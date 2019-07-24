@@ -242,6 +242,7 @@ public class EsaService {
                     if (files.isEmpty()) {
                         // No hi-res for some missions (Gaia, Visual Monitoring Camera, OSIRIS...)
                         getImageUrl(imageHtml.getElementsByClass("pi_container").get(0).getElementsByTag("img").get(0).attr("src"), imageUrl)
+                            .filter(u -> !u.getPath().contains("extension/esadam/design/esadam/images/global/arw"))
                             .map(EsaFile::new).ifPresent(files::add);
                     }
                     processDetails(image, imageHtml.getElementById("pi_details_content").getElementsByTag("ul").get(0).children());
