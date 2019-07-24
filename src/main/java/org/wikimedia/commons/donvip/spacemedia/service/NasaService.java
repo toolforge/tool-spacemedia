@@ -6,9 +6,11 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +45,10 @@ public class NasaService {
 
     @Value("${nasa.search.link}")
     private String searchEndpoint;
-    
+
+    @Value("${nasa.max.tries}")
+    private int maxTries;
+
     @Autowired
     private NasaAudioRepository audioRepository;
 
@@ -89,6 +94,15 @@ public class NasaService {
         } else {
             save = true;
         }
+        // The API is supposed to send us keywords in a proper JSON array, but sometimes it is not
+        Set<String> keywords = media.getKeywords();
+        if (keywords != null && keywords.size() == 1) {
+            String kw = keywords.iterator().next();
+            if (kw.contains(", ")) {
+                media.setKeywords(Arrays.stream(kw.split(",")).map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toSet()));
+                save = true;
+            }
+        }
         if (media.getAssetUrl() == null) {
             Optional<URL> originalUrl = rest.getForObject(Utils.urlToUri(href), NasaAssets.class).stream()
                     .filter(u -> u.toExternalForm().contains("~orig.")).findFirst();
@@ -117,18 +131,26 @@ public class NasaService {
     @SuppressWarnings("unchecked")
     private <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl, List<T> medias) {
         LOGGER.debug("Fetching {}", searchUrl);
-        NasaCollection collection = rest.getForObject(searchUrl, NasaResponse.class).getCollection();
-        for (NasaItem item : collection.getItems()) {
+        boolean ok = false;
+        for (int i = 0; i < maxTries && !ok; i++) {
             try {
-                medias.add((T) processMedia(rest, item.getData().get(0), item.getHref()));
-            } catch (IOException | RestClientException | URISyntaxException e) {
-                LOGGER.error("Cannot process item " + item, e);
-            }
-        }
-        if (!CollectionUtils.isEmpty(collection.getLinks())) {
-            Optional<NasaLink> next = collection.getLinks().stream().filter(l -> "next".equals(l.getRel())).findFirst();
-            if (next.isPresent()) {
-                return next.get().getHref().toExternalForm();
+                NasaCollection collection = rest.getForObject(searchUrl, NasaResponse.class).getCollection();
+                ok = true;
+                for (NasaItem item : collection.getItems()) {
+                    try {
+                        medias.add((T) processMedia(rest, item.getData().get(0), item.getHref()));
+                    } catch (IOException | RestClientException | URISyntaxException e) {
+                        LOGGER.error("Cannot process item " + item, e);
+                    }
+                }
+                if (!CollectionUtils.isEmpty(collection.getLinks())) {
+                    Optional<NasaLink> next = collection.getLinks().stream().filter(l -> "next".equals(l.getRel())).findFirst();
+                    if (next.isPresent()) {
+                        return next.get().getHref().toExternalForm();
+                    }
+                }
+            } catch (RestClientException e) {
+                LOGGER.error("Unable to process search results for " + searchUrl, e);
             }
         }
         return null;
