@@ -25,7 +25,7 @@ public class SpacemediaApplication implements SchedulingConfigurer {
 
     @Bean(destroyMethod="shutdown")
     public Executor taskExecutor() {
-        // Allow to run NASA and ESA update in parallel
-        return Executors.newScheduledThreadPool(2);
+        // Allow to run NASA (3) and ESA (1) update in parallel
+        return Executors.newScheduledThreadPool(4);
     }
 }

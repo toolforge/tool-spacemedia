@@ -90,7 +90,7 @@ public class NasaService {
             save = true;
         }
         if (media.getAssetUrl() == null) {
-            Optional<URL> originalUrl = rest.getForObject(href.toExternalForm(), NasaAssets.class).stream()
+            Optional<URL> originalUrl = rest.getForObject(Utils.urlToUri(href), NasaAssets.class).stream()
                     .filter(u -> u.toExternalForm().contains("~orig.")).findFirst();
             if (originalUrl.isPresent()) {
                 media.setAssetUrl(originalUrl.get());
@@ -133,19 +133,42 @@ public class NasaService {
         return null;
     }
 
+    private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType) {
+        LocalDateTime start = LocalDateTime.now();
+        LOGGER.info("Starting NASA {} update...", mediaType);
+        final List<T> medias = new ArrayList<>();
+        RestTemplate rest = new RestTemplate();
+        String nextUrl = searchEndpoint + "media_type=" + mediaType;
+        while (nextUrl != null) {
+            nextUrl = processSearchResults(rest, nextUrl);
+        }
+        LOGGER.info("NASA {} update completed: {} {}s in {}",
+                mediaType, medias.size(), mediaType, Duration.between(LocalDateTime.now(), start));
+        return medias;
+    }
+
     @Scheduled(fixedRateString = "${nasa.update.rate}")
+    public List<NasaImage> updateImages() {
+        return doUpdateMedia(NasaMediaType.image);
+    }
+
+    @Scheduled(fixedRateString = "${nasa.update.rate}")
+    public List<NasaAudio> updateAudios() {
+        return doUpdateMedia(NasaMediaType.audio);
+    }
+
+    @Scheduled(fixedRateString = "${nasa.update.rate}")
+    public List<NasaVideo> updateVideos() {
+        return doUpdateMedia(NasaMediaType.video);
+    }
+
     public List<NasaMedia> updateMedia() {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Starting NASA medias update...");
         final List<NasaMedia> medias = new ArrayList<>();
-        RestTemplate rest = new RestTemplate();
-        for (NasaMediaType mediaType : NasaMediaType.values()) {
-            LOGGER.info("Starting NASA {} update...", mediaType);
-            String nextUrl = searchEndpoint + "media_type=" + mediaType;
-            while (nextUrl != null) {
-                nextUrl = processSearchResults(rest, nextUrl);
-            }
-        }
+        medias.addAll(updateImages());
+        medias.addAll(updateAudios());
+        medias.addAll(updateVideos());
         LOGGER.info("NASA medias update completed: {} medias in {}", medias.size(), Duration.between(LocalDateTime.now(), start));
         return medias;
     }
