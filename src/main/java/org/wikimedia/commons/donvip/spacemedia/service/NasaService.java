@@ -114,12 +114,13 @@ public class NasaService {
         return media;
     }
 
-    private String processSearchResults(RestTemplate rest, String searchUrl) {
+    @SuppressWarnings("unchecked")
+    private <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl, List<T> medias) {
         LOGGER.debug("Fetching {}", searchUrl);
         NasaCollection collection = rest.getForObject(searchUrl, NasaResponse.class).getCollection();
         for (NasaItem item : collection.getItems()) {
             try {
-                processMedia(rest, item.getData().get(0), item.getHref());
+                medias.add((T) processMedia(rest, item.getData().get(0), item.getHref()));
             } catch (IOException | RestClientException | URISyntaxException e) {
                 LOGGER.error("Cannot process item " + item, e);
             }
@@ -140,7 +141,7 @@ public class NasaService {
         RestTemplate rest = new RestTemplate();
         String nextUrl = searchEndpoint + "media_type=" + mediaType;
         while (nextUrl != null) {
-            nextUrl = processSearchResults(rest, nextUrl);
+            nextUrl = processSearchResults(rest, nextUrl, medias);
         }
         LOGGER.info("NASA {} update completed: {} {}s in {}",
                 mediaType, medias.size(), mediaType, Duration.between(LocalDateTime.now(), start));
