@@ -32,7 +32,7 @@ public abstract class NasaMedia {
     @NotNull
     @JsonProperty("nasa_id")
     private String nasaId;
-    @Column(length = 860)
+    @Lob
     private String title;
     @Column(length = 20)
     private String center;

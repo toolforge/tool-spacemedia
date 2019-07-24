@@ -27,7 +27,6 @@ public class EsaImage {
     private LocalDateTime released;
     @Column(nullable = false, length = 300)
     private String copyright;
-    //@Column(length = 5000)
     @Lob
     private String description;
     @Column(length = 70)
