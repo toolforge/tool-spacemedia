@@ -46,6 +46,9 @@ public class NasaService {
     @Value("${nasa.search.link}")
     private String searchEndpoint;
 
+    @Value("${nasa.min.year}")
+    private int minYear;
+
     @Value("${nasa.max.tries}")
     private int maxTries;
 
@@ -157,22 +160,34 @@ public class NasaService {
     }
 
     private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType) {
+        return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear());
+    }
+
+    private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType, int year) {
+        return doUpdateMedia(mediaType, year, year);
+    }
+
+    private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType, int startYear, int endYear) {
         LocalDateTime start = LocalDateTime.now();
-        LOGGER.info("Starting NASA {} update...", mediaType);
+        LOGGER.info("Starting NASA {} update for years {}-{}...", mediaType, startYear, endYear);
         final List<T> medias = new ArrayList<>();
         RestTemplate rest = new RestTemplate();
-        String nextUrl = searchEndpoint + "media_type=" + mediaType;
+        String nextUrl = searchEndpoint + "media_type=" + mediaType + "&year_start=" + startYear + "&year_end=" + endYear;
         while (nextUrl != null) {
             nextUrl = processSearchResults(rest, nextUrl, medias);
         }
-        LOGGER.info("NASA {} update completed: {} {}s in {}",
-                mediaType, medias.size(), mediaType, Duration.between(LocalDateTime.now(), start));
+        LOGGER.info("NASA {} update for years {}-{} completed: {} {}s in {}",
+                mediaType, startYear, endYear, medias.size(), mediaType, Duration.between(LocalDateTime.now(), start));
         return medias;
     }
 
     @Scheduled(fixedRateString = "${nasa.update.rate}")
     public List<NasaImage> updateImages() {
-        return doUpdateMedia(NasaMediaType.image);
+        List<NasaImage> images = new ArrayList<>();
+        for (int year = LocalDateTime.now().getYear(); year >= minYear; year--) {
+            images.addAll(doUpdateMedia(NasaMediaType.image, year));
+        }
+        return images;
     }
 
     @Scheduled(fixedRateString = "${nasa.update.rate}")
