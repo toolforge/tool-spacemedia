@@ -42,9 +42,10 @@ public abstract class NasaMedia {
     private String description;
     @JsonProperty("media_type")
     private NasaMediaType mediaType;
+    @Column(length = 330)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords;
-    @Column(length = 280)
+    @Column(length = 290)
     @JsonProperty("asset_url")
     private URL assetUrl;
     @Column(nullable = false, length = 42)
