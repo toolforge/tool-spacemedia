@@ -27,17 +27,13 @@ public final class Utils {
     }
 
     public static URI urlToUri(URL url) throws URISyntaxException {
-        // TODO: cannot access https://images-assets.nasa.gov/video/EarthKAM_español_V2/collection.json
-        // The ñ character is not translated as expected by AWS and we receive a 403 error from AWS
-        // See https://stackoverflow.com/a/49769155/2257172
-        return new URI(
-                url.getProtocol(),
-                url.getUserInfo(),
-                url.getHost(),
-                url.getPort(),
-                url.getPath(),
-                url.getQuery(),
-                null);
+        URI uri = null;
+        try {
+            uri = url.toURI();
+        } catch (URISyntaxException e) {
+            uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), null);
+        }
+        return new URI(uri.toASCIIString());
     }
 
     public static String computeSha1(URL url) throws IOException, URISyntaxException {

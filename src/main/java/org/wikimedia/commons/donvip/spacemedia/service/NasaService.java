@@ -89,6 +89,11 @@ public class NasaService {
         throw new IllegalArgumentException(media.toString());
     }
 
+    static Optional<URL> findOriginalMedia(RestTemplate rest, URL href) throws RestClientException, URISyntaxException {
+        return rest.getForObject(Utils.urlToUri(href), NasaAssets.class).stream()
+                .filter(u -> u.toExternalForm().contains("~orig.")).findFirst();
+    }
+
     private NasaMedia processMedia(RestTemplate rest, NasaMedia media, URL href) throws IOException, URISyntaxException {
         Optional<? extends NasaMedia> mediaInRepo = mediaRepository.findById(media.getNasaId());
         boolean save = false;
@@ -107,8 +112,7 @@ public class NasaService {
             }
         }
         if (media.getAssetUrl() == null) {
-            Optional<URL> originalUrl = rest.getForObject(Utils.urlToUri(href), NasaAssets.class).stream()
-                    .filter(u -> u.toExternalForm().contains("~orig.")).findFirst();
+            Optional<URL> originalUrl = findOriginalMedia(rest, href);
             if (originalUrl.isPresent()) {
                 media.setAssetUrl(originalUrl.get());
                 save = true;
