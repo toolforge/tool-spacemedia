@@ -1,10 +1,14 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -31,5 +35,71 @@ public class NasaServiceTest {
         }).collect(Collectors.toList())) {
             assertNotNull(NasaService.findOriginalMedia(rest, href));
         }
+    }
+
+    @Test
+    public void testKeywordsSplit() throws Exception {
+        doTestKeywords("MSFC; National Space Advisory Council; U.S. Space and Rocket Cen",
+                Arrays.asList("MSFC", "National Space Advisory Council", "U.S. Space and Rocket Cen"));
+        doTestKeywords("Human Exploration Rover Challenge; U.S. Space and Rocket Center;",
+                Arrays.asList("Human Exploration Rover Challenge", "U.S. Space and Rocket Center"));
+        doTestKeywords("NASA,Jet Propulsion Laboratory,JPL,space,exploration,planets,InSight,lander,Interior Exploration using Seismic Investigations,Geodesy and Heat Transport,Martian wind,Marsforming,AR,instrument deployment,SEIS,Seismic Experiment for Interior Structure,Curiosity,Mars Science Laboratory,MSL,science,Mars,planet,news,robot,robotics,tech,technology,augmented reality,hololens",
+                Arrays.asList("NASA","Jet Propulsion Laboratory","JPL","space","exploration","planets","InSight","lander","Interior Exploration using Seismic Investigations","Geodesy and Heat Transport","Martian wind","Marsforming","AR","instrument deployment","SEIS","Seismic Experiment for Interior Structure","Curiosity","Mars Science Laboratory","MSL","science","Mars","planet","news","robot","robotics","tech","technology","augmented reality","hololens"));
+        doTestKeywords("Chandra X-ray Observatory,NuSTAR",
+                Arrays.asList("Chandra X-ray Observatory","NuSTAR"));
+        doTestKeywords("iss,",
+                Arrays.asList("iss"));
+    }
+
+    @Test
+    public void testKeywordsNoSplitDates() throws Exception {
+        doTestKeywords("USA Composite Reveals Massive Winter Storm - January 02, 2014",
+                Arrays.asList("USA Composite Reveals Massive Winter Storm - January 02, 2014"));
+        doTestKeywords("Erupting Prominence Observed by SDO on March 30, 2010",
+                Arrays.asList("Erupting Prominence Observed by SDO on March 30, 2010"));
+        doTestKeywords("C3-class Solar Flare Erupts on Sept. 8, 2010 [Detail]",
+                Arrays.asList("C3-class Solar Flare Erupts on Sept. 8, 2010 [Detail]"));
+    }
+
+    @Test
+    public void testKeywordsNoSplitVariousStuff() throws Exception {
+        doTestKeywords("Kulusuk Icebergs, by Andrew Bossi",
+                Arrays.asList("Kulusuk Icebergs, by Andrew Bossi"));
+        doTestKeywords("Hi, Hokusai!",
+                Arrays.asList("Hi, Hokusai!"));
+        doTestKeywords("U.S. Senate Committee on Commerce, Science and Transportation",
+                Arrays.asList("U.S. Senate Committee on Commerce, Science and Transportation"));
+        doTestKeywords("Entry, Descent and Landing (EDL)",
+                Arrays.asList("Entry, Descent and Landing (EDL)"));
+        doTestKeywords("NASA's SDO Satellite Captures Venus Transit Approach -- Bigger, Better!",
+                Arrays.asList("NASA's SDO Satellite Captures Venus Transit Approach -- Bigger, Better!"));
+    }
+
+    @Test
+    public void testKeywordsNoSplitContinentsCountriesStates() throws Exception {
+        doTestKeywords("Partial Eclipse Seen Over the Princess Ragnhild Coast, Antarctica",
+                Arrays.asList("Partial Eclipse Seen Over the Princess Ragnhild Coast, Antarctica"));
+        doTestKeywords("Eastern Hudson Bay, Canada",
+                Arrays.asList("Eastern Hudson Bay, Canada"));
+        doTestKeywords("Landsat View: Western Suburbs of Chicago, Illinois",
+                Arrays.asList("Landsat View: Western Suburbs of Chicago, Illinois"));
+        doTestKeywords("Satellite Sees Holiday Lights Brighten Cities - Washington, D.C., and Baltimore",
+                Arrays.asList("Satellite Sees Holiday Lights Brighten Cities - Washington, D.C., and Baltimore"));
+        doTestKeywords("Smoke from Fires in Southwestern Oregon, Northern California",
+                Arrays.asList("Smoke from Fires in Southwestern Oregon, Northern California"));
+        doTestKeywords("Worcester, MA",
+                Arrays.asList("Worcester, MA"));
+        doTestKeywords("Washington, DC",
+                Arrays.asList("Washington, DC"));
+    }
+
+    @Test
+    public void testKeywordsNoSplitNumbers() throws Exception {
+        doTestKeywords("Hubble views a spectacular supernova with interstellar material over 160,000 light-years away",
+                Arrays.asList("Hubble views a spectacular supernova with interstellar material over 160,000 light-years away"));
+    }
+
+    private static void doTestKeywords(String string, List<String> asList) {
+        assertEquals(new HashSet<>(asList), NasaService.normalizeKeywords(Collections.singleton(string)));
     }
 }

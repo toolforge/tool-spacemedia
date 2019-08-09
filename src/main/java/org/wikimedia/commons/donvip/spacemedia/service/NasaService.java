@@ -7,10 +7,17 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,18 +105,22 @@ public class NasaService {
         Optional<? extends NasaMedia> mediaInRepo = mediaRepository.findById(media.getNasaId());
         boolean save = false;
         if (mediaInRepo.isPresent()) {
+            // allow to purge keywords table and recreate contents
+            Set<String> keywordsInRepo = mediaInRepo.get().getKeywords();
+            Set<String> keywordsFromNasa = media.getKeywords();
             media = mediaInRepo.get();
+            if (CollectionUtils.isEmpty(keywordsInRepo) && !CollectionUtils.isEmpty(keywordsFromNasa)) {
+                media.setKeywords(keywordsFromNasa);
+                save = true;
+            }
         } else {
             save = true;
         }
         // The API is supposed to send us keywords in a proper JSON array, but sometimes it is not
-        Set<String> keywords = media.getKeywords();
-        if (keywords != null && keywords.size() == 1) {
-            String kw = keywords.iterator().next();
-            if (kw.contains(", ")) {
-                media.setKeywords(Arrays.stream(kw.split(",")).map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toSet()));
-                save = true;
-            }
+        Set<String> normalizedKeywords = normalizeKeywords(media.getKeywords());
+        if (!Objects.equals(normalizedKeywords, media.getKeywords())) {
+            media.setKeywords(normalizedKeywords);
+            save = true;
         }
         if (media.getAssetUrl() == null) {
             Optional<URL> originalUrl = findOriginalMedia(rest, href);
@@ -133,6 +144,135 @@ public class NasaService {
             media = save(media);
         }
         return media;
+    }
+
+    static Set<String> normalizeKeywords(Set<String> keywords) {
+        if (keywords != null && keywords.size() == 1) {
+            String kw = keywords.iterator().next();
+            for (String sep : Arrays.asList(",", ";")) {
+                if (kw.contains(sep) && looksLikeMultipleValues(kw, sep)) {
+                    return Arrays.stream(kw.split(sep)).map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toSet());
+                }
+            }
+        }
+        return keywords;
+    }
+
+    private static final Pattern PATTERN_NUMBER = Pattern.compile(".*\\d+,\\d+.*");
+    private static final Pattern PATTERN_DATE = Pattern.compile(".*\\p{Alpha}+\\.? \\d{1,2}, [12]\\d{3}.*");
+    private static final Pattern PATTERN_A_AND_B = Pattern.compile(".*[\\p{Alpha}\\.]+, (and|&) \\p{Alpha}+.*");
+    private static final Pattern PATTERN_A_B_AND_C = Pattern.compile(".*\\p{Alpha}+, \\p{Alpha}+ (and|&) \\p{Alpha}+.*");
+    private static final Pattern PATTERN_ER = Pattern.compile(".*\\p{Alpha}+er, \\p{Alpha}+er.*");
+
+    private static final List<String> CONTINENTS = Arrays.asList(
+            "Africa", "Antarctica", "Asia", "Australia", "Eurasia", "Europe", "Oceania",
+            "America", "Central America", "North America", "South America");
+
+    public static final Map<String, String> STATE_MAP;
+    static {
+        STATE_MAP = new HashMap<String, String>();
+        STATE_MAP.put("AL", "Alabama");
+        STATE_MAP.put("AK", "Alaska");
+        STATE_MAP.put("AB", "Alberta");
+        STATE_MAP.put("AZ", "Arizona");
+        STATE_MAP.put("AR", "Arkansas");
+        STATE_MAP.put("BC", "British Columbia");
+        STATE_MAP.put("CA", "California");
+        STATE_MAP.put("CO", "Colorado");
+        STATE_MAP.put("CT", "Connecticut");
+        STATE_MAP.put("DE", "Delaware");
+        STATE_MAP.put("DC", "District Of Columbia");
+        STATE_MAP.put("FL", "Florida");
+        STATE_MAP.put("GA", "Georgia");
+        STATE_MAP.put("GU", "Guam");
+        STATE_MAP.put("HI", "Hawaii");
+        STATE_MAP.put("ID", "Idaho");
+        STATE_MAP.put("IL", "Illinois");
+        STATE_MAP.put("IN", "Indiana");
+        STATE_MAP.put("IA", "Iowa");
+        STATE_MAP.put("KS", "Kansas");
+        STATE_MAP.put("KY", "Kentucky");
+        STATE_MAP.put("LA", "Louisiana");
+        STATE_MAP.put("ME", "Maine");
+        STATE_MAP.put("MB", "Manitoba");
+        STATE_MAP.put("MD", "Maryland");
+        STATE_MAP.put("MA", "Massachusetts");
+        STATE_MAP.put("MI", "Michigan");
+        STATE_MAP.put("MN", "Minnesota");
+        STATE_MAP.put("MS", "Mississippi");
+        STATE_MAP.put("MO", "Missouri");
+        STATE_MAP.put("MT", "Montana");
+        STATE_MAP.put("NE", "Nebraska");
+        STATE_MAP.put("NV", "Nevada");
+        STATE_MAP.put("NB", "New Brunswick");
+        STATE_MAP.put("NH", "New Hampshire");
+        STATE_MAP.put("NJ", "New Jersey");
+        STATE_MAP.put("NM", "New Mexico");
+        STATE_MAP.put("NY", "New York");
+        STATE_MAP.put("NF", "Newfoundland");
+        STATE_MAP.put("NC", "North Carolina");
+        STATE_MAP.put("ND", "North Dakota");
+        STATE_MAP.put("NT", "Northwest Territories");
+        STATE_MAP.put("NS", "Nova Scotia");
+        STATE_MAP.put("NU", "Nunavut");
+        STATE_MAP.put("OH", "Ohio");
+        STATE_MAP.put("OK", "Oklahoma");
+        STATE_MAP.put("ON", "Ontario");
+        STATE_MAP.put("OR", "Oregon");
+        STATE_MAP.put("PA", "Pennsylvania");
+        STATE_MAP.put("PE", "Prince Edward Island");
+        STATE_MAP.put("PR", "Puerto Rico");
+        STATE_MAP.put("QC", "Quebec");
+        STATE_MAP.put("RI", "Rhode Island");
+        STATE_MAP.put("SK", "Saskatchewan");
+        STATE_MAP.put("SC", "South Carolina");
+        STATE_MAP.put("SD", "South Dakota");
+        STATE_MAP.put("TN", "Tennessee");
+        STATE_MAP.put("TX", "Texas");
+        STATE_MAP.put("UT", "Utah");
+        STATE_MAP.put("VT", "Vermont");
+        STATE_MAP.put("VI", "Virgin Islands");
+        STATE_MAP.put("VA", "Virginia");
+        STATE_MAP.put("WA", "Washington");
+        STATE_MAP.put("WV", "West Virginia");
+        STATE_MAP.put("WI", "Wisconsin");
+        STATE_MAP.put("WY", "Wyoming");
+        STATE_MAP.put("YT", "Yukon Territory");
+    }
+
+    private static final Set<String> STATE_CODES = STATE_MAP.keySet();
+    private static final Collection<String> STATES = STATE_MAP.values();
+    private static final List<String> NORTH_SOUTH_STATES = STATES.stream()
+            .flatMap(state -> Stream.of("Southern " + state, "Northern " + state)).collect(Collectors.toList());
+
+    private static final List<String> COUNTRIES = Arrays.stream(Locale.getISOCountries())
+            .map(code -> new Locale("en", code).getDisplayCountry()).collect(Collectors.toList());
+
+    private static boolean looksLikeMultipleValues(String kw, String sep) {
+        if (",".equals(sep)) {
+            if (kw.startsWith("Hi, ") || kw.contains(", by ")) {
+                return false;
+            }
+            if (kw.endsWith(sep)) {
+                kw = kw.substring(0, kw.length()-sep.length());
+            }
+            if (kw.contains(sep)) {
+                String after = kw.substring(kw.lastIndexOf(sep) + sep.length() + " ".length());
+                for (Collection<String> entities : Arrays.asList(
+                        CONTINENTS, COUNTRIES, STATES, STATE_CODES, NORTH_SOUTH_STATES)) {
+                    if (entities.contains(after)) {
+                        return false;
+                    }
+                }
+                for (Pattern pattern : Arrays.asList(
+                        PATTERN_NUMBER, PATTERN_DATE, PATTERN_A_AND_B, PATTERN_A_B_AND_C, PATTERN_ER)) {
+                    if (pattern.matcher(kw).matches()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     @SuppressWarnings("unchecked")
