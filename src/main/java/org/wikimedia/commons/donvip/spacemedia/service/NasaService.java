@@ -133,7 +133,7 @@ public class NasaService {
             media.setSha1(Utils.computeSha1(media.getAssetUrl()));
             save = true;
         }
-        if (media.getSha1() != null) {
+        if (media.getSha1() != null && CollectionUtils.isEmpty(media.getCommonsFileNames())) {
             Set<String> files = commonsService.findFilesWithSha1(media.getSha1());
             if (!files.isEmpty()) {
                 media.setCommonsFileNames(files);
