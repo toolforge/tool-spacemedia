@@ -4,6 +4,7 @@ import java.net.URL;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
@@ -14,6 +15,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.Media;
 public class EsaFile extends Media {
 
     @Id
+    @GeneratedValue
+    private Integer id;
     @Column(nullable = false, length = 350)
     private URL url;
     @Column(nullable = true)
@@ -25,6 +28,14 @@ public class EsaFile extends Media {
 
     public EsaFile(@NotNull URL url) {
         this.url = url;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public URL getUrl() {
