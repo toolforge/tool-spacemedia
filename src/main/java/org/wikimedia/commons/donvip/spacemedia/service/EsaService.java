@@ -56,7 +56,7 @@ public class EsaService {
     private EsaImageRepository imageRepository;
     
     @Autowired
-    private CommonsService commonsService;
+    private MediaService mediaService;
 
     @Value("${esa.search.link}")
     private String searchLink; 
@@ -175,13 +175,8 @@ public class EsaService {
     }
 
     private EsaFile findCommonsFileBySha1(EsaFile f, boolean save) {
-        String sha1 = f.getSha1();
-        if (sha1 != null && CollectionUtils.isEmpty(f.getCommonsFileNames())) {
-            Set<String> files = commonsService.findFilesWithSha1(sha1);
-            f.setCommonsFileNames(files);
-            if (save && !files.isEmpty()) {
-                return fileRepository.save(f);
-            }
+        if (mediaService.findCommonsFilesWithSha1(f) && save) {
+            return fileRepository.save(f);
         }
         return f;
     }
@@ -202,7 +197,7 @@ public class EsaService {
                     boolean sha1ok = false;
                     for (int j = 0; j < maxTries && !sha1ok; j++) {
                         try {
-                            f.setSha1(Utils.computeSha1(url));
+                            mediaService.computeSha1(f, url);
                             f = fileRepository.save(findCommonsFileBySha1(f, false));
                             sha1ok = true;
                         } catch (IOException | URISyntaxException e) {

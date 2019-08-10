@@ -4,7 +4,6 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,10 +11,12 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.validation.constraints.NotNull;
 
+import org.wikimedia.commons.donvip.spacemedia.data.local.Media;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
-public class FlickrMedia {
+public class FlickrMedia extends Media {
 
     @Id
     @NotNull
@@ -74,12 +75,6 @@ public class FlickrMedia {
     @NotNull
     @JsonProperty("pathalias")
     String pathAlias;
-
-    @Column(nullable = false, length = 42)
-    private String sha1;
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> commonsFileNames;
 
     public Long getId() {
         return id;
@@ -231,21 +226,5 @@ public class FlickrMedia {
 
     public void setPathAlias(String pathAlias) {
         this.pathAlias = pathAlias;
-    }
-
-    public String getSha1() {
-        return sha1;
-    }
-
-    public void setSha1(String sha1) {
-        this.sha1 = sha1;
-    }
-
-    public Set<String> getCommonsFileNames() {
-        return commonsFileNames;
-    }
-
-    public void setCommonsFileNames(Set<String> commonsFileNames) {
-        this.commonsFileNames = commonsFileNames;
     }
 }

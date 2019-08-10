@@ -73,7 +73,7 @@ public class NasaService {
     private NasaMediaRepository<?> mediaRepository;
 
     @Autowired
-    private CommonsService commonsService;
+    private MediaService mediaService;
 
     public Iterable<? extends NasaMedia> listAllMedia() throws IOException {
         return mediaRepository.findAll();
@@ -129,16 +129,11 @@ public class NasaService {
                 save = true;
             }
         }
-        if (media.getAssetUrl() != null && media.getSha1() == null) {
-            media.setSha1(Utils.computeSha1(media.getAssetUrl()));
+        if (mediaService.computeSha1(media, media.getAssetUrl())) {
             save = true;
         }
-        if (media.getSha1() != null && CollectionUtils.isEmpty(media.getCommonsFileNames())) {
-            Set<String> files = commonsService.findFilesWithSha1(media.getSha1());
-            if (!files.isEmpty()) {
-                media.setCommonsFileNames(files);
-                save = true;
-            }
+        if (mediaService.findCommonsFilesWithSha1(media)) {
+            save = true;
         }
         if (save) {
             media = save(media);

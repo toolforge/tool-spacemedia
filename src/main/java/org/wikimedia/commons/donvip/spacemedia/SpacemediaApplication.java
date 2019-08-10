@@ -14,9 +14,9 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 @SpringBootApplication
 public class SpacemediaApplication implements SchedulingConfigurer {
 
-	public static void main(String[] args) {
-		SpringApplication.run(SpacemediaApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(SpacemediaApplication.class, args);
+    }
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {

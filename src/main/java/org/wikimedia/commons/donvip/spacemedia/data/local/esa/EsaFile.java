@@ -1,27 +1,21 @@
 package org.wikimedia.commons.donvip.spacemedia.data.local.esa;
 
 import java.net.URL;
-import java.util.Set;
 
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.util.CollectionUtils;
+import org.wikimedia.commons.donvip.spacemedia.data.local.Media;
 
 @Entity
-public class EsaFile {
+public class EsaFile extends Media {
 
     @Id
     @Column(nullable = false, length = 350)
     private URL url;
-    @Column(nullable = false, length = 42)
-    private String sha1;
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> commonsFileNames;
     @Column(nullable = true)
     private Boolean ignored;
     private String ignoredReason;
@@ -41,22 +35,6 @@ public class EsaFile {
         this.url = url;
     }
     
-    public String getSha1() {
-        return sha1;
-    }
-    
-    public void setSha1(String sha1) {
-        this.sha1 = sha1;
-    }
-
-    public Set<String> getCommonsFileNames() {
-        return commonsFileNames;
-    }
-
-    public void setCommonsFileNames(Set<String> commonsFileNames) {
-        this.commonsFileNames = commonsFileNames;
-    }
-
     public Boolean isIgnored() {
         return ignored;
     }

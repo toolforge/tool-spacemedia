@@ -47,7 +47,7 @@ public class FlickrService {
     }
 
     public List<Photo> findFreePhotos(String userId) throws FlickrException {
-        List<Photo> result = new ArrayList<Photo>();
+        List<Photo> result = new ArrayList<>();
         SearchParameters params = new SearchParameters();
         params.setUserId(Objects.requireNonNull(userId));
         params.setExtras(EXTRAS);

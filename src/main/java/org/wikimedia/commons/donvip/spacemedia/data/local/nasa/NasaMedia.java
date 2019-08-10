@@ -14,6 +14,8 @@ import javax.persistence.InheritanceType;
 import javax.persistence.Lob;
 import javax.validation.constraints.NotNull;
 
+import org.wikimedia.commons.donvip.spacemedia.data.local.Media;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -26,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = NasaImage.class, name = "image"),
     @JsonSubTypes.Type(value = NasaVideo.class, name = "video") }
 )
-public abstract class NasaMedia {
+public abstract class NasaMedia extends Media {
 
     @Id
     @NotNull
@@ -48,10 +50,6 @@ public abstract class NasaMedia {
     @Column(length = 300)
     @JsonProperty("asset_url")
     private URL assetUrl;
-    @Column(nullable = false, length = 42)
-    private String sha1;
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> commonsFileNames;
 
     public String getNasaId() {
         return nasaId;
@@ -100,17 +98,5 @@ public abstract class NasaMedia {
     }
     public void setAssetUrl(URL assetUrl) {
         this.assetUrl = assetUrl;
-    }
-    public String getSha1() {
-        return sha1;
-    }
-    public void setSha1(String sha1) {
-        this.sha1 = sha1;
-    }
-    public Set<String> getCommonsFileNames() {
-        return commonsFileNames;
-    }
-    public void setCommonsFileNames(Set<String> commonsFileNames) {
-        this.commonsFileNames = commonsFileNames;
     }
 }

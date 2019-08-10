@@ -16,10 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.flickr4java.flickr.FlickrException;
 import com.github.dozermapper.core.Mapper;
@@ -36,7 +34,7 @@ public class SpaceXService {
     private FlickrMediaRepository repository;
 
     @Autowired
-    private CommonsService commonsService;
+    private MediaService mediaService;
 
     @Autowired
     private FlickrService flickrService;
@@ -77,16 +75,11 @@ public class SpaceXService {
         } else {
             save = true;
         }
-        if (media.getSha1() == null) {
-            media.setSha1(Utils.computeSha1(media.getOriginalUrl()));
+        if (mediaService.computeSha1(media, media.getOriginalUrl())) {
             save = true;
         }
-        if (media.getSha1() != null && CollectionUtils.isEmpty(media.getCommonsFileNames())) {
-            Set<String> files = commonsService.findFilesWithSha1(media.getSha1());
-            if (!files.isEmpty()) {
-                media.setCommonsFileNames(files);
-                save = true;
-            }
+        if (mediaService.findCommonsFilesWithSha1(media)) {
+            save = true;
         }
         if (save) {
             media = repository.save(media);
