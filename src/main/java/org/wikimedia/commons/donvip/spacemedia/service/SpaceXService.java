@@ -42,6 +42,18 @@ public class SpaceXService {
     @Autowired
     private Mapper dozerMapper;
 
+    public Iterable<? extends FlickrMedia> listAllMedia() {
+        return repository.findAll();
+    }
+
+    public List<FlickrMedia> listMissingMedia() {
+        return repository.findMissingInCommons();
+    }
+
+    public List<FlickrMedia> listDuplicateMedia() throws IOException {
+        return repository.findDuplicateInCommons();
+    }
+
     @Scheduled(fixedRateString = "${spacex.update.rate}")
     public List<FlickrMedia> updateMedia() {
         LocalDateTime start = LocalDateTime.now();

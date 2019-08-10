@@ -7,9 +7,14 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface NasaMediaRepository<T extends NasaMedia> extends CrudRepository<T, String> {
 
-    @Query("select distinct m from NasaMedia m") // TODO
+    /**
+     * Find NASA files not yet uploaded to Wikimedia Commons.
+     * 
+     * @return NASA files not yet uploaded to Wikimedia Commons
+     */
+    @Query("select m from NasaMedia m where not exists elements (m.commonsFileNames)")
     List<NasaMedia> findMissingInCommons();
 
-    @Query("select distinct m from NasaMedia m") // TODO
+    @Query("select m from NasaMedia m where size (m.commonsFileNames) >= 2")
     List<NasaMedia> findDuplicateInCommons();
 }

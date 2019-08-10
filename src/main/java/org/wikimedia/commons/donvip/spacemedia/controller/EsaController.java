@@ -13,7 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImage;
 import org.wikimedia.commons.donvip.spacemedia.service.EsaService;
 
 @RestController
-@RequestMapping("/esa")
+@RequestMapping("/spacemedia/esa")
 public class EsaController {
 
     @Autowired
