@@ -32,6 +32,7 @@ public abstract class NasaMedia extends Media {
 
     @Id
     @NotNull
+    @Column(length = 128)
     @JsonProperty("nasa_id")
     private String nasaId;
     @Lob
