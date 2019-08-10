@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozermapper.github.io/schema/bean-mapping"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozermapper.github.io/schema/bean-mapping http://dozermapper.github.io/schema/bean-mapping.xsd">
+    <configuration>
+		<custom-converters>
+			<converter type="org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrTagToStringConverter">
+				<class-a>com.flickr4java.flickr.tags.Tag</class-a>
+				<class-b>java.lang.String</class-b>
+			</converter>
+		</custom-converters>
+    </configuration>
+
+    <mapping type="one-way">
+        <class-a>com.flickr4java.flickr.photos.Photo</class-a>
+        <class-b>org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia</class-b>
+        <field>
+            <a>takenGranularity</a>
+            <b>dateTakenGranularity</b>
+        </field>
+        <field>
+            <a>datePosted</a>
+            <b>dateUpload</b>
+        </field>
+        <field>
+            <a>geoData.latitude</a>
+            <b>latitude</b>
+        </field>
+        <field>
+            <a>geoData.longitude</a>
+            <b>longitude</b>
+        </field>
+        <field>
+            <a>geoData.accuracy</a>
+            <b>accuracy</b>
+        </field>
+    </mapping>
+</mappings>
