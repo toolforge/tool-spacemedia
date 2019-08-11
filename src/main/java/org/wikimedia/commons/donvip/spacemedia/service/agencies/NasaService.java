@@ -313,7 +313,7 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
         return medias;
     }
 
-    @Scheduled(fixedRateString = "${nasa.update.rate}")
+    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
     public List<NasaImage> updateImages() {
         List<NasaImage> images = new ArrayList<>();
         for (int year = LocalDateTime.now().getYear(); year >= minYear; year--) {
@@ -322,12 +322,12 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
         return images;
     }
 
-    @Scheduled(fixedRateString = "${nasa.update.rate}")
+    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
     public List<NasaAudio> updateAudios() {
         return doUpdateMedia(NasaMediaType.audio);
     }
 
-    @Scheduled(fixedRateString = "${nasa.update.rate}")
+    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
     public List<NasaVideo> updateVideos() {
         return doUpdateMedia(NasaMediaType.video);
     }

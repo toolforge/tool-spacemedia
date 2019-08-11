@@ -26,7 +26,7 @@ public class SpaceXService extends SpaceAgencyFlickrService {
     }
 
     @Override
-    @Scheduled(fixedRateString = "${spacex.update.rate}")
+    @Scheduled(fixedRateString = "${spacex.update.rate}", initialDelayString = "${initial.delay}")
     public List<FlickrMedia> updateMedia() {
         return updateFlickrMedia();
     }

@@ -300,7 +300,7 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
         }
     }
 
-    @Scheduled(fixedRateString = "${esa.update.rate}")
+    @Scheduled(fixedRateString = "${esa.update.rate}", initialDelayString = "${initial.delay}")
     public List<EsaImage> updateImages() throws IOException {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Starting ESA image updates...");
