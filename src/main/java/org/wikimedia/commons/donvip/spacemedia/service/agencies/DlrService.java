@@ -15,17 +15,17 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import com.github.dozermapper.core.Mapper;
 
 @Service
-public class SpaceXService extends SpaceAgencyFlickrService {
+public class DlrService extends SpaceAgencyFlickrService {
 
     @Autowired
-    public SpaceXService(FlickrMediaRepository repository, MediaService mediaService, FlickrService flickrService,
-            Mapper dozerMapper, @Value("${spacex.flickr.accounts}") Set<String> flickrAccounts) {
+    public DlrService(FlickrMediaRepository repository, MediaService mediaService, FlickrService flickrService,
+            Mapper dozerMapper, @Value("${dlr.flickr.accounts}") Set<String> flickrAccounts) {
         super(repository, mediaService, flickrService, dozerMapper, flickrAccounts);
     }
 
     @Override
-    @Scheduled(fixedRateString = "${spacex.update.rate}")
+    @Scheduled(fixedRateString = "${dlr.update.rate}")
     public List<FlickrMedia> updateMedia() {
-        return updateFlickrMedia("SpaceX");
+        return updateFlickrMedia("DLR");
     }
 }
