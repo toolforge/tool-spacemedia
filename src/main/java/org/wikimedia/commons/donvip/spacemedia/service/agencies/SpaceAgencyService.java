@@ -51,7 +51,8 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
     public abstract List<T> updateMedia() throws IOException;
 
     public Statistics getStatistics() {
-        return new Statistics(getName(), countAllMedia(), countMissingMedia(), getProblemsCount());
+        long problems = getProblemsCount();
+        return new Statistics(getName(), countAllMedia(), countMissingMedia(), problems > 0 ? problems : null);
     }
 
     public List<Problem> getProblems() {

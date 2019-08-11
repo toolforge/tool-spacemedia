@@ -7,14 +7,14 @@ public class Statistics implements Comparable<Statistics> {
     private final String agency;
     private final long totalMedia;
     private final long missingMedia;
-    private final long problemsCount;
+    private final Long problemsCount;
     private List<Statistics> details;
 
-    public Statistics(String agency, long totalMedia, long missingMedia, long problemsCount) {
+    public Statistics(String agency, long totalMedia, long missingMedia, Long problemsCount) {
         this(agency, totalMedia, missingMedia, problemsCount, null);
     }
 
-    public Statistics(String agency, long totalMedia, long missingMedia, long problemsCount, List<Statistics> details) {
+    public Statistics(String agency, long totalMedia, long missingMedia, Long problemsCount, List<Statistics> details) {
         this.agency = Objects.requireNonNull(agency);
         this.totalMedia = totalMedia;
         this.missingMedia = missingMedia;
@@ -46,7 +46,7 @@ public class Statistics implements Comparable<Statistics> {
     /**
      * @return the problemsCount
      */
-    public long getProblemsCount() {
+    public Long getProblemsCount() {
         return problemsCount;
     }
 

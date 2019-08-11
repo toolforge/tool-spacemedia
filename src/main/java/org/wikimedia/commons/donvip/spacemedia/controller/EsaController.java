@@ -14,64 +14,50 @@ import org.wikimedia.commons.donvip.spacemedia.service.agencies.EsaService;
 
 @RestController
 @RequestMapping("/spacemedia/esa")
-public class EsaController {
+public class EsaController extends SpaceAgencyController<EsaFile, String> {
+
+    private final EsaService esaService;
 
     @Autowired
-    private EsaService service;
+    public EsaController(EsaService service) {
+        super(service);
+        this.esaService = service;
+    }
 
-    // IMAGE GETTERS
+    @GetMapping("ignored")
+    public List<EsaFile> listIgnoredFiles() {
+        return esaService.listIgnoredMedia();
+    }
+
+    // ESA IMAGES
 
     @GetMapping("/images/all")
     public Iterable<EsaImage> listAllImages() {
-        return service.listAllImages();
+        return esaService.listAllImages();
     }
 
     @GetMapping("/images/missing")
     public List<EsaImage> listMissingImages() {
-        return service.listMissingImages();
+        return esaService.listMissingImages();
     }
 
     @GetMapping("/images/ignored")
     public List<EsaImage> listIgnoredImages() {
-        return service.listIgnoredImages();
+        return esaService.listIgnoredImages();
     }
 
     @GetMapping("/images/duplicates")
     public List<EsaImage> listDuplicateImages() {
-        return service.listDuplicateImages();
+        return esaService.listDuplicateImages();
     }
 
-    // FILE GETTERS
-
-    @GetMapping("/files/all")
-    public Iterable<EsaFile> listAllFiles() {
-        return service.listAllMedia();
+    @GetMapping("/images/update")
+    public List<EsaImage> updateImages() throws IOException {
+        return esaService.updateImages();
     }
 
-    @GetMapping("/files/missing")
-    public List<EsaFile> listMissingFiles() {
-        return service.listMissingMedia();
-    }
-
-    @GetMapping("/files/ignored")
-    public List<EsaFile> listIgnoredFiles() {
-        return service.listIgnoredMedia();
-    }
-
-    @GetMapping("/files/duplicates")
-    public List<EsaFile> listDuplicateFiles() {
-        return service.listDuplicateMedia();
-    }
-
-    // ACTIONS
-
-    @GetMapping("/action/update")
-    public List<EsaImage> update() throws IOException {
-        return service.updateImages();
-    }
-
-    @GetMapping("/action/upload/{sha1}")
+    @GetMapping("/upload/{sha1}")
     public EsaFile upload(@PathVariable String sha1) {
-        return service.upload(sha1);
+        return esaService.upload(sha1);
     }
 }

@@ -8,16 +8,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +26,7 @@ import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.local.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAssets;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAudioRepository;
@@ -45,6 +42,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
@@ -72,6 +70,9 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
 
     @Autowired
     private MediaService mediaService;
+
+    @Autowired
+    private NasaMediaRepository<NasaMedia> mediaRepository;
 
     @Autowired
     public NasaService(NasaMediaRepository<NasaMedia> repository, ProblemRepository problemrepository) {
@@ -150,90 +151,6 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     private static final Pattern PATTERN_A_B_AND_C = Pattern.compile(".*\\p{Alpha}+, \\p{Alpha}+ (and|&) \\p{Alpha}+.*");
     private static final Pattern PATTERN_ER = Pattern.compile(".*\\p{Alpha}+er, \\p{Alpha}+er.*");
 
-    private static final List<String> CONTINENTS = Arrays.asList(
-            "Africa", "Antarctica", "Asia", "Australia", "Eurasia", "Europe", "Oceania",
-            "America", "Central America", "North America", "South America");
-
-    public static final Map<String, String> STATE_MAP;
-    static {
-        STATE_MAP = new HashMap<String, String>();
-        STATE_MAP.put("AL", "Alabama");
-        STATE_MAP.put("AK", "Alaska");
-        STATE_MAP.put("AB", "Alberta");
-        STATE_MAP.put("AZ", "Arizona");
-        STATE_MAP.put("AR", "Arkansas");
-        STATE_MAP.put("BC", "British Columbia");
-        STATE_MAP.put("CA", "California");
-        STATE_MAP.put("CO", "Colorado");
-        STATE_MAP.put("CT", "Connecticut");
-        STATE_MAP.put("DE", "Delaware");
-        STATE_MAP.put("DC", "District Of Columbia");
-        STATE_MAP.put("FL", "Florida");
-        STATE_MAP.put("GA", "Georgia");
-        STATE_MAP.put("GU", "Guam");
-        STATE_MAP.put("HI", "Hawaii");
-        STATE_MAP.put("ID", "Idaho");
-        STATE_MAP.put("IL", "Illinois");
-        STATE_MAP.put("IN", "Indiana");
-        STATE_MAP.put("IA", "Iowa");
-        STATE_MAP.put("KS", "Kansas");
-        STATE_MAP.put("KY", "Kentucky");
-        STATE_MAP.put("LA", "Louisiana");
-        STATE_MAP.put("ME", "Maine");
-        STATE_MAP.put("MB", "Manitoba");
-        STATE_MAP.put("MD", "Maryland");
-        STATE_MAP.put("MA", "Massachusetts");
-        STATE_MAP.put("MI", "Michigan");
-        STATE_MAP.put("MN", "Minnesota");
-        STATE_MAP.put("MS", "Mississippi");
-        STATE_MAP.put("MO", "Missouri");
-        STATE_MAP.put("MT", "Montana");
-        STATE_MAP.put("NE", "Nebraska");
-        STATE_MAP.put("NV", "Nevada");
-        STATE_MAP.put("NB", "New Brunswick");
-        STATE_MAP.put("NH", "New Hampshire");
-        STATE_MAP.put("NJ", "New Jersey");
-        STATE_MAP.put("NM", "New Mexico");
-        STATE_MAP.put("NY", "New York");
-        STATE_MAP.put("NF", "Newfoundland");
-        STATE_MAP.put("NC", "North Carolina");
-        STATE_MAP.put("ND", "North Dakota");
-        STATE_MAP.put("NT", "Northwest Territories");
-        STATE_MAP.put("NS", "Nova Scotia");
-        STATE_MAP.put("NU", "Nunavut");
-        STATE_MAP.put("OH", "Ohio");
-        STATE_MAP.put("OK", "Oklahoma");
-        STATE_MAP.put("ON", "Ontario");
-        STATE_MAP.put("OR", "Oregon");
-        STATE_MAP.put("PA", "Pennsylvania");
-        STATE_MAP.put("PE", "Prince Edward Island");
-        STATE_MAP.put("PR", "Puerto Rico");
-        STATE_MAP.put("QC", "Quebec");
-        STATE_MAP.put("RI", "Rhode Island");
-        STATE_MAP.put("SK", "Saskatchewan");
-        STATE_MAP.put("SC", "South Carolina");
-        STATE_MAP.put("SD", "South Dakota");
-        STATE_MAP.put("TN", "Tennessee");
-        STATE_MAP.put("TX", "Texas");
-        STATE_MAP.put("UT", "Utah");
-        STATE_MAP.put("VT", "Vermont");
-        STATE_MAP.put("VI", "Virgin Islands");
-        STATE_MAP.put("VA", "Virginia");
-        STATE_MAP.put("WA", "Washington");
-        STATE_MAP.put("WV", "West Virginia");
-        STATE_MAP.put("WI", "Wisconsin");
-        STATE_MAP.put("WY", "Wyoming");
-        STATE_MAP.put("YT", "Yukon Territory");
-    }
-
-    private static final Set<String> STATE_CODES = STATE_MAP.keySet();
-    private static final Collection<String> STATES = STATE_MAP.values();
-    private static final List<String> NORTH_SOUTH_STATES = STATES.stream()
-            .flatMap(state -> Stream.of("Southern " + state, "Northern " + state)).collect(Collectors.toList());
-
-    private static final List<String> COUNTRIES = Arrays.stream(Locale.getISOCountries())
-            .map(code -> new Locale("en", code).getDisplayCountry()).collect(Collectors.toList());
-
     private static boolean looksLikeMultipleValues(String kw, String sep) {
         if (",".equals(sep)) {
             if (kw.startsWith("Hi, ") || kw.contains(", by ")) {
@@ -245,7 +162,7 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
             if (kw.contains(sep)) {
                 String after = kw.substring(kw.lastIndexOf(sep) + sep.length() + " ".length());
                 for (Collection<String> entities : Arrays.asList(
-                        CONTINENTS, COUNTRIES, STATES, STATE_CODES, NORTH_SOUTH_STATES)) {
+                        Geo.CONTINENTS, Geo.COUNTRIES, Geo.STATES, Geo.STATE_CODES, Geo.NORTH_SOUTH_STATES)) {
                     if (entities.contains(after)) {
                         return false;
                     }
@@ -347,5 +264,18 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     @Override
     public String getName() {
         return "NASA";
+    }
+
+    @Override
+    public Statistics getStatistics() {
+        Statistics stats = super.getStatistics();
+        List<String> centers = mediaRepository.listCenters();
+        if (centers.size() > 1) {
+            stats.setDetails(centers.stream()
+                    .map(c -> new Statistics(Objects.toString(c), mediaRepository.countByCenter(c),
+                            mediaRepository.countMissingInCommonsByCenter(c), null))
+                    .sorted().collect(Collectors.toList()));
+        }
+        return stats;
     }
 }

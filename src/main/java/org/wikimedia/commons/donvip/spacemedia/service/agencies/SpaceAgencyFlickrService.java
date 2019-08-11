@@ -75,7 +75,7 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
         if (flickrAccounts.size() > 1) {
             stats.setDetails(flickrAccounts.stream()
                     .map(a -> new Statistics(a, flickrRepository.count(Collections.singleton(a)),
-                            flickrRepository.countMissingInCommons(Collections.singleton(a)), 0))
+                            flickrRepository.countMissingInCommons(Collections.singleton(a)), null))
                     .sorted().collect(Collectors.toList()));
         }
         return stats;
