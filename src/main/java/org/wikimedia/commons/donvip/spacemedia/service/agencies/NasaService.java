@@ -242,11 +242,12 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
 
     private static void logStartUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers) {
         if (centers == null) {
-            LOGGER.info("Starting NASA {} update for years {}-{}...", mediaType, startYear, endYear);
+            LOGGER.info("NASA {} update for years {}-{} started...", mediaType, startYear, endYear);
         } else if (startYear == endYear && centers.size() == 1) {
-            LOGGER.info("Starting NASA {} update for year {} center {}...", mediaType, startYear, centers.iterator().next());
+            LOGGER.info("NASA {} update for year {} center {} started...", mediaType, startYear,
+                    centers.iterator().next());
         } else {
-            LOGGER.info("Starting NASA {} update for years {}-{} center {}...", mediaType, startYear, endYear, centers);
+            LOGGER.info("NASA {} update for years {}-{} center {} started...", mediaType, startYear, endYear, centers);
         }
     }
 
