@@ -15,6 +15,13 @@ public interface MediaRepository<T extends Media, ID> extends CrudRepository<T, 
      */
     List<T> findMissingInCommons();
 
+    /**
+     * Count files not yet uploaded to Wikimedia Commons.
+     * 
+     * @return number of files not yet uploaded to Wikimedia Commons
+     */
+    long countMissingInCommons();
+
     List<T> findDuplicateInCommons();
 
     Optional<T> findBySha1(String sha1);

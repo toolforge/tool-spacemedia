@@ -12,6 +12,10 @@ public interface NasaAudioRepository extends MediaRepository<NasaAudio, String> 
     List<NasaAudio> findMissingInCommons();
 
     @Override
+    @Query("select count(*) from NasaAudio m where not exists elements (m.commonsFileNames)")
+    long countMissingInCommons();
+
+    @Override
     @Query("select m from NasaAudio m where size (m.commonsFileNames) >= 2")
     List<NasaAudio> findDuplicateInCommons();
 }

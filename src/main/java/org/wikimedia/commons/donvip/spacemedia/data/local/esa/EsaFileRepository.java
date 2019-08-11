@@ -17,6 +17,10 @@ public interface EsaFileRepository extends MediaRepository<EsaFile, String> {
     List<EsaFile> findMissingInCommons();
 
     @Override
+    @Query("select count(*) from EsaFile f where (f.ignored is null or f.ignored is false) and not exists elements (f.commonsFileNames)")
+    long countMissingInCommons();
+
+    @Override
     @Query("select f from EsaFile f where size (f.commonsFileNames) >= 2")
     List<EsaFile> findDuplicateInCommons();
 }

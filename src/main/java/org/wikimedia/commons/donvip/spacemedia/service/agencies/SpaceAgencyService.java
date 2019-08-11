@@ -15,6 +15,14 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
         this.repository = Objects.requireNonNull(repository);
     }
 
+    public final long countAllMedia() {
+        return repository.count();
+    }
+
+    public final long countMissingMedia() {
+        return repository.countMissingInCommons();
+    }
+
     public final Iterable<T> listAllMedia() {
         return repository.findAll();
     }

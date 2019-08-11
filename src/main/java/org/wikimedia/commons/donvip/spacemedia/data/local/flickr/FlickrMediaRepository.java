@@ -12,6 +12,10 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     List<FlickrMedia> findMissingInCommons();
 
     @Override
+    @Query("select count(*) from FlickrMedia m where not exists elements (m.commonsFileNames)")
+    long countMissingInCommons();
+
+    @Override
     @Query("select m from FlickrMedia m where size (m.commonsFileNames) >= 2")
     List<FlickrMedia> findDuplicateInCommons();
 }
