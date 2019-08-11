@@ -16,23 +16,23 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import com.github.dozermapper.core.Mapper;
 
 @Service
-public class NasaFlickrService extends SpaceAgencyFlickrService {
+public class EsaFlickrService extends SpaceAgencyFlickrService {
 
     @Autowired
-    public NasaFlickrService(FlickrMediaRepository repository, ProblemRepository problemrepository,
+    public EsaFlickrService(FlickrMediaRepository repository, ProblemRepository problemrepository,
             MediaService mediaService, FlickrService flickrService,
-            Mapper dozerMapper, @Value("${nasa.flickr.accounts}") Set<String> flickrAccounts) {
+            Mapper dozerMapper, @Value("${esa.flickr.accounts}") Set<String> flickrAccounts) {
         super(repository, problemrepository, mediaService, flickrService, dozerMapper, flickrAccounts);
     }
 
     @Override
-    @Scheduled(fixedRateString = "${nasa.flickr.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${esa.flickr.update.rate}", initialDelayString = "${initial.delay}")
     public List<FlickrMedia> updateMedia() {
         return updateFlickrMedia();
     }
 
     @Override
     public String getName() {
-        return "NASA (Flickr)";
+        return "ESA (Flickr)";
     }
 }
