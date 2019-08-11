@@ -137,6 +137,9 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
         if (!nasaCenters.contains(media.getCenter())) {
             problem(media.getAssetUrl(), "Unknown center for id '" + media.getNasaId() + "': " + media.getCenter());
         }
+        if (media.getNasaId().length() < 3) {
+            problem(media.getAssetUrl(), "Strange id: '" + media.getNasaId() + "'");
+        }
         return media;
     }
 
