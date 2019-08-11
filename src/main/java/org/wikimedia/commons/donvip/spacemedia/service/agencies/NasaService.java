@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,6 +59,9 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
 
     @Value("${nasa.max.tries}")
     private int maxTries;
+
+    @Value("${nasa.centers}")
+    private Set<String> nasaCenters;
 
     @Autowired
     private NasaAudioRepository audioRepository;
@@ -129,6 +133,9 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
         }
         if (save) {
             media = save(media);
+        }
+        if (!nasaCenters.contains(media.getCenter())) {
+            problem(media.getAssetUrl(), "Unknown center for id '" + media.getNasaId() + "': " + media.getCenter());
         }
         return media;
     }
@@ -209,32 +216,61 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     }
 
     private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType) {
-        return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear());
+        return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear(), null);
     }
 
-    private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType, int year) {
-        return doUpdateMedia(mediaType, year, year);
+    private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType, int year, Set<String> centers) {
+        return doUpdateMedia(mediaType, year, year, centers);
     }
 
-    private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType, int startYear, int endYear) {
+    private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType, int startYear, int endYear,
+            Set<String> centers) {
         LocalDateTime start = LocalDateTime.now();
-        LOGGER.info("Starting NASA {} update for years {}-{}...", mediaType, startYear, endYear);
+        logStartUpdate(mediaType, startYear, endYear, centers);
         final List<T> medias = new ArrayList<>();
         RestTemplate rest = new RestTemplate();
         String nextUrl = searchEndpoint + "media_type=" + mediaType + "&year_start=" + startYear + "&year_end=" + endYear;
+        if (centers != null) {
+            nextUrl += "&center=" + String.join(",", centers);
+        }
         while (nextUrl != null) {
             nextUrl = processSearchResults(rest, nextUrl, medias);
         }
-        LOGGER.info("NASA {} update for years {}-{} completed: {} {}s in {}",
-                mediaType, startYear, endYear, medias.size(), mediaType, Duration.between(LocalDateTime.now(), start));
+        logEndUpdate(mediaType, startYear, endYear, centers, start, medias.size());
         return medias;
+    }
+
+    private static void logStartUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers) {
+        if (centers == null) {
+            LOGGER.info("Starting NASA {} update for years {}-{}...", mediaType, startYear, endYear);
+        } else if (startYear == endYear && centers.size() == 1) {
+            LOGGER.info("Starting NASA {} update for year {} center {}...", mediaType, startYear, centers.iterator().next());
+        } else {
+            LOGGER.info("Starting NASA {} update for years {}-{} center {}...", mediaType, startYear, endYear, centers);
+        }
+    }
+
+    private static void logEndUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers, LocalDateTime start, int size) {
+        Duration duration = Duration.between(LocalDateTime.now(), start);
+        if (centers == null) {
+            LOGGER.info("NASA {} update for years {}-{} completed: {} {}s in {}",
+                    mediaType, startYear, endYear, size, mediaType, duration);
+        } else if (startYear == endYear && centers.size() == 1) {
+            LOGGER.info("NASA {} update for year {} center {} completed: {} {}s in {}",
+                    mediaType, startYear, centers.iterator().next(), size, mediaType, duration);
+        } else {
+            LOGGER.info("NASA {} update for years {}-{} center {} completed: {} {}s in {}",
+                    mediaType, startYear, endYear, centers.iterator().next(), size, mediaType, duration);
+        }
     }
 
     @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
     public List<NasaImage> updateImages() {
         List<NasaImage> images = new ArrayList<>();
         for (int year = LocalDateTime.now().getYear(); year >= minYear; year--) {
-            images.addAll(doUpdateMedia(NasaMediaType.image, year));
+            for (String center : nasaCenters) {
+                images.addAll(doUpdateMedia(NasaMediaType.image, year, Collections.singleton(center)));
+            }
         }
         return images;
     }
