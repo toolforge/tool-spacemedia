@@ -2,7 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.local;
 
 import java.util.Objects;
 
-public class Statistics {
+public class Statistics implements Comparable<Statistics> {
     private final String agency;
     private final long totalMedia;
     private final long missingMedia;
@@ -32,5 +32,10 @@ public class Statistics {
      */
     public long getMissingMedia() {
         return missingMedia;
+    }
+
+    @Override
+    public int compareTo(Statistics o) {
+        return agency.compareTo(o.agency);
     }
 }

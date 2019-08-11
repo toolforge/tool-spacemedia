@@ -24,6 +24,7 @@ public class StatsController {
                         a.getClass().getSimpleName().replace("Service", ""),
                         a.countAllMedia(),
                         a.countMissingMedia()))
+                .sorted()
                 .collect(Collectors.toList());
     }
 }
