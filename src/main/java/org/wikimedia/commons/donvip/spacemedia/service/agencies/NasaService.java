@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service;
+package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -22,13 +22,13 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.wikimedia.commons.donvip.spacemedia.data.local.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAssets;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAudioRepository;
@@ -38,15 +38,15 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaImageReposito
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaItem;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaLink;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
-public class NasaService {
+public class NasaService extends SpaceAgencyService<NasaMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaService.class);
 
@@ -69,22 +69,11 @@ public class NasaService {
     private NasaVideoRepository videoRepository;
 
     @Autowired
-    @Qualifier("nasaMediaRepository")
-    private NasaMediaRepository<?> mediaRepository;
-
-    @Autowired
     private MediaService mediaService;
 
-    public Iterable<? extends NasaMedia> listAllMedia() throws IOException {
-        return mediaRepository.findAll();
-    }
-
-    public List<NasaMedia> listMissingMedia() throws IOException {
-        return mediaRepository.findMissingInCommons();
-    }
-
-    public List<NasaMedia> listDuplicateMedia() throws IOException {
-        return mediaRepository.findDuplicateInCommons();
+    @Autowired
+    public NasaService(MediaRepository<NasaMedia, String> repository) {
+        super(repository);
     }
 
     private NasaMedia save(NasaMedia media) {
@@ -96,13 +85,13 @@ public class NasaService {
         throw new IllegalArgumentException(media.toString());
     }
 
-    static Optional<URL> findOriginalMedia(RestTemplate rest, URL href) throws RestClientException, URISyntaxException {
+    static Optional<URL> findOriginalMedia(RestTemplate rest, URL href) throws URISyntaxException {
         return rest.getForObject(Utils.urlToUri(href), NasaAssets.class).stream()
                 .filter(u -> u.toExternalForm().contains("~orig.")).findFirst();
     }
 
     private NasaMedia processMedia(RestTemplate rest, NasaMedia media, URL href) throws IOException, URISyntaxException {
-        Optional<? extends NasaMedia> mediaInRepo = mediaRepository.findById(media.getNasaId());
+        Optional<NasaMedia> mediaInRepo = repository.findById(media.getNasaId());
         boolean save = false;
         if (mediaInRepo.isPresent()) {
             // allow to purge keywords table and recreate contents
@@ -339,6 +328,7 @@ public class NasaService {
         return doUpdateMedia(NasaMediaType.video);
     }
 
+    @Override
     public List<NasaMedia> updateMedia() {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Starting NASA medias update...");

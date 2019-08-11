@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service;
+package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,20 +18,19 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 
 import com.flickr4java.flickr.FlickrException;
 import com.github.dozermapper.core.Mapper;
 
 @Service
-public class SpaceXService {
+public class SpaceXService extends SpaceAgencyService<FlickrMedia, Long> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpaceXService.class);
 
     @Value("${spacex.flickr.accounts}")
     private Set<String> flickrAccounts;
-
-    @Autowired
-    private FlickrMediaRepository repository;
 
     @Autowired
     private MediaService mediaService;
@@ -42,18 +41,12 @@ public class SpaceXService {
     @Autowired
     private Mapper dozerMapper;
 
-    public Iterable<? extends FlickrMedia> listAllMedia() {
-        return repository.findAll();
+    @Autowired
+    public SpaceXService(FlickrMediaRepository repository) {
+        super(repository);
     }
 
-    public List<FlickrMedia> listMissingMedia() {
-        return repository.findMissingInCommons();
-    }
-
-    public List<FlickrMedia> listDuplicateMedia() throws IOException {
-        return repository.findDuplicateInCommons();
-    }
-
+    @Override
     @Scheduled(fixedRateString = "${spacex.update.rate}")
     public List<FlickrMedia> updateMedia() {
         LocalDateTime start = LocalDateTime.now();

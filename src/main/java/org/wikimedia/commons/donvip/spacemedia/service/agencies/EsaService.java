@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service;
+package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -36,10 +37,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImageRepository
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
-public class EsaService {
+public class EsaService extends SpaceAgencyService<EsaFile, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaService.class);
 
@@ -48,9 +50,6 @@ public class EsaService {
      * See <a href="https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2006/10/envisat_sees_madagascar/10084739-2-eng-GB/Envisat_sees_Madagascar.tiff">this example</a>
      */
     private static final String SHA1_ERROR = "860f6466c5f3da5d62b2065c33aa5548697d817c";
-
-    @Autowired
-    private EsaFileRepository fileRepository;
 
     @Autowired
     private EsaImageRepository imageRepository;
@@ -69,41 +68,34 @@ public class EsaService {
 
     private DateTimeFormatter dateFormatter;
 
+    @Autowired
+    public EsaService(EsaFileRepository repository) {
+        super(repository);
+    }
+
     @PostConstruct
-    void init() throws MalformedURLException {
+    void init() {
         dateFormatter = DateTimeFormatter.ofPattern(datePattern);
     }
 
-    public Iterable<EsaImage> listAllImages() throws IOException {
+    public Iterable<EsaImage> listAllImages() {
         return imageRepository.findAll();
     }
 
-    public List<EsaImage> listMissingImages() throws IOException {
+    public List<EsaImage> listMissingImages() {
         return imageRepository.findMissingInCommons();
     }
 
-    public List<EsaImage> listIgnoredImages() throws IOException {
+    public List<EsaImage> listIgnoredImages() {
         return imageRepository.findByIgnoredTrue();
     }
 
-    public List<EsaImage> listDuplicateImages() throws IOException {
+    public List<EsaImage> listDuplicateImages() {
         return imageRepository.findDuplicateInCommons();
     }
 
-    public Iterable<EsaFile> listAllFiles() throws IOException {
-        return fileRepository.findAll();
-    }
-
-    public List<EsaFile> listMissingFiles() throws IOException {
-        return fileRepository.findMissingInCommons();
-    }
-
-    public List<EsaFile> listIgnoredFiles() throws IOException {
-        return fileRepository.findByIgnoredTrue();
-    }
-
-    public List<EsaFile> listDuplicateFiles() throws IOException {
-        return fileRepository.findDuplicateInCommons();
+    public List<EsaFile> listIgnoredMedia() {
+        return ((EsaFileRepository) repository).findByIgnoredTrue();
     }
 
     private static Optional<URL> getImageUrl(String src, URL imageUrl) throws MalformedURLException {
@@ -176,7 +168,7 @@ public class EsaService {
 
     private EsaFile findCommonsFileBySha1(EsaFile f, boolean save) {
         if (mediaService.findCommonsFilesWithSha1(f) && save) {
-            return fileRepository.save(f);
+            return repository.save(f);
         }
         return f;
     }
@@ -186,11 +178,15 @@ public class EsaService {
         return image;
     }
 
-    private EsaImage processCopyrightAndSave(EsaImage image) {
+    private static boolean isCopyrightOk(EsaImage image) {
         String copyrightUppercase = image.getCopyright().toUpperCase(Locale.ENGLISH);
-        if (copyrightUppercase.contains("BY-SA")
-         || copyrightUppercase.contains("COPERNICUS SENTINEL")
-         || (copyrightUppercase.contains("COPERNICUS DATA") && image.getDescription().toUpperCase(Locale.ENGLISH).contains(" SENTINEL"))) {
+        return (copyrightUppercase.contains("BY-SA") || copyrightUppercase.contains("COPERNICUS SENTINEL")
+                || (copyrightUppercase.contains("COPERNICUS DATA")
+                        && image.getDescription().toUpperCase(Locale.ENGLISH).contains(" SENTINEL")));
+    }
+
+    private EsaImage processCopyrightAndSave(EsaImage image) {
+        if (isCopyrightOk(image)) {
             for (EsaFile f : image.getFiles()) {
                 URL url = f.getUrl();
                 if (url != null) {
@@ -198,7 +194,7 @@ public class EsaService {
                     for (int j = 0; j < maxTries && !sha1ok; j++) {
                         try {
                             mediaService.computeSha1(f, url);
-                            f = fileRepository.save(findCommonsFileBySha1(f, false));
+                            f = repository.save(findCommonsFileBySha1(f, false));
                             sha1ok = true;
                         } catch (IOException | URISyntaxException e) {
                             LOGGER.error(url.toExternalForm(), e);
@@ -261,49 +257,45 @@ public class EsaService {
     private EsaFile ignoreAndSaveFile(EsaFile file, String reason) {
         file.setIgnored(Boolean.TRUE);
         file.setIgnoredReason(reason);
-        return fileRepository.save(file);
+        return repository.save(file);
     }
 
     private void updateMissingImages() {
-        try {
-            for (EsaImage image: listMissingImages()) {
-                List<EsaFile> files = image.getFiles();
-                // Envisat pictures are released in two versions: 1 hi-res TIFF file and 1 not-so-shi-res JPEG file
-                // On wikimedia commons, the TIFF file has been uploaded in both TIFF and JPEG format to benefit from hi-res
-                if ("Envisat".equalsIgnoreCase(image.getMission()) && files.size() == 2) {
-                    boolean empty0 = CollectionUtils.isEmpty(files.get(0).getCommonsFileNames());
-                    boolean empty1 = CollectionUtils.isEmpty(files.get(1).getCommonsFileNames());
-                    if (empty0 && !empty1) {
-                        ignoreAndSaveFile(files.get(0), "ENVISAT low resolution image");
-                    } else if (!empty0 && empty1) {
-                        ignoreAndSaveFile(files.get(1), "ENVISAT low resolution image");
-                    }
+        for (EsaImage image: listMissingImages()) {
+            List<EsaFile> files = image.getFiles();
+            // Envisat pictures are released in two versions: 1 hi-res TIFF file and 1 not-so-shi-res JPEG file
+            // On wikimedia commons, the TIFF file has been uploaded in both TIFF and JPEG format to benefit from hi-res
+            if ("Envisat".equalsIgnoreCase(image.getMission()) && files.size() == 2) {
+                boolean empty0 = CollectionUtils.isEmpty(files.get(0).getCommonsFileNames());
+                boolean empty1 = CollectionUtils.isEmpty(files.get(1).getCommonsFileNames());
+                if (empty0 && !empty1) {
+                    ignoreAndSaveFile(files.get(0), "ENVISAT low resolution image");
+                } else if (!empty0 && empty1) {
+                    ignoreAndSaveFile(files.get(1), "ENVISAT low resolution image");
                 }
-                // Ignore files on a case by case
-                for (EsaFile file : files) {
-                    if (file.isIgnored() == null) {
-                        // Ignore file from which we get an HTML error page instead of a real image
-                        if (SHA1_ERROR.equals(file.getSha1())) {
-                            ignoreAndSaveFile(file, "HTML error page");
-                        } else {
-                            // Check for corrupted ESA images (many of them...)
-                            try {
-                                if (Utils.readImage(file.getUrl(), false) != null) {
-                                    file.setIgnored(Boolean.FALSE);
-                                    file = fileRepository.save(file);
-                                }
-                            } catch (ImageDecodingException e) {
-                                LOGGER.warn(file.toString(), e);
-                                ignoreAndSaveFile(file, e.getMessage());
-                            } catch (IOException | URISyntaxException e) {
-                                LOGGER.error(file.toString(), e);
+            }
+            // Ignore files on a case by case
+            for (EsaFile file : files) {
+                if (file.isIgnored() == null) {
+                    // Ignore file from which we get an HTML error page instead of a real image
+                    if (SHA1_ERROR.equals(file.getSha1())) {
+                        ignoreAndSaveFile(file, "HTML error page");
+                    } else {
+                        // Check for corrupted ESA images (many of them...)
+                        try {
+                            if (Utils.readImage(file.getUrl(), false) != null) {
+                                file.setIgnored(Boolean.FALSE);
+                                /* file = */ repository.save(file);
                             }
+                        } catch (ImageDecodingException e) {
+                            LOGGER.warn(file.toString(), e);
+                            ignoreAndSaveFile(file, e.getMessage());
+                        } catch (IOException | URISyntaxException e) {
+                            LOGGER.error(file.toString(), e);
                         }
                     }
                 }
             }
-        } catch (IOException e) {
-            LOGGER.error("cannot list missing images", e);
         }
     }
 
@@ -348,8 +340,13 @@ public class EsaService {
         return images;
     }
 
+    @Override
+    public List<EsaFile> updateMedia() throws IOException {
+        return updateImages().stream().flatMap(i -> i.getFiles().stream()).collect(Collectors.toList());
+    }
+
     public EsaFile upload(String sha1) {
-        EsaFile file = fileRepository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
+        EsaFile file = repository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
         if (file.isIgnored() == Boolean.TRUE) {
             throw new ImageForbiddenException(sha1);
         }
@@ -357,6 +354,7 @@ public class EsaService {
         if (images.size() != 1) {
             throw new IllegalStateException(images.toString());
         }
+        // TODO
         return file;
     }
 }

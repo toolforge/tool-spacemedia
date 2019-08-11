@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service;
+package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.springframework.web.client.RestTemplate;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.NasaService;
 
 public class NasaServiceTest {
 

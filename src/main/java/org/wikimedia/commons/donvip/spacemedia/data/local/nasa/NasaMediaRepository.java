@@ -3,18 +3,15 @@ package org.wikimedia.commons.donvip.spacemedia.data.local.nasa;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.local.MediaRepository;
 
-public interface NasaMediaRepository<T extends NasaMedia> extends CrudRepository<T, String> {
+public interface NasaMediaRepository extends MediaRepository<NasaMedia, String> {
 
-    /**
-     * Find NASA files not yet uploaded to Wikimedia Commons.
-     * 
-     * @return NASA files not yet uploaded to Wikimedia Commons
-     */
+    @Override
     @Query("select m from NasaMedia m where not exists elements (m.commonsFileNames)")
     List<NasaMedia> findMissingInCommons();
 
+    @Override
     @Query("select m from NasaMedia m where size (m.commonsFileNames) >= 2")
     List<NasaMedia> findDuplicateInCommons();
 }

@@ -1,0 +1,21 @@
+package org.wikimedia.commons.donvip.spacemedia.data.local;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.NoRepositoryBean;
+
+@NoRepositoryBean
+public interface MediaRepository<T extends Media, ID> extends CrudRepository<T, ID> {
+    /**
+     * Find files not yet uploaded to Wikimedia Commons.
+     * 
+     * @return files not yet uploaded to Wikimedia Commons
+     */
+    List<T> findMissingInCommons();
+
+    List<T> findDuplicateInCommons();
+
+    Optional<T> findBySha1(String sha1);
+}
