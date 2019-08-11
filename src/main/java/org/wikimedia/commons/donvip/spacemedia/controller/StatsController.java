@@ -20,10 +20,7 @@ public class StatsController {
     @GetMapping("/stats")
     public List<Statistics> stats() {
         return agencies.stream()
-                .map(a -> new Statistics(
-                        a.getClass().getSimpleName().replace("Service", ""),
-                        a.countAllMedia(),
-                        a.countMissingMedia()))
+                .map(SpaceAgencyService::getStatistics)
                 .sorted()
                 .collect(Collectors.toList());
     }

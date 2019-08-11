@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
@@ -18,14 +19,20 @@ import com.github.dozermapper.core.Mapper;
 public class SpaceXService extends SpaceAgencyFlickrService {
 
     @Autowired
-    public SpaceXService(FlickrMediaRepository repository, MediaService mediaService, FlickrService flickrService,
+    public SpaceXService(FlickrMediaRepository repository, ProblemRepository problemrepository,
+            MediaService mediaService, FlickrService flickrService,
             Mapper dozerMapper, @Value("${spacex.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, mediaService, flickrService, dozerMapper, flickrAccounts);
+        super(repository, problemrepository, mediaService, flickrService, dozerMapper, flickrAccounts);
     }
 
     @Override
     @Scheduled(fixedRateString = "${spacex.update.rate}")
     public List<FlickrMedia> updateMedia() {
-        return updateFlickrMedia("SpaceX");
+        return updateFlickrMedia();
+    }
+
+    @Override
+    public String getName() {
+        return "SpaceX";
     }
 }

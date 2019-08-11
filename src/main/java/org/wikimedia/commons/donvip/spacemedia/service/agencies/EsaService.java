@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaFile;
 import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaFileRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImage;
@@ -69,8 +70,8 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
     private DateTimeFormatter dateFormatter;
 
     @Autowired
-    public EsaService(EsaFileRepository repository) {
-        super(repository);
+    public EsaService(EsaFileRepository repository, ProblemRepository problemrepository) {
+        super(repository, problemrepository);
     }
 
     @PostConstruct
@@ -204,7 +205,7 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
             }
             image = imageRepository.save(image);
             if (CollectionUtils.isEmpty(image.getFiles())) {
-                LOGGER.warn("Image without any file: {}", image);
+                problem(image.getUrl(), "Image without any file");
             } else {
                 LOGGER.debug("New image: {}", image);
             }
@@ -356,5 +357,10 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
         }
         // TODO
         return file;
+    }
+
+    @Override
+    public String getName() {
+        return "ESA";
     }
 }

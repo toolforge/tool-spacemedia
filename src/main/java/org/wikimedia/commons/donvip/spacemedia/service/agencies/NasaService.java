@@ -26,8 +26,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAssets;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAudioRepository;
@@ -72,8 +74,8 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     private MediaService mediaService;
 
     @Autowired
-    public NasaService(NasaMediaRepository<NasaMedia> repository) {
-        super(repository);
+    public NasaService(NasaMediaRepository<NasaMedia> repository, ProblemRepository problemrepository) {
+        super(repository, problemrepository);
     }
 
     private NasaMedia save(NasaMedia media) {
@@ -270,6 +272,8 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
                 for (NasaItem item : collection.getItems()) {
                     try {
                         medias.add((T) processMedia(rest, item.getData().get(0), item.getHref()));
+                    } catch (Forbidden e) {
+                        problem(item.getHref(), e.getMessage());
                     } catch (IOException | RestClientException | URISyntaxException e) {
                         LOGGER.error("Cannot process item " + item, e);
                     }
@@ -338,5 +342,10 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
         medias.addAll(updateVideos());
         LOGGER.info("NASA medias update completed: {} medias in {}", medias.size(), Duration.between(LocalDateTime.now(), start));
         return medias;
+    }
+
+    @Override
+    public String getName() {
+        return "NASA";
     }
 }

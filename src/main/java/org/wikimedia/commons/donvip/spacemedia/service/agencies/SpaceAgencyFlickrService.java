@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -13,6 +14,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.local.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
@@ -31,9 +34,9 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
     protected final Mapper dozerMapper;
     protected final Set<String> flickrAccounts;
 
-    public SpaceAgencyFlickrService(FlickrMediaRepository repository, MediaService mediaService,
-            FlickrService flickrService, Mapper dozerMapper, Set<String> flickrAccounts) {
-        super(repository);
+    public SpaceAgencyFlickrService(FlickrMediaRepository repository, ProblemRepository problemrepository,
+            MediaService mediaService, FlickrService flickrService, Mapper dozerMapper, Set<String> flickrAccounts) {
+        super(repository, problemrepository);
         this.flickrRepository = repository;
         this.mediaService = Objects.requireNonNull(mediaService);
         this.flickrService = Objects.requireNonNull(flickrService);
@@ -66,9 +69,21 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
         return flickrRepository.findDuplicateInCommons(flickrAccounts);
     }
 
-    protected List<FlickrMedia> updateFlickrMedia(String name) {
+    @Override
+    public Statistics getStatistics() {
+        Statistics stats = super.getStatistics();
+        if (flickrAccounts.size() > 1) {
+            stats.setDetails(flickrAccounts.stream()
+                    .map(a -> new Statistics(a, flickrRepository.count(Collections.singleton(a)),
+                            flickrRepository.countMissingInCommons(Collections.singleton(a)), 0))
+                    .sorted().collect(Collectors.toList()));
+        }
+        return stats;
+    }
+
+    protected List<FlickrMedia> updateFlickrMedia() {
         LocalDateTime start = LocalDateTime.now();
-        LOGGER.info("Starting {} medias update...", name);
+        LOGGER.info("Starting {} medias update...", getName());
         final List<FlickrMedia> medias = new ArrayList<>();
         for (String flickrAccount : flickrAccounts) {
             try {
@@ -85,7 +100,7 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
                 LOGGER.error("Error while fetching Flickr images from account " + flickrAccount, e);
             }
         }
-        LOGGER.info("{} medias update completed: {} medias in {}", name, medias.size(),
+        LOGGER.info("{} medias update completed: {} medias in {}", getName(), medias.size(),
                 Duration.between(LocalDateTime.now(), start));
         return medias;
     }
