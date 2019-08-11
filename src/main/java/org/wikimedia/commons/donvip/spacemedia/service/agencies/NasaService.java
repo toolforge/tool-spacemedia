@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.wikimedia.commons.donvip.spacemedia.data.local.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAssets;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAudioRepository;
@@ -38,6 +37,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaImageReposito
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaItem;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaLink;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaVideo;
@@ -72,7 +72,7 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     private MediaService mediaService;
 
     @Autowired
-    public NasaService(MediaRepository<NasaMedia, String> repository) {
+    public NasaService(NasaMediaRepository<NasaMedia> repository) {
         super(repository);
     }
 
