@@ -7,7 +7,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceXService;
 
 @RestController()
-@RequestMapping("/spacemedia/dlr")
+@RequestMapping("/dlr")
 public class DlrController extends SpaceAgencyController<FlickrMedia, Long> {
 
     @Autowired

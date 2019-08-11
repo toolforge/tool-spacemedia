@@ -11,7 +11,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceAgencyService;
 
 @RestController()
-@RequestMapping("/spacemedia")
+@RequestMapping
 public class StatsController {
 
     @Autowired

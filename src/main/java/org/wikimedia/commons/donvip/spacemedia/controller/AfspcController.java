@@ -7,7 +7,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AfspcService;
 
 @RestController()
-@RequestMapping("/spacemedia/afspc")
+@RequestMapping("/afspc")
 public class AfspcController extends SpaceAgencyController<FlickrMedia, Long> {
 
     @Autowired

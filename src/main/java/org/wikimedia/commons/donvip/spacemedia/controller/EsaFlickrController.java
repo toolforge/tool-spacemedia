@@ -7,7 +7,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.EsaFlickrService;
 
 @RestController()
-@RequestMapping("/spacemedia/esa/flickr")
+@RequestMapping("/esa/flickr")
 public class EsaFlickrController extends SpaceAgencyController<FlickrMedia, Long> {
 
     @Autowired

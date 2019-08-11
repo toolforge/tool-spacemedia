@@ -13,7 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImage;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.EsaService;
 
 @RestController
-@RequestMapping("/spacemedia/esa")
+@RequestMapping("/esa")
 public class EsaController extends SpaceAgencyController<EsaFile, String> {
 
     private final EsaService esaService;

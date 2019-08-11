@@ -7,7 +7,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.PotentialFlickrService;
 
 @RestController()
-@RequestMapping("/spacemedia/potential")
+@RequestMapping("/potential")
 public class PotentialController extends SpaceAgencyController<FlickrMedia, Long> {
 
     @Autowired

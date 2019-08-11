@@ -7,7 +7,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.NasaService;
 
 @RestController()
-@RequestMapping("/spacemedia/nasa")
+@RequestMapping("/nasa")
 public class NasaController extends SpaceAgencyController<NasaMedia, String> {
 
     @Autowired
