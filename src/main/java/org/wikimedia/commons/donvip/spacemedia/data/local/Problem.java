@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.local;
 
 import java.net.URL;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -18,6 +19,7 @@ public class Problem {
     @NotNull
     private String agency;
 
+    @Column(length = 500)
     private String errorMessage;
 
     @NotNull
