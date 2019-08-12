@@ -255,7 +255,10 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
         return new TreeSet<>(Arrays.asList(label.replace(", ", ",").split(",")));
     }
 
-    private EsaFile ignoreAndSaveFile(EsaFile file, String reason) {
+    private EsaFile ignoreAndSaveFile(EsaFile file, String reason, boolean problem) {
+        if (problem) {
+            problem(file.getUrl(), reason);
+        }
         file.setIgnored(Boolean.TRUE);
         file.setIgnoredReason(reason);
         return repository.save(file);
@@ -270,9 +273,9 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
                 boolean empty0 = CollectionUtils.isEmpty(files.get(0).getCommonsFileNames());
                 boolean empty1 = CollectionUtils.isEmpty(files.get(1).getCommonsFileNames());
                 if (empty0 && !empty1) {
-                    ignoreAndSaveFile(files.get(0), "ENVISAT low resolution image");
+                    ignoreAndSaveFile(files.get(0), "ENVISAT low resolution image", false);
                 } else if (!empty0 && empty1) {
-                    ignoreAndSaveFile(files.get(1), "ENVISAT low resolution image");
+                    ignoreAndSaveFile(files.get(1), "ENVISAT low resolution image", false);
                 }
             }
             // Ignore files on a case by case
@@ -280,7 +283,7 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
                 if (file.isIgnored() == null) {
                     // Ignore file from which we get an HTML error page instead of a real image
                     if (SHA1_ERROR.equals(file.getSha1())) {
-                        ignoreAndSaveFile(file, "HTML error page");
+                        ignoreAndSaveFile(file, "HTML error page", true);
                     } else {
                         // Check for corrupted ESA images (many of them...)
                         try {
@@ -290,8 +293,9 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
                             }
                         } catch (ImageDecodingException e) {
                             LOGGER.warn(file.toString(), e);
-                            ignoreAndSaveFile(file, e.getMessage());
+                            ignoreAndSaveFile(file, e.getMessage(), true);
                         } catch (IOException | URISyntaxException e) {
+                            problem(file.getUrl(), e.getMessage());
                             LOGGER.error(file.toString(), e);
                         }
                     }
