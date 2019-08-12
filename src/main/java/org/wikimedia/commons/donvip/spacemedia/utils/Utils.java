@@ -96,8 +96,8 @@ public final class Utils {
                 case "png":
                 case "tif":
                 case "tiff":
-                    try (ImageInputStream iis = ImageIO.createImageInputStream(in)) {
-                        return readImage(iis, readMetadata);
+                    try {
+                        return readImage(ImageIO.createImageInputStream(in), readMetadata);
                     } catch (IOException | IllegalArgumentException e) {
                         throw new ImageDecodingException(e);
                     }
