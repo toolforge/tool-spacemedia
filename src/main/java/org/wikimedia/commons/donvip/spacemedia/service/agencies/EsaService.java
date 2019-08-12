@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -287,7 +288,9 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
                     } else {
                         // Check for corrupted ESA images (many of them...)
                         try {
-                            if (Utils.readImage(file.getUrl(), false) != null) {
+                            BufferedImage bi = Utils.readImage(file.getUrl(), false);
+                            if (bi != null) {
+                                bi.flush();
                                 file.setIgnored(Boolean.FALSE);
                                 /* file = */ repository.save(file);
                             }
