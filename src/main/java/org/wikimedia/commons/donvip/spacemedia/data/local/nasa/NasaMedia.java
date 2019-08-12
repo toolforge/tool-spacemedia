@@ -45,7 +45,7 @@ public abstract class NasaMedia extends Media {
     private String description;
     @JsonProperty("media_type")
     private NasaMediaType mediaType;
-    @Column(length = 330)
+    @Column(length = 340)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords;
     @Column(length = 300)
