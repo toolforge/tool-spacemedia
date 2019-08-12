@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -201,7 +202,13 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
                         medias.add((T) processMedia(rest, item.getData().get(0), item.getHref()));
                     } catch (Forbidden e) {
                         problem(item.getHref(), e.getMessage());
-                    } catch (IOException | RestClientException | URISyntaxException e) {
+                    } catch (RestClientException e) {
+                        if (e.getCause() instanceof HttpMessageNotReadableException) {
+                            problem(item.getHref(), e.getCause().getMessage());
+                        } else {
+                            LOGGER.error("Cannot process item " + item, e);
+                        }
+                    } catch (IOException | URISyntaxException e) {
                         LOGGER.error("Cannot process item " + item, e);
                     }
                 }
