@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -64,11 +65,12 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
         while (consecutiveFailures < maxFailures) {
             boolean save = false;
             KariMedia media = null;
+            String viewUrl = viewLink.replace("<id>", Integer.toString(id));
+            URL view = new URL(viewUrl);
             Optional<KariMedia> mediaInRepo = repository.findById(id);
             if (mediaInRepo.isPresent()) {
                 media = mediaInRepo.get();
             } else {
-                String viewUrl = viewLink.replace("<id>", Integer.toString(id));
                 Document html = Jsoup.connect(viewUrl).timeout(15_000).get();
                 Element div = html.getElementsByClass("board_view").get(0);
                 String title = div.getElementsByTag("h4").get(0).text();
@@ -85,8 +87,10 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
                             media.setDate(LocalDate.parse(div.getElementsByClass("infor").get(0).getElementsByTag("li")
                                     .get(0).getElementsByClass("txt").get(0).text()));
                             media.setDescription(div.getElementsByClass("photo_txt").get(0).text());
-                            URL view = new URL(viewUrl);
-                            media.setUrl(new URL(view.getProtocol(), view.getHost(), infos.getElementsByTag("a").attr("href")));
+                            String href = infos.getElementsByTag("a").attr("href");
+                            if (StringUtils.isNotBlank(href)) {
+                                media.setUrl(new URL(view.getProtocol(), view.getHost(), href));
+                            }
                             save = true;
                         }
                     } catch (DateTimeParseException e) {
@@ -98,6 +102,14 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
             }
             if (media != null) {
                 try {
+                    if (StringUtils.isBlank(media.getDescription())) {
+                        problem(view, "Empty description");
+                    }
+                    String mediaUrl = media.getUrl().toExternalForm();
+                    if (StringUtils.isBlank(mediaUrl) || "https://www.kari.re.kr".equals(mediaUrl)) {
+                        problem(view, "No download link");
+                        media.setUrl(null);
+                    }
                     if (mediaService.computeSha1(media, media.getUrl())) {
                         save = true;
                     }
