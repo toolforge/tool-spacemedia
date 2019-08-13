@@ -252,7 +252,11 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
 
     private static void logStartUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers) {
         if (centers == null) {
-            LOGGER.info("NASA {} update for years {}-{} started...", mediaType, startYear, endYear);
+            if (startYear == endYear) {
+                LOGGER.info("NASA {} update for year {} started...", mediaType, startYear);
+            } else {
+                LOGGER.info("NASA {} update for years {}-{} started...", mediaType, startYear, endYear);
+            }
         } else if (startYear == endYear && centers.size() == 1) {
             LOGGER.info("NASA {} update for year {} center {} started...", mediaType, startYear,
                     centers.iterator().next());
@@ -264,8 +268,13 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     private static void logEndUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers, LocalDateTime start, int size) {
         Duration duration = Duration.between(LocalDateTime.now(), start);
         if (centers == null) {
-            LOGGER.info("NASA {} update for years {}-{} completed: {} {}s in {}",
-                    mediaType, startYear, endYear, size, mediaType, duration);
+            if (startYear == endYear) {
+                LOGGER.info("NASA {} update for year {} completed: {} {}s in {}",
+                        mediaType, startYear, size, mediaType, duration);
+            } else {
+                LOGGER.info("NASA {} update for years {}-{} completed: {} {}s in {}",
+                        mediaType, startYear, endYear, size, mediaType, duration);
+            }
         } else if (startYear == endYear && centers.size() == 1) {
             LOGGER.info("NASA {} update for year {} center {} completed: {} {}s in {}",
                     mediaType, startYear, centers.iterator().next(), size, mediaType, duration);
