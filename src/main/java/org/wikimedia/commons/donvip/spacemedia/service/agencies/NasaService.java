@@ -278,10 +278,15 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
     public List<NasaImage> updateImages() {
         List<NasaImage> images = new ArrayList<>();
-        for (int year = LocalDateTime.now().getYear(); year >= minYear; year--) {
+        // Recent years have a lot of photos: search by center to avoid more than 10k results
+        for (int year = LocalDateTime.now().getYear(); year >= 2000; year--) {
             for (String center : nasaCenters) {
                 images.addAll(doUpdateMedia(NasaMediaType.image, year, Collections.singleton(center)));
             }
+        }
+        // Ancient years have a lot less photos: simple search for all centers
+        for (int year = 1999; year >= minYear; year--) {
+            images.addAll(doUpdateMedia(NasaMediaType.image, year, null));
         }
         return images;
     }

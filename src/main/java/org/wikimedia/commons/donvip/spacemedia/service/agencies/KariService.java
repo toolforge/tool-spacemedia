@@ -42,6 +42,9 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
     @Value("${kari.kogl.type1}")
     private String koglType1Icon;
 
+    @Value("${kari.max.failures:5}")
+    private int maxFailures;
+
     @Autowired
     private MediaService mediaService;
 
@@ -56,9 +59,9 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Starting KARI medias update...");
         List<KariMedia> medias = new ArrayList<>();
-        boolean loop = true;
+        int consecutiveFailures = 0;
         int id = 1;
-        while (loop) {
+        while (consecutiveFailures < maxFailures) {
             boolean save = false;
             KariMedia media = null;
             Optional<KariMedia> mediaInRepo = repository.findById(id);
@@ -70,6 +73,7 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
                 Element div = html.getElementsByClass("board_view").get(0);
                 String title = div.getElementsByTag("h4").get(0).text();
                 if (!title.isEmpty()) {
+                    consecutiveFailures = 0;
                     try {
                         Element infos = div.getElementsByClass("photo_infor").get(0);
                         Elements lis = infos.getElementsByTag("li");
@@ -89,7 +93,7 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
                         LOGGER.error("Cannot parse HTML", e);
                     }
                 } else {
-                    loop = false;
+                    consecutiveFailures++;
                 }
             }
             if (media != null) {
