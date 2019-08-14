@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -72,7 +73,7 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
             if (mediaInRepo.isPresent()) {
                 media = mediaInRepo.get();
             } else {
-                Document html = Jsoup.connect(viewUrl).timeout(15_000).get();
+                Document html = Jsoup.connect(viewUrl).timeout(60_000).get();
                 Element div = html.getElementsByClass("board_view").get(0);
                 String title = div.getElementsByTag("h4").get(0).text();
                 if (!title.isEmpty()) {
@@ -81,17 +82,7 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
                         Element infos = div.getElementsByClass("photo_infor").get(0);
                         Elements lis = infos.getElementsByTag("li");
                         if (lis.get(lis.size() - 1).getElementsByTag("img").attr("src").endsWith(koglType1Icon)) {
-                            media = new KariMedia();
-                            media.setId(id);
-                            media.setKariId(lis.get(0).getElementsByClass("txt").get(0).text());
-                            media.setTitle(title);
-                            media.setDate(LocalDate.parse(div.getElementsByClass("infor").get(0).getElementsByTag("li")
-                                    .get(0).getElementsByClass("txt").get(0).text()));
-                            media.setDescription(div.getElementsByClass("photo_txt").get(0).text());
-                            String href = infos.getElementsByTag("a").attr("href");
-                            if (StringUtils.isNotBlank(href)) {
-                                media.setUrl(new URL(view.getProtocol(), view.getHost(), href));
-                            }
+                            media = buildMedia(id, view, div, title, infos, lis);
                             save = true;
                         }
                     } catch (DateTimeParseException e) {
@@ -136,5 +127,21 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
         }
         LOGGER.info("KARI medias update completed: {} medias in {}", medias.size(), Duration.between(LocalDateTime.now(), start));
         return medias;
+    }
+
+    private static KariMedia buildMedia(int id, URL view, Element div, String title, Element infos, Elements lis)
+            throws MalformedURLException {
+        KariMedia media = new KariMedia();
+        media.setId(id);
+        media.setKariId(lis.get(0).getElementsByClass("txt").get(0).text());
+        media.setTitle(title);
+        media.setDate(LocalDate.parse(div.getElementsByClass("infor").get(0).getElementsByTag("li")
+                .get(0).getElementsByClass("txt").get(0).text()));
+        media.setDescription(div.getElementsByClass("photo_txt").get(0).text());
+        String href = infos.getElementsByTag("a").attr("href");
+        if (StringUtils.isNotBlank(href)) {
+            media.setUrl(new URL(view.getProtocol(), view.getHost(), href));
+        }
+        return media;
     }
 }
