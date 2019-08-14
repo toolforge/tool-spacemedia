@@ -50,6 +50,8 @@ public class NasaServiceTest {
                 Arrays.asList("Chandra X-ray Observatory","NuSTAR"));
         doTestKeywords("iss,",
                 Arrays.asList("iss"));
+        doTestKeywords("NASA, JPL, Jet Propulsion Laboratory, GRACE, GRACE Follow-On, Gravity Recovery and Climate Experiment, water, water cycle, launch, Falcon 9, SpaceX, rocket, GFZ, German Research Centre for Geosciences, gravity, measurements, sea level rise, glaciers, ice sheets, Greenland, Antarctica, melting, aquifer, groundwater, soil moisture, droughts, floods, lakes, rivers, climate change, Vandenberg Air Force Base, VAFB, movement, mass changes, weather forecasting, microwave instrument, laser ranging interferometer",
+                Arrays.asList("NASA", "JPL", "Jet Propulsion Laboratory", "GRACE", "GRACE Follow-On", "Gravity Recovery and Climate Experiment", "water", "water cycle", "launch", "Falcon 9", "SpaceX", "rocket", "GFZ", "German Research Centre for Geosciences", "gravity", "measurements", "sea level rise", "glaciers", "ice sheets", "Greenland", "Antarctica", "melting", "aquifer", "groundwater", "soil moisture", "droughts", "floods", "lakes", "rivers", "climate change", "Vandenberg Air Force Base", "VAFB", "movement", "mass changes", "weather forecasting", "microwave instrument", "laser ranging interferometer"));
     }
 
     @Test

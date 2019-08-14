@@ -160,7 +160,7 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     private static final Pattern PATTERN_DATE = Pattern.compile(".*\\p{Alpha}+\\.? \\d{1,2}, [12]\\d{3}.*");
     private static final Pattern PATTERN_A_AND_B = Pattern.compile(".*[\\p{Alpha}\\.]+, (and|&) \\p{Alpha}+.*");
     private static final Pattern PATTERN_A_B_AND_C = Pattern.compile(".*\\p{Alpha}+, \\p{Alpha}+ (and|&) \\p{Alpha}+.*");
-    private static final Pattern PATTERN_ER = Pattern.compile(".*\\p{Alpha}+er, \\p{Alpha}+er.*");
+    private static final Pattern PATTERN_ER = Pattern.compile("[^,]*\\p{Alpha}+er, \\p{Alpha}+er[^,]*");
 
     private static boolean looksLikeMultipleValues(String kw, String sep) {
         if (",".equals(sep)) {
