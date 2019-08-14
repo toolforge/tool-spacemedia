@@ -60,7 +60,7 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
     @Scheduled(fixedRateString = "${kari.update.rate}", initialDelayString = "${initial.delay}")
     public List<KariMedia> updateMedia() throws IOException {
         LocalDateTime start = LocalDateTime.now();
-        LOGGER.info("Starting KARI medias update...");
+        LOGGER.info("Starting {} medias update...", getName());
         List<KariMedia> medias = new ArrayList<>();
         int consecutiveFailures = 0;
         int id = 1;
@@ -125,7 +125,8 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
             }
             id++;
         }
-        LOGGER.info("KARI medias update completed: {} medias in {}", medias.size(), Duration.between(LocalDateTime.now(), start));
+        LOGGER.info("{} medias update completed: {} medias in {}", getName(), medias.size(),
+                Duration.between(LocalDateTime.now(), start));
         return medias;
     }
 
