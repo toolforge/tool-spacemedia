@@ -105,10 +105,12 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
                     if (StringUtils.isBlank(media.getDescription())) {
                         problem(view, "Empty description");
                     }
-                    String mediaUrl = media.getUrl().toExternalForm();
-                    if (StringUtils.isBlank(mediaUrl) || "https://www.kari.re.kr".equals(mediaUrl)) {
-                        problem(view, "No download link");
-                        media.setUrl(null);
+                    if (media.getUrl() != null) {
+                        String mediaUrl = media.getUrl().toExternalForm();
+                        if (StringUtils.isBlank(mediaUrl) || "https://www.kari.re.kr".equals(mediaUrl)) {
+                            problem(view, "No download link");
+                            media.setUrl(null);
+                        }
                     }
                     if (mediaService.computeSha1(media, media.getUrl())) {
                         save = true;
