@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionException;
 import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.kari.KariMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.local.kari.KariMediaRepository;
@@ -124,7 +125,9 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
                     }
                     medias.add(save ? repository.save(media) : media);
                 } catch (URISyntaxException e) {
-                    LOGGER.error("Cannot compute SHA-1", e);
+                    LOGGER.error("Cannot compute SHA-1 of " + media, e);
+                } catch (TransactionException e) {
+                    LOGGER.error("Transaction error when saving " + media, e);
                 }
             }
             id++;

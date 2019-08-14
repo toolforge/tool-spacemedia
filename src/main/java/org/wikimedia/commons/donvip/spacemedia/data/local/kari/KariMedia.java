@@ -76,4 +76,13 @@ public class KariMedia extends Media {
     public void setDate(LocalDate date) {
         this.date = date;
     }
+
+    @Override
+    public String toString() {
+        return "KariMedia [id=" + id + ", " + (url != null ? "url=" + url + ", " : "")
+                + (title != null ? "title=" + title + ", " : "") + (kariId != null ? "kariId=" + kariId + ", " : "")
+                + (date != null ? "date=" + date + ", " : "")
+                + (description != null ? "description=" + description + ", " : "")
+                + (sha1 != null ? "sha1=" + sha1 : "") + "]";
+    }
 }
