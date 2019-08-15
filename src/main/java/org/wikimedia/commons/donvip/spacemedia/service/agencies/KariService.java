@@ -49,8 +49,35 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
     private int maxFailures;
 
     @Override
-    public String getName() {
+    public final String getName() {
         return "KARI";
+    }
+
+    @Override
+    protected final String getDescription(KariMedia media) {
+        String description = media.getDescription();
+        return StringUtils.isBlank(description) ? media.getTitle() : description;
+    }
+
+    @Override
+    protected final String getSource(KariMedia media) throws MalformedURLException {
+        return wikiLink(new URL(getViewUrl(media.getId())), media.getTitle());
+    }
+
+    @Override
+    protected final String getAuthor(KariMedia media) {
+        return "Korea Aerospace Research Institute";
+    }
+
+    private String getViewUrl(int id) {
+        return viewLink.replace("<id>", Integer.toString(id));
+    }
+
+    @Override
+    protected List<String> findTemplates(KariMedia media) {
+        List<String> result = super.findTemplates(media);
+        result.add("KOGL");
+        return result;
     }
 
     @Override
@@ -64,7 +91,7 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
         while (consecutiveFailures < maxFailures) {
             boolean save = false;
             KariMedia media = null;
-            String viewUrl = viewLink.replace("<id>", Integer.toString(id));
+            String viewUrl = getViewUrl(id);
             URL view = new URL(viewUrl);
             Optional<KariMedia> mediaInRepo = repository.findById(id);
             if (mediaInRepo.isPresent()) {
@@ -93,29 +120,7 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
             }
             if (media != null) {
                 try {
-                    if (StringUtils.isBlank(media.getDescription())) {
-                        problem(view, "Empty description");
-                    }
-                    if (media.getAssetUrl() != null) {
-                        String mediaUrl = media.getAssetUrl().toExternalForm();
-                        if (StringUtils.isBlank(mediaUrl) || "https://www.kari.re.kr".equals(mediaUrl)) {
-                            media.setAssetUrl(null);
-                        }
-                    }
-                    if (media.getAssetUrl() == null) {
-                        problem(view, "No download link");
-                        save = false;
-                        if (mediaInRepo.isPresent()) {
-                            repository.delete(media);
-                        }
-                    }
-                    if (mediaService.computeSha1(media)) {
-                        save = true;
-                    }
-                    if (mediaService.findCommonsFilesWithSha1(media)) {
-                        save = true;
-                    }
-                    medias.add(save ? repository.save(media) : media);
+                    medias.add(processMedia(save, media, view, mediaInRepo.isPresent()));
                 } catch (URISyntaxException e) {
                     LOGGER.error("Cannot compute SHA-1 of " + media, e);
                 } catch (TransactionException e) {
@@ -127,6 +132,33 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
         LOGGER.info("{} medias update completed: {} medias in {}", getName(), medias.size(),
                 Duration.between(LocalDateTime.now(), start));
         return medias;
+    }
+
+    protected KariMedia processMedia(boolean save, KariMedia media, URL view, boolean mediaInRepo)
+            throws IOException, URISyntaxException {
+        if (StringUtils.isBlank(media.getDescription())) {
+            problem(view, "Empty description");
+        }
+        if (media.getAssetUrl() != null) {
+            String mediaUrl = media.getAssetUrl().toExternalForm();
+            if (StringUtils.isBlank(mediaUrl) || "https://www.kari.re.kr".equals(mediaUrl)) {
+                media.setAssetUrl(null);
+            }
+        }
+        if (media.getAssetUrl() == null) {
+            problem(view, "No download link");
+            save = false;
+            if (mediaInRepo) {
+                repository.delete(media);
+            }
+        }
+        if (mediaService.computeSha1(media)) {
+            save = true;
+        }
+        if (mediaService.findCommonsFilesWithSha1(media)) {
+            save = true;
+        }
+        return save ? repository.save(media) : media;
     }
 
     private static KariMedia buildMedia(int id, URL view, Element div, String title, Element infos, Elements lis)

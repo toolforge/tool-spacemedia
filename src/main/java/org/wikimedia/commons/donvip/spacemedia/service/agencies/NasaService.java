@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -10,16 +11,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -55,6 +59,9 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     @Value("${nasa.search.link}")
     private String searchEndpoint;
 
+    @Value("${nasa.details.link}")
+    private String detailsLink;
+
     @Value("${nasa.min.year}")
     private int minYear;
 
@@ -75,6 +82,9 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
 
     @Autowired
     private NasaMediaRepository<NasaMedia> mediaRepository;
+
+    @Autowired
+    private Environment env;
 
     @Autowired
     public NasaService(NasaMediaRepository<NasaMedia> repository, ProblemRepository problemrepository,
@@ -323,6 +333,30 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     @Override
     public String getName() {
         return "NASA";
+    }
+
+    @Override
+    protected String getDescription(NasaMedia media) {
+        return media.getDescription();
+    }
+
+    @Override
+    protected String getSource(NasaMedia media) throws MalformedURLException {
+        return wikiLink(new URL(detailsLink.replace("<id>", media.getNasaId())), media.getTitle());
+    }
+
+    @Override
+    protected String getAuthor(NasaMedia media) {
+        String center = media.getCenter().toLowerCase(Locale.ENGLISH);
+        URL homePage = env.getProperty("nasa." + center + ".home.page", URL.class);
+        String name = env.getProperty("nasa." + center + ".name", String.class);
+        if (media instanceof NasaImage) {
+            NasaImage image = (NasaImage) media;
+            if (StringUtils.isNotBlank(image.getPhotographer())) {
+                name += " / " + image.getPhotographer();
+            }
+        }
+        return wikiLink(homePage, name);
     }
 
     @Override

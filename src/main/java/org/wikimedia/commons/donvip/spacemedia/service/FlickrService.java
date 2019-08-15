@@ -1,36 +1,40 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
+import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrFreeLicense;
 
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.REST;
+import com.flickr4java.flickr.Response;
+import com.flickr4java.flickr.Transport;
+import com.flickr4java.flickr.people.User;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.photos.PhotoList;
 import com.flickr4java.flickr.photos.SearchParameters;
+import com.flickr4java.flickr.urls.UrlsInterface;
 
 @Service
 public class FlickrService {
 
     private static final int MAX_PER_PAGE = 500;
-
-    private static final List<Integer> FREE_LICENSES = Arrays.asList(
-        4, // "Attribution License",             // https://creativecommons.org/licenses/by/2.0/
-        5, // "Attribution-ShareAlike License",  // https://creativecommons.org/licenses/by-sa/2.0/
-        7, // "No known copyright restrictions", // https://www.flickr.com/commons/usage/
-        8, // "United States Government Work",   // https://www.usa.gov/copyright.shtml
-        9, // "Public Domain Dedication (CC0)",  // https://creativecommons.org/publicdomain/zero/1.0/
-        10 // "Public Domain Mark"               // https://creativecommons.org/publicdomain/mark/1.0/
-        );
 
     private static final Set<String> EXTRAS = new HashSet<>(Arrays.asList(
             "description", "license", "date_upload", "date_taken",
@@ -46,6 +50,21 @@ public class FlickrService {
         flickr = new Flickr(flickrApiKey, flickrSecret, new REST());
     }
 
+    @Cacheable("usersByUrl")
+    public User findUser(URL url) throws FlickrException {
+        return new UrlsInterfacePatched(flickr).lookupUserPatched(url.toExternalForm());
+    }
+
+    @Cacheable("userNamesByNsid")
+    public String findUserName(String nsid) throws FlickrException {
+        return flickr.getPeopleInterface().getInfo(nsid).getUsername();
+    }
+
+    @Cacheable("userProfilesByNsid")
+    public URL findUserProfileUrl(String nsid) throws FlickrException, MalformedURLException {
+        return new URL(flickr.getUrlsInterface().getUserProfile(nsid));
+    }
+
     public List<Photo> findFreePhotos(String userId) throws FlickrException {
         List<Photo> result = new ArrayList<>();
         SearchParameters params = new SearchParameters();
@@ -53,7 +72,7 @@ public class FlickrService {
         params.setExtras(EXTRAS);
         // Multi-license search does not work
         // https://www.flickr.com/groups/51035612836@N01/discuss/72157665503298714/72157667263924940
-        for (int license : FREE_LICENSES) {
+        for (int license : Arrays.stream(FlickrFreeLicense.values()).map(FlickrFreeLicense::getCode).collect(Collectors.toList())) {
             PhotoList<Photo> photos;
             params.setLicense(Integer.toString(license));
             int page = 1;
@@ -63,5 +82,45 @@ public class FlickrService {
             } while (photos.getPage() < photos.getPages());
         }
         return result;
+    }
+
+    // TODO: create a pull request at https://github.com/boncey/Flickr4Java
+    static class UrlsInterfacePatched extends UrlsInterface {
+
+        private final String apiKey;
+        private final String sharedSecret;
+        private final Transport transport;
+
+        public UrlsInterfacePatched(Flickr flickr) {
+            super(flickr.getApiKey(), flickr.getSharedSecret(), flickr.getTransport());
+            this.apiKey = flickr.getApiKey();
+            this.sharedSecret = flickr.getSharedSecret();
+            this.transport = flickr.getTransport();
+        }
+
+        /**
+         * Lookup the userid and username for the specified User URL.
+         * 
+         * @param url The user profile URL
+         * @return The userid and username
+         * @throws FlickrException
+         */
+        public User lookupUserPatched(String url) throws FlickrException {
+            Map<String, Object> parameters = new HashMap<String, Object>();
+            parameters.put("method", METHOD_LOOKUP_USER);
+            parameters.put("url", url);
+
+            Response response = transport.get(transport.getPath(), parameters, apiKey, sharedSecret);
+            if (response.isError()) {
+                throw new FlickrException(response.getErrorCode(), response.getErrorMessage());
+            }
+
+            Element payload = response.getPayload();
+            Element groupnameElement = (Element) payload.getElementsByTagName("username").item(0);
+            User user = new User();
+            user.setId(payload.getAttribute("id"));
+            user.setUsername(((Text) groupnameElement.getFirstChild()).getData());
+            return user;
+        }
     }
 }

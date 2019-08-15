@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
@@ -34,5 +35,17 @@ public class SpaceXService extends SpaceAgencyFlickrService {
     @Override
     public String getName() {
         return "SpaceX";
+    }
+
+    @Override
+    protected List<String> findTemplates(FlickrMedia media) {
+        List<String> result = super.findTemplates(media);
+        FlickrFreeLicense license = FlickrFreeLicense.of(media.getLicense());
+        if (license == FlickrFreeLicense.Public_Domain_Dedication_CC0) {
+            result.add("Cc-zero-SpaceX");
+        } else {
+            result.add(license.getWikiTemplate());
+        }
+        return result;
     }
 }

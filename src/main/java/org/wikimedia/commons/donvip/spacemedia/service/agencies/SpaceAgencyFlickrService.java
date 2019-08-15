@@ -1,7 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,6 +24,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 
 import com.flickr4java.flickr.FlickrException;
+import com.flickr4java.flickr.people.User;
 import com.github.dozermapper.core.Mapper;
 
 public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<FlickrMedia, Long> {
@@ -77,6 +80,27 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
                     .sorted().collect(Collectors.toList()));
         }
         return stats;
+    }
+
+    @Override
+    protected final String getDescription(FlickrMedia media) {
+        return media.getDescription();
+    }
+
+    @Override
+    protected final String getSource(FlickrMedia media) {
+        return wikiLink(media.getAssetUrl(), media.getTitle());
+    }
+
+    @Override
+    protected final String getAuthor(FlickrMedia media) throws MalformedURLException {
+        try {
+            User user = flickrService.findUser(new URL("https://www.flickr.com/photos/" + media.getPathAlias()));
+            URL profileUrl = flickrService.findUserProfileUrl(user.getId());
+            return wikiLink(profileUrl, user.getUsername());
+        } catch (FlickrException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected List<FlickrMedia> updateFlickrMedia() {

@@ -343,17 +343,50 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
         return updateImages().stream().flatMap(i -> i.getFiles().stream()).collect(Collectors.toList());
     }
 
+    private EsaImage getEsaImageForFile(EsaFile media) {
+        List<EsaImage> images = imageRepository.findByFile(media);
+        if (images.size() != 1) { // TODO handle multiple images
+            throw new IllegalStateException(images.toString());
+        }
+        return images.get(0);
+    }
+
     @Override
     protected void checkUploadPreconditions(EsaFile media) {
         super.checkUploadPreconditions(media);
-        List<EsaImage> images = imageRepository.findByFile(media);
-        if (images.size() != 1) {
-            throw new IllegalStateException(images.toString());
-        }
+        getEsaImageForFile(media);
     }
 
     @Override
     public String getName() {
         return "ESA";
+    }
+
+    @Override
+    protected String getDescription(EsaFile media) {
+        return getEsaImageForFile(media).getDescription();
+    }
+
+    @Override
+    protected String getSource(EsaFile media) throws MalformedURLException {
+        EsaImage image = getEsaImageForFile(media);
+        URL url = image.getUrl();
+        String externalForm = url.toExternalForm();
+        if (externalForm.contains("://www.esa.int/spaceinimages/layout/set/html_npl/Images/")) {
+            url = new URL(externalForm.replace("layout/set/html_npl/", ""));
+        }
+        return wikiLink(url, image.getTitle());
+    }
+
+    @Override
+    protected String getAuthor(EsaFile media) {
+        EsaImage image = getEsaImageForFile(media);
+        if (image.getCopyright().contains("/")) {
+            String authors = image.getCopyright().replace("CC BY-SA 3.0 IGO", "").trim();
+            if (authors.endsWith(",") && authors.length() > 2) {
+                return authors.replace(",", "").trim();
+            }
+        }
+        return "European Space Agency";
     }
 }

@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +45,15 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
     @Value("${nasa.sirs.images.url}")
     private String imagesUrl;
 
+    @Value("${nasa.sirs.details.url}")
+    private String detailsUrl;
+
+    @Value("${nasa.ssc.home.page}")
+    private URL homePage;
+
+    @Value("${nasa.ssc.name}")
+    private String sscName;
+
     public NasaSirsService(NasaSirsImageRepository repository, ProblemRepository problemrepository,
             MediaService mediaService) {
         super(repository, problemrepository, mediaService);
@@ -51,6 +62,27 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
     @Override
     public String getName() {
         return "NASA (SIRS)";
+    }
+
+    @Override
+    protected String getDescription(NasaSirsImage media) {
+        return media.getDescription();
+    }
+
+    @Override
+    protected String getSource(NasaSirsImage media) throws MalformedURLException {
+        return wikiLink(new URL(detailsUrl.replace("<idx>", media.getNasaId())), media.getTitle());
+    }
+
+    @Override
+    protected String getAuthor(NasaSirsImage media) {
+        return wikiLink(homePage, sscName);
+    }
+
+    @Override
+    protected Optional<Temporal> getCreationDate(NasaSirsImage media) {
+        return media.getPhotoDate() != null ? Optional.of(media.getPhotoDate())
+                : Optional.ofNullable(media.getPhotoYear());
     }
 
     @Override

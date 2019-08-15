@@ -1,7 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -56,6 +59,11 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
         return repository.findByIgnoredTrue();
     }
 
+    /**
+     * Returns the space agency name, used in statistics and logs.
+     * 
+     * @return the space agency name
+     */
     public abstract String getName();
 
     public abstract List<T> updateMedia() throws IOException;
@@ -65,19 +73,19 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
         return new Statistics(getName(), countAllMedia(), countMissingMedia(), problems > 0 ? problems : null);
     }
 
-    public List<Problem> getProblems() {
+    public final List<Problem> getProblems() {
         return problemrepository.findByAgency(getName());
     }
 
-    public long getProblemsCount() {
+    public final long getProblemsCount() {
         return problemrepository.countByAgency(getName());
     }
 
-    protected Problem problem(URL problematicUrl, Throwable t) {
+    protected final Problem problem(URL problematicUrl, Throwable t) {
         return problem(problematicUrl, t.getMessage());
     }
 
-    protected Problem problem(URL problematicUrl, String errorMessage) {
+    protected final Problem problem(URL problematicUrl, String errorMessage) {
         Optional<Problem> problem = problemrepository.findByAgencyAndProblematicUrl(getName(), problematicUrl);
         if (problem.isPresent()) {
             return problem.get();
@@ -91,11 +99,79 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
         }
     }
 
-    public T upload(String sha1) {
-        T media = repository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
+    private T findBySha1OrThrow(String sha1) {
+        return repository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
+    }
+
+    public final T upload(String sha1) {
+        T media = findBySha1OrThrow(sha1);
         checkUploadPreconditions(media);
+        String wikiCode = getWikiCode(media);
         // TODO
-        return media;
+        return repository.save(media);
+    }
+
+    public final String getWikiCode(String sha1) {
+        return getWikiCode(findBySha1OrThrow(sha1));
+    }
+
+    public final String getWikiCode(T media) {
+        try {
+            StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n{{Information\n| description = ")
+                    .append(getDescription(media));
+            getCreationDate(media).ifPresent(s -> sb.append("| date = ").append(s));
+            sb.append("| source = ").append(getSource(media)).append("| author = ").append(getAuthor(media));
+            getPermission(media).ifPresent(s -> sb.append("| permission = ").append(s));
+            getOtherVersions(media).ifPresent(s -> sb.append("| other versions = ").append(s));
+            getOtherFields(media).ifPresent(s -> sb.append("| other fields = ").append(s));
+            getOtherFields1(media).ifPresent(s -> sb.append("| other fields 1 = ").append(s));
+            sb.append("}}\n=={{int:license-header}}==\n");
+            findTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
+            findCategories(media).forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
+            return sb.toString();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected abstract String getDescription(T media) throws MalformedURLException;
+
+    protected abstract String getSource(T media) throws MalformedURLException;
+
+    protected abstract String getAuthor(T media) throws MalformedURLException;
+
+    protected Optional<Temporal> getCreationDate(T media) {
+        return Optional.empty();
+    }
+
+    protected Optional<String> getPermission(T media) {
+        return Optional.empty();
+    }
+
+    protected Optional<String> getOtherVersions(T media) {
+        return Optional.empty();
+    }
+
+    protected Optional<String> getOtherFields(T media) {
+        return Optional.empty();
+    }
+
+    protected Optional<String> getOtherFields1(T media) {
+        return Optional.empty();
+    }
+
+    protected List<String> findCategories(T media) {
+        // TODO
+        return new ArrayList<String>();
+    }
+
+    protected List<String> findTemplates(T media) {
+        // TODO
+        return new ArrayList<String>();
+    }
+
+    protected final String wikiLink(URL url, String text) {
+        return "[" + Objects.requireNonNull(url, "url") + " " + Objects.requireNonNull(text, "text") + "]";
     }
 
     protected void checkUploadPreconditions(T media) {

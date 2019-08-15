@@ -54,8 +54,13 @@ public abstract class SpaceAgencyController<T extends Media, ID> {
         return service.getProblems();
     }
 
+    @GetMapping("/wiki/{sha1}")
+    public final String wikiCode(@PathVariable String sha1) {
+        return service.getWikiCode(sha1);
+    }
+
     @GetMapping("/upload/{sha1}")
-    public T upload(@PathVariable String sha1) {
+    public final T upload(@PathVariable String sha1) {
         return service.upload(sha1);
     }
 }
