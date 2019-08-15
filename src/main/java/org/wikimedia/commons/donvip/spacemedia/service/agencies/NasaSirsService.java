@@ -71,6 +71,7 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
                 loop = !imageLinks.isEmpty();
                 for (String imageLink : imageLinks) {
                     String id = imageLink.substring(imageLink.lastIndexOf('=') + 1);
+                    URL url = new URL(imageLink);
                     NasaSirsImage media = null;
                     try {
                         boolean save = false;
@@ -80,7 +81,6 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
                         } else {
                             media = new NasaSirsImage();
                             media.setNasaId(id);
-                            URL url = new URL(imageLink);
                             List<String> values = loadImageValues(imageLink);
                             media.setTitle(values.get(0));
                             media.setCategory(values.get(1));
@@ -105,7 +105,7 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
                     } catch (URISyntaxException e) {
                         LOGGER.error("Cannot compute SHA-1 of " + media, e);
                     } catch (HttpStatusException e) {
-                        LOGGER.error("HTTP error for " + media, e);
+                        problem(url, e.getMessage());
                     }
                 }
             }
