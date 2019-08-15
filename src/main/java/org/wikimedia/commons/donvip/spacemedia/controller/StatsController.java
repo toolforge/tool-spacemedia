@@ -19,7 +19,7 @@ public class StatsController {
 
     @GetMapping("/stats")
     public List<Statistics> stats() {
-        return agencies.stream()
+        return agencies.parallelStream()
                 .map(SpaceAgencyService::getStatistics)
                 .sorted()
                 .collect(Collectors.toList());
