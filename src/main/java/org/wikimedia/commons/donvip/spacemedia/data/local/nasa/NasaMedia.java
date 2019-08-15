@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public abstract class NasaMedia extends Media {
 
     @Id
-    @Column(nullable = false, length = 128)
+    @Column(nullable = false, length = 170)
     @JsonProperty("nasa_id")
     private String nasaId;
 
