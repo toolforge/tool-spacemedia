@@ -45,7 +45,7 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
     @Value("${kari.kogl.type1}")
     private String koglType1Icon;
 
-    @Value("${kari.max.failures:10}")
+    @Value("${kari.max.failures:50}")
     private int maxFailures;
 
     @Override
