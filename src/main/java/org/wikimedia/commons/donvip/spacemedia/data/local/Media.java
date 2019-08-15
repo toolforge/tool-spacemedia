@@ -1,14 +1,19 @@
 package org.wikimedia.commons.donvip.spacemedia.data.local;
 
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.FetchType;
+import javax.persistence.Index;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Table;
 
 @MappedSuperclass
+@Table(indexes = {@Index(columnList = "sha1")})
 public abstract class Media {
+
     @Column(nullable = false, length = 42)
     protected String sha1;
 
@@ -29,5 +34,20 @@ public abstract class Media {
 
     public void setCommonsFileNames(Set<String> commonsFileNames) {
         this.commonsFileNames = commonsFileNames;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(commonsFileNames, sha1);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        Media other = (Media) obj;
+        return Objects.equals(commonsFileNames, other.commonsFileNames) && Objects.equals(sha1, other.sha1);
     }
 }

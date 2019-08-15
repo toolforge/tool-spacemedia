@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.local.kari;
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.Objects;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -84,5 +85,20 @@ public class KariMedia extends Media {
                 + (date != null ? "date=" + date + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (sha1 != null ? "sha1=" + sha1 : "") + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * super.hashCode() + Objects.hash(id, kariId, url);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj) || getClass() != obj.getClass())
+            return false;
+        KariMedia other = (KariMedia) obj;
+        return id == other.id && Objects.equals(kariId, other.kariId) && Objects.equals(url, other.url);
     }
 }

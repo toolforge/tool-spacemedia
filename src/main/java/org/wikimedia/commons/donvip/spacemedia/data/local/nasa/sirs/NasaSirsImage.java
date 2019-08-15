@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.local.nasa.sirs;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.Year;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -121,5 +122,20 @@ public class NasaSirsImage extends Media {
                 + (description != null ? "description=" + description + ", " : "")
                 + (keywords != null ? "keywords=" + keywords + ", " : "")
                 + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "") + (sha1 != null ? "sha1=" + sha1 : "") + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * super.hashCode() + Objects.hash(assetUrl, nasaId);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj) || getClass() != obj.getClass())
+            return false;
+        NasaSirsImage other = (NasaSirsImage) obj;
+        return Objects.equals(assetUrl, other.assetUrl) && Objects.equals(nasaId, other.nasaId);
     }
 }

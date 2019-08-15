@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.local.flickr;
 
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.ElementCollection;
@@ -226,5 +227,20 @@ public class FlickrMedia extends Media {
 
     public void setPathAlias(String pathAlias) {
         this.pathAlias = pathAlias;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * super.hashCode() + Objects.hash(id, pathAlias);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj) || getClass() != obj.getClass())
+            return false;
+        FlickrMedia other = (FlickrMedia) obj;
+        return Objects.equals(id, other.id) && Objects.equals(pathAlias, other.pathAlias);
     }
 }

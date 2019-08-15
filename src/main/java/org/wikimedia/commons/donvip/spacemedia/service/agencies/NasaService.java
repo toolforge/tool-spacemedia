@@ -330,7 +330,7 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     @Override
     public Statistics getStatistics() {
         Statistics stats = super.getStatistics();
-        List<String> centers = mediaRepository.listCenters();
+        List<String> centers = mediaRepository.findCenters();
         if (centers.size() > 1) {
             stats.setDetails(centers.parallelStream()
                     .map(c -> new Statistics(Objects.toString(c), mediaRepository.countByCenter(c),

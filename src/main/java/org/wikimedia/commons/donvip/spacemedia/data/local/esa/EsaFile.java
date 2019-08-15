@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.local.esa;
 
 import java.net.URL;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -70,5 +71,20 @@ public class EsaFile extends Media {
     public String toString() {
         return "EsaFile [" + (url != null ? "url=" + url + ", " : "") + (sha1 != null ? "sha1=" + sha1 + ", " : "")
                 + (!CollectionUtils.isEmpty(commonsFileNames) ? "commonsFileNames=" + commonsFileNames : "") + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * super.hashCode() + Objects.hash(id, url);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj) || getClass() != obj.getClass())
+            return false;
+        EsaFile other = (EsaFile) obj;
+        return Objects.equals(id, other.id) && Objects.equals(url, other.url);
     }
 }
