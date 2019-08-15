@@ -6,23 +6,22 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
 
 @Entity
 public class Problem {
 
     @Id
-    @NotNull
+    @Column(nullable = false)
     @GeneratedValue
     private Integer id;
 
-    @NotNull
+    @Column(nullable = false)
     private String agency;
 
     @Column(length = 500)
     private String errorMessage;
 
-    @NotNull
+    @Column(nullable = false, length = 380)
     private URL problematicUrl;
 
     public Integer getId() {
