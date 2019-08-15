@@ -22,7 +22,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -44,11 +43,9 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
     @Value("${nasa.sirs.images.url}")
     private String imagesUrl;
 
-    @Autowired
-    private MediaService mediaService;
-
-    public NasaSirsService(NasaSirsImageRepository repository, ProblemRepository problemrepository) {
-        super(repository, problemrepository);
+    public NasaSirsService(NasaSirsImageRepository repository, ProblemRepository problemrepository,
+            MediaService mediaService) {
+        super(repository, problemrepository, mediaService);
     }
 
     @Override

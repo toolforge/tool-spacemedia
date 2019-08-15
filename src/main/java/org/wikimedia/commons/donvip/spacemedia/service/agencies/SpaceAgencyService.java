@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Media;
@@ -15,6 +16,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 
 public abstract class SpaceAgencyService<T extends Media, ID> {
 
@@ -22,10 +24,12 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
 
     protected final MediaRepository<T, ID> repository;
     protected final ProblemRepository problemrepository;
+    protected final MediaService mediaService;
 
-    public SpaceAgencyService(MediaRepository<T, ID> repository, ProblemRepository problemrepository) {
+    public SpaceAgencyService(MediaRepository<T, ID> repository, ProblemRepository problemrepository, MediaService mediaService) {
         this.repository = Objects.requireNonNull(repository);
         this.problemrepository = Objects.requireNonNull(problemrepository);
+        this.mediaService = Objects.requireNonNull(mediaService);
     }
 
     public long countAllMedia() {
@@ -96,7 +100,11 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
 
     protected void checkUploadPreconditions(T media) {
         if (media.isIgnored() == Boolean.TRUE) {
-            throw new ImageUploadForbiddenException(media.getSha1());
+            throw new ImageUploadForbiddenException(media + " is marked as ignored.");
+        }
+        // Double-check for duplicates before upload!
+        if (CollectionUtils.isNotEmpty(media.getCommonsFileNames()) || mediaService.findCommonsFilesWithSha1(media)) {
+            throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
         }
     }
 }

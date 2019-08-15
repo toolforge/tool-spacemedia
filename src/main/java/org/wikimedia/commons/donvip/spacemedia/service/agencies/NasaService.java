@@ -74,14 +74,12 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     private NasaVideoRepository videoRepository;
 
     @Autowired
-    private MediaService mediaService;
-
-    @Autowired
     private NasaMediaRepository<NasaMedia> mediaRepository;
 
     @Autowired
-    public NasaService(NasaMediaRepository<NasaMedia> repository, ProblemRepository problemrepository) {
-        super(repository, problemrepository);
+    public NasaService(NasaMediaRepository<NasaMedia> repository, ProblemRepository problemrepository,
+            MediaService mediaService) {
+        super(repository, problemrepository, mediaService);
     }
 
     private NasaMedia save(NasaMedia media) {

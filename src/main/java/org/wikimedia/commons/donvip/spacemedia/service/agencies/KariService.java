@@ -35,8 +35,8 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(KariService.class);
 
     @Autowired
-    public KariService(KariMediaRepository repository, ProblemRepository problemrepository) {
-        super(repository, problemrepository);
+    public KariService(KariMediaRepository repository, ProblemRepository problemrepository, MediaService mediaService) {
+        super(repository, problemrepository, mediaService);
     }
 
     @Value("${kari.view.link}")
@@ -47,9 +47,6 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
 
     @Value("${kari.max.failures:10}")
     private int maxFailures;
-
-    @Autowired
-    private MediaService mediaService;
 
     @Override
     public String getName() {

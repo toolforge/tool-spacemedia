@@ -53,9 +53,6 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
 
     @Autowired
     private EsaImageRepository imageRepository;
-    
-    @Autowired
-    private MediaService mediaService;
 
     @Value("${esa.search.link}")
     private String searchLink; 
@@ -69,8 +66,8 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
     private DateTimeFormatter dateFormatter;
 
     @Autowired
-    public EsaService(EsaFileRepository repository, ProblemRepository problemrepository) {
-        super(repository, problemrepository);
+    public EsaService(EsaFileRepository repository, ProblemRepository problemrepository, MediaService mediaService) {
+        super(repository, problemrepository, mediaService);
     }
 
     @PostConstruct

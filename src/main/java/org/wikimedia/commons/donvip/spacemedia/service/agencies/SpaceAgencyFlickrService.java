@@ -29,16 +29,14 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
     private static final Logger LOGGER = LoggerFactory.getLogger(SpaceAgencyFlickrService.class);
 
     protected final FlickrMediaRepository flickrRepository;
-    protected final MediaService mediaService;
     protected final FlickrService flickrService;
     protected final Mapper dozerMapper;
     protected final Set<String> flickrAccounts;
 
     public SpaceAgencyFlickrService(FlickrMediaRepository repository, ProblemRepository problemrepository,
             MediaService mediaService, FlickrService flickrService, Mapper dozerMapper, Set<String> flickrAccounts) {
-        super(repository, problemrepository);
+        super(repository, problemrepository, mediaService);
         this.flickrRepository = repository;
-        this.mediaService = Objects.requireNonNull(mediaService);
         this.flickrService = Objects.requireNonNull(flickrService);
         this.dozerMapper = Objects.requireNonNull(dozerMapper);
         this.flickrAccounts = Objects.requireNonNull(flickrAccounts);
