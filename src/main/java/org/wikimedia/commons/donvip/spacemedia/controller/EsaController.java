@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaFile;
@@ -22,11 +21,6 @@ public class EsaController extends SpaceAgencyController<EsaFile, String> {
     public EsaController(EsaService service) {
         super(service);
         this.esaService = service;
-    }
-
-    @GetMapping("ignored")
-    public List<EsaFile> listIgnoredFiles() {
-        return esaService.listIgnoredMedia();
     }
 
     // ESA IMAGES
@@ -54,10 +48,5 @@ public class EsaController extends SpaceAgencyController<EsaFile, String> {
     @GetMapping("/images/update")
     public List<EsaImage> updateImages() throws IOException {
         return esaService.updateImages();
-    }
-
-    @GetMapping("/upload/{sha1}")
-    public EsaFile upload(@PathVariable String sha1) {
-        return esaService.upload(sha1);
     }
 }

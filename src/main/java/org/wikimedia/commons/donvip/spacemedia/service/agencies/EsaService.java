@@ -37,8 +37,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaFileRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImage;
 import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
-import org.wikimedia.commons.donvip.spacemedia.exception.ImageForbiddenException;
-import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -94,10 +92,6 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
 
     public List<EsaImage> listDuplicateImages() {
         return imageRepository.findDuplicateInCommons();
-    }
-
-    public List<EsaFile> listIgnoredMedia() {
-        return ((EsaFileRepository) repository).findByIgnoredTrue();
     }
 
     private static Optional<URL> getImageUrl(String src, URL imageUrl) throws MalformedURLException {
@@ -353,17 +347,13 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
         return updateImages().stream().flatMap(i -> i.getFiles().stream()).collect(Collectors.toList());
     }
 
-    public EsaFile upload(String sha1) {
-        EsaFile file = repository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
-        if (file.isIgnored() == Boolean.TRUE) {
-            throw new ImageForbiddenException(sha1);
-        }
-        List<EsaImage> images = imageRepository.findByFile(file);
+    @Override
+    protected void checkUploadPreconditions(EsaFile media) {
+        super.checkUploadPreconditions(media);
+        List<EsaImage> images = imageRepository.findByFile(media);
         if (images.size() != 1) {
             throw new IllegalStateException(images.toString());
         }
-        // TODO
-        return file;
     }
 
     @Override

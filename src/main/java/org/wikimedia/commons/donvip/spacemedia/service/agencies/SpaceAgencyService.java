@@ -13,6 +13,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
+import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 
 public abstract class SpaceAgencyService<T extends Media, ID> {
 
@@ -46,6 +48,10 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
         return repository.findDuplicateInCommons();
     }
 
+    public List<T> listIgnoredMedia() {
+        return repository.findByIgnoredTrue();
+    }
+
     public abstract String getName();
 
     public abstract List<T> updateMedia() throws IOException;
@@ -74,6 +80,19 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
             pb.setProblematicUrl(problematicUrl);
             LOGGER.warn(pb.toString());
             return problemrepository.save(pb);
+        }
+    }
+
+    public T upload(String sha1) {
+        T media = repository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
+        checkUploadPreconditions(media);
+        // TODO
+        return media;
+    }
+
+    protected void checkUploadPreconditions(T media) {
+        if (media.isIgnored() == Boolean.TRUE) {
+            throw new ImageUploadForbiddenException(media.getSha1());
         }
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Statistics;
@@ -38,6 +39,11 @@ public abstract class SpaceAgencyController<T extends Media, ID> {
         return service.listDuplicateMedia();
     }
 
+    @GetMapping("/ignored")
+    public List<T> listIgnored() {
+        return service.listIgnoredMedia();
+    }
+
     @GetMapping("/stats")
     public final Statistics stats() throws IOException {
         return service.getStatistics();
@@ -46,5 +52,10 @@ public abstract class SpaceAgencyController<T extends Media, ID> {
     @GetMapping("/problems")
     public final List<Problem> problems() throws IOException {
         return service.getProblems();
+    }
+
+    @GetMapping("/upload/{sha1}")
+    public T upload(@PathVariable String sha1) {
+        return service.upload(sha1);
     }
 }

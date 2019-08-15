@@ -10,8 +10,6 @@ public interface EsaFileRepository extends MediaRepository<EsaFile, String> {
 
     List<EsaFile> findByUrl(URL imageUrl);
 
-    List<EsaFile> findByIgnoredTrue();
-
     @Override
     @Query("select f from EsaFile f where (f.ignored is null or f.ignored is false) and not exists elements (f.commonsFileNames)")
     List<EsaFile> findMissingInCommons();

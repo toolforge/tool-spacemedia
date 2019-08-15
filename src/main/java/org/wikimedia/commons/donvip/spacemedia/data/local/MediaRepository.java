@@ -25,4 +25,6 @@ public interface MediaRepository<T extends Media, ID> extends CrudRepository<T, 
     List<T> findDuplicateInCommons();
 
     Optional<T> findBySha1(String sha1);
+
+    List<T> findByIgnoredTrue();
 }

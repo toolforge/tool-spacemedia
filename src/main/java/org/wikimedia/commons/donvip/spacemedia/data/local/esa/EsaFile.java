@@ -18,11 +18,9 @@ public class EsaFile extends Media {
     @Id
     @GeneratedValue
     private Integer id;
+
     @Column(nullable = false, length = 350)
     private URL url;
-    @Column(nullable = true)
-    private Boolean ignored;
-    private String ignoredReason;
 
     public EsaFile() {
     }
@@ -45,26 +43,6 @@ public class EsaFile extends Media {
     
     public void setUrl(URL url) {
         this.url = url;
-    }
-    
-    public Boolean isIgnored() {
-        return ignored;
-    }
-
-    public void setIgnored(Boolean ignored) {
-        this.ignored = ignored;
-    }
-
-    public String getIgnoredReason() {
-        return ignoredReason;
-    }
-
-    public void setIgnoredReason(String ignoredReason) {
-        this.ignoredReason = ignoredReason;
-    }
-
-    public Boolean getIgnored() {
-        return ignored;
     }
 
     @Override

@@ -19,7 +19,12 @@ public abstract class Media {
 
     @ElementCollection(fetch = FetchType.EAGER)
     protected Set<String> commonsFileNames;
-    
+
+    @Column(nullable = true)
+    private Boolean ignored;
+
+    private String ignoredReason;
+
     public String getSha1() {
         return sha1;
     }
@@ -34,6 +39,26 @@ public abstract class Media {
 
     public void setCommonsFileNames(Set<String> commonsFileNames) {
         this.commonsFileNames = commonsFileNames;
+    }
+
+    public Boolean isIgnored() {
+        return ignored;
+    }
+
+    public void setIgnored(Boolean ignored) {
+        this.ignored = ignored;
+    }
+
+    public String getIgnoredReason() {
+        return ignoredReason;
+    }
+
+    public void setIgnoredReason(String ignoredReason) {
+        this.ignoredReason = ignoredReason;
+    }
+
+    public Boolean getIgnored() {
+        return ignored;
     }
 
     @Override
