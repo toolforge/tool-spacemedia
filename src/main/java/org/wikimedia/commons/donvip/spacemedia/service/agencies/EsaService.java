@@ -292,8 +292,7 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
                             LOGGER.warn(file.toString(), e);
                             ignoreAndSaveFile(file, e.getMessage(), true);
                         } catch (IOException | URISyntaxException e) {
-                            problem(file.getUrl(), e.getMessage());
-                            LOGGER.error(file.toString(), e);
+                            problem(file.getUrl(), e);
                         }
                     }
                 }

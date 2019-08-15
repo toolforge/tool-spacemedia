@@ -69,6 +69,10 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
         return problemrepository.countByAgency(getName());
     }
 
+    protected Problem problem(URL problematicUrl, Throwable t) {
+        return problem(problematicUrl, t.getMessage());
+    }
+
     protected Problem problem(URL problematicUrl, String errorMessage) {
         Optional<Problem> problem = problemrepository.findByAgencyAndProblematicUrl(getName(), problematicUrl);
         if (problem.isPresent()) {

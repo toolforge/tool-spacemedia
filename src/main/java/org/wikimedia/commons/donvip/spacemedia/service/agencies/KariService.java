@@ -73,23 +73,25 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
             if (mediaInRepo.isPresent()) {
                 media = mediaInRepo.get();
             } else {
-                Document html = Jsoup.connect(viewUrl).timeout(60_000).get();
-                Element div = html.getElementsByClass("board_view").get(0);
-                String title = div.getElementsByTag("h4").get(0).text();
-                if (!title.isEmpty()) {
-                    consecutiveFailures = 0;
-                    try {
+                try {
+                    Document html = Jsoup.connect(viewUrl).timeout(60_000).get();
+                    Element div = html.getElementsByClass("board_view").get(0);
+                    String title = div.getElementsByTag("h4").get(0).text();
+                    if (!title.isEmpty()) {
+                        consecutiveFailures = 0;
                         Element infos = div.getElementsByClass("photo_infor").get(0);
                         Elements lis = infos.getElementsByTag("li");
                         if (lis.get(lis.size() - 1).getElementsByTag("img").attr("src").endsWith(koglType1Icon)) {
                             media = buildMedia(id, view, div, title, infos, lis);
                             save = true;
                         }
-                    } catch (DateTimeParseException e) {
-                        LOGGER.error("Cannot parse HTML", e);
+                    } else {
+                        consecutiveFailures++;
                     }
-                } else {
-                    consecutiveFailures++;
+                } catch (DateTimeParseException e) {
+                    LOGGER.error("Cannot parse HTML", e);
+                } catch (IOException e) {
+                    problem(view, e);
                 }
             }
             if (media != null) {

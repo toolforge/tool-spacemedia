@@ -105,7 +105,7 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
                     } catch (URISyntaxException e) {
                         LOGGER.error("Cannot compute SHA-1 of " + media, e);
                     } catch (HttpStatusException e) {
-                        problem(url, e.getMessage());
+                        problem(url, e);
                     }
                 }
             }

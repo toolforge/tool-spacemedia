@@ -201,10 +201,10 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
                     try {
                         medias.add((T) processMedia(rest, item.getData().get(0), item.getHref()));
                     } catch (Forbidden e) {
-                        problem(item.getHref(), e.getMessage());
+                        problem(item.getHref(), e);
                     } catch (RestClientException e) {
                         if (e.getCause() instanceof HttpMessageNotReadableException) {
-                            problem(item.getHref(), e.getCause().getMessage());
+                            problem(item.getHref(), e.getCause());
                         } else {
                             LOGGER.error("Cannot process item " + item, e);
                         }
