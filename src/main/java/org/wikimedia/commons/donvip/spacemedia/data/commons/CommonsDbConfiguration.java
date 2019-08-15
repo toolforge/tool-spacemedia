@@ -3,8 +3,8 @@ package org.wikimedia.commons.donvip.spacemedia.data.commons;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,10 +21,17 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
     transactionManagerRef = "commonsTransactionManager",
     basePackageClasses = {CommonsDbConfiguration.class})
 public class CommonsDbConfiguration {
+
+    @Bean(name = "commonsDataSourceProperties")
+    @ConfigurationProperties("commons.datasource")
+    public DataSourceProperties dataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
     @Bean(name = "commonsDataSource")
-    @ConfigurationProperties(prefix = "commons.datasource")
+    @ConfigurationProperties("commons.datasource.hikari")
     public DataSource dataSource() {
-        return DataSourceBuilder.create().build();
+        return dataSourceProperties().initializeDataSourceBuilder().build();
     }
 
     @Bean(name = "commonsEntityManagerFactory")

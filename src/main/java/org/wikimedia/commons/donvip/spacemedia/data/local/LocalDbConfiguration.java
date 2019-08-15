@@ -6,8 +6,8 @@ import java.util.Map;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
 import org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy;
@@ -28,11 +28,19 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
     transactionManagerRef = "localTransactionManager",
     basePackageClasses = {LocalDbConfiguration.class})
 public class LocalDbConfiguration {
+
+    @Primary
+    @Bean(name = "localDataSourceProperties")
+    @ConfigurationProperties("local.datasource")
+    public DataSourceProperties dataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
     @Primary
     @Bean(name = "localDataSource")
-    @ConfigurationProperties(prefix = "local.datasource")
+    @ConfigurationProperties("local.datasource.hikari")
     public DataSource dataSource() {
-        return DataSourceBuilder.create().build();
+        return dataSourceProperties().initializeDataSourceBuilder().build();
     }
 
     @Primary
