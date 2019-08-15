@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.local;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,8 @@ public interface MediaRepository<T extends Media, ID> extends CrudRepository<T, 
     long countMissingInCommons();
 
     List<T> findDuplicateInCommons();
+
+    List<T> findByAssetUrl(URL imageUrl);
 
     Optional<T> findBySha1(String sha1);
 

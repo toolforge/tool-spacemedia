@@ -96,20 +96,20 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
                     if (StringUtils.isBlank(media.getDescription())) {
                         problem(view, "Empty description");
                     }
-                    if (media.getUrl() != null) {
-                        String mediaUrl = media.getUrl().toExternalForm();
+                    if (media.getAssetUrl() != null) {
+                        String mediaUrl = media.getAssetUrl().toExternalForm();
                         if (StringUtils.isBlank(mediaUrl) || "https://www.kari.re.kr".equals(mediaUrl)) {
-                            media.setUrl(null);
+                            media.setAssetUrl(null);
                         }
                     }
-                    if (media.getUrl() == null) {
+                    if (media.getAssetUrl() == null) {
                         problem(view, "No download link");
                         save = false;
                         if (mediaInRepo.isPresent()) {
                             repository.delete(media);
                         }
                     }
-                    if (mediaService.computeSha1(media, media.getUrl())) {
+                    if (mediaService.computeSha1(media)) {
                         save = true;
                     }
                     if (mediaService.findCommonsFilesWithSha1(media)) {
@@ -140,7 +140,7 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
         media.setDescription(div.getElementsByClass("photo_txt").get(0).text());
         String href = infos.getElementsByTag("a").attr("href");
         if (StringUtils.isNotBlank(href)) {
-            media.setUrl(new URL(view.getProtocol(), view.getHost(), href));
+            media.setAssetUrl(new URL(view.getProtocol(), view.getHost(), href));
         }
         return media;
     }

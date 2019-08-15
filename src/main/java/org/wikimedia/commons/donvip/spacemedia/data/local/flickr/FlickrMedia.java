@@ -62,10 +62,6 @@ public class FlickrMedia extends Media {
     
     @JsonProperty("media_status")
     String mediaStatus;// ": "ready"
-    
-    @NotNull
-    @JsonProperty("url_o")
-    URL originalUrl;
 
     @JsonProperty("height_o")
     int originalHeight;
@@ -197,12 +193,16 @@ public class FlickrMedia extends Media {
         this.mediaStatus = mediaStatus;
     }
 
-    public URL getOriginalUrl() {
-        return originalUrl;
+    @Override
+    @JsonProperty("url_o")
+    public URL getAssetUrl() {
+        return super.getAssetUrl();
     }
 
-    public void setOriginalUrl(URL originalUrl) {
-        this.originalUrl = originalUrl;
+    @Override
+    @JsonProperty("url_o")
+    public void setAssetUrl(URL originalUrl) {
+        super.setAssetUrl(originalUrl);
     }
 
     public int getOriginalHeight() {
@@ -242,5 +242,13 @@ public class FlickrMedia extends Media {
             return false;
         FlickrMedia other = (FlickrMedia) obj;
         return Objects.equals(id, other.id) && Objects.equals(pathAlias, other.pathAlias);
+    }
+
+    @Override
+    public String toString() {
+        return "FlickrMedia [" + (id != null ? "id=" + id + ", " : "") + (title != null ? "title=" + title + ", " : "")
+                + "license=" + license + ", " + (dateUpload != null ? "dateUpload=" + dateUpload + ", " : "")
+                + (pathAlias != null ? "pathAlias=" + pathAlias + ", " : "")
+                + (getAssetUrl() != null ? "getAssetUrl()=" + getAssetUrl() : "") + "]";
     }
 }

@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +20,13 @@ public class MediaService {
      * Computes the media SHA-1, if required, and updates the media object accordingly.
      * 
      * @param media    media object
-     * @param mediaUrl media URL
      * @return {@code true} if media has been updated with computed SHA-1 and must be persisted
      * @throws IOException        in case of I/O error
      * @throws URISyntaxException if URL cannot be converted to URI
      */
-    public boolean computeSha1(Media media, URL mediaUrl) throws IOException, URISyntaxException {
-        if (media.getSha1() == null && mediaUrl != null) {
-            media.setSha1(Utils.computeSha1(mediaUrl));
+    public boolean computeSha1(Media media) throws IOException, URISyntaxException {
+        if (media.getSha1() == null && media.getAssetUrl() != null) {
+            media.setSha1(Utils.computeSha1(media.getAssetUrl()));
             return true;
         }
         return false;

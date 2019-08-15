@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.local.nasa.sirs;
 
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.Objects;
@@ -43,10 +42,6 @@ public class NasaSirsImage extends Media {
     @Column(length = 340)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords;
-
-    @Column(length = 200)
-    @JsonProperty("asset_url")
-    private URL assetUrl;
 
     public String getNasaId() {
         return nasaId;
@@ -104,14 +99,6 @@ public class NasaSirsImage extends Media {
         this.keywords = keywords;
     }
 
-    public URL getAssetUrl() {
-        return assetUrl;
-    }
-
-    public void setAssetUrl(URL assetUrl) {
-        this.assetUrl = assetUrl;
-    }
-
     @Override
     public String toString() {
         return "NasaSirsImage [" + (nasaId != null ? "nasaId=" + nasaId + ", " : "")
@@ -121,12 +108,13 @@ public class NasaSirsImage extends Media {
                 + (photoYear != null ? "photoYear=" + photoYear + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (keywords != null ? "keywords=" + keywords + ", " : "")
-                + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "") + (sha1 != null ? "sha1=" + sha1 : "") + "]";
+                + (getAssetUrl() != null ? "assetUrl=" + getAssetUrl() + ", " : "")
+                + (sha1 != null ? "sha1=" + sha1 : "") + "]";
     }
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(assetUrl, nasaId);
+        return 31 * super.hashCode() + Objects.hash(nasaId);
     }
 
     @Override
@@ -136,6 +124,6 @@ public class NasaSirsImage extends Media {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaSirsImage other = (NasaSirsImage) obj;
-        return Objects.equals(assetUrl, other.assetUrl) && Objects.equals(nasaId, other.nasaId);
+        return Objects.equals(nasaId, other.nasaId);
     }
 }

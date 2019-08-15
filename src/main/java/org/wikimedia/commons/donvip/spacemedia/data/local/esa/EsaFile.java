@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.local.esa;
 import java.net.URL;
 import java.util.Objects;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -19,14 +18,11 @@ public class EsaFile extends Media {
     @GeneratedValue
     private Integer id;
 
-    @Column(nullable = false, length = 350)
-    private URL url;
-
     public EsaFile() {
     }
 
     public EsaFile(@NotNull URL url) {
-        this.url = url;
+        setAssetUrl(url);
     }
 
     public Integer getId() {
@@ -37,23 +33,16 @@ public class EsaFile extends Media {
         this.id = id;
     }
 
-    public URL getUrl() {
-        return url;
-    }
-    
-    public void setUrl(URL url) {
-        this.url = url;
-    }
-
     @Override
     public String toString() {
-        return "EsaFile [" + (url != null ? "url=" + url + ", " : "") + (sha1 != null ? "sha1=" + sha1 + ", " : "")
+        return "EsaFile [" + (getAssetUrl() != null ? "url=" + getAssetUrl() + ", " : "")
+                + (sha1 != null ? "sha1=" + sha1 + ", " : "")
                 + (!CollectionUtils.isEmpty(commonsFileNames) ? "commonsFileNames=" + commonsFileNames : "") + "]";
     }
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(id, url);
+        return 31 * super.hashCode() + Objects.hash(id);
     }
 
     @Override
@@ -63,6 +52,6 @@ public class EsaFile extends Media {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         EsaFile other = (EsaFile) obj;
-        return Objects.equals(id, other.id) && Objects.equals(url, other.url);
+        return Objects.equals(id, other.id);
     }
 }

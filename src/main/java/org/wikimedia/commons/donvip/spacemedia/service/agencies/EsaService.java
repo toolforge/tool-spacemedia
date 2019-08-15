@@ -181,12 +181,12 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
     private EsaImage processCopyrightAndSave(EsaImage image) {
         if (isCopyrightOk(image)) {
             for (EsaFile f : image.getFiles()) {
-                URL url = f.getUrl();
+                URL url = f.getAssetUrl();
                 if (url != null) {
                     boolean sha1ok = false;
                     for (int j = 0; j < maxTries && !sha1ok; j++) {
                         try {
-                            mediaService.computeSha1(f, url);
+                            mediaService.computeSha1(f);
                             f = repository.save(findCommonsFileBySha1(f, false));
                             sha1ok = true;
                         } catch (IOException | URISyntaxException e) {
@@ -249,7 +249,7 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
 
     private EsaFile ignoreAndSaveFile(EsaFile file, String reason, boolean problem) {
         if (problem) {
-            problem(file.getUrl(), reason);
+            problem(file.getAssetUrl(), reason);
         }
         file.setIgnored(Boolean.TRUE);
         file.setIgnoredReason(reason);
@@ -279,7 +279,7 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
                     } else {
                         // Check for corrupted ESA images (many of them...)
                         try {
-                            BufferedImage bi = Utils.readImage(file.getUrl(), false);
+                            BufferedImage bi = Utils.readImage(file.getAssetUrl(), false);
                             if (bi != null) {
                                 bi.flush();
                                 file.setIgnored(Boolean.FALSE);
@@ -289,7 +289,7 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
                             LOGGER.warn(file.toString(), e);
                             ignoreAndSaveFile(file, e.getMessage(), true);
                         } catch (IOException | URISyntaxException e) {
-                            problem(file.getUrl(), e);
+                            problem(file.getAssetUrl(), e);
                         }
                     }
                 }

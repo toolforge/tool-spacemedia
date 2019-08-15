@@ -111,7 +111,7 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
         } else {
             save = true;
         }
-        if (mediaService.computeSha1(media, media.getOriginalUrl())) {
+        if (mediaService.computeSha1(media)) {
             save = true;
         }
         if (mediaService.findCommonsFilesWithSha1(media)) {

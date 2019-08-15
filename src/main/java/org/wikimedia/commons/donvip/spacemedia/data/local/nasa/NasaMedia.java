@@ -57,10 +57,6 @@ public abstract class NasaMedia extends Media {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords;
 
-    @Column(length = 380)
-    @JsonProperty("asset_url")
-    private URL assetUrl;
-
     public String getNasaId() {
         return nasaId;
     }
@@ -117,18 +113,22 @@ public abstract class NasaMedia extends Media {
         this.mediaType = mediaType;
     }
 
+    @Override
+    @JsonProperty("asset_url")
     public URL getAssetUrl() {
-        return assetUrl;
+        return super.getAssetUrl();
     }
 
+    @Override
+    @JsonProperty("asset_url")
     public void setAssetUrl(URL assetUrl) {
-        this.assetUrl = assetUrl;
+        super.setAssetUrl(assetUrl);
     }
 
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(assetUrl, center, dateCreated, description, keywords, mediaType, nasaId, title);
+                + Objects.hash(center, dateCreated, description, keywords, mediaType, nasaId, title);
     }
 
     @Override
@@ -138,7 +138,7 @@ public abstract class NasaMedia extends Media {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaMedia other = (NasaMedia) obj;
-        return Objects.equals(assetUrl, other.assetUrl) && Objects.equals(center, other.center)
+        return Objects.equals(center, other.center)
                 && Objects.equals(dateCreated, other.dateCreated) && Objects.equals(description, other.description)
                 && Objects.equals(keywords, other.keywords) && mediaType == other.mediaType
                 && Objects.equals(nasaId, other.nasaId) && Objects.equals(title, other.title);
@@ -150,6 +150,7 @@ public abstract class NasaMedia extends Media {
                 + (title != null ? "title=" + title + ", " : "") + (center != null ? "center=" + center + ", " : "")
                 + (dateCreated != null ? "dateCreated=" + dateCreated + ", " : "")
                 + (mediaType != null ? "mediaType=" + mediaType + ", " : "")
-                + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "") + (sha1 != null ? "sha1=" + sha1 : "") + "]";
+                + (getAssetUrl() != null ? "assetUrl=" + getAssetUrl() + ", " : "")
+                + (sha1 != null ? "sha1=" + sha1 : "") + "]";
     }
 }

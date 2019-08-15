@@ -92,7 +92,7 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
                             media.setDescription(values.get(6));
                             save = true;
                         }
-                        if (mediaService.computeSha1(media, media.getAssetUrl())) {
+                        if (mediaService.computeSha1(media)) {
                             save = true;
                         }
                         if (mediaService.findCommonsFilesWithSha1(media)) {

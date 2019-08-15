@@ -124,7 +124,7 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
                 save = true;
             }
         }
-        if (mediaService.computeSha1(media, media.getAssetUrl())) {
+        if (mediaService.computeSha1(media)) {
             save = true;
         }
         if (mediaService.findCommonsFilesWithSha1(media)) {

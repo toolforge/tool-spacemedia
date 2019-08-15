@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.local.kari;
 
-import java.net.URL;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -18,9 +17,6 @@ public class KariMedia extends Media {
     @NotNull
     private int id;
 
-    @NotNull
-    private URL url;
-
     private String title;
 
     private String kariId;
@@ -36,14 +32,6 @@ public class KariMedia extends Media {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
-    public void setUrl(URL url) {
-        this.url = url;
     }
 
     public String getTitle() {
@@ -80,7 +68,7 @@ public class KariMedia extends Media {
 
     @Override
     public String toString() {
-        return "KariMedia [id=" + id + ", " + (url != null ? "url=" + url + ", " : "")
+        return "KariMedia [id=" + id + ", " + (getAssetUrl() != null ? "url=" + getAssetUrl() + ", " : "")
                 + (title != null ? "title=" + title + ", " : "") + (kariId != null ? "kariId=" + kariId + ", " : "")
                 + (date != null ? "date=" + date + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
@@ -89,7 +77,7 @@ public class KariMedia extends Media {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(id, kariId, url);
+        return 31 * super.hashCode() + Objects.hash(id, kariId);
     }
 
     @Override
@@ -99,6 +87,6 @@ public class KariMedia extends Media {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         KariMedia other = (KariMedia) obj;
-        return id == other.id && Objects.equals(kariId, other.kariId) && Objects.equals(url, other.url);
+        return id == other.id && Objects.equals(kariId, other.kariId);
     }
 }
