@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
@@ -103,6 +104,8 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
                         medias.add(save ? repository.save(media) : media);
                     } catch (URISyntaxException e) {
                         LOGGER.error("Cannot compute SHA-1 of " + media, e);
+                    } catch (HttpStatusException e) {
+                        LOGGER.error("HTTP error for " + media, e);
                     }
                 }
             }
