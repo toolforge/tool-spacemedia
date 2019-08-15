@@ -57,7 +57,7 @@ public abstract class NasaMedia extends Media {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords;
 
-    @Column(length = 300)
+    @Column(length = 380)
     @JsonProperty("asset_url")
     private URL assetUrl;
 
