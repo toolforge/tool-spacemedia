@@ -10,10 +10,12 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import org.wikimedia.commons.donvip.spacemedia.data.local.Media;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
@@ -43,7 +45,7 @@ public class FlickrMedia extends Media {
     LocalDateTime dateTaken;
 
     @JsonProperty("datetakengranularity")
-    int dateTakenGranularity;// ": 0
+    int dateTakenGranularity;
     
     @ElementCollection(fetch = FetchType.EAGER)
     Set<String> tags;
@@ -61,7 +63,12 @@ public class FlickrMedia extends Media {
     String media;
     
     @JsonProperty("media_status")
-    String mediaStatus;// ": "ready"
+    String mediaStatus;
+
+    @Transient
+    @JsonInclude
+    @JsonProperty("url_o")
+    URL originalUrl;
 
     @JsonProperty("height_o")
     int originalHeight;
@@ -193,16 +200,19 @@ public class FlickrMedia extends Media {
         this.mediaStatus = mediaStatus;
     }
 
-    @Override
-    @JsonProperty("url_o")
-    public URL getAssetUrl() {
-        return super.getAssetUrl();
+    public URL getOriginalUrl() {
+        return originalUrl;
+    }
+
+    public void setOriginalUrl(URL originalUrl) {
+        super.setAssetUrl(originalUrl);
+        this.originalUrl = originalUrl;
     }
 
     @Override
-    @JsonProperty("url_o")
     public void setAssetUrl(URL originalUrl) {
         super.setAssetUrl(originalUrl);
+        this.originalUrl = originalUrl;
     }
 
     public int getOriginalHeight() {
