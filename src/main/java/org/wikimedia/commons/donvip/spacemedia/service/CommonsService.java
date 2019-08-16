@@ -66,7 +66,8 @@ public class CommonsService {
             nvps.add(new BasicNameValuePair("page", "Test"));
             nvps.add(new BasicNameValuePair("wikitext", wikiCode));
             nvps.add(new BasicNameValuePair("pst", "true"));
-            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
+            httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
             try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
                 HttpEntity entity = response.getEntity();
