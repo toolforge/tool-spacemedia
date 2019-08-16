@@ -47,6 +47,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -88,8 +89,8 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
 
     @Autowired
     public NasaService(NasaMediaRepository<NasaMedia> repository, ProblemRepository problemrepository,
-            MediaService mediaService) {
-        super(repository, problemrepository, mediaService);
+            MediaService mediaService, CommonsService commonsService) {
+        super(repository, problemrepository, mediaService, commonsService);
     }
 
     private NasaMedia save(NasaMedia media) {

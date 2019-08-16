@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.http.client.ClientProtocolException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Media;
@@ -55,6 +56,11 @@ public abstract class SpaceAgencyController<T extends Media, ID> {
     }
 
     @GetMapping("/wiki/{sha1}")
+    public final String wikiPreview(@PathVariable String sha1) throws ClientProtocolException, IOException {
+        return service.getWikiPreview(sha1);
+    }
+
+    @GetMapping("/wikicode/{sha1}")
     public final String wikiCode(@PathVariable String sha1) {
         return service.getWikiCode(sha1);
     }

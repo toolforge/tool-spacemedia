@@ -1,15 +1,36 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImageRepository;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class CommonsService {
@@ -20,6 +41,9 @@ public class CommonsService {
     @Autowired
     private CommonsOldImageRepository commonsOldImageRepository;
 
+    @Value("${commons.api.url}")
+    private URL commonsApiUrl;
+
     public Set<String> findFilesWithSha1(String sha1) {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
         // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters 
@@ -29,5 +53,73 @@ public class CommonsService {
             files.addAll(commonsOldImageRepository.findBySha1(sha1base36).stream().map(CommonsOldImage::getName).collect(Collectors.toSet()));
         }
         return files;
+    }
+
+    public String getWikiHtmlPreview(String wikiCode) throws ClientProtocolException, IOException {
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpPost httpPost = new HttpPost(commonsApiUrl.toExternalForm());
+            List<NameValuePair> nvps = new ArrayList<>();
+            nvps.add(new BasicNameValuePair("action", "visualeditor"));
+            nvps.add(new BasicNameValuePair("format", "json"));
+            nvps.add(new BasicNameValuePair("formatversion", "2"));
+            nvps.add(new BasicNameValuePair("paction", "parsedoc"));
+            nvps.add(new BasicNameValuePair("page", "Test"));
+            nvps.add(new BasicNameValuePair("wikitext", wikiCode));
+            nvps.add(new BasicNameValuePair("pst", "true"));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+
+            try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
+                HttpEntity entity = response.getEntity();
+                Header encoding = entity.getContentEncoding();
+                String body = IOUtils.toString(entity.getContent(),
+                        encoding == null ? StandardCharsets.UTF_8 : Charset.forName(encoding.getValue()));
+                EntityUtils.consume(entity);
+                VisualEditorResponse apiResponse = new ObjectMapper().readValue(body, ApiResponse.class)
+                        .getVisualeditor();
+                if (!"success".equals(apiResponse.getResult())) {
+                    throw new IllegalArgumentException(apiResponse.toString());
+                }
+                return apiResponse.getContent();
+            }
+        }
+    }
+
+    static class ApiResponse {
+        private VisualEditorResponse visualeditor;
+
+        public VisualEditorResponse getVisualeditor() {
+            return visualeditor;
+        }
+
+        public void setVisualeditor(VisualEditorResponse visualeditor) {
+            this.visualeditor = visualeditor;
+        }
+    }
+
+    static class VisualEditorResponse {
+        private String result;
+        private String content;
+
+        public String getResult() {
+            return result;
+        }
+
+        public void setResult(String result) {
+            this.result = result;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "VisualEditorResponse [" + (result != null ? "result=" + result + ", " : "")
+                    + (content != null ? "content=" + content : "") + "]";
+        }
     }
 }

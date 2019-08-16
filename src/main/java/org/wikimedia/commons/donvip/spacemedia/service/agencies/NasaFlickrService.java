@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 
@@ -20,9 +21,9 @@ public class NasaFlickrService extends SpaceAgencyFlickrService {
 
     @Autowired
     public NasaFlickrService(FlickrMediaRepository repository, ProblemRepository problemrepository,
-            MediaService mediaService, FlickrService flickrService,
+            MediaService mediaService, CommonsService commonsService, FlickrService flickrService,
             Mapper dozerMapper, @Value("${nasa.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, problemrepository, mediaService, flickrService, dozerMapper, flickrAccounts);
+        super(repository, problemrepository, mediaService, commonsService, flickrService, dozerMapper, flickrAccounts);
     }
 
     @Override

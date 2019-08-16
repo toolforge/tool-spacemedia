@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.sirs.NasaSirsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.sirs.NasaSirsImageRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 
 @Service
@@ -55,8 +56,8 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
     private String sscName;
 
     public NasaSirsService(NasaSirsImageRepository repository, ProblemRepository problemrepository,
-            MediaService mediaService) {
-        super(repository, problemrepository, mediaService);
+            MediaService mediaService, CommonsService commonsService) {
+        super(repository, problemrepository, mediaService, commonsService);
     }
 
     @Override

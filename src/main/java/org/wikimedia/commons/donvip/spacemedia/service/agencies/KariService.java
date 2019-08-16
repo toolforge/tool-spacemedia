@@ -27,6 +27,7 @@ import org.springframework.transaction.TransactionException;
 import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.kari.KariMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.local.kari.KariMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 
 @Service
@@ -35,8 +36,9 @@ public class KariService extends SpaceAgencyService<KariMedia, Integer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(KariService.class);
 
     @Autowired
-    public KariService(KariMediaRepository repository, ProblemRepository problemrepository, MediaService mediaService) {
-        super(repository, problemrepository, mediaService);
+    public KariService(KariMediaRepository repository, ProblemRepository problemrepository, MediaService mediaService,
+            CommonsService commonsService) {
+        super(repository, problemrepository, mediaService, commonsService);
     }
 
     @Value("${kari.view.link}")

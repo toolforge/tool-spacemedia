@@ -37,6 +37,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaFileRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImage;
 import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
+import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -66,8 +67,9 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
     private DateTimeFormatter dateFormatter;
 
     @Autowired
-    public EsaService(EsaFileRepository repository, ProblemRepository problemrepository, MediaService mediaService) {
-        super(repository, problemrepository, mediaService);
+    public EsaService(EsaFileRepository repository, ProblemRepository problemrepository, MediaService mediaService,
+            CommonsService commonsService) {
+        super(repository, problemrepository, mediaService, commonsService);
     }
 
     @PostConstruct

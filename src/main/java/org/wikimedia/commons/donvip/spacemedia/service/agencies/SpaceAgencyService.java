@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.http.client.ClientProtocolException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Media;
@@ -19,6 +20,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
+import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 
 public abstract class SpaceAgencyService<T extends Media, ID> {
@@ -28,11 +30,14 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
     protected final MediaRepository<T, ID> repository;
     protected final ProblemRepository problemrepository;
     protected final MediaService mediaService;
+    protected final CommonsService commonsService;
 
-    public SpaceAgencyService(MediaRepository<T, ID> repository, ProblemRepository problemrepository, MediaService mediaService) {
+    public SpaceAgencyService(MediaRepository<T, ID> repository, ProblemRepository problemrepository,
+            MediaService mediaService, CommonsService commonsService) {
         this.repository = Objects.requireNonNull(repository);
         this.problemrepository = Objects.requireNonNull(problemrepository);
         this.mediaService = Objects.requireNonNull(mediaService);
+        this.commonsService = Objects.requireNonNull(commonsService);
     }
 
     public long countAllMedia() {
@@ -111,6 +116,10 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
         return repository.save(media);
     }
 
+    public String getWikiPreview(String sha1) throws ClientProtocolException, IOException {
+        return commonsService.getWikiHtmlPreview(getWikiCode(sha1));
+    }
+
     public final String getWikiCode(String sha1) {
         return getWikiCode(findBySha1OrThrow(sha1));
     }
@@ -119,13 +128,13 @@ public abstract class SpaceAgencyService<T extends Media, ID> {
         try {
             StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n{{Information\n| description = ")
                     .append(getDescription(media));
-            getCreationDate(media).ifPresent(s -> sb.append("| date = ").append(s));
-            sb.append("| source = ").append(getSource(media)).append("| author = ").append(getAuthor(media));
-            getPermission(media).ifPresent(s -> sb.append("| permission = ").append(s));
-            getOtherVersions(media).ifPresent(s -> sb.append("| other versions = ").append(s));
-            getOtherFields(media).ifPresent(s -> sb.append("| other fields = ").append(s));
-            getOtherFields1(media).ifPresent(s -> sb.append("| other fields 1 = ").append(s));
-            sb.append("}}\n=={{int:license-header}}==\n");
+            getCreationDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
+            sb.append("\n| source = ").append(getSource(media)).append("\n| author = ").append(getAuthor(media));
+            getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
+            getOtherVersions(media).ifPresent(s -> sb.append("\n| other versions = ").append(s));
+            getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
+            getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
+            sb.append("\n}}\n=={{int:license-header}}==\n");
             findTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
             findCategories(media).forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
             return sb.toString();

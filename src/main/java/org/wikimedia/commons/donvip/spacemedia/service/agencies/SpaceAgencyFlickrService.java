@@ -20,6 +20,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 
@@ -37,8 +38,9 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
     protected final Set<String> flickrAccounts;
 
     public SpaceAgencyFlickrService(FlickrMediaRepository repository, ProblemRepository problemrepository,
-            MediaService mediaService, FlickrService flickrService, Mapper dozerMapper, Set<String> flickrAccounts) {
-        super(repository, problemrepository, mediaService);
+            MediaService mediaService, CommonsService commonsService, FlickrService flickrService, Mapper dozerMapper,
+            Set<String> flickrAccounts) {
+        super(repository, problemrepository, mediaService, commonsService);
         this.flickrRepository = repository;
         this.flickrService = Objects.requireNonNull(flickrService);
         this.dozerMapper = Objects.requireNonNull(dozerMapper);
