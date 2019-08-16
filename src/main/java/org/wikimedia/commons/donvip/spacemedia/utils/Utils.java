@@ -14,6 +14,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -37,9 +38,13 @@ public final class Utils {
     }
 
     public static String computeSha1(URL url) throws IOException, URISyntaxException {
+        URI uri = urlToUri(url);
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(new HttpGet(urlToUri(url)));
+                CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
                 InputStream in = response.getEntity().getContent()) {
+            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+                throw new IOException(uri + " => " + response.getStatusLine());
+            }
             return DigestUtils.sha1Hex(in);
         }
     }

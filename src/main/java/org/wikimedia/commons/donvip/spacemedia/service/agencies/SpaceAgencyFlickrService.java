@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.local.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia;
@@ -36,6 +37,9 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
     protected final FlickrService flickrService;
     protected final Mapper dozerMapper;
     protected final Set<String> flickrAccounts;
+
+    @Value("${flickr.video.download.url}")
+    private String flickrVideoDownloadUrl;
 
     public SpaceAgencyFlickrService(FlickrMediaRepository repository, ProblemRepository problemrepository,
             MediaService mediaService, CommonsService commonsService, FlickrService flickrService, Mapper dozerMapper,
@@ -90,19 +94,27 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
     }
 
     @Override
-    protected final String getSource(FlickrMedia media) {
-        return wikiLink(media.getAssetUrl(), media.getTitle());
+    protected final String getSource(FlickrMedia media) throws MalformedURLException {
+        return wikiLink(getPhotoUrl(media), media.getTitle());
     }
 
     @Override
     protected final String getAuthor(FlickrMedia media) throws MalformedURLException {
         try {
-            User user = flickrService.findUser(new URL("https://www.flickr.com/photos/" + media.getPathAlias()));
+            User user = flickrService.findUser(getUserPhotosUrl(media));
             URL profileUrl = flickrService.findUserProfileUrl(user.getId());
             return wikiLink(profileUrl, user.getUsername());
         } catch (FlickrException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static final URL getUserPhotosUrl(FlickrMedia media) throws MalformedURLException {
+        return new URL("https://www.flickr.com/photos/" + media.getPathAlias());
+    }
+
+    private static final URL getPhotoUrl(FlickrMedia media) throws MalformedURLException {
+        return new URL(getUserPhotosUrl(media).toExternalForm() + "/" + media.getId());
     }
 
     protected List<FlickrMedia> updateFlickrMedia() {
@@ -117,10 +129,10 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
                     try {
                         medias.add(processFlickrMedia(media));
                     } catch (IOException | URISyntaxException e) {
-                        LOGGER.error("Error while processing media " + media, e);
+                        problem(getPhotoUrl(media), e);
                     }
                 }
-            } catch (FlickrException e) {
+            } catch (FlickrException | MalformedURLException e) {
                 LOGGER.error("Error while fetching Flickr images from account " + flickrAccount, e);
             }
         }
@@ -136,6 +148,15 @@ public abstract class SpaceAgencyFlickrService extends SpaceAgencyService<Flickr
             media = mediaInRepo.get();
         } else {
             save = true;
+        }
+        if ("video".equals(media.getMedia())) {
+            String videoUrl = flickrVideoDownloadUrl.replace("<id>", media.getId().toString());
+            if (!videoUrl.equals(media.getAssetUrl().toExternalForm())) {
+                media.setAssetUrl(new URL(videoUrl));
+                media.setCommonsFileNames(null);
+                media.setSha1(null);
+                save = true;
+            }
         }
         if (mediaService.computeSha1(media)) {
             save = true;
