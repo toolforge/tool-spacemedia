@@ -43,6 +43,8 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsFileArchive;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsFileArchiveRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImage;
@@ -61,19 +63,22 @@ public class CommonsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonsService.class);
 
     @Autowired
-    private CommonsImageRepository commonsImageRepository;
+    private CommonsImageRepository imageRepository;
 
     @Autowired
-    private CommonsOldImageRepository commonsOldImageRepository;
+    private CommonsFileArchiveRepository fileArchiveRepository;
 
     @Autowired
-    private CommonsCategoryRepository commonsCategoryRepository;
+    private CommonsOldImageRepository oldImageRepository;
 
     @Autowired
-    private CommonsPageRepository commonsPageRepository;
+    private CommonsCategoryRepository categoryRepository;
 
     @Autowired
-    private CommonsCategoryLinkRepository commonsCategoryLinkRepository;
+    private CommonsPageRepository pageRepository;
+
+    @Autowired
+    private CommonsCategoryLinkRepository categoryLinkRepository;
 
     /**
      * Self-autowiring to call {@link Cacheable} methods, otherwise the cache is
@@ -83,7 +88,7 @@ public class CommonsService {
     private CommonsService self;
 
     @Value("${commons.api.url}")
-    private URL commonsApiUrl;
+    private URL apiUrl;
 
     @Value("${commons.cat.search.depth}")
     private int catSearchDepth;
@@ -92,16 +97,19 @@ public class CommonsService {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
         // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters 
         String sha1base36 = String.format("%31s", new BigInteger(sha1, 16).toString(36)).replace(' ', '0');
-        Set<String> files = commonsImageRepository.findBySha1(sha1base36).stream().map(CommonsImage::getName).collect(Collectors.toSet());
+        Set<String> files = imageRepository.findBySha1(sha1base36).stream().map(CommonsImage::getName).collect(Collectors.toSet());
         if (files.isEmpty()) {
-            files.addAll(commonsOldImageRepository.findBySha1(sha1base36).stream().map(CommonsOldImage::getName).collect(Collectors.toSet()));
+            files.addAll(oldImageRepository.findBySha1(sha1base36).stream().map(CommonsOldImage::getName).collect(Collectors.toSet()));
+        }
+        if (files.isEmpty()) {
+            files.addAll(fileArchiveRepository.findBySha1(sha1base36).stream().map(CommonsFileArchive::getName).collect(Collectors.toSet()));
         }
         return files;
     }
 
     public String getWikiHtmlPreview(String wikiCode, String pageTitle) throws ClientProtocolException, IOException {
         try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableCookieManagement().build()) {
-            HttpPost httpPost = new HttpPost(commonsApiUrl.toExternalForm());
+            HttpPost httpPost = new HttpPost(apiUrl.toExternalForm());
             List<NameValuePair> nvps = new ArrayList<>();
             nvps.add(new BasicNameValuePair("action", "visualeditor"));
             nvps.add(new BasicNameValuePair("format", "json"));
@@ -250,14 +258,14 @@ public class CommonsService {
 
     @Cacheable("categoryPages")
     public CommonsPage getCategoryPage(String category) {
-        return commonsPageRepository.findByCategoryTitle(commonsCategoryRepository
+        return pageRepository.findByCategoryTitle(categoryRepository
                 .findByTitle(category).orElseThrow(() -> new CategoryNotFoundException(category)).getTitle())
                 .orElseThrow(() -> new CategoryPageNotFoundException(category));
     }
 
     @Cacheable("subCategories")
     public Set<String> getSubCategories(String category) {
-        return commonsCategoryLinkRepository
+        return categoryLinkRepository
                 .findByTypeAndIdTo(CommonsCategoryLinkType.subcat, category.replace(' ', '_'))
                 .stream().map(c -> c.getId().getFrom().getTitle()).collect(Collectors.toSet());
     }

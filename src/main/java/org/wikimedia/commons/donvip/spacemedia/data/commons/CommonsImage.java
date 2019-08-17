@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 /**
@@ -37,7 +38,7 @@ import javax.persistence.Table;
 @Table(name = "image")
 public class CommonsImage {
     @Id
-    @Column(name = "img_name", nullable = false, length = 255)
+    @Column(name = "img_name", nullable = false, length = 255, columnDefinition = "VARBINARY")
     private String name;
     @Column(name = "img_size", nullable = false, length = 8)
     private int size;
@@ -45,6 +46,7 @@ public class CommonsImage {
     private int width;
     @Column(name = "img_height", nullable = false, length = 5)
     private int height;
+    @Lob
     @Column(name = "img_metadata", nullable = false)
     private String metadata;
     @Column(name = "img_bits", nullable = false, length = 3)
@@ -55,11 +57,11 @@ public class CommonsImage {
     @Column(name = "img_major_mime", nullable = false)
     @Enumerated(EnumType.STRING)
     private CommonsMajorMime majorMime; 
-    @Column(name = "img_minor_mime", nullable = false, length = 100)
+    @Column(name = "img_minor_mime", nullable = false, length = 100, columnDefinition = "VARBINARY")
     private byte[] minorMime;
-    @Column(name = "img_description_id", nullable = false, precision = 20, scale = 0)
-    private double descriptionId;
-    @Column(name = "img_actor", nullable = false, length = 20)
+    @Column(name = "img_description_id", nullable = false, length = 20, columnDefinition = "BIGINT")
+    private long descriptionId;
+    @Column(name = "img_actor", nullable = false, length = 20, columnDefinition = "BIGINT")
     private long actor;
     @Column(name = "img_timestamp", nullable = false, length = 14)
     private byte[] timestamp;
@@ -123,7 +125,7 @@ public class CommonsImage {
     public double getDescriptionId() {
         return descriptionId;
     }
-    public void setDescriptionId(double descriptionId) {
+    public void setDescriptionId(long descriptionId) {
         this.descriptionId = descriptionId;
     }
     public long getActor() {
