@@ -34,11 +34,9 @@ public class SpaceXService extends AbstractSpaceAgencyFlickrService {
     @Override
     protected List<String> findTemplates(FlickrMedia media) {
         List<String> result = super.findTemplates(media);
-        FlickrFreeLicense license = FlickrFreeLicense.of(media.getLicense());
-        if (license == FlickrFreeLicense.Public_Domain_Dedication_CC0) {
+        if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Dedication_CC0) {
+            result.remove(FlickrFreeLicense.Public_Domain_Dedication_CC0.getWikiTemplate());
             result.add("Cc-zero-SpaceX");
-        } else {
-            result.add(license.getWikiTemplate());
         }
         return result;
     }

@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
@@ -125,6 +126,7 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
     @Override
     protected List<String> findTemplates(FlickrMedia media) {
         List<String> result = super.findTemplates(media);
+        result.add(FlickrFreeLicense.of(media.getLicense()).getWikiTemplate());
         result.add("Flickrreview");
         return result;
     }
