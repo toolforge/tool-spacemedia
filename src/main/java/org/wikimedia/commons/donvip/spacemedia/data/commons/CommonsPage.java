@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -85,7 +85,11 @@ public class CommonsPage {
 
     @JoinColumn(name = "pp_page")
     @OneToMany(fetch = FetchType.EAGER)
-    private List<CommonsPageProp> props;
+    private Set<CommonsPageProp> props;
+
+    @JoinColumn(name = "cl_from")
+    @OneToMany(fetch = FetchType.EAGER)
+    private Set<CommonsCategoryLink> categoryLinks;
 
     public int getId() {
         return id;
@@ -191,12 +195,20 @@ public class CommonsPage {
         this.lang = lang;
     }
 
-    public List<CommonsPageProp> getProps() {
+    public Set<CommonsPageProp> getProps() {
         return props;
     }
 
-    public void setProps(List<CommonsPageProp> props) {
+    public void setProps(Set<CommonsPageProp> props) {
         this.props = props;
+    }
+
+    public Set<CommonsCategoryLink> getCategoryLinks() {
+        return categoryLinks;
+    }
+
+    public void setCategoryLinks(Set<CommonsCategoryLink> categoryLinks) {
+        this.categoryLinks = categoryLinks;
     }
 
     @Override

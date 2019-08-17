@@ -150,7 +150,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
     public final String getWikiCode(T media) {
         try {
             StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n{{Information\n| description = ")
-                    .append(getDescription(media));
+                    .append(CommonsService.formatWikiCode(getDescription(media)));
             Optional<Temporal> creationDate = getCreationDate(media);
             if (creationDate.isPresent()) {
                 Temporal d = creationDate.get();

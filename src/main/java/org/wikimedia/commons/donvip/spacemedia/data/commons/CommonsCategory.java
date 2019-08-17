@@ -32,7 +32,7 @@ public class CommonsCategory {
     @Column(name = "cat_id", nullable = false, length = 10)
     private int id;
 
-    @Column(name = "cat_title", nullable = false, length = 255, columnDefinition = "VARBINARY")
+    @Column(name = "cat_title", nullable = false, length = 255, columnDefinition = "VARBINARY", unique = true)
     private String title;
 
     @Column(name = "cat_pages", nullable = false, length = 11)

@@ -140,21 +140,23 @@ public final class Utils {
 
     public static boolean isTextFound(String fullText, String textToFind) {
         if (fullText != null) {
-            if (textToFind.contains("+")) {
-                for (String word : textToFind.split("\\+")) {
-                    if (!isTextFound(fullText, word)) {
+            String fullTextLc = fullText.toLowerCase(Locale.ENGLISH);
+            String textToFindLc = textToFind.toLowerCase(Locale.ENGLISH);
+            if (textToFindLc.contains("+")) {
+                for (String word : textToFindLc.split("\\+")) {
+                    if (!isTextFound(fullTextLc, word)) {
                         return false;
                     }
                 }
                 return true;
             } else {
-                int index = fullText.indexOf(textToFind);
+                int index = fullTextLc.indexOf(textToFindLc);
                 if (index > -1) {
-                    if (index > 0 && isTokenPart(fullText.charAt(index - 1))) {
+                    if (index > 0 && isTokenPart(fullTextLc.charAt(index - 1))) {
                         return false;
                     }
-                    if (index + textToFind.length() < fullText.length() - 1 && isTokenPart(
-                            fullText.charAt(index + textToFind.length()))) {
+                    if (index + textToFindLc.length() < fullTextLc.length() - 1
+                            && isTokenPart(fullTextLc.charAt(index + textToFindLc.length()))) {
                         return false;
                     }
                     return true;
