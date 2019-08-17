@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -148,14 +150,33 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
         return media;
     }
 
+    private static Set<String> doNormalizeKeywords(Set<String> keywords) {
+        String kw = keywords.iterator().next();
+        for (String sep : Arrays.asList(",", ";")) {
+            if (kw.contains(sep) && looksLikeMultipleValues(kw, sep)) {
+                return Arrays.stream(kw.split(sep)).map(String::trim).filter(s -> !s.isEmpty())
+                        .collect(Collectors.toSet());
+            }
+        }
+        return keywords;
+    }
+
     static Set<String> normalizeKeywords(Set<String> keywords) {
         if (keywords != null && keywords.size() == 1) {
-            String kw = keywords.iterator().next();
-            for (String sep : Arrays.asList(",", ";")) {
-                if (kw.contains(sep) && looksLikeMultipleValues(kw, sep)) {
-                    return Arrays.stream(kw.split(sep)).map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toSet());
+            return doNormalizeKeywords(keywords);
+        } else {
+            // Look for bad situations like https://images.nasa.gov/details-GRC-2017-CM-0155.html
+            // Keyword 1 : GRC-CM => Good :)
+            // Keyword 2 :  Solar Eclipse, Jefferson City Missouri, ... Reggie Williams, Astronaut Mike Hopkins ==> WTF !?
+            Set<String> normalized = new HashSet<>();
+            for (Iterator<String> it = keywords.iterator(); it.hasNext();) {
+                String kw = it.next();
+                if (kw.length() > 300 && StringUtils.countMatches(kw, ",") > 10) {
+                    normalized.addAll(doNormalizeKeywords(Collections.singleton(kw)));
+                    it.remove();
                 }
             }
+            keywords.addAll(normalized);
         }
         return keywords;
     }
