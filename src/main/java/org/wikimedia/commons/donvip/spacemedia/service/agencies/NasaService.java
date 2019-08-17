@@ -6,7 +6,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -194,8 +193,7 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
         return true;
     }
 
-    @SuppressWarnings("unchecked")
-    private <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl, List<T> medias) {
+    private <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl, Counter count) {
         LOGGER.debug("Fetching {}", searchUrl);
         boolean ok = false;
         for (int i = 0; i < maxTries && !ok; i++) {
@@ -204,7 +202,8 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
                 ok = true;
                 for (NasaItem item : collection.getItems()) {
                     try {
-                        medias.add((T) processMedia(rest, item.getData().get(0), item.getHref()));
+                        processMedia(rest, item.getData().get(0), item.getHref());
+                        count.count++;
                     } catch (Forbidden e) {
                         problem(item.getHref(), e);
                     } catch (RestClientException e) {
@@ -230,29 +229,29 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
         return null;
     }
 
-    private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType) {
+    private <T extends NasaMedia> int doUpdateMedia(NasaMediaType mediaType) {
         return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear(), null);
     }
 
-    private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType, int year, Set<String> centers) {
+    private <T extends NasaMedia> int doUpdateMedia(NasaMediaType mediaType, int year, Set<String> centers) {
         return doUpdateMedia(mediaType, year, year, centers);
     }
 
-    private <T extends NasaMedia> List<T> doUpdateMedia(NasaMediaType mediaType, int startYear, int endYear,
+    private <T extends NasaMedia> int doUpdateMedia(NasaMediaType mediaType, int startYear, int endYear,
             Set<String> centers) {
         LocalDateTime start = LocalDateTime.now();
         logStartUpdate(mediaType, startYear, endYear, centers);
-        final List<T> medias = new ArrayList<>();
+        Counter count = new Counter();
         RestTemplate rest = new RestTemplate();
         String nextUrl = searchEndpoint + "media_type=" + mediaType + "&year_start=" + startYear + "&year_end=" + endYear;
         if (centers != null) {
             nextUrl += "&center=" + String.join(",", centers);
         }
         while (nextUrl != null) {
-            nextUrl = processSearchResults(rest, nextUrl, medias);
+            nextUrl = processSearchResults(rest, nextUrl, count);
         }
-        logEndUpdate(mediaType, startYear, endYear, centers, start, medias.size());
-        return medias;
+        logEndUpdate(mediaType, startYear, endYear, centers, start, count.count);
+        return count.count;
     }
 
     private static void logStartUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers) {
@@ -290,41 +289,41 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
     }
 
     @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
-    public List<NasaImage> updateImages() {
-        List<NasaImage> images = new ArrayList<>();
+    public int updateImages() {
+        int count = 0;
         // Recent years have a lot of photos: search by center to avoid more than 10k results
         for (int year = LocalDateTime.now().getYear(); year >= 2000; year--) {
             for (String center : nasaCenters) {
-                images.addAll(doUpdateMedia(NasaMediaType.image, year, Collections.singleton(center)));
+                count += doUpdateMedia(NasaMediaType.image, year, Collections.singleton(center));
             }
         }
         // Ancient years have a lot less photos: simple search for all centers
         for (int year = 1999; year >= minYear; year--) {
-            images.addAll(doUpdateMedia(NasaMediaType.image, year, null));
+            count += doUpdateMedia(NasaMediaType.image, year, null);
         }
-        return images;
+        return count;
     }
 
     @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
-    public List<NasaAudio> updateAudios() {
+    public int updateAudios() {
         return doUpdateMedia(NasaMediaType.audio);
     }
 
     @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
-    public List<NasaVideo> updateVideos() {
+    public int updateVideos() {
         return doUpdateMedia(NasaMediaType.video);
     }
 
     @Override
-    public List<NasaMedia> updateMedia() {
+    public void updateMedia() {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Starting NASA medias update...");
-        final List<NasaMedia> medias = new ArrayList<>();
-        medias.addAll(updateImages());
-        medias.addAll(updateAudios());
-        medias.addAll(updateVideos());
-        LOGGER.info("NASA medias update completed: {} medias in {}", medias.size(), Duration.between(LocalDateTime.now(), start));
-        return medias;
+        int count = 0;
+        count += updateImages();
+        count += updateAudios();
+        count += updateVideos();
+        LOGGER.info("NASA medias update completed: {} medias in {}", count,
+                Duration.between(LocalDateTime.now(), start));
     }
 
     @Override
@@ -367,5 +366,9 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
                     .sorted().collect(Collectors.toList()));
         }
         return stats;
+    }
+
+    static class Counter {
+        int count = 0;
     }
 }

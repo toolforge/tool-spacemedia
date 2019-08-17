@@ -84,10 +84,10 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
 
     @Override
     @Scheduled(fixedRateString = "${nasa.sirs.update.rate}", initialDelayString = "${initial.delay}")
-    public List<NasaSirsImage> updateMedia() throws IOException {
+    public void updateMedia() throws IOException {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Starting {} medias update...", getName());
-        List<NasaSirsImage> medias = new ArrayList<>();
+        int count = 0;
         for (String category : loadCategories()) {
             LOGGER.info("{} medias update for '{}'...", getName(), category);
             int page = 0;
@@ -127,7 +127,10 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
                         if (mediaService.findCommonsFilesWithSha1(media)) {
                             save = true;
                         }
-                        medias.add(save ? repository.save(media) : media);
+                        if (save) {
+                            repository.save(media);
+                        }
+                        count++;
                     } catch (URISyntaxException e) {
                         LOGGER.error("Cannot compute SHA-1 of " + media, e);
                     } catch (HttpStatusException e) {
@@ -136,9 +139,8 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
                 }
             }
         }
-        LOGGER.info("{} medias update completed: {} medias in {}", getName(), medias.size(),
+        LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 Duration.between(LocalDateTime.now(), start));
-        return medias;
     }
 
     private static List<String> loadImageValues(String imageLink) throws IOException {

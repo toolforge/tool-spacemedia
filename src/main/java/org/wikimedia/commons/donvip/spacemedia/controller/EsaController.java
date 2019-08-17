@@ -46,7 +46,7 @@ public class EsaController extends AbstractSpaceAgencyController<EsaFile, String
     }
 
     @GetMapping("/images/update")
-    public List<EsaImage> updateImages() throws IOException {
-        return esaService.updateImages();
+    public void updateImages() throws IOException {
+        esaService.updateImages();
     }
 }

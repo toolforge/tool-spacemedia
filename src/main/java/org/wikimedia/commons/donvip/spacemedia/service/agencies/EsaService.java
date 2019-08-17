@@ -16,7 +16,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -296,15 +295,15 @@ public class EsaService extends AbstractSpaceAgencyService<EsaFile, String> {
     }
 
     @Scheduled(fixedRateString = "${esa.update.rate}", initialDelayString = "${initial.delay}")
-    public List<EsaImage> updateImages() throws IOException {
+    public void updateImages() throws IOException {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Starting ESA image updates...");
         updateMissingImages();
         final URL url = new URL(searchLink);
         final String proto = url.getProtocol();
         final String host = url.getHost();
-        final List<EsaImage> images = new ArrayList<>();
         boolean moreImages = true;
+        int count = 0;
         int index = 0;
         do {
             String searchUrl = searchLink.replace("<idx>", Integer.toString(index));
@@ -319,7 +318,9 @@ public class EsaService extends AbstractSpaceAgencyService<EsaFile, String> {
                             URL imageUrl = new URL(proto, host, div.select("a").get(0).attr("href"));
                             index++;
                             LOGGER.debug("Checking ESA image {}: {}", index, imageUrl);
-                            checkEsaImage(imageUrl).ifPresent(images::add);
+                            if (checkEsaImage(imageUrl).isPresent()) {
+                                count++;
+                            }
                         }
                         moreImages = !html.getElementsByClass("next").isEmpty();
                         ok = true;
@@ -332,13 +333,12 @@ public class EsaService extends AbstractSpaceAgencyService<EsaFile, String> {
             }
         } while (moreImages);
 
-        LOGGER.info("ESA images update completed: {} images in {}", images.size(), Duration.between(LocalDateTime.now(), start));
-        return images;
+        LOGGER.info("ESA images update completed: {} images in {}", count, Duration.between(LocalDateTime.now(), start));
     }
 
     @Override
-    public List<EsaFile> updateMedia() throws IOException {
-        return updateImages().stream().flatMap(i -> i.getFiles().stream()).collect(Collectors.toList());
+    public void updateMedia() throws IOException {
+        updateImages();
     }
 
     private EsaImage getEsaImageForFile(EsaFile media) {

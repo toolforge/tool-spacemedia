@@ -87,7 +87,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
      */
     public abstract String getName();
 
-    public abstract List<T> updateMedia() throws IOException;
+    public abstract void updateMedia() throws IOException;
 
     public Statistics getStatistics() {
         long problems = getProblemsCount();

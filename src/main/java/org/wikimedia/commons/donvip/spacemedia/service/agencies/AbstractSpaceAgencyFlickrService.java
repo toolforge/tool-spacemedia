@@ -7,7 +7,6 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -149,17 +148,18 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
         return new URL(getUserPhotosUrl(media).toExternalForm() + "/" + media.getId());
     }
 
-    protected List<FlickrMedia> updateFlickrMedia() {
+    protected void updateFlickrMedia() {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Starting {} medias update...", getName());
-        final List<FlickrMedia> medias = new ArrayList<>();
+        int count = 0;
         for (String flickrAccount : flickrAccounts) {
             try {
                 LOGGER.info("Fetching Flickr images from account '{}'...", flickrAccount);
                 for (FlickrMedia media : flickrService.findFreePhotos(flickrAccount).stream()
                         .map(p -> dozerMapper.map(p, FlickrMedia.class)).collect(Collectors.toList())) {
                     try {
-                        medias.add(processFlickrMedia(media));
+                        processFlickrMedia(media);
+                        count++;
                     } catch (IOException | URISyntaxException e) {
                         problem(getPhotoUrl(media), e);
                     }
@@ -168,9 +168,8 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
                 LOGGER.error("Error while fetching Flickr images from account " + flickrAccount, e);
             }
         }
-        LOGGER.info("{} medias update completed: {} medias in {}", getName(), medias.size(),
+        LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 Duration.between(LocalDateTime.now(), start));
-        return medias;
     }
 
     private URL getVideoUrl(FlickrMedia media) throws MalformedURLException {

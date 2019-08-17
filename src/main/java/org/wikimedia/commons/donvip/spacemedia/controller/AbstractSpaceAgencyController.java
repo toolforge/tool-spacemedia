@@ -30,8 +30,8 @@ public abstract class AbstractSpaceAgencyController<T extends Media, ID> {
     }
 
     @GetMapping("/update")
-    public final List<T> update() throws IOException {
-        return service.updateMedia();
+    public final void update() throws IOException {
+        service.updateMedia();
     }
 
     @GetMapping("/missing")

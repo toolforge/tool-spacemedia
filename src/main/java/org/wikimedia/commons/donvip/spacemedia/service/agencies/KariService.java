@@ -8,7 +8,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,11 +79,11 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> 
 
     @Override
     @Scheduled(fixedRateString = "${kari.update.rate}", initialDelayString = "${initial.delay}")
-    public List<KariMedia> updateMedia() throws IOException {
+    public void updateMedia() throws IOException {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Starting {} medias update...", getName());
-        List<KariMedia> medias = new ArrayList<>();
         int consecutiveFailures = 0;
+        int count = 0;
         int id = 1;
         while (consecutiveFailures < maxFailures) {
             boolean save = false;
@@ -118,7 +117,8 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> 
             }
             if (media != null) {
                 try {
-                    medias.add(processMedia(save, media, view, mediaInRepo.isPresent()));
+                    processMedia(save, media, view, mediaInRepo.isPresent());
+                    count++;
                 } catch (URISyntaxException e) {
                     LOGGER.error("Cannot compute SHA-1 of " + media, e);
                 } catch (TransactionException e) {
@@ -127,9 +127,8 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> 
             }
             id++;
         }
-        LOGGER.info("{} medias update completed: {} medias in {}", getName(), medias.size(),
+        LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 Duration.between(LocalDateTime.now(), start));
-        return medias;
     }
 
     protected KariMedia processMedia(boolean save, KariMedia media, URL view, boolean mediaInRepo)
