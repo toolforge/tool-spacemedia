@@ -93,6 +93,14 @@ public class CommonsService {
     @Value("${commons.cat.search.depth}")
     private int catSearchDepth;
 
+    /**
+     * Configurable because of a major performance bug on the database replica (the
+     * field is no indexed, see
+     * <a href="https://phabricator.wikimedia.org/T71088">#T71088</a>
+     */
+    @Value("${commons.query.filearchive}")
+    private boolean queryFilearchive;
+
     public Set<String> findFilesWithSha1(String sha1) {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
         // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters 
@@ -101,7 +109,7 @@ public class CommonsService {
         if (files.isEmpty()) {
             files.addAll(oldImageRepository.findBySha1(sha1base36).stream().map(CommonsOldImage::getName).collect(Collectors.toSet()));
         }
-        if (files.isEmpty()) {
+        if (files.isEmpty() && queryFilearchive) {
             files.addAll(fileArchiveRepository.findBySha1(sha1base36).stream().map(CommonsFileArchive::getName).collect(Collectors.toSet()));
         }
         return files;
