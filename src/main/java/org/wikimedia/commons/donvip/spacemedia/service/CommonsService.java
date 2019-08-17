@@ -93,6 +93,9 @@ public class CommonsService {
     @Value("${commons.cat.search.depth}")
     private int catSearchDepth;
 
+    @Value("${commons.img.preview.width}")
+    private int imgPreviewWidth;
+
     /**
      * Configurable because of a major performance bug on the database replica (the
      * field is no indexed, see
@@ -159,7 +162,7 @@ public class CommonsService {
         Utils.appendChildElement(imgLink, "img", null, new HashMap<String, String>() {
             {
                 put("src", imgUrl);
-                put("width", "800");
+                put("width", Integer.toString(imgPreviewWidth));
             }
         });
         // Display categories
