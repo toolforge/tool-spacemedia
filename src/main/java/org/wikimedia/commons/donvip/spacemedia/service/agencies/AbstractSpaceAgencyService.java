@@ -3,6 +3,9 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -121,7 +124,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
         return repository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
     }
 
-    public final T upload(String sha1) {
+    public final T upload(String sha1) throws MalformedURLException {
         T media = findBySha1OrThrow(sha1);
         checkUploadPreconditions(media);
         String wikiCode = getWikiCode(media);
@@ -132,7 +135,12 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
     public String getWikiHtmlPreview(String sha1)
             throws ClientProtocolException, IOException, ParserConfigurationException, SAXException {
         T media = findBySha1OrThrow(sha1);
-        return commonsService.getWikiHtmlPreview(getWikiCode(media), media.getAssetUrl().toExternalForm());
+        return commonsService.getWikiHtmlPreview(getWikiCode(media), getPageTile(media),
+                media.getAssetUrl().toExternalForm());
+    }
+
+    protected String getPageTile(T media) {
+        return media.getTitle();
     }
 
     public final String getWikiCode(String sha1) {
@@ -143,7 +151,18 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
         try {
             StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n{{Information\n| description = ")
                     .append(getDescription(media));
-            getCreationDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
+            Optional<Temporal> creationDate = getCreationDate(media);
+            if (creationDate.isPresent()) {
+                Temporal d = creationDate.get();
+                sb.append("\n| date = ");
+                if (d instanceof LocalDateTime || d instanceof ZonedDateTime || d instanceof Instant) {
+                    sb.append("{{Taken on|").append(d).append("}}");
+                } else {
+                    sb.append("{{Taken in|").append(d).append("}}");
+                }
+            } else {
+                getUploadDate(media).ifPresent(d -> sb.append("{{Upload date|").append(d).append("}}"));
+            }
             sb.append("\n| source = ").append(getSource(media)).append("\n| author = ").append(getAuthor(media));
             getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
             getOtherVersions(media).ifPresent(s -> sb.append("\n| other versions = ").append(s));
@@ -165,6 +184,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
     protected abstract String getAuthor(T media) throws MalformedURLException;
 
     protected Optional<Temporal> getCreationDate(T media) {
+        return Optional.empty();
+    }
+
+    protected Optional<Temporal> getUploadDate(T media) {
         return Optional.empty();
     }
 
@@ -204,7 +227,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
         return "[" + Objects.requireNonNull(url, "url") + " " + Objects.requireNonNull(text, "text") + "]";
     }
 
-    protected void checkUploadPreconditions(T media) {
+    protected void checkUploadPreconditions(T media) throws MalformedURLException {
         if (media.isIgnored() == Boolean.TRUE) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored.");
         }

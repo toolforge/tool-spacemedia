@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
 
 import com.flickr4java.flickr.FlickrException;
@@ -96,6 +98,16 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
     }
 
     @Override
+    protected Optional<Temporal> getCreationDate(FlickrMedia media) {
+        return Optional.ofNullable(media.getDateTaken());
+    }
+
+    @Override
+    protected Optional<Temporal> getUploadDate(FlickrMedia media) {
+        return Optional.of(media.getDateUpload());
+    }
+
+    @Override
     protected final String getAuthor(FlickrMedia media) throws MalformedURLException {
         try {
             User user = flickrService.findUser(getUserPhotosUrl(media));
@@ -103,6 +115,29 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
             return wikiLink(profileUrl, user.getUsername());
         } catch (FlickrException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected final String getPageTile(FlickrMedia media) {
+        return super.getPageTile(media) + "(" + media.getId() + ")";
+    }
+
+    @Override
+    protected List<String> findTemplates(FlickrMedia media) {
+        List<String> result = super.findTemplates(media);
+        result.add("Flickrreview");
+        return result;
+    }
+
+    @Override
+    protected void checkUploadPreconditions(FlickrMedia media) throws MalformedURLException {
+        super.checkUploadPreconditions(media);
+        if (isBadVideoEntry(media)) {
+            throw new ImageUploadForbiddenException("Bad video download link: " + media);
+        }
+        if (!"ready".equals(media.getMediaStatus())) {
+            throw new ImageUploadForbiddenException("Media is not ready: " + media);
         }
     }
 
@@ -138,6 +173,19 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
         return medias;
     }
 
+    private URL getVideoUrl(FlickrMedia media) throws MalformedURLException {
+        return new URL(flickrVideoDownloadUrl.replace("<id>", media.getId().toString()));
+    }
+
+    private boolean isBadVideoEntry(FlickrMedia media) throws MalformedURLException {
+        if ("video".equals(media.getMedia())) {
+            if (!getVideoUrl(media).equals(media.getAssetUrl())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private FlickrMedia processFlickrMedia(FlickrMedia media) throws IOException, URISyntaxException {
         boolean save = false;
         Optional<FlickrMedia> mediaInRepo = flickrRepository.findById(media.getId());
@@ -146,14 +194,11 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
         } else {
             save = true;
         }
-        if ("video".equals(media.getMedia())) {
-            String videoUrl = flickrVideoDownloadUrl.replace("<id>", media.getId().toString());
-            if (!videoUrl.equals(media.getAssetUrl().toExternalForm())) {
-                media.setAssetUrl(new URL(videoUrl));
-                media.setCommonsFileNames(null);
-                media.setSha1(null);
-                save = true;
-            }
+        if (isBadVideoEntry(media)) {
+            media.setAssetUrl(getVideoUrl(media));
+            media.setCommonsFileNames(null);
+            media.setSha1(null);
+            save = true;
         }
         if (mediaService.computeSha1(media)) {
             save = true;

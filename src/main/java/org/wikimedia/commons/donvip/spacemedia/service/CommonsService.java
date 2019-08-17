@@ -71,7 +71,7 @@ public class CommonsService {
         return files;
     }
 
-    public String getWikiHtmlPreview(String wikiCode) throws ClientProtocolException, IOException {
+    public String getWikiHtmlPreview(String wikiCode, String pageTitle) throws ClientProtocolException, IOException {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpPost httpPost = new HttpPost(commonsApiUrl.toExternalForm());
             List<NameValuePair> nvps = new ArrayList<>();
@@ -79,7 +79,7 @@ public class CommonsService {
             nvps.add(new BasicNameValuePair("format", "json"));
             nvps.add(new BasicNameValuePair("formatversion", "2"));
             nvps.add(new BasicNameValuePair("paction", "parsedoc"));
-            nvps.add(new BasicNameValuePair("page", "Test"));
+            nvps.add(new BasicNameValuePair("page", pageTitle));
             nvps.add(new BasicNameValuePair("wikitext", wikiCode));
             nvps.add(new BasicNameValuePair("pst", "true"));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
@@ -102,8 +102,9 @@ public class CommonsService {
     }
 
     @SuppressWarnings("serial")
-    public String getWikiHtmlPreview(String wikiCode, String imgUrl) throws ClientProtocolException, IOException {
-        Document doc = Jsoup.parse(getWikiHtmlPreview(wikiCode));
+    public String getWikiHtmlPreview(String wikiCode, String pageTitle, String imgUrl)
+            throws ClientProtocolException, IOException {
+        Document doc = Jsoup.parse(getWikiHtmlPreview(wikiCode, pageTitle));
         Element body = doc.getElementsByTag("body").get(0);
         // Display image
         Element imgLink = Utils.prependChildElement(body, "a", null, new HashMap<String, String>() {
@@ -149,7 +150,7 @@ public class CommonsService {
             }
         }).appendChild(hiddenCatLinksList);
         for (Element link : lastSection.getElementsByTag("link")) {
-            String category = link.attr("href").replace("#Test", "").replace("./Category:", "");
+            String category = link.attr("href").replace("#" + pageTitle, "").replace("./Category:", "");
             String href = "https://commons.wikimedia.org/wiki/Category:" + category;
             Element list = isHiddenCategory(category) ? hiddenCatLinksList : normalCatLinksList;
             Element item = new Element("li");

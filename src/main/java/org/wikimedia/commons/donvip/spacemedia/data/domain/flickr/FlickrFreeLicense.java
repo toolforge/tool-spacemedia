@@ -2,6 +2,9 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
 import java.util.Objects;
 
+/**
+ * https://commons.wikimedia.org/wiki/Commons:Flickr_files
+ */
 public enum FlickrFreeLicense {
     Attribution_License(4, "Cc-by-2.0"),                                          // https://creativecommons.org/licenses/by/2.0/
     Attribution_ShareAlike_License(5, "Cc-by-sa-2.0"),                            // https://creativecommons.org/licenses/by-sa/2.0/

@@ -350,7 +350,7 @@ public class EsaService extends AbstractSpaceAgencyService<EsaFile, String> {
     }
 
     @Override
-    protected void checkUploadPreconditions(EsaFile media) {
+    protected void checkUploadPreconditions(EsaFile media) throws MalformedURLException {
         super.checkUploadPreconditions(media);
         getEsaImageForFile(media);
     }
