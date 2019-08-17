@@ -31,29 +31,26 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.local.Statistics;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAssets;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAudio;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaAudioRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaCollection;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaImage;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaImageRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaItem;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaLink;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaMediaType;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaResponse;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaVideo;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.NasaVideoRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
-import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAssets;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAudio;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAudioRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaCollection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaItem;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaLink;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideo;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
-public class NasaService extends SpaceAgencyService<NasaMedia, String> {
+public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaService.class);
 
@@ -88,9 +85,8 @@ public class NasaService extends SpaceAgencyService<NasaMedia, String> {
     private Environment env;
 
     @Autowired
-    public NasaService(NasaMediaRepository<NasaMedia> repository, ProblemRepository problemrepository,
-            MediaService mediaService, CommonsService commonsService) {
-        super(repository, problemrepository, mediaService, commonsService);
+    public NasaService(NasaMediaRepository<NasaMedia> repository) {
+        super(repository);
     }
 
     private NasaMedia save(NasaMedia media) {

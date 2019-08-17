@@ -5,8 +5,36 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
-@Entity(name = "image")
+/**
+ * <a href="https://www.mediawiki.org/wiki/Manual:Image_table">Mediawiki Image
+ * table</a>
+ * 
+ * <pre>
+ * +--------------------+-------------------------------------------------------------------------------------------------------------+------+-----+---------+-------+
+ * | Field              | Type                                                                                                        | Null | Key | Default | Extra |
+ * +--------------------+-------------------------------------------------------------------------------------------------------------+------+-----+---------+-------+
+ * | img_name           | varbinary(255)                                                                                              | NO   | PRI |         |       |
+ * | img_size           | int(10) unsigned                                                                                            | NO   | MUL | 0       |       |
+ * | img_width          | int(11)                                                                                                     | NO   |     | 0       |       |
+ * | img_height         | int(11)                                                                                                     | NO   |     | 0       |       |
+ * | img_metadata       | mediumblob                                                                                                  | NO   |     | NULL    |       |
+ * | img_bits           | int(11)                                                                                                     | NO   |     | 0       |       |
+ * | img_media_type     | enum('UNKNOWN','BITMAP','DRAWING','AUDIO','VIDEO','MULTIMEDIA','OFFICE','TEXT','EXECUTABLE','ARCHIVE','3D') | YES  | MUL | NULL    |       |
+ * | img_major_mime     | enum('unknown','application','audio','image','text','video','message','model','multipart','chemical')       | NO   |     | unknown |       |
+ * | img_minor_mime     | varbinary(100)                                                                                              | NO   |     | unknown |       |
+ * | img_description_id | bigint(20) unsigned                                                                                         | NO   |     | NULL    |       |
+ * | img_user           | int(10) unsigned                                                                                            | NO   | MUL | 0       |       |
+ * | img_user_text      | varbinary(255)                                                                                              | NO   | MUL |         |       |
+ * | img_actor          | bigint(20) unsigned                                                                                         | NO   | MUL | 0       |       |
+ * | img_timestamp      | varbinary(14)                                                                                               | NO   | MUL |         |       |
+ * | img_sha1           | varbinary(32)                                                                                               | NO   | MUL |         |       |
+ * +--------------------+-------------------------------------------------------------------------------------------------------------+------+-----+---------+-------+
+ * </pre>
+ */
+@Entity
+@Table(name = "image")
 public class CommonsImage {
     @Id
     @Column(name = "img_name", nullable = false, length = 255)

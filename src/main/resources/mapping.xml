@@ -4,7 +4,7 @@
           xsi:schemaLocation="http://dozermapper.github.io/schema/bean-mapping http://dozermapper.github.io/schema/bean-mapping.xsd">
     <configuration>
 		<custom-converters>
-			<converter type="org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrTagToStringConverter">
+			<converter type="org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrTagToStringConverter">
 				<class-a>com.flickr4java.flickr.tags.Tag</class-a>
 				<class-b>java.lang.String</class-b>
 			</converter>
@@ -13,7 +13,7 @@
 
     <mapping type="one-way">
         <class-a>com.flickr4java.flickr.photos.Photo</class-a>
-        <class-b>org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrMedia</class-b>
+        <class-b>org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia</class-b>
         <field>
             <a>takenGranularity</a>
             <b>dateTakenGranularity</b>

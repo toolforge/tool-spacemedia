@@ -7,13 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaFile;
-import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaFile;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaImage;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.EsaService;
 
 @RestController
 @RequestMapping("/esa")
-public class EsaController extends SpaceAgencyController<EsaFile, String> {
+public class EsaController extends AbstractSpaceAgencyController<EsaFile, String> {
 
     private final EsaService esaService;
 

@@ -27,14 +27,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.sirs.NasaSirsImage;
-import org.wikimedia.commons.donvip.spacemedia.data.local.nasa.sirs.NasaSirsImageRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
-import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
 
 @Service
-public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
+public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaSirsService.class);
 
@@ -55,9 +52,8 @@ public class NasaSirsService extends SpaceAgencyService<NasaSirsImage, String> {
     @Value("${nasa.ssc.name}")
     private String sscName;
 
-    public NasaSirsService(NasaSirsImageRepository repository, ProblemRepository problemrepository,
-            MediaService mediaService, CommonsService commonsService) {
-        super(repository, problemrepository, mediaService, commonsService);
+    public NasaSirsService(NasaSirsImageRepository repository) {
+        super(repository);
     }
 
     @Override

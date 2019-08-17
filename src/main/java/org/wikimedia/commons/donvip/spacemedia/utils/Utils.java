@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -19,6 +20,9 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.jsoup.nodes.Attributes;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 
 public final class Utils {
@@ -110,5 +114,57 @@ public final class Utils {
                     throw new ImageDecodingException("Unsupported format: " + extension);
             }
         }
+    }
+
+    public static Element newElement(String tag, String text, Map<String, String> attrs) {
+        Attributes attributes = new Attributes();
+        attrs.entrySet().forEach(e -> attributes.put(e.getKey(), e.getValue()));
+        Element elem = new Element(Tag.valueOf(tag), "", attributes);
+        if (text != null) {
+            elem.text(text);
+        }
+        return elem;
+    }
+
+    public static Element prependChildElement(Element base, String tag, String text, Map<String, String> attrs) {
+        Element elem = newElement(tag, text, attrs);
+        base.insertChildren(0, elem);
+        return elem;
+    }
+
+    public static Element appendChildElement(Element base, String tag, String text, Map<String, String> attrs) {
+        Element elem = newElement(tag, text, attrs);
+        base.appendChild(elem);
+        return elem;
+    }
+
+    public static boolean isTextFound(String fullText, String textToFind) {
+        if (fullText != null) {
+            if (textToFind.contains("+")) {
+                for (String word : textToFind.split("\\+")) {
+                    if (!isTextFound(fullText, word)) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                int index = fullText.indexOf(textToFind);
+                if (index > -1) {
+                    if (index > 0 && isTokenPart(fullText.charAt(index - 1))) {
+                        return false;
+                    }
+                    if (index + textToFind.length() < fullText.length() - 1 && isTokenPart(
+                            fullText.charAt(index + textToFind.length()))) {
+                        return false;
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isTokenPart(char c) {
+        return Character.isAlphabetic(c) || Character.isDigit(c) || c == '-' || c == '_';
     }
 }

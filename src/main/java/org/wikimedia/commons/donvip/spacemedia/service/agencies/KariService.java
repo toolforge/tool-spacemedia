@@ -24,21 +24,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
-import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.local.kari.KariMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.local.kari.KariMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
-import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMediaRepository;
 
 @Service
-public class KariService extends SpaceAgencyService<KariMedia, Integer> {
+public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KariService.class);
 
     @Autowired
-    public KariService(KariMediaRepository repository, ProblemRepository problemrepository, MediaService mediaService,
-            CommonsService commonsService) {
-        super(repository, problemrepository, mediaService, commonsService);
+    public KariService(KariMediaRepository repository) {
+        super(repository);
     }
 
     @Value("${kari.view.link}")

@@ -31,18 +31,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.wikimedia.commons.donvip.spacemedia.data.local.ProblemRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaFile;
-import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaFileRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImage;
-import org.wikimedia.commons.donvip.spacemedia.data.local.esa.EsaImageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaFile;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaFileRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaImage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
-import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
-import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
-public class EsaService extends SpaceAgencyService<EsaFile, String> {
+public class EsaService extends AbstractSpaceAgencyService<EsaFile, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaService.class);
 
@@ -67,9 +64,8 @@ public class EsaService extends SpaceAgencyService<EsaFile, String> {
     private DateTimeFormatter dateFormatter;
 
     @Autowired
-    public EsaService(EsaFileRepository repository, ProblemRepository problemrepository, MediaService mediaService,
-            CommonsService commonsService) {
-        super(repository, problemrepository, mediaService, commonsService);
+    public EsaService(EsaFileRepository repository) {
+        super(repository);
     }
 
     @PostConstruct

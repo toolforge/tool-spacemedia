@@ -5,8 +5,38 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
-@Entity(name = "oldimage")
+/**
+ * <a href="https://www.mediawiki.org/wiki/Manual:Oldimage_table">Mediawiki
+ * Oldimage table</a>
+ * 
+ * <pre>
+ * +-------------------+-------------------------------------------------------------------------------------------------------------+------+-----+----------------+-------+
+ * | Field             | Type                                                                                                        | Null | Key | Default        | Extra |
+ * +-------------------+-------------------------------------------------------------------------------------------------------------+------+-----+----------------+-------+
+ * | oi_name           | varbinary(255)                                                                                              | NO   | MUL |                |       |
+ * | oi_archive_name   | varbinary(255)                                                                                              | NO   |     |                |       |
+ * | oi_size           | int(10) unsigned                                                                                            | NO   |     | 0              |       |
+ * | oi_width          | int(11)                                                                                                     | NO   |     | 0              |       |
+ * | oi_height         | int(11)                                                                                                     | NO   |     | 0              |       |
+ * | oi_bits           | int(11)                                                                                                     | NO   |     | 0              |       |
+ * | oi_description_id | bigint(20) unsigned                                                                                         | NO   |     | NULL           |       |
+ * | oi_user           | int(10) unsigned                                                                                            | NO   |     | 0              |       |
+ * | oi_user_text      | varbinary(255)                                                                                              | NO   | MUL |                |       |
+ * | oi_actor          | bigint(20) unsigned                                                                                         | NO   | MUL | 0              |       |
+ * | oi_timestamp      | binary(14)                                                                                                  | NO   |     |                |       |
+ * | oi_metadata       | mediumblob                                                                                                  | NO   |     | NULL           |       |
+ * | oi_media_type     | enum('UNKNOWN','BITMAP','DRAWING','AUDIO','VIDEO','MULTIMEDIA','OFFICE','TEXT','EXECUTABLE','ARCHIVE','3D') | YES  |     | NULL           |       |
+ * | oi_major_mime     | enum('unknown','application','audio','image','text','video','message','model','multipart','chemical')       | NO   |     | unknown        |       |
+ * | oi_minor_mime     | varbinary(100)                                                                                              | NO   |     | unknown        |       |
+ * | oi_deleted        | tinyint(3) unsigned                                                                                         | NO   |     | 0              |       |
+ * | oi_sha1           | varbinary(32)                                                                                               | NO   | MUL |                |       |
+ * +-------------------+-------------------------------------------------------------------------------------------------------------+------+-----+----------------+-------+
+ * </pre>
+ */
+@Entity
+@Table(name = "oldimage")
 public class CommonsOldImage {
     @Id
     @Column(name = "oi_name", nullable = false, length = 255)

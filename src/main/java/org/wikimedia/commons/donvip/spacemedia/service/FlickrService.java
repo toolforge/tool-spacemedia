@@ -18,7 +18,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
-import org.wikimedia.commons.donvip.spacemedia.data.local.flickr.FlickrFreeLicense;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
