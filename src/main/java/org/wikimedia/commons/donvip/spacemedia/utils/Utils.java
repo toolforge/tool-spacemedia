@@ -23,9 +23,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 
 public final class Utils {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
 
     private Utils() {
         // Hide default constructor
@@ -93,6 +97,7 @@ public final class Utils {
 
     public static BufferedImage readImage(URL url, boolean readMetadata) throws IOException, URISyntaxException, ImageDecodingException {
         URI uri = urlToUri(url);
+        LOGGER.info("Reading image {}", uri);
         String extension = uri.toString().substring(uri.toString().lastIndexOf('.')+1).toLowerCase(Locale.ENGLISH);
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
