@@ -100,6 +100,7 @@ public final class Utils {
             switch (extension) {
                 case "bmp":
                 case "gif":
+                case "jpe":
                 case "jpg":
                 case "jpeg":
                 case "png":
