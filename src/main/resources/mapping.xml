@@ -12,15 +12,6 @@
     </configuration>
 
     <mapping type="one-way">
-        <class-a>org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaImage</class-a>
-        <class-b>org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia</class-b>
-        <field copy-by-reference="true">
-            <a>url</a>
-            <b>url</b>
-        </field>
-    </mapping>
-
-    <mapping type="one-way">
         <class-a>com.flickr4java.flickr.photos.Photo</class-a>
         <class-b>org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia</class-b>
         <field>
