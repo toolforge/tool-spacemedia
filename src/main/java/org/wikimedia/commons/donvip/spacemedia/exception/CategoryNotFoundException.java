@@ -1,10 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;;
+import org.springframework.web.server.ResponseStatusException;;
 
-@ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "category not found")
-public class CategoryNotFoundException extends RuntimeException {
+public class CategoryNotFoundException extends ResponseStatusException {
 
     private static final long serialVersionUID = 1L;
 
@@ -14,6 +13,6 @@ public class CategoryNotFoundException extends RuntimeException {
      * @param message category title that can't be found
      */
     public CategoryNotFoundException(String message) {
-        super(message);
+        super(HttpStatus.NOT_FOUND, message);
     }
 }

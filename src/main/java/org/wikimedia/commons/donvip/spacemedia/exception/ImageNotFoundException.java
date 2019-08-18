@@ -1,10 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.exception;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.http.HttpStatus;;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;;
 
-@ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "image not found")
-public class ImageNotFoundException extends RuntimeException {
+public class ImageNotFoundException extends ResponseStatusException {
 
     private static final long serialVersionUID = 1L;
 
@@ -13,6 +12,6 @@ public class ImageNotFoundException extends RuntimeException {
      * @param message image identifier that can't be found
      */
     public ImageNotFoundException(String message) {
-        super(message);
+        super(HttpStatus.NOT_FOUND, message);
     }
 }

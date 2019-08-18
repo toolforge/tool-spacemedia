@@ -1,10 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.exception;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.http.HttpStatus;;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;;
 
-@ResponseStatus(code = HttpStatus.FORBIDDEN, reason = "image forbidden to upload")
-public class ImageUploadForbiddenException extends RuntimeException {
+public class ImageUploadForbiddenException extends ResponseStatusException {
 
     private static final long serialVersionUID = 1L;
 
@@ -13,6 +12,6 @@ public class ImageUploadForbiddenException extends RuntimeException {
      * @param message image identifier that can't be found
      */
     public ImageUploadForbiddenException(String message) {
-        super(message);
+        super(HttpStatus.FORBIDDEN, message);
     }
 }
