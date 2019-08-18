@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -51,6 +52,9 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
     protected MediaService mediaService;
     @Autowired
     protected CommonsService commonsService;
+
+    @Autowired
+    private Environment env;
 
     @Value("#{${categories}}")
     private Map<String, String> categories;
@@ -128,6 +132,9 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
     }
 
     public final T upload(String sha1) throws MalformedURLException {
+        if (!env.getProperty(getClass().getName() + ".upload.enabled", Boolean.class, Boolean.FALSE)) {
+            throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
+        }
         T media = findBySha1OrThrow(sha1);
         checkUploadPreconditions(media);
         String wikiCode = getWikiCode(media);
