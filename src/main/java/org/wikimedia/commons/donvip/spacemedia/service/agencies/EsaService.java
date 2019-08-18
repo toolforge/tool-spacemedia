@@ -19,7 +19,6 @@ import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.codec.binary.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -31,10 +30,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaFile;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaFileRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaImage;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
@@ -52,14 +47,6 @@ public class EsaService extends AbstractSpaceAgencyService<EsaMedia, Integer> {
      * See <a href="https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2006/10/envisat_sees_madagascar/10084739-2-eng-GB/Envisat_sees_Madagascar.tiff">this example</a>
      */
     private static final String SHA1_ERROR = "860f6466c5f3da5d62b2065c33aa5548697d817c";
-
-    @Autowired
-    @SuppressWarnings("deprecation")
-    private EsaImageRepository imageRepository;
-
-    @Autowired
-    @SuppressWarnings("deprecation")
-    private EsaFileRepository fileRepository;
 
     @Autowired
     private EsaMediaRepository mediaRepository;
@@ -300,7 +287,6 @@ public class EsaService extends AbstractSpaceAgencyService<EsaMedia, Integer> {
     public void updateMedia() throws IOException {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Starting ESA image updates...");
-        migrateToNewDatabaseFormat();
         updateMissingImages();
         final URL url = new URL(searchLink);
         final String proto = url.getProtocol();
@@ -337,54 +323,6 @@ public class EsaService extends AbstractSpaceAgencyService<EsaMedia, Integer> {
         } while (moreImages);
 
         LOGGER.info("ESA images update completed: {} images in {}", count, Duration.between(LocalDateTime.now(), start));
-    }
-
-    @SuppressWarnings("deprecation")
-    private void migrateToNewDatabaseFormat() {
-        if (imageRepository.count() > 0) {
-            LOGGER.info("Migrating to new ESA database schema...");
-            for (EsaImage image : imageRepository.findAll()) {
-                List<EsaFile> files = image.getFiles();
-                int size = files.size();
-                if (size > 0) {
-                    EsaMedia media = dozerMapper.map(image, EsaMedia.class);
-                    if (size == 1) {
-                        EsaFile file = files.get(0);
-                        media.setCommonsFileNames(file.getCommonsFileNames());
-                        media.setAssetUrl(file.getAssetUrl());
-                        media.setSha1(file.getSha1());
-                        media.setIgnored(file.getIgnored());
-                        media.setIgnoredReason(file.getIgnoredReason());
-                    } else if (size == 2) {
-                        for (EsaFile file : files) {
-                            URL url = file.getAssetUrl();
-                            if (url.toExternalForm().endsWith(".tif") || url.toExternalForm().endsWith(".png")) {
-                                media.setFullResCommonsFileNames(file.getCommonsFileNames());
-                                media.setFullResSha1(file.getSha1());
-                                media.setFullResAssetUrl(url);
-                            } else {
-                                media.setCommonsFileNames(file.getCommonsFileNames());
-                                media.setSha1(file.getSha1());
-                                media.setAssetUrl(url);
-                            }
-                            if (media.getIgnored() == Boolean.TRUE && file.getIgnored() == Boolean.TRUE
-                                    && !StringUtils.equals(media.getIgnoredReason(), file.getIgnoredReason())) {
-                                LOGGER.error(files.toString());
-                                throw new IllegalStateException(files.toString());
-                            }
-                            media.setIgnored(file.getIgnored());
-                            media.setIgnoredReason(file.getIgnoredReason());
-                        }
-                    } else {
-                        throw new IllegalStateException(files.toString());
-                    }
-                    repository.save(media);
-                }
-                imageRepository.delete(image);
-                files.forEach(fileRepository::delete);
-            }
-            LOGGER.info("Migration to new ESA database schema completed");
-        }
     }
 
     @Override
