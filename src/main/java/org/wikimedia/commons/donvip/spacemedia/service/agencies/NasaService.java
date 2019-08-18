@@ -164,7 +164,7 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
     static Set<String> normalizeKeywords(Set<String> keywords) {
         if (keywords != null && keywords.size() == 1) {
             return doNormalizeKeywords(keywords);
-        } else {
+        } else if (keywords != null) {
             // Look for bad situations like https://images.nasa.gov/details-GRC-2017-CM-0155.html
             // Keyword 1 : GRC-CM => Good :)
             // Keyword 2 :  Solar Eclipse, Jefferson City Missouri, ... Reggie Williams, Astronaut Mike Hopkins ==> WTF !?
