@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
+@Deprecated
 public interface EsaFileRepository extends MediaRepository<EsaFile, String> {
 
     @Override

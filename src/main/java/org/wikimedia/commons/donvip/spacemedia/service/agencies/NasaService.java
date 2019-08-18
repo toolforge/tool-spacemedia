@@ -353,11 +353,6 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
     }
 
     @Override
-    protected String getDescription(NasaMedia media) {
-        return media.getDescription();
-    }
-
-    @Override
     protected String getSource(NasaMedia media) throws MalformedURLException {
         return wikiLink(new URL(detailsLink.replace("<id>", media.getNasaId())), media.getTitle());
     }

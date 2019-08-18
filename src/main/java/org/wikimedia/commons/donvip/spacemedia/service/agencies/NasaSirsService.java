@@ -62,11 +62,6 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
     }
 
     @Override
-    protected String getDescription(NasaSirsImage media) {
-        return media.getDescription();
-    }
-
-    @Override
     protected String getSource(NasaSirsImage media) throws MalformedURLException {
         return wikiLink(new URL(detailsUrl.replace("<id>", media.getNasaId())), media.getTitle());
     }

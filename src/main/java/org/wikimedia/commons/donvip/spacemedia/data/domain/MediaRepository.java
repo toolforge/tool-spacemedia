@@ -9,12 +9,8 @@ import org.springframework.data.repository.NoRepositoryBean;
 
 @NoRepositoryBean
 public interface MediaRepository<T extends Media, ID> extends CrudRepository<T, ID> {
-    /**
-     * Find files not yet uploaded to Wikimedia Commons.
-     * 
-     * @return files not yet uploaded to Wikimedia Commons
-     */
-    List<T> findMissingInCommons();
+
+    int countBySha1(String sha1);
 
     /**
      * Count files not yet uploaded to Wikimedia Commons.
@@ -22,6 +18,13 @@ public interface MediaRepository<T extends Media, ID> extends CrudRepository<T, 
      * @return number of files not yet uploaded to Wikimedia Commons
      */
     long countMissingInCommons();
+
+    /**
+     * Find files not yet uploaded to Wikimedia Commons.
+     * 
+     * @return files not yet uploaded to Wikimedia Commons
+     */
+    List<T> findMissingInCommons();
 
     List<T> findDuplicateInCommons();
 

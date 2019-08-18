@@ -88,11 +88,6 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
     }
 
     @Override
-    protected final String getDescription(FlickrMedia media) {
-        return media.getDescription();
-    }
-
-    @Override
     protected final String getSource(FlickrMedia media) throws MalformedURLException {
         return wikiLink(getPhotoUrl(media), media.getTitle());
     }

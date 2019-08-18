@@ -51,12 +51,6 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> 
     }
 
     @Override
-    protected final String getDescription(KariMedia media) {
-        String description = media.getDescription();
-        return StringUtils.isBlank(description) ? media.getTitle() : description;
-    }
-
-    @Override
     protected final String getSource(KariMedia media) throws MalformedURLException {
         return wikiLink(new URL(getViewUrl(media.getId())), media.getTitle());
     }

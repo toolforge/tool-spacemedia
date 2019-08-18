@@ -19,11 +19,14 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
@@ -177,7 +180,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
         }
     }
 
-    protected abstract String getDescription(T media) throws MalformedURLException;
+    protected String getDescription(T media) {
+        String description = media.getDescription();
+        return StringUtils.isBlank(description) ? media.getTitle() : description;
+    }
 
     protected abstract String getSource(T media) throws MalformedURLException;
 
@@ -230,6 +236,13 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
     protected void checkUploadPreconditions(T media) throws MalformedURLException {
         if (media.isIgnored() == Boolean.TRUE) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored.");
+        }
+        // Forbid upload of duplicate medias for a single repo, they may have different descriptions
+        if (repository.countBySha1(media.getSha1()) > 1) {
+            throw new ImageUploadForbiddenException(media + " is marked as ignored.");
+        }
+        if (repository instanceof FullResMediaRepository && media instanceof FullResMedia) {
+            
         }
         // Double-check for duplicates before upload!
         if (CollectionUtils.isNotEmpty(media.getCommonsFileNames()) || mediaService.findCommonsFilesWithSha1(media)) {

@@ -10,11 +10,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.util.CollectionUtils;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
 @Entity
 @AttributeOverride(name = "title", column = @Column(nullable = true))
+@Deprecated
 public class EsaFile extends Media {
 
     @Id
@@ -38,9 +38,11 @@ public class EsaFile extends Media {
 
     @Override
     public String toString() {
-        return "EsaFile [" + (getAssetUrl() != null ? "url=" + getAssetUrl() + ", " : "")
-                + (sha1 != null ? "sha1=" + sha1 + ", " : "")
-                + (!CollectionUtils.isEmpty(commonsFileNames) ? "commonsFileNames=" + commonsFileNames : "") + "]";
+        return "EsaFile [" + (id != null ? "id=" + id + ", " : "") + (sha1 != null ? "sha1=" + sha1 + ", " : "")
+                + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "")
+                + (commonsFileNames != null ? "commonsFileNames=" + commonsFileNames + ", " : "")
+                + (ignored != null ? "ignored=" + ignored + ", " : "")
+                + (ignoredReason != null ? "ignoredReason=" + ignoredReason : "") + "]";
     }
 
     @Override

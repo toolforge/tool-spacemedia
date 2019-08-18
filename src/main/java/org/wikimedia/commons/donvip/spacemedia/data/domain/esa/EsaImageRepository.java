@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+@Deprecated
 public interface EsaImageRepository extends CrudRepository<EsaImage, Integer> {
 
     List<EsaImage> findByUrl(URL imageUrl);
