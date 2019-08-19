@@ -177,6 +177,7 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
                     int size = files.size();
                     if (size == 0) {
                         problem(media.getUrl(), "Image without any file");
+                        save = false;
                     } else if (size == 1) {
                         media.setAssetUrl(files.get(0));
                     } else if (size == 2) {
