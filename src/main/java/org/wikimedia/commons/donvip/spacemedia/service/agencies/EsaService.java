@@ -38,7 +38,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 import com.github.dozermapper.core.Mapper;
 
 @Service
-public class EsaService extends AbstractSpaceAgencyService<EsaMedia, Integer> {
+public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaService.class);
 

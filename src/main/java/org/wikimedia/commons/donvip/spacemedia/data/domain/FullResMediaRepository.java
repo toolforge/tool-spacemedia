@@ -16,12 +16,18 @@ public interface FullResMediaRepository<T extends FullResMedia, ID> extends Medi
 
     Optional<T> findByFullResSha1(String sha1);
 
+    default Optional<T> findBySha1OrFullResSha1(String sha1) {
+        return findBySha1OrFullResSha1(sha1, sha1);
+    }
+
+    Optional<T> findBySha1OrFullResSha1(String sha1, String fullRessha1);
+
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not (exists elements (m.commonsFileNames) and exists elements (m.fullResCommonsFileNames))")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResSha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
     List<T> findMissingInCommons();
 
     @Override
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not (exists elements (m.commonsFileNames) and exists elements (m.fullResCommonsFileNames))")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResSha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
     long countMissingInCommons();
 
     @Override

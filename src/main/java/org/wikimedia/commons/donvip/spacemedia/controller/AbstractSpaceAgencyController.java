@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.controller;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Objects;
 
@@ -71,7 +70,7 @@ public abstract class AbstractSpaceAgencyController<T extends Media, ID> {
     }
 
     @GetMapping("/upload/{sha1}")
-    public final T upload(@PathVariable String sha1) throws MalformedURLException {
+    public final T upload(@PathVariable String sha1) throws IOException {
         return service.upload(sha1);
     }
 }

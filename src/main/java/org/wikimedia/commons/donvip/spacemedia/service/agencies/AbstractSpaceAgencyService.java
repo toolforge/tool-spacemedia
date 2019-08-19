@@ -26,8 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
@@ -127,19 +125,22 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
         }
     }
 
-    private T findBySha1OrThrow(String sha1) {
+    protected T findBySha1OrThrow(String sha1) {
         return repository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
     }
 
-    public final T upload(String sha1) throws MalformedURLException {
+    public final T upload(String sha1) throws IOException {
         if (!env.getProperty(getClass().getName() + ".upload.enabled", Boolean.class, Boolean.FALSE)) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
         T media = findBySha1OrThrow(sha1);
         checkUploadPreconditions(media);
-        String wikiCode = getWikiCode(media);
-        // TODO
+        doUpload(getWikiCode(media), media);
         return repository.save(media);
+    }
+
+    protected void doUpload(String wikiCode, T media) throws IOException {
+        commonsService.upload(wikiCode, media.getTitle(), media.getAssetUrl());
     }
 
     public String getWikiHtmlPreview(String sha1)
@@ -244,12 +245,12 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
         if (media.isIgnored() == Boolean.TRUE) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored.");
         }
+        if (media.getSha1() == null) {
+            throw new ImageUploadForbiddenException(media + " SHA-1 has not been computed.");
+        }
         // Forbid upload of duplicate medias for a single repo, they may have different descriptions
         if (repository.countBySha1(media.getSha1()) > 1) {
-            throw new ImageUploadForbiddenException(media + " is marked as ignored.");
-        }
-        if (repository instanceof FullResMediaRepository && media instanceof FullResMedia) {
-            
+            throw new ImageUploadForbiddenException(media + " is present several times.");
         }
         // Double-check for duplicates before upload!
         if (CollectionUtils.isNotEmpty(media.getCommonsFileNames()) || mediaService.findCommonsFilesWithSha1(media)) {

@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -55,6 +56,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundExcepti
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -90,6 +92,12 @@ public class CommonsService {
     @Value("${commons.api.url}")
     private URL apiUrl;
 
+    @Value("${commons.api.login}")
+    private String apiLogin;
+
+    @Value("${commons.api.password}")
+    private String apiPassword;
+
     @Value("${commons.cat.search.depth}")
     private int catSearchDepth;
 
@@ -118,9 +126,25 @@ public class CommonsService {
         return files;
     }
 
+    private HttpPost apiHttpPost(List<NameValuePair> nvps) {
+        HttpPost httpPost = new HttpPost(apiUrl.toExternalForm());
+        httpPost.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
+        httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        return httpPost;
+    }
+
+    private static String getHttpResponseBody(CloseableHttpResponse response)
+            throws UnsupportedOperationException, IOException {
+        HttpEntity entity = response.getEntity();
+        Header encoding = entity.getContentEncoding();
+        String body = IOUtils.toString(entity.getContent(),
+                encoding == null ? StandardCharsets.UTF_8 : Charset.forName(encoding.getValue()));
+        EntityUtils.consume(entity);
+        return body;
+    }
+
     public String getWikiHtmlPreview(String wikiCode, String pageTitle) throws ClientProtocolException, IOException {
         try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableCookieManagement().build()) {
-            HttpPost httpPost = new HttpPost(apiUrl.toExternalForm());
             List<NameValuePair> nvps = new ArrayList<>();
             nvps.add(new BasicNameValuePair("action", "visualeditor"));
             nvps.add(new BasicNameValuePair("format", "json"));
@@ -129,19 +153,14 @@ public class CommonsService {
             nvps.add(new BasicNameValuePair("page", pageTitle));
             nvps.add(new BasicNameValuePair("wikitext", wikiCode));
             nvps.add(new BasicNameValuePair("pst", "true"));
-            httpPost.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
-            httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            HttpPost httpPost = apiHttpPost(nvps);
 
             try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
-                HttpEntity entity = response.getEntity();
-                Header encoding = entity.getContentEncoding();
-                String body = IOUtils.toString(entity.getContent(),
-                        encoding == null ? StandardCharsets.UTF_8 : Charset.forName(encoding.getValue()));
-                EntityUtils.consume(entity);
-                VisualEditorResponse apiResponse = new ObjectMapper().readValue(body, ApiResponse.class)
+                String body = getHttpResponseBody(response);
+                VisualEditorResponse apiResponse = new ObjectMapper().readValue(body, VeApiResponse.class)
                         .getVisualeditor();
                 if (!"success".equals(apiResponse.getResult())) {
-                    throw new IllegalArgumentException(apiResponse.toString());
+                    throw new IllegalArgumentException(apiResponse.toString()); // FIXME better exception
                 }
                 return apiResponse.getContent();
             }
@@ -213,7 +232,7 @@ public class CommonsService {
         return doc.toString();
     }
 
-    static class ApiResponse {
+    static class VeApiResponse {
         private VisualEditorResponse visualeditor;
 
         public VisualEditorResponse getVisualeditor() {
@@ -329,5 +348,113 @@ public class CommonsService {
 
     public static String formatWikiCode(String badWikiCode) {
         return badWikiCode.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", "[$1 $2]");
+    }
+
+    public void upload(String wikiCode, String filename, URL url) throws IOException {
+        try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableCookieManagement().build()) {
+            // TODO Auto-generated method stub
+            List<NameValuePair> nvps = new ArrayList<>();
+            nvps.add(new BasicNameValuePair("action", "upload"));
+            nvps.add(new BasicNameValuePair("format", "json"));
+            nvps.add(new BasicNameValuePair("filename", Objects.requireNonNull(filename, "filename")));
+            nvps.add(new BasicNameValuePair("ignorewarnings", "1"));
+            nvps.add(new BasicNameValuePair("url", url.toExternalForm()));
+            HttpPost httpPost = apiHttpPost(nvps);
+            try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
+                String body = getHttpResponseBody(response);
+                LOGGER.info(body);
+                UploadApiResponse apiResponse = new ObjectMapper().readValue(body, UploadApiResponse.class);
+                UploadError error = apiResponse.getError();
+                if (error != null) {
+                    LOGGER.error(error.toString());
+                    throw new IllegalArgumentException(error.toString()); // FIXME better exception
+                }
+                if (!"success".equals(apiResponse.getUpload().getResult())) {
+                    throw new IllegalArgumentException(apiResponse.toString()); // FIXME better exception
+                }
+            }
+        }
+    }
+
+    static class UploadApiResponse {
+        private UploadResponse upload;
+        private UploadError error;
+        @JsonProperty("servedby")
+        private String servedBy;
+
+        public UploadResponse getUpload() {
+            return upload;
+        }
+
+        public void setUpload(UploadResponse upload) {
+            this.upload = upload;
+        }
+
+        public UploadError getError() {
+            return error;
+        }
+
+        public void setError(UploadError error) {
+            this.error = error;
+        }
+
+        public String getServedBy() {
+            return servedBy;
+        }
+
+        public void setServedBy(String servedBy) {
+            this.servedBy = servedBy;
+        }
+    }
+
+    static class UploadResponse {
+        private String result;
+
+        public String getResult() {
+            return result;
+        }
+
+        public void setResult(String result) {
+            this.result = result;
+        }
+    }
+
+    static class UploadError {
+        private String code;
+        private String info;
+        @JsonProperty("*")
+        private String star;
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public String getInfo() {
+            return info;
+        }
+
+        public void setInfo(String info) {
+            this.info = info;
+        }
+
+        public String getStar() {
+            return star;
+        }
+
+        public void setStar(String star) {
+            this.star = star;
+        }
+
+        @Override
+        public String toString() {
+            return "UploadError [" + (code != null ? "code=" + code + ", " : "")
+                    + (info != null ? "info=" + info + ", " : "")
+                    + (star != null ? "*=" + star : "")
+                    + "]";
+        }
     }
 }
