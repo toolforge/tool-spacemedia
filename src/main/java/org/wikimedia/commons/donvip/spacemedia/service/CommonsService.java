@@ -82,6 +82,9 @@ public class CommonsService {
     @Autowired
     private CommonsCategoryLinkRepository categoryLinkRepository;
 
+    @Autowired
+    private ObjectMapper jackson;
+
     /**
      * Self-autowiring to call {@link Cacheable} methods, otherwise the cache is
      * skipped. Spring cache is only trigerred on external calls.
@@ -157,7 +160,7 @@ public class CommonsService {
 
             try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
                 String body = getHttpResponseBody(response);
-                VisualEditorResponse apiResponse = new ObjectMapper().readValue(body, VeApiResponse.class)
+                VisualEditorResponse apiResponse = jackson.readValue(body, VeApiResponse.class)
                         .getVisualeditor();
                 if (!"success".equals(apiResponse.getResult())) {
                     throw new IllegalArgumentException(apiResponse.toString()); // FIXME better exception
