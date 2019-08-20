@@ -24,6 +24,10 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Cacheable("nasaCountByCenter")
     long countByCenter(String center);
 
+    @Cacheable("nasaCountIgnoredByCenter")
+    @Query("select count(*) from #{#entityName} m where m.ignored is true and m.center = ?1")
+    long countIgnoredByCenter(String center);
+
     @Override
     @Cacheable("nasaCountMissing")
     @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames)")

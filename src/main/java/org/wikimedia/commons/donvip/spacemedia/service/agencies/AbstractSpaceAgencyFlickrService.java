@@ -80,11 +80,17 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
         Statistics stats = super.getStatistics();
         if (flickrAccounts.size() > 1) {
             stats.setDetails(flickrAccounts.stream()
-                    .map(a -> new Statistics(a, flickrRepository.count(Collections.singleton(a)),
-                            flickrRepository.countMissingInCommons(Collections.singleton(a)), null))
+                    .map(this::getStatistics)
                     .sorted().collect(Collectors.toList()));
         }
         return stats;
+    }
+
+    private Statistics getStatistics(String alias) {
+        Set<String> singleton = Collections.singleton(alias);
+        return new Statistics(alias, flickrRepository.count(singleton),
+                flickrRepository.countIgnored(singleton),
+                flickrRepository.countMissingInCommons(singleton), null);
     }
 
     @Override

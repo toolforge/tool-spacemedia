@@ -378,7 +378,8 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
         if (centers.size() > 1) {
             stats.setDetails(centers.parallelStream()
                     .map(c -> new Statistics(Objects.toString(c), mediaRepository.countByCenter(c),
-                            mediaRepository.countMissingInCommonsByCenter(c), null))
+                            mediaRepository.countIgnoredByCenter(c), mediaRepository.countMissingInCommonsByCenter(c),
+                            null))
                     .sorted().collect(Collectors.toList()));
         }
         return stats;

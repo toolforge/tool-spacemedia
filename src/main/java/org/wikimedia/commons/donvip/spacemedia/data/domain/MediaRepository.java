@@ -10,7 +10,9 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface MediaRepository<T extends Media, ID> extends CrudRepository<T, ID> {
 
-    int countBySha1(String sha1);
+    long countBySha1(String sha1);
+
+    long countByIgnoredTrue();
 
     /**
      * Count files not yet uploaded to Wikimedia Commons.

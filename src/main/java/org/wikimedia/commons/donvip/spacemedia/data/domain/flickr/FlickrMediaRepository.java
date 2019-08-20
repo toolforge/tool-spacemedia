@@ -26,6 +26,10 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Query("select count(*) from #{#entityName} m where m.pathAlias in ?1")
     long count(Set<String> flickrAccounts);
 
+    @Cacheable("flickrCountMissing")
+    @Query("select count(*) from #{#entityName} m where m.ignored = true and m.pathAlias in ?1")
+    long countIgnored(Set<String> flickrAccounts);
+
     @Override
     @Cacheable("flickrCountMissing")
     @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames)")

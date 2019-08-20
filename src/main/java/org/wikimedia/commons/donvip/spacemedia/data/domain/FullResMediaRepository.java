@@ -10,7 +10,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface FullResMediaRepository<T extends FullResMedia, ID> extends MediaRepository<T, ID> {
 
-    int countByFullResSha1(String sha1);
+    long countByFullResSha1(String sha1);
 
     List<T> findByFullResAssetUrl(URL imageUrl);
 

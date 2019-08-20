@@ -6,17 +6,20 @@ import java.util.Objects;
 public class Statistics implements Comparable<Statistics> {
     private final String agency;
     private final long totalMedia;
+    private final long ignoredMedia;
     private final long missingMedia;
     private final Long problemsCount;
     private List<Statistics> details;
 
-    public Statistics(String agency, long totalMedia, long missingMedia, Long problemsCount) {
-        this(agency, totalMedia, missingMedia, problemsCount, null);
+    public Statistics(String agency, long totalMedia, long ignoredMedia, long missingMedia, Long problemsCount) {
+        this(agency, totalMedia, ignoredMedia, missingMedia, problemsCount, null);
     }
 
-    public Statistics(String agency, long totalMedia, long missingMedia, Long problemsCount, List<Statistics> details) {
+    public Statistics(String agency, long totalMedia, long ignoredMedia, long missingMedia, Long problemsCount,
+            List<Statistics> details) {
         this.agency = Objects.requireNonNull(agency);
         this.totalMedia = totalMedia;
+        this.ignoredMedia = ignoredMedia;
         this.missingMedia = missingMedia;
         this.problemsCount = problemsCount;
         this.details = details;
@@ -59,6 +62,10 @@ public class Statistics implements Comparable<Statistics> {
 
     public void setDetails(List<Statistics> details) {
         this.details = details;
+    }
+
+    public long getIgnoredMedia() {
+        return ignoredMedia;
     }
 
     @Override

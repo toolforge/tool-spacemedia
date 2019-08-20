@@ -1,0 +1,302 @@
+package org.wikimedia.commons.donvip.spacemedia.service.agencies;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
+import org.jsoup.HttpStatusException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@Service
+public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, String> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EsoService.class);
+
+    private static final Pattern SIZE_PATTERN = Pattern.compile("([0-9]+) x ([0-9]+) px");
+
+    private DateTimeFormatter dateFormatter;
+
+    @Value("${eso.date.pattern}")
+    private String datePattern;
+
+    @Value("${eso.search.link}")
+    private String searchLink;
+
+    @Autowired
+    private ObjectMapper jackson;
+
+    public EsoService(EsoMediaRepository repository) {
+        super(repository);
+    }
+
+    @PostConstruct
+    void init() {
+        dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
+    }
+
+    @Override
+    public String getName() {
+        return "ESO";
+    }
+
+    private static void scrapingError(String url) {
+        throw new IllegalStateException("ESO scraping code must be updated, see " + url);
+    }
+
+    private Optional<EsoMedia> updateMediaForUrl(URL url, EsoFrontPageItem item)
+            throws IOException, URISyntaxException {
+        String imgUrlLink = url.getProtocol() + "://" + url.getHost() + item.getUrl();
+        String id = item.getId();
+        if (id.length() < 2) {
+            scrapingError(imgUrlLink);
+        }
+        EsoMedia media;
+        boolean save = false;
+        Optional<EsoMedia> mediaInRepo = repository.findById(id);
+        if (mediaInRepo.isPresent()) {
+            media = mediaInRepo.get();
+        } else {
+            media = new EsoMedia();
+            media.setId(id);
+            save = true;
+            LOGGER.info(imgUrlLink);
+            Document html = Jsoup.connect(imgUrlLink).timeout(60_000).get();
+            Element div = html.getElementsByClass("col-md-9 left-column").get(0);
+            // Find title
+            Elements h1s = div.getElementsByTag("h1");
+            if (h1s.size() != 1 || h1s.get(0).text().isEmpty()) {
+                scrapingError(imgUrlLink);
+            }
+            media.setTitle(h1s.get(0).html());
+            // Find description
+            StringBuilder description = new StringBuilder();
+            for (Element p : div.getElementsByTag("div").get(1).nextElementSiblings()) {
+                if ("script".equals(p.tagName())) {
+                    continue;
+                } else if (!"p".equals(p.tagName())) {
+                    break;
+                }
+                description.append(p.html());
+            }
+            // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
+            media.setDescription(description.toString());
+            // Find credit
+            media.setCredit(div.getElementsByClass("credit").get(0).text());
+            // Check copyright is standard (CC-BY-4.0)
+            if (!"/public/outreach/copyright/"
+                    .equals(div.getElementsByClass("copyright").get(0).getElementsByTag("a").get(0).attr("href"))) {
+                LOGGER.error("Invalid copyright for " + imgUrlLink);
+                return Optional.empty();
+            }
+
+            processObjectInfo(url, imgUrlLink, id, media, html);
+
+            for (Element link : html.getElementsByClass("archive_dl_text")) {
+                String assetUrlLink = link.getElementsByTag("a").get(0).attr("href");
+                if (assetUrlLink.contains("/original/")) {
+                    media.setFullResAssetUrl(buildAssetUrl(assetUrlLink, url));
+                } else if (assetUrlLink.contains("/large/")) {
+                    media.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+                }
+            }
+
+            // Try to detect pictures of identifiable people, as per ESO conditions
+            if (media.getCategories() != null && media.getCategories().contains("People and Events")
+                    && media.getCategories().size() == 1
+                    && media.getTypes().stream().noneMatch(s -> !s.startsWith("Unspecified : People"))) {
+                media.setIgnored(Boolean.TRUE);
+                media.setIgnoredReason(
+                        "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.");
+            }
+        }
+        if (mediaService.computeSha1(media)) {
+            save = true;
+        }
+        if (mediaService.findCommonsFilesWithSha1(media)) {
+            save = true;
+        }
+        if (save) {
+            repository.save(media);
+        }
+        return Optional.of(media);
+    }
+
+    private URL buildAssetUrl(String assetUrlLink, URL url) throws MalformedURLException {
+        return new URL(
+                assetUrlLink.startsWith("/") ? url.getProtocol() + "://" + url.getHost() + assetUrlLink : assetUrlLink);
+    }
+
+    protected void processObjectInfo(URL url, String imgUrlLink, String id, EsoMedia media, Document doc) {
+        Element info = doc.getElementsByClass("object-info").get(0);
+        for (Element h3 : info.getElementsByTag("h3")) {
+            for (Element title : h3.nextElementSibling().getElementsByClass("title")) {
+                Element sibling = title.nextElementSibling();
+                String html = sibling.html();
+                String text = sibling.text();
+                switch (h3.text()) {
+                case "About the Image":
+                    switch (title.text()) {
+                    case "Id:":
+                        if (!id.equals(text)) {
+                            scrapingError(imgUrlLink);
+                        }
+                        break;
+                    case "Type:":
+                        media.setImageType(EsoMediaType.valueOf(text));
+                        break;
+                    case "Release date:":
+                        media.setReleaseDate(LocalDateTime.parse(text, dateFormatter));
+                        break;
+                    case "Size:":
+                        Matcher m = SIZE_PATTERN.matcher(text);
+                        if (!m.matches()) {
+                            scrapingError(imgUrlLink);
+                        }
+                        media.setWidth(Integer.parseInt(m.group(1)));
+                        media.setHeight(Integer.parseInt(m.group(2)));
+                        break;
+                    case "Field of View:":
+                        media.setFieldOfView(text);
+                        break;
+                    case "Related announcements:":
+                        media.setRelatedAnnouncements(parseExternalLinks(sibling, url));
+                        break;
+                    case "Related releases:":
+                        media.setRelatedReleases(parseExternalLinks(sibling, url));
+                        break;
+                    default:
+                        scrapingError(imgUrlLink);
+                    }
+                    break;
+                case "About the Object":
+                    switch (title.text()) {
+                    case "Name:":
+                        media.setName(text);
+                        break;
+                    case "Type:":
+                        media.setTypes(
+                                Arrays.stream(html.split("<br>")).map(String::trim).collect(Collectors.toSet()));
+                        break;
+                    case "Category:":
+                        Elements categories = sibling.getElementsByTag("a");
+                        if (categories.isEmpty()) {
+                            scrapingError(imgUrlLink);
+                        }
+                        media.setCategories(categories.stream().map(Element::text).collect(Collectors.toSet()));
+                        break;
+                    case "Distance:":
+                        media.setDistance(text);
+                        break;
+                    case "Constellation:":
+                        media.setConstellation(text);
+                        break;
+                    default:
+                        scrapingError(imgUrlLink);
+                    }
+                    break;
+                default:
+                    scrapingError(imgUrlLink);
+                }
+            }
+        }
+    }
+
+    private Set<String> parseExternalLinks(Element sibling, URL url) {
+        return sibling.getElementsByTag("a").stream().map(
+                e -> e.outerHtml().replace("href=\"/", "href=\"" + url.getProtocol() + "://" + url.getHost() + "/"))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    @Scheduled(fixedRateString = "${eso.update.rate}", initialDelayString = "${initial.delay}")
+    public void updateMedia() throws IOException {
+        LocalDateTime start = LocalDateTime.now();
+        LOGGER.info("Starting {} medias update...", getName());
+        int count = 0;
+        boolean loop = true;
+        int idx = 1;
+        while (loop) {
+            String urlLink = searchLink.replace("<idx>", Integer.toString(idx++));
+            URL url = new URL(urlLink);
+            try {
+                Document document = Jsoup.connect(urlLink).timeout(60_000).get();
+                for (Element script : document.getElementsByTag("script")) {
+                    String html = script.html();
+                    if (html.startsWith("var images = [")) {
+                        String json = html.replaceFirst("var images = ", "").replace(",\n    \n];", "\n    \n]")
+                                .replace("id: '", "\"id\": \"").replace("title: '", "\"title\": \"")
+                                .replace("width:", "\"width\":").replace("height:", "\"height\":")
+                                .replace("src: '", "\"src\": \"").replace("url: '", "\"url\": \"")
+                                .replace("potw: '", "\"potw\": \"").replace("',\n", "\",\n").replace("'\n", "\"\n");
+                        for (Iterator<EsoFrontPageItem> it = jackson.readerFor(EsoFrontPageItem.class)
+                                .readValues(json); it.hasNext();) {
+                            if (updateMediaForUrl(url, it.next()).isPresent()) {
+                                count++;
+                            }
+                        }
+                    }
+                }
+            } catch (HttpStatusException e) {
+                // End of search when we receive an HTTP 404
+                loop = false;
+            } catch (IOException | URISyntaxException e) {
+                LOGGER.error("Error when fetching " + url, e);
+            }
+        }
+        LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
+                Duration.between(LocalDateTime.now(), start));
+    }
+
+    @Override
+    protected Optional<Temporal> getUploadDate(EsoMedia media) {
+        return Optional.of(media.getReleaseDate());
+    }
+
+    @Override
+    protected String getSource(EsoMedia media) throws MalformedURLException {
+        return wikiLink(new URL("https://www.eso.org/public/images/" + media.getId()), media.getTitle());
+    }
+
+    @Override
+    protected String getAuthor(EsoMedia media) throws MalformedURLException {
+        return media.getCredit();
+    }
+
+    @Override
+    protected List<String> findTemplates(EsoMedia media) {
+        List<String> result = super.findTemplates(media);
+        result.add("ESO");
+        return result;
+    }
+}

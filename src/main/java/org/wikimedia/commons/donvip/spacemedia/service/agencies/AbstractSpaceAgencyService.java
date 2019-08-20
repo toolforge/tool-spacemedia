@@ -65,6 +65,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
         return repository.count();
     }
 
+    public long countIgnored() {
+        return repository.countByIgnoredTrue();
+    }
+
     public long countMissingMedia() {
         return repository.countMissingInCommons();
     }
@@ -96,7 +100,8 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
 
     public Statistics getStatistics() {
         long problems = getProblemsCount();
-        return new Statistics(getName(), countAllMedia(), countMissingMedia(), problems > 0 ? problems : null);
+        return new Statistics(getName(), countAllMedia(), countIgnored(), countMissingMedia(),
+                problems > 0 ? problems : null);
     }
 
     public final List<Problem> getProblems() {
@@ -172,7 +177,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
                     sb.append("{{Taken in|").append(d).append("}}");
                 }
             } else {
-                getUploadDate(media).ifPresent(d -> sb.append("{{Upload date|").append(d).append("}}"));
+                getUploadDate(media).ifPresent(d -> sb.append("\n| date = {{Upload date|").append(d).append("}}"));
             }
             sb.append("\n| source = ").append(getSource(media)).append("\n| author = ").append(getAuthor(media));
             getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
