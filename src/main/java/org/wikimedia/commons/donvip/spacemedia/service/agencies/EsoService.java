@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -38,6 +39,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.micrometer.core.instrument.util.StringUtils;
+
 @Service
 public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, String> {
 
@@ -52,6 +55,9 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
 
     @Value("${eso.search.link}")
     private String searchLink;
+
+    @Value("#{${eso.categories}}")
+    private Map<String, String> esoCategories;
 
     @Autowired
     private ObjectMapper jackson;
@@ -297,6 +303,20 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
     protected List<String> findTemplates(EsoMedia media) {
         List<String> result = super.findTemplates(media);
         result.add("ESO");
+        return result;
+    }
+
+    @Override
+    protected Set<String> findCategories(EsoMedia media) {
+        Set<String> result = super.findCategories(media);
+        if (media.getCategories() != null) {
+            for (String cat : media.getCategories()) {
+                String esoCat = esoCategories.get(cat);
+                if (StringUtils.isNotBlank(esoCat)) {
+                    result.add(esoCat);
+                }
+            }
+        }
         return result;
     }
 }
