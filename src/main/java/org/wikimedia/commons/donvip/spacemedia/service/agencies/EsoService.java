@@ -139,7 +139,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
 
             // Try to detect pictures of identifiable people, as per ESO conditions
             if (media.getCategories() != null && media.getCategories().contains("People and Events")
-                    && media.getCategories().size() == 1
+                    && media.getCategories().size() == 1 && media.getTypes() != null
                     && media.getTypes().stream().noneMatch(s -> !s.startsWith("Unspecified : People"))) {
                 media.setIgnored(Boolean.TRUE);
                 media.setIgnoredReason(
