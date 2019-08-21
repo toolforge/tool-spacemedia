@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -126,7 +127,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
                 return Optional.empty();
             }
 
-            processObjectInfo(url, imgUrlLink, id, media, html);
+            processObjectInfos(url, imgUrlLink, id, media, html);
 
             for (Element link : html.getElementsByClass("archive_dl_text")) {
                 String assetUrlLink = link.getElementsByTag("a").get(0).attr("href");
@@ -158,87 +159,149 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
         return Optional.of(media);
     }
 
-    private URL buildAssetUrl(String assetUrlLink, URL url) throws MalformedURLException {
+    private static URL buildAssetUrl(String assetUrlLink, URL url) throws MalformedURLException {
         return new URL(
                 assetUrlLink.startsWith("/") ? url.getProtocol() + "://" + url.getHost() + assetUrlLink : assetUrlLink);
     }
 
-    protected void processObjectInfo(URL url, String imgUrlLink, String id, EsoMedia media, Document doc) {
-        Element info = doc.getElementsByClass("object-info").get(0);
-        for (Element h3 : info.getElementsByTag("h3")) {
-            for (Element title : h3.nextElementSibling().getElementsByClass("title")) {
-                Element sibling = title.nextElementSibling();
-                String html = sibling.html();
-                String text = sibling.text();
-                switch (h3.text()) {
-                case "About the Image":
-                    switch (title.text()) {
-                    case "Id:":
-                        if (!id.equals(text)) {
-                            scrapingError(imgUrlLink);
-                        }
+    protected void processObjectInfos(URL url, String imgUrlLink, String id, EsoMedia media, Document doc) {
+        for (Element info : doc.getElementsByClass("object-info")) {
+            for (Element h3 : info.getElementsByTag("h3")) {
+                for (Element title : h3.nextElementSibling().getElementsByClass("title")) {
+                    Element sibling = title.nextElementSibling();
+                    String html = sibling.html();
+                    String text = sibling.text();
+                    switch (h3.text()) {
+                    case "About the Image":
+                        processAboutTheImage(url, imgUrlLink, id, media, title, sibling, text);
                         break;
-                    case "Type:":
-                        media.setImageType(EsoMediaType.valueOf(text));
+                    case "About the Object":
+                        processAboutTheObject(imgUrlLink, media, title, sibling, html, text);
                         break;
-                    case "Release date:":
-                        media.setReleaseDate(LocalDateTime.parse(text, dateFormatter));
-                        break;
-                    case "Size:":
-                        Matcher m = SIZE_PATTERN.matcher(text);
-                        if (!m.matches()) {
-                            scrapingError(imgUrlLink);
-                        }
-                        media.setWidth(Integer.parseInt(m.group(1)));
-                        media.setHeight(Integer.parseInt(m.group(2)));
-                        break;
-                    case "Field of View:":
-                        media.setFieldOfView(text);
-                        break;
-                    case "Related announcements:":
-                        media.setRelatedAnnouncements(parseExternalLinks(sibling, url));
-                        break;
-                    case "Related releases:":
-                        media.setRelatedReleases(parseExternalLinks(sibling, url));
+                    case "Coordinates":
+                        processCoordinates(imgUrlLink, media, title, text);
                         break;
                     default:
                         scrapingError(imgUrlLink);
                     }
-                    break;
-                case "About the Object":
-                    switch (title.text()) {
-                    case "Name:":
-                        media.setName(text);
-                        break;
-                    case "Type:":
-                        media.setTypes(
-                                Arrays.stream(html.split("<br>")).map(String::trim).collect(Collectors.toSet()));
-                        break;
-                    case "Category:":
-                        Elements categories = sibling.getElementsByTag("a");
-                        if (categories.isEmpty()) {
-                            scrapingError(imgUrlLink);
-                        }
-                        media.setCategories(categories.stream().map(Element::text).collect(Collectors.toSet()));
-                        break;
-                    case "Distance:":
-                        media.setDistance(text);
-                        break;
-                    case "Constellation:":
-                        media.setConstellation(text);
-                        break;
-                    default:
-                        scrapingError(imgUrlLink);
-                    }
-                    break;
-                default:
-                    scrapingError(imgUrlLink);
+                }
+                if ("Colours & filters".equals(h3.text())) {
+                    processColooursAndFilters(imgUrlLink, media, h3);
                 }
             }
         }
     }
 
-    private Set<String> parseExternalLinks(Element sibling, URL url) {
+    protected void processAboutTheImage(URL url, String imgUrlLink, String id, EsoMedia media, Element title,
+            Element sibling, String text) {
+        switch (title.text()) {
+        case "Id:":
+            if (!id.equals(text)) {
+                scrapingError(imgUrlLink);
+            }
+            break;
+        case "Type:":
+            media.setImageType(EsoMediaType.valueOf(text));
+            break;
+        case "Release date:":
+            media.setReleaseDate(LocalDateTime.parse(text, dateFormatter));
+            break;
+        case "Size:":
+            Matcher m = SIZE_PATTERN.matcher(text);
+            if (!m.matches()) {
+                scrapingError(imgUrlLink);
+            }
+            media.setWidth(Integer.parseInt(m.group(1)));
+            media.setHeight(Integer.parseInt(m.group(2)));
+            break;
+        case "Field of View:":
+            media.setFieldOfView(text);
+            break;
+        case "Related announcements:":
+            media.setRelatedAnnouncements(parseExternalLinks(sibling, url));
+            break;
+        case "Related releases:":
+            media.setRelatedReleases(parseExternalLinks(sibling, url));
+            break;
+        default:
+            scrapingError(imgUrlLink);
+        }
+    }
+
+    protected void processAboutTheObject(String imgUrlLink, EsoMedia media, Element title, Element sibling,
+            String html,
+            String text) {
+        switch (title.text()) {
+        case "Name:":
+            media.setName(text);
+            break;
+        case "Type:":
+            media.setTypes(Arrays.stream(html.split("<br>")).map(String::trim).collect(Collectors.toSet()));
+            break;
+        case "Category:":
+            Elements categories = sibling.getElementsByTag("a");
+            if (categories.isEmpty()) {
+                scrapingError(imgUrlLink);
+            }
+            media.setCategories(categories.stream().map(Element::text).collect(Collectors.toSet()));
+            break;
+        case "Distance:":
+            media.setDistance(text);
+            break;
+        case "Constellation:":
+            media.setConstellation(text);
+            break;
+        default:
+            scrapingError(imgUrlLink);
+        }
+    }
+
+    protected void processCoordinates(String imgUrlLink, EsoMedia media, Element title, String text) {
+        switch (title.text()) {
+        case "Position (RA):":
+            media.setPositionRa(text);
+            break;
+        case "Position (Dec):":
+            media.setPositionDec(text);
+            break;
+        case "Field of view:":
+            media.setFieldOfView(text);
+            break;
+        case "Orientation:":
+            media.setOrientation(text);
+            break;
+        default:
+            scrapingError(imgUrlLink);
+        }
+    }
+
+    protected void processColooursAndFilters(String imgUrlLink, EsoMedia media, Element h3) {
+        Element table = h3.nextElementSibling();
+        int telescopeIndex = -1;
+        int index = 0;
+        Elements ths = table.getElementsByTag("th");
+        for (Element th : ths) {
+            if ("Telescope".equals(th.text())) {
+                telescopeIndex = index;
+                break;
+            }
+            index++;
+        }
+        if (telescopeIndex < 0) {
+            scrapingError(imgUrlLink);
+        }
+        Set<String> telescopes = new HashSet<>();
+        Elements tds = table.getElementsByTag("td");
+        for (int i = telescopeIndex; i < tds.size(); i += ths.size()) {
+            tds.get(i).getElementsByTag("a").forEach(a -> telescopes.add(a.text()));
+        }
+        if (telescopes.isEmpty()) {
+            scrapingError(imgUrlLink);
+        }
+        media.setTelescopes(telescopes);
+    }
+
+    protected Set<String> parseExternalLinks(Element sibling, URL url) {
         return sibling.getElementsByTag("a").stream().map(
                 e -> e.outerHtml().replace("href=\"/", "href=\"" + url.getProtocol() + "://" + url.getHost() + "/"))
                 .collect(Collectors.toSet());

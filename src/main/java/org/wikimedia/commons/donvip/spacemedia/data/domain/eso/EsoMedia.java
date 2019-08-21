@@ -38,17 +38,30 @@ public class EsoMedia extends FullResMedia {
     private int width;
     private int height;
 
-    @Column(nullable = true, length = 64)
+    @Column(nullable = true, length = 63)
     private String fieldOfView;
 
     @Column(nullable = true, length = 127)
     private String name;
 
-    @Column(nullable = true, length = 64)
+    @Column(nullable = true, length = 63)
     private String distance;
 
     @Column(nullable = true, length = 127)
     private String constellation;
+
+    @Column(nullable = true, length = 63)
+    private String positionRa;
+
+    @Column(nullable = true, length = 63)
+    private String positionDec;
+
+    @Column(nullable = true, length = 63)
+    private String orientation;
+
+    @Column(nullable = true, length = 63)
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> telescopes;
 
     @Column(nullable = false, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
@@ -171,6 +184,38 @@ public class EsoMedia extends FullResMedia {
 
     public void setRelatedAnnouncements(Set<String> relatedAnnouncements) {
         this.relatedAnnouncements = relatedAnnouncements;
+    }
+
+    public String getPositionRa() {
+        return positionRa;
+    }
+
+    public void setPositionRa(String positionRa) {
+        this.positionRa = positionRa;
+    }
+
+    public String getPositionDec() {
+        return positionDec;
+    }
+
+    public void setPositionDec(String positionDec) {
+        this.positionDec = positionDec;
+    }
+
+    public String getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(String orientation) {
+        this.orientation = orientation;
+    }
+
+    public Set<String> getTelescopes() {
+        return telescopes;
+    }
+
+    public void setTelescopes(Set<String> telescopes) {
+        this.telescopes = telescopes;
     }
 
     @Override
