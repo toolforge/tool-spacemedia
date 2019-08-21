@@ -119,7 +119,11 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
             // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
             media.setDescription(description.toString());
             // Find credit
-            media.setCredit(div.getElementsByClass("credit").get(0).text());
+            Element credit = div.getElementsByClass("credit").get(0).getElementsByTag("p").get(0);
+            media.setCredit(credit.getElementsByTag("a").isEmpty() ? credit.text() : credit.html());
+            if (media.getCredit().startsWith("<") && !media.getCredit().startsWith("<a")) {
+                scrapingError(imgUrlLink);
+            }
             // Check copyright is standard (CC-BY-4.0)
             if (!"/public/outreach/copyright/"
                     .equals(div.getElementsByClass("copyright").get(0).getElementsByTag("a").get(0).attr("href"))) {
@@ -141,7 +145,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
             // Try to detect pictures of identifiable people, as per ESO conditions
             if (media.getCategories() != null && media.getCategories().contains("People and Events")
                     && media.getCategories().size() == 1 && media.getTypes() != null
-                    && media.getTypes().stream().noneMatch(s -> !s.startsWith("Unspecified : People"))) {
+                    && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
                 media.setIgnored(Boolean.TRUE);
                 media.setIgnoredReason(
                         "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.");
