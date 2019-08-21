@@ -17,6 +17,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 public class EsoMedia extends FullResMedia {
 
     @Id
+    @Column(length = 127)
     private String id;
 
     @Enumerated(EnumType.STRING)
@@ -26,38 +27,38 @@ public class EsoMedia extends FullResMedia {
     @Column(nullable = false)
     private LocalDateTime releaseDate;
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> relatedAnnouncements;
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> relatedReleases;
 
     private int width;
     private int height;
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 64)
     private String fieldOfView;
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 127)
     private String name;
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 64)
     private String distance;
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 127)
     private String constellation;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> types;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> categories;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 127)
     private String credit;
 
     public String getId() {
