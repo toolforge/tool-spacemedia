@@ -134,7 +134,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
                     }
                 }
             }
-            media.setCredit(links.isEmpty() ? credit.text() : credit.html());
+            media.setCredit(links.isEmpty() ? credit.text() : credit.html().replace("<span>", "").replace("</span>", ""));
             if (media.getCredit().startsWith("<") && !media.getCredit().startsWith("<a")) {
                 scrapingError(imgUrlLink);
             }
