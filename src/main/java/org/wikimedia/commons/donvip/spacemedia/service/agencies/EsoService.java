@@ -24,6 +24,7 @@ import javax.annotation.PostConstruct;
 
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -120,7 +121,15 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
             media.setDescription(description.toString());
             // Find credit
             Element credit = div.getElementsByClass("credit").get(0).getElementsByTag("p").get(0);
-            media.setCredit(credit.getElementsByTag("a").isEmpty() ? credit.text() : credit.html());
+            Elements links = credit.getElementsByTag("a");
+            for (Element a : links) {
+                for (Iterator<Attribute> it = a.attributes().iterator(); it.hasNext();) {
+                    if (!"href".equals(it.next().getKey())) {
+                        it.remove();
+                    }
+                }
+            }
+            media.setCredit(links.isEmpty() ? credit.text() : credit.html());
             if (media.getCredit().startsWith("<") && !media.getCredit().startsWith("<a")) {
                 scrapingError(imgUrlLink);
             }
