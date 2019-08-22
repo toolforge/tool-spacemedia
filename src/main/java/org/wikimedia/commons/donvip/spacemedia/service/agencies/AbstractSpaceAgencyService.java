@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
@@ -59,6 +61,20 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
 
     public AbstractSpaceAgencyService(MediaRepository<T, ID> repository) {
         this.repository = Objects.requireNonNull(repository);
+    }
+
+    @Scheduled(fixedDelay = 43200000L)
+    public void checkCommonCategories() {
+        checkCategories(categories);
+    }
+
+    protected void checkCategories(Map<String, String> categories) {
+        Set<String> problematicCategories = categories.values().parallelStream()
+                .filter(c -> !c.isEmpty() && !c.startsWith("SpaceX CRS-") && !commonsService.isUpToDateCategory(c))
+                .collect(Collectors.toSet());
+        if (!problematicCategories.isEmpty()) {
+            LOGGER.warn("problematicCategories : {}", problematicCategories);
+        }
     }
 
     public long countAllMedia() {

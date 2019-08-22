@@ -73,6 +73,11 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
         dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
     }
 
+    @Scheduled(fixedDelay = 43200000L)
+    public void checkEsoCategories() {
+        checkCategories(esoCategories);
+    }
+
     @Override
     public String getName() {
         return "ESO";

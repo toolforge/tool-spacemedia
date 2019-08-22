@@ -11,6 +11,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
 import javax.persistence.Table;
 
 /**
@@ -39,6 +42,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "page")
+@SecondaryTable(name = "redirect", pkJoinColumns = @PrimaryKeyJoinColumn(name = "rd_from"))
 public class CommonsPage {
 
     @Id
@@ -90,6 +94,10 @@ public class CommonsPage {
     @JoinColumn(name = "cl_from")
     @OneToMany(fetch = FetchType.EAGER)
     private Set<CommonsCategoryLink> categoryLinks;
+
+    @JoinColumn(name = "rd_from", table = "redirect", insertable = false, updatable = false)
+    @OneToOne(fetch = FetchType.EAGER, optional = true)
+    private CommonsRedirect redirect;
 
     public int getId() {
         return id;
@@ -209,6 +217,14 @@ public class CommonsPage {
 
     public void setCategoryLinks(Set<CommonsCategoryLink> categoryLinks) {
         this.categoryLinks = categoryLinks;
+    }
+
+    public CommonsRedirect getRedirect() {
+        return redirect;
+    }
+
+    public void setRedirect(CommonsRedirect redirect) {
+        this.redirect = redirect;
     }
 
     @Override

@@ -289,10 +289,25 @@ public class CommonsService {
         return self.getCategoryPage(category).getProps().stream().anyMatch(pp -> "hiddencat".equals(pp.getPropname()));
     }
 
+    /**
+     * Determines if a Commons category exists and is not a redirect.
+     * 
+     * @param category category to check
+     * @return {@code true} if the category exists and is not a redirect
+     */
+    @Cacheable("upToDateCategories")
+    public boolean isUpToDateCategory(String category) {
+        try {
+            return self.getCategoryPage(category).getRedirect() == null;
+        } catch (CategoryNotFoundException | CategoryPageNotFoundException e) {
+            return false;
+        }
+    }
+
     @Cacheable("categoryPages")
     public CommonsPage getCategoryPage(String category) {
         return pageRepository.findByCategoryTitle(categoryRepository
-                .findByTitle(category).orElseThrow(() -> new CategoryNotFoundException(category)).getTitle())
+                .findByTitle(category.replace(' ', '_')).orElseThrow(() -> new CategoryNotFoundException(category)).getTitle())
                 .orElseThrow(() -> new CategoryPageNotFoundException(category));
     }
 
