@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
@@ -57,6 +59,10 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Override
     @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
     List<T> findMissingInCommons();
+
+    @Override
+    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    Page<T> findMissingInCommons(Pageable page);
 
     @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.center = ?1")
     List<T> findMissingInCommonsByCenter(String center);

@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
@@ -47,7 +49,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
     protected final MediaRepository<T, ID> repository;
 
     @Autowired
-    protected ProblemRepository problemrepository;
+    protected ProblemRepository problemRepository;
     @Autowired
     protected MediaService mediaService;
     @Autowired
@@ -93,8 +95,16 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
         return repository.findAll();
     }
 
+    public Page<T> listAllMedia(Pageable page) {
+        return repository.findAll(page);
+    }
+
     public List<T> listMissingMedia() {
         return repository.findMissingInCommons();
+    }
+
+    public Page<T> listMissingMedia(Pageable page) {
+        return repository.findMissingInCommons(page);
     }
 
     public List<T> listDuplicateMedia() {
@@ -121,11 +131,11 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
     }
 
     public final List<Problem> getProblems() {
-        return problemrepository.findByAgency(getName());
+        return problemRepository.findByAgency(getName());
     }
 
     public final long getProblemsCount() {
-        return problemrepository.countByAgency(getName());
+        return problemRepository.countByAgency(getName());
     }
 
     protected final Problem problem(URL problematicUrl, Throwable t) {
@@ -133,7 +143,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
     }
 
     protected final Problem problem(URL problematicUrl, String errorMessage) {
-        Optional<Problem> problem = problemrepository.findByAgencyAndProblematicUrl(getName(), problematicUrl);
+        Optional<Problem> problem = problemRepository.findByAgencyAndProblematicUrl(getName(), problematicUrl);
         if (problem.isPresent()) {
             return problem.get();
         } else {
@@ -142,7 +152,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
             pb.setErrorMessage(errorMessage);
             pb.setProblematicUrl(problematicUrl);
             LOGGER.warn(pb.toString());
-            return problemrepository.save(pb);
+            return problemRepository.save(pb);
         }
     }
 

@@ -5,6 +5,8 @@ import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
@@ -47,6 +49,10 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Override
     @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
     List<FlickrMedia> findMissingInCommons();
+
+    @Override
+    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    Page<FlickrMedia> findMissingInCommons(Pageable page);
 
     @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
     List<FlickrMedia> findMissingInCommons(Set<String> flickrAccounts);

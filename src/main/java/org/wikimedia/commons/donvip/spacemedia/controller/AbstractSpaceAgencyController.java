@@ -7,6 +7,9 @@ import java.util.Objects;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.http.client.ClientProtocolException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -24,8 +27,8 @@ public abstract class AbstractSpaceAgencyController<T extends Media, ID> {
     }
 
     @GetMapping("/all")
-    public final Iterable<T> listAll() throws IOException {
-        return service.listAllMedia();
+    public final Page<T> listAll(@PageableDefault(size = 100, sort = "id") Pageable page) throws IOException {
+        return service.listAllMedia(page);
     }
 
     @GetMapping("/update")
@@ -34,8 +37,8 @@ public abstract class AbstractSpaceAgencyController<T extends Media, ID> {
     }
 
     @GetMapping("/missing")
-    public final List<T> listMissing() throws IOException {
-        return service.listMissingMedia();
+    public final Page<T> listMissing(@PageableDefault(size = 100, sort = "id") Pageable page) throws IOException {
+        return service.listMissingMedia(page);
     }
 
     @GetMapping("/duplicates")

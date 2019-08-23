@@ -4,6 +4,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 
@@ -25,6 +27,10 @@ public interface FullResMediaRepository<T extends FullResMedia, ID> extends Medi
     @Override
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResSha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
     List<T> findMissingInCommons();
+
+    @Override
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResSha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
+    Page<T> findMissingInCommons(Pageable page);
 
     @Override
     @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResSha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
