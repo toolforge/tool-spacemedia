@@ -50,6 +50,13 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("([0-9]+) x ([0-9]+) px");
 
+    private static final String ESO_BASE_PUBLIC_URL = "https://www.eso.org/public/";
+
+    private static final String ESO_IMAGES_PATH = "images/";
+
+    private static final Pattern PATTERN_LOCALIZED_URL = Pattern
+            .compile(ESO_BASE_PUBLIC_URL + "([a-z]+/)" + ESO_IMAGES_PATH + ".*");
+
     private DateTimeFormatter dateFormatter;
 
     @Value("${eso.date.pattern}")
@@ -90,6 +97,11 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
     private Optional<EsoMedia> updateMediaForUrl(URL url, EsoFrontPageItem item)
             throws IOException, URISyntaxException {
         String imgUrlLink = url.getProtocol() + "://" + url.getHost() + item.getUrl();
+        Matcher m = PATTERN_LOCALIZED_URL.matcher(imgUrlLink);
+        if (m.matches()) {
+            // Switch to international english url
+            imgUrlLink = imgUrlLink.replace(m.group(1), "");
+        }
         String id = item.getId();
         if (id.length() < 2) {
             scrapingError(imgUrlLink);
@@ -372,7 +384,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
 
     @Override
     protected String getSource(EsoMedia media) throws MalformedURLException {
-        return wikiLink(new URL("https://www.eso.org/public/images/" + media.getId()), media.getTitle());
+        return wikiLink(new URL(ESO_BASE_PUBLIC_URL + ESO_IMAGES_PATH + media.getId()), media.getTitle());
     }
 
     @Override
