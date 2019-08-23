@@ -337,14 +337,12 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
 
     @Override
     public void updateMedia() {
-        LocalDateTime start = LocalDateTime.now();
-        LOGGER.info("Starting NASA medias update...");
+        LocalDateTime start = startUpdateMedia();
         int count = 0;
         count += updateImages();
         count += updateAudios();
         count += updateVideos();
-        LOGGER.info("NASA medias update completed: {} medias in {}", count,
-                Duration.between(LocalDateTime.now(), start));
+        endUpdateMedia(count, start);
     }
 
     @Override

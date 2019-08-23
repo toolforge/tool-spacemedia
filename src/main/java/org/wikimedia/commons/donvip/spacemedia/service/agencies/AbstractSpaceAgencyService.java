@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -123,6 +124,16 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
     public abstract String getName();
 
     public abstract void updateMedia() throws IOException;
+
+    protected final LocalDateTime startUpdateMedia() {
+        LOGGER.info("Starting {} medias update...", getName());
+        return LocalDateTime.now();
+    }
+
+    protected final void endUpdateMedia(int count, LocalDateTime start) {
+        LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
+                Duration.between(LocalDateTime.now(), start));
+    }
 
     public Statistics getStatistics() {
         long problems = getProblemsCount();

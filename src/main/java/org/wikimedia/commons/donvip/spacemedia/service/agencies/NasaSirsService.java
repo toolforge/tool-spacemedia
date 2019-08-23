@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -80,8 +79,7 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
     @Override
     @Scheduled(fixedRateString = "${nasa.sirs.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
-        LocalDateTime start = LocalDateTime.now();
-        LOGGER.info("Starting {} medias update...", getName());
+        LocalDateTime start = startUpdateMedia();
         int count = 0;
         for (String category : loadCategories()) {
             LOGGER.info("{} medias update for '{}'...", getName(), category);
@@ -134,8 +132,7 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
                 }
             }
         }
-        LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
-                Duration.between(LocalDateTime.now(), start));
+        endUpdateMedia(count, start);
     }
 
     private static List<String> loadImageValues(String imageLink) throws IOException {

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.Collections;
@@ -152,8 +151,7 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
     }
 
     protected void updateFlickrMedia() {
-        LocalDateTime start = LocalDateTime.now();
-        LOGGER.info("Starting {} medias update...", getName());
+        LocalDateTime start = startUpdateMedia();
         int count = 0;
         for (String flickrAccount : flickrAccounts) {
             try {
@@ -171,8 +169,7 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
                 LOGGER.error("Error while fetching Flickr images from account " + flickrAccount, e);
             }
         }
-        LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
-                Duration.between(LocalDateTime.now(), start));
+        endUpdateMedia(count, start);
     }
 
     private URL getVideoUrl(FlickrMedia media) throws MalformedURLException {

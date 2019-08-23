@@ -6,7 +6,6 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -286,8 +285,7 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
     @Override
     @Scheduled(fixedRateString = "${esa.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
-        LocalDateTime start = LocalDateTime.now();
-        LOGGER.info("Starting ESA image updates...");
+        LocalDateTime start = startUpdateMedia();
         updateMissingImages();
         final URL url = new URL(searchLink);
         final String proto = url.getProtocol();
@@ -323,7 +321,7 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
             }
         } while (moreImages);
 
-        LOGGER.info("ESA images update completed: {} images in {}", count, Duration.between(LocalDateTime.now(), start));
+        endUpdateMedia(count, start);
     }
 
     @Override

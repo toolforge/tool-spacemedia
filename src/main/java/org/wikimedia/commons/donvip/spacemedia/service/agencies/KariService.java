@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -74,8 +73,7 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> 
     @Override
     @Scheduled(fixedRateString = "${kari.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
-        LocalDateTime start = LocalDateTime.now();
-        LOGGER.info("Starting {} medias update...", getName());
+        LocalDateTime start = startUpdateMedia();
         int consecutiveFailures = 0;
         int count = 0;
         int id = 1;
@@ -121,8 +119,7 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> 
             }
             id++;
         }
-        LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
-                Duration.between(LocalDateTime.now(), start));
+        endUpdateMedia(count, start);
     }
 
     protected KariMedia processMedia(boolean save, KariMedia media, URL view, boolean mediaInRepo)

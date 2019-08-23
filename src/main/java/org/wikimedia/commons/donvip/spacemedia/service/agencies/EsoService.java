@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
@@ -340,8 +339,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
     @Override
     @Scheduled(fixedRateString = "${eso.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
-        LocalDateTime start = LocalDateTime.now();
-        LOGGER.info("Starting {} medias update...", getName());
+        LocalDateTime start = startUpdateMedia();
         int count = 0;
         boolean loop = true;
         int idx = 1;
@@ -373,8 +371,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
                 LOGGER.error("Error when fetching " + url, e);
             }
         }
-        LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
-                Duration.between(LocalDateTime.now(), start));
+        endUpdateMedia(count, start);
     }
 
     @Override
