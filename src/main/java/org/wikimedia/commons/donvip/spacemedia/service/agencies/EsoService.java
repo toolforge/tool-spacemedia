@@ -81,7 +81,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
 
     @Scheduled(fixedDelay = 43200000L)
     public void checkEsoCategories() {
-        checkCategories(esoCategories);
+        checkCommonsCategories(esoCategories);
     }
 
     @Override

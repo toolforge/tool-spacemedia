@@ -68,10 +68,17 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
 
     @Scheduled(fixedDelay = 43200000L)
     public void checkCommonCategories() {
-        checkCategories(categories);
+        checkCommonsCategories(categories);
     }
 
-    protected void checkCategories(Map<String, String> categories) {
+    /**
+     * Checks that given Commons categories exist and are not redirected. Otherwise,
+     * log a warning. Future known space missions which don't have a Commons
+     * category yet are excluded.
+     * 
+     * @param categories Commons categories to check
+     */
+    protected void checkCommonsCategories(Map<String, String> categories) {
         Set<String> problematicCategories = categories.values().parallelStream()
                 .filter(c -> !c.isEmpty() && !c.startsWith("SpaceX CRS-") && !commonsService.isUpToDateCategory(c))
                 .collect(Collectors.toSet());
