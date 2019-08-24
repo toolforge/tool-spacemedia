@@ -105,7 +105,7 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
     }
 
     private NasaMedia processMedia(RestTemplate rest, NasaMedia media, URL href) throws IOException, URISyntaxException {
-        Optional<NasaMedia> mediaInRepo = repository.findById(media.getNasaId());
+        Optional<NasaMedia> mediaInRepo = repository.findById(media.getId());
         boolean save = false;
         if (mediaInRepo.isPresent()) {
             // allow to purge keywords table and recreate contents
@@ -142,10 +142,10 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
             media = save(media);
         }
         if (!nasaCenters.contains(media.getCenter())) {
-            problem(media.getAssetUrl(), "Unknown center for id '" + media.getNasaId() + "': " + media.getCenter());
+            problem(media.getAssetUrl(), "Unknown center for id '" + media.getId() + "': " + media.getCenter());
         }
-        if (media.getNasaId().length() < 3) {
-            problem(media.getAssetUrl(), "Strange id: '" + media.getNasaId() + "'");
+        if (media.getId().length() < 3) {
+            problem(media.getAssetUrl(), "Strange id: '" + media.getId() + "'");
         }
         return media;
     }
@@ -352,7 +352,7 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
 
     @Override
     protected String getSource(NasaMedia media) throws MalformedURLException {
-        return wikiLink(new URL(detailsLink.replace("<id>", media.getNasaId())), media.getTitle());
+        return wikiLink(new URL(detailsLink.replace("<id>", media.getId())), media.getTitle());
     }
 
     @Override

@@ -4,7 +4,6 @@ import static net.bytebuddy.description.annotation.AnnotationDescription.Builder
 import static net.bytebuddy.description.annotation.AnnotationValue.ForConstant.of;
 
 import java.util.List;
-import java.util.Locale;
 
 import javax.annotation.PostConstruct;
 
@@ -38,13 +37,12 @@ public class SpaceAgencyControllerConfiguration {
         for (AbstractSpaceAgencyService<?, ?> agency : agencies) {
             Class<SpaceAgencyController> parentClass = SpaceAgencyController.class;
             String controllerName = agency.getName().replace(" ", "").replace("(", "").replace(")", "") + "Controller";
-            String path = agency.getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH);
 
             SpaceAgencyController controller = new ByteBuddy()
                     .subclass(parentClass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
                     .annotateType(
                             ofType(RestController.class).build(),
-                            ofType(RequestMapping.class).define("path", of(new String[] {path})).build())
+                            ofType(RequestMapping.class).define("path", of(new String[] {agency.getId()})).build())
                     .defineConstructor(Visibility.PUBLIC)
                     .withParameters(agency.getClass())
                     .intercept(MethodCall

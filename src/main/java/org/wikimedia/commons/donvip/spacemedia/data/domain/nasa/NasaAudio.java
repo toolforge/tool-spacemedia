@@ -8,7 +8,7 @@ public class NasaAudio extends NasaMedia {
     @Override
     public String toString() {
         return "NasaAudio ["
-                + (getNasaId() != null ? "nasaId=" + getNasaId() + ", " : "")
+                + (getId() != null ? "nasaId=" + getId() + ", " : "")
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")
                 + (getCenter() != null ? "center=" + getCenter() + ", " : "")
                 + (getDateCreated() != null ? "dateCreated=" + getDateCreated() + ", " : "")

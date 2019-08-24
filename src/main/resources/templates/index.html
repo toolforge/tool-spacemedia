@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Spacemedia</title>
+  </head>
+  <body>
+    <h1>Sources</h1>
+
+    <table class="table table-sm table-hover">
+      <thead class="thead-dark">
+	      <tr>
+	        <th>Name</th>
+	        <th>Free Media</th>
+	        <th>To upload</th>
+	        <th>Ignored</th>
+	        <th>Problems</th>
+	      <tr>
+      </thead>
+      <tbody>
+	      <tr th:each="agency : ${agencies}">
+	        <td th:text="${agency.name}"></td>
+	        <td><a th:text="${agency.countAllMedia()}" th:href="@{/{id}/all(id=${agency.id})}"/></td>
+	        <td><a th:text="${agency.countMissingMedia()}" th:href="@{/{id}/missing(id=${agency.id})}"/></td>
+	        <td><a th:text="${agency.countIgnored()}" th:href="@{/{id}/ignored(id=${agency.id})}"/></td>
+	        <td><a th:text="${agency.getProblemsCount()}" th:href="@{/{id}/problems(id=${agency.id})}"/></td>
+	      </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

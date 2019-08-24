@@ -11,6 +11,7 @@ import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -135,6 +136,15 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
      * @return the space agency name
      */
     public abstract String getName();
+
+    /**
+     * Returns an unique identifier used for REST controllers.
+     * 
+     * @return an unique identifier based on class name
+     */
+    public String getId() {
+        return getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH);
+    }
 
     public abstract void updateMedia() throws IOException;
 

@@ -33,9 +33,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public abstract class NasaMedia extends Media {
 
     @Id
-    @Column(nullable = false, length = 170)
+    @Column(name = "nasa_id", nullable = false, length = 170)
     @JsonProperty("nasa_id")
-    private String nasaId;
+    private String id;
 
     @Column(length = 20)
     private String center;
@@ -50,12 +50,12 @@ public abstract class NasaMedia extends Media {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords;
 
-    public String getNasaId() {
-        return nasaId;
+    public String getId() {
+        return id;
     }
 
-    public void setNasaId(String nasaId) {
-        this.nasaId = nasaId;
+    public void setId(String nasaId) {
+        this.id = nasaId;
     }
 
     public String getCenter() {
@@ -105,7 +105,7 @@ public abstract class NasaMedia extends Media {
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(center, dateCreated, description, keywords, mediaType, nasaId, title);
+                + Objects.hash(center, dateCreated, description, keywords, mediaType, id, title);
     }
 
     @Override
@@ -118,12 +118,12 @@ public abstract class NasaMedia extends Media {
         return Objects.equals(center, other.center)
                 && Objects.equals(dateCreated, other.dateCreated) && Objects.equals(description, other.description)
                 && Objects.equals(keywords, other.keywords) && mediaType == other.mediaType
-                && Objects.equals(nasaId, other.nasaId) && Objects.equals(title, other.title);
+                && Objects.equals(id, other.id) && Objects.equals(title, other.title);
     }
 
     @Override
     public String toString() {
-        return "NasaMedia [" + (nasaId != null ? "nasaId=" + nasaId + ", " : "")
+        return "NasaMedia [" + (id != null ? "nasaId=" + id + ", " : "")
                 + (title != null ? "title=" + title + ", " : "") + (center != null ? "center=" + center + ", " : "")
                 + (dateCreated != null ? "dateCreated=" + dateCreated + ", " : "")
                 + (mediaType != null ? "mediaType=" + mediaType + ", " : "")
