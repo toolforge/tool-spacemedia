@@ -20,6 +20,9 @@ import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
 import net.bytebuddy.implementation.MethodCall;
 
+/**
+ * Configuration that dynamically creates space agencies REST controllers.
+ */
 @Configuration
 public class SpaceAgencyControllerConfiguration {
 

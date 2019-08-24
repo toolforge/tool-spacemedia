@@ -43,6 +43,12 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 import org.xml.sax.SAXException;
 
+/**
+ * Superclass of space agencies services.
+ * 
+ * @param <T> the media type the repository manages
+ * @param <ID> the type of the id of the entity the repository manages
+ */
 public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpaceAgencyService.class);

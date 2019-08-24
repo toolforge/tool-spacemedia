@@ -9,6 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
+/**
+ * Superclass of Media CRUD repositories, handling pagination and sorting.
+ *
+ * @param <T> the media type the repository manages
+ * @param <ID> the type of the id of the entity the repository manages
+ */
 @NoRepositoryBean
 public interface MediaRepository<T extends Media, ID> extends PagingAndSortingRepository<T, ID> {
 

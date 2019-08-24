@@ -18,6 +18,12 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
 import org.xml.sax.SAXException;
 
+/**
+ * Superclass of space agencies REST controllers. Sub-classes are created dynamically.
+ *
+ * @param <T> the media type the repository manages
+ * @param <ID> the type of the id of the entity the repository manages
+ */
 public abstract class SpaceAgencyController<T extends Media, ID> {
 
     protected final AbstractSpaceAgencyService<T, ID> service;
