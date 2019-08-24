@@ -18,11 +18,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
 import org.xml.sax.SAXException;
 
-public abstract class AbstractSpaceAgencyController<T extends Media, ID> {
+public abstract class SpaceAgencyController<T extends Media, ID> {
 
     protected final AbstractSpaceAgencyService<T, ID> service;
 
-    public AbstractSpaceAgencyController(AbstractSpaceAgencyService<T, ID> service) {
+    public SpaceAgencyController(AbstractSpaceAgencyService<T, ID> service) {
         this.service = Objects.requireNonNull(service);
     }
 
