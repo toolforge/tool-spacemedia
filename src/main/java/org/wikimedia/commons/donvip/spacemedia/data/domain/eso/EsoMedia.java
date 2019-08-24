@@ -71,7 +71,7 @@ public class EsoMedia extends FullResMedia {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> categories;
 
-    @Column(nullable = false, length = 300)
+    @Column(nullable = false, length = 375)
     private String credit;
 
     public String getId() {
