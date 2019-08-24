@@ -33,13 +33,14 @@ public class SpaceAgencyControllerConfiguration {
     private AbstractAutowireCapableBeanFactory factory;
 
     @PostConstruct
+    @SuppressWarnings("rawtypes")
     void initSpaceAgencyControllers() throws ReflectiveOperationException {
         for (AbstractSpaceAgencyService<?, ?> agency : agencies) {
-            Class<?> parentClass = SpaceAgencyController.class;
+            Class<SpaceAgencyController> parentClass = SpaceAgencyController.class;
             String controllerName = agency.getName().replace(" ", "").replace("(", "").replace(")", "") + "Controller";
             String path = agency.getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH);
 
-            Object controller = new ByteBuddy()
+            SpaceAgencyController controller = new ByteBuddy()
                     .subclass(parentClass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
                     .annotateType(
                             ofType(RestController.class).build(),

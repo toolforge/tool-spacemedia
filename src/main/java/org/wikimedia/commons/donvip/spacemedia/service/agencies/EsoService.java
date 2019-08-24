@@ -326,10 +326,10 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
         for (int i = telescopeIndex; i < tds.size(); i += ths.size()) {
             tds.get(i).getElementsByTag("a").forEach(a -> telescopes.add(a.text()));
         }
-        if (telescopes.isEmpty()) {
-            scrapingError(imgUrlLink);
+        if (!telescopes.isEmpty()) {
+            // Can be empty, example: https://www.eso.org/public/images/potw1817a/
+            media.setTelescopes(telescopes);
         }
-        media.setTelescopes(telescopes);
     }
 
     protected Set<String> parseExternalLinks(Element sibling, URL url) {
