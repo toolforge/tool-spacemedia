@@ -50,7 +50,8 @@ import org.xml.sax.SAXException;
  * @param <T> the media type the repository manages
  * @param <ID> the type of the id of the entity the repository manages
  */
-public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
+public abstract class AbstractSpaceAgencyService<T extends Media, ID>
+        implements Comparable<AbstractSpaceAgencyService<T, ID>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpaceAgencyService.class);
 
@@ -321,5 +322,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID> {
         if (CollectionUtils.isNotEmpty(media.getCommonsFileNames()) || mediaService.findCommonsFilesWithSha1(media)) {
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
         }
+    }
+
+    @Override
+    public int compareTo(AbstractSpaceAgencyService<T, ID> o) {
+        return getName().compareTo(o.getName());
     }
 }
