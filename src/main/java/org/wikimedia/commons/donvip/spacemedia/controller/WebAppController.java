@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.controller;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,8 +18,7 @@ public class WebAppController {
 
     @GetMapping("/")
     public String index(Model model) {
-        Collections.sort(agencies);
-        model.addAttribute("agencies", agencies);
+        model.addAttribute("agencies", agencies.stream().sorted().collect(Collectors.toList()));
         return "index";
     }
 }
