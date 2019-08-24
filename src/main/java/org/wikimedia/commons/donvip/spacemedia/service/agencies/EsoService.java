@@ -248,6 +248,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
             media.setFieldOfView(text);
             break;
         case "Related announcements:":
+        case "Related science announcements:":
             media.setRelatedAnnouncements(parseExternalLinks(sibling, url));
             break;
         case "Related releases:":
