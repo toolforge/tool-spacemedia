@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.PotentialFlickrService;
 
-@RestController()
+@RestController
 @RequestMapping("/potential")
 public class PotentialController extends AbstractSpaceAgencyController<FlickrMedia, Long> {
 

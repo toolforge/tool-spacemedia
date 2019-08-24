@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.KariService;
 
-@RestController()
+@RestController
 @RequestMapping("/kari")
 public class KariController extends AbstractSpaceAgencyController<KariMedia, Integer> {
 

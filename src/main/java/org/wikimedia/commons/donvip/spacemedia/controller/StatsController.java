@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
 
-@RestController()
+@RestController
 @RequestMapping
 public class StatsController {
 

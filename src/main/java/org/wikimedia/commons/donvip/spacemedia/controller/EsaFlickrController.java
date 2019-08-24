@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.EsaFlickrService;
 
-@RestController()
+@RestController
 @RequestMapping("/esa/flickr")
 public class EsaFlickrController extends AbstractSpaceAgencyController<FlickrMedia, Long> {
 

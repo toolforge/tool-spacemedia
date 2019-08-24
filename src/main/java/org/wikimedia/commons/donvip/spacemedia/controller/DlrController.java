@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceXService;
 
-@RestController()
+@RestController
 @RequestMapping("/dlr")
 public class DlrController extends AbstractSpaceAgencyController<FlickrMedia, Long> {
 

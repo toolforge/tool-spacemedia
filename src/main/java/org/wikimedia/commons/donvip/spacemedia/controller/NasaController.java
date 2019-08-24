@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.NasaService;
 
-@RestController()
+@RestController
 @RequestMapping("/nasa")
 public class NasaController extends AbstractSpaceAgencyController<NasaMedia, String> {
 
