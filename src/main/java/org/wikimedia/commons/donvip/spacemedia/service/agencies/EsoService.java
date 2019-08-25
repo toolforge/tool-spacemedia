@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -243,7 +244,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
             try {
                 media.setReleaseDate(LocalDateTime.parse(text, dateTimeFormatter));
             } catch (DateTimeParseException e) {
-                media.setReleaseDate(LocalDateTime.parse(text, dateFormatter));
+                media.setReleaseDate(LocalDate.parse(text, dateFormatter).atStartOfDay());
             }
             break;
         case "Size:":
