@@ -28,9 +28,9 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Query("select count(*) from #{#entityName} m where m.pathAlias in ?1")
     long count(Set<String> flickrAccounts);
 
-    @Cacheable("flickrCountMissing")
+    @Cacheable("flickrCountIgnoredByAccount")
     @Query("select count(*) from #{#entityName} m where m.ignored = true and m.pathAlias in ?1")
-    long countIgnored(Set<String> flickrAccounts);
+    long countByIgnoredTrue(Set<String> flickrAccounts);
 
     @Override
     @Cacheable("flickrCountMissing")
@@ -54,6 +54,12 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
 
     @Query("select m from #{#entityName} m where m.pathAlias in ?1")
     Iterable<FlickrMedia> findAll(Set<String> flickrAccounts);
+
+    @Query("select m from #{#entityName} m where m.ignored = true and m.pathAlias in ?1")
+    List<FlickrMedia> findByIgnoredTrue(Set<String> flickrAccounts);
+
+    @Query("select m from #{#entityName} m where m.ignored = true and m.pathAlias in ?1")
+    Page<FlickrMedia> findByIgnoredTrue(Set<String> flickrAccounts, Pageable page);
 
     @Override
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")

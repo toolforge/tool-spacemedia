@@ -143,6 +143,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         return repository.findByIgnoredTrue();
     }
 
+    public Page<T> listIgnoredMedia(Pageable page) {
+        return repository.findByIgnoredTrue(page);
+    }
+
     /**
      * Returns the space agency name, used in statistics and logs.
      * 

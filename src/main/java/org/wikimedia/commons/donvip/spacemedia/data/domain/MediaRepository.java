@@ -87,4 +87,6 @@ public interface MediaRepository<T extends Media, ID> extends PagingAndSortingRe
     Optional<T> findBySha1(String sha1);
 
     List<T> findByIgnoredTrue();
+
+    Page<T> findByIgnoredTrue(Pageable page);
 }

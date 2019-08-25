@@ -57,6 +57,11 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
     }
 
     @Override
+    public final long countIgnored() {
+        return flickrRepository.countByIgnoredTrue(flickrAccounts);
+    }
+
+    @Override
     public final long countMissingMedia() {
         return flickrRepository.countMissingInCommons(flickrAccounts);
     }
@@ -69,6 +74,11 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
     @Override
     public final Iterable<FlickrMedia> listAllMedia() {
         return flickrRepository.findAll(flickrAccounts);
+    }
+
+    @Override
+    public final List<FlickrMedia> listIgnoredMedia() {
+        return flickrRepository.findByIgnoredTrue(flickrAccounts);
     }
 
     @Override
@@ -110,7 +120,7 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
     private Statistics getStatistics(String alias) {
         Set<String> singleton = Collections.singleton(alias);
         return new Statistics(alias, flickrRepository.count(singleton),
-                flickrRepository.countIgnored(singleton),
+                flickrRepository.countByIgnoredTrue(singleton),
                 flickrRepository.countMissingInCommons(singleton), null);
     }
 
