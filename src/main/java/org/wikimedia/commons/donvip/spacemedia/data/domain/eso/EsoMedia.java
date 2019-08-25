@@ -41,7 +41,7 @@ public class EsoMedia extends FullResMedia {
     @Column(nullable = true, length = 63)
     private String fieldOfView;
 
-    @Column(nullable = true, length = 127)
+    @Column(nullable = true, length = 200)
     private String name;
 
     @Column(nullable = true, length = 63)
