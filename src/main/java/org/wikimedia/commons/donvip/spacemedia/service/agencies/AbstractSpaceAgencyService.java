@@ -319,7 +319,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
     protected void ignoreMediaInOriginalRepository() {
         if (getOriginalRepository() != null) {
             for (T m : repository.findMissingInCommons()) {
-                if (getOriginalRepository().findBySha1(m.getSha1()).isPresent()) {
+                if (getOriginalRepository().countBySha1(m.getSha1()) > 0) {
                     m.setIgnored(true);
                     m.setIgnoredReason("Already present in " + getOriginalRepository().getClass().getSimpleName());
                     repository.save(m);

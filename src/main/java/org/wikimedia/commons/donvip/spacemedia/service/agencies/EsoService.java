@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -57,9 +58,13 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
             .compile(ESO_BASE_PUBLIC_URL + "([a-z]+/)" + ESO_IMAGES_PATH + ".*");
 
     private DateTimeFormatter dateFormatter;
+    private DateTimeFormatter dateTimeFormatter;
 
     @Value("${eso.date.pattern}")
     private String datePattern;
+
+    @Value("${eso.datetime.pattern}")
+    private String dateTimePattern;
 
     @Value("${eso.search.link}")
     private String searchLink;
@@ -77,6 +82,7 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
     @PostConstruct
     void init() {
         dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
+        dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern, Locale.ENGLISH);
     }
 
     @Scheduled(fixedDelay = 43200000L)
@@ -234,7 +240,11 @@ public class EsoService extends AbstractFullResSpaceAgencyService<EsoMedia, Stri
             media.setImageType(EsoMediaType.valueOf(text));
             break;
         case "Release date:":
-            media.setReleaseDate(LocalDateTime.parse(text, dateFormatter));
+            try {
+                media.setReleaseDate(LocalDateTime.parse(text, dateTimeFormatter));
+            } catch (DateTimeParseException e) {
+                media.setReleaseDate(LocalDateTime.parse(text, dateFormatter));
+            }
             break;
         case "Size:":
             Matcher m = SIZE_PATTERN.matcher(text);
