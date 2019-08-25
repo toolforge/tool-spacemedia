@@ -11,45 +11,45 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMediaRepository;
 
 @Service
-public class EsoService extends CommonEsoService<EsoMedia> {
+public class IauService extends CommonEsoService<IauMedia> {
 
-    private static final String ESO_BASE_PUBLIC_URL = "https://www.eso.org/public/";
+    private static final String IAU_BASE_PUBLIC_URL = "https://www.iau.org/public/";
 
-    private static final String ESO_IMAGES_PATH = "images/";
+    private static final String IAU_IMAGES_PATH = "images/";
 
     private static final Pattern PATTERN_LOCALIZED_URL = Pattern
-            .compile(ESO_BASE_PUBLIC_URL + "([a-z]+/)" + ESO_IMAGES_PATH + ".*");
+            .compile(IAU_BASE_PUBLIC_URL + "([a-z]+/)" + IAU_IMAGES_PATH + ".*");
 
     @Autowired
-    public EsoService(EsoMediaRepository repository, @Value("${eso.search.link}") String searchLink) {
-        super(repository, searchLink, EsoMedia.class);
+    public IauService(IauMediaRepository repository, @Value("${iau.search.link}") String searchLink) {
+        super(repository, searchLink, IauMedia.class);
     }
 
     @Override
-    @Scheduled(fixedRateString = "${eso.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${iau.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
         doUpdateMedia();
     }
 
     @Override
     public String getName() {
-        return "ESO";
+        return "IAU";
     }
 
     @Override
-    protected List<String> findTemplates(EsoMedia media) {
+    protected List<String> findTemplates(IauMedia media) {
         List<String> result = super.findTemplates(media);
-        result.add("ESO");
+        result.add("IAU");
         return result;
     }
 
     @Override
-    protected String getSource(EsoMedia media) throws MalformedURLException {
-        return wikiLink(new URL(ESO_BASE_PUBLIC_URL + ESO_IMAGES_PATH + media.getId()), media.getTitle());
+    protected String getSource(IauMedia media) throws MalformedURLException {
+        return wikiLink(new URL(IAU_BASE_PUBLIC_URL + IAU_IMAGES_PATH + media.getId()), media.getTitle());
     }
 
     @Override
@@ -59,6 +59,6 @@ public class EsoService extends CommonEsoService<EsoMedia> {
 
     @Override
     protected String getCopyrightLink() {
-        return "/public/outreach/copyright/";
+        return "/copyright/";
     }
 }
