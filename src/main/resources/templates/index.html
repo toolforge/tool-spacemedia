@@ -18,6 +18,7 @@
 	      <tr>
 	        <th>Name</th>
 	        <th>Free Media</th>
+	        <th>Uploaded</th>
 	        <th>To upload</th>
 	        <th>Ignored</th>
 	        <th>Problems</th>
@@ -27,6 +28,7 @@
 	      <tr th:each="agency : ${agencies}">
 	        <td th:text="${agency.name}"></td>
 	        <td><a th:text="${agency.countAllMedia()}" th:href="@{/{id}/all(id=${agency.id})}"/></td>
+	        <td><a th:text="${agency.countUploadedMedia()}" th:href="@{/{id}/uploaded(id=${agency.id})}"/></td>
 	        <td><a th:text="${agency.countMissingMedia()}" th:href="@{/{id}/missing(id=${agency.id})}"/></td>
 	        <td><a th:text="${agency.countIgnored()}" th:href="@{/{id}/ignored(id=${agency.id})}"/></td>
 	        <td><a th:text="${agency.getProblemsCount()}" th:href="@{/{id}/problems(id=${agency.id})}"/></td>

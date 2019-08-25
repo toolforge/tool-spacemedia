@@ -57,6 +57,29 @@ public interface MediaRepository<T extends Media, ID> extends PagingAndSortingRe
      */
     Page<T> findMissingInCommons(Pageable page);
 
+    /**
+     * Count files already uploaded to Wikimedia Commons.
+     * 
+     * @return number of files already uploaded to Wikimedia Commons
+     */
+    long countUploadedToCommons();
+
+    /**
+     * Find files already uploaded to Wikimedia Commons.
+     * 
+     * @return files already uploaded to Wikimedia Commons
+     */
+    List<T> findUploadedToCommons();
+
+    /**
+     * Find files already uploaded to Wikimedia Commons.
+     * 
+     * @param page pagination information
+     * 
+     * @return files already uploaded to Wikimedia Commons
+     */
+    Page<T> findUploadedToCommons(Pageable page);
+
     List<T> findDuplicateInCommons();
 
     List<T> findByAssetUrl(URL imageUrl);

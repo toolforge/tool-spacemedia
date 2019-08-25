@@ -39,6 +39,15 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames) and m.center = ?1")
     long countMissingInCommonsByCenter(String center);
 
+    @Override
+    @Cacheable("nasaCountUploaded")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
+    long countUploadedToCommons();
+
+    @Cacheable("nasaCountUploadedByCenter")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames) and m.center = ?1")
+    long countUploadedToCommonsByCenter(String center);
+
     // CUSTOM
 
     @Cacheable("nasaCenters")
@@ -66,6 +75,17 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.center = ?1")
     List<T> findMissingInCommonsByCenter(String center);
+
+    @Override
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    List<T> findUploadedToCommons();
+
+    @Override
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    Page<T> findUploadedToCommons(Pageable page);
+
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) and m.center = ?1")
+    List<T> findUploadedToCommonsByCenter(String center);
 
     // SAVE
 

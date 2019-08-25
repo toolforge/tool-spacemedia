@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
@@ -60,6 +62,11 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
     }
 
     @Override
+    public final long countUploadedMedia() {
+        return flickrRepository.countUploadedToCommons(flickrAccounts);
+    }
+
+    @Override
     public final Iterable<FlickrMedia> listAllMedia() {
         return flickrRepository.findAll(flickrAccounts);
     }
@@ -67,6 +74,21 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
     @Override
     public final List<FlickrMedia> listMissingMedia() {
         return flickrRepository.findMissingInCommons(flickrAccounts);
+    }
+
+    @Override
+    public final Page<FlickrMedia> listMissingMedia(Pageable page) {
+        return flickrRepository.findMissingInCommons(flickrAccounts, page);
+    }
+
+    @Override
+    public final List<FlickrMedia> listUploadedMedia() {
+        return flickrRepository.findUploadedToCommons(flickrAccounts);
+    }
+
+    @Override
+    public final Page<FlickrMedia> listUploadedMedia(Pageable page) {
+        return flickrRepository.findUploadedToCommons(flickrAccounts, page);
     }
 
     @Override

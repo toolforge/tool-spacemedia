@@ -41,6 +41,15 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
     long countMissingInCommons(Set<String> flickrAccounts);
 
+    @Override
+    @Cacheable("flickrCountUploaded")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
+    long countUploadedToCommons();
+
+    @Cacheable("flickrCountUploadedByAccount")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames) and m.pathAlias in ?1")
+    long countUploadedToCommons(Set<String> flickrAccounts);
+
     // FIND
 
     @Query("select m from #{#entityName} m where m.pathAlias in ?1")
@@ -56,6 +65,23 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
 
     @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
     List<FlickrMedia> findMissingInCommons(Set<String> flickrAccounts);
+
+    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
+    Page<FlickrMedia> findMissingInCommons(Set<String> flickrAccounts, Pageable page);
+
+    @Override
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    List<FlickrMedia> findUploadedToCommons();
+
+    @Override
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    Page<FlickrMedia> findUploadedToCommons(Pageable page);
+
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) and m.pathAlias in ?1")
+    List<FlickrMedia> findUploadedToCommons(Set<String> flickrAccounts);
+
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) and m.pathAlias in ?1")
+    Page<FlickrMedia> findUploadedToCommons(Set<String> flickrAccounts, Pageable page);
 
     @Override
     @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2")

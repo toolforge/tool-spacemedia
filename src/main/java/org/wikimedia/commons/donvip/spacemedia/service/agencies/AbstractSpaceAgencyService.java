@@ -107,6 +107,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         return repository.countMissingInCommons();
     }
 
+    public long countUploadedMedia() {
+        return repository.countUploadedToCommons();
+    }
+
     public Iterable<T> listAllMedia() {
         return repository.findAll();
     }
@@ -121,6 +125,14 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
 
     public Page<T> listMissingMedia(Pageable page) {
         return repository.findMissingInCommons(page);
+    }
+
+    public List<T> listUploadedMedia() {
+        return repository.findUploadedToCommons();
+    }
+
+    public Page<T> listUploadedMedia(Pageable page) {
+        return repository.findUploadedToCommons(page);
     }
 
     public List<T> listDuplicateMedia() {

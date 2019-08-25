@@ -22,6 +22,18 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
     long countMissingInCommons();
 
     @Override
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    List<NasaSirsImage> findUploadedToCommons();
+
+    @Override
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    Page<NasaSirsImage> findUploadedToCommons(Pageable page);
+
+    @Override
+    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
+    long countUploadedToCommons();
+
+    @Override
     @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2")
     List<NasaSirsImage> findDuplicateInCommons();
 }

@@ -22,6 +22,18 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer>
     long countMissingInCommons();
 
     @Override
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    List<KariMedia> findUploadedToCommons();
+
+    @Override
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    Page<KariMedia> findUploadedToCommons(Pageable page);
+
+    @Override
+    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
+    long countUploadedToCommons();
+
+    @Override
     @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2")
     List<KariMedia> findDuplicateInCommons();
 }

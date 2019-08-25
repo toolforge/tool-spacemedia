@@ -47,6 +47,11 @@ public abstract class SpaceAgencyController<T extends Media, ID> {
         return service.listMissingMedia(page);
     }
 
+    @GetMapping("/uploaded")
+    public final Page<T> listUploaded(@PageableDefault(size = 100, sort = "id") Pageable page) throws IOException {
+        return service.listUploadedMedia(page);
+    }
+
     @GetMapping("/duplicates")
     public final List<T> listDuplicate() throws IOException {
         return service.listDuplicateMedia();

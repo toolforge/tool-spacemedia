@@ -37,6 +37,18 @@ public interface FullResMediaRepository<T extends FullResMedia, ID> extends Medi
     long countMissingInCommons();
 
     @Override
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames)")
+    List<T> findUploadedToCommons();
+
+    @Override
+    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames)")
+    Page<T> findUploadedToCommons(Pageable page);
+
+    @Override
+    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames)")
+    long countUploadedToCommons();
+
+    @Override
     @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2 or size (m.fullResCommonsFileNames) >= 2")
     List<T> findDuplicateInCommons();
 }
