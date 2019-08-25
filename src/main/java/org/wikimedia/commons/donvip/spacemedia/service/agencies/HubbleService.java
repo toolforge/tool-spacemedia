@@ -43,7 +43,11 @@ public class HubbleService extends CommonEsoService<HubbleMedia> {
     @Override
     protected List<String> findTemplates(HubbleMedia media) {
         List<String> result = super.findTemplates(media);
-        result.add("Hubble");
+        if (media.getReleaseDate().getYear() < 2009) {
+            result.add("PD-Hubble");
+        } else {
+            result.add("ESA-Hubble");
+        }
         return result;
     }
 
