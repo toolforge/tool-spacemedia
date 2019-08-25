@@ -167,6 +167,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
     }
 
     protected final void endUpdateMedia(int count, LocalDateTime start) {
+        ignoreMediaInOriginalRepository();
         LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 Duration.between(LocalDateTime.now(), start));
     }
@@ -315,6 +316,18 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         return new ArrayList<String>();
     }
 
+    protected void ignoreMediaInOriginalRepository() {
+        if (getOriginalRepository() != null) {
+            for (T m : repository.findMissingInCommons()) {
+                if (getOriginalRepository().findBySha1(m.getSha1()).isPresent()) {
+                    m.setIgnored(true);
+                    m.setIgnoredReason("Already present in " + getOriginalRepository().getClass().getSimpleName());
+                    repository.save(m);
+                }
+            }
+        }
+    }
+
     protected final String wikiLink(URL url, String text) {
         return "[" + Objects.requireNonNull(url, "url") + " " + Objects.requireNonNull(text, "text") + "]";
     }
@@ -334,6 +347,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         if (CollectionUtils.isNotEmpty(media.getCommonsFileNames()) || mediaService.findCommonsFilesWithSha1(media)) {
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
         }
+    }
+
+    protected MediaRepository<?, ?> getOriginalRepository() {
+        return null;
     }
 
     @Override

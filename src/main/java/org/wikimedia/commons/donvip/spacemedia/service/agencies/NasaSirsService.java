@@ -23,9 +23,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
 
@@ -51,6 +55,9 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
     @Value("${nasa.ssc.name}")
     private String sscName;
 
+    @Autowired
+    private NasaMediaRepository<NasaMedia> nasaMediaRepository;
+
     public NasaSirsService(NasaSirsImageRepository repository) {
         super(repository);
     }
@@ -58,6 +65,11 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
     @Override
     public String getName() {
         return "NASA (SIRS)";
+    }
+
+    @Override
+    protected MediaRepository<?, ?> getOriginalRepository() {
+        return nasaMediaRepository;
     }
 
     @Override

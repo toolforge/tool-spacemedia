@@ -34,11 +34,11 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
 
     @Override
     @Cacheable("flickrCountMissing")
-    @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
     long countMissingInCommons();
 
     @Cacheable("flickrCountMissingByAccount")
-    @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
     long countMissingInCommons(Set<String> flickrAccounts);
 
     @Override
@@ -56,17 +56,17 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     Iterable<FlickrMedia> findAll(Set<String> flickrAccounts);
 
     @Override
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
     List<FlickrMedia> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
     Page<FlickrMedia> findMissingInCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
     List<FlickrMedia> findMissingInCommons(Set<String> flickrAccounts);
 
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
     Page<FlickrMedia> findMissingInCommons(Set<String> flickrAccounts, Pageable page);
 
     @Override

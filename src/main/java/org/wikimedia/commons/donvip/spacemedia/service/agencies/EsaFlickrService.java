@@ -6,10 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
 public class EsaFlickrService extends AbstractSpaceAgencyFlickrService {
+
+    @Autowired
+    private EsaMediaRepository esaRepository;
 
     @Autowired
     public EsaFlickrService(FlickrMediaRepository repository,
@@ -26,5 +31,10 @@ public class EsaFlickrService extends AbstractSpaceAgencyFlickrService {
     @Override
     public String getName() {
         return "ESA (Flickr)";
+    }
+
+    @Override
+    protected MediaRepository<?, ?> getOriginalRepository() {
+        return esaRepository;
     }
 }
