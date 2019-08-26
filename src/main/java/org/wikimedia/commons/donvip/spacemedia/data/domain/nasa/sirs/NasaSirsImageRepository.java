@@ -2,12 +2,42 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
 public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, String> {
+
+    @CacheEvict(allEntries = true, cacheNames = {
+            "nasaSirsCount", "nasaSirsCountIgnored", "nasaSirsCountMissing", "nasaSirsCountUploaded"})
+    @interface CacheEvictNasaSirsAll {
+
+    }
+
+    // COUNT
+
+    @Override
+    @Cacheable("nasaSirsCount")
+    long count();
+
+    @Override
+    @Cacheable("nasaSirsCountIgnored")
+    long countByIgnoredTrue();
+
+    @Override
+    @Cacheable("nasaSirsCountMissing")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
+    long countMissingInCommons();
+
+    @Override
+    @Cacheable("nasaSirsCountUploaded")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
+    long countUploadedToCommons();
+
+    // FIND
 
     @Override
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
@@ -18,10 +48,6 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
     Page<NasaSirsImage> findMissingInCommons(Pageable page);
 
     @Override
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
-    long countMissingInCommons();
-
-    @Override
     @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
     List<NasaSirsImage> findUploadedToCommons();
 
@@ -30,10 +56,34 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
     Page<NasaSirsImage> findUploadedToCommons(Pageable page);
 
     @Override
-    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
-    long countUploadedToCommons();
-
-    @Override
     @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2")
     List<NasaSirsImage> findDuplicateInCommons();
+
+    // SAVE
+
+    @Override
+    @CacheEvictNasaSirsAll
+    <S extends NasaSirsImage> S save(S entity);
+
+    @Override
+    @CacheEvictNasaSirsAll
+    <S extends NasaSirsImage> Iterable<S> saveAll(Iterable<S> entities);
+
+    // DELETE
+
+    @Override
+    @CacheEvictNasaSirsAll
+    void deleteById(String id);
+
+    @Override
+    @CacheEvictNasaSirsAll
+    void delete(NasaSirsImage entity);
+
+    @Override
+    @CacheEvictNasaSirsAll
+    void deleteAll(Iterable<? extends NasaSirsImage> entities);
+
+    @Override
+    @CacheEvictNasaSirsAll
+    void deleteAll();
 }

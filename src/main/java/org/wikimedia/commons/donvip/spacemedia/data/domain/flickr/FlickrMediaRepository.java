@@ -13,7 +13,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long> {
 
     @CacheEvict(allEntries = true, cacheNames = {
-            "flickrCount", "flickrCountByAccount", "flickrCountMissing", "flickrCountMissingByAccount"})
+            "flickrCount", "flickrCountByAccount", "flickrCountIgnoredByAccount", "flickrCountMissing",
+            "flickrCountMissingByAccount", "flickrCountUploaded", "flickrCountUploadedByAccount"})
     @interface CacheEvictFlickrAll {
 
     }

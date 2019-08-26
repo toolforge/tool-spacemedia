@@ -12,7 +12,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepository<T, String> {
 
     @CacheEvict(allEntries = true, cacheNames = {
-            "nasaCount", "nasaCountByCenter", "nasaCountMissing", "nasaCountMissingByCenter", "nasaCenters"})
+            "nasaCount", "nasaCountByCenter", "nasaCountIgnored", "nasaCountIgnoredByCenter", "nasaCountMissing",
+            "nasaCountMissingByCenter", "nasaCountUploaded", "nasaCountUploadedByCenter", "nasaCenters"})
     @interface CacheEvictNasaAll {
 
     }
@@ -25,6 +26,10 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     @Cacheable("nasaCountByCenter")
     long countByCenter(String center);
+
+    @Override
+    @Cacheable("nasaCountIgnored")
+    long countByIgnoredTrue();
 
     @Cacheable("nasaCountIgnoredByCenter")
     @Query("select count(*) from #{#entityName} m where m.ignored is true and m.center = ?1")
