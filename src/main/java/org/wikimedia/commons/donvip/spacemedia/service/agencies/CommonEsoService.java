@@ -86,8 +86,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
         checkCommonsCategories(esoCategories);
     }
 
-    private static void scrapingError(String url) {
-        throw new IllegalStateException("ESO scraping code must be updated, see " + url);
+    private static void scrapingError(String url, String details) {
+        throw new IllegalStateException("ESO scraping code must be updated, see " + url + " - Details: " + details);
     }
 
     protected abstract Matcher getLocalizedUrlMatcher(String imgUrlLink);
@@ -102,7 +102,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
         }
         String id = item.getId();
         if (id.length() < 2) {
-            scrapingError(imgUrlLink);
+            scrapingError(imgUrlLink, id);
         }
         T media;
         boolean save = false;
@@ -119,7 +119,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             // Find title
             Elements h1s = div.getElementsByTag("h1");
             if (h1s.size() != 1 || h1s.get(0).text().isEmpty()) {
-                scrapingError(imgUrlLink);
+                scrapingError(imgUrlLink, h1s.toString());
             }
             media.setTitle(h1s.get(0).html());
             // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
@@ -127,7 +127,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             // Find credit
             media.setCredit(findCredit(div));
             if (media.getCredit().startsWith("<") && !media.getCredit().startsWith("<a")) {
-                scrapingError(imgUrlLink);
+                scrapingError(imgUrlLink, media.getCredit());
             }
             // Check copyright is standard (CC-BY-4.0)
             Elements copyrights = div.getElementsByClass("copyright");
@@ -248,7 +248,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
                         processCoordinates(imgUrlLink, media, title, text);
                         break;
                     default:
-                        scrapingError(imgUrlLink);
+                        scrapingError(imgUrlLink, h3.text());
                     }
                 }
                 if ("Colours & filters".equals(h3.text())) {
@@ -263,7 +263,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
         switch (title.text()) {
         case "Id:":
             if (!id.equals(text)) {
-                scrapingError(imgUrlLink);
+                scrapingError(imgUrlLink, text);
             }
             break;
         case "Type:":
@@ -279,7 +279,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
         case "Size:":
             Matcher m = SIZE_PATTERN.matcher(text);
             if (!m.matches()) {
-                scrapingError(imgUrlLink);
+                scrapingError(imgUrlLink, text);
             }
             media.setWidth(Integer.parseInt(m.group(1)));
             media.setHeight(Integer.parseInt(m.group(2)));
@@ -295,7 +295,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             media.setRelatedReleases(parseExternalLinks(sibling, url));
             break;
         default:
-            scrapingError(imgUrlLink);
+            scrapingError(imgUrlLink, title.text());
         }
     }
 
@@ -312,7 +312,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
         case "Category:":
             Elements categories = sibling.getElementsByTag("a");
             if (categories.isEmpty()) {
-                scrapingError(imgUrlLink);
+                scrapingError(imgUrlLink, sibling.html());
             }
             media.setCategories(categories.stream().map(Element::text).collect(Collectors.toSet()));
             break;
@@ -323,7 +323,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             media.setConstellation(text);
             break;
         default:
-            scrapingError(imgUrlLink);
+            scrapingError(imgUrlLink, title.text());
         }
     }
 
@@ -342,7 +342,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             media.setOrientation(text);
             break;
         default:
-            scrapingError(imgUrlLink);
+            scrapingError(imgUrlLink, title.text());
         }
     }
 
@@ -359,7 +359,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             index++;
         }
         if (telescopeIndex < 0) {
-            scrapingError(imgUrlLink);
+            scrapingError(imgUrlLink, table.html());
         }
         Set<String> telescopes = new HashSet<>();
         Elements tds = table.getElementsByTag("td");
