@@ -125,21 +125,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
             media.setDescription(findDescription(div).toString());
             // Find credit
-            Element credit = div.getElementsByClass("credit").get(0);
-            if (credit.childNodeSize() == 1
-                    && ("p".equals(credit.child(0).tagName()) || "div".equals(credit.child(0).tagName()))) {
-                credit = credit.child(0);
-            }
-            Elements links = credit.getElementsByTag("a");
-            for (Element a : links) {
-                for (Iterator<Attribute> it = a.attributes().iterator(); it.hasNext();) {
-                    if (!"href".equals(it.next().getKey())) {
-                        it.remove();
-                    }
-                }
-            }
-            media.setCredit(links.isEmpty() ? credit.text()
-                    : credit.html().replaceAll("<span[^>]*>", "").replace("</span>", ""));
+            media.setCredit(findCredit(div));
             if (media.getCredit().startsWith("<") && !media.getCredit().startsWith("<a")) {
                 scrapingError(imgUrlLink);
             }
@@ -192,6 +178,25 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
 
     protected Collection<String> getForbiddenCategories() {
         return Collections.emptyList();
+    }
+
+    protected String findCredit(Element div) {
+        Element credit = div.getElementsByClass("credit").get(0);
+        if (credit.childNodeSize() == 1
+                && ("p".equals(credit.child(0).tagName()) || "div".equals(credit.child(0).tagName()))) {
+            credit = credit.child(0);
+        }
+        Elements links = credit.getElementsByTag("a");
+        for (Element a : links) {
+            for (Iterator<Attribute> it = a.attributes().iterator(); it.hasNext();) {
+                if (!"href".equals(it.next().getKey())) {
+                    it.remove();
+                }
+            }
+        }
+        return links.isEmpty() ? credit.text()
+                : credit.html().replaceAll("<span[^>]*>", "").replace("</span>", "").replace("<br>", ". ")
+                        .replace("<p[^>]*>", "").replace("</p>", "");
     }
 
     protected StringBuilder findDescription(Element div) {
