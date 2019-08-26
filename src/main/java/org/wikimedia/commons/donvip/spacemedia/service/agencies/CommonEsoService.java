@@ -10,6 +10,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
@@ -113,28 +115,18 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             save = true;
             LOGGER.info(imgUrlLink);
             Document html = Jsoup.connect(imgUrlLink).timeout(60_000).get();
-            Element div = html.getElementsByClass("col-md-9 left-column").get(0);
+            Element div = html.getElementsByClass("col-md-9").last();
             // Find title
             Elements h1s = div.getElementsByTag("h1");
             if (h1s.size() != 1 || h1s.get(0).text().isEmpty()) {
                 scrapingError(imgUrlLink);
             }
             media.setTitle(h1s.get(0).html());
-            // Find description
-            StringBuilder description = new StringBuilder();
-            for (Element p : div.getElementsByTag("div").get(1).nextElementSiblings()) {
-                if ("script".equals(p.tagName())) {
-                    continue;
-                } else if (!"p".equals(p.tagName())) {
-                    break;
-                }
-                description.append(p.html());
-            }
             // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
-            media.setDescription(description.toString());
+            media.setDescription(findDescription(div).toString());
             // Find credit
             Element credit = div.getElementsByClass("credit").get(0);
-            if (credit.childNodeSize() > 0
+            if (credit.childNodeSize() == 1
                     && ("p".equals(credit.child(0).tagName()) || "div".equals(credit.child(0).tagName()))) {
                 credit = credit.child(0);
             }
@@ -152,8 +144,9 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
                 scrapingError(imgUrlLink);
             }
             // Check copyright is standard (CC-BY-4.0)
-            if (!getCopyrightLink()
-                    .equals(div.getElementsByClass("copyright").get(0).getElementsByTag("a").get(0).attr("href"))) {
+            Elements copyrights = div.getElementsByClass("copyright");
+            if (!copyrights.isEmpty()
+                    && !getCopyrightLink().equals(copyrights.get(0).getElementsByTag("a").get(0).attr("href"))) {
                 LOGGER.error("Invalid copyright for " + imgUrlLink);
                 return Optional.empty();
             }
@@ -166,16 +159,23 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
                     media.setFullResAssetUrl(buildAssetUrl(assetUrlLink, url));
                 } else if (assetUrlLink.contains("/large/")) {
                     media.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+                } else if (media.getAssetUrl() != null && media.getFullResAssetUrl() != null) {
+                    break;
                 }
             }
 
-            // Try to detect pictures of identifiable people, as per ESO conditions
-            if (media.getCategories() != null && media.getCategories().contains("People and Events")
-                    && media.getCategories().size() == 1 && media.getTypes() != null
-                    && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
-                media.setIgnored(Boolean.TRUE);
-                media.setIgnoredReason(
-                        "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.");
+            if (media.getCategories() != null) {
+                // Try to detect pictures of identifiable people, as per ESO conditions
+                if (media.getCategories().contains("People and Events") && media.getCategories().size() == 1
+                        && media.getTypes() != null
+                        && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
+                    media.setIgnored(Boolean.TRUE);
+                    media.setIgnoredReason(
+                            "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.");
+                } else if (media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
+                    media.setIgnored(Boolean.TRUE);
+                    media.setIgnoredReason("Forbidden category.");
+                }
             }
         }
         if (mediaService.computeSha1(media)) {
@@ -185,9 +185,26 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             save = true;
         }
         if (save) {
-            repository.save(media);
+            media = repository.save(media);
         }
         return Optional.of(media);
+    }
+
+    protected Collection<String> getForbiddenCategories() {
+        return Collections.emptyList();
+    }
+
+    protected StringBuilder findDescription(Element div) {
+        StringBuilder description = new StringBuilder();
+        for (Element p : div.getElementsByTag("div").get(1).nextElementSiblings()) {
+            if ("script".equals(p.tagName())) {
+                continue;
+            } else if (!"p".equals(p.tagName())) {
+                break;
+            }
+            description.append(p.html());
+        }
+        return description;
     }
 
     protected abstract String getCopyrightLink();
@@ -197,11 +214,22 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
                 assetUrlLink.startsWith("/") ? url.getProtocol() + "://" + url.getHost() + assetUrlLink : assetUrlLink);
     }
 
+    protected String getObjectInfoClass() {
+        return "object-info";
+    }
+
+    protected String getObjectInfoTitleClass() {
+        return "title";
+    }
+
     protected void processObjectInfos(URL url, String imgUrlLink, String id, T media, Document doc) {
-        for (Element info : doc.getElementsByClass("object-info")) {
+        for (Element info : doc.getElementsByClass(getObjectInfoClass())) {
             for (Element h3 : info.getElementsByTag("h3")) {
-                for (Element title : h3.nextElementSibling().getElementsByClass("title")) {
+                for (Element title : h3.nextElementSibling().getElementsByClass(getObjectInfoTitleClass())) {
                     Element sibling = title.nextElementSibling();
+                    if (!sibling.tagName().equals(title.tagName())) {
+                        sibling = sibling.nextElementSibling();
+                    }
                     String html = sibling.html();
                     String text = sibling.text();
                     switch (h3.text()) {
@@ -345,6 +373,21 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
                 .collect(Collectors.toSet());
     }
 
+    protected Iterator<EsoFrontPageItem> findFrontPageItems(Document document) throws IOException {
+        for (Element script : document.getElementsByTag("script")) {
+            String html = script.html();
+            if (html.startsWith("var images = [")) {
+                String json = html.replaceFirst("var images = ", "").replace(",\n    \n];", "\n    \n]")
+                        .replace("id: '", "\"id\": \"").replace("title: '", "\"title\": \"")
+                        .replace("width:", "\"width\":").replace("height:", "\"height\":")
+                        .replace("src: '", "\"src\": \"").replace("url: '", "\"url\": \"")
+                        .replace("potw: '", "\"potw\": \"").replace("',\n", "\",\n").replace("'\n", "\"\n");
+                return jackson.readerFor(EsoFrontPageItem.class).readValues(json);
+            }
+        }
+        return Collections.emptyIterator();
+    }
+
     protected void doUpdateMedia() throws IOException {
         LocalDateTime start = startUpdateMedia();
         int count = 0;
@@ -355,20 +398,9 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             URL url = new URL(urlLink);
             try {
                 Document document = Jsoup.connect(urlLink).timeout(60_000).get();
-                for (Element script : document.getElementsByTag("script")) {
-                    String html = script.html();
-                    if (html.startsWith("var images = [")) {
-                        String json = html.replaceFirst("var images = ", "").replace(",\n    \n];", "\n    \n]")
-                                .replace("id: '", "\"id\": \"").replace("title: '", "\"title\": \"")
-                                .replace("width:", "\"width\":").replace("height:", "\"height\":")
-                                .replace("src: '", "\"src\": \"").replace("url: '", "\"url\": \"")
-                                .replace("potw: '", "\"potw\": \"").replace("',\n", "\",\n").replace("'\n", "\"\n");
-                        for (Iterator<EsoFrontPageItem> it = jackson.readerFor(EsoFrontPageItem.class)
-                                .readValues(json); it.hasNext();) {
-                            if (updateMediaForUrl(url, it.next()).isPresent()) {
-                                count++;
-                            }
-                        }
+                for (Iterator<EsoFrontPageItem> it = findFrontPageItems(document); it.hasNext();) {
+                    if (updateMediaForUrl(url, it.next()).isPresent()) {
+                        count++;
                     }
                 }
             } catch (HttpStatusException e) {

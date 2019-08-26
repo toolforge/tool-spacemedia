@@ -3,12 +3,19 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.eso;
 import java.net.URL;
 
 public class EsoFrontPageItem {
+    /** ESO identifier. Example: 'eso1907a' */ 
     private String id;
+    /** Image title. Example: 'First Image of a Black Hole' */
     private String title;
+    /** Image width in pixels. Example: 7416 */
     private int width;
+    /** Image height in pixels. Example: 4320 */
     private int height;
+    /** Image thumbnail URL. Example: 'https://cdn.eso.org/images/thumb300y/eso1907a.jpg' */
     private URL src;
+    /** Image relative link. Example: '/public/images/eso1907a/' */
     private String url;
+    /** ? No idea. Empty string in example above */
     private String potw;
 
     public String getId() {
