@@ -7,6 +7,7 @@ import java.util.Objects;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.http.client.ClientProtocolException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -16,6 +17,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.AsyncSpaceAgencyUpdaterService;
 import org.xml.sax.SAXException;
 
 /**
@@ -25,6 +27,9 @@ import org.xml.sax.SAXException;
  * @param <ID> the type of the id of the entity the repository manages
  */
 public abstract class SpaceAgencyController<T extends Media, ID> {
+
+    @Autowired
+    private AsyncSpaceAgencyUpdaterService async;
 
     protected final AbstractSpaceAgencyService<T, ID> service;
 
@@ -39,7 +44,7 @@ public abstract class SpaceAgencyController<T extends Media, ID> {
 
     @GetMapping("/update")
     public final void update() throws IOException {
-        service.updateMedia();
+        async.updateMedia(service);
     }
 
     @GetMapping("/missing")
