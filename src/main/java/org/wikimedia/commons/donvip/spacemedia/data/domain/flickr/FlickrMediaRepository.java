@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Set;
 
@@ -12,6 +14,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
 public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long> {
 
+    @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "flickrCount", "flickrCountByAccount", "flickrCountIgnoredByAccount", "flickrCountMissing",
             "flickrCountMissingByAccount", "flickrCountUploaded", "flickrCountUploadedByAccount"})

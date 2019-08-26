@@ -1,10 +1,14 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.eso;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 
 public interface EsoMediaRepository extends CommonEsoMediaRepository<EsoMedia> {
 
+    @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {"esoCount", "esoCountIgnored", "esoCountMissing", "esoCountUploaded"})
     @interface CacheEvictEsoAll {
 

@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.esa;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
 import java.util.Optional;
 
@@ -9,6 +11,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepositor
 
 public interface EsaMediaRepository extends FullResMediaRepository<EsaMedia, Integer> {
 
+    @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {"esaCount", "esaCountIgnored", "esaCountMissing", "esaCountUploaded"})
     @interface CacheEvictEsaAll {
 

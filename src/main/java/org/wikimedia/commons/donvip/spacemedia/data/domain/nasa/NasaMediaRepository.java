@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,6 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
 public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepository<T, String> {
 
+    @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "nasaCount", "nasaCountByCenter", "nasaCountIgnored", "nasaCountIgnoredByCenter", "nasaCountMissing",
             "nasaCountMissingByCenter", "nasaCountUploaded", "nasaCountUploadedByCenter", "nasaCenters"})
