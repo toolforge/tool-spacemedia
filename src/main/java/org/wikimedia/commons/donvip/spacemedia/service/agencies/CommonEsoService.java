@@ -133,7 +133,11 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
             media.setDescription(description.toString());
             // Find credit
-            Element credit = div.getElementsByClass("credit").get(0).getElementsByTag("p").get(0);
+            Element credit = div.getElementsByClass("credit").get(0);
+            if (credit.childNodeSize() > 0
+                    && ("p".equals(credit.child(0).tagName()) || "div".equals(credit.child(0).tagName()))) {
+                credit = credit.child(0);
+            }
             Elements links = credit.getElementsByTag("a");
             for (Element a : links) {
                 for (Iterator<Attribute> it = a.attributes().iterator(); it.hasNext();) {
