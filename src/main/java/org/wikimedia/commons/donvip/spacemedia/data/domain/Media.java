@@ -23,11 +23,11 @@ public abstract class Media {
     protected URL assetUrl;
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     protected String title;
 
     @Lob
-    @Column(nullable = true)
+    @Column(nullable = true, columnDefinition = "TEXT")
     protected String description;
 
     @ElementCollection(fetch = FetchType.EAGER)

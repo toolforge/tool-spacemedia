@@ -73,7 +73,7 @@ public abstract class CommonEsoMedia extends FullResMedia {
     private Set<String> categories;
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String credit;
 
     public String getId() {
