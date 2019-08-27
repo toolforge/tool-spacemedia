@@ -263,7 +263,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
         switch (title.text()) {
         case "Id:":
             if (!id.equals(text)) {
-                scrapingError(imgUrlLink, text);
+                scrapingError(imgUrlLink, id + " <> " + text);
             }
             break;
         case "Type:":

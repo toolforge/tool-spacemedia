@@ -9,6 +9,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
@@ -71,7 +72,8 @@ public abstract class CommonEsoMedia extends FullResMedia {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> categories;
 
-    @Column(nullable = false, length = 630)
+    @Lob
+    @Column(nullable = false)
     private String credit;
 
     public String getId() {
