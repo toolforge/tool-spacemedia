@@ -195,8 +195,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             }
         }
         return links.isEmpty() ? credit.text()
-                : credit.html().replaceAll("<span[^>]*>", "").replace("</span>", "").replace("<br>", ". ")
-                        .replaceAll("<p[^>]*>", "").replace("</p>", "");
+                : credit.html().replaceAll("</?span[^>]*>", "").replace("<br>", ". ").replaceAll("</?p[^>]*>", "")
+                        .replaceAll("</?strong>", "");
     }
 
     protected StringBuilder findDescription(Element div) {
