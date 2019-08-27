@@ -227,7 +227,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
         return "title";
     }
 
-    protected void processObjectInfos(URL url, String imgUrlLink, String id, T media, Document doc) {
+    protected void processObjectInfos(URL url, String imgUrlLink, String id, T media, Document doc)
+            throws MalformedURLException {
         for (Element info : doc.getElementsByClass(getObjectInfoClass())) {
             for (Element h3 : info.getElementsByTag("h3")) {
                 for (Element title : h3.nextElementSibling().getElementsByClass(getObjectInfoTitleClass())) {
@@ -259,11 +260,11 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
     }
 
     protected void processAboutTheImage(URL url, String imgUrlLink, String id, T media, Element title,
-            Element sibling, String text) {
+            Element sibling, String text) throws MalformedURLException {
         switch (title.text()) {
         case "Id:":
             if (!id.equals(text)) {
-                scrapingError(imgUrlLink, id + " <> " + text);
+                problem(new URL(imgUrlLink), "Different ids: " + id + " <> " + text);
             }
             break;
         case "Type:":
