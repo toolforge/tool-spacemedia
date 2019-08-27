@@ -294,6 +294,9 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
         case "Related releases:":
             media.setRelatedReleases(parseExternalLinks(sibling, url));
             break;
+        case "Language:":
+            // Ignored
+            break;
         default:
             scrapingError(imgUrlLink, title.text());
         }

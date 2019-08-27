@@ -71,7 +71,7 @@ public abstract class CommonEsoMedia extends FullResMedia {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> categories;
 
-    @Column(nullable = false, length = 460)
+    @Column(nullable = false, length = 630)
     private String credit;
 
     public String getId() {
