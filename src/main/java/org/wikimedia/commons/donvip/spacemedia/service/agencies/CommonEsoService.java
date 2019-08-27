@@ -142,8 +142,15 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             for (Element link : html.getElementsByClass("archive_dl_text")) {
                 String assetUrlLink = link.getElementsByTag("a").get(0).attr("href");
                 if (assetUrlLink.contains("/original/")) {
+                    if (assetUrlLink.endsWith(".psb")) {
+                        continue; // format not supported by Wikimedia Commons
+                    }
                     media.setFullResAssetUrl(buildAssetUrl(assetUrlLink, url));
                 } else if (assetUrlLink.contains("/large/")) {
+                    media.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+                } else if (media.getFullResAssetUrl() == null && assetUrlLink.contains(".tif")) {
+                    media.setFullResAssetUrl(buildAssetUrl(assetUrlLink, url));
+                } else if (media.getAssetUrl() == null && assetUrlLink.contains(".jp")) {
                     media.setAssetUrl(buildAssetUrl(assetUrlLink, url));
                 } else if (media.getAssetUrl() != null && media.getFullResAssetUrl() != null) {
                     break;
