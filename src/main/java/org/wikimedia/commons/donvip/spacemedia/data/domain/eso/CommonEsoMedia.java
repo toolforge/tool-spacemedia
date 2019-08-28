@@ -42,7 +42,7 @@ public abstract class CommonEsoMedia extends FullResMedia {
     @Column(nullable = true, length = 63)
     private String fieldOfView;
 
-    @Column(nullable = true, length = 200)
+    @Column(nullable = true, length = 400)
     private String name;
 
     @Column(nullable = true, length = 63)
