@@ -231,7 +231,13 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
         boolean save = false;
         Optional<FlickrMedia> mediaInRepo = flickrRepository.findById(media.getId());
         if (mediaInRepo.isPresent()) {
-            media = mediaInRepo.get();
+            FlickrMedia mediaInDb = mediaInRepo.get();
+            // FIXME migration code, to delete later
+            if (media.getThumbnailUrl() != null && mediaInDb.getThumbnailUrl() == null) {
+                mediaInDb.setThumbnailUrl(media.getThumbnailUrl());
+                save = true;
+            }
+            media = mediaInDb;
         } else {
             save = true;
         }

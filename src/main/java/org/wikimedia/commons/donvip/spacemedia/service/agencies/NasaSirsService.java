@@ -109,21 +109,28 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
                         Optional<NasaSirsImage> mediaInRepo = repository.findById(id);
                         if (mediaInRepo.isPresent()) {
                             media = mediaInRepo.get();
-                        } else {
-                            media = new NasaSirsImage();
-                            media.setNasaId(id);
+                        }
+                        if (media == null || media.getThumbnailUrl() == null) {
                             List<String> values = loadImageValues(imageLink);
-                            media.setTitle(values.get(0));
-                            media.setCategory(values.get(1));
-                            try {
-                                media.setPhotoDate(LocalDate.parse(values.get(3), usDateformatter));
-                                media.setPhotoYear(Year.of(media.getPhotoDate().getYear()));
-                            } catch (DateTimeParseException e) {
-                                media.setPhotoYear(Year.parse(values.get(3)));
+                            boolean newMedia = null == media; // FIXME migration code, to remove later
+                            if (newMedia) {
+                                media = new NasaSirsImage();
+                                media.setNasaId(id);
+                                media.setTitle(values.get(0));
+                                media.setCategory(values.get(1));
+                                try {
+                                    media.setPhotoDate(LocalDate.parse(values.get(3), usDateformatter));
+                                    media.setPhotoYear(Year.of(media.getPhotoDate().getYear()));
+                                } catch (DateTimeParseException e) {
+                                    media.setPhotoYear(Year.parse(values.get(3)));
+                                }
+                                media.setKeywords(NasaService.normalizeKeywords(Collections.singleton(values.get(4))));
                             }
-                            media.setKeywords(NasaService.normalizeKeywords(Collections.singleton(values.get(4))));
-                            media.setAssetUrl(new URL(url.getProtocol(), url.getHost(), values.get(5)));
-                            media.setDescription(values.get(6));
+                            media.setThumbnailUrl(new URL(url.getProtocol(), url.getHost(), values.get(5)));
+                            if (newMedia) {
+                                media.setAssetUrl(new URL(url.getProtocol(), url.getHost(), values.get(6)));
+                                media.setDescription(values.get(7));
+                            }
                             save = true;
                         }
                         if (mediaService.computeSha1(media)) {
@@ -152,7 +159,9 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
         List<String> result = new ArrayList<>();
         for (int i = 1; i < tds.size(); i += 2) {
             if (i == 11) {
-                result.add(tds.get(i).getElementsByTag("a").last().attr("href"));
+                Elements links = tds.get(i).getElementsByTag("a");
+                result.add(links.first().attr("href"));
+                result.add(links.last().attr("href"));
             } else {
                 result.add(tds.get(i).text());
             }

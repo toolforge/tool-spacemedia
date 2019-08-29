@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceAgency;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
@@ -35,14 +36,14 @@ public class SpaceAgencyControllerConfiguration {
 
     @PostConstruct
     void initSpaceAgencyControllers() throws ReflectiveOperationException {
-        for (AbstractSpaceAgencyService<?, ?> agency : agencies) {
+        for (SpaceAgency<?, ?> agency : agencies) {
             String agencyName = agency.getName().replace(" ", "").replace("(", "").replace(")", "");
             registerNewBean(agency, agencyName + "RestController", RestController.class, SpaceAgencyRestController.class, "/rest");
             registerNewBean(agency, agencyName + "WebController", Controller.class, SpaceAgencyWebController.class, "");
         }
     }
 
-    private void registerNewBean(AbstractSpaceAgencyService<?, ?> agency, String controllerName,
+    private void registerNewBean(SpaceAgency<?, ?> agency, String controllerName,
             Class<? extends Annotation> annotationClass, Class<?> parentClass, String pathSuffix)
             throws ReflectiveOperationException {
         Object controller = new ByteBuddy().subclass(parentClass, ConstructorStrategy.Default.NO_CONSTRUCTORS)

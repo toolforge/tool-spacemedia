@@ -51,7 +51,7 @@ import org.xml.sax.SAXException;
  * @param <ID> the type of the id of the entity the repository manages
  */
 public abstract class AbstractSpaceAgencyService<T extends Media, ID>
-        implements Comparable<AbstractSpaceAgencyService<T, ID>> {
+        implements Comparable<AbstractSpaceAgencyService<T, ID>>, SpaceAgency<T, ID> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpaceAgencyService.class);
 
@@ -74,6 +74,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         this.repository = Objects.requireNonNull(repository);
     }
 
+    @Override
     @Scheduled(fixedDelay = 43200000L)
     public void checkCommonCategories() {
         checkCommonsCategories(categories);
@@ -95,54 +96,67 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         }
     }
 
+    @Override
     public long countAllMedia() {
         return repository.count();
     }
 
+    @Override
     public long countIgnored() {
         return repository.countByIgnoredTrue();
     }
 
+    @Override
     public long countMissingMedia() {
         return repository.countMissingInCommons();
     }
 
+    @Override
     public long countUploadedMedia() {
         return repository.countUploadedToCommons();
     }
 
+    @Override
     public Iterable<T> listAllMedia() {
         return repository.findAll();
     }
 
+    @Override
     public Page<T> listAllMedia(Pageable page) {
         return repository.findAll(page);
     }
 
+    @Override
     public List<T> listMissingMedia() {
         return repository.findMissingInCommons();
     }
 
+    @Override
     public Page<T> listMissingMedia(Pageable page) {
         return repository.findMissingInCommons(page);
     }
 
+    @Override
     public List<T> listUploadedMedia() {
         return repository.findUploadedToCommons();
     }
 
+    @Override
     public Page<T> listUploadedMedia(Pageable page) {
         return repository.findUploadedToCommons(page);
     }
 
+    @Override
     public List<T> listDuplicateMedia() {
         return repository.findDuplicateInCommons();
     }
 
+    @Override
     public List<T> listIgnoredMedia() {
         return repository.findByIgnoredTrue();
     }
 
+    @Override
     public Page<T> listIgnoredMedia(Pageable page) {
         return repository.findByIgnoredTrue(page);
     }
@@ -152,6 +166,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
      * 
      * @return the space agency name
      */
+    @Override
     public abstract String getName();
 
     /**
@@ -159,10 +174,12 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
      * 
      * @return an unique identifier based on class name
      */
+    @Override
     public String getId() {
         return getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH);
     }
 
+    @Override
     public abstract void updateMedia() throws IOException;
 
     protected final LocalDateTime startUpdateMedia() {
@@ -176,16 +193,19 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
                 Duration.between(LocalDateTime.now(), start));
     }
 
+    @Override
     public Statistics getStatistics() {
         long problems = getProblemsCount();
         return new Statistics(getName(), countAllMedia(), countIgnored(), countMissingMedia(),
                 problems > 0 ? problems : null);
     }
 
+    @Override
     public final List<Problem> getProblems() {
         return problemRepository.findByAgency(getName());
     }
 
+    @Override
     public final long getProblemsCount() {
         return problemRepository.countByAgency(getName());
     }
@@ -212,6 +232,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         return repository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
     }
 
+    @Override
     public final T upload(String sha1) throws IOException {
         if (!env.getProperty(getClass().getName() + ".upload.enabled", Boolean.class, Boolean.FALSE)) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
@@ -226,6 +247,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         commonsService.upload(wikiCode, media.getTitle(), media.getAssetUrl());
     }
 
+    @Override
     public String getWikiHtmlPreview(String sha1)
             throws ClientProtocolException, IOException, ParserConfigurationException, SAXException {
         T media = findBySha1OrThrow(sha1);
@@ -237,10 +259,12 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         return media.getTitle();
     }
 
+    @Override
     public final String getWikiCode(String sha1) {
         return getWikiCode(findBySha1OrThrow(sha1));
     }
 
+    @Override
     public final String getWikiCode(T media) {
         try {
             StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n{{Information\n| description = ")
@@ -276,6 +300,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         return StringUtils.isBlank(description) ? media.getTitle() : description;
     }
 
+    @Override
     public abstract URL getSourceUrl(T media) throws MalformedURLException;
 
     protected String getSource(T media) throws MalformedURLException {
@@ -284,6 +309,12 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
 
     protected abstract String getAuthor(T media) throws MalformedURLException;
 
+    @Override
+    public final URL getThumbnailUrl(T media) {
+        return Optional.ofNullable(media.getThumbnailUrl()).orElse(media.getAssetUrl());
+    }
+
+    @Override
     public final Temporal getDate(T media) {
         return getCreationDate(media).orElseGet(() -> getUploadDate(media).orElse(null));
     }

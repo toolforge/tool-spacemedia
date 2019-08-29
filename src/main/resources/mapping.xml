@@ -34,5 +34,9 @@
             <a>geoData.accuracy</a>
             <b>accuracy</b>
         </field>
+        <field>
+            <a>smallUrl</a>
+            <b>thumbnailUrl</b>
+        </field>
     </mapping>
 </mappings>

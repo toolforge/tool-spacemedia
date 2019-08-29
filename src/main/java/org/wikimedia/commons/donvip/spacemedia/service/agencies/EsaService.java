@@ -168,11 +168,18 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
                     for (String format : Arrays.asList("gif", "jpg", "png", "tif")) {
                         getImageUrl(html, "download d-" + format + "-hi", url).ifPresent(files::add);
                     }
-                    if (files.isEmpty()) {
-                        // No hi-res for some missions (Gaia, Visual Monitoring Camera, OSIRIS...)
-                        getImageUrl(html.getElementsByClass("pi_container").get(0).getElementsByTag("img").get(0).attr("src"), url)
-                            .filter(u -> !u.getPath().contains("extension/esadam/design/esadam/images/global/arw"))
-                            .ifPresent(files::add);
+                    Optional<URL> lowRes = getImageUrl(
+                            html.getElementsByClass("pi_container").get(0).getElementsByTag("img").get(0).attr("src"), url)
+                            .filter(u -> !u.getPath().contains("extension/esadam/design/esadam/images/global/arw"));
+                    if (lowRes.isPresent()) {
+                        if (files.isEmpty()) {
+                            // No hi-res for some missions (Gaia, Visual Monitoring Camera, OSIRIS...)
+                            files.add(lowRes.get());
+                        }
+                        if (media.getThumbnailUrl() == null) {
+                            media.setThumbnailUrl(lowRes.get());
+                            save = true;
+                        }
                     }
                     int size = files.size();
                     if (size == 0) {

@@ -19,6 +19,8 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 public class SpacemediaApplication implements SchedulingConfigurer {
 
     public static void main(String[] args) {
+        // Disable devtools restart support to avoid strange CCE in Flickr media update
+        System.setProperty("spring.devtools.restart.enabled", "false");
         SpringApplication.run(SpacemediaApplication.class, args);
     }
 

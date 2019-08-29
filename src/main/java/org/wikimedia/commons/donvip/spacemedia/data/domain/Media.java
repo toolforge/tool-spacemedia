@@ -22,6 +22,9 @@ public abstract class Media {
     @Column(nullable = false, length = 380)
     protected URL assetUrl;
 
+    @Column(nullable = true, length = 380)
+    protected URL thumbnailUrl;
+
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     protected String title;
@@ -52,6 +55,14 @@ public abstract class Media {
 
     public void setAssetUrl(URL assetUrl) {
         this.assetUrl = assetUrl;
+    }
+
+    public URL getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(URL thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     public String getTitle() {

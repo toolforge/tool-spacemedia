@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceAgency;
 
 /**
  * Superclass of space agencies web controllers. Sub-classes are created
@@ -22,7 +23,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAge
  */
 public class SpaceAgencyWebController<T extends Media, ID> {
 
-    protected final AbstractSpaceAgencyService<T, ID> service;
+    protected final SpaceAgency<T, ID> service;
 
     public SpaceAgencyWebController(AbstractSpaceAgencyService<T, ID> service) {
         this.service = Objects.requireNonNull(service);

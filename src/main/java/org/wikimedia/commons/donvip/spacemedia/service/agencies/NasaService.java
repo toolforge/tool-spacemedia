@@ -100,9 +100,17 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
         throw new IllegalArgumentException(media.toString());
     }
 
-    static Optional<URL> findOriginalMedia(RestTemplate rest, URL href) throws URISyntaxException {
+    private static Optional<URL> findSpecificMedia(RestTemplate rest, URL href, String text) throws URISyntaxException {
         return rest.getForObject(Utils.urlToUri(href), NasaAssets.class).stream()
-                .filter(u -> u.toExternalForm().contains("~orig.")).findFirst();
+                .filter(u -> u.toExternalForm().contains(text)).findFirst();
+    }
+
+    static Optional<URL> findOriginalMedia(RestTemplate rest, URL href) throws URISyntaxException {
+        return findSpecificMedia(rest, href, "~orig.");
+    }
+
+    static Optional<URL> findThumbnailMedia(RestTemplate rest, URL href) throws URISyntaxException {
+        return findSpecificMedia(rest, href, "~thumb.");
     }
 
     private NasaMedia processMedia(RestTemplate rest, NasaMedia media, URL href) throws IOException, URISyntaxException {
@@ -130,6 +138,13 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
             Optional<URL> originalUrl = findOriginalMedia(rest, href);
             if (originalUrl.isPresent()) {
                 media.setAssetUrl(originalUrl.get());
+                save = true;
+            }
+        }
+        if (media.getThumbnailUrl() == null) {
+            Optional<URL> thumbnailUrl = findThumbnailMedia(rest, href);
+            if (thumbnailUrl.isPresent()) {
+                media.setThumbnailUrl(thumbnailUrl.get());
                 save = true;
             }
         }

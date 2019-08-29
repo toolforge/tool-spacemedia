@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class AsyncSpaceAgencyUpdaterService {
 
     @Async
-    public void updateMedia(AbstractSpaceAgencyService<?, ?> agency) throws IOException {
+    public void updateMedia(SpaceAgency<?, ?> agency) throws IOException {
         agency.updateMedia();
     }
 }

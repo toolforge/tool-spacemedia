@@ -19,7 +19,7 @@
       </thead>
       <tbody>
 	      <tr th:each="media : ${medias}">
-	        <td><a th:href="${agency.getSourceUrl(media)}"><img th:src="${media.assetUrl}" width="210px" /></a></td>
+	        <td th:replace="media :: cell_media"></td>
 	        <td th:text="${media.title}"></td>
 	        <td th:text="${agency.getDate(media)}"></td>
 	        <td th:text="${media.description}" ></td>

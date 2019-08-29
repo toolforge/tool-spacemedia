@@ -39,7 +39,7 @@ public class FlickrService {
     private static final Set<String> EXTRAS = new HashSet<>(Arrays.asList(
             "description", "license", "date_upload", "date_taken",
             "original_format", "last_update", "geo", "tags", 
-            "media", "path_alias", "url_o"));
+            "media", "path_alias", "url_m", "url_o"));
 
     private final Flickr flickr;
 

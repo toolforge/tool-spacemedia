@@ -91,7 +91,8 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> 
             Optional<KariMedia> mediaInRepo = repository.findById(id);
             if (mediaInRepo.isPresent()) {
                 media = mediaInRepo.get();
-            } else {
+            }
+            if (media == null || media.getThumbnailUrl() == null) {
                 try {
                     Document html = Jsoup.connect(viewUrl).timeout(60_000).get();
                     Element div = html.getElementsByClass("board_view").get(0);
@@ -100,9 +101,17 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> 
                         consecutiveFailures = 0;
                         Element infos = div.getElementsByClass("photo_infor").get(0);
                         Elements lis = infos.getElementsByTag("li");
-                        if (lis.get(lis.size() - 1).getElementsByTag("img").attr("src").endsWith(koglType1Icon)) {
+                        if (media == null && lis.get(lis.size() - 1).getElementsByTag("img").attr("src").endsWith(koglType1Icon)) {
                             media = buildMedia(id, view, div, title, infos, lis);
                             save = true;
+                        }
+                        if (media != null && media.getThumbnailUrl() == null) {
+                            String src = div.getElementsByClass("board_txt").get(0).getElementsByTag("img").attr("src")
+                                    .replace("/view/", "/lst/");
+                            if (StringUtils.isNotBlank(src)) {
+                                media.setThumbnailUrl(new URL(view.getProtocol(), view.getHost(), src));
+                                save = true;
+                            }
                         }
                     } else {
                         consecutiveFailures++;
