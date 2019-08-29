@@ -59,6 +59,9 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Query("select m from #{#entityName} m where m.pathAlias in ?1")
     Iterable<FlickrMedia> findAll(Set<String> flickrAccounts);
 
+    @Query("select m from #{#entityName} m where m.pathAlias in ?1")
+    Page<FlickrMedia> findAll(Set<String> flickrAccounts, Pageable page);
+
     @Query("select m from #{#entityName} m where m.ignored = true and m.pathAlias in ?1")
     List<FlickrMedia> findByIgnoredTrue(Set<String> flickrAccounts);
 

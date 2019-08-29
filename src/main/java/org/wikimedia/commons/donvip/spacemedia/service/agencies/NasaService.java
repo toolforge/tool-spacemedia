@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -353,6 +354,11 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
     @Override
     public URL getSourceUrl(NasaMedia media) throws MalformedURLException {
         return new URL(detailsLink.replace("<id>", media.getId()));
+    }
+
+    @Override
+    protected Optional<Temporal> getCreationDate(NasaMedia media) {
+        return Optional.ofNullable(media.getDateCreated());
     }
 
     @Override

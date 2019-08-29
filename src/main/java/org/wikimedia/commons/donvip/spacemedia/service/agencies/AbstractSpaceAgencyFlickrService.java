@@ -77,8 +77,18 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
     }
 
     @Override
+    public final Page<FlickrMedia> listAllMedia(Pageable page) {
+        return flickrRepository.findAll(flickrAccounts, page);
+    }
+
+    @Override
     public final List<FlickrMedia> listIgnoredMedia() {
         return flickrRepository.findByIgnoredTrue(flickrAccounts);
+    }
+
+    @Override
+    public final Page<FlickrMedia> listIgnoredMedia(Pageable page) {
+        return flickrRepository.findByIgnoredTrue(flickrAccounts, page);
     }
 
     @Override

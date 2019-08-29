@@ -7,6 +7,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +48,11 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> 
     @Override
     public final String getName() {
         return "KARI";
+    }
+
+    @Override
+    protected Optional<Temporal> getCreationDate(KariMedia media) {
+        return Optional.ofNullable(media.getDate());
     }
 
     @Override
