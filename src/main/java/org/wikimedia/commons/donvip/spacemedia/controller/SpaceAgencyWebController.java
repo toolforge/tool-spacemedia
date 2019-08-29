@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.controller;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -69,6 +71,11 @@ public class SpaceAgencyWebController<T extends Media, ID> {
 
     private String media(Model model, String template, Page<T> medias) {
         model.addAttribute("medias", medias);
+        int totalPages = medias.getTotalPages();
+        if (totalPages > 0) {
+            model.addAttribute("pageNumbers",
+                    IntStream.rangeClosed(1, totalPages).boxed().collect(Collectors.toList()));
+        }
         return template(model, template);
     }
 }

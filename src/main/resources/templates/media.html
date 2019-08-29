@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <nav th:fragment="pagination_nav" th:if="${medias.totalPages > 0}" aria-label="Search results pages">
+      <ul class="pagination">
+        <li th:class="'page-item ' + (${pageNumber==medias.number + 1} ? active)"
+            th:each="pageNumber : ${pageNumbers}">
+          <a class="page-link"
+             th:href="@{__${#request.requestURI}__(size=${medias.size}, page=${pageNumber-1})}"
+             th:text="${pageNumber}">
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </body>
+</html>

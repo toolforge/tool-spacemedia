@@ -6,6 +6,7 @@
   <body>
     <h1 th:text="${agency.name} + ' - Missing media'">Media</h1>
 
+    <nav th:replace="media :: pagination_nav"></nav>
     <table class="table table-sm table-hover">
       <thead class="thead-dark">
 	      <tr>
@@ -28,5 +29,6 @@
 	      </tr>
       </tbody>
     </table>
+    <nav th:replace="media :: pagination_nav"></nav>
   </body>
 </html>
