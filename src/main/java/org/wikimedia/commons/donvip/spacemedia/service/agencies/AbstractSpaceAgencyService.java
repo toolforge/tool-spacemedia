@@ -285,7 +285,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
     protected abstract String getAuthor(T media) throws MalformedURLException;
 
     public final Temporal getDate(T media) {
-        return getCreationDate(media).orElseGet(() -> getUploadDate(media).get());
+        return getCreationDate(media).orElseGet(() -> getUploadDate(media).orElse(null));
     }
 
     protected Optional<Temporal> getCreationDate(T media) {
