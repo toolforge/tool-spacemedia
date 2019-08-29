@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="header :: common_header(~{::title},~{})">
+    <title th:text="Spacemedia + ' - ' + ${agency.name} + ' - Ignored media'">Spacemedia</title>
+  </head>
+  <body>
+    <h1 th:text="${agency.name} + ' - Ignored media'">Media</h1>
+
+    <table class="table table-sm table-hover">
+      <thead class="thead-dark">
+	      <tr>
+	        <th>Media</th>
+	        <th>Title</th>
+	        <th>Date</th>
+	        <th>Description</th>
+	        <th>Commons</th>
+	        <th>Reason</th>
+	      <tr>
+      </thead>
+      <tbody>
+	      <tr th:each="media : ${medias}">
+	        <td><a th:href="${agency.getSourceUrl(media)}"><img th:src="${media.assetUrl}" width="210px" /></a></td>
+	        <td th:text="${media.title}"></td>
+	        <td th:text="${agency.getDate(media)}"></td>
+	        <td th:text="${media.description}" ></td>
+	        <td><a th:each="file : ${media.commonsFileNames}" th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a></td>
+	        <td th:text="${media.ignoredReason}" ></td>
+	      </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

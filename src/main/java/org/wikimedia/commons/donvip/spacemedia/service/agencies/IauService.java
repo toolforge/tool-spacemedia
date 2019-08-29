@@ -110,8 +110,8 @@ public class IauService extends CommonEsoService<IauMedia> {
     }
 
     @Override
-    protected String getSource(IauMedia media) throws MalformedURLException {
-        return wikiLink(new URL(IAU_BASE_PUBLIC_URL + IAU_IMAGES_PATH + media.getId()), media.getTitle());
+    public URL getSourceUrl(IauMedia media) throws MalformedURLException {
+        return new URL(IAU_BASE_PUBLIC_URL + IAU_IMAGES_PATH + media.getId());
     }
 
     @Override

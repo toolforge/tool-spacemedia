@@ -276,9 +276,17 @@ public abstract class AbstractSpaceAgencyService<T extends Media, ID>
         return StringUtils.isBlank(description) ? media.getTitle() : description;
     }
 
-    protected abstract String getSource(T media) throws MalformedURLException;
+    public abstract URL getSourceUrl(T media) throws MalformedURLException;
+
+    protected String getSource(T media) throws MalformedURLException {
+        return wikiLink(getSourceUrl(media), media.getTitle());
+    }
 
     protected abstract String getAuthor(T media) throws MalformedURLException;
+
+    public final Temporal getDate(T media) {
+        return getCreationDate(media).orElseGet(() -> getUploadDate(media).get());
+    }
 
     protected Optional<Temporal> getCreationDate(T media) {
         return Optional.empty();

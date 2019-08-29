@@ -1,13 +1,6 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="header :: common_header(~{::title},~{})">
     <title>Spacemedia</title>
   </head>
   <body>
@@ -27,11 +20,11 @@
       <tbody>
 	      <tr th:each="agency : ${agencies}">
 	        <td th:text="${agency.name}"></td>
-	        <td><a th:text="${agency.countAllMedia()}" th:href="@{/{id}/all(id=${agency.id})}"/></td>
-	        <td><a th:text="${agency.countUploadedMedia()}" th:href="@{/{id}/uploaded(id=${agency.id})}"/></td>
-	        <td><a th:text="${agency.countMissingMedia()}" th:href="@{/{id}/missing(id=${agency.id})}"/></td>
-	        <td><a th:text="${agency.countIgnored()}" th:href="@{/{id}/ignored(id=${agency.id})}"/></td>
-	        <td><a th:text="${agency.getProblemsCount()}" th:href="@{/{id}/problems(id=${agency.id})}"/></td>
+	        <td><a th:text="${agency.countAllMedia()}" th:href="@{/{id}/all(id=${agency.id})}">0</a></td>
+	        <td><a th:text="${agency.countUploadedMedia()}" th:href="@{/{id}/uploaded(id=${agency.id})}">0</a></td>
+	        <td><a th:text="${agency.countMissingMedia()}" th:href="@{/{id}/missing(id=${agency.id})}">0</a></td>
+	        <td><a th:text="${agency.countIgnored()}" th:href="@{/{id}/ignored(id=${agency.id})}">0</a></td>
+	        <td><a th:text="${agency.getProblemsCount()}" th:href="@{/{id}/problems(id=${agency.id})}">0</a></td>
 	      </tr>
       </tbody>
     </table>

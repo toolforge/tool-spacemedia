@@ -48,8 +48,8 @@ public class EsoService extends CommonEsoService<EsoMedia> {
     }
 
     @Override
-    protected String getSource(EsoMedia media) throws MalformedURLException {
-        return wikiLink(new URL(ESO_BASE_PUBLIC_URL + ESO_IMAGES_PATH + media.getId()), media.getTitle());
+    public URL getSourceUrl(EsoMedia media) throws MalformedURLException {
+        return new URL(ESO_BASE_PUBLIC_URL + ESO_IMAGES_PATH + media.getId());
     }
 
     @Override

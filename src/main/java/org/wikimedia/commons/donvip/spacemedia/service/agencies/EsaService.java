@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -330,13 +331,13 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
     }
 
     @Override
-    protected String getSource(EsaMedia media) throws MalformedURLException {
+    public URL getSourceUrl(EsaMedia media) throws MalformedURLException {
         URL url = media.getUrl();
         String externalForm = url.toExternalForm();
         if (externalForm.contains("://www.esa.int/spaceinimages/layout/set/html_npl/Images/")) {
             url = new URL(externalForm.replace("layout/set/html_npl/", ""));
         }
-        return wikiLink(url, media.getTitle());
+        return url;
     }
 
     @Override
@@ -348,5 +349,10 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
             }
         }
         return "European Space Agency";
+    }
+
+    @Override
+    protected Optional<Temporal> getUploadDate(EsaMedia media) {
+        return Optional.ofNullable(media.getReleased());
     }
 }

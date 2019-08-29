@@ -52,8 +52,8 @@ public class HubbleService extends CommonEsoService<HubbleMedia> {
     }
 
     @Override
-    protected String getSource(HubbleMedia media) throws MalformedURLException {
-        return wikiLink(new URL(HUB_BASE_PUBLIC_URL + HUB_IMAGES_PATH + media.getId()), media.getTitle());
+    public URL getSourceUrl(HubbleMedia media) throws MalformedURLException {
+        return new URL(HUB_BASE_PUBLIC_URL + HUB_IMAGES_PATH + media.getId());
     }
 
     @Override

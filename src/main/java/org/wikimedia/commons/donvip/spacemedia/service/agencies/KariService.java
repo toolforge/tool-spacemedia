@@ -50,8 +50,8 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer> 
     }
 
     @Override
-    protected final String getSource(KariMedia media) throws MalformedURLException {
-        return wikiLink(new URL(getViewUrl(media.getId())), media.getTitle());
+    public final URL getSourceUrl(KariMedia media) throws MalformedURLException {
+        return new URL(getViewUrl(media.getId()));
     }
 
     @Override

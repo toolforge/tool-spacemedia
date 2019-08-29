@@ -26,19 +26,19 @@ import org.xml.sax.SAXException;
  * @param <T> the media type the repository manages
  * @param <ID> the type of the id of the entity the repository manages
  */
-public abstract class SpaceAgencyController<T extends Media, ID> {
+public abstract class SpaceAgencyRestController<T extends Media, ID> {
 
     @Autowired
     private AsyncSpaceAgencyUpdaterService async;
 
     protected final AbstractSpaceAgencyService<T, ID> service;
 
-    public SpaceAgencyController(AbstractSpaceAgencyService<T, ID> service) {
+    public SpaceAgencyRestController(AbstractSpaceAgencyService<T, ID> service) {
         this.service = Objects.requireNonNull(service);
     }
 
     @GetMapping("/all")
-    public final Page<T> listAll(@PageableDefault(size = 100, sort = "id") Pageable page) throws IOException {
+    public final Page<T> listAll(@PageableDefault(size = 50, sort = "id") Pageable page) {
         return service.listAllMedia(page);
     }
 
@@ -48,32 +48,32 @@ public abstract class SpaceAgencyController<T extends Media, ID> {
     }
 
     @GetMapping("/missing")
-    public final Page<T> listMissing(@PageableDefault(size = 100, sort = "id") Pageable page) throws IOException {
+    public final Page<T> listMissing(@PageableDefault(size = 50, sort = "id") Pageable page) {
         return service.listMissingMedia(page);
     }
 
     @GetMapping("/uploaded")
-    public final Page<T> listUploaded(@PageableDefault(size = 100, sort = "id") Pageable page) throws IOException {
+    public final Page<T> listUploaded(@PageableDefault(size = 50, sort = "id") Pageable page) {
         return service.listUploadedMedia(page);
     }
 
     @GetMapping("/duplicates")
-    public final List<T> listDuplicate() throws IOException {
+    public final List<T> listDuplicate() {
         return service.listDuplicateMedia();
     }
 
     @GetMapping("/ignored")
-    public List<T> listIgnored() {
-        return service.listIgnoredMedia();
+    public final Page<T> listIgnored(@PageableDefault(size = 50, sort = "id") Pageable page) {
+        return service.listIgnoredMedia(page);
     }
 
     @GetMapping("/stats")
-    public final Statistics stats() throws IOException {
+    public final Statistics stats() {
         return service.getStatistics();
     }
 
     @GetMapping("/problems")
-    public final List<Problem> problems() throws IOException {
+    public final List<Problem> problems() {
         return service.getProblems();
     }
 
