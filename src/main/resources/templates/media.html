@@ -6,7 +6,7 @@
         <li th:class="'page-item ' + (${pageNumber==medias.number + 1} ? active)"
             th:each="pageNumber : ${pageNumbers}">
           <a class="page-link"
-             th:href="@{__${#request.requestURI}__(size=${medias.size}, page=${pageNumber-1})}"
+             th:href="@{''(size=${medias.size}, page=${pageNumber-1})}"
              th:text="${pageNumber}">
           </a>
         </li>
