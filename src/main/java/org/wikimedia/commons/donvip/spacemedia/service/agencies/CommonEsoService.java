@@ -164,12 +164,10 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             if (media.getCategories().contains("People") && media.getCategories().size() == 1
                     && media.getTypes() != null
                     && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
-                media.setIgnored(Boolean.TRUE);
-                media.setIgnoredReason(
+                save = ignoreFile(media,
                         "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.");
             } else if (media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
-                media.setIgnored(Boolean.TRUE);
-                media.setIgnoredReason("Forbidden category.");
+                save = ignoreFile(media, "Forbidden category.");
             }
         }
         if (mediaService.computeSha1(media)) {
@@ -182,6 +180,12 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             media = repository.save(media);
         }
         return Optional.of(media);
+    }
+
+    protected boolean ignoreFile(T media, String reason) {
+        media.setIgnored(Boolean.TRUE);
+        media.setIgnoredReason(reason);
+        return true;
     }
 
     protected Collection<String> getForbiddenCategories() {
