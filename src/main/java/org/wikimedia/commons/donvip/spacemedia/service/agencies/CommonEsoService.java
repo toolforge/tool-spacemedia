@@ -158,19 +158,18 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
                     break;
                 }
             }
-
-            if (media.getCategories() != null) {
-                // Try to detect pictures of identifiable people, as per ESO conditions
-                if (media.getCategories().contains("People and Events") && media.getCategories().size() == 1
-                        && media.getTypes() != null
-                        && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
-                    media.setIgnored(Boolean.TRUE);
-                    media.setIgnoredReason(
-                            "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.");
-                } else if (media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
-                    media.setIgnored(Boolean.TRUE);
-                    media.setIgnoredReason("Forbidden category.");
-                }
+        }
+        if (media.getCategories() != null) {
+            // Try to detect pictures of identifiable people, as per ESO conditions
+            if (media.getCategories().contains("People") && media.getCategories().size() == 1
+                    && media.getTypes() != null
+                    && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
+                media.setIgnored(Boolean.TRUE);
+                media.setIgnoredReason(
+                        "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.");
+            } else if (media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
+                media.setIgnored(Boolean.TRUE);
+                media.setIgnoredReason("Forbidden category.");
             }
         }
         if (mediaService.computeSha1(media)) {
