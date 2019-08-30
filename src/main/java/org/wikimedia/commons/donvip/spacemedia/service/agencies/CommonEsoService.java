@@ -194,9 +194,10 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
 
     protected String findCredit(Element div) {
         Element credit = div.getElementsByClass("credit").get(0);
-        if (credit.childNodeSize() == 1
-                && ("p".equals(credit.child(0).tagName()) || "div".equals(credit.child(0).tagName()))) {
-            credit = credit.child(0);
+        Elements children = credit.children();
+        if (children.size() == 1
+                && ("p".equals(children.get(0).tagName()) || "div".equals(children.get(0).tagName()))) {
+            credit = children.get(0);
         }
         Elements links = credit.getElementsByTag("a");
         for (Element a : links) {
