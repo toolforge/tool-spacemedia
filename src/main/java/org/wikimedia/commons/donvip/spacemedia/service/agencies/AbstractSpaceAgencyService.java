@@ -50,7 +50,7 @@ import org.xml.sax.SAXException;
  * @param <T> the media type the repository manages
  * @param <ID> the type of the id of the entity the repository manages
  */
-public abstract class AbstractSpaceAgencyService<T extends Media, ID>
+public abstract class AbstractSpaceAgencyService<T extends Media<ID>, ID>
         implements Comparable<AbstractSpaceAgencyService<T, ID>>, SpaceAgency<T, ID> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpaceAgencyService.class);

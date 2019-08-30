@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = NasaImage.class, name = "image"),
     @JsonSubTypes.Type(value = NasaVideo.class, name = "video") }
 )
-public abstract class NasaMedia extends Media {
+public abstract class NasaMedia extends Media<String> {
 
     @Id
     @Column(name = "nasa_id", nullable = false, length = 170)
@@ -50,10 +50,12 @@ public abstract class NasaMedia extends Media {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords;
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public void setId(String nasaId) {
         this.id = nasaId;
     }

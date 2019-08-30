@@ -21,7 +21,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceAgency;
  * @param <T> the media type the repository manages
  * @param <ID> the type of the id of the entity the repository manages
  */
-public class SpaceAgencyWebController<T extends Media, ID> {
+public class SpaceAgencyWebController<T extends Media<ID>, ID> {
 
     protected final SpaceAgency<T, ID> service;
 

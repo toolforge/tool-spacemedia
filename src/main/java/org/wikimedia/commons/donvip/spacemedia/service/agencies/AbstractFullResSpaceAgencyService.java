@@ -8,7 +8,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepositor
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 
-public abstract class AbstractFullResSpaceAgencyService<T extends FullResMedia, ID>
+public abstract class AbstractFullResSpaceAgencyService<T extends FullResMedia<ID>, ID>
         extends AbstractSpaceAgencyService<T, ID> {
 
     private FullResMediaRepository<T, ID> fullResRepository;

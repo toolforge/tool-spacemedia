@@ -27,7 +27,7 @@ import org.xml.sax.SAXException;
  * @param <T> the media type the repository manages
  * @param <ID> the type of the id of the entity the repository manages
  */
-public abstract class SpaceAgencyRestController<T extends Media, ID> {
+public abstract class SpaceAgencyRestController<T extends Media<ID>, ID> {
 
     @Autowired
     private AsyncSpaceAgencyUpdaterService async;

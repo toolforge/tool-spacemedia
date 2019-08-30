@@ -14,7 +14,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAge
 public class WebAppController {
 
     @Autowired
-    private List<AbstractSpaceAgencyService<? extends Media, ?>> agencies;
+    private List<AbstractSpaceAgencyService<? extends Media<?>, ?>> agencies;
 
     @GetMapping("/")
     public String index(Model model) {

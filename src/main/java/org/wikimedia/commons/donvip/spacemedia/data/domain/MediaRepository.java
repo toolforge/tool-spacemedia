@@ -16,7 +16,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  * @param <ID> the type of the id of the entity the repository manages
  */
 @NoRepositoryBean
-public interface MediaRepository<T extends Media, ID> extends PagingAndSortingRepository<T, ID> {
+public interface MediaRepository<T extends Media<ID>, ID> extends PagingAndSortingRepository<T, ID> {
 
     /**
      * Count files matching the given SHA-1.

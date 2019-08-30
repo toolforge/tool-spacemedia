@@ -15,7 +15,7 @@ import javax.persistence.MappedSuperclass;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 
 @MappedSuperclass
-public abstract class CommonEsoMedia extends FullResMedia {
+public abstract class CommonEsoMedia extends FullResMedia<String> {
 
     @Id
     @Column(length = 127)
@@ -76,10 +76,12 @@ public abstract class CommonEsoMedia extends FullResMedia {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String credit;
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public void setId(String id) {
         this.id = id;
     }

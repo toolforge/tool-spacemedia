@@ -74,7 +74,7 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
 
     @Override
     public URL getSourceUrl(NasaSirsImage media) throws MalformedURLException {
-        return new URL(detailsUrl.replace("<id>", media.getNasaId()));
+        return new URL(detailsUrl.replace("<id>", media.getId()));
     }
 
     @Override
@@ -115,7 +115,7 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
                             boolean newMedia = null == media; // FIXME migration code, to remove later
                             if (newMedia) {
                                 media = new NasaSirsImage();
-                                media.setNasaId(id);
+                                media.setId(id);
                                 media.setTitle(values.get(0));
                                 media.setCategory(values.get(1));
                                 try {

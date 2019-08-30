@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 
 @NoRepositoryBean
-public interface FullResMediaRepository<T extends FullResMedia, ID> extends MediaRepository<T, ID> {
+public interface FullResMediaRepository<T extends FullResMedia<ID>, ID> extends MediaRepository<T, ID> {
 
     long countByFullResSha1(String sha1);
 

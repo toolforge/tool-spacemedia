@@ -13,11 +13,11 @@ import javax.persistence.Id;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 
 @Entity
-public class EsaMedia extends FullResMedia {
+public class EsaMedia extends FullResMedia<Integer> {
 
     @Id
     @Column(nullable = false)
-    private int id;
+    private Integer id;
     @Column(nullable = false, unique = true, length = 200)
     private URL url;
     private LocalDateTime released;
@@ -64,11 +64,13 @@ public class EsaMedia extends FullResMedia {
         this.copyright = copyright;
     }
 
-    public int getId() {
+    @Override
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    @Override
+    public void setId(Integer id) {
         this.id = id;
     }
 

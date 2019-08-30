@@ -17,7 +17,7 @@ import javax.persistence.Table;
  */
 @MappedSuperclass
 @Table(indexes = {@Index(columnList = "sha1,full_res_sha1")})
-public abstract class FullResMedia extends Media {
+public abstract class FullResMedia<ID> extends Media<ID> {
 
     @Column(nullable = true, name = "full_res_sha1", length = 42)
     protected String fullResSha1;
@@ -63,7 +63,7 @@ public abstract class FullResMedia extends Media {
             return true;
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
-        FullResMedia other = (FullResMedia) obj;
+        FullResMedia<?> other = (FullResMedia<?>) obj;
         return Objects.equals(fullResCommonsFileNames, other.fullResCommonsFileNames)
                 && Objects.equals(fullResAssetUrl, other.fullResAssetUrl)
                 && Objects.equals(fullResSha1, other.fullResSha1);

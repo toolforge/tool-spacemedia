@@ -14,7 +14,7 @@ import javax.persistence.Table;
 
 @MappedSuperclass
 @Table(indexes = {@Index(columnList = "sha1")})
-public abstract class Media {
+public abstract class Media<ID> {
 
     @Column(nullable = false, length = 42)
     protected String sha1;
@@ -109,6 +109,10 @@ public abstract class Media {
         return ignored;
     }
 
+    public abstract ID getId();
+
+    public abstract void setId(ID id);
+
     @Override
     public int hashCode() {
         return Objects.hash(commonsFileNames, sha1, assetUrl);
@@ -120,7 +124,7 @@ public abstract class Media {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        Media other = (Media) obj;
+        Media<?> other = (Media<?>) obj;
         return Objects.equals(commonsFileNames, other.commonsFileNames)
             && Objects.equals(sha1, other.sha1)
             && Objects.equals(assetUrl, other.assetUrl);

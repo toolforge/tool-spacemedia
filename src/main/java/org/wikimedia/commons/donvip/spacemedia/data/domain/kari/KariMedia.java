@@ -10,21 +10,23 @@ import javax.validation.constraints.NotNull;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
 @Entity
-public class KariMedia extends Media {
+public class KariMedia extends Media<Integer> {
 
     @Id
     @NotNull
-    private int id;
+    private Integer id;
 
     private String kariId;
 
     private LocalDate date;
 
-    public int getId() {
+    @Override
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    @Override
+    public void setId(Integer id) {
         this.id = id;
     }
 

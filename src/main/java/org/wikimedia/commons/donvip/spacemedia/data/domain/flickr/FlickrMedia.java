@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
-public class FlickrMedia extends Media {
+public class FlickrMedia extends Media<Long> {
 
     @Id
     @NotNull
@@ -73,10 +73,12 @@ public class FlickrMedia extends Media {
     @JsonProperty("pathalias")
     String pathAlias;
 
+    @Override
     public Long getId() {
         return id;
     }
 
+    @Override
     public void setId(Long id) {
         this.id = id;
     }

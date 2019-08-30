@@ -16,12 +16,12 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
-public class NasaSirsImage extends Media {
+public class NasaSirsImage extends Media<String> {
 
     @Id
-    @Column(nullable = false, length = 60)
+    @Column(name = "nasa_id", nullable = false, length = 60)
     @JsonProperty("nasa_id")
-    private String nasaId;
+    private String id;
 
     @Column(nullable = false)
     private String category;
@@ -36,12 +36,14 @@ public class NasaSirsImage extends Media {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords;
 
-    public String getNasaId() {
-        return nasaId;
+    @Override
+    public String getId() {
+        return id;
     }
 
-    public void setNasaId(String nasaId) {
-        this.nasaId = nasaId;
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getCategory() {
@@ -78,7 +80,7 @@ public class NasaSirsImage extends Media {
 
     @Override
     public String toString() {
-        return "NasaSirsImage [" + (nasaId != null ? "nasaId=" + nasaId + ", " : "")
+        return "NasaSirsImage [" + (id != null ? "id=" + id + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (category != null ? "category=" + category + ", " : "")
                 + (photoDate != null ? "photoDate=" + photoDate + ", " : "")
@@ -91,7 +93,7 @@ public class NasaSirsImage extends Media {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(nasaId);
+        return 31 * super.hashCode() + Objects.hash(id);
     }
 
     @Override
@@ -101,6 +103,6 @@ public class NasaSirsImage extends Media {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaSirsImage other = (NasaSirsImage) obj;
-        return Objects.equals(nasaId, other.nasaId);
+        return Objects.equals(id, other.id);
     }
 }

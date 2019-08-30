@@ -16,7 +16,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.xml.sax.SAXException;
 
-public interface SpaceAgency<T extends Media, ID> {
+public interface SpaceAgency<T extends Media<ID>, ID> {
 
     void checkCommonCategories();
 
