@@ -112,6 +112,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
         } else {
             media = mediaClass.newInstance();
             media.setId(id);
+        }
+        if (!mediaInRepo.isPresent() || media.getThumbnailUrl() == null) { // FIXME migration code to remove later
             save = true;
             LOGGER.info(imgUrlLink);
             Document html = Jsoup.connect(imgUrlLink).timeout(60_000).get();
