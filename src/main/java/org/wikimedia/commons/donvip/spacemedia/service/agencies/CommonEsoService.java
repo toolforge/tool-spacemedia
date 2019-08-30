@@ -142,11 +142,15 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             processObjectInfos(url, imgUrlLink, id, media, html);
 
             for (Element link : html.getElementsByClass("archive_dl_text")) {
-                String assetUrlLink = link.getElementsByTag("a").get(0).attr("href");
-                if (assetUrlLink.contains("/original/")) {
-                    if (assetUrlLink.endsWith(".psb")) {
-                        continue; // format not supported by Wikimedia Commons
-                    }
+                Elements innerLinks = link.getElementsByTag("a");
+                if (innerLinks.isEmpty()) {
+                    // Invalid page, see https://www.spacetelescope.org/images/heic1103a/
+                    innerLinks = link.parent().nextElementSiblings();
+                }
+                String assetUrlLink = innerLinks.get(0).attr("href");
+                if (assetUrlLink.endsWith(".psb")) {
+                    continue; // format not supported by Wikimedia Commons
+                } else if (assetUrlLink.contains("/original/")) {
                     media.setFullResAssetUrl(buildAssetUrl(assetUrlLink, url));
                 } else if (assetUrlLink.contains("/large/")) {
                     media.setAssetUrl(buildAssetUrl(assetUrlLink, url));
