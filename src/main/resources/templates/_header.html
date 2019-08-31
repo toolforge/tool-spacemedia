@@ -11,7 +11,10 @@
 
     <!-- Common styles and scripts -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="shortcut icon" th:href="@{/images/favicon.ico}">
+    <link rel="shortcut icon" th:href="@{/favicon.ico}">
+	<link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon-32x32.png}">
+	<link rel="icon" type="image/png" sizes="96x96" th:href="@{/favicon-96x96.png}">
+	<link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon-16x16.png}">
 
     <!--/* Per-page placeholder for additional links */-->
     <th:block th:replace="${links}" />
@@ -19,7 +22,10 @@
   <body>
     <!-- NAVBAR fragment -->
 	<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-light bg-light">
-	  <a class="navbar-brand" th:href="@{/}">Spacemedia</a>
+	  <a class="navbar-brand" th:href="@{/}">
+	    <img th:src="@{/iconfinder_EARTH_1715795.svg}" width="30" height="30" class="d-inline-block align-top">
+	    Spacemedia
+	  </a>
 	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 	    <span class="navbar-toggler-icon"></span>
 	  </button>
