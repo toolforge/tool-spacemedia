@@ -68,12 +68,12 @@
 		<dependency>
 		    <groupId>com.twelvemonkeys.imageio</groupId>
 		    <artifactId>imageio-tiff</artifactId>
-		    <version>3.4.1</version>
+		    <version>3.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.flickr4java</groupId>
 			<artifactId>flickr4java</artifactId>
-			<version>3.0.1</version>
+			<version>3.0.2</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.github.dozermapper</groupId>
