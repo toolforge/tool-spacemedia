@@ -5,9 +5,9 @@
       <ul class="pagination">
         <li th:class="'page-item ' + (${pageNumber==medias.number + 1} ? active)"
             th:each="pageNumber : ${pageNumbers}">
-          <a class="page-link"
-             th:href="@{''(size=${medias.size}, page=${pageNumber-1})}"
-             th:text="${pageNumber}">
+          <a class="page-link" th:if="!${search.q}" th:href="@{''(size=${medias.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
+          </a>
+          <a class="page-link" th:if="${search.q}" th:href="@{''(q=${search.q}, size=${medias.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
           </a>
         </li>
       </ul>
@@ -31,7 +31,7 @@
 	        </td>
 	        <td th:text="${media.title}"></td>
 	        <td th:text="${media.date}"></td>
-	        <td th:text="${media.description}" ></td>
+	        <td th:utext="${media.description}"></td>
 	        <td><a th:each="file : ${media.commonsFileNames}" th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a></td>
 	      </tr>
       </tbody>

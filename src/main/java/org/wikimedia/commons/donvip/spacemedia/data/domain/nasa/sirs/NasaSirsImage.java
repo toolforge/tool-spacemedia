@@ -10,12 +10,17 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
+import org.hibernate.search.annotations.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
+@Indexed
+@Table(indexes = {@Index(columnList = "sha1")})
 public class NasaSirsImage extends Media<String, LocalDate> {
 
     @Id

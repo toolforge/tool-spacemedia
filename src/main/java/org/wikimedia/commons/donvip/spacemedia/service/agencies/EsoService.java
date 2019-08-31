@@ -36,6 +36,11 @@ public class EsoService extends CommonEsoService<EsoMedia> {
     }
 
     @Override
+    protected Class<EsoMedia> getMediaClass() {
+        return EsoMedia.class;
+    }
+
+    @Override
     public String getName() {
         return "ESO";
     }

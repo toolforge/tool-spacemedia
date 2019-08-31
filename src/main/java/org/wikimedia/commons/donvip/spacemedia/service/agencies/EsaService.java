@@ -70,9 +70,16 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
         super(repository);
     }
 
+    @Override
     @PostConstruct
     void init() {
+        super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern);
+    }
+
+    @Override
+    protected Class<EsaMedia> getMediaClass() {
+        return EsaMedia.class;
     }
 
     private static Optional<URL> getImageUrl(String src, URL imageUrl) throws MalformedURLException {
@@ -221,10 +228,7 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
         boolean ok = false;
         for (int i = 0; i < maxTries && !ok; i++) {
             try {
-                if (mediaService.computeSha1(media)) {
-                    save = true;
-                }
-                if (mediaService.findCommonsFilesWithSha1(media)) {
+                if (mediaService.updateMedia(media)) {
                     save = true;
                 }
                 ok = true;

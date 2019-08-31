@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.SimpleQueryStringMatchingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,7 @@ public abstract class AbstractSpaceAgencyFlickrService
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpaceAgencyFlickrService.class);
 
+
     @Autowired
     protected FlickrMediaRepository flickrRepository;
     @Autowired
@@ -50,6 +53,11 @@ public abstract class AbstractSpaceAgencyFlickrService
     public AbstractSpaceAgencyFlickrService(FlickrMediaRepository repository, Set<String> flickrAccounts) {
         super(repository);
         this.flickrAccounts = Objects.requireNonNull(flickrAccounts);
+    }
+
+    @Override
+    protected final Class<FlickrMedia> getMediaClass() {
+        return FlickrMedia.class;
     }
 
     @Override
@@ -248,15 +256,20 @@ public abstract class AbstractSpaceAgencyFlickrService
             media.setSha1(null);
             save = true;
         }
-        if (mediaService.computeSha1(media)) {
-            save = true;
-        }
-        if (mediaService.findCommonsFilesWithSha1(media)) {
+        if (mediaService.updateMedia(media)) {
             save = true;
         }
         if (save) {
             media = flickrRepository.save(media);
         }
         return media;
+    }
+
+    @Override
+    protected Query getSearchQuery(SimpleQueryStringMatchingContext context, String q) {
+        return queryBuilder.bool()
+                .must(super.getSearchQuery(context, q))
+                .must(queryBuilder.simpleQueryString().onField("pathAlias").matching(String.join(" ", flickrAccounts)).createQuery())
+                .createQuery();
     }
 }

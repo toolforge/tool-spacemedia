@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="header :: common_header(~{::title},~{})">
-    <title th:text="Spacemedia + ' - ' + ${agency.name} + ' - Problems'">Spacemedia</title>
+  <head th:replace="_header :: common_header(~{::title},~{})">
+    <title th:text="Spacemedia + ' - ' + ${agency.name} + ' - Problems'"></title>
   </head>
   <body>
+    <nav th:replace="_header :: navbar"></nav>
+    <div th:replace="_header :: scripts"></div>
   </body>
 </html>

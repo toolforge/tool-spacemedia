@@ -10,13 +10,15 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.FetchType;
-import javax.persistence.Index;
 import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Table;
+
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Store;
 
 @MappedSuperclass
-@Table(indexes = {@Index(columnList = "sha1")})
 public abstract class Media<ID, D extends Temporal> {
 
     @Column(nullable = false, length = 42)
@@ -30,10 +32,12 @@ public abstract class Media<ID, D extends Temporal> {
 
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
     protected String title;
 
     @Lob
     @Column(nullable = true, columnDefinition = "TEXT")
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
     protected String description;
 
     @ElementCollection(fetch = FetchType.EAGER)

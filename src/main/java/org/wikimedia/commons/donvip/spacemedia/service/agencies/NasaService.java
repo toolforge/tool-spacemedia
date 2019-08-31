@@ -92,6 +92,11 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String, Z
         super(repository);
     }
 
+    @Override
+    protected Class<NasaMedia> getMediaClass() {
+        return NasaMedia.class;
+    }
+
     private NasaMedia save(NasaMedia media) {
         switch (media.getMediaType()) {
         case image: return imageRepository.save((NasaImage) media);
@@ -149,10 +154,7 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String, Z
                 save = true;
             }
         }
-        if (mediaService.computeSha1(media)) {
-            save = true;
-        }
-        if (mediaService.findCommonsFilesWithSha1(media)) {
+        if (mediaService.updateMedia(media)) {
             save = true;
         }
         if (save) {

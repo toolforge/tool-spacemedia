@@ -63,6 +63,11 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
     }
 
     @Override
+    protected Class<NasaSirsImage> getMediaClass() {
+        return NasaSirsImage.class;
+    }
+
+    @Override
     public String getName() {
         return "NASA (SIRS)";
     }
@@ -132,10 +137,7 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
                             }
                             save = true;
                         }
-                        if (mediaService.computeSha1(media)) {
-                            save = true;
-                        }
-                        if (mediaService.findCommonsFilesWithSha1(media)) {
+                        if (mediaService.updateMedia(media)) {
                             save = true;
                         }
                         if (save) {

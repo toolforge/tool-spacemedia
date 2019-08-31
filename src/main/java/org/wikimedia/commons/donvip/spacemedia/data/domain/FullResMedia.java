@@ -8,16 +8,13 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.FetchType;
-import javax.persistence.Index;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Table;
 
 /**
  * Media that can have an optional full-res variant of the main media (ex: big
  * TIFF file).
  */
 @MappedSuperclass
-@Table(indexes = {@Index(columnList = "sha1,full_res_sha1")})
 public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> {
 
     @Column(nullable = true, name = "full_res_sha1", length = 42)

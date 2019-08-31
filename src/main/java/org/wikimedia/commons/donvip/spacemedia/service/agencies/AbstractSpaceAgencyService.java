@@ -19,17 +19,27 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.query.dsl.SimpleQueryStringMatchingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -68,11 +78,25 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @Autowired
     private Environment env;
 
+    @Autowired
+    @Qualifier("searchEntityManager")
+    private EntityManager searchEntityManager;
+
     @Value("#{${categories}}")
     private Map<String, String> categories;
 
+    private FullTextEntityManager fullTextEntityManager;
+
+    protected QueryBuilder queryBuilder;
+
     public AbstractSpaceAgencyService(MediaRepository<T, ID, D> repository) {
         this.repository = Objects.requireNonNull(repository);
+    }
+
+    @PostConstruct
+    void init() {
+        fullTextEntityManager = Search.getFullTextEntityManager(searchEntityManager);
+        queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(getMediaClass()).get();
     }
 
     @Override
@@ -160,6 +184,32 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @Override
     public Page<T> listIgnoredMedia(Pageable page) {
         return repository.findByIgnoredTrue(page);
+    }
+
+    protected Query getSearchQuery(SimpleQueryStringMatchingContext context, String q) {
+        return context.withAndAsDefaultOperator().matching(q).createQuery();
+    }
+
+    private FullTextQuery getFullTextQuery(String q) {
+        return fullTextEntityManager.createFullTextQuery(getSearchQuery(
+                queryBuilder.simpleQueryString().onField("title").boostedTo(5f).andField("description").boostedTo(2f),
+                q),
+                getMediaClass());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public final List<T> searchMedia(String q) {
+        return getFullTextQuery(q).getResultList();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public final Page<T> searchMedia(String q, Pageable page) {
+        FullTextQuery fullTextQuery = getFullTextQuery(q);
+        fullTextQuery.setFirstResult(page.getPageNumber() * page.getPageSize());
+        fullTextQuery.setMaxResults(page.getPageSize());
+        return new PageImpl<>(fullTextQuery.getResultList(), page, fullTextQuery.getResultSize());
     }
 
     /**
@@ -391,6 +441,8 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     protected MediaRepository<?, ?, ?> getOriginalRepository() {
         return null;
     }
+
+    protected abstract Class<T> getMediaClass();
 
     @Override
     public int compareTo(AbstractSpaceAgencyService<T, ID, D> o) {

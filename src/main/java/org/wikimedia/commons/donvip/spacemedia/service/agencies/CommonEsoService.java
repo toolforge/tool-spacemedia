@@ -76,8 +76,10 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         this.mediaClass = Objects.requireNonNull(mediaClass);
     }
 
+    @Override
     @PostConstruct
     void init() {
+        super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
         dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern, Locale.ENGLISH);
     }
@@ -177,10 +179,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
                 save = ignoreFile(media, "Forbidden category.");
             }
         }
-        if (mediaService.computeSha1(media)) {
-            save = true;
-        }
-        if (mediaService.findCommonsFilesWithSha1(media)) {
+        if (mediaService.updateMedia(media)) {
             save = true;
         }
         if (save) {

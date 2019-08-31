@@ -80,4 +80,8 @@ public interface SpaceAgency<T extends Media<ID, D>, ID, D extends Temporal> {
     URL getSourceUrl(T media) throws MalformedURLException;
 
     URL getThumbnailUrl(T media);
+
+    List<T> searchMedia(String q);
+
+    Page<T> searchMedia(String q, Pageable page);
 }

@@ -44,6 +44,11 @@ public class IauService extends CommonEsoService<IauMedia> {
     }
 
     @Override
+    protected Class<IauMedia> getMediaClass() {
+        return IauMedia.class;
+    }
+
+    @Override
     @Scheduled(fixedRateString = "${iau.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
         doUpdateMedia();

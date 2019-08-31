@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +16,43 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 @Service
 public class MediaService {
 
+    private static final List<String> STRINGS_TO_REMOVE = Arrays.asList(" rel=\"noreferrer nofollow\"");
+
+    private static final List<String> STRINGS_TO_REPLACE_BY_SPACE = Arrays.asList("&nbsp;", "  ");
+
     @Autowired
     private CommonsService commonsService;
+
+    public boolean updateMedia(Media<?, ?> media) throws IOException, URISyntaxException {
+        boolean result = false;
+        if (cleanupDescription(media)) {
+            result = true;
+        }
+        if (computeSha1(media)) {
+            result = true;
+        }
+        if (findCommonsFilesWithSha1(media)) {
+            result = true;
+        }
+        return result;
+    }
+
+    public boolean cleanupDescription(Media<?, ?> media) {
+        boolean result = false;
+        for (String toRemove : STRINGS_TO_REMOVE) {
+            if (media.getDescription().contains(toRemove)) {
+                media.setDescription(media.getDescription().replace(toRemove, ""));
+                result = true;
+            }
+        }
+        for (String toReplace : STRINGS_TO_REPLACE_BY_SPACE) {
+            while (media.getDescription().contains(toReplace)) {
+                media.setDescription(media.getDescription().replace(toReplace, " "));
+                result = true;
+            }
+        }
+        return result;
+    }
 
     /**
      * Computes the media SHA-1, if required, and updates the media object accordingly.

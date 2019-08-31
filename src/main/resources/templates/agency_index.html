@@ -1,8 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="header :: common_header(~{::title},~{})">
-    <title th:text="Spacemedia + ' - ' + ${agency.name}">Spacemedia</title>
+  <head th:replace="_header :: common_header(~{::title},~{})">
+    <title th:text="Spacemedia + ' - ' + ${agency.name}"></title>
   </head>
   <body>
+    <nav th:replace="_header :: navbar"></nav>
+    <h2 th:text="${agency.name}"></h2>
+    <table class="table table-sm table-hover">
+      <thead class="thead-dark">
+	      <tr>
+	        <th>Free Media</th>
+	        <th>Uploaded</th>
+	        <th>To upload</th>
+	        <th>Ignored</th>
+	        <th>Problems</th>
+	      <tr>
+      </thead>
+      <tbody>
+	      <tr>
+	        <td><a th:text="${agency.countAllMedia()}" th:href="@{/{id}/all(id=${agency.id})}"></a></td>
+	        <td><a th:text="${agency.countUploadedMedia()}" th:href="@{/{id}/uploaded(id=${agency.id})}"></a></td>
+	        <td><a th:text="${agency.countMissingMedia()}" th:href="@{/{id}/missing(id=${agency.id})}"></a></td>
+	        <td><a th:text="${agency.countIgnored()}" th:href="@{/{id}/ignored(id=${agency.id})}"></a></td>
+	        <td><a th:text="${agency.getProblemsCount()}" th:href="@{/{id}/problems(id=${agency.id})}"></a></td>
+	      </tr>
+      </tbody>
+    </table>
+    <div th:replace="_header :: scripts"></div>
   </body>
 </html>

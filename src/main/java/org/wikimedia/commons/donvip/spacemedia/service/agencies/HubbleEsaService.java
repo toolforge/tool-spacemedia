@@ -31,6 +31,11 @@ public class HubbleEsaService extends CommonEsoService<HubbleEsaMedia> {
     }
 
     @Override
+    protected Class<HubbleEsaMedia> getMediaClass() {
+        return HubbleEsaMedia.class;
+    }
+
+    @Override
     @Scheduled(fixedRateString = "${hubble.esa.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
         doUpdateMedia();

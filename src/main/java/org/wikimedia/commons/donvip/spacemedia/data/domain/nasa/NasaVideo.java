@@ -2,7 +2,10 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa;
 
 import javax.persistence.Entity;
 
+import org.hibernate.search.annotations.Indexed;
+
 @Entity
+@Indexed
 public class NasaVideo extends NasaMedia {
 
     @Override

@@ -10,15 +10,23 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
+@Indexed
+@Table(indexes = {@Index(columnList = "sha1")})
 public class FlickrMedia extends Media<Long, LocalDateTime> {
 
     @Id
@@ -46,7 +54,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
 
     @JsonProperty("originalformat")
     private String originalFormat;
-    
+
     private double latitude;
     
     private double longitude;
@@ -72,6 +80,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
 
     @NotNull
     @JsonProperty("pathalias")
+    @Field(index = org.hibernate.search.annotations.Index.YES, analyze = Analyze.NO, store = Store.NO)
     private String pathAlias;
 
     @Override

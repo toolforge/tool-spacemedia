@@ -51,6 +51,11 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer, 
     }
 
     @Override
+    protected Class<KariMedia> getMediaClass() {
+        return KariMedia.class;
+    }
+
+    @Override
     protected Optional<Temporal> getCreationDate(KariMedia media) {
         return Optional.ofNullable(media.getDate());
     }
@@ -155,10 +160,7 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer, 
                 repository.delete(media);
             }
         }
-        if (mediaService.computeSha1(media)) {
-            save = true;
-        }
-        if (mediaService.findCommonsFilesWithSha1(media)) {
+        if (mediaService.updateMedia(media)) {
             save = true;
         }
         return save ? repository.save(media) : media;

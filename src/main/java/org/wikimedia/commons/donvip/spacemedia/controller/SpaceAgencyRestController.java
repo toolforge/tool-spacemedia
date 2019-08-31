@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
@@ -77,6 +78,11 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
     @GetMapping("/problems")
     public final List<Problem> listProblems() {
         return service.getProblems();
+    }
+
+    @GetMapping("/search")
+    public final Page<T> search(@RequestParam("q") String q, @PageableDefault(size = SIZE) Pageable page) {
+        return service.searchMedia(q, page);
     }
 
     @GetMapping("/update")

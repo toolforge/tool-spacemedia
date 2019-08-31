@@ -5,11 +5,16 @@ import java.util.Objects;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.search.annotations.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
 @Entity
+@Indexed
+@Table(indexes = {@Index(columnList = "sha1")})
 public class KariMedia extends Media<Integer, LocalDate> {
 
     @Id
