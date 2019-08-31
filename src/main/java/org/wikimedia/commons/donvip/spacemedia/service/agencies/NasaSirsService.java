@@ -34,7 +34,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsIma
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
 
 @Service
-public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, String> {
+public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, String, LocalDate> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaSirsService.class);
 
@@ -68,7 +68,7 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
     }
 
     @Override
-    protected MediaRepository<?, ?> getOriginalRepository() {
+    protected MediaRepository<?, ?, ?> getOriginalRepository() {
         return nasaMediaRepository;
     }
 
@@ -84,8 +84,7 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
 
     @Override
     protected Optional<Temporal> getCreationDate(NasaSirsImage media) {
-        return media.getPhotoDate() != null ? Optional.of(media.getPhotoDate())
-                : Optional.ofNullable(media.getPhotoYear());
+        return Optional.of(media.getDate());
     }
 
     @Override
@@ -119,10 +118,10 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
                                 media.setTitle(values.get(0));
                                 media.setCategory(values.get(1));
                                 try {
-                                    media.setPhotoDate(LocalDate.parse(values.get(3), usDateformatter));
-                                    media.setPhotoYear(Year.of(media.getPhotoDate().getYear()));
+                                    media.setDate(LocalDate.parse(values.get(3), usDateformatter));
+                                    media.setYear(Year.of(media.getDate().getYear()));
                                 } catch (DateTimeParseException e) {
-                                    media.setPhotoYear(Year.parse(values.get(3)));
+                                    media.setYear(Year.parse(values.get(3)));
                                 }
                                 media.setKeywords(NasaService.normalizeKeywords(Collections.singleton(values.get(4))));
                             }

@@ -1,6 +1,11 @@
 package org.wikimedia.commons.donvip.spacemedia.controller;
 
+import static org.springframework.data.domain.Sort.Direction.DESC;
+import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDefaults.SIZE;
+import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDefaults.SORT;
+
 import java.io.IOException;
+import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,36 +31,42 @@ import org.xml.sax.SAXException;
  *
  * @param <T> the media type the repository manages
  * @param <ID> the type of the id of the entity the repository manages
+ * @param <D> the media date type
  */
-public abstract class SpaceAgencyRestController<T extends Media<ID>, ID> {
+public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D extends Temporal> {
 
     @Autowired
     private AsyncSpaceAgencyUpdaterService async;
 
-    protected final SpaceAgency<T, ID> service;
+    protected final SpaceAgency<T, ID, D> service;
 
-    public SpaceAgencyRestController(AbstractSpaceAgencyService<T, ID> service) {
+    public SpaceAgencyRestController(AbstractSpaceAgencyService<T, ID, D> service) {
         this.service = Objects.requireNonNull(service);
     }
 
+    @GetMapping("/stats")
+    public final Statistics getStats() {
+        return service.getStatistics();
+    }
+
     @GetMapping("/all")
-    public final Page<T> listAll(@PageableDefault(size = 50, sort = "id") Pageable page) {
+    public final Page<T> listAll(@PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
         return service.listAllMedia(page);
     }
 
-    @GetMapping("/update")
-    public final void update() throws IOException {
-        async.updateMedia(service);
-    }
-
     @GetMapping("/missing")
-    public final Page<T> listMissing(@PageableDefault(size = 50, sort = "id") Pageable page) {
+    public final Page<T> listMissing(@PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
         return service.listMissingMedia(page);
     }
 
     @GetMapping("/uploaded")
-    public final Page<T> listUploaded(@PageableDefault(size = 50, sort = "id") Pageable page) {
+    public final Page<T> listUploaded(@PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
         return service.listUploadedMedia(page);
+    }
+
+    @GetMapping("/ignored")
+    public final Page<T> listIgnored(@PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return service.listIgnoredMedia(page);
     }
 
     @GetMapping("/duplicates")
@@ -63,19 +74,19 @@ public abstract class SpaceAgencyRestController<T extends Media<ID>, ID> {
         return service.listDuplicateMedia();
     }
 
-    @GetMapping("/ignored")
-    public final Page<T> listIgnored(@PageableDefault(size = 50, sort = "id") Pageable page) {
-        return service.listIgnoredMedia(page);
-    }
-
-    @GetMapping("/stats")
-    public final Statistics stats() {
-        return service.getStatistics();
-    }
-
     @GetMapping("/problems")
-    public final List<Problem> problems() {
+    public final List<Problem> listProblems() {
         return service.getProblems();
+    }
+
+    @GetMapping("/update")
+    public final void update() throws IOException {
+        async.updateMedia(service);
+    }
+
+    @GetMapping("/upload/{sha1}")
+    public final T upload(@PathVariable String sha1) throws IOException {
+        return service.upload(sha1);
     }
 
     @GetMapping("/wiki/{sha1}")
@@ -87,10 +98,5 @@ public abstract class SpaceAgencyRestController<T extends Media<ID>, ID> {
     @GetMapping("/wikicode/{sha1}")
     public final String wikiCode(@PathVariable String sha1) {
         return service.getWikiCode(sha1);
-    }
-
-    @GetMapping("/upload/{sha1}")
-    public final T upload(@PathVariable String sha1) throws IOException {
-        return service.upload(sha1);
     }
 }

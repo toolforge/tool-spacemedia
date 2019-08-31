@@ -49,13 +49,14 @@ import org.xml.sax.SAXException;
  * 
  * @param <T> the media type the repository manages
  * @param <ID> the type of the id of the entity the repository manages
+ * @param <D> the media date type
  */
-public abstract class AbstractSpaceAgencyService<T extends Media<ID>, ID>
-        implements Comparable<AbstractSpaceAgencyService<T, ID>>, SpaceAgency<T, ID> {
+public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D extends Temporal>
+        implements Comparable<AbstractSpaceAgencyService<T, ID, D>>, SpaceAgency<T, ID, D> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpaceAgencyService.class);
 
-    protected final MediaRepository<T, ID> repository;
+    protected final MediaRepository<T, ID, D> repository;
 
     @Autowired
     protected ProblemRepository problemRepository;
@@ -70,7 +71,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID>, ID>
     @Value("#{${categories}}")
     private Map<String, String> categories;
 
-    public AbstractSpaceAgencyService(MediaRepository<T, ID> repository) {
+    public AbstractSpaceAgencyService(MediaRepository<T, ID, D> repository) {
         this.repository = Objects.requireNonNull(repository);
     }
 
@@ -314,11 +315,6 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID>, ID>
         return Optional.ofNullable(media.getThumbnailUrl()).orElse(media.getAssetUrl());
     }
 
-    @Override
-    public final Temporal getDate(T media) {
-        return getCreationDate(media).orElseGet(() -> getUploadDate(media).orElse(null));
-    }
-
     protected Optional<Temporal> getCreationDate(T media) {
         return Optional.empty();
     }
@@ -392,12 +388,12 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID>, ID>
         }
     }
 
-    protected MediaRepository<?, ?> getOriginalRepository() {
+    protected MediaRepository<?, ?, ?> getOriginalRepository() {
         return null;
     }
 
     @Override
-    public int compareTo(AbstractSpaceAgencyService<T, ID> o) {
+    public int compareTo(AbstractSpaceAgencyService<T, ID, D> o) {
         return getName().compareTo(o.getName());
     }
 }

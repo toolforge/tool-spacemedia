@@ -1,6 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import java.net.URL;
+import java.time.Year;
+import java.time.temporal.ChronoField;
+import java.time.temporal.Temporal;
 import java.util.Objects;
 import java.util.Set;
 
@@ -14,7 +17,7 @@ import javax.persistence.Table;
 
 @MappedSuperclass
 @Table(indexes = {@Index(columnList = "sha1")})
-public abstract class Media<ID> {
+public abstract class Media<ID, D extends Temporal> {
 
     @Column(nullable = false, length = 42)
     protected String sha1;
@@ -113,6 +116,18 @@ public abstract class Media<ID> {
 
     public abstract void setId(ID id);
 
+    public abstract D getDate();
+
+    public abstract void setDate(D date);
+
+    public Year getYear() {
+        return Year.of(getDate().get(ChronoField.YEAR));
+    }
+
+    public void setYear(Year photoYear) {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(commonsFileNames, sha1, assetUrl);
@@ -124,7 +139,7 @@ public abstract class Media<ID> {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        Media<?> other = (Media<?>) obj;
+        Media<?, ?> other = (Media<?, ?>) obj;
         return Objects.equals(commonsFileNames, other.commonsFileNames)
             && Objects.equals(sha1, other.sha1)
             && Objects.equals(assetUrl, other.assetUrl);

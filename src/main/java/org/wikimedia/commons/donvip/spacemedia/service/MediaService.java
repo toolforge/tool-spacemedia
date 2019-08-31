@@ -25,14 +25,14 @@ public class MediaService {
      * @throws IOException        in case of I/O error
      * @throws URISyntaxException if URL cannot be converted to URI
      */
-    public boolean computeSha1(Media<?> media) throws IOException, URISyntaxException {
+    public boolean computeSha1(Media<?, ?> media) throws IOException, URISyntaxException {
         boolean result = false;
         if (media.getSha1() == null && media.getAssetUrl() != null) {
             media.setSha1(Utils.computeSha1(media.getAssetUrl()));
             result = true;
         }
         if (media instanceof FullResMedia) {
-            FullResMedia<?> frMedia = (FullResMedia<?>) media;
+            FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
             if (frMedia.getFullResSha1() == null && frMedia.getFullResAssetUrl() != null) {
                 frMedia.setFullResSha1(Utils.computeSha1(frMedia.getFullResAssetUrl()));
                 result = true;
@@ -49,7 +49,7 @@ public class MediaService {
      * @return {@code true} if media has been updated with list of Wikimedia Commons
      *         files and must be persisted
      */
-    public boolean findCommonsFilesWithSha1(Media<?> media) {
+    public boolean findCommonsFilesWithSha1(Media<?, ?> media) {
         boolean result = false;
         if (media.getSha1() != null && CollectionUtils.isEmpty(media.getCommonsFileNames())) {
             Set<String> files = commonsService.findFilesWithSha1(media.getSha1());
@@ -59,7 +59,7 @@ public class MediaService {
             }
         }
         if (media instanceof FullResMedia) {
-            FullResMedia<?> frMedia = (FullResMedia<?>) media;
+            FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
             if (frMedia.getFullResSha1() != null && CollectionUtils.isEmpty(frMedia.getFullResCommonsFileNames())) {
                 Set<String> files = commonsService.findFilesWithSha1(frMedia.getFullResSha1());
                 if (!files.isEmpty()) {

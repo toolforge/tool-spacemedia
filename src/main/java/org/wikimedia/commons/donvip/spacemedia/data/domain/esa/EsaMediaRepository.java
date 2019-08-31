@@ -3,13 +3,14 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.esa;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 
-public interface EsaMediaRepository extends FullResMediaRepository<EsaMedia, Integer> {
+public interface EsaMediaRepository extends FullResMediaRepository<EsaMedia, Integer, LocalDateTime> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {"esaCount", "esaCountIgnored", "esaCountMissing", "esaCountUploaded"})

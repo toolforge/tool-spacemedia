@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import java.net.URL;
+import java.time.temporal.Temporal;
 import java.util.Objects;
 import java.util.Set;
 
@@ -17,7 +18,7 @@ import javax.persistence.Table;
  */
 @MappedSuperclass
 @Table(indexes = {@Index(columnList = "sha1,full_res_sha1")})
-public abstract class FullResMedia<ID> extends Media<ID> {
+public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> {
 
     @Column(nullable = true, name = "full_res_sha1", length = 42)
     protected String fullResSha1;
@@ -63,7 +64,7 @@ public abstract class FullResMedia<ID> extends Media<ID> {
             return true;
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
-        FullResMedia<?> other = (FullResMedia<?>) obj;
+        FullResMedia<?, ?> other = (FullResMedia<?, ?>) obj;
         return Objects.equals(fullResCommonsFileNames, other.fullResCommonsFileNames)
                 && Objects.equals(fullResAssetUrl, other.fullResAssetUrl)
                 && Objects.equals(fullResSha1, other.fullResSha1);

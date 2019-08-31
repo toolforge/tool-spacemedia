@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import java.net.URL;
+import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,7 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 
 @NoRepositoryBean
-public interface FullResMediaRepository<T extends FullResMedia<ID>, ID> extends MediaRepository<T, ID> {
+public interface FullResMediaRepository<T extends FullResMedia<ID, D>, ID, D extends Temporal>
+        extends MediaRepository<T, ID, D> {
 
     long countByFullResSha1(String sha1);
 

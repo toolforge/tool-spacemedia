@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,7 +53,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
-public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
+public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String, ZonedDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaService.class);
 
@@ -373,7 +374,7 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String> {
 
     @Override
     protected Optional<Temporal> getCreationDate(NasaMedia media) {
-        return Optional.ofNullable(media.getDateCreated());
+        return Optional.ofNullable(media.getDate());
     }
 
     @Override

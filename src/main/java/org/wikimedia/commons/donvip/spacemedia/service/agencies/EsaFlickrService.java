@@ -34,7 +34,7 @@ public class EsaFlickrService extends AbstractSpaceAgencyFlickrService {
     }
 
     @Override
-    protected MediaRepository<?, ?> getOriginalRepository() {
+    protected MediaRepository<?, ?, ?> getOriginalRepository() {
         return esaRepository;
     }
 }

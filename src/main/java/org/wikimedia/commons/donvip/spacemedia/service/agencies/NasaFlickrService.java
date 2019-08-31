@@ -35,7 +35,7 @@ public class NasaFlickrService extends AbstractSpaceAgencyFlickrService {
     }
 
     @Override
-    protected MediaRepository<?, ?> getOriginalRepository() {
+    protected MediaRepository<?, ?, ?> getOriginalRepository() {
         return nasaMediaRepository;
     }
 }

@@ -20,7 +20,7 @@
         </field>
         <field>
             <a>datePosted</a>
-            <b>dateUpload</b>
+            <b>date</b>
         </field>
         <field>
             <a>geoData.latitude</a>

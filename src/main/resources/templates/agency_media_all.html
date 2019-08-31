@@ -21,7 +21,7 @@
 	      <tr th:each="media : ${medias}">
 	        <td th:replace="media :: cell_media"></td>
 	        <td th:text="${media.title}"></td>
-	        <td th:text="${agency.getDate(media)}"></td>
+	        <td th:text="${media.date}"></td>
 	        <td th:text="${media.description}" ></td>
 	        <td><a th:each="file : ${media.commonsFileNames}" th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a></td>
 	      </tr>

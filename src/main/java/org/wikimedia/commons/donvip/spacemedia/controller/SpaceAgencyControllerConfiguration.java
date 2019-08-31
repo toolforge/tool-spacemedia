@@ -29,21 +29,21 @@ import net.bytebuddy.implementation.MethodCall;
 public class SpaceAgencyControllerConfiguration {
 
     @Autowired
-    private List<AbstractSpaceAgencyService<?, ?>> agencies;
+    private List<AbstractSpaceAgencyService<?, ?, ?>> agencies;
 
     @Autowired
     private AbstractAutowireCapableBeanFactory factory;
 
     @PostConstruct
     void initSpaceAgencyControllers() throws ReflectiveOperationException {
-        for (SpaceAgency<?, ?> agency : agencies) {
+        for (SpaceAgency<?, ?, ?> agency : agencies) {
             String agencyName = agency.getName().replace(" ", "").replace("(", "").replace(")", "");
             registerNewBean(agency, agencyName + "RestController", RestController.class, SpaceAgencyRestController.class, "/rest");
             registerNewBean(agency, agencyName + "WebController", Controller.class, SpaceAgencyWebController.class, "");
         }
     }
 
-    private void registerNewBean(SpaceAgency<?, ?> agency, String controllerName,
+    private void registerNewBean(SpaceAgency<?, ?, ?> agency, String controllerName,
             Class<? extends Annotation> annotationClass, Class<?> parentClass, String pathSuffix)
             throws ReflectiveOperationException {
         Object controller = new ByteBuddy().subclass(parentClass, ConstructorStrategy.Default.NO_CONSTRUCTORS)

@@ -16,7 +16,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.xml.sax.SAXException;
 
-public interface SpaceAgency<T extends Media<ID>, ID> {
+public interface SpaceAgency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     void checkCommonCategories();
 
@@ -80,6 +80,4 @@ public interface SpaceAgency<T extends Media<ID>, ID> {
     URL getSourceUrl(T media) throws MalformedURLException;
 
     URL getThumbnailUrl(T media);
-
-    Temporal getDate(T media);
 }

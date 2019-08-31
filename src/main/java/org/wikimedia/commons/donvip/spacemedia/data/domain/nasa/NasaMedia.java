@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = NasaImage.class, name = "image"),
     @JsonSubTypes.Type(value = NasaVideo.class, name = "video") }
 )
-public abstract class NasaMedia extends Media<String> {
+public abstract class NasaMedia extends Media<String, ZonedDateTime> {
 
     @Id
     @Column(name = "nasa_id", nullable = false, length = 170)
@@ -41,7 +41,8 @@ public abstract class NasaMedia extends Media<String> {
     private String center;
 
     @JsonProperty("date_created")
-    private ZonedDateTime dateCreated;
+    @Column(name = "date_created")
+    private ZonedDateTime date;
 
     @JsonProperty("media_type")
     private NasaMediaType mediaType;
@@ -68,12 +69,14 @@ public abstract class NasaMedia extends Media<String> {
         this.center = center;
     }
 
-    public ZonedDateTime getDateCreated() {
-        return dateCreated;
+    @Override
+    public ZonedDateTime getDate() {
+        return date;
     }
 
-    public void setDateCreated(ZonedDateTime dateCreated) {
-        this.dateCreated = dateCreated;
+    @Override
+    public void setDate(ZonedDateTime date) {
+        this.date = date;
     }
 
     public Set<String> getKeywords() {
@@ -107,7 +110,7 @@ public abstract class NasaMedia extends Media<String> {
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(center, dateCreated, description, keywords, mediaType, id, title);
+                + Objects.hash(center, date, description, keywords, mediaType, id, title);
     }
 
     @Override
@@ -118,7 +121,7 @@ public abstract class NasaMedia extends Media<String> {
             return false;
         NasaMedia other = (NasaMedia) obj;
         return Objects.equals(center, other.center)
-                && Objects.equals(dateCreated, other.dateCreated) && Objects.equals(description, other.description)
+                && Objects.equals(date, other.date) && Objects.equals(description, other.description)
                 && Objects.equals(keywords, other.keywords) && mediaType == other.mediaType
                 && Objects.equals(id, other.id) && Objects.equals(title, other.title);
     }
@@ -127,7 +130,7 @@ public abstract class NasaMedia extends Media<String> {
     public String toString() {
         return "NasaMedia [" + (id != null ? "nasaId=" + id + ", " : "")
                 + (title != null ? "title=" + title + ", " : "") + (center != null ? "center=" + center + ", " : "")
-                + (dateCreated != null ? "dateCreated=" + dateCreated + ", " : "")
+                + (date != null ? "date=" + date + ", " : "")
                 + (mediaType != null ? "mediaType=" + mediaType + ", " : "")
                 + (getAssetUrl() != null ? "assetUrl=" + getAssetUrl() + ", " : "")
                 + (sha1 != null ? "sha1=" + sha1 : "") + "]";

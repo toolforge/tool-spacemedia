@@ -13,14 +13,15 @@ import javax.persistence.Id;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 
 @Entity
-public class EsaMedia extends FullResMedia<Integer> {
+public class EsaMedia extends FullResMedia<Integer, LocalDateTime> {
 
     @Id
     @Column(nullable = false)
     private Integer id;
     @Column(nullable = false, unique = true, length = 200)
     private URL url;
-    private LocalDateTime released;
+    @Column(name = "released", nullable = false)
+    private LocalDateTime date;
     @Column(nullable = false, length = 300)
     private String copyright;
     @Column(length = 70)
@@ -48,12 +49,14 @@ public class EsaMedia extends FullResMedia<Integer> {
         this.url = url;
     }
 
-    public LocalDateTime getReleased() {
-        return released;
+    @Override
+    public LocalDateTime getDate() {
+        return date;
     }
 
-    public void setReleased(LocalDateTime released) {
-        this.released = released;
+    @Override
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
 
     public String getCopyright() {
@@ -142,7 +145,7 @@ public class EsaMedia extends FullResMedia<Integer> {
     public String toString() {
         return "EsaMedia [id=" + id + ", " + (url != null ? "url=" + url + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
-                + (released != null ? "released=" + released + ", " : "")
+                + (date != null ? "released=" + date + ", " : "")
                 + (copyright != null ? "copyright=" + copyright + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (activity != null ? "activity=" + activity + ", " : "")

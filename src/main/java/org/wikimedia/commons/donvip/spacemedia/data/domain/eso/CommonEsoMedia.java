@@ -15,7 +15,7 @@ import javax.persistence.MappedSuperclass;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 
 @MappedSuperclass
-public abstract class CommonEsoMedia extends FullResMedia<String> {
+public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime> {
 
     @Id
     @Column(length = 127)
@@ -25,8 +25,8 @@ public abstract class CommonEsoMedia extends FullResMedia<String> {
     @Column(nullable = true)
     private EsoMediaType imageType;
 
-    @Column(nullable = false)
-    private LocalDateTime releaseDate;
+    @Column(name = "release_date", nullable = false)
+    private LocalDateTime date;
 
     @Column(nullable = true, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
@@ -94,12 +94,14 @@ public abstract class CommonEsoMedia extends FullResMedia<String> {
         this.imageType = imageType;
     }
 
-    public LocalDateTime getReleaseDate() {
-        return releaseDate;
+    @Override
+    public LocalDateTime getDate() {
+        return date;
     }
 
-    public void setReleaseDate(LocalDateTime releaseDate) {
-        this.releaseDate = releaseDate;
+    @Override
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
 
     public int getWidth() {
@@ -226,7 +228,7 @@ public abstract class CommonEsoMedia extends FullResMedia<String> {
     public String toString() {
         return "AbstractEsoMedia [" + (id != null ? "id=" + id + ", " : "")
                 + (imageType != null ? "imageType=" + imageType + ", " : "")
-                + (releaseDate != null ? "releaseDate=" + releaseDate + ", " : "") + "width=" + width + ", height="
+                + (date != null ? "date=" + date + ", " : "") + "width=" + width + ", height="
                 + height + ", " + (name != null ? "objectName=" + name + ", " : "")
                 + (types != null ? "objectType=" + types + ", " : "")
                 + (categories != null ? "objectCategories=" + categories + ", " : "")

@@ -22,7 +22,7 @@
 	      <tr th:each="media : ${medias}">
 	        <td th:replace="media :: cell_media"></td>
 	        <td th:text="${media.title}"></td>
-	        <td th:text="${agency.getDate(media)}"></td>
+	        <td th:text="${media.date}"></td>
 	        <td th:text="${media.description}" ></td>
 	        <td></td>
 	        <td></td>

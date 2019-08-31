@@ -45,7 +45,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.micrometer.core.instrument.util.StringUtils;
 
-public abstract class CommonEsoService<T extends CommonEsoMedia> extends AbstractFullResSpaceAgencyService<T, String> {
+public abstract class CommonEsoService<T extends CommonEsoMedia>
+        extends AbstractFullResSpaceAgencyService<T, String, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonEsoService.class);
 
@@ -291,9 +292,9 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             break;
         case "Release date:":
             try {
-                media.setReleaseDate(LocalDateTime.parse(text, dateTimeFormatter));
+                media.setDate(LocalDateTime.parse(text, dateTimeFormatter));
             } catch (DateTimeParseException e) {
-                media.setReleaseDate(LocalDate.parse(text, dateFormatter).atStartOfDay());
+                media.setDate(LocalDate.parse(text, dateFormatter).atStartOfDay());
             }
             break;
         case "Size:":
@@ -443,7 +444,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
 
     @Override
     protected Optional<Temporal> getUploadDate(T media) {
-        return Optional.of(media.getReleaseDate());
+        return Optional.of(media.getDate());
     }
 
     @Override

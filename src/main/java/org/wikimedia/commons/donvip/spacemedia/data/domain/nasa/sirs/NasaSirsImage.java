@@ -16,7 +16,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
-public class NasaSirsImage extends Media<String> {
+public class NasaSirsImage extends Media<String, LocalDate> {
 
     @Id
     @Column(name = "nasa_id", nullable = false, length = 60)
@@ -26,11 +26,11 @@ public class NasaSirsImage extends Media<String> {
     @Column(nullable = false)
     private String category;
 
-    @Column(nullable = true)
-    private LocalDate photoDate;
+    @Column(name = "photo_date", nullable = true)
+    private LocalDate date;
 
-    @Column(nullable = false)
-    private Year photoYear;
+    @Column(name = "photo_year", nullable = false)
+    private Year year;
 
     @Column(length = 340)
     @ElementCollection(fetch = FetchType.EAGER)
@@ -54,20 +54,24 @@ public class NasaSirsImage extends Media<String> {
         this.category = category;
     }
 
-    public LocalDate getPhotoDate() {
-        return photoDate;
+    @Override
+    public LocalDate getDate() {
+        return date;
     }
 
-    public void setPhotoDate(LocalDate photoDate) {
-        this.photoDate = photoDate;
+    @Override
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
-    public Year getPhotoYear() {
-        return photoYear;
+    @Override
+    public Year getYear() {
+        return year;
     }
 
-    public void setPhotoYear(Year photoYear) {
-        this.photoYear = photoYear;
+    @Override
+    public void setYear(Year photoYear) {
+        this.year = photoYear;
     }
 
     public Set<String> getKeywords() {
@@ -83,8 +87,8 @@ public class NasaSirsImage extends Media<String> {
         return "NasaSirsImage [" + (id != null ? "id=" + id + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (category != null ? "category=" + category + ", " : "")
-                + (photoDate != null ? "photoDate=" + photoDate + ", " : "")
-                + (photoYear != null ? "photoYear=" + photoYear + ", " : "")
+                + (date != null ? "photoDate=" + date + ", " : "")
+                + (year != null ? "photoYear=" + year + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (keywords != null ? "keywords=" + keywords + ", " : "")
                 + (getAssetUrl() != null ? "assetUrl=" + getAssetUrl() + ", " : "")

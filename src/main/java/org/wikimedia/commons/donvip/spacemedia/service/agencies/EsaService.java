@@ -38,7 +38,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 import com.github.dozermapper.core.Mapper;
 
 @Service
-public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Integer> {
+public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Integer, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaService.class);
 
@@ -97,7 +97,7 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
                     case "Title":
                         image.setTitle(label); break;
                     case "Released":
-                        image.setReleased(LocalDateTime.parse(label.toUpperCase(Locale.ENGLISH), dateFormatter)); break;
+                        image.setDate(LocalDateTime.parse(label.toUpperCase(Locale.ENGLISH), dateFormatter)); break;
                     case "Copyright":
                         image.setCopyright(label); break;
                     case "Description":
@@ -360,6 +360,6 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
 
     @Override
     protected Optional<Temporal> getUploadDate(EsaMedia media) {
-        return Optional.ofNullable(media.getReleased());
+        return Optional.ofNullable(media.getDate());
     }
 }

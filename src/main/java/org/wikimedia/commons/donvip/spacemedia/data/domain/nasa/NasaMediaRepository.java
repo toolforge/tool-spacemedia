@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
-public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepository<T, String> {
+public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepository<T, String, ZonedDateTime> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {

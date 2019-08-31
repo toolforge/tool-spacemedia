@@ -30,7 +30,8 @@ import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.people.User;
 import com.github.dozermapper.core.Mapper;
 
-public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgencyService<FlickrMedia, Long> {
+public abstract class AbstractSpaceAgencyFlickrService
+        extends AbstractSpaceAgencyService<FlickrMedia, Long, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpaceAgencyFlickrService.class);
 
@@ -146,7 +147,7 @@ public abstract class AbstractSpaceAgencyFlickrService extends AbstractSpaceAgen
 
     @Override
     protected Optional<Temporal> getUploadDate(FlickrMedia media) {
-        return Optional.of(media.getDateUpload());
+        return Optional.of(media.getDate());
     }
 
     @Override

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -18,60 +19,60 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
-public class FlickrMedia extends Media<Long> {
+public class FlickrMedia extends Media<Long, LocalDateTime> {
 
     @Id
     @NotNull
-    Long id;
+    private Long id;
 
     @NotNull
-    int license; 
+    private int license;
 
-    @NotNull
     @JsonProperty("dateupload")
-    LocalDateTime dateUpload;
+    @Column(name = "date_upload", nullable = false)
+    private LocalDateTime date;
 
     @JsonProperty("lastupdate")
-    LocalDateTime lastUpdate;
+    private LocalDateTime lastUpdate;
 
     @JsonProperty("datetaken")
-    LocalDateTime dateTaken;
+    private LocalDateTime dateTaken;
 
     @JsonProperty("datetakengranularity")
-    int dateTakenGranularity;
+    private int dateTakenGranularity;
     
     @ElementCollection(fetch = FetchType.EAGER)
-    Set<String> tags;
+    private Set<String> tags;
 
     @JsonProperty("originalformat")
-    String originalFormat;
+    private String originalFormat;
     
-    double latitude;
+    private double latitude;
     
-    double longitude;
+    private double longitude;
     
-    double accuracy;
+    private double accuracy;
 
     @NotNull
-    String media;
+    private String media;
     
     @JsonProperty("media_status")
-    String mediaStatus;
+    private String mediaStatus;
 
     @Transient
     @JsonInclude
     @JsonProperty("url_o")
-    URL originalUrl;
+    private URL originalUrl;
 
     @JsonProperty("height_o")
-    int originalHeight;
+    private int originalHeight;
 
     @JsonProperty("width_o")
-    int originalWidth;
+    private int originalWidth;
 
     @NotNull
     @JsonProperty("pathalias")
-    String pathAlias;
+    private String pathAlias;
 
     @Override
     public Long getId() {
@@ -91,12 +92,14 @@ public class FlickrMedia extends Media<Long> {
         this.license = license;
     }
 
-    public LocalDateTime getDateUpload() {
-        return dateUpload;
+    @Override
+    public LocalDateTime getDate() {
+        return date;
     }
 
-    public void setDateUpload(LocalDateTime dateUpload) {
-        this.dateUpload = dateUpload;
+    @Override
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
 
     public LocalDateTime getLastUpdate() {
@@ -236,7 +239,7 @@ public class FlickrMedia extends Media<Long> {
     @Override
     public String toString() {
         return "FlickrMedia [" + (id != null ? "id=" + id + ", " : "") + (title != null ? "title=" + title + ", " : "")
-                + "license=" + license + ", " + (dateUpload != null ? "dateUpload=" + dateUpload + ", " : "")
+                + "license=" + license + ", " + (date != null ? "date=" + date + ", " : "")
                 + (pathAlias != null ? "pathAlias=" + pathAlias + ", " : "")
                 + (getAssetUrl() != null ? "getAssetUrl()=" + getAssetUrl() : "") + "]";
     }

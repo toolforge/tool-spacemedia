@@ -11,11 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.hubble.HubbleMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.hubble.HubbleMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMediaRepository;
 
 @Service
-public class HubbleService extends CommonEsoService<HubbleMedia> {
+public class HubbleEsaService extends CommonEsoService<HubbleEsaMedia> {
 
     private static final String HUB_BASE_PUBLIC_URL = "https://www.spacetelescope.org/public/";
 
@@ -25,25 +25,26 @@ public class HubbleService extends CommonEsoService<HubbleMedia> {
             .compile(HUB_BASE_PUBLIC_URL + "([a-z]+/)" + HUB_IMAGES_PATH + ".*");
 
     @Autowired
-    public HubbleService(HubbleMediaRepository repository, @Value("${hubble.search.link}") String searchLink) {
-        super(repository, searchLink, HubbleMedia.class);
+    public HubbleEsaService(HubbleEsaMediaRepository repository,
+            @Value("${hubble.esa.search.link}") String searchLink) {
+        super(repository, searchLink, HubbleEsaMedia.class);
     }
 
     @Override
-    @Scheduled(fixedRateString = "${hubble.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${hubble.esa.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
         doUpdateMedia();
     }
 
     @Override
     public String getName() {
-        return "Hubble";
+        return "Hubble (ESA)";
     }
 
     @Override
-    protected List<String> findTemplates(HubbleMedia media) {
+    protected List<String> findTemplates(HubbleEsaMedia media) {
         List<String> result = super.findTemplates(media);
-        if (media.getReleaseDate().getYear() < 2009) {
+        if (media.getDate().getYear() < 2009) {
             result.add("PD-Hubble");
         } else {
             result.add("ESA-Hubble");
@@ -52,7 +53,7 @@ public class HubbleService extends CommonEsoService<HubbleMedia> {
     }
 
     @Override
-    public URL getSourceUrl(HubbleMedia media) throws MalformedURLException {
+    public URL getSourceUrl(HubbleEsaMedia media) throws MalformedURLException {
         return new URL(HUB_BASE_PUBLIC_URL + HUB_IMAGES_PATH + media.getId());
     }
 

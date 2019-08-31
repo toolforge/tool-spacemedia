@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
 @Entity
-public class KariMedia extends Media<Integer> {
+public class KariMedia extends Media<Integer, LocalDate> {
 
     @Id
     @NotNull
@@ -38,10 +38,12 @@ public class KariMedia extends Media<Integer> {
         this.kariId = kariId;
     }
 
+    @Override
     public LocalDate getDate() {
         return date;
     }
 
+    @Override
     public void setDate(LocalDate date) {
         this.date = date;
     }

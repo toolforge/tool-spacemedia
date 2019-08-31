@@ -13,7 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAge
 public class StatsController {
 
     @Autowired
-    private List<AbstractSpaceAgencyService<?, ?>> agencies;
+    private List<AbstractSpaceAgencyService<?, ?, ?>> agencies;
 
     @GetMapping("/stats")
     public List<Statistics> stats() {

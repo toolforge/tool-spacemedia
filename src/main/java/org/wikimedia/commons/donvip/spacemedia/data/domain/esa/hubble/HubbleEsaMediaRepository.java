@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain.hubble;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -7,7 +7,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRepository;
 
-public interface HubbleMediaRepository extends CommonEsoMediaRepository<HubbleMedia> {
+public interface HubbleEsaMediaRepository extends CommonEsoMediaRepository<HubbleEsaMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {"hubCount", "hubCountIgnored", "hubCountMissing", "hubCountUploaded"})
@@ -37,11 +37,11 @@ public interface HubbleMediaRepository extends CommonEsoMediaRepository<HubbleMe
 
     @Override
     @CacheEvictHubAll
-    <S extends HubbleMedia> S save(S entity);
+    <S extends HubbleEsaMedia> S save(S entity);
 
     @Override
     @CacheEvictHubAll
-    <S extends HubbleMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends HubbleEsaMedia> Iterable<S> saveAll(Iterable<S> entities);
 
     // DELETE
 
@@ -51,11 +51,11 @@ public interface HubbleMediaRepository extends CommonEsoMediaRepository<HubbleMe
 
     @Override
     @CacheEvictHubAll
-    void delete(HubbleMedia entity);
+    void delete(HubbleEsaMedia entity);
 
     @Override
     @CacheEvictHubAll
-    void deleteAll(Iterable<? extends HubbleMedia> entities);
+    void deleteAll(Iterable<? extends HubbleEsaMedia> entities);
 
     @Override
     @CacheEvictHubAll

@@ -2,18 +2,19 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.time.temporal.Temporal;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 
-public abstract class AbstractFullResSpaceAgencyService<T extends FullResMedia<ID>, ID>
-        extends AbstractSpaceAgencyService<T, ID> {
+public abstract class AbstractFullResSpaceAgencyService<T extends FullResMedia<ID, D>, ID, D extends Temporal>
+        extends AbstractSpaceAgencyService<T, ID, D> {
 
-    private FullResMediaRepository<T, ID> fullResRepository;
+    private FullResMediaRepository<T, ID, D> fullResRepository;
 
-    public AbstractFullResSpaceAgencyService(FullResMediaRepository<T, ID> repository) {
+    public AbstractFullResSpaceAgencyService(FullResMediaRepository<T, ID, D> repository) {
         super(repository);
         this.fullResRepository = repository;
     }
