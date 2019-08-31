@@ -159,6 +159,8 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
         } else {
             media = new EsaMedia();
             media.setUrl(url);
+        }
+        if (!mediaInRepo.isPresent() || media.getThumbnailUrl() == null) { // FIXME migration code to remove later
             save = true;
             boolean ok = false;
             for (int i = 0; i < maxTries && !ok; i++) {
