@@ -89,7 +89,7 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
 
     private String template(Model model, String template, Search search) {
         model.addAttribute("search", search);
-        model.addAttribute("agencies", agencies);
+        model.addAttribute("agencies", agencies.stream().sorted().collect(Collectors.toList()));
         model.addAttribute("agency", service);
         return template;
     }
