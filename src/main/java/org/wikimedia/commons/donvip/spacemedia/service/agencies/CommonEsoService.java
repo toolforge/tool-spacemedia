@@ -120,7 +120,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia> extends Abstrac
             Element div = html.getElementsByClass("col-md-9").last();
             // Find title
             Elements h1s = div.getElementsByTag("h1");
-            if (h1s.size() != 1 || h1s.get(0).text().isEmpty()) {
+            if (h1s.isEmpty() || h1s.get(0).text().isEmpty()) {
                 scrapingError(imgUrlLink, h1s.toString());
             }
             media.setTitle(h1s.get(0).html());
