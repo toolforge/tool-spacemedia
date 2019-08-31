@@ -39,16 +39,18 @@ public class MediaService {
 
     public boolean cleanupDescription(Media<?, ?> media) {
         boolean result = false;
-        for (String toRemove : STRINGS_TO_REMOVE) {
-            if (media.getDescription().contains(toRemove)) {
-                media.setDescription(media.getDescription().replace(toRemove, ""));
-                result = true;
+        if (media.getDescription() != null) {
+            for (String toRemove : STRINGS_TO_REMOVE) {
+                if (media.getDescription().contains(toRemove)) {
+                    media.setDescription(media.getDescription().replace(toRemove, ""));
+                    result = true;
+                }
             }
-        }
-        for (String toReplace : STRINGS_TO_REPLACE_BY_SPACE) {
-            while (media.getDescription().contains(toReplace)) {
-                media.setDescription(media.getDescription().replace(toReplace, " "));
-                result = true;
+            for (String toReplace : STRINGS_TO_REPLACE_BY_SPACE) {
+                while (media.getDescription().contains(toReplace)) {
+                    media.setDescription(media.getDescription().replace(toReplace, " "));
+                    result = true;
+                }
             }
         }
         return result;
