@@ -104,7 +104,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             imgUrlLink = imgUrlLink.replace(m.group(1), "");
         }
         String id = item.getId();
-        if (id.length() < 2) {
+        if (id.length() < 1) {
             scrapingError(imgUrlLink, id);
         }
         T media;
