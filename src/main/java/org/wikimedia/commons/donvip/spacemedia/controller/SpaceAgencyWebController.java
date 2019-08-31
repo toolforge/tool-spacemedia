@@ -9,7 +9,6 @@ import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,9 +18,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Search;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceAgency;
+import org.wikimedia.commons.donvip.spacemedia.utils.Pagination;
 
 /**
  * Superclass of space agencies web controllers. Sub-classes are created dynamically.
@@ -73,7 +74,10 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
     }
 
     @GetMapping("/problems")
-    public String problems(Model model) throws IOException {
+    public String problems(Model model, @PageableDefault(size = SIZE) Pageable page) throws IOException {
+        Page<Problem> problems = service.getProblems(page);
+        model.addAttribute("problems", problems);
+        Pagination.setPageNumbers(model, problems);
         return template(model, "agency_problems");
     }
 
@@ -100,11 +104,7 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
 
     private String media(Model model, String template, Page<T> medias, Search search) {
         model.addAttribute("medias", medias);
-        int totalPages = medias.getTotalPages();
-        if (totalPages > 0) {
-            model.addAttribute("pageNumbers",
-                    IntStream.rangeClosed(1, totalPages).boxed().collect(Collectors.toList()));
-        }
+        Pagination.setPageNumbers(model, medias);
         return template(model, template, search);
     }
 }

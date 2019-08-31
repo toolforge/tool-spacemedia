@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
   <body>
-    <nav th:fragment="pagination_nav" th:if="${medias.totalPages > 0}" aria-label="Search results pages">
+    <nav th:fragment="pagination_nav(page)" th:if="${page.totalPages > 0}" aria-label="Search results pages">
       <ul class="pagination">
-        <li th:class="'page-item ' + (${pageNumber==medias.number + 1} ? active)"
+        <li th:class="'page-item ' + (${pageNumber==page.number + 1} ? active)"
             th:each="pageNumber : ${pageNumbers}">
-          <a class="page-link" th:if="!${search.q}" th:href="@{''(size=${medias.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
+          <a class="page-link" th:if="!${search.q}" th:href="@{''(size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
           </a>
-          <a class="page-link" th:if="${search.q}" th:href="@{''(q=${search.q}, size=${medias.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
+          <a class="page-link" th:if="${search.q}" th:href="@{''(q=${search.q}, size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
           </a>
         </li>
       </ul>

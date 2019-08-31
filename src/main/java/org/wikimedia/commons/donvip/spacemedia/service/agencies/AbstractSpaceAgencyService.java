@@ -257,6 +257,11 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     }
 
     @Override
+    public final Page<Problem> getProblems(Pageable page) {
+        return problemRepository.findByAgency(getName(), page);
+    }
+
+    @Override
     public final long getProblemsCount() {
         return problemRepository.countByAgency(getName());
     }

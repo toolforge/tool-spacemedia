@@ -7,7 +7,7 @@
     <nav th:replace="_header :: navbar"></nav>
     <h2><a th:text="${agency.name}" th:href="@{/{id}(id=${agency.id})}"></a> - Missing media</h2>
 
-    <nav th:replace="_media :: pagination_nav"></nav>
+    <nav th:replace="_media :: pagination_nav(${medias})"></nav>
     <table class="table table-sm table-hover">
       <thead class="thead-dark">
 	      <tr>
@@ -30,7 +30,7 @@
 	      </tr>
       </tbody>
     </table>
-    <nav th:replace="_media :: pagination_nav"></nav>
+    <nav th:replace="_media :: pagination_nav(${medias})"></nav>
     <div th:replace="_header :: scripts"></div>
   </body>
 </html>

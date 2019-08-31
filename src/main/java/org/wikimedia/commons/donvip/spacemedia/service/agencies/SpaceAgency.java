@@ -66,6 +66,8 @@ public interface SpaceAgency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     List<Problem> getProblems();
 
+    Page<Problem> getProblems(Pageable page);
+
     long getProblemsCount();
 
     T upload(String sha1) throws IOException;
