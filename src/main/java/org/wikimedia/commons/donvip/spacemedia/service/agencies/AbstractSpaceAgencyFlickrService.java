@@ -175,7 +175,15 @@ public abstract class AbstractSpaceAgencyFlickrService
     }
 
     @Override
-    protected List<String> findTemplates(FlickrMedia media) {
+    protected Set<String> findCategories(FlickrMedia media) {
+        Set<String> result = super.findCategories(media);
+        result.remove("Spacemedia files uploaded by Vipbot");
+        result.add("Spacemedia Flickr files uploaded by Vipbot");
+        return result;
+    }
+
+    @Override
+    public List<String> findTemplates(FlickrMedia media) {
         List<String> result = super.findTemplates(media);
         result.add(FlickrFreeLicense.of(media.getLicense()).getWikiTemplate());
         result.add("Flickrreview");

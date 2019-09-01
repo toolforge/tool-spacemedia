@@ -108,7 +108,7 @@ public class IauService extends CommonEsoService<IauMedia> {
     }
 
     @Override
-    protected List<String> findTemplates(IauMedia media) {
+    public List<String> findTemplates(IauMedia media) {
         List<String> result = super.findTemplates(media);
         result.add("IAU");
         return result;

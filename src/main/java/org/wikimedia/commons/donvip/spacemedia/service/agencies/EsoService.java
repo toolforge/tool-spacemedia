@@ -46,7 +46,7 @@ public class EsoService extends CommonEsoService<EsoMedia> {
     }
 
     @Override
-    protected List<String> findTemplates(EsoMedia media) {
+    public List<String> findTemplates(EsoMedia media) {
         List<String> result = super.findTemplates(media);
         result.add("ESO");
         return result;

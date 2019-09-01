@@ -396,6 +396,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
 
     protected Set<String> findCategories(T media) {
         Set<String> result = new HashSet<String>();
+        result.add("Spacemedia files uploaded by Vipbot");
         for (Entry<String, String> e : categories.entrySet()) {
             if (Utils.isTextFound(media.getTitle(), e.getKey())
                     || Utils.isTextFound(media.getDescription(), e.getKey())) {
@@ -405,7 +406,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         return commonsService.cleanupCategories(result);
     }
 
-    protected List<String> findTemplates(T media) {
+    public List<String> findTemplates(T media) {
         // TODO
         return new ArrayList<String>();
     }

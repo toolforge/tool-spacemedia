@@ -75,7 +75,7 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer, 
     }
 
     @Override
-    protected List<String> findTemplates(KariMedia media) {
+    public List<String> findTemplates(KariMedia media) {
         List<String> result = super.findTemplates(media);
         result.add("KOGL");
         return result;

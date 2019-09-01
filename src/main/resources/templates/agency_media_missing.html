@@ -25,7 +25,11 @@
 	        <td th:text="${media.title}"></td>
 	        <td th:text="${media.date}"></td>
 	        <td th:utext="${media.description}" ></td>
-	        <td></td>
+	        <td>
+	          <div th:each="template : ${agency.findTemplates(media)}">
+	            <a th:text="'{{'+${template}+'}}'" th:href="@{https://commons.wikimedia.org/wiki/Template:{t}(t=${template})}"></a>
+	          </div>
+	        </td>
 	        <td></td>
 	      </tr>
       </tbody>
