@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -11,14 +11,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.NasaService;
 
 public class NasaServiceTest {
 
     @Test
-    public void testFindOriginalMedia() throws Exception {
+    void testFindOriginalMedia() throws Exception {
         RestTemplate rest = new RestTemplate();
         for (URL href : Arrays.asList(
                 "https://images-assets.nasa.gov/video/EarthKAM_espa%C3%B1ol_V2/collection.json",
@@ -39,7 +38,7 @@ public class NasaServiceTest {
     }
 
     @Test
-    public void testKeywordsSplit() throws Exception {
+    void testKeywordsSplit() throws Exception {
         doTestKeywords("MSFC; National Space Advisory Council; U.S. Space and Rocket Cen",
                 Arrays.asList("MSFC", "National Space Advisory Council", "U.S. Space and Rocket Cen"));
         doTestKeywords("Human Exploration Rover Challenge; U.S. Space and Rocket Center;",
@@ -55,7 +54,7 @@ public class NasaServiceTest {
     }
 
     @Test
-    public void testKeywordsNoSplitDates() throws Exception {
+    void testKeywordsNoSplitDates() throws Exception {
         doTestKeywords("USA Composite Reveals Massive Winter Storm - January 02, 2014",
                 Arrays.asList("USA Composite Reveals Massive Winter Storm - January 02, 2014"));
         doTestKeywords("Erupting Prominence Observed by SDO on March 30, 2010",
@@ -65,7 +64,7 @@ public class NasaServiceTest {
     }
 
     @Test
-    public void testKeywordsNoSplitVariousStuff() throws Exception {
+    void testKeywordsNoSplitVariousStuff() throws Exception {
         doTestKeywords("Kulusuk Icebergs, by Andrew Bossi",
                 Arrays.asList("Kulusuk Icebergs, by Andrew Bossi"));
         doTestKeywords("Hi, Hokusai!",
@@ -79,7 +78,7 @@ public class NasaServiceTest {
     }
 
     @Test
-    public void testKeywordsNoSplitContinentsCountriesStates() throws Exception {
+    void testKeywordsNoSplitContinentsCountriesStates() throws Exception {
         doTestKeywords("Partial Eclipse Seen Over the Princess Ragnhild Coast, Antarctica",
                 Arrays.asList("Partial Eclipse Seen Over the Princess Ragnhild Coast, Antarctica"));
         doTestKeywords("Eastern Hudson Bay, Canada",
@@ -97,7 +96,7 @@ public class NasaServiceTest {
     }
 
     @Test
-    public void testKeywordsNoSplitNumbers() throws Exception {
+    void testKeywordsNoSplitNumbers() throws Exception {
         doTestKeywords("Hubble views a spectacular supernova with interstellar material over 160,000 light-years away",
                 Arrays.asList("Hubble views a spectacular supernova with interstellar material over 160,000 light-years away"));
     }

@@ -50,8 +50,23 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
      */
     private static final String SHA1_ERROR = "860f6466c5f3da5d62b2065c33aa5548697d817c";
 
-    private static final Pattern COPERNICUS_CREDIT = Pattern
-            .compile(".*Copernicus Sentinel dat(?:a|en) \\((2[0-9]{3})\\).*", Pattern.CASE_INSENSITIVE);
+    static final Pattern COPERNICUS_CREDIT = Pattern.compile(
+                    ".*Copernicus[ -](?:Sentinel[ -])?dat(?:a|en)(?:/ESA)? [\\(\\[](2[0-9]{3}(?:[-–/][0-9]{2,4})?)[\\)\\]].*",
+                    Pattern.CASE_INSENSITIVE);
+
+    static final List<Pattern> COPERNICUS_PROCESSED_BY = Arrays.asList(
+            Pattern.compile(
+                    ".*Copernicus.*data [\\(\\[]2[0-9]{3}(?:[-–/][0-9]{2,4})?[\\)\\]][ ]?(?:/|,)[ ]?(?:Processed by )?(.*)",
+                    Pattern.CASE_INSENSITIVE),
+            Pattern.compile(
+                    "(?:Basierend auf|Modifizierte und) von der (.*) (?:modifizierten|bearbeitete) Copernicus[ -]Sentinel[ -]Daten [\\(\\[]2[0-9]{3}(?:[-–/][0-9]{2,4})?[\\)\\]]",
+                    Pattern.CASE_INSENSITIVE),
+            Pattern.compile(
+                    "Erstellt mit modifizierten Copernicus[ -]Sentinel[ -]Daten [\\(\\[]2[0-9]{3}(?:[-–/][0-9]{2,4})?[\\)\\]][,]? bearbeitet von (.*)",
+                    Pattern.CASE_INSENSITIVE));
+
+    static final List<String> CC_BY_SA_SPELLINGS = Arrays.asList(
+            "CC-BY-SA-3.0 IGO", "CC BY-SA IGO 3.0", "CC BY-SA 3.0 IGO", "(CC BY-SA 2.0)", "(CC BY-SA 4.0)");
 
     @Autowired
     private EsaMediaRepository mediaRepository;
@@ -377,11 +392,26 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
     @Override
     public List<String> findTemplates(EsaMedia media) {
         List<String> result = super.findTemplates(media);
-        result.add("ESA");
-        Matcher m = COPERNICUS_CREDIT.matcher(media.getCopyright());
-        if (m.matches() || (media.getMission() != null && media.getMission().contains("Sentinel-"))) {
-            result.add("Attribution-Copernicus |year=" + (m.matches() ? m.group(1) : media.getYear().toString()));
+        String credit = media.getCopyright();
+        for (String spelling : CC_BY_SA_SPELLINGS) {
+            credit = credit.replace(", " + spelling, "").replace("; " + spelling, "").replace(" " + spelling, "").trim();
         }
+        Matcher m = COPERNICUS_CREDIT.matcher(credit);
+        if (m.matches()) {
+            result.add("Attribution-Copernicus |year=" + m.group(1));
+            credit = getCopernicusProcessedBy(credit).orElse("ESA");
+        }
+        result.add("ESA|" + credit);
         return result;
+    }
+
+    static Optional<String> getCopernicusProcessedBy(String credit) {
+        for (Pattern p : COPERNICUS_PROCESSED_BY) {
+            Matcher m = p.matcher(credit);
+            if (m.matches()) {
+                return Optional.of(m.group(1));
+            }
+        }
+        return Optional.empty();
     }
 }
