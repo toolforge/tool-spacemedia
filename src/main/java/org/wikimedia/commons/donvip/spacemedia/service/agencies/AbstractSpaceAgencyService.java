@@ -206,10 +206,15 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @Override
     @SuppressWarnings("unchecked")
     public final Page<T> searchMedia(String q, Pageable page) {
-        FullTextQuery fullTextQuery = getFullTextQuery(q);
-        fullTextQuery.setFirstResult(page.getPageNumber() * page.getPageSize());
-        fullTextQuery.setMaxResults(page.getPageSize());
-        return new PageImpl<>(fullTextQuery.getResultList(), page, fullTextQuery.getResultSize());
+        searchEntityManager.getTransaction().begin();
+        try {
+            FullTextQuery fullTextQuery = getFullTextQuery(q);
+            fullTextQuery.setFirstResult(page.getPageNumber() * page.getPageSize());
+            fullTextQuery.setMaxResults(page.getPageSize());
+            return new PageImpl<>(fullTextQuery.getResultList(), page, fullTextQuery.getResultSize());
+        } finally {
+            searchEntityManager.getTransaction().commit();
+        }
     }
 
     /**
