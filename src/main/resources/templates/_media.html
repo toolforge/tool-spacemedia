@@ -27,7 +27,7 @@
 	       th:href="@{/{id}/search?q={q}(id=${agency.id},q=${search.q})}" th:text="'Search results (' + ${medias.totalElements} + ')'"></a>
 	  </li>
 	</ul>
-    <nav th:fragment="pagination_nav(page)" th:if="${page.totalPages > 0}" aria-label="Search results pages">
+    <nav th:fragment="pagination_nav(page)" th:if="${page.totalPages > 1}" aria-label="Search results pages">
       <ul class="pagination">
         <li th:class="'page-item ' + (${pageNumber==page.number + 1} ? active)"
             th:each="pageNumber : ${pageNumbers}">
