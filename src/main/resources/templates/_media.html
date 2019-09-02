@@ -1,6 +1,32 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
   <body>
+	<ul th:fragment="tabs(tab)" class="nav nav-pills">
+	  <li class="nav-item">
+	    <a th:class="'nav-link ' + ('all' == ${tab} ? active)" th:href="@{/{id}/all(id=${agency.id})}"
+	       th:text="'Free Media (' + ${agency.countAllMedia()} + ')'"></a>
+	  </li>
+	  <li class="nav-item">
+	    <a th:class="'nav-link ' + ('uploaded' == ${tab} ? active)" th:href="@{/{id}/uploaded(id=${agency.id})}"
+	       th:text="'Uploaded (' + ${agency.countUploadedMedia()} + ')'"></a>
+	  </li>
+	  <li class="nav-item">
+	    <a th:class="'nav-link ' + ('missing' == ${tab} ? active)" th:href="@{/{id}/missing(id=${agency.id})}"
+	       th:text="'To upload (' + ${agency.countMissingMedia()} + ')'"></a>
+	  </li>
+	  <li class="nav-item">
+	    <a th:class="'nav-link ' + ('ignored' == ${tab} ? active)" th:href="@{/{id}/ignored(id=${agency.id})}"
+	       th:text="'Ignored (' + ${agency.countIgnored()} + ')'"></a>
+	  </li>
+	  <li class="nav-item" th:if="${agency.getProblemsCount()}">
+	    <a th:class="'nav-link ' + ('problems' == ${tab} ? active)" th:href="@{/{id}/problems(id=${agency.id})}"
+	       th:text="'Problems (' + ${agency.getProblemsCount()} + ')'"></a>
+	  </li>
+	  <li class="nav-item" th:if="${search.q}">
+	    <a th:class="'nav-link ' + ('search' == ${tab} ? active)" th:href="@{/{id}/search?q={q}(id=${agency.id},q=${search.q})}"
+	       th:text="'Search results (' + ${medias.totalElements} + ')'"></a>
+	  </li>
+	</ul>
     <nav th:fragment="pagination_nav(page)" th:if="${page.totalPages > 0}" aria-label="Search results pages">
       <ul class="pagination">
         <li th:class="'page-item ' + (${pageNumber==page.number + 1} ? active)"
@@ -12,29 +38,5 @@
         </li>
       </ul>
     </nav>
-    <table class="table table-sm table-hover">
-      <thead class="thead-dark">
-	      <tr>
-	        <th>Media</th>
-	        <th>Title</th>
-	        <th>Date</th>
-	        <th>Description</th>
-	        <th>Commons</th>
-	      <tr>
-      </thead>
-      <tbody>
-	      <tr th:each="media : ${medias}">
-	        <td th:fragment="cell_media">
-	          <a th:href="${agency.getSourceUrl(media)}">
-	            <img th:src="${agency.getThumbnailUrl(media)}" width="210px" />
-	          </a>
-	        </td>
-	        <td th:text="${media.title}"></td>
-	        <td th:text="${media.date}"></td>
-	        <td th:utext="${media.description}"></td>
-	        <td><a th:each="file : ${media.commonsFileNames}" th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a></td>
-	      </tr>
-      </tbody>
-    </table>
   </body>
 </html>

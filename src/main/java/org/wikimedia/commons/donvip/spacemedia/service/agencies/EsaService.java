@@ -16,6 +16,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
@@ -47,6 +49,9 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
      * See <a href="https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2006/10/envisat_sees_madagascar/10084739-2-eng-GB/Envisat_sees_Madagascar.tiff">this example</a>
      */
     private static final String SHA1_ERROR = "860f6466c5f3da5d62b2065c33aa5548697d817c";
+
+    private static final Pattern COPERNICUS_CREDIT = Pattern
+            .compile(".*Copernicus Sentinel dat(?:a|en) \\((2[0-9]{3})\\).*", Pattern.CASE_INSENSITIVE);
 
     @Autowired
     private EsaMediaRepository mediaRepository;
@@ -367,5 +372,16 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
     @Override
     protected Optional<Temporal> getUploadDate(EsaMedia media) {
         return Optional.ofNullable(media.getDate());
+    }
+
+    @Override
+    public List<String> findTemplates(EsaMedia media) {
+        List<String> result = super.findTemplates(media);
+        result.add("ESA");
+        Matcher m = COPERNICUS_CREDIT.matcher(media.getCopyright());
+        if (m.matches() || (media.getMission() != null && media.getMission().contains("Sentinel-"))) {
+            result.add("Attribution-Copernicus |year=" + (m.matches() ? m.group(1) : media.getYear().toString()));
+        }
+        return result;
     }
 }

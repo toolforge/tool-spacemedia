@@ -18,7 +18,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Search;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceAgency;
@@ -49,22 +48,22 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
 
     @GetMapping("/all")
     public String all(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "agency_media_all", service.listAllMedia(page));
+        return media(model, "all", service.listAllMedia(page));
     }
 
     @GetMapping("/missing")
     public String missing(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "agency_media_missing", service.listMissingMedia(page));
+        return media(model, "missing", service.listMissingMedia(page));
     }
 
     @GetMapping("/uploaded")
     public String uploaded(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "agency_media_uploaded", service.listUploadedMedia(page));
+        return media(model, "uploaded", service.listUploadedMedia(page));
     }
 
     @GetMapping("/ignored")
     public String ignored(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "agency_media_ignored", service.listIgnoredMedia(page));
+        return media(model, "ignored", service.listIgnoredMedia(page));
     }
 
     @GetMapping("/stats")
@@ -75,16 +74,13 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
 
     @GetMapping("/problems")
     public String problems(Model model, @PageableDefault(size = SIZE) Pageable page) throws IOException {
-        Page<Problem> problems = service.getProblems(page);
-        model.addAttribute("problems", problems);
-        Pagination.setPageNumbers(model, problems);
-        return template(model, "agency_problems");
+        return index(model, "problems", service.getProblems(page), "problems", new Search());
     }
 
     @GetMapping("/search")
     public final String search(Model model, @ModelAttribute Search search,
             @PageableDefault(size = SIZE) Pageable page) {
-        return media(model, "agency_media_search", service.searchMedia(search.getQ(), page), search);
+        return media(model, "search", service.searchMedia(search.getQ(), page), search);
     }
 
     private String template(Model model, String template) {
@@ -98,13 +94,18 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
         return template;
     }
 
-    private String media(Model model, String template, Page<T> medias) {
-        return media(model, template, medias, new Search());
+    private String media(Model model, String tab, Page<T> medias) {
+        return media(model, tab, medias, new Search());
     }
 
-    private String media(Model model, String template, Page<T> medias, Search search) {
-        model.addAttribute("medias", medias);
-        Pagination.setPageNumbers(model, medias);
-        return template(model, template, search);
+    private String media(Model model, String tab, Page<T> medias, Search search) {
+        return index(model, tab, medias, "medias", search);
+    }
+
+    private String index(Model model, String tab, Page<?> items, String itemsName, Search search) {
+        model.addAttribute(itemsName, items);
+        model.addAttribute("tab", tab);
+        Pagination.setPageNumbers(model, items);
+        return template(model, "agency_index", search);
     }
 }
