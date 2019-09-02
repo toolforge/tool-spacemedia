@@ -186,10 +186,25 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         return repository.findByIgnoredTrue(page);
     }
 
+    /**
+     * Builds the Lucene search query to provide to Hibernate Search.
+     * 
+     * @param context a simple query search context, initialized to search on
+     *            "title" and "description"
+     * @param q the search string
+     * @return the lucene query obtained from the simple query search context and
+     *         potentially more field
+     */
     protected Query getSearchQuery(SimpleQueryStringMatchingContext context, String q) {
         return context.withAndAsDefaultOperator().matching(q).createQuery();
     }
 
+    /**
+     * Builds the Hibernate Search query.
+     * 
+     * @param q the search string
+     * @return the Hibernate Search query
+     */
     private FullTextQuery getFullTextQuery(String q) {
         return fullTextEntityManager.createFullTextQuery(getSearchQuery(
                 queryBuilder.simpleQueryString().onField("title").boostedTo(5f).andField("description").boostedTo(2f),
