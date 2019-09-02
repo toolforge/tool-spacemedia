@@ -3,28 +3,28 @@
   <body>
 	<ul th:fragment="tabs(tab)" class="nav nav-pills">
 	  <li class="nav-item">
-	    <a th:class="'nav-link ' + ('all' == ${tab} ? active)" th:href="@{/{id}/all(id=${agency.id})}"
-	       th:text="'Free Media (' + ${agency.countAllMedia()} + ')'"></a>
+	    <a th:class="'nav-link' + ('all' == ${tab} ? ' active' : '') + (${agency.countAllMedia()} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/all(id=${agency.id})}" th:text="'Free Media (' + ${agency.countAllMedia()} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
-	    <a th:class="'nav-link ' + ('uploaded' == ${tab} ? active)" th:href="@{/{id}/uploaded(id=${agency.id})}"
-	       th:text="'Uploaded (' + ${agency.countUploadedMedia()} + ')'"></a>
+	    <a th:class="'nav-link' + ('uploaded' == ${tab} ? ' active' : '') + (${agency.countUploadedMedia()} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/uploaded(id=${agency.id})}" th:text="'Uploaded (' + ${agency.countUploadedMedia()} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
-	    <a th:class="'nav-link ' + ('missing' == ${tab} ? active)" th:href="@{/{id}/missing(id=${agency.id})}"
-	       th:text="'To upload (' + ${agency.countMissingMedia()} + ')'"></a>
+	    <a th:class="'nav-link' + ('missing' == ${tab} ? ' active' : '') + (${agency.countMissingMedia()} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/missing(id=${agency.id})}" th:text="'To upload (' + ${agency.countMissingMedia()} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
-	    <a th:class="'nav-link ' + ('ignored' == ${tab} ? active)" th:href="@{/{id}/ignored(id=${agency.id})}"
-	       th:text="'Ignored (' + ${agency.countIgnored()} + ')'"></a>
+	    <a th:class="'nav-link' + ('ignored' == ${tab} ? ' active' : '') + (${agency.countIgnored()} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/ignored(id=${agency.id})}" th:text="'Ignored (' + ${agency.countIgnored()} + ')'"></a>
 	  </li>
 	  <li class="nav-item" th:if="${agency.getProblemsCount()}">
-	    <a th:class="'nav-link ' + ('problems' == ${tab} ? active)" th:href="@{/{id}/problems(id=${agency.id})}"
-	       th:text="'Problems (' + ${agency.getProblemsCount()} + ')'"></a>
+	    <a th:class="'nav-link' + ('problems' == ${tab} ? ' active' : '') + (${agency.getProblemsCount()} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/problems(id=${agency.id})}" th:text="'Problems (' + ${agency.getProblemsCount()} + ')'"></a>
 	  </li>
 	  <li class="nav-item" th:if="${search.q}">
-	    <a th:class="'nav-link ' + ('search' == ${tab} ? active)" th:href="@{/{id}/search?q={q}(id=${agency.id},q=${search.q})}"
-	       th:text="'Search results (' + ${medias.totalElements} + ')'"></a>
+	    <a th:class="'nav-link' + ('search' == ${tab} ? ' active' : '')"
+	       th:href="@{/{id}/search?q={q}(id=${agency.id},q=${search.q})}" th:text="'Search results (' + ${medias.totalElements} + ')'"></a>
 	  </li>
 	</ul>
     <nav th:fragment="pagination_nav(page)" th:if="${page.totalPages > 0}" aria-label="Search results pages">

@@ -19,7 +19,7 @@
 		        <th>Description</th>
 		        <th th:if="'missing' != ${tab}">Commons</th>
 		        <th>Templates</th>
-		        <th>Categories</th>
+		        <th th:if="'uploaded' != ${tab}">Categories</th>
 		        <th th:if="'ignored' == ${tab}">Reason</th>
 		      <tr>
 	      </thead>
@@ -42,7 +42,7 @@
 		               th:href="@{https://commons.wikimedia.org/wiki/Template:{t}(t=${template.split('\|')[0].trim()})}"></a>
 		          </div>
 		        </td>
-		        <td><!-- TODO --></td>
+		        <td th:if="'uploaded' != ${tab}"><!-- TODO --></td>
 		        <td th:if="'ignored' == ${tab}" th:text="${media.ignoredReason}"></td>
 		      </tr>
 	      </tbody>
