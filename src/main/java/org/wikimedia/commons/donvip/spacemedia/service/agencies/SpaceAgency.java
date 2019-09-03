@@ -9,6 +9,7 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.http.client.ClientProtocolException;
+import org.apache.lucene.misc.TermStats;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -86,4 +87,6 @@ public interface SpaceAgency<T extends Media<ID, D>, ID, D extends Temporal> {
     List<T> searchMedia(String q);
 
     Page<T> searchMedia(String q, Pageable page);
+
+    List<TermStats> getTopTerms() throws Exception;
 }

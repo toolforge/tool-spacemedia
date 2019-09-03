@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -26,7 +27,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.misc.HighFreqTerms;
+import org.apache.lucene.misc.HighFreqTerms.DocFreqComparator;
+import org.apache.lucene.misc.TermStats;
 import org.apache.lucene.search.Query;
+import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
@@ -84,6 +90,9 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
 
     @Value("#{${categories}}")
     private Map<String, String> categories;
+
+    @Value("${ignored.common.terms}")
+    private Set<String> ignoredCommonTerms;
 
     private FullTextEntityManager fullTextEntityManager;
 
@@ -229,6 +238,23 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
             return new PageImpl<>(fullTextQuery.getResultList(), page, fullTextQuery.getResultSize());
         } finally {
             searchEntityManager.getTransaction().commit();
+        }
+    }
+
+    @Override
+    public final List<TermStats> getTopTerms() throws Exception {
+        SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+        IndexReader indexReader = searchFactory.getIndexReaderAccessor().open(getTopTermsMediaClass());
+        try {
+            return Arrays
+                    .stream(HighFreqTerms.getHighFreqTerms(indexReader, 1000, "description", new DocFreqComparator()))
+                    .filter(ts -> {
+                        String s = ts.termtext.utf8ToString();
+                        return s.length() > 1 && !ignoredCommonTerms.contains(s) && !s.matches("\\d+");
+                    })
+                    .collect(Collectors.toList()).subList(0, 500);
+        } finally {
+            searchFactory.getIndexReaderAccessor().close(indexReader);
         }
     }
 
@@ -469,6 +495,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     }
 
     protected abstract Class<T> getMediaClass();
+
+    protected Class<? extends T> getTopTermsMediaClass() {
+        return getMediaClass();
+    }
 
     @Override
     public int compareTo(AbstractSpaceAgencyService<T, ID, D> o) {

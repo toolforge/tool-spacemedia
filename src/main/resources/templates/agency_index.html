@@ -68,6 +68,27 @@
 	    </table>
 	    <nav th:replace="_media :: pagination_nav(${problems})"></nav>
     </div>
+    <!-- Top terms tab -->
+    <div th:if="${topterms}">
+	    <table class="table table-sm table-hover">
+	      <thead class="thead-dark">
+		      <tr>
+		        <th>Term</th>
+		        <th>Occurrences</th>
+		      <tr>
+	      </thead>
+	      <tbody>
+		      <tr th:each="topterm : ${topterms}">
+		        <td>
+		          <a th:text="${topterm.termtext.utf8ToString()}"
+		             th:href="@{/{id}/search?q={term}(id=${agency.id},term=${topterm.termtext.utf8ToString()})}">
+		          </a>
+		        </td>
+		        <td th:text="${topterm.docFreq}"></td>
+		      </tr>
+	      </tbody>
+	    </table>
+    </div>
     <div th:replace="_header :: scripts"></div>
   </body>
 </html>

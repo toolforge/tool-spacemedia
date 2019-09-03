@@ -97,6 +97,11 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String, Z
         return NasaMedia.class;
     }
 
+    @Override
+    protected Class<NasaImage> getTopTermsMediaClass() {
+        return NasaImage.class; // TODO can't get a direct lucene reader on NasaMedia
+    }
+
     private NasaMedia save(NasaMedia media) {
         switch (media.getMediaType()) {
         case image: return imageRepository.save((NasaImage) media);

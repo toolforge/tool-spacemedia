@@ -22,11 +22,16 @@
 	    <a th:class="'nav-link' + ('problems' == ${tab} ? ' active' : '') + (${agency.getProblemsCount()} == 0 ? ' disabled': '')"
 	       th:href="@{/{id}/problems(id=${agency.id})}" th:text="'Problems (' + ${agency.getProblemsCount()} + ')'"></a>
 	  </li>
+	  <li class="nav-item">
+	    <a th:class="'nav-link' + ('topterms' == ${tab} ? ' active' : '')"
+	       th:href="@{/{id}/topterms(id=${agency.id})}">Top terms</a>
+	  </li>
 	  <li class="nav-item" th:if="${search.q}">
 	    <a th:class="'nav-link' + ('search' == ${tab} ? ' active' : '')"
 	       th:href="@{/{id}/search?q={q}(id=${agency.id},q=${search.q})}" th:text="'Search results (' + ${medias.totalElements} + ')'"></a>
 	  </li>
 	</ul>
+	<!-- TODO https://attacomsian.com/blog/spring-boot-thymeleaf-pagination/ -->
     <nav th:fragment="pagination_nav(page)" th:if="${page.totalPages > 1}" aria-label="Search results pages">
       <ul class="pagination">
         <li th:class="'page-item ' + (${pageNumber==page.number + 1} ? active)"

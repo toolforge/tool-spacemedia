@@ -74,7 +74,12 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
 
     @GetMapping("/problems")
     public String problems(Model model, @PageableDefault(size = SIZE) Pageable page) throws IOException {
-        return index(model, "problems", service.getProblems(page), "problems", new Search());
+        return pageIndex(model, "problems", service.getProblems(page), "problems", new Search());
+    }
+
+    @GetMapping("/topterms")
+    public final String topterms(Model model) throws Exception {
+        return index(model, "topterms", service.getTopTerms(), "topterms", new Search());
     }
 
     @GetMapping("/search")
@@ -99,13 +104,17 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
     }
 
     private String media(Model model, String tab, Page<T> medias, Search search) {
-        return index(model, tab, medias, "medias", search);
+        return pageIndex(model, tab, medias, "medias", search);
     }
 
-    private String index(Model model, String tab, Page<?> items, String itemsName, Search search) {
+    private String index(Model model, String tab, Iterable<?> items, String itemsName, Search search) {
         model.addAttribute(itemsName, items);
         model.addAttribute("tab", tab);
-        Pagination.setPageNumbers(model, items);
         return template(model, "agency_index", search);
+    }
+
+    private String pageIndex(Model model, String tab, Page<?> items, String itemsName, Search search) {
+        Pagination.setPageNumbers(model, items);
+        return index(model, tab, items, itemsName, search);
     }
 }
