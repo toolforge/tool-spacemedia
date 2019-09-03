@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
@@ -36,5 +37,12 @@ public class EsaFlickrService extends AbstractSpaceAgencyFlickrService {
     @Override
     protected MediaRepository<?, ?, ?> getOriginalRepository() {
         return esaRepository;
+    }
+
+    @Override
+    protected Set<String> findCategories(FlickrMedia media) {
+        Set<String> result = super.findCategories(media);
+        result.add("ESA images (review needed)");
+        return result;
     }
 }

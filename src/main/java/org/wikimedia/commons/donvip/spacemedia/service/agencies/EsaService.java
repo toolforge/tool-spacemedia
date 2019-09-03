@@ -390,6 +390,13 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
     }
 
     @Override
+    protected Set<String> findCategories(EsaMedia media) {
+        Set<String> result = super.findCategories(media);
+        result.add("ESA images (review needed)");
+        return result;
+    }
+
+    @Override
     public List<String> findTemplates(EsaMedia media) {
         List<String> result = super.findTemplates(media);
         String credit = media.getCopyright();
