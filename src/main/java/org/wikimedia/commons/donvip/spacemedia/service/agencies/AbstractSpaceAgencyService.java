@@ -20,8 +20,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -85,8 +85,8 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     private Environment env;
 
     @Autowired
-    @Qualifier("searchEntityManager")
-    private EntityManager searchEntityManager;
+    @Qualifier("domainEntityManagerFactory")
+    private EntityManagerFactory entityManagerFactory;
 
     @Value("#{${categories}}")
     private Map<String, String> categories;
@@ -94,18 +94,8 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @Value("${ignored.common.terms}")
     private Set<String> ignoredCommonTerms;
 
-    private FullTextEntityManager fullTextEntityManager;
-
-    protected QueryBuilder queryBuilder;
-
     public AbstractSpaceAgencyService(MediaRepository<T, ID, D> repository) {
         this.repository = Objects.requireNonNull(repository);
-    }
-
-    @PostConstruct
-    void init() {
-        fullTextEntityManager = Search.getFullTextEntityManager(searchEntityManager);
-        queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(getMediaClass()).get();
     }
 
     @Override
@@ -198,13 +188,14 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     /**
      * Builds the Lucene search query to provide to Hibernate Search.
      * 
+     * @param queryBuilder the query builder
      * @param context a simple query search context, initialized to search on
      *            "title" and "description"
      * @param q the search string
      * @return the lucene query obtained from the simple query search context and
      *         potentially more field
      */
-    protected Query getSearchQuery(SimpleQueryStringMatchingContext context, String q) {
+    protected Query getSearchQuery(QueryBuilder queryBuilder, SimpleQueryStringMatchingContext context, String q) {
         return context.withAndAsDefaultOperator().matching(q).createQuery();
     }
 
@@ -214,8 +205,11 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
      * @param q the search string
      * @return the Hibernate Search query
      */
-    private FullTextQuery getFullTextQuery(String q) {
-        return fullTextEntityManager.createFullTextQuery(getSearchQuery(
+    private FullTextQuery getFullTextQuery(String q, EntityManager searchEntityManager) {
+        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(searchEntityManager);
+        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
+                .forEntity(getMediaClass()).get();
+        return fullTextEntityManager.createFullTextQuery(getSearchQuery(queryBuilder,
                 queryBuilder.simpleQueryString().onField("title").boostedTo(5f).andField("description").boostedTo(2f),
                 q),
                 getMediaClass());
@@ -224,15 +218,16 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @Override
     @SuppressWarnings("unchecked")
     public final List<T> searchMedia(String q) {
-        return getFullTextQuery(q).getResultList();
+        return getFullTextQuery(q, entityManagerFactory.createEntityManager()).getResultList();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public final Page<T> searchMedia(String q, Pageable page) {
+        EntityManager searchEntityManager = entityManagerFactory.createEntityManager();
         searchEntityManager.getTransaction().begin();
         try {
-            FullTextQuery fullTextQuery = getFullTextQuery(q);
+            FullTextQuery fullTextQuery = getFullTextQuery(q, searchEntityManager);
             fullTextQuery.setFirstResult(page.getPageNumber() * page.getPageSize());
             fullTextQuery.setMaxResults(page.getPageSize());
             return new PageImpl<>(fullTextQuery.getResultList(), page, fullTextQuery.getResultSize());
@@ -243,7 +238,8 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
 
     @Override
     public final List<TermStats> getTopTerms() throws Exception {
-        SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+        EntityManager searchEntityManager = entityManagerFactory.createEntityManager();
+        SearchFactory searchFactory = Search.getFullTextEntityManager(searchEntityManager).getSearchFactory();
         IndexReader indexReader = searchFactory.getIndexReaderAccessor().open(getTopTermsMediaClass());
         try {
             return Arrays

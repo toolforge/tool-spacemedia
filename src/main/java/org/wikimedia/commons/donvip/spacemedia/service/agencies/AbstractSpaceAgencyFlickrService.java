@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.SimpleQueryStringMatchingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -274,9 +275,9 @@ public abstract class AbstractSpaceAgencyFlickrService
     }
 
     @Override
-    protected Query getSearchQuery(SimpleQueryStringMatchingContext context, String q) {
+    protected Query getSearchQuery(QueryBuilder queryBuilder, SimpleQueryStringMatchingContext context, String q) {
         return queryBuilder.bool()
-                .must(super.getSearchQuery(context, q))
+                .must(super.getSearchQuery(queryBuilder, context, q))
                 .must(queryBuilder.simpleQueryString().onField("pathAlias").matching(String.join(" ", flickrAccounts)).createQuery())
                 .createQuery();
     }

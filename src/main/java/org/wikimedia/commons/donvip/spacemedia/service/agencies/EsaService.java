@@ -90,10 +90,8 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
         super(repository);
     }
 
-    @Override
     @PostConstruct
     void init() {
-        super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern);
     }
 

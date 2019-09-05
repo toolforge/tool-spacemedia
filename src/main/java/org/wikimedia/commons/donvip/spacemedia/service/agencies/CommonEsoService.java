@@ -76,10 +76,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         this.mediaClass = Objects.requireNonNull(mediaClass);
     }
 
-    @Override
     @PostConstruct
     void init() {
-        super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
         dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern, Locale.ENGLISH);
     }
