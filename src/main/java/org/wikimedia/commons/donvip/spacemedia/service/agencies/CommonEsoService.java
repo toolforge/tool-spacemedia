@@ -76,8 +76,10 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         this.mediaClass = Objects.requireNonNull(mediaClass);
     }
 
+    @Override
     @PostConstruct
     void init() throws IOException {
+        super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
         dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern, Locale.ENGLISH);
         esoCategories = Csv.loadMap(getClass().getResource("/eso.categories.csv"));

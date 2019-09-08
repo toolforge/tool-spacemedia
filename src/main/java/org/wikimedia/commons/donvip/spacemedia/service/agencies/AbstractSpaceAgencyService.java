@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -57,6 +58,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 import org.xml.sax.SAXException;
 
@@ -91,11 +93,15 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @Value("#{${categories}}")
     private Map<String, String> categories;
 
-    @Value("${ignored.common.terms}")
     private Set<String> ignoredCommonTerms;
 
     public AbstractSpaceAgencyService(MediaRepository<T, ID, D> repository) {
         this.repository = Objects.requireNonNull(repository);
+    }
+
+    @PostConstruct
+    void init() throws IOException {
+        ignoredCommonTerms = Csv.loadSet(getClass().getResource("/ignored.terms.csv"));
     }
 
     @Override
