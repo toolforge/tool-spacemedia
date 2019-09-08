@@ -40,6 +40,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
+import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -64,7 +65,6 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     @Value("${eso.datetime.pattern}")
     private String dateTimePattern;
 
-    @Value("#{${eso.categories}}")
     private Map<String, String> esoCategories;
 
     @Autowired
@@ -77,9 +77,10 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     }
 
     @PostConstruct
-    void init() {
+    void init() throws IOException {
         dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
         dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern, Locale.ENGLISH);
+        esoCategories = Csv.loadMap(getClass().getResource("/eso.categories.csv"));
     }
 
     @Scheduled(fixedDelay = 43200000L)
