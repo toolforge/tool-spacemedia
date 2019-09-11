@@ -192,7 +192,7 @@ public abstract class AbstractSpaceAgencyFlickrService
     }
 
     @Override
-    protected void checkUploadPreconditions(FlickrMedia media) throws MalformedURLException {
+    protected void checkUploadPreconditions(FlickrMedia media) throws IOException {
         super.checkUploadPreconditions(media);
         if (isBadVideoEntry(media)) {
             throw new ImageUploadForbiddenException("Bad video download link: " + media);

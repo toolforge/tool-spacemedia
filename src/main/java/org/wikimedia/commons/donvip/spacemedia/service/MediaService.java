@@ -87,8 +87,9 @@ public class MediaService {
      * @param media media object
      * @return {@code true} if media has been updated with list of Wikimedia Commons
      *         files and must be persisted
+     * @throws IOException in case of I/O error
      */
-    public boolean findCommonsFilesWithSha1(Media<?, ?> media) {
+    public boolean findCommonsFilesWithSha1(Media<?, ?> media) throws IOException {
         boolean result = false;
         if (media.getSha1() != null && CollectionUtils.isEmpty(media.getCommonsFileNames())) {
             Set<String> files = commonsService.findFilesWithSha1(media.getSha1());

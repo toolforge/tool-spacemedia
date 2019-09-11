@@ -27,6 +27,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -44,14 +45,14 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsFileArchive;
-import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsFileArchiveRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -66,9 +67,6 @@ public class CommonsService {
 
     @Autowired
     private CommonsImageRepository imageRepository;
-
-    @Autowired
-    private CommonsFileArchiveRepository fileArchiveRepository;
 
     @Autowired
     private CommonsOldImageRepository oldImageRepository;
@@ -107,15 +105,7 @@ public class CommonsService {
     @Value("${commons.img.preview.width}")
     private int imgPreviewWidth;
 
-    /**
-     * Configurable because of a major performance bug on the database replica (the
-     * field is no indexed, see
-     * <a href="https://phabricator.wikimedia.org/T71088">#T71088</a>
-     */
-    @Value("${commons.query.filearchive}")
-    private boolean queryFilearchive;
-
-    public Set<String> findFilesWithSha1(String sha1) {
+    public Set<String> findFilesWithSha1(String sha1) throws IOException {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
         // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters 
         String sha1base36 = String.format("%31s", new BigInteger(sha1, 16).toString(36)).replace(' ', '0');
@@ -123,10 +113,21 @@ public class CommonsService {
         if (files.isEmpty()) {
             files.addAll(oldImageRepository.findBySha1(sha1base36).stream().map(CommonsOldImage::getName).collect(Collectors.toSet()));
         }
-        if (files.isEmpty() && queryFilearchive) {
-            files.addAll(fileArchiveRepository.findBySha1(sha1base36).stream().map(CommonsFileArchive::getName).collect(Collectors.toSet()));
+        if (files.isEmpty()) {
+            files.addAll(queryFileArchive(sha1base36).stream().map(FileArchive::getName).collect(Collectors.toSet()));
         }
         return files;
+    }
+
+    public List<FileArchive> queryFileArchive(String sha1base36) throws IOException {
+        try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableCookieManagement().build()) {
+            HttpGet httpGet = new HttpGet(
+                    apiUrl + "?action=query&list=filearchive&format=json&fasha1base36=" + sha1base36);
+            try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
+                String body = getHttpResponseBody(response);
+                return jackson.readValue(body, FileArchiveQueryResponse.class).getQuery().getFilearchive();
+            }
+        }
     }
 
     private HttpPost apiHttpPost(List<NameValuePair> nvps) {

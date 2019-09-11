@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.time.temporal.Temporal;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
@@ -25,7 +24,7 @@ public abstract class AbstractFullResSpaceAgencyService<T extends FullResMedia<I
     }
 
     @Override
-    protected void checkUploadPreconditions(T media) throws MalformedURLException {
+    protected void checkUploadPreconditions(T media) throws IOException {
         super.checkUploadPreconditions(media);
         // Forbid upload of duplicate medias for a single repo, they may have different descriptions
         if (media.getFullResSha1() != null && fullResRepository.countByFullResSha1(media.getFullResSha1()) > 1) {

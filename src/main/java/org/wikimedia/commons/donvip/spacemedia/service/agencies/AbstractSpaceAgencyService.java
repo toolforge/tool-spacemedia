@@ -475,7 +475,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         return "[" + Objects.requireNonNull(url, "url") + " " + Objects.requireNonNull(text, "text") + "]";
     }
 
-    protected void checkUploadPreconditions(T media) throws MalformedURLException {
+    protected void checkUploadPreconditions(T media) throws IOException {
         if (media.isIgnored() == Boolean.TRUE) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored.");
         }
