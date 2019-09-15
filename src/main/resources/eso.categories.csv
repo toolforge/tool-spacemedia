@@ -97,23 +97,23 @@
 "Solar System : Star : Circumstellar Material : Disk : Protoplanetary","Protoplanetary disks"
 "Solar System : Star : Circumstellar Material : Disk : Accretion","Accretion disks"
 "Solar System : Star : Circumstellar Material : Disk : Debris","Debris disks"
-"Solar System : Star : Circumstellar Material : Outflow",
+"Solar System : Star : Circumstellar Material : Outflow","Stellar outflow"
 "Solar System : Star : Circumstellar Material : Outflow : Solar Wind","Stellar wind"
 "Solar System : Star : Circumstellar Material : Outflow : Coronal Mass Ejection","Coronal mass ejection"
 "Solar System : Nebula","Nebulae"
 "Solar System : Nebula : Type : Interstellar Medium","Interstellar medium"
 "Solar System : Nebula : Type : Star Formation","Star formation"
-"Solar System : Nebula : Type : Planetary",
+"Solar System : Nebula : Type : Planetary","Planetary nebulae"
 "Solar System : Nebula : Type : Supernova Remnant","Supernova remnants"
-"Solar System : Nebula : Type : Jet",
+"Solar System : Nebula : Type : Jet","Astrophysical jets"
 "Solar System : Nebula : Appearance : Emission","Emission nebulae"
 "Solar System : Nebula : Appearance : Emission : H II Region","H II regions"
 "Solar System : Nebula : Appearance : Reflection","Reflection nebulae"
-"Solar System : Nebula : Appearance : Reflection : Light Echo",
+"Solar System : Nebula : Appearance : Reflection : Light Echo","Light echo"
 "Solar System : Nebula : Appearance : Dark","Dark nebulae"
 "Solar System : Nebula : Appearance : Dark : Molecular Cloud","Molecular clouds"
 "Solar System : Nebula : Appearance : Dark : Bok Globule","Bok globules"
-"Solar System : Nebula : Appearance : Dark : Proplyd",
+"Solar System : Nebula : Appearance : Dark : Proplyd","Proplyds"
 "Solar System : Galaxy","Galaxies"
 "Solar System : Galaxy : Type : Spiral","Spiral galaxies"
 "Solar System : Galaxy : Type : Barred","Barred spiral galaxies"
@@ -314,23 +314,23 @@
 "Milky Way : Star : Circumstellar Material : Disk : Protoplanetary","Protoplanetary disks"
 "Milky Way : Star : Circumstellar Material : Disk : Accretion","Accretion disks"
 "Milky Way : Star : Circumstellar Material : Disk : Debris","Debris disks"
-"Milky Way : Star : Circumstellar Material : Outflow",
+"Milky Way : Star : Circumstellar Material : Outflow","Stellar outflow"
 "Milky Way : Star : Circumstellar Material : Outflow : Solar Wind","Stellar wind"
 "Milky Way : Star : Circumstellar Material : Outflow : Coronal Mass Ejection","Coronal mass ejection"
 "Milky Way : Nebula","Nebulae"
 "Milky Way : Nebula : Type : Interstellar Medium","Interstellar medium"
 "Milky Way : Nebula : Type : Star Formation","Star formation"
-"Milky Way : Nebula : Type : Planetary",
+"Milky Way : Nebula : Type : Planetary","Planetary nebulae"
 "Milky Way : Nebula : Type : Supernova Remnant","Supernova remnants"
-"Milky Way : Nebula : Type : Jet",
+"Milky Way : Nebula : Type : Jet","Astrophysical jets"
 "Milky Way : Nebula : Appearance : Emission","Emission nebulae"
 "Milky Way : Nebula : Appearance : Emission : H II Region","H II regions"
 "Milky Way : Nebula : Appearance : Reflection","Reflection nebulae"
-"Milky Way : Nebula : Appearance : Reflection : Light Echo",
+"Milky Way : Nebula : Appearance : Reflection : Light Echo","Light echo"
 "Milky Way : Nebula : Appearance : Dark","Dark nebulae"
 "Milky Way : Nebula : Appearance : Dark : Molecular Cloud","Molecular clouds"
 "Milky Way : Nebula : Appearance : Dark : Bok Globule","Bok globules"
-"Milky Way : Nebula : Appearance : Dark : Proplyd",
+"Milky Way : Nebula : Appearance : Dark : Proplyd","Proplyds"
 "Milky Way : Galaxy","Galaxies"
 "Milky Way : Galaxy : Type : Spiral","Spiral galaxies"
 "Milky Way : Galaxy : Type : Barred","Barred spiral galaxies"
@@ -531,23 +531,23 @@
 "Local Universe : Star : Circumstellar Material : Disk : Protoplanetary","Protoplanetary disks"
 "Local Universe : Star : Circumstellar Material : Disk : Accretion","Accretion disks"
 "Local Universe : Star : Circumstellar Material : Disk : Debris","Debris disks"
-"Local Universe : Star : Circumstellar Material : Outflow",
+"Local Universe : Star : Circumstellar Material : Outflow","Stellar outflow"
 "Local Universe : Star : Circumstellar Material : Outflow : Solar Wind","Stellar wind"
 "Local Universe : Star : Circumstellar Material : Outflow : Coronal Mass Ejection","Coronal mass ejection"
 "Local Universe : Nebula","Nebulae"
 "Local Universe : Nebula : Type : Interstellar Medium","Interstellar medium"
 "Local Universe : Nebula : Type : Star Formation","Star formation"
-"Local Universe : Nebula : Type : Planetary",
+"Local Universe : Nebula : Type : Planetary","Planetary nebulae"
 "Local Universe : Nebula : Type : Supernova Remnant","Supernova remnants"
-"Local Universe : Nebula : Type : Jet",
+"Local Universe : Nebula : Type : Jet","Astrophysical jets"
 "Local Universe : Nebula : Appearance : Emission","Emission nebulae"
 "Local Universe : Nebula : Appearance : Emission : H II Region","H II regions"
 "Local Universe : Nebula : Appearance : Reflection","Reflection nebulae"
-"Local Universe : Nebula : Appearance : Reflection : Light Echo",
+"Local Universe : Nebula : Appearance : Reflection : Light Echo","Light echo"
 "Local Universe : Nebula : Appearance : Dark","Dark nebulae"
 "Local Universe : Nebula : Appearance : Dark : Molecular Cloud","Molecular clouds"
 "Local Universe : Nebula : Appearance : Dark : Bok Globule","Bok globules"
-"Local Universe : Nebula : Appearance : Dark : Proplyd",
+"Local Universe : Nebula : Appearance : Dark : Proplyd","Proplyds"
 "Local Universe : Galaxy","Galaxies"
 "Local Universe : Galaxy : Type : Spiral","Spiral galaxies"
 "Local Universe : Galaxy : Type : Barred","Barred spiral galaxies"
@@ -748,23 +748,23 @@
 "Early Universe : Star : Circumstellar Material : Disk : Protoplanetary","Protoplanetary disks"
 "Early Universe : Star : Circumstellar Material : Disk : Accretion","Accretion disks"
 "Early Universe : Star : Circumstellar Material : Disk : Debris","Debris disks"
-"Early Universe : Star : Circumstellar Material : Outflow",
+"Early Universe : Star : Circumstellar Material : Outflow","Stellar outflow"
 "Early Universe : Star : Circumstellar Material : Outflow : Solar Wind","Stellar wind"
 "Early Universe : Star : Circumstellar Material : Outflow : Coronal Mass Ejection","Coronal mass ejection"
 "Early Universe : Nebula",
 "Early Universe : Nebula : Type : Interstellar Medium",
 "Early Universe : Nebula : Type : Star Formation",
-"Early Universe : Nebula : Type : Planetary",
+"Early Universe : Nebula : Type : Planetary","Planetary nebulae"
 "Early Universe : Nebula : Type : Supernova Remnant",
-"Early Universe : Nebula : Type : Jet",
+"Early Universe : Nebula : Type : Jet","Astrophysical jets"
 "Early Universe : Nebula : Appearance : Emission",
 "Early Universe : Nebula : Appearance : Emission : H II Region",
 "Early Universe : Nebula : Appearance : Reflection",
-"Early Universe : Nebula : Appearance : Reflection : Light Echo",
+"Early Universe : Nebula : Appearance : Reflection : Light Echo","Light echo"
 "Early Universe : Nebula : Appearance : Dark",
 "Early Universe : Nebula : Appearance : Dark : Molecular Cloud",
 "Early Universe : Nebula : Appearance : Dark : Bok Globule",
-"Early Universe : Nebula : Appearance : Dark : Proplyd",
+"Early Universe : Nebula : Appearance : Dark : Proplyd","Proplyds"
 "Early Universe : Galaxy",
 "Early Universe : Galaxy : Type : Spiral",
 "Early Universe : Galaxy : Type : Barred",
@@ -964,23 +964,23 @@
 "Unspecified : Star : Circumstellar Material : Disk : Protoplanetary","Protoplanetary disks"
 "Unspecified : Star : Circumstellar Material : Disk : Accretion","Accretion disks"
 "Unspecified : Star : Circumstellar Material : Disk : Debris","Debris disks"
-"Unspecified : Star : Circumstellar Material : Outflow",
+"Unspecified : Star : Circumstellar Material : Outflow","Stellar outflow"
 "Unspecified : Star : Circumstellar Material : Outflow : Solar Wind","Stellar wind"
 "Unspecified : Star : Circumstellar Material : Outflow : Coronal Mass Ejection","Coronal mass ejection"
 "Unspecified : Nebula",
 "Unspecified : Nebula : Type : Interstellar Medium",
 "Unspecified : Nebula : Type : Star Formation",
-"Unspecified : Nebula : Type : Planetary",
+"Unspecified : Nebula : Type : Planetary","Planetary nebulae"
 "Unspecified : Nebula : Type : Supernova Remnant",
-"Unspecified : Nebula : Type : Jet",
+"Unspecified : Nebula : Type : Jet","Astrophysical jets"
 "Unspecified : Nebula : Appearance : Emission",
 "Unspecified : Nebula : Appearance : Emission : H II Region",
 "Unspecified : Nebula : Appearance : Reflection",
-"Unspecified : Nebula : Appearance : Reflection : Light Echo",
+"Unspecified : Nebula : Appearance : Reflection : Light Echo","Light echo"
 "Unspecified : Nebula : Appearance : Dark",
 "Unspecified : Nebula : Appearance : Dark : Molecular Cloud",
 "Unspecified : Nebula : Appearance : Dark : Bok Globule",
-"Unspecified : Nebula : Appearance : Dark : Proplyd",
+"Unspecified : Nebula : Appearance : Dark : Proplyd","Proplyds"
 "Unspecified : Galaxy",
 "Unspecified : Galaxy : Type : Spiral",
 "Unspecified : Galaxy : Type : Barred",
