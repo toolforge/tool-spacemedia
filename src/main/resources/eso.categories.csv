@@ -123,104 +123,104 @@
 "Solar System : Galaxy : Type : Irregular","Irregular galaxies"
 "Solar System : Galaxy : Type : Interacting","Interacting galaxies"
 "Solar System : Galaxy : Type : Gravitationally Lensed","Gravitational lensing"
-"Solar System : Galaxy : Size : Giant",
+"Solar System : Galaxy : Size : Giant","Galaxies"
 "Solar System : Galaxy : Size : Dwarf","Dwarf galaxies"
-"Solar System : Galaxy : Activity : Normal",
+"Solar System : Galaxy : Activity : Normal","Galaxies"
 "Solar System : Galaxy : Activity : AGN","Active galactic nuclei"
 "Solar System : Galaxy : Activity : AGN : Quasar","Quasars"
 "Solar System : Galaxy : Activity : AGN : Seyfert","Seyfert galaxies"
 "Solar System : Galaxy : Activity : AGN : Blazar","Blazars"
-"Solar System : Galaxy : Activity : AGN : Liner",
+"Solar System : Galaxy : Activity : AGN : Liner","LINERs"
 "Solar System : Galaxy : Activity : Starburst","Starburst galaxies"
 "Solar System : Galaxy : Activity : Ultraluminous","Ultraluminous X-ray source"
-"Solar System : Galaxy : Component : Bulge",
-"Solar System : Galaxy : Component : Bar",
-"Solar System : Galaxy : Component : Disk",
-"Solar System : Galaxy : Component : Halo",
-"Solar System : Galaxy : Component : Ring",
+"Solar System : Galaxy : Component : Bulge","Bulges"
+"Solar System : Galaxy : Component : Bar","Barred spiral galaxies"
+"Solar System : Galaxy : Component : Disk","Spiral galaxies"
+"Solar System : Galaxy : Component : Halo","Galactic halos"
+"Solar System : Galaxy : Component : Ring","Ring galaxies"
 "Solar System : Galaxy : Component : Central Black Hole","Black holes"
-"Solar System : Galaxy : Component : Spiral Arm",
-"Solar System : Galaxy : Component : Dust Lane",
-"Solar System : Galaxy : Component : Center/Core",
-"Solar System : Galaxy : Grouping : Pair",
-"Solar System : Galaxy : Grouping : Multiple",
+"Solar System : Galaxy : Component : Spiral Arm","Spiral galaxies"
+"Solar System : Galaxy : Component : Dust Lane","Dust lanes"
+"Solar System : Galaxy : Component : Center/Core","Galactic Center"
+"Solar System : Galaxy : Grouping : Pair","Galaxy groups"
+"Solar System : Galaxy : Grouping : Multiple","Galaxy groups"
 "Solar System : Galaxy : Grouping : Cluster","Galaxy clusters"
-"Solar System : Galaxy : Grouping : Supercluster",
+"Solar System : Galaxy : Grouping : Supercluster","Superclusters of galaxies"
 "Solar System : Cosmology","Cosmology"
 "Solar System : Cosmology : Morphology : Deep Field","Deep fields"
 "Solar System : Cosmology : Morphology : Large-Scale Structure","Large-scale structure of the cosmos"
 "Solar System : Cosmology : Morphology : Cosmic Background","Cosmic microwave background"
-"Solar System : Cosmology : Phenomenon : Lensing",
+"Solar System : Cosmology : Phenomenon : Lensing","Gravitational lensing"
 "Solar System : Cosmology : Phenomenon : Gamma Ray Burst","Gamma ray bursts"
 "Solar System : Cosmology : Phenomenon : Dark Matter","Dark matter"
-"Solar System : Sky Phenomenon",
+"Solar System : Sky Phenomenon","Sky"
 "Solar System : Sky Phenomenon : Night Sky","Night sky"
 "Solar System : Sky Phenomenon : Night Sky : Constellation","Constellations"
 "Solar System : Sky Phenomenon : Night Sky : Asterism","Asterisms (astronomy)"
 "Solar System : Sky Phenomenon : Night Sky : Milky Way","Milky Way Galaxy"
-"Solar System : Sky Phenomenon : Night Sky : Trail",
-"Solar System : Sky Phenomenon : Night Sky : Trail : Meteor","Meteors"
-"Solar System : Sky Phenomenon : Night Sky : Trail : Star","Stars"
-"Solar System : Sky Phenomenon : Night Sky : Trail : Satellite","Satellites"
+"Solar System : Sky Phenomenon : Night Sky : Trail","Light trails"
+"Solar System : Sky Phenomenon : Night Sky : Trail : Meteor","Meteor trails"
+"Solar System : Sky Phenomenon : Night Sky : Trail : Star","Star trails"
+"Solar System : Sky Phenomenon : Night Sky : Trail : Satellite","Satellite trails"
 "Solar System : Sky Phenomenon : Night Sky : Zodiacal Light","Zodiacal light"
-"Solar System : Sky Phenomenon : Night Sky : Zodiacal Light : Gegenschein",
+"Solar System : Sky Phenomenon : Night Sky : Zodiacal Light : Gegenschein","Gegenschein"
 "Solar System : Sky Phenomenon : Night Sky : Night glow","Skyglow"
 "Solar System : Sky Phenomenon : Eclipse","Eclipse"
-"Solar System : Sky Phenomenon : Eclipse : Solar","Solar eclipse"
-"Solar System : Sky Phenomenon : Eclipse : Solar : Total",
-"Solar System : Sky Phenomenon : Eclipse : Solar : Partial",
-"Solar System : Sky Phenomenon : Eclipse : Solar : Annular",
-"Solar System : Sky Phenomenon : Eclipse : Lunar","Lunar eclipse"
-"Solar System : Sky Phenomenon : Eclipse : Lunar : Total",
-"Solar System : Sky Phenomenon : Eclipse : Lunar : Partial",
-"Solar System : Sky Phenomenon : Eclipse : Lunar : Penumbral",
+"Solar System : Sky Phenomenon : Eclipse : Solar","Solar eclipses"
+"Solar System : Sky Phenomenon : Eclipse : Solar : Total","Solar eclipses"
+"Solar System : Sky Phenomenon : Eclipse : Solar : Partial","Solar eclipses"
+"Solar System : Sky Phenomenon : Eclipse : Solar : Annular","Solar eclipses"
+"Solar System : Sky Phenomenon : Eclipse : Lunar","Lunar eclipses"
+"Solar System : Sky Phenomenon : Eclipse : Lunar : Total","Lunar eclipses"
+"Solar System : Sky Phenomenon : Eclipse : Lunar : Partial","Lunar eclipses"
+"Solar System : Sky Phenomenon : Eclipse : Lunar : Penumbral","Lunar eclipses"
 "Solar System : Sky Phenomenon : Eclipse : Occultation","Occultation"
 "Solar System : Sky Phenomenon : Eclipse : Transit","Astronomical transits"
 "Solar System : Sky Phenomenon : Light Phenomenon","Atmospheric optical phenomena"
 "Solar System : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset","Sunsets and sunrises"
 "Solar System : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Green flash","Green flash phenomena"
-"Solar System : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Refractive Distortion",
+"Solar System : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Refractive Distortion","Astronomical seeing"
 "Solar System : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Sun Pillar","Sun pillars"
 "Solar System : Sky Phenomenon : Light Phenomenon : Cloud","Clouds"
 "Solar System : Sky Phenomenon : Light Phenomenon : Cloud : Iridescent","Iridescent clouds"
 "Solar System : Sky Phenomenon : Light Phenomenon : Cloud : Noctilucent","Noctilucent clouds"
-"Solar System : Sky Phenomenon : Light Phenomenon : Cloud : Nacreous",
-"Solar System : Sky Phenomenon : Light Phenomenon : Cloud : Corona",
-"Solar System : Sky Phenomenon : Light Phenomenon : Cloud : Glory",
+"Solar System : Sky Phenomenon : Light Phenomenon : Cloud : Nacreous","Polar stratospheric clouds"
+"Solar System : Sky Phenomenon : Light Phenomenon : Cloud : Corona","Corona"
+"Solar System : Sky Phenomenon : Light Phenomenon : Cloud : Glory","Glories"
 "Solar System : Sky Phenomenon : Light Phenomenon : Rainbow","Rainbows"
 "Solar System : Sky Phenomenon : Light Phenomenon : Rainbow : Moonbow","Moonbows"
 "Solar System : Sky Phenomenon : Light Phenomenon : Rainbow : Fogbow","Fogbow"
 "Solar System : Sky Phenomenon : Light Phenomenon : Halo","Halo phenomena"
-"Solar System : Sky Phenomenon : Light Phenomenon : Halo : Circle",
+"Solar System : Sky Phenomenon : Light Phenomenon : Halo : Circle","Halo phenomena"
 "Solar System : Sky Phenomenon : Light Phenomenon : Halo : Parhelia","Parhelia"
-"Solar System : Sky Phenomenon : Light Phenomenon : Halo : Arc",
+"Solar System : Sky Phenomenon : Light Phenomenon : Halo : Arc","Halo phenomena"
 "Solar System : Sky Phenomenon : Light Phenomenon : Ray-Shadow","Shadows (atmospheric optics)"
 "Solar System : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Crepuscular ray","Crepuscular rays"
 "Solar System : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Anti-crepuscular ray","Anticrepuscular rays"
-"Solar System : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Earth shadow",
+"Solar System : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Earth shadow","Earth's shadow"
 "Solar System : Sky Phenomenon : Light Phenomenon : Lightning","Lightning"
 "Solar System : Sky Phenomenon : Light Phenomenon : Aurora","Polar aurora"
-"Solar System : Technology",
+"Solar System : Technology","Scientific equipment"
 "Solar System : Technology : Observatory","Observatories"
 "Solar System : Technology : Observatory : Facility","Astronomical observatories"
 "Solar System : Technology : Observatory : Telescope","Telescopes"
 "Solar System : Technology : Observatory : Instrument","Astronomical instruments"
-"Solar System : Technology : Observatory : Detector",
+"Solar System : Technology : Observatory : Detector","Astronomical instruments"
 "Solar System : Technology : Spacecraft","Spacecraft"
 "Solar System : Technology : Spacecraft : Orbiter","Orbiters (spacecraft)"
 "Solar System : Technology : Spacecraft : Probe","Space probes"
 "Solar System : Technology : Spacecraft : Lander","Landers (spacecraft)"
 "Solar System : Technology : Spacecraft : Manned","Manned spacecraft"
 "Solar System : Technology : Spacecraft : Launch Vehicle","Space launch vehicles"
-"Solar System : People",
+"Solar System : People","People"
 "Solar System : People : Scientist","Scientists"
 "Solar System : People : Astronaut","Astronauts"
-"Solar System : People : Other/General",
+"Solar System : People : Other/General","People"
 "Milky Way","Milky Way Galaxy"
 "Milky Way : Planet","Planets"
 "Milky Way : Planet : Type : Terrestrial","Terrestrial Planet"
 "Milky Way : Planet : Type : Gas Giant","Gas giants"
-"Milky Way : Planet : Feature : Surface",
+"Milky Way : Planet : Feature : Surface","Surface features of astronomical bodies"
 "Milky Way : Planet : Feature : Surface : Mountain","Extraterrestrial mountains"
 "Milky Way : Planet : Feature : Surface : Canyon","Extraterrestrial valleys and canyons"
 "Milky Way : Planet : Feature : Surface : Volcanic","Extraterrestrial volcanoes"
@@ -246,8 +246,8 @@
 "Milky Way : Planet : Satellite : Feature : Surface : Ice","Ice"
 "Milky Way : Planet : Satellite : Feature : Atmosphere","Planetary atmospheres"
 "Milky Way : Planet : Ring","Planetary rings"
-"Milky Way : Interplanetary Body",
-"Milky Way : Interplanetary Body : Dwarf planet",
+"Milky Way : Interplanetary Body","Astronomical objects"
+"Milky Way : Interplanetary Body : Dwarf planet","Planets"
 "Milky Way : Interplanetary Body : Comet","Comets"
 "Milky Way : Interplanetary Body : Comet : Nucleus","Cometary nuclei"
 "Milky Way : Interplanetary Body : Comet : Coma","Coma (cometary)"
@@ -340,104 +340,104 @@
 "Milky Way : Galaxy : Type : Irregular","Irregular galaxies"
 "Milky Way : Galaxy : Type : Interacting","Interacting galaxies"
 "Milky Way : Galaxy : Type : Gravitationally Lensed","Gravitational lensing"
-"Milky Way : Galaxy : Size : Giant",
+"Milky Way : Galaxy : Size : Giant","Galaxies"
 "Milky Way : Galaxy : Size : Dwarf","Dwarf galaxies"
-"Milky Way : Galaxy : Activity : Normal",
+"Milky Way : Galaxy : Activity : Normal","Galaxies"
 "Milky Way : Galaxy : Activity : AGN","Active galactic nuclei"
 "Milky Way : Galaxy : Activity : AGN : Quasar","Quasars"
 "Milky Way : Galaxy : Activity : AGN : Seyfert","Seyfert galaxies"
 "Milky Way : Galaxy : Activity : AGN : Blazar","Blazars"
-"Milky Way : Galaxy : Activity : AGN : Liner",
+"Milky Way : Galaxy : Activity : AGN : Liner","LINERs"
 "Milky Way : Galaxy : Activity : Starburst","Starburst galaxies"
 "Milky Way : Galaxy : Activity : Ultraluminous","Ultraluminous X-ray source"
-"Milky Way : Galaxy : Component : Bulge",
-"Milky Way : Galaxy : Component : Bar",
-"Milky Way : Galaxy : Component : Disk",
-"Milky Way : Galaxy : Component : Halo",
-"Milky Way : Galaxy : Component : Ring",
+"Milky Way : Galaxy : Component : Bulge","Bulges"
+"Milky Way : Galaxy : Component : Bar","Barred spiral galaxies"
+"Milky Way : Galaxy : Component : Disk","Spiral galaxies"
+"Milky Way : Galaxy : Component : Halo","Galactic halos"
+"Milky Way : Galaxy : Component : Ring","Ring galaxies"
 "Milky Way : Galaxy : Component : Central Black Hole","Black holes"
-"Milky Way : Galaxy : Component : Spiral Arm",
-"Milky Way : Galaxy : Component : Dust Lane",
-"Milky Way : Galaxy : Component : Center/Core",
-"Milky Way : Galaxy : Grouping : Pair",
-"Milky Way : Galaxy : Grouping : Multiple",
+"Milky Way : Galaxy : Component : Spiral Arm","Spiral galaxies"
+"Milky Way : Galaxy : Component : Dust Lane","Dust lanes"
+"Milky Way : Galaxy : Component : Center/Core","Galactic Center"
+"Milky Way : Galaxy : Grouping : Pair","Galaxy groups"
+"Milky Way : Galaxy : Grouping : Multiple","Galaxy groups"
 "Milky Way : Galaxy : Grouping : Cluster","Galaxy clusters"
-"Milky Way : Galaxy : Grouping : Supercluster",
+"Milky Way : Galaxy : Grouping : Supercluster","Superclusters of galaxies"
 "Milky Way : Cosmology","Cosmology"
 "Milky Way : Cosmology : Morphology : Deep Field","Deep fields"
 "Milky Way : Cosmology : Morphology : Large-Scale Structure","Large-scale structure of the cosmos"
 "Milky Way : Cosmology : Morphology : Cosmic Background","Cosmic microwave background"
-"Milky Way : Cosmology : Phenomenon : Lensing",
+"Milky Way : Cosmology : Phenomenon : Lensing","Gravitational lensing"
 "Milky Way : Cosmology : Phenomenon : Gamma Ray Burst","Gamma ray bursts"
 "Milky Way : Cosmology : Phenomenon : Dark Matter","Dark matter"
-"Milky Way : Sky Phenomenon",
+"Milky Way : Sky Phenomenon","Sky"
 "Milky Way : Sky Phenomenon : Night Sky","Night sky"
 "Milky Way : Sky Phenomenon : Night Sky : Constellation","Constellations"
 "Milky Way : Sky Phenomenon : Night Sky : Asterism","Asterisms (astronomy)"
 "Milky Way : Sky Phenomenon : Night Sky : Milky Way","Milky Way Galaxy"
-"Milky Way : Sky Phenomenon : Night Sky : Trail",
-"Milky Way : Sky Phenomenon : Night Sky : Trail : Meteor","Meteors"
-"Milky Way : Sky Phenomenon : Night Sky : Trail : Star","Stars"
-"Milky Way : Sky Phenomenon : Night Sky : Trail : Satellite","Satellites"
+"Milky Way : Sky Phenomenon : Night Sky : Trail","Light trails"
+"Milky Way : Sky Phenomenon : Night Sky : Trail : Meteor","Meteor trails"
+"Milky Way : Sky Phenomenon : Night Sky : Trail : Star","Star trails"
+"Milky Way : Sky Phenomenon : Night Sky : Trail : Satellite","Satellite trails"
 "Milky Way : Sky Phenomenon : Night Sky : Zodiacal Light","Zodiacal light"
-"Milky Way : Sky Phenomenon : Night Sky : Zodiacal Light : Gegenschein",
+"Milky Way : Sky Phenomenon : Night Sky : Zodiacal Light : Gegenschein","Gegenschein"
 "Milky Way : Sky Phenomenon : Night Sky : Night glow","Skyglow"
 "Milky Way : Sky Phenomenon : Eclipse","Eclipse"
-"Milky Way : Sky Phenomenon : Eclipse : Solar","Solar eclipse"
-"Milky Way : Sky Phenomenon : Eclipse : Solar : Total",
-"Milky Way : Sky Phenomenon : Eclipse : Solar : Partial",
-"Milky Way : Sky Phenomenon : Eclipse : Solar : Annular",
-"Milky Way : Sky Phenomenon : Eclipse : Lunar","Lunar eclipse"
-"Milky Way : Sky Phenomenon : Eclipse : Lunar : Total",
-"Milky Way : Sky Phenomenon : Eclipse : Lunar : Partial",
-"Milky Way : Sky Phenomenon : Eclipse : Lunar : Penumbral",
+"Milky Way : Sky Phenomenon : Eclipse : Solar","Solar eclipses"
+"Milky Way : Sky Phenomenon : Eclipse : Solar : Total","Solar eclipses"
+"Milky Way : Sky Phenomenon : Eclipse : Solar : Partial","Solar eclipses"
+"Milky Way : Sky Phenomenon : Eclipse : Solar : Annular","Solar eclipses"
+"Milky Way : Sky Phenomenon : Eclipse : Lunar","Lunar eclipses"
+"Milky Way : Sky Phenomenon : Eclipse : Lunar : Total","Lunar eclipses"
+"Milky Way : Sky Phenomenon : Eclipse : Lunar : Partial","Lunar eclipses"
+"Milky Way : Sky Phenomenon : Eclipse : Lunar : Penumbral","Lunar eclipses"
 "Milky Way : Sky Phenomenon : Eclipse : Occultation","Occultation"
 "Milky Way : Sky Phenomenon : Eclipse : Transit","Astronomical transits"
 "Milky Way : Sky Phenomenon : Light Phenomenon","Atmospheric optical phenomena"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset","Sunsets and sunrises"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Green flash","Green flash phenomena"
-"Milky Way : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Refractive Distortion",
+"Milky Way : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Refractive Distortion","Astronomical seeing"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Sun Pillar","Sun pillars"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Cloud","Clouds"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Cloud : Iridescent","Iridescent clouds"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Cloud : Noctilucent","Noctilucent clouds"
-"Milky Way : Sky Phenomenon : Light Phenomenon : Cloud : Nacreous",
-"Milky Way : Sky Phenomenon : Light Phenomenon : Cloud : Corona",
-"Milky Way : Sky Phenomenon : Light Phenomenon : Cloud : Glory",
+"Milky Way : Sky Phenomenon : Light Phenomenon : Cloud : Nacreous","Polar stratospheric clouds"
+"Milky Way : Sky Phenomenon : Light Phenomenon : Cloud : Corona","Corona"
+"Milky Way : Sky Phenomenon : Light Phenomenon : Cloud : Glory","Glories"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Rainbow","Rainbows"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Rainbow : Moonbow","Moonbows"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Rainbow : Fogbow","Fogbow"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Halo","Halo phenomena"
-"Milky Way : Sky Phenomenon : Light Phenomenon : Halo : Circle",
+"Milky Way : Sky Phenomenon : Light Phenomenon : Halo : Circle","Halo phenomena"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Halo : Parhelia","Parhelia"
-"Milky Way : Sky Phenomenon : Light Phenomenon : Halo : Arc",
+"Milky Way : Sky Phenomenon : Light Phenomenon : Halo : Arc","Halo phenomena"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Ray-Shadow","Shadows (atmospheric optics)"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Crepuscular ray","Crepuscular rays"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Anti-crepuscular ray","Anticrepuscular rays"
-"Milky Way : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Earth shadow",
+"Milky Way : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Earth shadow","Earth's shadow"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Lightning","Lightning"
 "Milky Way : Sky Phenomenon : Light Phenomenon : Aurora","Polar aurora"
-"Milky Way : Technology",
+"Milky Way : Technology","Scientific equipment"
 "Milky Way : Technology : Observatory","Observatories"
 "Milky Way : Technology : Observatory : Facility","Astronomical observatories"
 "Milky Way : Technology : Observatory : Telescope","Telescopes"
 "Milky Way : Technology : Observatory : Instrument","Astronomical instruments"
-"Milky Way : Technology : Observatory : Detector",
+"Milky Way : Technology : Observatory : Detector","Astronomical instruments"
 "Milky Way : Technology : Spacecraft","Spacecraft"
 "Milky Way : Technology : Spacecraft : Orbiter","Orbiters (spacecraft)"
 "Milky Way : Technology : Spacecraft : Probe","Space probes"
 "Milky Way : Technology : Spacecraft : Lander","Landers (spacecraft)"
 "Milky Way : Technology : Spacecraft : Manned","Manned spacecraft"
 "Milky Way : Technology : Spacecraft : Launch Vehicle","Space launch vehicles"
-"Milky Way : People",
+"Milky Way : People","People"
 "Milky Way : People : Scientist","Scientists"
 "Milky Way : People : Astronaut","Astronauts"
-"Milky Way : People : Other/General",
-"Local Universe",
+"Milky Way : People : Other/General","People"
+"Local Universe","Universe"
 "Local Universe : Planet","Planets"
 "Local Universe : Planet : Type : Terrestrial","Terrestrial Planet"
 "Local Universe : Planet : Type : Gas Giant","Gas giants"
-"Local Universe : Planet : Feature : Surface",
+"Local Universe : Planet : Feature : Surface","Surface features of astronomical bodies"
 "Local Universe : Planet : Feature : Surface : Mountain","Extraterrestrial mountains"
 "Local Universe : Planet : Feature : Surface : Canyon","Extraterrestrial valleys and canyons"
 "Local Universe : Planet : Feature : Surface : Volcanic","Extraterrestrial volcanoes"
@@ -452,7 +452,7 @@
 "Local Universe : Planet : Special Cases : Transiting","Astronomical transits"
 "Local Universe : Planet : Special Cases : Hot Jupiter","Hot Jupiters"
 "Local Universe : Planet : Special Cases : Pulsar planet","Pulsar planets"
-"Local Universe : Planet : Satellite",
+"Local Universe : Planet : Satellite","Natural satellites"
 "Local Universe : Planet : Satellite : Feature : Surface","Surface features of moons"
 "Local Universe : Planet : Satellite : Feature : Surface : Mountain","Extraterrestrial mountains"
 "Local Universe : Planet : Satellite : Feature : Surface : Canyon","Extraterrestrial valleys and canyons"
@@ -463,16 +463,16 @@
 "Local Universe : Planet : Satellite : Feature : Surface : Ice","Ice"
 "Local Universe : Planet : Satellite : Feature : Atmosphere","Planetary atmospheres"
 "Local Universe : Planet : Ring","Planetary rings"
-"Local Universe : Interplanetary Body",
-"Local Universe : Interplanetary Body : Dwarf planet",
+"Local Universe : Interplanetary Body","Astronomical objects"
+"Local Universe : Interplanetary Body : Dwarf planet","Planets"
 "Local Universe : Interplanetary Body : Comet","Comets"
 "Local Universe : Interplanetary Body : Comet : Nucleus","Cometary nuclei"
 "Local Universe : Interplanetary Body : Comet : Coma","Coma (cometary)"
 "Local Universe : Interplanetary Body : Comet : Tail","Comet tail"
 "Local Universe : Interplanetary Body : Comet : Tail : Dust","Comet tail"
 "Local Universe : Interplanetary Body : Comet : Tail : Gas","Comet tail"
-"Local Universe : Interplanetary Body : Asteroid",
-"Local Universe : Interplanetary Body : Meteoroid",
+"Local Universe : Interplanetary Body : Asteroid","Asteroids"
+"Local Universe : Interplanetary Body : Meteoroid","Meteoroids"
 "Local Universe : Star","Stars"
 "Local Universe : Star : Evolutionary Stage : Protostar","Protostars"
 "Local Universe : Star : Evolutionary Stage : Young Stellar Object","Young stellar objects"
@@ -557,152 +557,152 @@
 "Local Universe : Galaxy : Type : Irregular","Irregular galaxies"
 "Local Universe : Galaxy : Type : Interacting","Interacting galaxies"
 "Local Universe : Galaxy : Type : Gravitationally Lensed","Gravitational lensing"
-"Local Universe : Galaxy : Size : Giant",
+"Local Universe : Galaxy : Size : Giant","Galaxies"
 "Local Universe : Galaxy : Size : Dwarf","Dwarf galaxies"
-"Local Universe : Galaxy : Activity : Normal",
+"Local Universe : Galaxy : Activity : Normal","Galaxies"
 "Local Universe : Galaxy : Activity : AGN","Active galactic nuclei"
 "Local Universe : Galaxy : Activity : AGN : Quasar","Quasars"
 "Local Universe : Galaxy : Activity : AGN : Seyfert","Seyfert galaxies"
 "Local Universe : Galaxy : Activity : AGN : Blazar","Blazars"
-"Local Universe : Galaxy : Activity : AGN : Liner",
+"Local Universe : Galaxy : Activity : AGN : Liner","LINERs"
 "Local Universe : Galaxy : Activity : Starburst","Starburst galaxies"
 "Local Universe : Galaxy : Activity : Ultraluminous","Ultraluminous X-ray source"
-"Local Universe : Galaxy : Component : Bulge",
-"Local Universe : Galaxy : Component : Bar",
-"Local Universe : Galaxy : Component : Disk",
-"Local Universe : Galaxy : Component : Halo",
-"Local Universe : Galaxy : Component : Ring",
+"Local Universe : Galaxy : Component : Bulge","Bulges"
+"Local Universe : Galaxy : Component : Bar","Barred spiral galaxies"
+"Local Universe : Galaxy : Component : Disk","Spiral galaxies"
+"Local Universe : Galaxy : Component : Halo","Galactic halos"
+"Local Universe : Galaxy : Component : Ring","Ring galaxies"
 "Local Universe : Galaxy : Component : Central Black Hole","Black holes"
-"Local Universe : Galaxy : Component : Spiral Arm",
-"Local Universe : Galaxy : Component : Dust Lane",
-"Local Universe : Galaxy : Component : Center/Core",
-"Local Universe : Galaxy : Grouping : Pair",
-"Local Universe : Galaxy : Grouping : Multiple",
+"Local Universe : Galaxy : Component : Spiral Arm","Spiral galaxies"
+"Local Universe : Galaxy : Component : Dust Lane","Dust lanes"
+"Local Universe : Galaxy : Component : Center/Core","Active galactic nuclei"
+"Local Universe : Galaxy : Grouping : Pair","Galaxy groups"
+"Local Universe : Galaxy : Grouping : Multiple","Galaxy groups"
 "Local Universe : Galaxy : Grouping : Cluster","Galaxy clusters"
-"Local Universe : Galaxy : Grouping : Supercluster",
+"Local Universe : Galaxy : Grouping : Supercluster","Superclusters of galaxies"
 "Local Universe : Cosmology","Cosmology"
 "Local Universe : Cosmology : Morphology : Deep Field","Deep fields"
 "Local Universe : Cosmology : Morphology : Large-Scale Structure","Large-scale structure of the cosmos"
 "Local Universe : Cosmology : Morphology : Cosmic Background","Cosmic microwave background"
-"Local Universe : Cosmology : Phenomenon : Lensing",
+"Local Universe : Cosmology : Phenomenon : Lensing","Gravitational lensing"
 "Local Universe : Cosmology : Phenomenon : Gamma Ray Burst","Gamma ray bursts"
 "Local Universe : Cosmology : Phenomenon : Dark Matter","Dark matter"
-"Local Universe : Sky Phenomenon",
+"Local Universe : Sky Phenomenon","Sky"
 "Local Universe : Sky Phenomenon : Night Sky","Night sky"
 "Local Universe : Sky Phenomenon : Night Sky : Constellation","Constellations"
 "Local Universe : Sky Phenomenon : Night Sky : Asterism","Asterisms (astronomy)"
 "Local Universe : Sky Phenomenon : Night Sky : Milky Way","Milky Way Galaxy"
-"Local Universe : Sky Phenomenon : Night Sky : Trail",
-"Local Universe : Sky Phenomenon : Night Sky : Trail : Meteor","Meteors"
-"Local Universe : Sky Phenomenon : Night Sky : Trail : Star","Stars"
-"Local Universe : Sky Phenomenon : Night Sky : Trail : Satellite","Satellites"
+"Local Universe : Sky Phenomenon : Night Sky : Trail","Light trails"
+"Local Universe : Sky Phenomenon : Night Sky : Trail : Meteor","Meteor trails"
+"Local Universe : Sky Phenomenon : Night Sky : Trail : Star","Star trails"
+"Local Universe : Sky Phenomenon : Night Sky : Trail : Satellite","Satellite trails"
 "Local Universe : Sky Phenomenon : Night Sky : Zodiacal Light","Zodiacal light"
-"Local Universe : Sky Phenomenon : Night Sky : Zodiacal Light : Gegenschein",
+"Local Universe : Sky Phenomenon : Night Sky : Zodiacal Light : Gegenschein","Gegenschein"
 "Local Universe : Sky Phenomenon : Night Sky : Night glow","Skyglow"
 "Local Universe : Sky Phenomenon : Eclipse","Eclipse"
-"Local Universe : Sky Phenomenon : Eclipse : Solar","Solar eclipse"
-"Local Universe : Sky Phenomenon : Eclipse : Solar : Total",
-"Local Universe : Sky Phenomenon : Eclipse : Solar : Partial",
-"Local Universe : Sky Phenomenon : Eclipse : Solar : Annular",
-"Local Universe : Sky Phenomenon : Eclipse : Lunar","Lunar eclipse"
-"Local Universe : Sky Phenomenon : Eclipse : Lunar : Total",
-"Local Universe : Sky Phenomenon : Eclipse : Lunar : Partial",
-"Local Universe : Sky Phenomenon : Eclipse : Lunar : Penumbral",
+"Local Universe : Sky Phenomenon : Eclipse : Solar","Solar eclipses"
+"Local Universe : Sky Phenomenon : Eclipse : Solar : Total","Solar eclipses"
+"Local Universe : Sky Phenomenon : Eclipse : Solar : Partial","Solar eclipses"
+"Local Universe : Sky Phenomenon : Eclipse : Solar : Annular","Solar eclipses"
+"Local Universe : Sky Phenomenon : Eclipse : Lunar","Lunar eclipses"
+"Local Universe : Sky Phenomenon : Eclipse : Lunar : Total","Lunar eclipses"
+"Local Universe : Sky Phenomenon : Eclipse : Lunar : Partial","Lunar eclipses"
+"Local Universe : Sky Phenomenon : Eclipse : Lunar : Penumbral","Lunar eclipses"
 "Local Universe : Sky Phenomenon : Eclipse : Occultation","Occultation"
 "Local Universe : Sky Phenomenon : Eclipse : Transit","Astronomical transits"
 "Local Universe : Sky Phenomenon : Light Phenomenon","Atmospheric optical phenomena"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset","Sunsets and sunrises"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Green flash","Green flash phenomena"
-"Local Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Refractive Distortion",
+"Local Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Refractive Distortion","Astronomical seeing"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Sun Pillar","Sun pillars"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Cloud","Clouds"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Cloud : Iridescent","Iridescent clouds"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Cloud : Noctilucent","Noctilucent clouds"
-"Local Universe : Sky Phenomenon : Light Phenomenon : Cloud : Nacreous",
-"Local Universe : Sky Phenomenon : Light Phenomenon : Cloud : Corona",
-"Local Universe : Sky Phenomenon : Light Phenomenon : Cloud : Glory",
+"Local Universe : Sky Phenomenon : Light Phenomenon : Cloud : Nacreous","Polar stratospheric clouds"
+"Local Universe : Sky Phenomenon : Light Phenomenon : Cloud : Corona","Corona"
+"Local Universe : Sky Phenomenon : Light Phenomenon : Cloud : Glory","Glories"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Rainbow","Rainbows"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Rainbow : Moonbow","Moonbows"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Rainbow : Fogbow","Fogbow"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Halo","Halo phenomena"
-"Local Universe : Sky Phenomenon : Light Phenomenon : Halo : Circle",
+"Local Universe : Sky Phenomenon : Light Phenomenon : Halo : Circle","Halo phenomena"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Halo : Parhelia","Parhelia"
-"Local Universe : Sky Phenomenon : Light Phenomenon : Halo : Arc",
+"Local Universe : Sky Phenomenon : Light Phenomenon : Halo : Arc","Halo phenomena"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow","Shadows (atmospheric optics)"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Crepuscular ray","Crepuscular rays"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Anti-crepuscular ray","Anticrepuscular rays"
-"Local Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Earth shadow",
+"Local Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Earth shadow","Earth's shadow"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Lightning","Lightning"
 "Local Universe : Sky Phenomenon : Light Phenomenon : Aurora","Polar aurora"
-"Local Universe : Technology",
+"Local Universe : Technology","Scientific equipment"
 "Local Universe : Technology : Observatory","Observatories"
 "Local Universe : Technology : Observatory : Facility","Astronomical observatories"
 "Local Universe : Technology : Observatory : Telescope","Telescopes"
 "Local Universe : Technology : Observatory : Instrument","Astronomical instruments"
-"Local Universe : Technology : Observatory : Detector",
+"Local Universe : Technology : Observatory : Detector","Astronomical instruments"
 "Local Universe : Technology : Spacecraft","Spacecraft"
 "Local Universe : Technology : Spacecraft : Orbiter","Orbiters (spacecraft)"
 "Local Universe : Technology : Spacecraft : Probe","Space probes"
 "Local Universe : Technology : Spacecraft : Lander","Landers (spacecraft)"
 "Local Universe : Technology : Spacecraft : Manned","Manned spacecraft"
 "Local Universe : Technology : Spacecraft : Launch Vehicle","Space launch vehicles"
-"Local Universe : People",
+"Local Universe : People","People"
 "Local Universe : People : Scientist","Scientists"
 "Local Universe : People : Astronaut","Astronauts"
-"Local Universe : People : Other/General",
-"Early Universe",
-"Early Universe : Planet",
-"Early Universe : Planet : Type : Terrestrial",
+"Local Universe : People : Other/General","People"
+"Early Universe","Universe"
+"Early Universe : Planet","Planets"
+"Early Universe : Planet : Type : Terrestrial","Terrestrial Planet"
 "Early Universe : Planet : Type : Gas Giant","Gas giants"
-"Early Universe : Planet : Feature : Surface",
+"Early Universe : Planet : Feature : Surface","Surface features of astronomical bodies"
 "Early Universe : Planet : Feature : Surface : Mountain","Extraterrestrial mountains"
 "Early Universe : Planet : Feature : Surface : Canyon","Extraterrestrial valleys and canyons"
 "Early Universe : Planet : Feature : Surface : Volcanic","Extraterrestrial volcanoes"
-"Early Universe : Planet : Feature : Surface : Impact",
-"Early Universe : Planet : Feature : Surface : Erosion",
-"Early Universe : Planet : Feature : Surface : Liquid",
-"Early Universe : Planet : Feature : Surface : Ice",
-"Early Universe : Planet : Feature : Atmosphere",
-"Early Universe : Planet : Feature : Atmosphere : Cloud",
-"Early Universe : Planet : Feature : Atmosphere : Storm",
-"Early Universe : Planet : Feature : Atmosphere : Aurora",
-"Early Universe : Planet : Special Cases : Transiting",
+"Early Universe : Planet : Feature : Surface : Impact","Impact craters"
+"Early Universe : Planet : Feature : Surface : Erosion","Erosion"
+"Early Universe : Planet : Feature : Surface : Liquid","Liquid"
+"Early Universe : Planet : Feature : Surface : Ice","Ice"
+"Early Universe : Planet : Feature : Atmosphere","Planetary atmospheres"
+"Early Universe : Planet : Feature : Atmosphere : Cloud","Clouds"
+"Early Universe : Planet : Feature : Atmosphere : Storm","Storms"
+"Early Universe : Planet : Feature : Atmosphere : Aurora","Polar aurora"
+"Early Universe : Planet : Special Cases : Transiting","Astronomical transits"
 "Early Universe : Planet : Special Cases : Hot Jupiter","Hot Jupiters"
 "Early Universe : Planet : Special Cases : Pulsar planet","Pulsar planets"
-"Early Universe : Planet : Satellite",
-"Early Universe : Planet : Satellite : Feature : Surface",
+"Early Universe : Planet : Satellite","Natural satellites"
+"Early Universe : Planet : Satellite : Feature : Surface","Surface features of astronomical bodies"
 "Early Universe : Planet : Satellite : Feature : Surface : Mountain","Extraterrestrial mountains"
 "Early Universe : Planet : Satellite : Feature : Surface : Canyon","Extraterrestrial valleys and canyons"
 "Early Universe : Planet : Satellite : Feature : Surface : Volcanic","Extraterrestrial volcanoes"
-"Early Universe : Planet : Satellite : Feature : Surface : Impact",
-"Early Universe : Planet : Satellite : Feature : Surface : Erosion",
-"Early Universe : Planet : Satellite : Feature : Surface : Liquid",
-"Early Universe : Planet : Satellite : Feature : Surface : Ice",
-"Early Universe : Planet : Satellite : Feature : Atmosphere",
-"Early Universe : Planet : Ring",
-"Early Universe : Interplanetary Body",
-"Early Universe : Interplanetary Body : Dwarf planet",
-"Early Universe : Interplanetary Body : Comet",
+"Early Universe : Planet : Satellite : Feature : Surface : Impact","Impact craters on moons"
+"Early Universe : Planet : Satellite : Feature : Surface : Erosion","Erosion"
+"Early Universe : Planet : Satellite : Feature : Surface : Liquid","Liquid"
+"Early Universe : Planet : Satellite : Feature : Surface : Ice","Ice"
+"Early Universe : Planet : Satellite : Feature : Atmosphere","Planetary atmospheres"
+"Early Universe : Planet : Ring","Planetary rings"
+"Early Universe : Interplanetary Body","Astronomical objects"
+"Early Universe : Interplanetary Body : Dwarf planet","Planets"
+"Early Universe : Interplanetary Body : Comet","Comets"
 "Early Universe : Interplanetary Body : Comet : Nucleus","Cometary nuclei"
 "Early Universe : Interplanetary Body : Comet : Coma","Coma (cometary)"
 "Early Universe : Interplanetary Body : Comet : Tail","Comet tail"
 "Early Universe : Interplanetary Body : Comet : Tail : Dust","Comet tail"
 "Early Universe : Interplanetary Body : Comet : Tail : Gas","Comet tail"
-"Early Universe : Interplanetary Body : Asteroid",
-"Early Universe : Interplanetary Body : Meteoroid",
-"Early Universe : Star",
-"Early Universe : Star : Evolutionary Stage : Protostar",
-"Early Universe : Star : Evolutionary Stage : Young Stellar Object",
-"Early Universe : Star : Evolutionary Stage : Main Sequence",
-"Early Universe : Star : Evolutionary Stage : Red Giant",
-"Early Universe : Star : Evolutionary Stage : Red Supergiant",
-"Early Universe : Star : Evolutionary Stage : Blue Supergiant",
-"Early Universe : Star : Evolutionary Stage : White Dwarf",
-"Early Universe : Star : Evolutionary Stage : Supernova",
-"Early Universe : Star : Evolutionary Stage : Neutron Star",
+"Early Universe : Interplanetary Body : Asteroid","Asteroids"
+"Early Universe : Interplanetary Body : Meteoroid","Meteoroids"
+"Early Universe : Star","Stars"
+"Early Universe : Star : Evolutionary Stage : Protostar","Protostars"
+"Early Universe : Star : Evolutionary Stage : Young Stellar Object","Young stellar objects"
+"Early Universe : Star : Evolutionary Stage : Main Sequence","Main sequence stars"
+"Early Universe : Star : Evolutionary Stage : Red Giant","Red giants"
+"Early Universe : Star : Evolutionary Stage : Red Supergiant","Red supergiants"
+"Early Universe : Star : Evolutionary Stage : Blue Supergiant","Blue supergiants"
+"Early Universe : Star : Evolutionary Stage : White Dwarf","White dwarfs"
+"Early Universe : Star : Evolutionary Stage : Supernova","Supernovae"
+"Early Universe : Star : Evolutionary Stage : Neutron Star","Neutron stars"
 "Early Universe : Star : Evolutionary Stage : Neutron Star : Pulsar","Pulsars"
-"Early Universe : Star : Evolutionary Stage : Neutron Star : Magnetar",
-"Early Universe : Star : Evolutionary Stage : Black Hole",
+"Early Universe : Star : Evolutionary Stage : Neutron Star : Magnetar","Magnetars"
+"Early Universe : Star : Evolutionary Stage : Black Hole","Black holes"
 "Early Universe : Star : Type : Variable","Variable stars"
 "Early Universe : Star : Type : Variable : Pulsating","Pulsating variable stars"
 "Early Universe : Star : Type : Variable : Irregular","Variable stars"
@@ -710,38 +710,38 @@
 "Early Universe : Star : Type : Variable : Flare Star","Flare stars"
 "Early Universe : Star : Type : Variable : Nova","Novae"
 "Early Universe : Star : Type : Variable : X-Ray Binary (Star)","Variable stars"
-"Early Universe : Star : Type : Carbon",
-"Early Universe : Star : Type : Brown Dwarf",
-"Early Universe : Star : Type : Wolf-Rayet",
+"Early Universe : Star : Type : Carbon","C stars"
+"Early Universe : Star : Type : Brown Dwarf","Brown dwarfs"
+"Early Universe : Star : Type : Wolf-Rayet","Wolf-Rayet stars"
 "Early Universe : Star : Type : Blue Straggler","Blue stragglers"
 "Early Universe : Star : Type : Exotic","Exotic stars"
 "Early Universe : Star : Type : Exotic : X-Ray Binary","Exotic stars"
-"Early Universe : Star : Spectral Type : O",
-"Early Universe : Star : Spectral Type : B",
-"Early Universe : Star : Spectral Type : A",
-"Early Universe : Star : Spectral Type : F",
-"Early Universe : Star : Spectral Type : G",
-"Early Universe : Star : Spectral Type : K",
-"Early Universe : Star : Spectral Type : M",
-"Early Universe : Star : Spectral Type : L",
-"Early Universe : Star : Spectral Type : T",
+"Early Universe : Star : Spectral Type : O","O stars"
+"Early Universe : Star : Spectral Type : B","B stars"
+"Early Universe : Star : Spectral Type : A","A stars"
+"Early Universe : Star : Spectral Type : F","F stars"
+"Early Universe : Star : Spectral Type : G","G stars"
+"Early Universe : Star : Spectral Type : K","K stars"
+"Early Universe : Star : Spectral Type : M","M stars"
+"Early Universe : Star : Spectral Type : L","L stars"
+"Early Universe : Star : Spectral Type : T","T stars"
 "Early Universe : Star : Population : I","Stellar populations"
 "Early Universe : Star : Population : II","Stellar populations"
 "Early Universe : Star : Population : III","Stellar populations"
-"Early Universe : Star : Feature : Photosphere",
+"Early Universe : Star : Feature : Photosphere","Photosphere"
 "Early Universe : Star : Feature : Photosphere : Granulation","Granules (solar physics)"
-"Early Universe : Star : Feature : Photosphere : Sunspot",
+"Early Universe : Star : Feature : Photosphere : Sunspot","Sunspots"
 "Early Universe : Star : Feature : Chromosphere","Chromosphere"
 "Early Universe : Star : Feature : Chromosphere : Flare","Solar flares"
 "Early Universe : Star : Feature : Chromosphere : Facula","Solar faculae"
-"Early Universe : Star : Feature : Corona",
-"Early Universe : Star : Feature : Corona : Prominence",
-"Early Universe : Star : Grouping : Binary",
+"Early Universe : Star : Feature : Corona","Solar corona"
+"Early Universe : Star : Feature : Corona : Prominence","Prominence"
+"Early Universe : Star : Grouping : Binary","Binary stars"
 "Early Universe : Star : Grouping : Triple","Triple star systems"
-"Early Universe : Star : Grouping : Multiple",
-"Early Universe : Star : Grouping : Cluster",
-"Early Universe : Star : Grouping : Cluster : Open",
-"Early Universe : Star : Grouping : Cluster : Globular",
+"Early Universe : Star : Grouping : Multiple","Multiple star systems"
+"Early Universe : Star : Grouping : Cluster","Star clusters"
+"Early Universe : Star : Grouping : Cluster : Open","Open clusters"
+"Early Universe : Star : Grouping : Cluster : Globular","Globular clusters"
 "Early Universe : Star : Circumstellar Material","Circumstellar enveloppe"
 "Early Universe : Star : Circumstellar Material : Planetary System","Planetary systems"
 "Early Universe : Star : Circumstellar Material : Disk","Circumstellar discs"
@@ -751,174 +751,174 @@
 "Early Universe : Star : Circumstellar Material : Outflow","Stellar outflow"
 "Early Universe : Star : Circumstellar Material : Outflow : Solar Wind","Stellar wind"
 "Early Universe : Star : Circumstellar Material : Outflow : Coronal Mass Ejection","Coronal mass ejection"
-"Early Universe : Nebula",
-"Early Universe : Nebula : Type : Interstellar Medium",
-"Early Universe : Nebula : Type : Star Formation",
+"Early Universe : Nebula","Nebulae"
+"Early Universe : Nebula : Type : Interstellar Medium","Interstellar medium"
+"Early Universe : Nebula : Type : Star Formation","Star formation"
 "Early Universe : Nebula : Type : Planetary","Planetary nebulae"
-"Early Universe : Nebula : Type : Supernova Remnant",
+"Early Universe : Nebula : Type : Supernova Remnant","Supernova remnants"
 "Early Universe : Nebula : Type : Jet","Astrophysical jets"
-"Early Universe : Nebula : Appearance : Emission",
-"Early Universe : Nebula : Appearance : Emission : H II Region",
-"Early Universe : Nebula : Appearance : Reflection",
+"Early Universe : Nebula : Appearance : Emission","Emission nebulae"
+"Early Universe : Nebula : Appearance : Emission : H II Region","H II regions"
+"Early Universe : Nebula : Appearance : Reflection","Reflection nebulae"
 "Early Universe : Nebula : Appearance : Reflection : Light Echo","Light echo"
-"Early Universe : Nebula : Appearance : Dark",
-"Early Universe : Nebula : Appearance : Dark : Molecular Cloud",
-"Early Universe : Nebula : Appearance : Dark : Bok Globule",
+"Early Universe : Nebula : Appearance : Dark","Dark nebulae"
+"Early Universe : Nebula : Appearance : Dark : Molecular Cloud","Molecular clouds"
+"Early Universe : Nebula : Appearance : Dark : Bok Globule","Bok globules"
 "Early Universe : Nebula : Appearance : Dark : Proplyd","Proplyds"
-"Early Universe : Galaxy",
-"Early Universe : Galaxy : Type : Spiral",
-"Early Universe : Galaxy : Type : Barred",
-"Early Universe : Galaxy : Type : Lenticular",
-"Early Universe : Galaxy : Type : Elliptical",
-"Early Universe : Galaxy : Type : Ring",
-"Early Universe : Galaxy : Type : Irregular",
-"Early Universe : Galaxy : Type : Interacting",
-"Early Universe : Galaxy : Type : Gravitationally Lensed",
-"Early Universe : Galaxy : Size : Giant",
-"Early Universe : Galaxy : Size : Dwarf",
-"Early Universe : Galaxy : Activity : Normal",
-"Early Universe : Galaxy : Activity : AGN",
-"Early Universe : Galaxy : Activity : AGN : Quasar",
-"Early Universe : Galaxy : Activity : AGN : Seyfert",
-"Early Universe : Galaxy : Activity : AGN : Blazar",
-"Early Universe : Galaxy : Activity : AGN : Liner",
-"Early Universe : Galaxy : Activity : Starburst",
-"Early Universe : Galaxy : Activity : Ultraluminous",
-"Early Universe : Galaxy : Component : Bulge",
-"Early Universe : Galaxy : Component : Bar",
-"Early Universe : Galaxy : Component : Disk",
-"Early Universe : Galaxy : Component : Halo",
-"Early Universe : Galaxy : Component : Ring",
-"Early Universe : Galaxy : Component : Central Black Hole",
-"Early Universe : Galaxy : Component : Spiral Arm",
-"Early Universe : Galaxy : Component : Dust Lane",
-"Early Universe : Galaxy : Component : Center/Core",
-"Early Universe : Galaxy : Grouping : Pair",
-"Early Universe : Galaxy : Grouping : Multiple",
-"Early Universe : Galaxy : Grouping : Cluster",
-"Early Universe : Galaxy : Grouping : Supercluster",
-"Early Universe : Cosmology",
-"Early Universe : Cosmology : Morphology : Deep Field",
-"Early Universe : Cosmology : Morphology : Large-Scale Structure",
-"Early Universe : Cosmology : Morphology : Cosmic Background",
-"Early Universe : Cosmology : Phenomenon : Lensing",
-"Early Universe : Cosmology : Phenomenon : Gamma Ray Burst",
-"Early Universe : Cosmology : Phenomenon : Dark Matter",
-"Early Universe : Sky Phenomenon",
-"Early Universe : Sky Phenomenon : Night Sky",
-"Early Universe : Sky Phenomenon : Night Sky : Constellation",
-"Early Universe : Sky Phenomenon : Night Sky : Asterism",
-"Early Universe : Sky Phenomenon : Night Sky : Milky Way",
-"Early Universe : Sky Phenomenon : Night Sky : Trail",
-"Early Universe : Sky Phenomenon : Night Sky : Trail : Meteor",
-"Early Universe : Sky Phenomenon : Night Sky : Trail : Star",
-"Early Universe : Sky Phenomenon : Night Sky : Trail : Satellite",
-"Early Universe : Sky Phenomenon : Night Sky : Zodiacal Light",
-"Early Universe : Sky Phenomenon : Night Sky : Zodiacal Light : Gegenschein",
-"Early Universe : Sky Phenomenon : Night Sky : Night glow",
-"Early Universe : Sky Phenomenon : Eclipse",
-"Early Universe : Sky Phenomenon : Eclipse : Solar",
-"Early Universe : Sky Phenomenon : Eclipse : Solar : Total",
-"Early Universe : Sky Phenomenon : Eclipse : Solar : Partial",
-"Early Universe : Sky Phenomenon : Eclipse : Solar : Annular",
-"Early Universe : Sky Phenomenon : Eclipse : Lunar",
-"Early Universe : Sky Phenomenon : Eclipse : Lunar : Total",
-"Early Universe : Sky Phenomenon : Eclipse : Lunar : Partial",
-"Early Universe : Sky Phenomenon : Eclipse : Lunar : Penumbral",
-"Early Universe : Sky Phenomenon : Eclipse : Occultation",
-"Early Universe : Sky Phenomenon : Eclipse : Transit",
-"Early Universe : Sky Phenomenon : Light Phenomenon",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Green flash",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Refractive Distortion",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Sun Pillar",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud : Iridescent",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud : Noctilucent",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud : Nacreous",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud : Corona",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud : Glory",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Rainbow",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Rainbow : Moonbow",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Rainbow : Fogbow",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Halo",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Halo : Circle",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Halo : Parhelia",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Halo : Arc",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Crepuscular ray",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Anti-crepuscular ray",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Earth shadow",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Lightning",
-"Early Universe : Sky Phenomenon : Light Phenomenon : Aurora",
-"Early Universe : Technology",
-"Early Universe : Technology : Observatory",
-"Early Universe : Technology : Observatory : Facility",
-"Early Universe : Technology : Observatory : Telescope",
-"Early Universe : Technology : Observatory : Instrument",
-"Early Universe : Technology : Observatory : Detector",
-"Early Universe : Technology : Spacecraft",
-"Early Universe : Technology : Spacecraft : Orbiter",
-"Early Universe : Technology : Spacecraft : Probe",
-"Early Universe : Technology : Spacecraft : Lander",
-"Early Universe : Technology : Spacecraft : Manned",
-"Early Universe : Technology : Spacecraft : Launch Vehicle",
-"Early Universe : People",
-"Early Universe : People : Scientist",
-"Early Universe : People : Astronaut",
-"Early Universe : People : Other/General",
-"Unspecified : Planet",
-"Unspecified : Planet : Type : Terrestrial",
+"Early Universe : Galaxy","Galaxies"
+"Early Universe : Galaxy : Type : Spiral","Spiral galaxies"
+"Early Universe : Galaxy : Type : Barred","Barred spiral galaxies"
+"Early Universe : Galaxy : Type : Lenticular","Lenticular galaxies"
+"Early Universe : Galaxy : Type : Elliptical","Elliptical galaxies"
+"Early Universe : Galaxy : Type : Ring","Ring galaxies"
+"Early Universe : Galaxy : Type : Irregular","Irregular galaxies"
+"Early Universe : Galaxy : Type : Interacting","Interacting galaxies"
+"Early Universe : Galaxy : Type : Gravitationally Lensed","Gravitational lensing"
+"Early Universe : Galaxy : Size : Giant","Galaxies"
+"Early Universe : Galaxy : Size : Dwarf","Dwarf galaxies"
+"Early Universe : Galaxy : Activity : Normal","Galaxies"
+"Early Universe : Galaxy : Activity : AGN","Active galactic nuclei"
+"Early Universe : Galaxy : Activity : AGN : Quasar","Quasars"
+"Early Universe : Galaxy : Activity : AGN : Seyfert","Seyfert galaxies"
+"Early Universe : Galaxy : Activity : AGN : Blazar","Blazars"
+"Early Universe : Galaxy : Activity : AGN : Liner","LINERs"
+"Early Universe : Galaxy : Activity : Starburst","Starburst galaxies"
+"Early Universe : Galaxy : Activity : Ultraluminous","Ultraluminous X-ray source"
+"Early Universe : Galaxy : Component : Bulge","Bulges"
+"Early Universe : Galaxy : Component : Bar","Barred spiral galaxies"
+"Early Universe : Galaxy : Component : Disk","Spiral galaxies"
+"Early Universe : Galaxy : Component : Halo","Galactic halos"
+"Early Universe : Galaxy : Component : Ring","Ring galaxies"
+"Early Universe : Galaxy : Component : Central Black Hole","Black holes"
+"Early Universe : Galaxy : Component : Spiral Arm","Spiral galaxies"
+"Early Universe : Galaxy : Component : Dust Lane","Dust lanes"
+"Early Universe : Galaxy : Component : Center/Core","Active galactic nuclei"
+"Early Universe : Galaxy : Grouping : Pair","Galaxy groups"
+"Early Universe : Galaxy : Grouping : Multiple","Galaxy groups"
+"Early Universe : Galaxy : Grouping : Cluster","Galaxy clusters"
+"Early Universe : Galaxy : Grouping : Supercluster","Superclusters of galaxies"
+"Early Universe : Cosmology","Cosmology"
+"Early Universe : Cosmology : Morphology : Deep Field","Deep fields"
+"Early Universe : Cosmology : Morphology : Large-Scale Structure","Large-scale structure of the cosmos"
+"Early Universe : Cosmology : Morphology : Cosmic Background","Cosmic microwave background"
+"Early Universe : Cosmology : Phenomenon : Lensing","Gravitational lensing"
+"Early Universe : Cosmology : Phenomenon : Gamma Ray Burst","Gamma ray bursts"
+"Early Universe : Cosmology : Phenomenon : Dark Matter","Dark matter"
+"Early Universe : Sky Phenomenon","Sky"
+"Early Universe : Sky Phenomenon : Night Sky","Night sky"
+"Early Universe : Sky Phenomenon : Night Sky : Constellation","Constellations"
+"Early Universe : Sky Phenomenon : Night Sky : Asterism","Asterisms (astronomy)"
+"Early Universe : Sky Phenomenon : Night Sky : Milky Way","Milky Way Galaxy"
+"Early Universe : Sky Phenomenon : Night Sky : Trail","Light trails"
+"Early Universe : Sky Phenomenon : Night Sky : Trail : Meteor","Meteor trails"
+"Early Universe : Sky Phenomenon : Night Sky : Trail : Star","Star trails"
+"Early Universe : Sky Phenomenon : Night Sky : Trail : Satellite","Satellite trails"
+"Early Universe : Sky Phenomenon : Night Sky : Zodiacal Light","Zodiacal light"
+"Early Universe : Sky Phenomenon : Night Sky : Zodiacal Light : Gegenschein","Gegenschein"
+"Early Universe : Sky Phenomenon : Night Sky : Night glow","Skyglow"
+"Early Universe : Sky Phenomenon : Eclipse","Eclipse"
+"Early Universe : Sky Phenomenon : Eclipse : Solar","Solar eclipses"
+"Early Universe : Sky Phenomenon : Eclipse : Solar : Total","Solar eclipses"
+"Early Universe : Sky Phenomenon : Eclipse : Solar : Partial","Solar eclipses"
+"Early Universe : Sky Phenomenon : Eclipse : Solar : Annular","Solar eclipses"
+"Early Universe : Sky Phenomenon : Eclipse : Lunar","Lunar eclipses"
+"Early Universe : Sky Phenomenon : Eclipse : Lunar : Total","Lunar eclipses"
+"Early Universe : Sky Phenomenon : Eclipse : Lunar : Partial","Lunar eclipses"
+"Early Universe : Sky Phenomenon : Eclipse : Lunar : Penumbral","Lunar eclipses"
+"Early Universe : Sky Phenomenon : Eclipse : Occultation","Occultation"
+"Early Universe : Sky Phenomenon : Eclipse : Transit","Astronomical transits"
+"Early Universe : Sky Phenomenon : Light Phenomenon","Atmospheric optical phenomena"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset","Sunsets and sunrises"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Green flash","Green flash phenomena"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Refractive Distortion","Astronomical seeing"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Sun Pillar","Sun pillars"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud","Clouds"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud : Iridescent","Iridescent clouds"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud : Noctilucent","Noctilucent clouds"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud : Nacreous","Polar stratospheric clouds"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud : Corona","Corona"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Cloud : Glory","Glories"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Rainbow","Rainbows"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Rainbow : Moonbow","Moonbows"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Rainbow : Fogbow","Fogbow"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Halo","Halo phenomena"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Halo : Circle","Halo phenomena"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Halo : Parhelia","Parhelia"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Halo : Arc","Halo phenomena"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow","Shadows (atmospheric optics)"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Crepuscular ray","Crepuscular rays"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Anti-crepuscular ray","Anticrepuscular rays"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Earth shadow","Earth's shadow"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Lightning","Lightning"
+"Early Universe : Sky Phenomenon : Light Phenomenon : Aurora","Polar aurora"
+"Early Universe : Technology","Scientific equipment"
+"Early Universe : Technology : Observatory","Observatories"
+"Early Universe : Technology : Observatory : Facility","Astronomical observatories"
+"Early Universe : Technology : Observatory : Telescope","Telescopes"
+"Early Universe : Technology : Observatory : Instrument","Astronomical instruments"
+"Early Universe : Technology : Observatory : Detector","Astronomical instruments"
+"Early Universe : Technology : Spacecraft","Spacecraft"
+"Early Universe : Technology : Spacecraft : Orbiter","Orbiters (spacecraft)"
+"Early Universe : Technology : Spacecraft : Probe","Space probes"
+"Early Universe : Technology : Spacecraft : Lander","Landers (spacecraft)"
+"Early Universe : Technology : Spacecraft : Manned","Manned spacecraft"
+"Early Universe : Technology : Spacecraft : Launch Vehicle","Space launch vehicles"
+"Early Universe : People","People"
+"Early Universe : People : Scientist","Scientists"
+"Early Universe : People : Astronaut","Astronauts"
+"Early Universe : People : Other/General","People"
+"Unspecified : Planet","Planets"
+"Unspecified : Planet : Type : Terrestrial","Terrestrial Planet"
 "Unspecified : Planet : Type : Gas Giant","Gas giants"
-"Unspecified : Planet : Feature : Surface",
+"Unspecified : Planet : Feature : Surface","Surface features of astronomical bodies"
 "Unspecified : Planet : Feature : Surface : Mountain","Extraterrestrial mountains"
 "Unspecified : Planet : Feature : Surface : Canyon","Extraterrestrial valleys and canyons"
 "Unspecified : Planet : Feature : Surface : Volcanic","Extraterrestrial volcanoes"
-"Unspecified : Planet : Feature : Surface : Impact",
-"Unspecified : Planet : Feature : Surface : Erosion",
-"Unspecified : Planet : Feature : Surface : Liquid",
-"Unspecified : Planet : Feature : Surface : Ice",
-"Unspecified : Planet : Feature : Atmosphere",
-"Unspecified : Planet : Feature : Atmosphere : Cloud",
-"Unspecified : Planet : Feature : Atmosphere : Storm",
-"Unspecified : Planet : Feature : Atmosphere : Aurora",
-"Unspecified : Planet : Special Cases : Transiting",
+"Unspecified : Planet : Feature : Surface : Impact","Impact craters"
+"Unspecified : Planet : Feature : Surface : Erosion","Erosion"
+"Unspecified : Planet : Feature : Surface : Liquid","Liquid"
+"Unspecified : Planet : Feature : Surface : Ice","Ice"
+"Unspecified : Planet : Feature : Atmosphere","Planetary atmospheres"
+"Unspecified : Planet : Feature : Atmosphere : Cloud","Clouds"
+"Unspecified : Planet : Feature : Atmosphere : Storm","Storms"
+"Unspecified : Planet : Feature : Atmosphere : Aurora","Polar aurora"
+"Unspecified : Planet : Special Cases : Transiting","Astronomical transits"
 "Unspecified : Planet : Special Cases : Hot Jupiter","Hot Jupiters"
 "Unspecified : Planet : Special Cases : Pulsar planet","Pulsar planets"
-"Unspecified : Planet : Satellite",
-"Unspecified : Planet : Satellite : Feature : Surface",
+"Unspecified : Planet : Satellite","Natural satellites"
+"Unspecified : Planet : Satellite : Feature : Surface","Surface features of astronomical bodies"
 "Unspecified : Planet : Satellite : Feature : Surface : Mountain","Extraterrestrial mountains"
 "Unspecified : Planet : Satellite : Feature : Surface : Canyon","Extraterrestrial valleys and canyons"
 "Unspecified : Planet : Satellite : Feature : Surface : Volcanic","Extraterrestrial volcanoes"
-"Unspecified : Planet : Satellite : Feature : Surface : Impact",
-"Unspecified : Planet : Satellite : Feature : Surface : Erosion",
-"Unspecified : Planet : Satellite : Feature : Surface : Liquid",
-"Unspecified : Planet : Satellite : Feature : Surface : Ice",
-"Unspecified : Planet : Satellite : Feature : Atmosphere",
-"Unspecified : Planet : Ring",
-"Unspecified : Interplanetary Body",
-"Unspecified : Interplanetary Body : Dwarf planet",
-"Unspecified : Interplanetary Body : Comet",
+"Unspecified : Planet : Satellite : Feature : Surface : Impact","Impact craters on moons"
+"Unspecified : Planet : Satellite : Feature : Surface : Erosion","Erosion"
+"Unspecified : Planet : Satellite : Feature : Surface : Liquid","Liquid"
+"Unspecified : Planet : Satellite : Feature : Surface : Ice","Ice"
+"Unspecified : Planet : Satellite : Feature : Atmosphere","Planetary atmospheres"
+"Unspecified : Planet : Ring","Planetary rings"
+"Unspecified : Interplanetary Body","Astronomical objects"
+"Unspecified : Interplanetary Body : Dwarf planet","Planets"
+"Unspecified : Interplanetary Body : Comet","Comets"
 "Unspecified : Interplanetary Body : Comet : Nucleus","Cometary nuclei"
 "Unspecified : Interplanetary Body : Comet : Coma","Coma (cometary)"
 "Unspecified : Interplanetary Body : Comet : Tail","Comet tail"
 "Unspecified : Interplanetary Body : Comet : Tail : Dust","Comet tail"
 "Unspecified : Interplanetary Body : Comet : Tail : Gas","Comet tail"
-"Unspecified : Interplanetary Body : Asteroid",
-"Unspecified : Interplanetary Body : Meteoroid",
-"Unspecified : Star",
-"Unspecified : Star : Evolutionary Stage : Protostar",
-"Unspecified : Star : Evolutionary Stage : Young Stellar Object",
-"Unspecified : Star : Evolutionary Stage : Main Sequence",
-"Unspecified : Star : Evolutionary Stage : Red Giant",
-"Unspecified : Star : Evolutionary Stage : Red Supergiant",
-"Unspecified : Star : Evolutionary Stage : Blue Supergiant",
-"Unspecified : Star : Evolutionary Stage : White Dwarf",
-"Unspecified : Star : Evolutionary Stage : Supernova",
-"Unspecified : Star : Evolutionary Stage : Neutron Star",
+"Unspecified : Interplanetary Body : Asteroid","Asteroids"
+"Unspecified : Interplanetary Body : Meteoroid","Meteoroids"
+"Unspecified : Star","Stars"
+"Unspecified : Star : Evolutionary Stage : Protostar","Protostars"
+"Unspecified : Star : Evolutionary Stage : Young Stellar Object","Young stellar objects"
+"Unspecified : Star : Evolutionary Stage : Main Sequence","Main sequence stars"
+"Unspecified : Star : Evolutionary Stage : Red Giant","Red giants"
+"Unspecified : Star : Evolutionary Stage : Red Supergiant","Red supergiants"
+"Unspecified : Star : Evolutionary Stage : Blue Supergiant","Blue supergiants"
+"Unspecified : Star : Evolutionary Stage : White Dwarf","White dwarfs"
+"Unspecified : Star : Evolutionary Stage : Supernova","Supernovae"
+"Unspecified : Star : Evolutionary Stage : Neutron Star","Neutron stars"
 "Unspecified : Star : Evolutionary Stage : Neutron Star : Pulsar","Pulsars"
-"Unspecified : Star : Evolutionary Stage : Neutron Star : Magnetar",
-"Unspecified : Star : Evolutionary Stage : Black Hole",
+"Unspecified : Star : Evolutionary Stage : Neutron Star : Magnetar","Magnetars"
+"Unspecified : Star : Evolutionary Stage : Black Hole","Black holes"
 "Unspecified : Star : Type : Variable","Variable stars"
 "Unspecified : Star : Type : Variable : Pulsating","Pulsating variable stars"
 "Unspecified : Star : Type : Variable : Irregular","Variable stars"
@@ -926,38 +926,38 @@
 "Unspecified : Star : Type : Variable : Flare Star","Flare stars"
 "Unspecified : Star : Type : Variable : Nova","Novae"
 "Unspecified : Star : Type : Variable : X-Ray Binary (Star)","Variable stars"
-"Unspecified : Star : Type : Carbon",
-"Unspecified : Star : Type : Brown Dwarf",
-"Unspecified : Star : Type : Wolf-Rayet",
+"Unspecified : Star : Type : Carbon","C stars"
+"Unspecified : Star : Type : Brown Dwarf","Brown dwarfs"
+"Unspecified : Star : Type : Wolf-Rayet","Wolf-Rayet stars"
 "Unspecified : Star : Type : Blue Straggler","Blue stragglers"
 "Unspecified : Star : Type : Exotic","Exotic stars"
 "Unspecified : Star : Type : Exotic : X-Ray Binary","Exotic stars"
-"Unspecified : Star : Spectral Type : O",
-"Unspecified : Star : Spectral Type : B",
-"Unspecified : Star : Spectral Type : A",
-"Unspecified : Star : Spectral Type : F",
-"Unspecified : Star : Spectral Type : G",
-"Unspecified : Star : Spectral Type : K",
-"Unspecified : Star : Spectral Type : M",
-"Unspecified : Star : Spectral Type : L",
-"Unspecified : Star : Spectral Type : T",
+"Unspecified : Star : Spectral Type : O","O stars"
+"Unspecified : Star : Spectral Type : B","B stars"
+"Unspecified : Star : Spectral Type : A","A stars"
+"Unspecified : Star : Spectral Type : F","F stars"
+"Unspecified : Star : Spectral Type : G","G stars"
+"Unspecified : Star : Spectral Type : K","K stars"
+"Unspecified : Star : Spectral Type : M","M stars"
+"Unspecified : Star : Spectral Type : L","L stars"
+"Unspecified : Star : Spectral Type : T","T stars"
 "Unspecified : Star : Population : I","Stellar populations"
 "Unspecified : Star : Population : II","Stellar populations"
 "Unspecified : Star : Population : III","Stellar populations"
-"Unspecified : Star : Feature : Photosphere",
+"Unspecified : Star : Feature : Photosphere","Photosphere"
 "Unspecified : Star : Feature : Photosphere : Granulation","Granules (solar physics)"
-"Unspecified : Star : Feature : Photosphere : Sunspot",
+"Unspecified : Star : Feature : Photosphere : Sunspot","Sunspots"
 "Unspecified : Star : Feature : Chromosphere","Chromosphere"
 "Unspecified : Star : Feature : Chromosphere : Flare","Solar flares"
 "Unspecified : Star : Feature : Chromosphere : Facula","Solar faculae"
-"Unspecified : Star : Feature : Corona",
-"Unspecified : Star : Feature : Corona : Prominence",
-"Unspecified : Star : Grouping : Binary",
+"Unspecified : Star : Feature : Corona","Solar corona"
+"Unspecified : Star : Feature : Corona : Prominence","Prominence"
+"Unspecified : Star : Grouping : Binary","Binary stars"
 "Unspecified : Star : Grouping : Triple","Triple star systems"
-"Unspecified : Star : Grouping : Multiple",
-"Unspecified : Star : Grouping : Cluster",
-"Unspecified : Star : Grouping : Cluster : Open",
-"Unspecified : Star : Grouping : Cluster : Globular",
+"Unspecified : Star : Grouping : Multiple","Multiple star systems"
+"Unspecified : Star : Grouping : Cluster","Star clusters"
+"Unspecified : Star : Grouping : Cluster : Open","Open clusters"
+"Unspecified : Star : Grouping : Cluster : Globular","Globular clusters"
 "Unspecified : Star : Circumstellar Material","Circumstellar enveloppe"
 "Unspecified : Star : Circumstellar Material : Planetary System","Planetary systems"
 "Unspecified : Star : Circumstellar Material : Disk","Circumstellar discs"
@@ -967,112 +967,112 @@
 "Unspecified : Star : Circumstellar Material : Outflow","Stellar outflow"
 "Unspecified : Star : Circumstellar Material : Outflow : Solar Wind","Stellar wind"
 "Unspecified : Star : Circumstellar Material : Outflow : Coronal Mass Ejection","Coronal mass ejection"
-"Unspecified : Nebula",
-"Unspecified : Nebula : Type : Interstellar Medium",
-"Unspecified : Nebula : Type : Star Formation",
+"Unspecified : Nebula","Nebulae"
+"Unspecified : Nebula : Type : Interstellar Medium","Interstellar medium"
+"Unspecified : Nebula : Type : Star Formation","Star formation"
 "Unspecified : Nebula : Type : Planetary","Planetary nebulae"
-"Unspecified : Nebula : Type : Supernova Remnant",
+"Unspecified : Nebula : Type : Supernova Remnant","Supernova remnants"
 "Unspecified : Nebula : Type : Jet","Astrophysical jets"
-"Unspecified : Nebula : Appearance : Emission",
-"Unspecified : Nebula : Appearance : Emission : H II Region",
-"Unspecified : Nebula : Appearance : Reflection",
+"Unspecified : Nebula : Appearance : Emission","Emission nebulae"
+"Unspecified : Nebula : Appearance : Emission : H II Region","H II regions"
+"Unspecified : Nebula : Appearance : Reflection","Reflection nebulae"
 "Unspecified : Nebula : Appearance : Reflection : Light Echo","Light echo"
-"Unspecified : Nebula : Appearance : Dark",
-"Unspecified : Nebula : Appearance : Dark : Molecular Cloud",
-"Unspecified : Nebula : Appearance : Dark : Bok Globule",
+"Unspecified : Nebula : Appearance : Dark","Dark nebulae"
+"Unspecified : Nebula : Appearance : Dark : Molecular Cloud","Molecular clouds"
+"Unspecified : Nebula : Appearance : Dark : Bok Globule","Bok globules"
 "Unspecified : Nebula : Appearance : Dark : Proplyd","Proplyds"
-"Unspecified : Galaxy",
-"Unspecified : Galaxy : Type : Spiral",
-"Unspecified : Galaxy : Type : Barred",
-"Unspecified : Galaxy : Type : Lenticular",
-"Unspecified : Galaxy : Type : Elliptical",
-"Unspecified : Galaxy : Type : Ring",
-"Unspecified : Galaxy : Type : Irregular",
-"Unspecified : Galaxy : Type : Interacting",
-"Unspecified : Galaxy : Type : Gravitationally Lensed",
-"Unspecified : Galaxy : Size : Giant",
-"Unspecified : Galaxy : Size : Dwarf",
-"Unspecified : Galaxy : Activity : Normal",
-"Unspecified : Galaxy : Activity : AGN",
-"Unspecified : Galaxy : Activity : AGN : Quasar",
-"Unspecified : Galaxy : Activity : AGN : Seyfert",
-"Unspecified : Galaxy : Activity : AGN : Blazar",
-"Unspecified : Galaxy : Activity : AGN : Liner",
-"Unspecified : Galaxy : Activity : Starburst",
-"Unspecified : Galaxy : Activity : Ultraluminous",
-"Unspecified : Galaxy : Component : Bulge",
-"Unspecified : Galaxy : Component : Bar",
-"Unspecified : Galaxy : Component : Disk",
-"Unspecified : Galaxy : Component : Halo",
-"Unspecified : Galaxy : Component : Ring",
-"Unspecified : Galaxy : Component : Central Black Hole",
-"Unspecified : Galaxy : Component : Spiral Arm",
-"Unspecified : Galaxy : Component : Dust Lane",
-"Unspecified : Galaxy : Component : Center/Core",
-"Unspecified : Galaxy : Grouping : Pair",
-"Unspecified : Galaxy : Grouping : Multiple",
-"Unspecified : Galaxy : Grouping : Cluster",
-"Unspecified : Galaxy : Grouping : Supercluster",
-"Unspecified : Cosmology",
-"Unspecified : Cosmology : Morphology : Deep Field",
-"Unspecified : Cosmology : Morphology : Large-Scale Structure",
-"Unspecified : Cosmology : Morphology : Cosmic Background",
-"Unspecified : Cosmology : Phenomenon : Lensing",
-"Unspecified : Cosmology : Phenomenon : Gamma Ray Burst",
-"Unspecified : Cosmology : Phenomenon : Dark Matter",
-"Unspecified : Sky Phenomenon",
-"Unspecified : Sky Phenomenon : Night Sky",
-"Unspecified : Sky Phenomenon : Night Sky : Constellation",
-"Unspecified : Sky Phenomenon : Night Sky : Asterism",
-"Unspecified : Sky Phenomenon : Night Sky : Milky Way",
-"Unspecified : Sky Phenomenon : Night Sky : Trail",
-"Unspecified : Sky Phenomenon : Night Sky : Trail : Meteor",
-"Unspecified : Sky Phenomenon : Night Sky : Trail : Star",
-"Unspecified : Sky Phenomenon : Night Sky : Trail : Satellite",
-"Unspecified : Sky Phenomenon : Night Sky : Zodiacal Light",
-"Unspecified : Sky Phenomenon : Night Sky : Zodiacal Light : Gegenschein",
-"Unspecified : Sky Phenomenon : Night Sky : Night glow",
-"Unspecified : Sky Phenomenon : Eclipse",
-"Unspecified : Sky Phenomenon : Eclipse : Solar",
-"Unspecified : Sky Phenomenon : Eclipse : Solar : Total",
-"Unspecified : Sky Phenomenon : Eclipse : Solar : Partial",
-"Unspecified : Sky Phenomenon : Eclipse : Solar : Annular",
-"Unspecified : Sky Phenomenon : Eclipse : Lunar",
-"Unspecified : Sky Phenomenon : Eclipse : Lunar : Total",
-"Unspecified : Sky Phenomenon : Eclipse : Lunar : Partial",
-"Unspecified : Sky Phenomenon : Eclipse : Lunar : Penumbral",
-"Unspecified : Sky Phenomenon : Eclipse : Occultation",
-"Unspecified : Sky Phenomenon : Eclipse : Transit",
+"Unspecified : Galaxy","Galaxies"
+"Unspecified : Galaxy : Type : Spiral","Spiral galaxies"
+"Unspecified : Galaxy : Type : Barred","Barred spiral galaxies"
+"Unspecified : Galaxy : Type : Lenticular","Lenticular galaxies"
+"Unspecified : Galaxy : Type : Elliptical","Elliptical galaxies"
+"Unspecified : Galaxy : Type : Ring","Ring galaxies"
+"Unspecified : Galaxy : Type : Irregular","Irregular galaxies"
+"Unspecified : Galaxy : Type : Interacting","Interacting galaxies"
+"Unspecified : Galaxy : Type : Gravitationally Lensed","Gravitational lensing"
+"Unspecified : Galaxy : Size : Giant","Galaxies"
+"Unspecified : Galaxy : Size : Dwarf","Dwarf galaxies"
+"Unspecified : Galaxy : Activity : Normal","Galaxies"
+"Unspecified : Galaxy : Activity : AGN","Active galactic nuclei"
+"Unspecified : Galaxy : Activity : AGN : Quasar","Quasars"
+"Unspecified : Galaxy : Activity : AGN : Seyfert","Seyfert galaxies"
+"Unspecified : Galaxy : Activity : AGN : Blazar","Blazars"
+"Unspecified : Galaxy : Activity : AGN : Liner","LINERs"
+"Unspecified : Galaxy : Activity : Starburst","Starburst galaxies"
+"Unspecified : Galaxy : Activity : Ultraluminous","Ultraluminous X-ray source"
+"Unspecified : Galaxy : Component : Bulge","Bulges"
+"Unspecified : Galaxy : Component : Bar","Barred spiral galaxies"
+"Unspecified : Galaxy : Component : Disk","Spiral galaxies"
+"Unspecified : Galaxy : Component : Halo","Galactic halos"
+"Unspecified : Galaxy : Component : Ring","Ring galaxies"
+"Unspecified : Galaxy : Component : Central Black Hole","Black holes"
+"Unspecified : Galaxy : Component : Spiral Arm","Spiral galaxies"
+"Unspecified : Galaxy : Component : Dust Lane","Dust lanes"
+"Unspecified : Galaxy : Component : Center/Core","Active galactic nuclei"
+"Unspecified : Galaxy : Grouping : Pair","Galaxy groups"
+"Unspecified : Galaxy : Grouping : Multiple","Galaxy groups"
+"Unspecified : Galaxy : Grouping : Cluster","Galaxy clusters"
+"Unspecified : Galaxy : Grouping : Supercluster","Superclusters of galaxies"
+"Unspecified : Cosmology","Cosmology"
+"Unspecified : Cosmology : Morphology : Deep Field","Deep fields"
+"Unspecified : Cosmology : Morphology : Large-Scale Structure","Large-scale structure of the cosmos"
+"Unspecified : Cosmology : Morphology : Cosmic Background","Cosmic microwave background"
+"Unspecified : Cosmology : Phenomenon : Lensing","Gravitational lensing"
+"Unspecified : Cosmology : Phenomenon : Gamma Ray Burst","Gamma ray bursts"
+"Unspecified : Cosmology : Phenomenon : Dark Matter","Dark matter"
+"Unspecified : Sky Phenomenon","Sky"
+"Unspecified : Sky Phenomenon : Night Sky","Night sky"
+"Unspecified : Sky Phenomenon : Night Sky : Constellation","Constellations"
+"Unspecified : Sky Phenomenon : Night Sky : Asterism","Asterisms (astronomy)"
+"Unspecified : Sky Phenomenon : Night Sky : Milky Way","Milky Way Galaxy"
+"Unspecified : Sky Phenomenon : Night Sky : Trail","Light trails"
+"Unspecified : Sky Phenomenon : Night Sky : Trail : Meteor","Meteor trails"
+"Unspecified : Sky Phenomenon : Night Sky : Trail : Star","Star trails"
+"Unspecified : Sky Phenomenon : Night Sky : Trail : Satellite","Satellite trails"
+"Unspecified : Sky Phenomenon : Night Sky : Zodiacal Light","Zodiacal light"
+"Unspecified : Sky Phenomenon : Night Sky : Zodiacal Light : Gegenschein","Gegenschein"
+"Unspecified : Sky Phenomenon : Night Sky : Night glow","Skyglow"
+"Unspecified : Sky Phenomenon : Eclipse","Eclipse"
+"Unspecified : Sky Phenomenon : Eclipse : Solar","Solar eclipses"
+"Unspecified : Sky Phenomenon : Eclipse : Solar : Total","Solar eclipses"
+"Unspecified : Sky Phenomenon : Eclipse : Solar : Partial","Solar eclipses"
+"Unspecified : Sky Phenomenon : Eclipse : Solar : Annular","Solar eclipses"
+"Unspecified : Sky Phenomenon : Eclipse : Lunar","Lunar eclipses"
+"Unspecified : Sky Phenomenon : Eclipse : Lunar : Total","Lunar eclipses"
+"Unspecified : Sky Phenomenon : Eclipse : Lunar : Partial","Lunar eclipses"
+"Unspecified : Sky Phenomenon : Eclipse : Lunar : Penumbral","Lunar eclipses"
+"Unspecified : Sky Phenomenon : Eclipse : Occultation","Occultation"
+"Unspecified : Sky Phenomenon : Eclipse : Transit","Astronomical transits"
 "Unspecified : Sky Phenomenon : Light Phenomenon","Atmospheric optical phenomena"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset","Sunsets and sunrises"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Green flash","Green flash phenomena"
-"Unspecified : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Refractive Distortion",
+"Unspecified : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Refractive Distortion","Astronomical seeing"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Sunrise-Sunset : Sun Pillar","Sun pillars"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Cloud","Clouds"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Cloud : Iridescent","Iridescent clouds"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Cloud : Noctilucent","Noctilucent clouds"
-"Unspecified : Sky Phenomenon : Light Phenomenon : Cloud : Nacreous",
-"Unspecified : Sky Phenomenon : Light Phenomenon : Cloud : Corona",
-"Unspecified : Sky Phenomenon : Light Phenomenon : Cloud : Glory",
+"Unspecified : Sky Phenomenon : Light Phenomenon : Cloud : Nacreous","Polar stratospheric clouds"
+"Unspecified : Sky Phenomenon : Light Phenomenon : Cloud : Corona","Corona"
+"Unspecified : Sky Phenomenon : Light Phenomenon : Cloud : Glory","Glories"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Rainbow","Rainbows"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Rainbow : Moonbow","Moonbows"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Rainbow : Fogbow","Fogbow"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Halo","Halo phenomena"
-"Unspecified : Sky Phenomenon : Light Phenomenon : Halo : Circle",
+"Unspecified : Sky Phenomenon : Light Phenomenon : Halo : Circle","Halo phenomena"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Halo : Parhelia","Parhelia"
-"Unspecified : Sky Phenomenon : Light Phenomenon : Halo : Arc",
+"Unspecified : Sky Phenomenon : Light Phenomenon : Halo : Arc","Halo phenomena"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Ray-Shadow","Shadows (atmospheric optics)"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Crepuscular ray","Crepuscular rays"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Anti-crepuscular ray","Anticrepuscular rays"
-"Unspecified : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Earth shadow",
+"Unspecified : Sky Phenomenon : Light Phenomenon : Ray-Shadow : Earth shadow","Earth's shadow"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Lightning","Lightning"
 "Unspecified : Sky Phenomenon : Light Phenomenon : Aurora","Polar aurora"
-"Unspecified : Technology",
+"Unspecified : Technology","Scientific equipment"
 "Unspecified : Technology : Observatory","Observatories"
 "Unspecified : Technology : Observatory : Facility","Astronomical observatories"
 "Unspecified : Technology : Observatory : Telescope","Telescopes"
 "Unspecified : Technology : Observatory : Instrument","Astronomical instruments"
-"Unspecified : Technology : Observatory : Detector",
+"Unspecified : Technology : Observatory : Detector","Astronomical instruments"
 "Unspecified : Technology : Spacecraft","Spacecraft"
 "Unspecified : Technology : Spacecraft : Orbiter","Orbiters (spacecraft)"
 "Unspecified : Technology : Spacecraft : Probe","Space probes"
