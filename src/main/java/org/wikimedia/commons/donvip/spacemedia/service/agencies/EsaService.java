@@ -352,6 +352,7 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
                 }
             } catch (IOException e) {
                 LOGGER.error(searchUrl, e);
+                moreImages = false;
             }
         } while (moreImages);
 
