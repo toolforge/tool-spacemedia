@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
@@ -18,6 +19,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -110,67 +112,59 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
         }
     }
 
-    private static Optional<URL> getImageUrl(Element imageHtml, String klass, URL imageUrl) throws MalformedURLException {
-        Elements elems = imageHtml.getElementsByClass(klass);
-        return elems.isEmpty() ? Optional.empty() : getImageUrl(elems.get(0).attr("href"), imageUrl);
-    }
-    
-    private void processDetails(EsaMedia image, Elements items) {
-        for (Element li : items) {
-            if ("li".equals(li.tagName())) {
-                String tag = li.child(0).text();
-                String label = li.text().replaceFirst(tag, "").trim();
-                switch (tag) {
-                    case "Title":
-                        image.setTitle(label); break;
-                    case "Released":
-                        image.setDate(LocalDateTime.parse(label.toUpperCase(Locale.ENGLISH), dateFormatter)); break;
-                    case "Copyright":
-                        image.setCopyright(label); break;
-                    case "Description":
-                        image.setDescription(label); break;
-                    case "Id":
-                        image.setId(Integer.parseInt(label)); break;
-                    default:
-                        LOGGER.warn("Unknown detail: {}", tag);
-                }
-            } else if (!li.children().isEmpty()) {
-                // Strange HTML in https://www.esa.int/spaceinimages/layout/set/html_npl/Images/2015/12/MTG_combined_antenna
-                processDetails(image, li.children());
-            }
-        }
+    private void processHeader(EsaMedia image, Element element) {
+        image.setTitle(element.getElementsByClass("heading").get(0).text());
+        image.setDate(LocalDate.parse(
+                element.getElementsByClass("meta").get(0).getElementsByTag("span").get(0).text(), dateFormatter)
+                .atStartOfDay());
     }
 
-    private void processTags(EsaMedia image, Elements items) {
-        for (Element li : items) {
+    private void processShare(EsaMedia image, Element element) {
+        String id = element.getElementsByClass("btn ezsr-star-rating-enabled").get(0).attr("id").replace("ezsr_", "");
+        image.setId(Integer.parseInt(id.substring(0, id.indexOf('_'))));
+    }
+
+    private void processExtra(EsaMedia image, Element element) {
+        Element details = element.getElementById("modal__tab-content--details");
+        image.setDescription(details.getElementsByClass("modal__tab-description").get(0).getElementsByTag("p").stream()
+                .map(Element::text).collect(Collectors.joining("<br>")));
+        for (Element li : element.getElementsByClass("modal__meta").get(0).children()) {
             if (!li.children().isEmpty()) {
-                String tag = li.child(0).text();
-                String label = li.text().replaceFirst(tag, "").trim();
-                switch (tag) {
-                case "Action":
-                    image.setAction(label); break;
-                case "Activity":
+                String title = li.child(0).child(0).attr("title").toLowerCase(Locale.ENGLISH);
+                String label = li.child(1).text().trim();
+                switch (title) {
+                case "copyright":
+                    image.setCopyright(label); break;
+                // case "Action":
+                // image.setAction(label); break;
+                case "activity":
+                case "landmark":
                     image.setActivity(label); break;
-                case "Mission":
+                case "mission":
+                case "rocket":
                     image.setMission(label); break;
-                case "People":
-                    image.setPeople(label); break;
-                case "System":
+                // case "People":
+                // image.setPeople(label); break;
+                case "system":
+                case "book":
                     image.setSystems(set(label)); break;
-                case "Location":
-                    image.setLocations(set(label)); break;
-                case "Keywords":
-                    image.setKeywords(set(label)); break;
-                case "Set":
+                // case "Location":
+                // image.setLocations(set(label)); break;
+                // case "Keywords":
+                // image.setKeywords(set(label)); break;
+                case "set":
+                case "tags":
                     image.setPhotoSet(label); break;
                 default:
-                    LOGGER.warn("Unknown tag: {}", tag);
+                    LOGGER.warn("Unknown title: {}", title);
                 }
             }
         }
     }
 
     private static boolean isCopyrightOk(EsaMedia image) {
+        if (image.getCopyright() == null)
+            return false;
         String copyrightUppercase = image.getCopyright().toUpperCase(Locale.ENGLISH);
         return (copyrightUppercase.contains("BY-SA") || copyrightUppercase.contains("COPERNICUS SENTINEL")
                 || (copyrightUppercase.contains("COPERNICUS DATA")
@@ -194,12 +188,15 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
                 try {
                     Document html = Jsoup.connect(url.toExternalForm()).get();
                     List<URL> files = new ArrayList<>();
-                    for (String format : Arrays.asList("gif", "jpg", "png", "tif")) {
-                        getImageUrl(html, "download d-" + format + "-hi", url).ifPresent(files::add);
+                    Optional<URL> lowRes = Optional.empty();
+                    for (Element element : html.getElementsByClass("dropdown__item")) {
+                        String text = element.text().toUpperCase(Locale.ENGLISH);
+                        if (text.startsWith("HI-RES") || text.startsWith("SOURCE")) {
+                            getImageUrl(element.attr("href"), url).ifPresent(files::add);
+                        } else {
+                            lowRes = getImageUrl(element.attr("href"), url);
+                        }
                     }
-                    Optional<URL> lowRes = getImageUrl(
-                            html.getElementsByClass("pi_container").get(0).getElementsByTag("img").get(0).attr("src"), url)
-                            .filter(u -> !u.getPath().contains("extension/esadam/design/esadam/images/global/arw"));
                     if (lowRes.isPresent()) {
                         if (files.isEmpty()) {
                             // No hi-res for some missions (Gaia, Visual Monitoring Camera, OSIRIS...)
@@ -229,10 +226,9 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
                     } else {
                         throw new IllegalStateException("Media with more than two files: " + media);
                     }
-                    processDetails(media,
-                            html.getElementById("pi_details_content").getElementsByTag("ul").get(0).children());
-                    processTags(media,
-                            html.getElementById("pi_tags_content").getElementsByTag("ul").get(0).children());
+                    processHeader(media, html.getElementsByClass("modal__header").get(0));
+                    processShare(media, html.getElementsByClass("modal__share").get(0));
+                    processExtra(media, html.getElementsByClass("modal__extra").get(0));
                     ok = true;
                 } catch (SocketTimeoutException e) {
                     LOGGER.debug(url.toExternalForm(), e);
@@ -335,7 +331,7 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
                     try {
                         LOGGER.debug("Fetching ESA images: {}", searchUrl);
                         Document html = Jsoup.connect(searchUrl).timeout(15_000).get();
-                        Elements divs = html.getElementsByClass("psr_item_grid");
+                        Elements divs = html.getElementsByClass("grid-item");
                         for (Element div : divs) {
                             URL imageUrl = new URL(proto, host, div.select("a").get(0).attr("href"));
                             index++;
@@ -344,7 +340,8 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
                                 count++;
                             }
                         }
-                        moreImages = !html.getElementsByClass("next").isEmpty();
+                        moreImages = !html.getElementsByTag("paging").get(0)
+                                .getElementsByAttributeValue("title", "Next").isEmpty();
                         ok = true;
                     } catch (SocketTimeoutException e) {
                         LOGGER.debug(searchUrl, e);
