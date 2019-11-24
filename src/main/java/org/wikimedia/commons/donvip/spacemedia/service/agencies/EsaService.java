@@ -340,7 +340,7 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
                                 count++;
                             }
                         }
-                        moreImages = !html.getElementsByTag("paging").get(0)
+                        moreImages = !html.getElementsByClass("paging").get(0)
                                 .getElementsByAttributeValue("title", "Next").isEmpty();
                         ok = true;
                     } catch (SocketTimeoutException e) {
