@@ -129,35 +129,37 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
         image.setDescription(details.getElementsByClass("modal__tab-description").get(0).getElementsByTag("p").stream()
                 .map(Element::text).collect(Collectors.joining("<br>")));
         for (Element li : element.getElementsByClass("modal__meta").get(0).children()) {
-            if (!li.children().isEmpty()) {
+            if (li.children().size() > 1) {
                 String title = li.child(0).child(0).attr("title").toLowerCase(Locale.ENGLISH);
                 String label = li.child(1).text().trim();
                 switch (title) {
                 case "copyright":
                     image.setCopyright(label); break;
-                // case "Action":
-                // image.setAction(label); break;
+                case "action":
+                    image.setAction(label); break;
                 case "activity":
                 case "landmark":
                     image.setActivity(label); break;
                 case "mission":
                 case "rocket":
                     image.setMission(label); break;
-                // case "People":
-                // image.setPeople(label); break;
+                case "people":
+                    image.setPeople(label); break;
                 case "system":
                 case "book":
                     image.setSystems(set(label)); break;
-                // case "Location":
-                // image.setLocations(set(label)); break;
-                // case "Keywords":
-                // image.setKeywords(set(label)); break;
+                case "location":
+                    image.setLocations(set(label)); break;
+                case "keywords":
+                    image.setKeywords(set(label)); break;
                 case "set":
                 case "tags":
                     image.setPhotoSet(label); break;
                 default:
-                    LOGGER.warn("Unknown title: {}", title);
+                    LOGGER.warn("Unknown title for {}: {}", image, title);
                 }
+            } else {
+                LOGGER.warn("Strange item for {}: {}", image, li);
             }
         }
     }
