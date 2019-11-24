@@ -129,6 +129,10 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
         image.setDescription(details.getElementsByClass("modal__tab-description").get(0).getElementsByTag("p").stream()
                 .map(Element::text).collect(Collectors.joining("<br>")));
         for (Element li : element.getElementsByClass("modal__meta").get(0).children()) {
+            if (li.children().size() == 1 && li.child(0).children().size() > 1) {
+                // Weird HTML code for https://www.esa.int/ESA_Multimedia/Images/2015/12/MTG_combined_antenna
+                li = li.child(0);
+            }
             if (li.children().size() > 1) {
                 String title = li.child(0).child(0).attr("title").toLowerCase(Locale.ENGLISH);
                 String label = li.child(1).text().trim();
@@ -168,9 +172,12 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
         if (image.getCopyright() == null)
             return false;
         String copyrightUppercase = image.getCopyright().toUpperCase(Locale.ENGLISH);
+        String descriptionUppercase = image.getDescription().toUpperCase(Locale.ENGLISH);
         return (copyrightUppercase.contains("BY-SA") || copyrightUppercase.contains("COPERNICUS SENTINEL")
-                || (copyrightUppercase.contains("COPERNICUS DATA")
-                        && image.getDescription().toUpperCase(Locale.ENGLISH).contains(" SENTINEL")));
+                || (copyrightUppercase.contains("COPERNICUS DATA") && descriptionUppercase.contains(" SENTINEL")))
+                || ((copyrightUppercase.equals("ESA") || copyrightUppercase.equals("SEE BELOW"))
+                        && (descriptionUppercase.contains("BY-SA") || (image.getMission() != null
+                                && image.getMission().toUpperCase(Locale.ENGLISH).contains("SENTINEL"))));
     }
 
     private Optional<EsaMedia> checkEsaImage(URL url) {
