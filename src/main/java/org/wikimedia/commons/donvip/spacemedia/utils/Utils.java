@@ -113,7 +113,7 @@ public final class Utils {
                 case "tiff":
                     try {
                         return readImage(ImageIO.createImageInputStream(in), readMetadata);
-                    } catch (IOException | IllegalArgumentException e) {
+					} catch (IOException | RuntimeException e) {
                         throw new ImageDecodingException(e);
                     }
                 default:

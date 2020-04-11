@@ -315,7 +315,7 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
             } catch (ImageDecodingException e) {
                 LOGGER.warn(media.toString(), e);
                 ignoreAndSaveFile(media, url, e.getMessage(), true);
-            } catch (IOException | URISyntaxException e) {
+			} catch (IOException | URISyntaxException | RuntimeException e) {
                 problem(url, e);
             }
         }
