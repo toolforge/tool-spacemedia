@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -97,7 +98,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     protected abstract Matcher getLocalizedUrlMatcher(String imgUrlLink);
 
     private Optional<T> updateMediaForUrl(URL url, EsoFrontPageItem item)
-            throws IOException, URISyntaxException, InstantiationException, IllegalAccessException {
+			throws IOException, URISyntaxException, InstantiationException, IllegalAccessException,
+			InvocationTargetException, NoSuchMethodException {
         String imgUrlLink = url.getProtocol() + "://" + url.getHost() + item.getUrl();
         Matcher m = getLocalizedUrlMatcher(imgUrlLink);
         if (m.matches()) {
@@ -114,7 +116,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
         } else {
-            media = mediaClass.newInstance();
+			media = mediaClass.getConstructor().newInstance();
             media.setId(id);
         }
         if (!mediaInRepo.isPresent() || media.getThumbnailUrl() == null) { // FIXME migration code to remove later
