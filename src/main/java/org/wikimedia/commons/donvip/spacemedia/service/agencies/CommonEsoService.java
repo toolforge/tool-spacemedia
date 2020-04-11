@@ -173,7 +173,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         }
         if (media.getCategories() != null) {
             // Try to detect pictures of identifiable people, as per ESO conditions
-            if (media.getCategories().contains("People") && media.getCategories().size() == 1
+			if (media.getCategories().size() == 1 && media.getCategories().iterator().next().contains(
+					"People") 
                     && media.getTypes() != null
                     && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
                 save = ignoreFile(media,
