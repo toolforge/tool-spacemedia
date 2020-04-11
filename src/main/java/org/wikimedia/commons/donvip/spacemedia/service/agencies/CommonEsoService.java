@@ -438,7 +438,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             } catch (HttpStatusException e) {
                 // End of search when we receive an HTTP 404
                 loop = false;
-            } catch (IOException | URISyntaxException | ReflectiveOperationException e) {
+			} catch (IOException | URISyntaxException | ReflectiveOperationException | RuntimeException e) {
                 LOGGER.error("Error when fetching " + url, e);
             }
         }

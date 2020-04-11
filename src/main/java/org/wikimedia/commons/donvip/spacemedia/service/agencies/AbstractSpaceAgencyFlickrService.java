@@ -225,7 +225,7 @@ public abstract class AbstractSpaceAgencyFlickrService
                         problem(getPhotoUrl(media), e);
                     }
                 }
-            } catch (FlickrException | MalformedURLException e) {
+			} catch (FlickrException | MalformedURLException | RuntimeException e) {
                 LOGGER.error("Error while fetching Flickr images from account " + flickrAccount, e);
             }
         }

@@ -257,7 +257,7 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String, Z
                         } else {
                             LOGGER.error("Cannot process item " + item, e);
                         }
-                    } catch (IOException | URISyntaxException e) {
+					} catch (IOException | URISyntaxException | RuntimeException e) {
                         LOGGER.error("Cannot process item " + item, e);
                     }
                 }
