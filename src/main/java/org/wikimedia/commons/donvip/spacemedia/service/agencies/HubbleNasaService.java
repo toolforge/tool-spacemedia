@@ -44,7 +44,10 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNas
 @Service
 public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleNasaMedia, Integer, ZonedDateTime> {
 
-	private static final DateTimeFormatter dateformatter = DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH);
+	private static final DateTimeFormatter exposureDateformatter = DateTimeFormatter
+			.ofPattern("MMM dd, yyyy", Locale.ENGLISH);
+	private static final DateTimeFormatter releaseDateformatter = DateTimeFormatter
+			.ofPattern("MMMM dd, yyyy h:mma (zz)", Locale.ENGLISH);
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HubbleNasaService.class);
 
@@ -60,11 +63,11 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 	@Value("${hubble.nasa.detail.link}")
 	private String detailEndpoint;
 
-	@Value("${hubble.nasa.hubble.image.link}")
-	private String hubbleImageLink;
+	@Value("${hubble.nasa.image.link}")
+	private String imageLink;
 
-	@Value("${hubble.nasa.james_webb.image.link}")
-	private String webbImageLink;
+	@Value("${hubble.nasa.news.image.link}")
+	private String newsImageLink;
 
     @Autowired
     public HubbleNasaService(HubbleNasaMediaRepository repository) {
@@ -224,11 +227,23 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 				if (media.getExposureDate() == null) {
 					findTd(tds, "Exposure Dates").ifPresent(dates -> {
 						try {
-							media.setExposureDate(LocalDate.parse(dates, dateformatter));
+							media.setExposureDate(LocalDate.parse(dates, exposureDateformatter));
 						} catch (DateTimeParseException e) {
 							LOGGER.debug(dates, e);
 						}
 					});
+				}
+				if (media.getDate() == null) {
+					List<Element> elems = html.getElementsByTag("p").stream()
+							.filter(p -> p.text().startsWith("Release Date:")).collect(Collectors.toList());
+					if (elems.size() == 1) {
+						String date = elems.get(0).text().replace("Release Date:", "").trim();
+						try {
+							media.setDate(ZonedDateTime.parse(date, releaseDateformatter));
+						} catch (DateTimeParseException e) {
+							LOGGER.debug(date, e);
+						}
+					}
 				}
 				save = true;
 			}
@@ -275,22 +290,30 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 
 	@Override
     public URL getSourceUrl(HubbleNasaMedia media) throws MalformedURLException {
-		if (media.getNewsId() != null && media.getMission() != null) {
-			String pattern = getimageLinkPattern(media.getMission());
-			if (pattern != null) {
-				return new URL(pattern.replace("<news_id>", media.getNewsId().replace('-', '/')).replace("<img_id>",
-						media.getId().toString()));
+		if (media.getMission() != null) {
+			String website = getWebsite(media.getMission());
+			if (website != null) {
+				if (media.getNewsId() != null) {
+					return new URL(newsImageLink
+							.replace("<website>", website)
+							.replace("<news_id>", media.getNewsId().replace('-', '/'))
+							.replace("<img_id>", media.getId().toString()));
+				} else {
+					return new URL(imageLink
+							.replace("<website>", website)
+							.replace("<img_id>", media.getId().toString()));
+				}
 			}
 		}
 		return null;
     }
 
-	private String getimageLinkPattern(String mission) {
+	private String getWebsite(String mission) {
 		switch (mission) {
 		case "hubble":
-			return hubbleImageLink;
+			return "hubblesite.org";
 		case "james_webb":
-			return webbImageLink;
+			return "webbtelescope.org";
 		default:
 			return null;
 		}
