@@ -118,6 +118,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         } else {
 			media = mediaClass.getConstructor().newInstance();
             media.setId(id);
+			save = true;
         }
         if (!mediaInRepo.isPresent() || media.getThumbnailUrl() == null) { // FIXME migration code to remove later
             save = true;

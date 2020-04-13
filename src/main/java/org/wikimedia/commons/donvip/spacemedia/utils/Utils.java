@@ -1,11 +1,17 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -13,8 +19,11 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -175,4 +184,19 @@ public final class Utils {
     public static boolean isTokenPart(char c) {
         return Character.isAlphabetic(c) || Character.isDigit(c) || c == '-' || c == '_';
     }
+
+	public static void addCertificate(String resource) throws GeneralSecurityException, IOException {
+		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+		try (InputStream is = Files.newInputStream(Paths.get(System.getProperty("java.home"), "lib", "security", "cacerts"))) {
+			keyStore.load(is, "changeit".toCharArray());
+		}
+		keyStore.setCertificateEntry(resource,
+				CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(
+						IOUtils.toByteArray(Utils.class.getClassLoader().getResourceAsStream(resource)))));
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+		tmf.init(keyStore);
+		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+		sslContext.init(null, tmf.getTrustManagers(), null);
+		SSLContext.setDefault(sslContext);
+	}
 }
