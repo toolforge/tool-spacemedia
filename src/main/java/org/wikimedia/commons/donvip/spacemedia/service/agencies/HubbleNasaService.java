@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -213,11 +215,24 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 			save = true;
 		}
 		if (CollectionUtils.isEmpty(media.getKeywords())) {
-			URL sourceUrl = getSourceUrl(media);
+			URL sourceUrl = getImageUrl(media, true);
 			if (sourceUrl != null) {
-				String sourceLink = sourceUrl.toExternalForm();
-				LOGGER.info(sourceLink);
-				Document html = Jsoup.connect(sourceLink).timeout(60_000).get();
+				Document html = null;
+				try {
+					html = fetchHtml(sourceUrl);
+				} catch (HttpStatusException e) {
+					if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND && media.getNewsId() != null) {
+						sourceUrl = getImageUrl(media, false);
+						if (sourceUrl != null) {
+							html = fetchHtml(sourceUrl);
+						}
+					} else {
+						throw e;
+					}
+				}
+				if (html == null) {
+					throw new IllegalStateException("Unable to fetch HTML page for image " + media.getId());
+				}
 				media.setKeywords(
 					html.getElementsByClass("keyword-tag").stream().map(Element::text).collect(Collectors.toSet()));
 				Elements tds = html.getElementsByTag("td");
@@ -257,6 +272,12 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 		return save ? 1 : 0;
 	}
 
+	private static Document fetchHtml(URL sourceUrl) throws IOException {
+		String sourceLink = sourceUrl.toExternalForm();
+		LOGGER.info(sourceLink);
+		return Jsoup.connect(sourceLink).timeout(60_000).get();
+	}
+
 	private static Optional<String> findTd(Elements tds, String label) {
 		List<Element> matches = tds.stream().filter(x -> label.equalsIgnoreCase(x.text())).collect(Collectors.toList());
 		if (matches.size() == 2) {
@@ -290,12 +311,15 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 
 	@Override
     public URL getSourceUrl(HubbleNasaMedia media) throws MalformedURLException {
+		return getImageUrl(media, true);
+	}
+
+	private URL getImageUrl(HubbleNasaMedia media, boolean allowNews) throws MalformedURLException {
 		if (media.getMission() != null) {
 			String website = getWebsite(media.getMission());
 			if (website != null) {
-				if (media.getNewsId() != null) {
-					return new URL(newsImageLink
-							.replace("<website>", website)
+				if (allowNews && media.getNewsId() != null) {
+					return new URL(newsImageLink.replace("<website>", website)
 							.replace("<news_id>", media.getNewsId().replace('-', '/'))
 							.replace("<img_id>", media.getId().toString()));
 				} else {
@@ -306,7 +330,7 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 			}
 		}
 		return null;
-    }
+	}
 
 	private String getWebsite(String mission) {
 		switch (mission) {
