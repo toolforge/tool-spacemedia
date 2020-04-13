@@ -40,8 +40,8 @@ public class CommonsImage {
     @Id
     @Column(name = "img_name", nullable = false, length = 255, columnDefinition = "VARBINARY")
     private String name;
-    @Column(name = "img_size", nullable = false, length = 8)
-    private int size;
+	@Column(name = "img_size", nullable = false, length = 10)
+	private long size;
     @Column(name = "img_width", nullable = false, length = 5)
     private int width;
     @Column(name = "img_height", nullable = false, length = 5)
@@ -74,10 +74,12 @@ public class CommonsImage {
     public void setName(String name) {
         this.name = name;
     }
-    public int getSize() {
+
+	public long getSize() {
         return size;
     }
-    public void setSize(int size) {
+
+	public void setSize(long size) {
         this.size = size;
     }
     public int getWidth() {
