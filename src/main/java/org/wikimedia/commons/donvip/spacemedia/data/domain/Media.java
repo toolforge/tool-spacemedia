@@ -36,7 +36,7 @@ public abstract class Media<ID, D extends Temporal> {
     protected String title;
 
     @Lob
-    @Column(nullable = true, columnDefinition = "TEXT")
+	@Column(nullable = true, columnDefinition = "MEDIUMTEXT")
     @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
     protected String description;
 
