@@ -318,6 +318,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         return problem(problematicUrl, t.getMessage());
     }
 
+	protected final Problem problem(String problematicUrl, String errorMessage) throws MalformedURLException {
+		return problem(new URL(problematicUrl), errorMessage);
+	}
+
     protected final Problem problem(URL problematicUrl, String errorMessage) {
         Optional<Problem> problem = problemRepository.findByAgencyAndProblematicUrl(getName(), problematicUrl);
         if (problem.isPresent()) {

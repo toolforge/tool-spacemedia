@@ -76,9 +76,12 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
         return HubbleNasaMedia.class;
     }
 
+	private String getImageDetailsLink(int imageId) {
+		return detailEndpoint.replace("<id>", Integer.toString(imageId));
+	}
+
 	private HubbleNasaImageResponse getImageDetails(RestTemplate rest, int imageId) {
-		return rest.getForObject(detailEndpoint.replace("<id>", Integer.toString(imageId)),
-				HubbleNasaImageResponse.class);
+		return rest.getForObject(getImageDetailsLink(imageId), HubbleNasaImageResponse.class);
 	}
 
     @Override
@@ -101,7 +104,7 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 					try {
 						count += doUpdateMedia(imageId, getImageDetails(rest, imageId), details);
 					} catch (IOException | URISyntaxException | RuntimeException e) {
-						LOGGER.error("Error while fetching Hubble news: " + news, e);
+						LOGGER.error("Error while fetching image " + imageId + " via Hubble news " + news.getId(), e);
 					}
 				}
 			}
@@ -117,7 +120,7 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 				try {
 					count += doUpdateMedia(image.getId(), getImageDetails(rest, image.getId()), null);
 				} catch (IOException | URISyntaxException | RuntimeException e) {
-					LOGGER.error("Error while fetching Hubble images: " + image, e);
+					LOGGER.error("Error while fetching image " + image.getId() + " via Hubble images", e);
 				}
 			}
 		}
@@ -149,6 +152,10 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 
 	private int doUpdateMedia(int id, HubbleNasaImageResponse image, HubbleNasaNewsReleaseResponse news)
 			throws IOException, URISyntaxException {
+		if (image.getImageFiles() == null) {
+			problem(getImageDetailsLink(id), "No image files");
+			return 0;
+		}
         boolean save = false;
 		HubbleNasaMedia media;
 		Optional<HubbleNasaMedia> mediaInRepo = repository.findById(id);
