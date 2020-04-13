@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 
 import org.hibernate.search.annotations.Indexed;
@@ -8,6 +9,7 @@ import org.hibernate.search.annotations.Indexed;
 @Indexed
 public class NasaImage extends NasaMedia {
 
+	@Column(length = 300)
     private String photographer;
 
     public NasaImage() {
