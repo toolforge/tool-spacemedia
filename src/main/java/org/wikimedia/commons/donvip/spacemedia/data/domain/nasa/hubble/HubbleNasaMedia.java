@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import org.hibernate.search.annotations.Indexed;
@@ -39,7 +40,8 @@ public class HubbleNasaMedia extends FullResMedia<Integer, ZonedDateTime> {
 	/**
 	 * Image's credits and acknowledgments.
 	 */
-	@Column(length = 510)
+	@Lob
+	@Column(columnDefinition = "TEXT")
 	private String credits;
 
 	/**
