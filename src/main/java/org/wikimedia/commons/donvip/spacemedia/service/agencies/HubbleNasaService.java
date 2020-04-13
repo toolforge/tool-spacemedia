@@ -101,12 +101,15 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 				for (HubbleNasaNewsResponse news : response) {
 					HubbleNasaNewsReleaseResponse details = rest.getForObject(
 							newsDetailEndpoint.replace("<id>", news.getId()), HubbleNasaNewsReleaseResponse.class);
-					for (int imageId : details.getReleaseImages()) {
-						try {
-							count += doUpdateMedia(imageId, getImageDetails(rest, imageId), details);
-						} catch (IOException | URISyntaxException | RuntimeException e) {
-							LOGGER.error("Error while fetching image " + imageId + " via Hubble news " + news.getId(),
-									e);
+					if (details.getReleaseImages() != null) {
+						for (int imageId : details.getReleaseImages()) {
+							try {
+								count += doUpdateMedia(imageId, getImageDetails(rest, imageId), details);
+							} catch (IOException | URISyntaxException | RuntimeException e) {
+								LOGGER.error(
+										"Error while fetching image " + imageId + " via Hubble news " + news.getId(),
+										e);
+							}
 						}
 					}
 				}
