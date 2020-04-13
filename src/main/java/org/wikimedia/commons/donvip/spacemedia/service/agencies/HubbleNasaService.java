@@ -96,15 +96,18 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 		while (loop) {
 			String urlLink = newsEndpoint.replace("<idx>", Integer.toString(idx++));
 			HubbleNasaNewsResponse[] response = rest.getForObject(urlLink, HubbleNasaNewsResponse[].class);
-			loop = response.length > 0;
-			for (HubbleNasaNewsResponse news : response) {
-				HubbleNasaNewsReleaseResponse details = rest.getForObject(newsDetailEndpoint.replace("<id>",
-						news.getId()), HubbleNasaNewsReleaseResponse.class);
-				for (int imageId : details.getReleaseImages()) {
-					try {
-						count += doUpdateMedia(imageId, getImageDetails(rest, imageId), details);
-					} catch (IOException | URISyntaxException | RuntimeException e) {
-						LOGGER.error("Error while fetching image " + imageId + " via Hubble news " + news.getId(), e);
+			loop = response != null && response.length > 0;
+			if (loop) {
+				for (HubbleNasaNewsResponse news : response) {
+					HubbleNasaNewsReleaseResponse details = rest.getForObject(
+							newsDetailEndpoint.replace("<id>", news.getId()), HubbleNasaNewsReleaseResponse.class);
+					for (int imageId : details.getReleaseImages()) {
+						try {
+							count += doUpdateMedia(imageId, getImageDetails(rest, imageId), details);
+						} catch (IOException | URISyntaxException | RuntimeException e) {
+							LOGGER.error("Error while fetching image " + imageId + " via Hubble news " + news.getId(),
+									e);
+						}
 					}
 				}
 			}
@@ -115,12 +118,14 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 		while (loop) {
 			String urlLink = searchEndpoint.replace("<idx>", Integer.toString(idx++));
 			HubbleNasaImagesResponse[] response = rest.getForObject(urlLink, HubbleNasaImagesResponse[].class);
-			loop = response.length > 0;
-			for (HubbleNasaImagesResponse image : response) {
-				try {
-					count += doUpdateMedia(image.getId(), getImageDetails(rest, image.getId()), null);
-				} catch (IOException | URISyntaxException | RuntimeException e) {
-					LOGGER.error("Error while fetching image " + image.getId() + " via Hubble images", e);
+			loop = response != null && response.length > 0;
+			if (loop) {
+				for (HubbleNasaImagesResponse image : response) {
+					try {
+						count += doUpdateMedia(image.getId(), getImageDetails(rest, image.getId()), null);
+					} catch (IOException | URISyntaxException | RuntimeException e) {
+						LOGGER.error("Error while fetching image " + image.getId() + " via Hubble images", e);
+					}
 				}
 			}
 		}
