@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -43,12 +42,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
@@ -59,7 +56,6 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenExc
 import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 import org.xml.sax.SAXException;
 
 /**
@@ -90,9 +86,6 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @Qualifier("domainEntityManagerFactory")
     private EntityManagerFactory entityManagerFactory;
 
-    @Value("#{${categories}}")
-    private Map<String, String> categories;
-
     private Set<String> ignoredCommonTerms;
 
     public AbstractSpaceAgencyService(MediaRepository<T, ID, D> repository) {
@@ -102,12 +95,6 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @PostConstruct
     void init() throws IOException {
         ignoredCommonTerms = Csv.loadSet(getClass().getResource("/ignored.terms.csv"));
-    }
-
-    @Override
-    @Scheduled(fixedDelay = 43200000L)
-    public void checkCommonCategories() {
-        checkCommonsCategories(categories);
     }
 
     /**
@@ -396,7 +383,8 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
             getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
             sb.append("\n}}\n=={{int:license-header}}==\n");
             findTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
-            findCategories(media).forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
+			commonsService.cleanupCategories(findCategories(media))
+					.forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
             return sb.toString();
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
@@ -449,13 +437,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     protected Set<String> findCategories(T media) {
 		Set<String> result = new HashSet<>();
         result.add("Spacemedia files uploaded by Vipbot");
-        for (Entry<String, String> e : categories.entrySet()) {
-            if (Utils.isTextFound(media.getTitle(), e.getKey())
-                    || Utils.isTextFound(media.getDescription(), e.getKey())) {
-                result.add(e.getValue());
-            }
-        }
-        return commonsService.cleanupCategories(result);
+		return result;
     }
 
     public List<String> findTemplates(T media) {

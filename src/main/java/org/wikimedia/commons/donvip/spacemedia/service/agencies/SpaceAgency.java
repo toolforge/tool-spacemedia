@@ -19,8 +19,6 @@ import org.xml.sax.SAXException;
 
 public interface SpaceAgency<T extends Media<ID, D>, ID, D extends Temporal> {
 
-    void checkCommonCategories();
-
     long countAllMedia();
 
     long countIgnored();
