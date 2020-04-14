@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.SimpleQueryStringMatchingContext;
@@ -219,7 +220,7 @@ public abstract class AbstractSpaceAgencyFlickrService
                 for (FlickrMedia media : flickrService.findFreePhotos(flickrAccount).stream()
                         .map(p -> dozerMapper.map(p, FlickrMedia.class)).collect(Collectors.toList())) {
                     try {
-                        processFlickrMedia(media);
+						processFlickrMedia(media, flickrAccount);
                         count++;
                     } catch (IOException | URISyntaxException e) {
                         problem(getPhotoUrl(media), e);
@@ -245,7 +246,8 @@ public abstract class AbstractSpaceAgencyFlickrService
         return false;
     }
 
-    private FlickrMedia processFlickrMedia(FlickrMedia media) throws IOException, URISyntaxException {
+	private FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount)
+			throws IOException, URISyntaxException {
         boolean save = false;
         Optional<FlickrMedia> mediaInRepo = flickrRepository.findById(media.getId());
         if (mediaInRepo.isPresent()) {
@@ -265,6 +267,10 @@ public abstract class AbstractSpaceAgencyFlickrService
             media.setSha1(null);
             save = true;
         }
+		if (StringUtils.isEmpty(media.getPathAlias())) {
+			media.setPathAlias(flickrAccount);
+			save = true;
+		}
         if (mediaService.updateMedia(media)) {
             save = true;
         }

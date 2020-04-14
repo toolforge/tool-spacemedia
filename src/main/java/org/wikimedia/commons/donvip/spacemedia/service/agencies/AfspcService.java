@@ -35,7 +35,7 @@ public class AfspcService extends AbstractSpaceAgencyFlickrService {
     public List<String> findTemplates(FlickrMedia media) {
         List<String> result = super.findTemplates(media);
         if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.United_States_Government_Work
-                || media.getDescription().contains("Air Force photo")) {
+				|| (media.getDescription() != null && media.getDescription().contains("Air Force photo"))) {
             result.remove(FlickrFreeLicense.United_States_Government_Work.getWikiTemplate());
             result.add("PD-USGov-Military-Air Force");
         }
