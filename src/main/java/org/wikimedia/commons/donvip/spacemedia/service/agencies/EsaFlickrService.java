@@ -40,7 +40,7 @@ public class EsaFlickrService extends AbstractSpaceAgencyFlickrService {
     }
 
     @Override
-    protected Set<String> findCategories(FlickrMedia media) {
+	public Set<String> findCategories(FlickrMedia media) {
         Set<String> result = super.findCategories(media);
         result.add("ESA images (review needed)");
         return result;

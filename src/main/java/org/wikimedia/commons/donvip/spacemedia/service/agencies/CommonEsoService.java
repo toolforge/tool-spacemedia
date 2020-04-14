@@ -457,7 +457,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     }
 
     @Override
-    protected Set<String> findCategories(T media) {
+	public Set<String> findCategories(T media) {
         Set<String> result = super.findCategories(media);
         if (media.getCategories() != null) {
             for (String cat : media.getCategories()) {

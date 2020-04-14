@@ -177,7 +177,7 @@ public abstract class AbstractSpaceAgencyFlickrService
     }
 
     @Override
-    protected Set<String> findCategories(FlickrMedia media) {
+	public Set<String> findCategories(FlickrMedia media) {
         Set<String> result = super.findCategories(media);
         result.remove("Spacemedia files uploaded by Vipbot");
         result.add("Spacemedia Flickr files uploaded by Vipbot");

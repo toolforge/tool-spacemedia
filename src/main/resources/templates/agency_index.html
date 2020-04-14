@@ -38,11 +38,16 @@
 		        </td>
 		        <td>
 		          <div th:each="template : ${agency.findTemplates(media)}">
-		            <a th:text="'{{'+${template}+'}}'"
+		            <a th:text="${template}"
 		               th:href="@{https://commons.wikimedia.org/wiki/Template:{t}(t=${template.split('\|')[0].trim()})}"></a>
 		          </div>
 		        </td>
-		        <td th:if="'uploaded' != ${tab}"><!-- TODO --></td>
+		        <td th:if="'uploaded' != ${tab}">
+		          <div th:each="category : ${agency.findCategories(media)}">
+		            <a th:text="${category}" th:unless="${#strings.endsWith(category, 'uploaded by Vipbot')}"
+		               th:href="@{https://commons.wikimedia.org/wiki/Category:{t}(t=${category})}"></a>
+		          </div>
+		        </td>
 		        <td th:if="'ignored' == ${tab}" th:text="${media.ignoredReason}"></td>
 		      </tr>
 	      </tbody>

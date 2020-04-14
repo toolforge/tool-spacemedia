@@ -317,7 +317,7 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
     }
 
     @Override
-	protected Set<String> findCategories(HubbleNasaMedia media) {
+	public Set<String> findCategories(HubbleNasaMedia media) {
 		Set<String> result = super.findCategories(media);
 		for (String keyword : media.getKeywords()) {
 			String hubbleCat = hubbleCategories.get(keyword);
