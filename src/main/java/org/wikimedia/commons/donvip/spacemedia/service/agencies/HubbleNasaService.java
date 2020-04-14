@@ -56,6 +56,8 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HubbleNasaService.class);
 
+	private static final String NO_KEYWORD = "NONE";
+
 	@Value("${hubble.nasa.news.link}")
 	private String newsEndpoint;
 
@@ -255,6 +257,9 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 				}
 				media.setKeywords(
 					html.getElementsByClass("keyword-tag").stream().map(Element::text).collect(Collectors.toSet()));
+				if (media.getKeywords().isEmpty()) {
+					media.getKeywords().add(NO_KEYWORD); // To avoid fetching HTML again on next update
+				}
 				Elements tds = html.getElementsByTag("td");
 				if (StringUtils.isEmpty(media.getObjectName())) {
 					findTd(tds, "Object Name").ifPresent(media::setObjectName);
