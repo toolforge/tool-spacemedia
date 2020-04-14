@@ -155,8 +155,13 @@ public final class Utils {
 
     public static boolean isTextFound(String fullText, String textToFind) {
         if (fullText != null) {
-            String fullTextLc = fullText.toLowerCase(Locale.ENGLISH);
-            String textToFindLc = textToFind.toLowerCase(Locale.ENGLISH);
+			return isTextFoundLowercase(fullText.toLowerCase(Locale.ENGLISH), textToFind.toLowerCase(Locale.ENGLISH));
+		}
+		return false;
+	}
+
+	public static boolean isTextFoundLowercase(String fullTextLc, String textToFindLc) {
+		if (fullTextLc != null) {
             if (textToFindLc.contains("+")) {
                 for (String word : textToFindLc.split("\\+")) {
                     if (!isTextFound(fullTextLc, word)) {

@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -294,6 +295,9 @@ public abstract class AbstractSpaceAgencyFlickrService
 						.collect(Collectors.toSet()));
 				if (CollectionUtils.isNotEmpty(media.getPhotosets())) {
 					for (FlickrPhotoSet ps : media.getPhotosets()) {
+						if (ps.getMembers() == null) {
+							ps.setMembers(new HashSet<>());
+						}
 						flickrPhotoSetRepository.save(ps).getMembers().add(media);
 					}
 					save = true;
