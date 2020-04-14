@@ -43,9 +43,11 @@ public class AfspcService extends AbstractSpaceAgencyFlickrService {
     }
 
     @Override
-	public Set<String> findCategories(FlickrMedia media) {
-        Set<String> result = super.findCategories(media);
-        result.add("Photographs by the United States Air Force Space Command");
+	public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
+		Set<String> result = super.findCategories(media, includeHidden);
+		if (includeHidden) {
+			result.add("Photographs by the United States Air Force Space Command");
+		}
         return result;
     }
 }

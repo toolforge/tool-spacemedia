@@ -317,13 +317,11 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
     }
 
     @Override
-	public Set<String> findCategories(HubbleNasaMedia media) {
-		Set<String> result = super.findCategories(media);
-		for (String keyword : media.getKeywords()) {
-			String hubbleCat = hubbleCategories.get(keyword);
-			if (StringUtils.isNotBlank(hubbleCat)) {
-                result.add(hubbleCat);
-            }
+	public Set<String> findCategories(HubbleNasaMedia media, boolean includeHidden) {
+		Set<String> result = super.findCategories(media, includeHidden);
+		if (media.getKeywords() != null) {
+			result.addAll(media.getKeywords().stream().map(hubbleCategories::get).filter(StringUtils::isNotBlank)
+					.collect(Collectors.toSet()));
 		}
 		return result;
 	}

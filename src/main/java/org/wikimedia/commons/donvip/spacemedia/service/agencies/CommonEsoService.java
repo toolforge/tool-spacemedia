@@ -67,6 +67,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     private String dateTimePattern;
 
     private Map<String, String> esoCategories;
+	private Map<String, String> esoNames;
+	private Map<String, String> esoTypes;
 
     @Autowired
     private ObjectMapper jackson;
@@ -84,11 +86,14 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
         dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern, Locale.ENGLISH);
         esoCategories = Csv.loadMap(getClass().getResource("/eso.categories.csv"));
+		esoNames = Csv.loadMap(getClass().getResource("/eso.names.csv"));
+		esoTypes = Csv.loadMap(getClass().getResource("/eso.types.csv"));
     }
 
     @Scheduled(fixedDelay = 43200000L)
     public void checkEsoCategories() {
         checkCommonsCategories(esoCategories);
+		checkCommonsCategories(esoTypes);
     }
 
     private static void scrapingError(String url, String details) {
@@ -457,16 +462,22 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     }
 
     @Override
-	public Set<String> findCategories(T media) {
-        Set<String> result = super.findCategories(media);
+	public Set<String> findCategories(T media, boolean includeHidden) {
+		Set<String> result = super.findCategories(media, includeHidden);
         if (media.getCategories() != null) {
-            for (String cat : media.getCategories()) {
-                String esoCat = esoCategories.get(cat);
-                if (StringUtils.isNotBlank(esoCat)) {
-                    result.add(esoCat);
-                }
-            }
+			result.addAll(media.getCategories().stream().map(esoCategories::get).filter(StringUtils::isNotBlank)
+					.collect(Collectors.toSet()));
         }
+		if (media.getCategories() != null) {
+			result.addAll(media.getTypes().stream().map(esoTypes::get).filter(StringUtils::isNotBlank)
+					.collect(Collectors.toSet()));
+		}
+		if (media.getName() != null) {
+			String catName = esoNames.get(media.getName());
+			if (StringUtils.isNotBlank(catName)) {
+				result.add(catName);
+			}
+		}
         return result;
     }
 }

@@ -43,9 +43,11 @@ public class SmcService extends AbstractSpaceAgencyFlickrService {
     }
 
     @Override
-	public Set<String> findCategories(FlickrMedia media) {
-        Set<String> result = super.findCategories(media);
-		result.add("Photographs by the Space and Missile Systems Center");
+	public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
+		Set<String> result = super.findCategories(media, includeHidden);
+		if (includeHidden) {
+			result.add("Photographs by the Space and Missile Systems Center");
+		}
         return result;
     }
 }

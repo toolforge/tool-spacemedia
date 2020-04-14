@@ -383,7 +383,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
             getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
             sb.append("\n}}\n=={{int:license-header}}==\n");
             findTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
-			commonsService.cleanupCategories(findCategories(media))
+			commonsService.cleanupCategories(findCategories(media, true))
 					.forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
             return sb.toString();
         } catch (MalformedURLException e) {
@@ -434,9 +434,11 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         return Optional.empty();
     }
 
-	public Set<String> findCategories(T media) {
+	public Set<String> findCategories(T media, boolean includeHidden) {
 		Set<String> result = new HashSet<>();
-        result.add("Spacemedia files uploaded by Vipbot");
+		if (includeHidden) {
+			result.add("Spacemedia files uploaded by Vipbot");
+		}
 		return result;
     }
 
