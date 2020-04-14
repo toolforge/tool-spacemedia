@@ -21,7 +21,7 @@ public class FlickrPhotoSet {
 	@Column(columnDefinition = "TEXT")
 	private String title;
 
-	@ManyToMany(mappedBy = "photosets")
+	@ManyToMany
 	protected Set<FlickrMedia> members;
 
 	public Long getId() {

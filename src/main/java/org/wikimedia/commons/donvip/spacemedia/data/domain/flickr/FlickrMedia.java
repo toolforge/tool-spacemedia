@@ -84,7 +84,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     @Field(index = org.hibernate.search.annotations.Index.YES, analyze = Analyze.NO, store = Store.NO)
     private String pathAlias;
 
-	@ManyToMany(fetch = FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER, mappedBy = "members")
 	private Set<FlickrPhotoSet> photosets;
 
     @Override
