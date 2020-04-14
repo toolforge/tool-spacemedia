@@ -13,9 +13,12 @@ import java.time.temporal.Temporal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +42,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNas
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaNewsReleaseResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaNewsResponse;
+import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
 
 /**
  * Service harvesting images from NASA Hubble / Jame Webb websites.
@@ -71,12 +75,21 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 	@Value("${hubble.nasa.news.image.link}")
 	private String newsImageLink;
 
+	private Map<String, String> hubbleCategories;
+
     @Autowired
     public HubbleNasaService(HubbleNasaMediaRepository repository) {
         super(repository);
     }
 
     @Override
+	@PostConstruct
+	void init() throws IOException {
+		super.init();
+		hubbleCategories = Csv.loadMap(getClass().getResource("/hubblenasa.categories.csv"));
+	}
+
+	@Override
     protected Class<HubbleNasaMedia> getMediaClass() {
         return HubbleNasaMedia.class;
     }
@@ -302,9 +315,10 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 	protected Set<String> findCategories(HubbleNasaMedia media) {
 		Set<String> result = super.findCategories(media);
 		for (String keyword : media.getKeywords()) {
-			switch (keyword) {
-			// TODO
-			}
+			String hubbleCat = hubbleCategories.get(keyword);
+			if (StringUtils.isNotBlank(hubbleCat)) {
+                result.add(hubbleCat);
+            }
 		}
 		return result;
 	}
