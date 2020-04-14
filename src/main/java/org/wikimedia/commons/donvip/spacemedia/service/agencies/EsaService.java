@@ -39,7 +39,6 @@ import org.springframework.util.CollectionUtils;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
-import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.github.dozermapper.core.Mapper;
@@ -103,8 +102,8 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
     void init() throws IOException {
         super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern);
-		esaMissions = Csv.loadMap(getClass().getResource("/esa.missions.csv"));
-		esaPeople = Csv.loadMap(getClass().getResource("/esa.people.csv"));
+		esaMissions = loadCsvMapping("esa.missions.csv");
+		esaPeople = loadCsvMapping("esa.people.csv");
     }
 
 	@Scheduled(fixedDelay = 43200000L)

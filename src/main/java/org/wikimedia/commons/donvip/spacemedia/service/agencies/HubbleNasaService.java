@@ -86,7 +86,7 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 	@PostConstruct
 	void init() throws IOException {
 		super.init();
-		hubbleCategories = Csv.loadMap(getClass().getResource("/hubblenasa.categories.csv"));
+		hubbleCategories = loadCsvMapping("hubblenasa.categories.csv");
 	}
 
 	@Scheduled(fixedDelay = 43200000L)

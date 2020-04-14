@@ -41,7 +41,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
-import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -85,9 +84,9 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
         dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern, Locale.ENGLISH);
-        esoCategories = Csv.loadMap(getClass().getResource("/eso.categories.csv"));
-		esoNames = Csv.loadMap(getClass().getResource("/eso.names.csv"));
-		esoTypes = Csv.loadMap(getClass().getResource("/eso.types.csv"));
+		esoCategories = loadCsvMapping("eso.categories.csv");
+		esoNames = loadCsvMapping("eso.names.csv");
+		esoTypes = loadCsvMapping("eso.types.csv");
     }
 
     @Scheduled(fixedDelay = 43200000L)

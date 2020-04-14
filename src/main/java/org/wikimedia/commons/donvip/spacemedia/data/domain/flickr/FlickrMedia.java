@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
@@ -82,6 +83,9 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     @JsonProperty("pathalias")
     @Field(index = org.hibernate.search.annotations.Index.YES, analyze = Analyze.NO, store = Store.NO)
     private String pathAlias;
+
+	@ManyToMany(fetch = FetchType.EAGER)
+	private Set<FlickrPhotoSet> photosets;
 
     @Override
     public Long getId() {
@@ -230,7 +234,15 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
         this.pathAlias = pathAlias;
     }
 
-    @Override
+	public Set<FlickrPhotoSet> getPhotosets() {
+		return photosets;
+	}
+
+	public void setPhotosets(Set<FlickrPhotoSet> photosets) {
+		this.photosets = photosets;
+	}
+
+	@Override
     public int hashCode() {
         return 31 * super.hashCode() + Objects.hash(id, pathAlias);
     }

@@ -490,6 +490,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         return getMediaClass();
     }
 
+	protected final Map<String, String> loadCsvMapping(String filename) throws IOException {
+		return Csv.loadMap(getClass().getResource("/mapping/" + filename));
+	}
+
     @Override
     public int compareTo(AbstractSpaceAgencyService<T, ID, D> o) {
         return getName().compareTo(o.getName());
