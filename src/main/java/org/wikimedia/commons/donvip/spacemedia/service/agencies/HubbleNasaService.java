@@ -89,6 +89,11 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 		hubbleCategories = Csv.loadMap(getClass().getResource("/hubblenasa.categories.csv"));
 	}
 
+	@Scheduled(fixedDelay = 43200000L)
+	public void checkHubbleCategories() {
+		checkCommonsCategories(hubbleCategories);
+	}
+
 	@Override
     protected Class<HubbleNasaMedia> getMediaClass() {
         return HubbleNasaMedia.class;
