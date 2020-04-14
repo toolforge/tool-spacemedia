@@ -42,7 +42,9 @@ public class EsaFlickrService extends AbstractSpaceAgencyFlickrService {
     @Override
 	public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
 		Set<String> result = super.findCategories(media, includeHidden);
-        result.add("ESA images (review needed)");
+		if (includeHidden) {
+			result.add("ESA images (review needed)");
+		}
         return result;
     }
 }

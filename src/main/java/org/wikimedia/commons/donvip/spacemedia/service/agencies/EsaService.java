@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -37,6 +39,7 @@ import org.springframework.util.CollectionUtils;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
+import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.github.dozermapper.core.Mapper;
@@ -87,6 +90,9 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
 
     private DateTimeFormatter dateFormatter;
 
+	private Map<String, String> esaMissions;
+	private Map<String, String> esaPeople;
+
     @Autowired
     public EsaService(EsaMediaRepository repository) {
         super(repository);
@@ -97,7 +103,15 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
     void init() throws IOException {
         super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern);
+		esaMissions = Csv.loadMap(getClass().getResource("/esa.missions.csv"));
+		esaPeople = Csv.loadMap(getClass().getResource("/esa.people.csv"));
     }
+
+	@Scheduled(fixedDelay = 43200000L)
+	public void checkEsaCategories() {
+		checkCommonsCategories(esaMissions);
+		checkCommonsCategories(esaPeople);
+	}
 
     @Override
     protected Class<EsaMedia> getMediaClass() {
@@ -399,7 +413,21 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
     @Override
 	public Set<String> findCategories(EsaMedia media, boolean includeHidden) {
 		Set<String> result = super.findCategories(media, includeHidden);
-        result.add("ESA images (review needed)");
+		if (includeHidden) {
+			result.add("ESA images (review needed)");
+		}
+		if (media.getMission() != null) {
+			String missionCats = esaMissions.get(media.getMission());
+			if (StringUtils.isNotBlank(missionCats)) {
+				Arrays.stream(missionCats.split(";")).forEach(result::add);
+			}
+		}
+		if (media.getPeople() != null) {
+			String peopleCats = esaPeople.get(media.getPeople());
+			if (StringUtils.isNotBlank(peopleCats)) {
+				Arrays.stream(peopleCats.split(";")).forEach(result::add);
+			}
+		}
         return result;
     }
 
