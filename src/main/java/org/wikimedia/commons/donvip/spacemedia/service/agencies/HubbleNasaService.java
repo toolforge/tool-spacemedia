@@ -42,7 +42,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNas
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaNewsReleaseResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaNewsResponse;
-import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
 
 /**
  * Service harvesting images from NASA Hubble / Jame Webb websites.
@@ -128,6 +127,9 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 						for (int imageId : details.getReleaseImages()) {
 							try {
 								count += doUpdateMedia(imageId, getImageDetails(rest, imageId), details);
+							} catch (HttpStatusException e) {
+								LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
+								problem(e.getUrl(), e);
 							} catch (IOException | URISyntaxException | RuntimeException e) {
 								LOGGER.error(
 										"Error while fetching image " + imageId + " via Hubble news " + news.getId(),
