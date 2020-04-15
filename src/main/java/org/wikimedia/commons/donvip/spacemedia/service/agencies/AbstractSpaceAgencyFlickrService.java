@@ -68,7 +68,7 @@ public abstract class AbstractSpaceAgencyFlickrService
 	void init() throws IOException {
 		super.init();
 		for (String account : flickrAccounts) {
-			Map<String, String> mapping = loadCsvMapping("/flickr/" + account + ".photosets.csv");
+			Map<String, String> mapping = loadCsvMapping("flickr/" + account + ".photosets.csv");
 			if (mapping != null) {
 				flickrPhotoSets.put(account, mapping);
 			}
