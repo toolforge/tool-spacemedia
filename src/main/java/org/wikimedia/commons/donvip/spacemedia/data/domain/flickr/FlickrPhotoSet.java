@@ -19,8 +19,11 @@ public class FlickrPhotoSet {
 	private Long id;
 
 	@Lob
-	@Column(columnDefinition = "TEXT")
+	@Column(columnDefinition = "TEXT", nullable = false)
 	private String title;
+
+	@NotNull
+	private String pathAlias;
 
 	@ManyToMany
 	protected Set<FlickrMedia> members = new HashSet<>();
@@ -47,6 +50,14 @@ public class FlickrPhotoSet {
 
 	public void setMembers(Set<FlickrMedia> members) {
 		this.members = members;
+	}
+
+	public String getPathAlias() {
+		return pathAlias;
+	}
+
+	public void setPathAlias(String pathAlias) {
+		this.pathAlias = pathAlias;
 	}
 
 	@Override

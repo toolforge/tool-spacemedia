@@ -85,6 +85,14 @@ public class FlickrMediaProcessorService {
 			media.setPathAlias(flickrAccount);
 			save = true;
 		}
+		if (media.getPhotosets() != null) {
+			for (FlickrPhotoSet photoSet : media.getPhotosets()) {
+				if (StringUtils.isBlank(photoSet.getPathAlias())) {
+					photoSet.setPathAlias(flickrAccount);
+					save = true;
+				}
+			}
+		}
 		if (mediaService.updateMedia(media)) {
 			save = true;
 		}
