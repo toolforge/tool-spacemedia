@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.SimpleQueryStringMatchingContext;
@@ -205,9 +207,9 @@ public abstract class AbstractSpaceAgencyFlickrService
 			Map<String, String> mapping = flickrPhotoSets.get(media.getPathAlias());
 			if (MapUtils.isNotEmpty(mapping)) {
 				for (FlickrPhotoSet album : media.getPhotosets()) {
-					String cat = mapping.get(album.getTitle());
-					if (cat != null) {
-						result.add(cat);
+                    String cats = mapping.get(album.getTitle());
+                    if (StringUtils.isNotBlank(cats)) {
+                        Arrays.stream(cats.split(";")).map(String::trim).forEach(result::add);
 					}
 				}
 			}
