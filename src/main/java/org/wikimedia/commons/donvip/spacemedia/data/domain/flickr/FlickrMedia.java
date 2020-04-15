@@ -2,9 +2,11 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -84,8 +86,8 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     @Field(index = org.hibernate.search.annotations.Index.YES, analyze = Analyze.NO, store = Store.NO)
     private String pathAlias;
 
-	@ManyToMany(fetch = FetchType.EAGER, mappedBy = "members")
-	private Set<FlickrPhotoSet> photosets;
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST, mappedBy = "members")
+	private Set<FlickrPhotoSet> photosets = new HashSet<>();
 
     @Override
     public Long getId() {
@@ -238,8 +240,14 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
 		return photosets;
 	}
 
-	public void setPhotosets(Set<FlickrPhotoSet> photosets) {
-		this.photosets = photosets;
+	public void addPhotoSet(FlickrPhotoSet photoset) {
+		this.photosets.add(photoset);
+		photoset.getMembers().add(this);
+	}
+
+	public void removePhotoSet(FlickrPhotoSet photoset) {
+		this.photosets.remove(photoset);
+		photoset.getMembers().remove(this);
 	}
 
 	@Override

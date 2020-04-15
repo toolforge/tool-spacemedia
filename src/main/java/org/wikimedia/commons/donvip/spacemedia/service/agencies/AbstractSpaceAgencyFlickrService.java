@@ -19,14 +19,12 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.SimpleQueryStringMatchingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
@@ -34,8 +32,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLice
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
+import org.wikimedia.commons.donvip.spacemedia.service.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
 
 import com.flickr4java.flickr.FlickrException;
@@ -49,18 +47,15 @@ public abstract class AbstractSpaceAgencyFlickrService
 
     @Autowired
     protected FlickrMediaRepository flickrRepository;
-    @Autowired
-	protected FlickrPhotoSetRepository flickrPhotoSetRepository;
 	@Autowired
     protected FlickrService flickrService;
     @Autowired
     protected Mapper dozerMapper;
+	@Autowired
+	protected FlickrMediaProcessorService processor;
 
     protected final Set<String> flickrAccounts;
 	protected final Map<String, Map<String, String>> flickrPhotoSets;
-
-    @Value("${flickr.video.download.url}")
-    private String flickrVideoDownloadUrl;
 
     public AbstractSpaceAgencyFlickrService(FlickrMediaRepository repository, Set<String> flickrAccounts) {
         super(repository);
@@ -231,7 +226,7 @@ public abstract class AbstractSpaceAgencyFlickrService
     @Override
     protected void checkUploadPreconditions(FlickrMedia media) throws IOException {
         super.checkUploadPreconditions(media);
-        if (isBadVideoEntry(media)) {
+		if (processor.isBadVideoEntry(media)) {
             throw new ImageUploadForbiddenException("Bad video download link: " + media);
         }
         if (!"ready".equals(media.getMediaStatus())) {
@@ -256,7 +251,7 @@ public abstract class AbstractSpaceAgencyFlickrService
                 for (FlickrMedia media : flickrService.findFreePhotos(flickrAccount).stream()
                         .map(p -> dozerMapper.map(p, FlickrMedia.class)).collect(Collectors.toList())) {
                     try {
-						processFlickrMedia(media, flickrAccount);
+						processor.processFlickrMedia(media, flickrAccount);
                         count++;
                     } catch (IOException | URISyntaxException e) {
                         problem(getPhotoUrl(media), e);
@@ -267,56 +262,6 @@ public abstract class AbstractSpaceAgencyFlickrService
             }
         }
         endUpdateMedia(count, start);
-    }
-
-    private URL getVideoUrl(FlickrMedia media) throws MalformedURLException {
-        return new URL(flickrVideoDownloadUrl.replace("<id>", media.getId().toString()));
-    }
-
-    private boolean isBadVideoEntry(FlickrMedia media) throws MalformedURLException {
-		return "video".equals(media.getMedia()) && !getVideoUrl(media).equals(media.getAssetUrl());
-    }
-
-	private FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount)
-			throws IOException, URISyntaxException {
-        boolean save = false;
-        Optional<FlickrMedia> mediaInRepo = flickrRepository.findById(media.getId());
-        if (mediaInRepo.isPresent()) {
-			media = mediaInRepo.get();
-        } else {
-            save = true;
-        }
-		if (CollectionUtils.isEmpty(media.getPhotosets())) {
-			try {
-				media.setPhotosets(flickrService.findPhotoSets(media.getId().toString()).stream()
-						.map(ps -> flickrPhotoSetRepository.findById(Long.valueOf(ps.getId()))
-								.orElseGet(() -> dozerMapper.map(ps, FlickrPhotoSet.class)))
-						.collect(Collectors.toSet()));
-				if (CollectionUtils.isNotEmpty(media.getPhotosets())) {
-					media.getPhotosets().forEach(flickrPhotoSetRepository::save);
-					save = true;
-				}
-			} catch (FlickrException e) {
-				LOGGER.error("Failed to retrieve photosets of image " + media.getId(), e);
-			}
-		}
-        if (isBadVideoEntry(media)) {
-            media.setAssetUrl(getVideoUrl(media));
-            media.setCommonsFileNames(null);
-            media.setSha1(null);
-            save = true;
-        }
-		if (StringUtils.isEmpty(media.getPathAlias())) {
-			media.setPathAlias(flickrAccount);
-			save = true;
-		}
-        if (mediaService.updateMedia(media)) {
-            save = true;
-        }
-        if (save) {
-            media = flickrRepository.save(media);
-        }
-        return media;
     }
 
     @Override

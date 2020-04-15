@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -22,7 +23,7 @@ public class FlickrPhotoSet {
 	private String title;
 
 	@ManyToMany
-	protected Set<FlickrMedia> members;
+	protected Set<FlickrMedia> members = new HashSet<>();
 
 	public Long getId() {
 		return id;
