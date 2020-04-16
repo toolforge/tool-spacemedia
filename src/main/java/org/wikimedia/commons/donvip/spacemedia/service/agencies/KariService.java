@@ -125,6 +125,7 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer, 
                     LOGGER.error("Cannot parse HTML", e);
                 } catch (IOException e) {
                     problem(view, e);
+                    consecutiveFailures++;
                 }
             }
             if (media != null) {
