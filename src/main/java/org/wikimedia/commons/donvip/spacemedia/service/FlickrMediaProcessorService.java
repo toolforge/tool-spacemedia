@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
@@ -55,9 +56,31 @@ public class FlickrMediaProcessorService {
 	public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount)
 			throws IOException, URISyntaxException {
 		boolean save = false;
-		Optional<FlickrMedia> mediaInRepo = flickrRepository.findById(media.getId());
-		if (mediaInRepo.isPresent()) {
-			media = mediaInRepo.get();
+		Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
+		if (optMediaInRepo.isPresent()) {
+            FlickrMedia mediaInRepo = optMediaInRepo.get();
+            if (mediaInRepo.getLicense() != media.getLicense()) {
+                LOGGER.warn("Flickr license has changed for picture {} of {} from {} to {}", 
+                        media.getId(), flickrAccount, mediaInRepo.getLicense(), media.getLicense());
+                try {
+                    if (FlickrFreeLicense.of(media.getLicense()) != null && mediaInRepo.isIgnored()
+                            && mediaInRepo.getIgnoredReason() != null
+                            && mediaInRepo.getIgnoredReason().endsWith("is no longer free!")) {
+                        LOGGER.info("Flickr license for picture {} of {} is free again!", media.getId(), flickrAccount);
+                        mediaInRepo.setIgnored(Boolean.FALSE);
+                        mediaInRepo.setIgnoredReason(null);
+                    }
+                } catch (IllegalArgumentException e) {
+                    String message = String.format("Flickr license for picture %d of %s is no longer free!",
+                            media.getId(), flickrAccount);
+                    mediaInRepo.setIgnored(Boolean.TRUE);
+                    mediaInRepo.setIgnoredReason(message);
+                    LOGGER.warn(message);
+                }
+                mediaInRepo.setLicense(media.getLicense());
+                save = true;
+            }
+            media = mediaInRepo;
 		} else {
 			save = true;
 		}
@@ -65,7 +88,11 @@ public class FlickrMediaProcessorService {
 			try {
 				Set<FlickrPhotoSet> sets = flickrService.findPhotoSets(media.getId().toString()).stream()
 						.map(ps -> flickrPhotoSetRepository.findById(Long.valueOf(ps.getId()))
-								.orElseGet(() -> dozerMapper.map(ps, FlickrPhotoSet.class)))
+                                .orElseGet(() -> {
+                                    FlickrPhotoSet set = dozerMapper.map(ps, FlickrPhotoSet.class);
+                                    set.setPathAlias(flickrAccount);
+                                    return flickrPhotoSetRepository.save(set);
+                                }))
 						.collect(Collectors.toSet());
 				if (CollectionUtils.isNotEmpty(sets)) {
 					sets.forEach(media::addPhotoSet);

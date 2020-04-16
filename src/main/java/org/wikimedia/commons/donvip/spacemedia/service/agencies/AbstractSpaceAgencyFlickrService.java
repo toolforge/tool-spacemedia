@@ -40,6 +40,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
 
 import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.people.User;
+import com.flickr4java.flickr.photos.Photo;
 import com.github.dozermapper.core.Mapper;
 
 public abstract class AbstractSpaceAgencyFlickrService
@@ -250,20 +251,39 @@ public abstract class AbstractSpaceAgencyFlickrService
         for (String flickrAccount : flickrAccounts) {
             try {
                 LOGGER.info("Fetching Flickr images from account '{}'...", flickrAccount);
-                for (FlickrMedia media : flickrService.findFreePhotos(flickrAccount).stream()
-                        .map(p -> dozerMapper.map(p, FlickrMedia.class)).collect(Collectors.toList())) {
-                    try {
-						processor.processFlickrMedia(media, flickrAccount);
-                        count++;
-                    } catch (IOException | URISyntaxException e) {
-                        problem(getPhotoUrl(media), e);
-                    }
+                List<FlickrMedia> freePictures = buildFlickrMediaList(flickrService.findFreePhotos(flickrAccount));
+                count += processFlickrMedia(freePictures, flickrAccount);
+                Set<FlickrMedia> noLongerFreePictures = flickrRepository.findAll(Set.of(flickrAccount));
+                noLongerFreePictures.removeAll(freePictures);
+                if (!noLongerFreePictures.isEmpty()) {
+                    LOGGER.info("Checking Flickr images no longer free for account '{}'...", flickrAccount);
+                    count += processFlickrMedia(buildFlickrMediaList(
+                            flickrService.findPhotos(noLongerFreePictures.stream().map(FlickrMedia::getId)
+                                    .map(l -> l.toString()).collect(Collectors.toSet()))),
+                            flickrAccount);
                 }
 			} catch (FlickrException | MalformedURLException | RuntimeException e) {
                 LOGGER.error("Error while fetching Flickr images from account " + flickrAccount, e);
             }
         }
         endUpdateMedia(count, start);
+    }
+
+    private List<FlickrMedia> buildFlickrMediaList(List<Photo> photos) {
+        return photos.stream().map(p -> dozerMapper.map(p, FlickrMedia.class)).collect(Collectors.toList());
+    }
+
+    private int processFlickrMedia(Iterable<FlickrMedia> medias, String flickrAccount) throws MalformedURLException {
+        int count = 0;
+        for (FlickrMedia media : medias) {
+            try {
+                processor.processFlickrMedia(media, flickrAccount);
+                count++;
+            } catch (IOException | URISyntaxException e) {
+                problem(getPhotoUrl(media), e);
+            }
+        }
+        return count;
     }
 
     @Override

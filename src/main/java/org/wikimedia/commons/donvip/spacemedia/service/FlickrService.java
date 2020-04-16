@@ -66,6 +66,14 @@ public class FlickrService {
         return new URL(flickr.getUrlsInterface().getUserProfile(nsid));
     }
 
+    public List<Photo> findPhotos(Set<String> photoIds) throws FlickrException {
+        List<Photo> result = new ArrayList<>();
+        for (String photoId : photoIds) {
+            result.add(flickr.getPhotosInterface().getPhoto(photoId));
+        }
+        return result;
+    }
+
     public List<Photo> findFreePhotos(String userId) throws FlickrException {
         List<Photo> result = new ArrayList<>();
         SearchParameters params = new SearchParameters();

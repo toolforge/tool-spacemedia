@@ -504,6 +504,12 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
 		return Csv.loadMap(getClass().getResource("/mapping/" + filename));
 	}
 
+    protected final boolean ignoreFile(T media, String reason) {
+        media.setIgnored(Boolean.TRUE);
+        media.setIgnoredReason(reason);
+        return true;
+    }
+
     @Override
     public int compareTo(AbstractSpaceAgencyService<T, ID, D> o) {
         return getName().compareTo(o.getName());

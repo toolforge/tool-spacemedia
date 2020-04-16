@@ -197,12 +197,6 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         return Optional.of(media);
     }
 
-    protected boolean ignoreFile(T media, String reason) {
-        media.setIgnored(Boolean.TRUE);
-        media.setIgnoredReason(reason);
-        return true;
-    }
-
     protected Collection<String> getForbiddenCategories() {
         return Collections.emptyList();
     }
