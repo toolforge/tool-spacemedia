@@ -462,7 +462,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
             for (T m : repository.findMissingInCommons()) {
                 if (getOriginalRepository().countBySha1(m.getSha1()) > 0) {
                     m.setIgnored(true);
-                    m.setIgnoredReason("Already present in " + getOriginalRepository().getClass().getSimpleName());
+                    m.setIgnoredReason("Already present in main repository.");
                     repository.save(m);
                 }
             }
