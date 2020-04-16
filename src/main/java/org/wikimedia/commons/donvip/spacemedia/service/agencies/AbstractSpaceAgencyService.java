@@ -367,7 +367,9 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     public final String getWikiCode(T media) {
         try {
             StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n{{Information\n| description = ")
-                    .append(CommonsService.formatWikiCode(getDescription(media)));
+                    .append("{{").append(getLanguage(media)).append(
+                            "|1=")
+                    .append(CommonsService.formatWikiCode(getDescription(media))).append("}}");
             Optional<Temporal> creationDate = getCreationDate(media);
             if (creationDate.isPresent()) {
                 Temporal d = creationDate.get();
@@ -393,6 +395,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected String getLanguage(T media) {
+        return "en";
     }
 
     protected String getDescription(T media) {

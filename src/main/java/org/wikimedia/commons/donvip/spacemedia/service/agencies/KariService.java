@@ -51,6 +51,11 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer, 
     }
 
     @Override
+    protected String getLanguage(KariMedia media) {
+        return "ko";
+    }
+
+    @Override
     protected Class<KariMedia> getMediaClass() {
         return KariMedia.class;
     }
