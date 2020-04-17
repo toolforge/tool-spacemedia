@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -47,6 +49,7 @@ public abstract class AbstractSpaceAgencyFlickrService
         extends AbstractSpaceAgencyService<FlickrMedia, Long, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpaceAgencyFlickrService.class);
+    private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"([0-9]+)\" not found \\(invalid ID\\)");
 
     @Autowired
     protected FlickrMediaRepository flickrRepository;
@@ -256,11 +259,7 @@ public abstract class AbstractSpaceAgencyFlickrService
                 Set<FlickrMedia> noLongerFreePictures = flickrRepository.findAll(Set.of(flickrAccount));
                 noLongerFreePictures.removeAll(freePictures);
                 if (!noLongerFreePictures.isEmpty()) {
-                    LOGGER.info("Checking Flickr images no longer free for account '{}'...", flickrAccount);
-                    count += processFlickrMedia(buildFlickrMediaList(
-                            flickrService.findPhotos(noLongerFreePictures.stream().map(FlickrMedia::getId)
-                                    .map(l -> l.toString()).collect(Collectors.toSet()))),
-                            flickrAccount);
+                    count += updateNoLongerFreeFlickrMedia(flickrAccount, noLongerFreePictures);
                 }
 			} catch (FlickrException | MalformedURLException | RuntimeException e) {
                 LOGGER.error("Error while fetching Flickr images from account " + flickrAccount, e);
@@ -269,8 +268,41 @@ public abstract class AbstractSpaceAgencyFlickrService
         endUpdateMedia(count, start);
     }
 
+    private int updateNoLongerFreeFlickrMedia(String flickrAccount, Set<FlickrMedia> pictures)
+            throws MalformedURLException {
+        int count = 0;
+        LOGGER.info("Checking {} Flickr images no longer free for account '{}'...", pictures.size(), flickrAccount);
+        for (FlickrMedia picture : pictures) {
+            try {
+                count += processFlickrMedia(
+                        buildFlickrMediaList(flickrService.findPhotos(Set.of(picture.getId().toString()))),
+                        flickrAccount);
+            } catch (FlickrException e) {
+                if (e.getErrorMessage() != null) {
+                    Matcher m = DELETED_PHOTO.matcher(e.getErrorMessage());
+                    if (m.matches()) {
+                        String id = m.group(1);
+                        LOGGER.warn("Flickr image {} has been deleted for account '{}'", id, flickrAccount);
+                        flickrRepository.deleteById(Long.valueOf(id));
+                        count++;
+                    } else {
+                        LOGGER.error("Error while processing non-free Flickr image " + picture.getId()
+                                + " from account " + flickrAccount, e);
+                    }
+                } else {
+                    LOGGER.error("Error while processing non-free Flickr image " + picture.getId()
+                            + " from account " + flickrAccount, e);
+                }
+            }
+        }
+        return count;
+    }
+
     private List<FlickrMedia> buildFlickrMediaList(List<Photo> photos) {
-        return photos.stream().map(p -> dozerMapper.map(p, FlickrMedia.class)).collect(Collectors.toList());
+        return photos.stream()
+                .map(p -> flickrRepository.findById(Long.parseLong(p.getId()))
+                        .orElseGet(() -> dozerMapper.map(p, FlickrMedia.class)))
+                .collect(Collectors.toList());
     }
 
     private int processFlickrMedia(Iterable<FlickrMedia> medias, String flickrAccount) throws MalformedURLException {
