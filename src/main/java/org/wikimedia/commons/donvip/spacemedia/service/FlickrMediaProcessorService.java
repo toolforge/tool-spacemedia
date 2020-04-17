@@ -56,6 +56,7 @@ public class FlickrMediaProcessorService {
 	public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount)
 			throws IOException, URISyntaxException {
 		boolean save = false;
+        boolean savePhotoSets = false;
 		Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
 		if (optMediaInRepo.isPresent()) {
             FlickrMedia mediaInRepo = optMediaInRepo.get();
@@ -96,6 +97,7 @@ public class FlickrMediaProcessorService {
 						.collect(Collectors.toSet());
 				if (CollectionUtils.isNotEmpty(sets)) {
 					sets.forEach(media::addPhotoSet);
+                    savePhotoSets = true;
 					save = true;
 				}
 			} catch (FlickrException e) {
@@ -116,7 +118,7 @@ public class FlickrMediaProcessorService {
 			for (FlickrPhotoSet photoSet : media.getPhotosets()) {
 				if (StringUtils.isBlank(photoSet.getPathAlias())) {
 					photoSet.setPathAlias(flickrAccount);
-					save = true;
+                    savePhotoSets = true;
 				}
 			}
 		}
@@ -126,6 +128,9 @@ public class FlickrMediaProcessorService {
 		if (save) {
 			media = flickrRepository.save(media);
 		}
+        if (savePhotoSets) {
+            media.getPhotosets().forEach(flickrPhotoSetRepository::save);
+        }
 		return media;
 	}
 }
