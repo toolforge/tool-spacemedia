@@ -153,6 +153,9 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 				for (HubbleNasaImagesResponse image : response) {
 					try {
 						count += doUpdateMedia(image.getId(), getImageDetails(rest, image.getId()), null);
+                    } catch (HttpStatusException e) {
+                        LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
+                        problem(e.getUrl(), e);
 					} catch (IOException | URISyntaxException | RuntimeException e) {
 						LOGGER.error("Error while fetching image " + image.getId() + " via Hubble images", e);
 					}
@@ -299,7 +302,7 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 
 	private static Document fetchHtml(URL sourceUrl) throws IOException {
 		String sourceLink = sourceUrl.toExternalForm();
-		LOGGER.info(sourceLink);
+        LOGGER.debug(sourceLink);
 		return Jsoup.connect(sourceLink).timeout(60_000).get();
 	}
 
