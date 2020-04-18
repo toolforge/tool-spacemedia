@@ -29,6 +29,17 @@
 		          <a th:href="${agency.getSourceUrl(media)}">
 		            <img th:src="${agency.getThumbnailUrl(media)}" width="210px" />
 		          </a>
+		          <div th:if="'missing' == ${tab}" th:each="asset : ${media.assetsToUpload}">
+		          	<a th:href="@{/{id}/rest/wiki/{sha1}(id=${agency.id},sha1=${asset})}" target="_blank">
+		          		<img width="24" height="24" th:alt="'wikihtml ' + ${asset}" th:src="@{/Emblem-search.svg}">
+		          	</a>
+		          	<a th:href="@{/{id}/rest/wikicode/{sha1}(id=${agency.id},sha1=${asset})}" target="_blank">
+		          		<img width="24" height="24" th:alt="'wikicode ' + ${asset}" th:src="@{/Curly_brackets_icon.svg}">
+		          	</a>
+		          	<a th:href="@{/{id}/rest/upload/{sha1}(id=${agency.id},sha1=${asset})}" target="_blank" th:if="${agency.uploadEnabled}">
+		          		<img width="24" height="24" th:alt="'upload ' + ${asset}" th:src="@{/Wlm-icon-upload-red.svg}">
+		          	</a>
+		          </div>
 		        </td>
 		        <td th:text="${media.title}"></td>
 		        <td th:text="${media.date}"></td>

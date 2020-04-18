@@ -4,6 +4,8 @@ import java.net.URL;
 import java.time.Year;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -13,6 +15,8 @@ import javax.persistence.FetchType;
 import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
@@ -147,5 +151,13 @@ public abstract class Media<ID, D extends Temporal> {
         return Objects.equals(commonsFileNames, other.commonsFileNames)
             && Objects.equals(sha1, other.sha1)
             && Objects.equals(assetUrl, other.assetUrl);
+    }
+
+    public List<String> getAssetsToUpload() {
+        List<String> result = new ArrayList<>();
+        if (StringUtils.isNotBlank(getSha1()) && CollectionUtils.isEmpty(getCommonsFileNames())) {
+            result.add(getSha1());
+        }
+        return result;
     }
 }

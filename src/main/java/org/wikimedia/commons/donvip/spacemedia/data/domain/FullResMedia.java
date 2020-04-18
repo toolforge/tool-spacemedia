@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import java.net.URL;
 import java.time.temporal.Temporal;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -9,6 +10,9 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.FetchType;
 import javax.persistence.MappedSuperclass;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Media that can have an optional full-res variant of the main media (ex: big
@@ -65,5 +69,14 @@ public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> 
         return Objects.equals(fullResCommonsFileNames, other.fullResCommonsFileNames)
                 && Objects.equals(fullResAssetUrl, other.fullResAssetUrl)
                 && Objects.equals(fullResSha1, other.fullResSha1);
+    }
+
+    @Override
+    public List<String> getAssetsToUpload() {
+        List<String> result = super.getAssetsToUpload();
+        if (StringUtils.isNotBlank(getFullResSha1()) && CollectionUtils.isEmpty(getFullResCommonsFileNames())) {
+            result.add(getFullResSha1());
+        }
+        return result;
     }
 }

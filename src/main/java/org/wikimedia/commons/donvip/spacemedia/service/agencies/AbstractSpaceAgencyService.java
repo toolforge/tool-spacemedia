@@ -88,6 +88,8 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
 
     private Set<String> ignoredCommonTerms;
 
+    private boolean uploadEnabled;
+
     public AbstractSpaceAgencyService(MediaRepository<T, ID, D> repository) {
         this.repository = Objects.requireNonNull(repository);
     }
@@ -95,6 +97,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @PostConstruct
     void init() throws IOException {
         ignoredCommonTerms = Csv.loadSet(getClass().getResource("/ignored.terms.csv"));
+        uploadEnabled = env.getProperty(getClass().getName() + ".upload.enabled", Boolean.class, Boolean.FALSE);
     }
 
     /**
@@ -331,9 +334,13 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         return repository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
     }
 
+    public final boolean isUploadEnabled() {
+        return uploadEnabled;
+    }
+
     @Override
     public final T upload(String sha1) throws IOException {
-        if (!env.getProperty(getClass().getName() + ".upload.enabled", Boolean.class, Boolean.FALSE)) {
+        if (!isUploadEnabled()) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
         T media = findBySha1OrThrow(sha1);
