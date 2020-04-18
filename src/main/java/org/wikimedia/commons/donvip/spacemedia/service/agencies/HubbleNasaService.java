@@ -211,7 +211,7 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 				URL url = toUrl(fileUrl);
 				if (fileUrl.endsWith(".tif") || fileUrl.endsWith(".tiff")) {
 					media.setFullResAssetUrl(url);
-				} else if (fileUrl.endsWith(".png") || fileUrl.endsWith(".jpg")) {
+                } else if (fileUrl.endsWith(".png") || fileUrl.endsWith(".jpg") || fileUrl.endsWith(".pdf")) {
 					media.setAssetUrl(url);
 				}
 			}
