@@ -78,6 +78,7 @@ public class EsaFlickrService extends AbstractSpaceAgencyFlickrService {
 				}
 			}
 		}
+        EsaService.enrichEsaCategories(result, media);
         return result;
     }
 }

@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
@@ -427,7 +428,35 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
 				Arrays.stream(peopleCats.split(";")).forEach(result::add);
 			}
 		}
+        enrichEsaCategories(result, media);
         return result;
+    }
+
+    public static void enrichEsaCategories(Set<String> categories, Media<?, ?> media) {
+        if (media.getDescription() != null) {
+            if (categories.contains("Photos by Mars Express") && media.getDescription().contains("ESA/DLR/FU Berlin")) {
+                categories.remove("Photos by Mars Express");
+                categories.add("Photos by HRSC");
+            }
+            if (categories.contains("Photos by HRSC")
+                    // Catch lowercase, normalcase, english and german
+                    && (media.getTitle().contains("opographi") || media.getDescription().contains("opographi"))) {
+                categories.remove("Photos by HRSC");
+                categories.add("Mars false-color topographic views by HRSC");
+            }
+            if (categories.contains("Photos by HRSC")
+                    // Catch lowercase, normalcase, english and german
+                    && (media.getTitle().contains("3D") || media.getTitle().contains("3-D") || media.getTitle().contains("naglyph"))) {
+                categories.remove("Photos by HRSC");
+                categories.add("Mars 3D anaglyphs by HRSC");
+            }
+            if (categories.contains("Photos by HRSC")
+                    // Catch lowercase, normalcase, english and german
+                    && (media.getTitle().contains("erspectiv") || media.getTitle().contains("erspektiv"))) {
+                categories.remove("Photos by HRSC");
+                categories.add("Mars perspective views by HRSC");
+            }
+        }
     }
 
     @Override

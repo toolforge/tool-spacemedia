@@ -29,10 +29,7 @@ public class DlrService extends AbstractSpaceAgencyFlickrService {
         if (includeHidden) {
             result.add("Files from Deutsches Zentrum für Luft- und Raumfahrt Flickr stream");
         }
-        if (result.contains("Mars Express") && media.getDescription().contains("HRSC")) {
-            result.remove("Mars Express");
-            result.add("Photos by HRSC");
-        }
+        EsaService.enrichEsaCategories(result, media);
         return result;
     }
 
