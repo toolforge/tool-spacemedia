@@ -57,6 +57,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepositor
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQueryResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.rest.UserProfile;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -97,6 +98,9 @@ public class CommonsService {
     @Value("${commons.api.url}")
     private URL apiUrl;
 
+    @Value("${commons.api.rest.url}")
+    private URL restApiUrl;
+
     @Value("${commons.api.oauth.access.token}")
     private String oauthAccessToken;
 
@@ -113,6 +117,14 @@ public class CommonsService {
     public void init() throws IOException {
         httpClient = createHttpClient();
         token = queryToken();
+        UserProfile userProfile = restApiHttpGet("/oauth2/resource/profile", UserProfile.class);
+        LOGGER.info("Identified to Wikimedia Commons API as {}", userProfile.getUserName());
+        if (userProfile.isBlocked()) {
+            LOGGER.warn("Wikimedia Commons user account is blocked!");
+        }
+        if (!userProfile.getRights().contains("upload")) {
+            LOGGER.warn("Wikimedia Commons user account has no upload right!");
+        }
     }
 
     @PreDestroy
@@ -156,7 +168,15 @@ public class CommonsService {
     }
 
     private <T> T apiHttpGet(String path, Class<T> responseClass) throws IOException {
-        HttpGet httpGet = new HttpGet(apiUrl + path + "&format=json");
+        return httpGet(apiUrl + path + "&format=json", responseClass);
+    }
+
+    private <T> T restApiHttpGet(String path, Class<T> responseClass) throws IOException {
+        return httpGet(restApiUrl + path, responseClass);
+    }
+
+    private <T> T httpGet(String url, Class<T> responseClass) throws IOException {
+        HttpGet httpGet = new HttpGet(url);
         httpGet.setHeader("Authorization", "Bearer " + oauthAccessToken);
         try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
             return jackson.readValue(getHttpResponseBody(response), responseClass);
