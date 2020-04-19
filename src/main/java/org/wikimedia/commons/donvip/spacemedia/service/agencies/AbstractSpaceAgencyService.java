@@ -454,7 +454,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
 	public Set<String> findCategories(T media, boolean includeHidden) {
 		Set<String> result = new HashSet<>();
 		if (includeHidden) {
-			result.add("Spacemedia files uploaded by Vipbot");
+            result.add("Spacemedia files uploaded by " + commonsService.getAccount());
 		}
 		return result;
     }

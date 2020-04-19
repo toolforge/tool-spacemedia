@@ -1,7 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -31,11 +33,13 @@ public final class Csv {
         Map<String, String> result = new TreeMap<>();
         CsvMapper mapper = new CsvMapper();
         mapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
-        MappingIterator<String[]> it = mapper.readerFor(String[].class).readValues(url);
-        it.next(); // Skip header
-        while (it.hasNext()) {
-            String[] row = it.next();
-            result.put(row[0], row[1]);
+        try (InputStreamReader reader = new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)) {
+            MappingIterator<String[]> it = mapper.readerFor(String[].class).readValues(reader);
+            it.next(); // Skip header
+            while (it.hasNext()) {
+                String[] row = it.next();
+                result.put(row[0], row[1]);
+            }
         }
         return result;
     }

@@ -3,11 +3,10 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,26 +15,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -56,14 +41,22 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQueryResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Limit;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQueryResponse;
-import org.wikimedia.commons.donvip.spacemedia.data.commons.api.rest.UserProfile;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Tokens;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UserInfo;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.scribejava.apis.MediaWikiApi;
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth1AccessToken;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth10aService;
 
 @Service
 public class CommonsService {
@@ -101,35 +94,56 @@ public class CommonsService {
     @Value("${commons.api.rest.url}")
     private URL restApiUrl;
 
-    @Value("${commons.api.oauth.access.token}")
-    private String oauthAccessToken;
-
     @Value("${commons.cat.search.depth}")
     private int catSearchDepth;
 
     @Value("${commons.img.preview.width}")
     private int imgPreviewWidth;
 
-    private CloseableHttpClient httpClient;
+    private final String account;
+    private final String contact;
+    private final String userAgent;
+    private final OAuth10aService oAuthService;
+    private final OAuth1AccessToken oAuthAccessToken;
+
     private String token;
+
+    public CommonsService(
+            @Value("${application.version}") String appVersion,
+            @Value("${application.contact}") String appContact,
+            @Value("${flickr4java.version}") String flickr4javaVersion,
+            @Value("${spring-boot.version}") String bootVersion,
+            @Value("${scribejava.version}") String scribeVersion,
+            @Value("${commons.api.account}") String apiAccount,
+            @Value("${commons.api.oauth1.consumer-token}") String consumerToken,
+            @Value("${commons.api.oauth1.consumer-secret}") String consumerSecret,
+            @Value("${commons.api.oauth1.access-token}") String accessToken,
+            @Value("${commons.api.oauth1.access-secret}") String accessSecret
+    ) {
+        account = apiAccount;
+        contact = appContact;
+        // Comply to Wikimedia User-Agent Policy: https://meta.wikimedia.org/wiki/User-Agent_policy
+        if (!account.toLowerCase(Locale.ENGLISH).contains("bot")) {
+            throw new IllegalArgumentException("Bot account must include 'bot' in its name!");
+        }
+        userAgent = String.format("%s/%s (%s - %s) %s/%s %s/%s %s/%s",
+                "Spacemedia", appVersion, appContact, apiAccount, "SpringBoot", bootVersion, "ScribeJava",
+                scribeVersion, "Flickr4Java", flickr4javaVersion);
+        oAuthService = new ServiceBuilder(consumerToken).apiSecret(consumerSecret).build(MediaWikiApi.instance());
+        oAuthAccessToken = new OAuth1AccessToken(accessToken, accessSecret);
+    }
 
     @PostConstruct
     public void init() throws IOException {
-        httpClient = createHttpClient();
-        token = queryToken();
-        UserProfile userProfile = restApiHttpGet("/oauth2/resource/profile", UserProfile.class);
-        LOGGER.info("Identified to Wikimedia Commons API as {}", userProfile.getUserName());
-        if (userProfile.isBlocked()) {
-            LOGGER.warn("Wikimedia Commons user account is blocked!");
-        }
-        if (!userProfile.getRights().contains("upload")) {
+        UserInfo userInfo = queryUserInfo();
+        LOGGER.info("Identified to Wikimedia Commons API as {}", userInfo.getName());
+        if (!userInfo.getRights().contains("upload")) {
             LOGGER.warn("Wikimedia Commons user account has no upload right!");
         }
-    }
-
-    @PreDestroy
-    public void destroy() throws IOException {
-        httpClient.close();
+        Limit uploadRate = userInfo.getRateLimits().getUpload().getUser();
+        LOGGER.info("Upload rate limited to {} hits every {} seconds.", uploadRate.getHits(), uploadRate.getSeconds());
+        // Fetch CSRF token, mandatory for upload using the Mediawiki API
+        token = queryTokens().getCsrftoken();
     }
 
     public Set<String> findFilesWithSha1(String sha1) throws IOException {
@@ -146,8 +160,13 @@ public class CommonsService {
         return files;
     }
 
-    public String queryToken() throws IOException {
-        return apiHttpGet("?action=query&meta=tokens", MetaQueryResponse.class).getQuery().getTokens().getCsrftoken();
+    public Tokens queryTokens() throws IOException {
+        return apiHttpGet("?action=query&meta=tokens", MetaQueryResponse.class).getQuery().getTokens();
+    }
+
+    public UserInfo queryUserInfo() throws IOException {
+        return apiHttpGet("?action=query&meta=userinfo&uiprop=blockinfo|groups|rights|ratelimits",
+                MetaQueryResponse.class).getQuery().getUserInfo();
     }
 
     public List<FileArchive> queryFileArchive(String sha1base36) throws IOException {
@@ -155,70 +174,53 @@ public class CommonsService {
                 FileArchiveQueryResponse.class).getQuery().getFilearchive();
     }
 
-    /**
-     * Creates an HTTP client smart enough to understand WMF cookies. See
-     * <a href="https://stackoverflow.com/a/40697322/2257172">Fixing HttpClient
-     * warning “Invalid expires attribute” using fluent API</a>
-     * 
-     * @return an HTTP client smart enough to understand WMF cookies
-     */
-    private static CloseableHttpClient createHttpClient() {
-        return HttpClients.custom()
-                .setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build()).build();
-    }
-
     private <T> T apiHttpGet(String path, Class<T> responseClass) throws IOException {
-        return httpGet(apiUrl + path + "&format=json", responseClass);
+        return httpGet(apiUrl.toExternalForm() + path + "&format=json", responseClass);
     }
 
-    private <T> T restApiHttpGet(String path, Class<T> responseClass) throws IOException {
-        return httpGet(restApiUrl + path, responseClass);
+    private <T> T apiHttpPost(Map<String, String> params, Class<T> responseClass) throws IOException {
+        return httpPost(apiUrl.toExternalForm(), responseClass, params);
     }
 
     private <T> T httpGet(String url, Class<T> responseClass) throws IOException {
-        HttpGet httpGet = new HttpGet(url);
-        httpGet.setHeader("Authorization", "Bearer " + oauthAccessToken);
-        try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
-            return jackson.readValue(getHttpResponseBody(response), responseClass);
+        return httpCall(Verb.GET, url, responseClass, Collections.emptyMap(), Collections.emptyMap());
+    }
+
+    private <T> T httpPost(String url, Class<T> responseClass, Map<String, String> params) throws IOException {
+        return httpCall(Verb.POST, url, responseClass,
+                Map.of("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"), params);
+    }
+
+    private <T> T httpCall(Verb verb, String url, Class<T> responseClass, Map<String, String> headers,
+            Map<String, String> params) throws IOException {
+        OAuthRequest request = new OAuthRequest(verb, url);
+        request.setCharset(StandardCharsets.UTF_8.name());
+        params.forEach(request::addParameter);
+        headers.forEach(request::addHeader);
+        request.addHeader("User-Agent", userAgent);
+        oAuthService.signRequest(oAuthAccessToken, request);
+        try {
+            return jackson.readValue(oAuthService.execute(request).getBody(), responseClass);
+        } catch (InterruptedException | ExecutionException e) {
+            throw new IOException(e);
         }
-    }
-
-    private HttpPost apiHttpPost(List<NameValuePair> nvps) {
-        HttpPost httpPost = new HttpPost(apiUrl.toExternalForm());
-        nvps.add(new BasicNameValuePair("Authorization", "Bearer " + oauthAccessToken));
-        httpPost.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
-        httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-        return httpPost;
-    }
-
-    private static String getHttpResponseBody(CloseableHttpResponse response) throws IOException {
-        HttpEntity entity = response.getEntity();
-        Header encoding = entity.getContentEncoding();
-        String body = IOUtils.toString(entity.getContent(),
-                encoding == null ? StandardCharsets.UTF_8 : Charset.forName(encoding.getValue()));
-        EntityUtils.consume(entity);
-        return body;
     }
 
     public String getWikiHtmlPreview(String wikiCode, String pageTitle) throws IOException {
-        List<NameValuePair> nvps = new ArrayList<>();
-        nvps.add(new BasicNameValuePair("action", "visualeditor"));
-        nvps.add(new BasicNameValuePair("format", "json"));
-        nvps.add(new BasicNameValuePair("formatversion", "2"));
-        nvps.add(new BasicNameValuePair("paction", "parsedoc"));
-        nvps.add(new BasicNameValuePair("page", pageTitle));
-        nvps.add(new BasicNameValuePair("wikitext", wikiCode));
-        nvps.add(new BasicNameValuePair("pst", "true"));
-        HttpPost httpPost = apiHttpPost(nvps);
+        VisualEditorResponse apiResponse = apiHttpPost(Map.of(
+                "action", "visualeditor",
+                "format", "json",
+                "formatversion", "2",
+                "paction", "parsedoc",
+                "page", pageTitle,
+                "wikitext", wikiCode,
+                "pst", "true"
+        ), VeApiResponse.class).getVisualeditor();
 
-        try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-            String body = getHttpResponseBody(response);
-            VisualEditorResponse apiResponse = jackson.readValue(body, VeApiResponse.class).getVisualeditor();
-            if (!"success".equals(apiResponse.getResult())) {
-                throw new IllegalArgumentException(apiResponse.toString());
-            }
-            return apiResponse.getContent();
+        if (!"success".equals(apiResponse.getResult())) {
+            throw new IllegalArgumentException(apiResponse.toString());
         }
+        return apiResponse.getContent();
     }
 
     public String getWikiHtmlPreview(String wikiCode, String pageTitle, String imgUrl) throws IOException {
@@ -296,13 +298,22 @@ public class CommonsService {
     }
 
     /**
+     * Returns the API bot account name. Used for User-Agent and Commons categories.
+     *
+     * @return the API bot account name
+     */
+    public String getAccount() {
+        return account;
+    }
+
+    /**
      * Determines if a Commons category is hidden, using the special
      * {@code __HIDDENCAT__} behavior switch. See <a href=
      * "https://www.mediawiki.org/wiki/Help:Magic_words#Behavior_switches">documentation</a>.
      * 
      * @param category category to check
      * @return {@code true} if the category is hidden
-     * @throws CategoryNotFoundException if the category is not found
+     * @throws CategoryNotFoundException     if the category is not found
      * @throws CategoryPageNotFoundException if no page is found for the category
      */
     @Cacheable("hiddenCategories")
@@ -390,28 +401,23 @@ public class CommonsService {
     }
 
     public void upload(String wikiCode, String filename, URL url) throws IOException {
-        List<NameValuePair> nvps = new ArrayList<>();
-        nvps.add(new BasicNameValuePair("action", "upload"));
-        nvps.add(new BasicNameValuePair("comment",
-                "#Spacemedia - Upload of " + url + " via https://tools.wmflabs.org/spacemedia/"));
-        nvps.add(new BasicNameValuePair("format", "json"));
-        nvps.add(new BasicNameValuePair("filename", Objects.requireNonNull(filename, "filename")));
-        nvps.add(new BasicNameValuePair("ignorewarnings", "1"));
-        nvps.add(new BasicNameValuePair("text", wikiCode));
-        nvps.add(new BasicNameValuePair("token", token));
-        nvps.add(new BasicNameValuePair("url", url.toExternalForm()));
-        HttpPost httpPost = apiHttpPost(nvps);
-        try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-            String body = getHttpResponseBody(response);
-            LOGGER.info(body);
-            UploadApiResponse apiResponse = new ObjectMapper().readValue(body, UploadApiResponse.class);
-            UploadError error = apiResponse.getError();
-            if (error != null) {
-                throw new IllegalArgumentException(error.toString());
-            }
-            if (!"success".equals(apiResponse.getUpload().getResult())) {
-                throw new IllegalArgumentException(apiResponse.toString());
-            }
+        UploadApiResponse apiResponse = apiHttpPost(Map.of(
+                "action", "upload",
+                "comment", "#Spacemedia - Upload of " + url + " via " + contact,
+                "format", "json",
+                "filename", Objects.requireNonNull(filename, "filename"),
+                "ignorewarnings", "1",
+                "text", Objects.requireNonNull(wikiCode, "wikiCode"),
+                "token", token,
+                "url", url.toExternalForm()
+        ), UploadApiResponse.class);
+
+        UploadError error = apiResponse.getError();
+        if (error != null) {
+            throw new IllegalArgumentException(error.toString());
+        }
+        if (!"success".equals(apiResponse.getUpload().getResult())) {
+            throw new IllegalArgumentException(apiResponse.toString());
         }
     }
 

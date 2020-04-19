@@ -204,8 +204,8 @@ public abstract class AbstractSpaceAgencyFlickrService
 	public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
 		Set<String> result = super.findCategories(media, includeHidden);
 		if (includeHidden) {
-			result.remove("Spacemedia files uploaded by Vipbot");
-			result.add("Spacemedia Flickr files uploaded by Vipbot");
+            result.remove("Spacemedia files uploaded by " + commonsService.getAccount());
+            result.add("Spacemedia Flickr files uploaded by " + commonsService.getAccount());
 		}
 		if (CollectionUtils.isNotEmpty(media.getPhotosets())) {
 			Map<String, String> mapping = flickrPhotoSets.get(media.getPathAlias());
