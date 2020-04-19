@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.http.client.ClientProtocolException;
 import org.apache.lucene.misc.TermStats;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -71,8 +70,7 @@ public interface SpaceAgency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     T upload(String sha1) throws IOException;
 
-    String getWikiHtmlPreview(String sha1)
-            throws ClientProtocolException, IOException, ParserConfigurationException, SAXException;
+    String getWikiHtmlPreview(String sha1) throws IOException, ParserConfigurationException, SAXException;
 
     String getWikiCode(String sha1);
 

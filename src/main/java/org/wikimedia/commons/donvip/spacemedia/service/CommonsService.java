@@ -8,29 +8,32 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
@@ -53,6 +56,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQueryResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -93,17 +97,28 @@ public class CommonsService {
     @Value("${commons.api.url}")
     private URL apiUrl;
 
-    @Value("${commons.api.login}")
-    private String apiLogin;
-
-    @Value("${commons.api.password}")
-    private String apiPassword;
+    @Value("${commons.api.oauth.access.token}")
+    private String oauthAccessToken;
 
     @Value("${commons.cat.search.depth}")
     private int catSearchDepth;
 
     @Value("${commons.img.preview.width}")
     private int imgPreviewWidth;
+
+    private CloseableHttpClient httpClient;
+    private String token;
+
+    @PostConstruct
+    public void init() throws IOException {
+        httpClient = createHttpClient();
+        token = queryToken();
+    }
+
+    @PreDestroy
+    public void destroy() throws IOException {
+        httpClient.close();
+    }
 
     public Set<String> findFilesWithSha1(String sha1) throws IOException {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
@@ -119,26 +134,44 @@ public class CommonsService {
         return files;
     }
 
+    public String queryToken() throws IOException {
+        return apiHttpGet("?action=query&meta=tokens", MetaQueryResponse.class).getQuery().getTokens().getCsrftoken();
+    }
+
     public List<FileArchive> queryFileArchive(String sha1base36) throws IOException {
-        try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableCookieManagement().build()) {
-            HttpGet httpGet = new HttpGet(
-                    apiUrl + "?action=query&list=filearchive&format=json&fasha1base36=" + sha1base36);
-            try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
-                String body = getHttpResponseBody(response);
-                return jackson.readValue(body, FileArchiveQueryResponse.class).getQuery().getFilearchive();
-            }
+        return apiHttpGet("?action=query&list=filearchive&fasha1base36=" + sha1base36,
+                FileArchiveQueryResponse.class).getQuery().getFilearchive();
+    }
+
+    /**
+     * Creates an HTTP client smart enough to understand WMF cookies. See
+     * <a href="https://stackoverflow.com/a/40697322/2257172">Fixing HttpClient
+     * warning “Invalid expires attribute” using fluent API</a>
+     * 
+     * @return an HTTP client smart enough to understand WMF cookies
+     */
+    private static CloseableHttpClient createHttpClient() {
+        return HttpClients.custom()
+                .setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build()).build();
+    }
+
+    private <T> T apiHttpGet(String path, Class<T> responseClass) throws IOException {
+        HttpGet httpGet = new HttpGet(apiUrl + path + "&format=json");
+        httpGet.setHeader("Authorization", "Bearer " + oauthAccessToken);
+        try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+            return jackson.readValue(getHttpResponseBody(response), responseClass);
         }
     }
 
     private HttpPost apiHttpPost(List<NameValuePair> nvps) {
         HttpPost httpPost = new HttpPost(apiUrl.toExternalForm());
+        nvps.add(new BasicNameValuePair("Authorization", "Bearer " + oauthAccessToken));
         httpPost.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
         httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         return httpPost;
     }
 
-    private static String getHttpResponseBody(CloseableHttpResponse response)
-            throws UnsupportedOperationException, IOException {
+    private static String getHttpResponseBody(CloseableHttpResponse response) throws IOException {
         HttpEntity entity = response.getEntity();
         Header encoding = entity.getContentEncoding();
         String body = IOUtils.toString(entity.getContent(),
@@ -147,90 +180,57 @@ public class CommonsService {
         return body;
     }
 
-    public String getWikiHtmlPreview(String wikiCode, String pageTitle) throws ClientProtocolException, IOException {
-        try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableCookieManagement().build()) {
-            List<NameValuePair> nvps = new ArrayList<>();
-            nvps.add(new BasicNameValuePair("action", "visualeditor"));
-            nvps.add(new BasicNameValuePair("format", "json"));
-            nvps.add(new BasicNameValuePair("formatversion", "2"));
-            nvps.add(new BasicNameValuePair("paction", "parsedoc"));
-            nvps.add(new BasicNameValuePair("page", pageTitle));
-            nvps.add(new BasicNameValuePair("wikitext", wikiCode));
-            nvps.add(new BasicNameValuePair("pst", "true"));
-            HttpPost httpPost = apiHttpPost(nvps);
+    public String getWikiHtmlPreview(String wikiCode, String pageTitle) throws IOException {
+        List<NameValuePair> nvps = new ArrayList<>();
+        nvps.add(new BasicNameValuePair("action", "visualeditor"));
+        nvps.add(new BasicNameValuePair("format", "json"));
+        nvps.add(new BasicNameValuePair("formatversion", "2"));
+        nvps.add(new BasicNameValuePair("paction", "parsedoc"));
+        nvps.add(new BasicNameValuePair("page", pageTitle));
+        nvps.add(new BasicNameValuePair("wikitext", wikiCode));
+        nvps.add(new BasicNameValuePair("pst", "true"));
+        HttpPost httpPost = apiHttpPost(nvps);
 
-            try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
-                String body = getHttpResponseBody(response);
-                VisualEditorResponse apiResponse = jackson.readValue(body, VeApiResponse.class)
-                        .getVisualeditor();
-                if (!"success".equals(apiResponse.getResult())) {
-                    throw new IllegalArgumentException(apiResponse.toString()); // FIXME better exception
-                }
-                return apiResponse.getContent();
+        try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+            String body = getHttpResponseBody(response);
+            VisualEditorResponse apiResponse = jackson.readValue(body, VeApiResponse.class).getVisualeditor();
+            if (!"success".equals(apiResponse.getResult())) {
+                throw new IllegalArgumentException(apiResponse.toString());
             }
+            return apiResponse.getContent();
         }
     }
 
-    @SuppressWarnings("serial")
-    public String getWikiHtmlPreview(String wikiCode, String pageTitle, String imgUrl)
-            throws ClientProtocolException, IOException {
+    public String getWikiHtmlPreview(String wikiCode, String pageTitle, String imgUrl) throws IOException {
         Document doc = Jsoup.parse(getWikiHtmlPreview(wikiCode, pageTitle));
         Element body = doc.getElementsByTag("body").get(0);
         // Display image
-        Element imgLink = Utils.prependChildElement(body, "a", null, new HashMap<String, String>() {
-            {
-                put("href", imgUrl);
-            }
-        });
-        Utils.appendChildElement(imgLink, "img", null, new HashMap<String, String>() {
-            {
-                put("src", imgUrl);
-                put("width", Integer.toString(imgPreviewWidth));
-            }
-        });
+        Element imgLink = Utils.prependChildElement(body, "a", null, Map.of("href", imgUrl));
+        Utils.appendChildElement(imgLink, "img", null,
+                Map.of("src", imgUrl, "width", Integer.toString(imgPreviewWidth)));
         // Display categories
         Element lastSection = body.getElementsByTag("section").last();
-        Element catLinksDiv = Utils.appendChildElement(lastSection, "div", null, new HashMap<String, String>() {
-            {
-                put("id", "catlinks");
-                put("class", "catlinks");
-                put("data-mw", "interface");
-            }
-        });
-        Element normalCatLinksDiv = Utils.appendChildElement(catLinksDiv, "div", null, new HashMap<String, String>() {
-            {
-                put("id", "mw-normal-catlinks");
-                put("class", "mw-normal-catlinks");
-            }
-        });
-        Utils.appendChildElement(normalCatLinksDiv, "a", "Categories", new HashMap<String, String>() {
-            {
-                put("href", "https://commons.wikimedia.org/wiki/Special:Categories");
-                put("title", "Special:Categories");
-            }
-        });
+        Element catLinksDiv = Utils.appendChildElement(lastSection, "div", null,
+                Map.of("id", "catlinks", "class", "catlinks", "data-mw", "interface"));
+        Element normalCatLinksDiv = Utils.appendChildElement(catLinksDiv, "div", null,
+                Map.of("id", "mw-normal-catlinks", "class", "mw-normal-catlinks"));
+        Utils.appendChildElement(normalCatLinksDiv, "a", "Categories",
+                Map.of("href", "https://commons.wikimedia.org/wiki/Special:Categories", "title", "Special:Categories"));
         normalCatLinksDiv.appendText(": ");
         Element normalCatLinksList = new Element("ul");
         normalCatLinksDiv.appendChild(normalCatLinksList);
         Element hiddenCatLinksList = new Element("ul");
-        Utils.appendChildElement(catLinksDiv, "div", "Hidden categories: ", new HashMap<String, String>() {
-            {
-                put("id", "mw-hidden-catlinks");
-                put("class", "mw-hidden-catlinks mw-hidden-cats-user-shown");
-            }
-        }).appendChild(hiddenCatLinksList);
+        Utils.appendChildElement(catLinksDiv, "div", "Hidden categories: ",
+                Map.of("id", "mw-hidden-catlinks", "class", "mw-hidden-catlinks mw-hidden-cats-user-shown"))
+                .appendChild(hiddenCatLinksList);
         for (Element link : lastSection.getElementsByTag("link")) {
             String category = link.attr("href").replace("#" + pageTitle.replace(" ", "%20"), "").replace("./Category:", "");
             String href = "https://commons.wikimedia.org/wiki/Category:" + category;
             Element list = self.isHiddenCategory(category) ? hiddenCatLinksList : normalCatLinksList;
             Element item = new Element("li");
             list.appendChild(item);
-            Utils.appendChildElement(item, "a", category.replace('_', ' '), new HashMap<String, String>() {
-                {
-                    put("href", href);
-                    put("title", "Category:" + category);
-                }
-            });
+            Utils.appendChildElement(item, "a", category.replace('_', ' '),
+                    Map.of("href", href, "title", "Category:" + category));
             link.remove();
         }
         return doc.toString();
@@ -338,7 +338,7 @@ public class CommonsService {
         LocalDateTime start = LocalDateTime.now();
         LOGGER.info("Cleaning {} categories with depth {}...", categories.size(), catSearchDepth);
         Set<String> result = new HashSet<>();
-        Set<String> LowerCategories = categories.stream().map(c -> c.toLowerCase(Locale.ENGLISH))
+        Set<String> lowerCategories = categories.stream().map(c -> c.toLowerCase(Locale.ENGLISH))
                 .collect(Collectors.toSet());
         for (Iterator<String> it = categories.iterator(); it.hasNext();) {
             String c = it.next().toLowerCase(Locale.ENGLISH);
@@ -347,13 +347,13 @@ public class CommonsService {
             }
             final String fc = c;
             // Quickly remove instances of rockets, spacecraft, satellites and so on
-            if (LowerCategories.stream().anyMatch(lc -> lc.contains("(" + fc + ")"))) {
+            if (lowerCategories.stream().anyMatch(lc -> lc.contains("(" + fc + ")"))) {
                 it.remove();
             }
         }
         for (String cat : categories) {
             Set<String> subcats = self.getSubCategories(cat, catSearchDepth);
-            if (subcats.parallelStream().noneMatch(c -> categories.contains(c))) {
+            if (subcats.parallelStream().noneMatch(categories::contains)) {
                 result.add(cat);
             }
         }
@@ -370,27 +370,27 @@ public class CommonsService {
     }
 
     public void upload(String wikiCode, String filename, URL url) throws IOException {
-        try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableCookieManagement().build()) {
-            // TODO Auto-generated method stub
-            List<NameValuePair> nvps = new ArrayList<>();
-            nvps.add(new BasicNameValuePair("action", "upload"));
-            nvps.add(new BasicNameValuePair("format", "json"));
-            nvps.add(new BasicNameValuePair("filename", Objects.requireNonNull(filename, "filename")));
-            nvps.add(new BasicNameValuePair("ignorewarnings", "1"));
-            nvps.add(new BasicNameValuePair("url", url.toExternalForm()));
-            HttpPost httpPost = apiHttpPost(nvps);
-            try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
-                String body = getHttpResponseBody(response);
-                LOGGER.info(body);
-                UploadApiResponse apiResponse = new ObjectMapper().readValue(body, UploadApiResponse.class);
-                UploadError error = apiResponse.getError();
-                if (error != null) {
-                    LOGGER.error(error.toString());
-                    throw new IllegalArgumentException(error.toString()); // FIXME better exception
-                }
-                if (!"success".equals(apiResponse.getUpload().getResult())) {
-                    throw new IllegalArgumentException(apiResponse.toString()); // FIXME better exception
-                }
+        List<NameValuePair> nvps = new ArrayList<>();
+        nvps.add(new BasicNameValuePair("action", "upload"));
+        nvps.add(new BasicNameValuePair("comment",
+                "#Spacemedia - Upload of " + url + " via https://tools.wmflabs.org/spacemedia/"));
+        nvps.add(new BasicNameValuePair("format", "json"));
+        nvps.add(new BasicNameValuePair("filename", Objects.requireNonNull(filename, "filename")));
+        nvps.add(new BasicNameValuePair("ignorewarnings", "1"));
+        nvps.add(new BasicNameValuePair("text", wikiCode));
+        nvps.add(new BasicNameValuePair("token", token));
+        nvps.add(new BasicNameValuePair("url", url.toExternalForm()));
+        HttpPost httpPost = apiHttpPost(nvps);
+        try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+            String body = getHttpResponseBody(response);
+            LOGGER.info(body);
+            UploadApiResponse apiResponse = new ObjectMapper().readValue(body, UploadApiResponse.class);
+            UploadError error = apiResponse.getError();
+            if (error != null) {
+                throw new IllegalArgumentException(error.toString());
+            }
+            if (!"success".equals(apiResponse.getUpload().getResult())) {
+                throw new IllegalArgumentException(apiResponse.toString());
             }
         }
     }

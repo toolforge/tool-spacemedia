@@ -26,7 +26,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.misc.HighFreqTerms;
 import org.apache.lucene.misc.HighFreqTerms.DocFreqComparator;
@@ -97,7 +96,9 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @PostConstruct
     void init() throws IOException {
         ignoredCommonTerms = Csv.loadSet(getClass().getResource("/ignored.terms.csv"));
-        uploadEnabled = env.getProperty(getClass().getName() + ".upload.enabled", Boolean.class, Boolean.FALSE);
+        uploadEnabled = env.getProperty(
+                getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH) + ".upload.enabled",
+                Boolean.class, Boolean.FALSE);
     }
 
     /**
@@ -350,12 +351,11 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     }
 
     protected void doUpload(String wikiCode, T media) throws IOException {
-        commonsService.upload(wikiCode, media.getTitle(), media.getAssetUrl());
+        commonsService.upload(wikiCode, media.getUploadTitle(), media.getAssetUrl());
     }
 
     @Override
-    public String getWikiHtmlPreview(String sha1)
-            throws ClientProtocolException, IOException, ParserConfigurationException, SAXException {
+    public String getWikiHtmlPreview(String sha1) throws IOException, ParserConfigurationException, SAXException {
         T media = findBySha1OrThrow(sha1);
         return commonsService.getWikiHtmlPreview(getWikiCode(media), getPageTile(media),
                 media.getAssetUrl().toExternalForm());

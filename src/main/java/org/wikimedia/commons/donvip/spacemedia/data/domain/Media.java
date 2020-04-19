@@ -76,6 +76,10 @@ public abstract class Media<ID, D extends Temporal> {
         this.thumbnailUrl = thumbnailUrl;
     }
 
+    public String getUploadTitle() {
+        return title + " (" + getId() + ")";
+    }
+
     public String getTitle() {
         return title;
     }
