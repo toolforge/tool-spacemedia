@@ -13,6 +13,7 @@
 		<java.version>11</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
     	<maven.compiler.target>${java.version}</maven.compiler.target>
+    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     	<flickr4java-version>3.0.2</flickr4java-version>
 		<springboot-version>2.2.6.RELEASE</springboot-version>
 		<scribejava-version>6.4.1</scribejava-version>
