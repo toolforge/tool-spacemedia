@@ -335,6 +335,7 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String, Z
 
     @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
     public int updateImages() {
+        waitIndexationInitialization();
         int count = 0;
         // Recent years have a lot of photos: search by center to avoid more than 10k results
         for (int year = LocalDateTime.now().getYear(); year >= 2000; year--) {
@@ -351,11 +352,13 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String, Z
 
     @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
     public int updateAudios() {
+        waitIndexationInitialization();
         return doUpdateMedia(NasaMediaType.audio);
     }
 
     @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
     public int updateVideos() {
+        waitIndexationInitialization();
         return doUpdateMedia(NasaMediaType.video);
     }
 

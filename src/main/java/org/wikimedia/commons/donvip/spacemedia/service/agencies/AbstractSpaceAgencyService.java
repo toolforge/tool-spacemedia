@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -54,6 +55,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
 import org.xml.sax.SAXException;
 
@@ -84,6 +86,9 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @Autowired
     @Qualifier("domainEntityManagerFactory")
     private EntityManagerFactory entityManagerFactory;
+
+    @Autowired
+    private SearchService searchService;
 
     private Set<String> ignoredCommonTerms;
 
@@ -515,6 +520,14 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         media.setIgnored(Boolean.TRUE);
         media.setIgnoredReason(reason);
         return true;
+    }
+
+    protected final void waitIndexationInitialization() {
+        try {
+            searchService.waitForInitialization();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

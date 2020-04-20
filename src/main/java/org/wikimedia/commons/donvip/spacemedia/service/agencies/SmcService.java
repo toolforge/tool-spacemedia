@@ -23,6 +23,7 @@ public class SmcService extends AbstractSpaceAgencyFlickrService {
     @Override
 	@Scheduled(fixedRateString = "${smc.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() {
+        waitIndexationInitialization();
         updateFlickrMedia();
     }
 

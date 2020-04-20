@@ -92,6 +92,7 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 
 	@Scheduled(fixedDelay = 43200000L)
 	public void checkHubbleCategories() {
+        waitIndexationInitialization();
 		checkCommonsCategories(hubbleCategories);
 	}
 
@@ -111,6 +112,7 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
     @Override
     @Scheduled(fixedRateString = "${hubble.nasa.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
+        waitIndexationInitialization();
 		LocalDateTime start = startUpdateMedia();
 		RestTemplate rest = new RestTemplate();
 		int count = 0;
