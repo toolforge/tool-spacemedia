@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -106,6 +107,7 @@ public class CommonsService {
     private final OAuth10aService oAuthService;
     private final OAuth1AccessToken oAuthAccessToken;
 
+    private UserInfo userInfo;
     private String token;
 
     public CommonsService(
@@ -135,15 +137,23 @@ public class CommonsService {
 
     @PostConstruct
     public void init() throws IOException {
-        UserInfo userInfo = queryUserInfo();
+        userInfo = queryUserInfo();
         LOGGER.info("Identified to Wikimedia Commons API as {}", userInfo.getName());
-        if (!userInfo.getRights().contains("upload")) {
+        if (!hasUploadRight() && !hasUploadByUrlRight()) {
             LOGGER.warn("Wikimedia Commons user account has no upload right!");
         }
         Limit uploadRate = userInfo.getRateLimits().getUpload().getUser();
         LOGGER.info("Upload rate limited to {} hits every {} seconds.", uploadRate.getHits(), uploadRate.getSeconds());
         // Fetch CSRF token, mandatory for upload using the Mediawiki API
         token = queryTokens().getCsrftoken();
+    }
+
+    private boolean hasUploadByUrlRight() {
+        return userInfo.getRights().contains("upload_by_url");
+    }
+
+    private boolean hasUploadRight() {
+        return userInfo.getRights().contains("upload");
     }
 
     public Set<String> findFilesWithSha1(String sha1) throws IOException {
@@ -405,17 +415,22 @@ public class CommonsService {
     }
 
     public void doUpload(String wikiCode, String filename, URL url, boolean renewTokenIfBadToken) throws IOException {
-        UploadApiResponse apiResponse = apiHttpPost(Map.of(
+        Map<String, String> params = new HashMap<>(Map.of(
                 "action", "upload",
                 "comment", "#Spacemedia - Upload of " + url + " via " + contact,
                 "format", "json",
                 "filename", Objects.requireNonNull(filename, "filename"),
                 "ignorewarnings", "1",
                 "text", Objects.requireNonNull(wikiCode, "wikiCode"),
-                "token", token,
-                "url", url.toExternalForm()
-        ), UploadApiResponse.class);
+                "token", token
+        ));
+        if (hasUploadByUrlRight()) {
+            params.put("url", url.toExternalForm());
+        } else {
+            throw new UnsupportedOperationException("Application is not yet able to upload by file, only by URL");
+        }
 
+        UploadApiResponse apiResponse = apiHttpPost(params, UploadApiResponse.class);
         UploadError error = apiResponse.getError();
         if (error != null) {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
