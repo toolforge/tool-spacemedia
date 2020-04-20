@@ -401,6 +401,10 @@ public class CommonsService {
     }
 
     public void upload(String wikiCode, String filename, URL url) throws IOException {
+        doUpload(wikiCode, filename, url, true);
+    }
+
+    public void doUpload(String wikiCode, String filename, URL url, boolean renewTokenIfBadToken) throws IOException {
         UploadApiResponse apiResponse = apiHttpPost(Map.of(
                 "action", "upload",
                 "comment", "#Spacemedia - Upload of " + url + " via " + contact,
@@ -414,9 +418,12 @@ public class CommonsService {
 
         UploadError error = apiResponse.getError();
         if (error != null) {
+            if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
+                token = queryTokens().getCsrftoken();
+                doUpload(wikiCode, filename, url, false);
+            }
             throw new IllegalArgumentException(error.toString());
-        }
-        if (!"success".equals(apiResponse.getUpload().getResult())) {
+        } else if (!"success".equals(apiResponse.getUpload().getResult())) {
             throw new IllegalArgumentException(apiResponse.toString());
         }
     }
