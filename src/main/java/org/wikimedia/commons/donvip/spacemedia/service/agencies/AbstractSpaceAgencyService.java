@@ -381,7 +381,8 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     }
 
     protected void doUpload(String wikiCode, T media) throws IOException {
-        commonsService.upload(wikiCode, media.getUploadTitle(), media.getAssetUrl());
+        media.setCommonsFileNames(
+                Set.of(commonsService.upload(wikiCode, media.getUploadTitle(), media.getAssetUrl(), media.getSha1())));
     }
 
     @Override

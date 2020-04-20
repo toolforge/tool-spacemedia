@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.time.temporal.Temporal;
+import java.util.Set;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
@@ -36,7 +37,8 @@ public abstract class AbstractFullResSpaceAgencyService<T extends FullResMedia<I
     protected void doUpload(String wikiCode, T media) throws IOException {
         super.doUpload(wikiCode, media);
         if (media.getFullResAssetUrl() != null) {
-            commonsService.upload(wikiCode, media.getUploadTitle(), media.getFullResAssetUrl());
+            media.setFullResCommonsFileNames(Set.of(commonsService.upload(wikiCode, media.getUploadTitle(),
+                    media.getFullResAssetUrl(), media.getFullResSha1())));
         }
     }
 }

@@ -45,12 +45,14 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQuery
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Limit;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Tokens;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadApiResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadError;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UserInfo;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.apis.MediaWikiApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
@@ -410,14 +412,15 @@ public class CommonsService {
         return badWikiCode.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", "[$1 $2]");
     }
 
-    public void upload(String wikiCode, String filename, URL url) throws IOException {
-        doUpload(wikiCode, filename, url, true);
+    public String upload(String wikiCode, String filename, URL url, String sha1) throws IOException {
+        return doUpload(wikiCode, filename, url, sha1, true);
     }
 
-    public void doUpload(String wikiCode, String filename, URL url, boolean renewTokenIfBadToken) throws IOException {
+    public String doUpload(String wikiCode, String filename, URL url, String sha1, boolean renewTokenIfBadToken)
+            throws IOException {
         Map<String, String> params = new HashMap<>(Map.of(
                 "action", "upload",
-                "comment", "#Spacemedia - Upload of [" + url + "] via [[:Commons:Spacemedia]]",
+                "comment", "#Spacemedia - Upload of " + url + " via [[:Commons:Spacemedia]]",
                 "format", "json",
                 "filename", Objects.requireNonNull(filename, "filename"),
                 "ignorewarnings", "1",
@@ -433,107 +436,21 @@ public class CommonsService {
         LOGGER.info("Uploading {} as {}..", url, filename);
         UploadApiResponse apiResponse = apiHttpPost(params, UploadApiResponse.class);
         LOGGER.info("Upload of {} as {}: {}", url, filename, apiResponse);
+        UploadResponse upload = apiResponse.getUpload();
         UploadError error = apiResponse.getError();
         if (error != null) {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
                 token = queryTokens().getCsrftoken();
-                doUpload(wikiCode, filename, url, false);
+                return doUpload(wikiCode, filename, url, sha1, false);
             }
             throw new IllegalArgumentException(error.toString());
-        } else if (!"success".equals(apiResponse.getUpload().getResult())) {
+        } else if (!"Success".equals(upload.getResult())) {
             throw new IllegalArgumentException(apiResponse.toString());
         }
-    }
-
-    static class UploadApiResponse {
-        private UploadResponse upload;
-        private UploadError error;
-        @JsonProperty("servedby")
-        private String servedBy;
-
-        public UploadResponse getUpload() {
-            return upload;
+        if (!sha1.equalsIgnoreCase(upload.getImageInfo().getSha1())) {
+            throw new IllegalStateException(String.format(
+                    "SHA1 mismatch for %s ! Expected %s, got %s", url, sha1, upload.getImageInfo().getSha1()));
         }
-
-        public void setUpload(UploadResponse upload) {
-            this.upload = upload;
-        }
-
-        public UploadError getError() {
-            return error;
-        }
-
-        public void setError(UploadError error) {
-            this.error = error;
-        }
-
-        public String getServedBy() {
-            return servedBy;
-        }
-
-        public void setServedBy(String servedBy) {
-            this.servedBy = servedBy;
-        }
-
-        @Override
-        public String toString() {
-            return "UploadApiResponse [upload=" + upload + ", error=" + error + ", servedBy=" + servedBy + "]";
-        }
-    }
-
-    static class UploadResponse {
-        private String result;
-
-        public String getResult() {
-            return result;
-        }
-
-        public void setResult(String result) {
-            this.result = result;
-        }
-
-        @Override
-        public String toString() {
-            return "UploadResponse [result=" + result + "]";
-        }
-    }
-
-    static class UploadError {
-        private String code;
-        private String info;
-        @JsonProperty("*")
-        private String star;
-
-        public String getCode() {
-            return code;
-        }
-
-        public void setCode(String code) {
-            this.code = code;
-        }
-
-        public String getInfo() {
-            return info;
-        }
-
-        public void setInfo(String info) {
-            this.info = info;
-        }
-
-        public String getStar() {
-            return star;
-        }
-
-        public void setStar(String star) {
-            this.star = star;
-        }
-
-        @Override
-        public String toString() {
-            return "UploadError [" + (code != null ? "code=" + code + ", " : "")
-                    + (info != null ? "info=" + info + ", " : "")
-                    + (star != null ? "*=" + star : "")
-                    + "]";
-        }
+        return upload.getFilename();
     }
 }
