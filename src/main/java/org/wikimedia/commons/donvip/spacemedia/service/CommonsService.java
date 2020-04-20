@@ -102,7 +102,6 @@ public class CommonsService {
     private int imgPreviewWidth;
 
     private final String account;
-    private final String contact;
     private final String userAgent;
     private final OAuth10aService oAuthService;
     private final OAuth1AccessToken oAuthAccessToken;
@@ -123,7 +122,6 @@ public class CommonsService {
             @Value("${commons.api.oauth1.access-secret}") String accessSecret
     ) {
         account = apiAccount;
-        contact = appContact;
         // Comply to Wikimedia User-Agent Policy: https://meta.wikimedia.org/wiki/User-Agent_policy
         if (!account.toLowerCase(Locale.ENGLISH).contains("bot")) {
             throw new IllegalArgumentException("Bot account must include 'bot' in its name!");
@@ -403,6 +401,8 @@ public class CommonsService {
         if (!categories.isEmpty() && result.isEmpty()) {
             throw new IllegalStateException("Cleaning " + categories + " removed all categories!");
         }
+        // Make sure all imported files get reviewed
+        result.add("Spacemedia files (review needed)");
         return result;
     }
 
@@ -417,7 +417,7 @@ public class CommonsService {
     public void doUpload(String wikiCode, String filename, URL url, boolean renewTokenIfBadToken) throws IOException {
         Map<String, String> params = new HashMap<>(Map.of(
                 "action", "upload",
-                "comment", "#Spacemedia - Upload of " + url + " via " + contact,
+                "comment", "#Spacemedia - Upload of [" + url + "] via [[:Commons:Spacemedia]]",
                 "format", "json",
                 "filename", Objects.requireNonNull(filename, "filename"),
                 "ignorewarnings", "1",
@@ -430,7 +430,9 @@ public class CommonsService {
             throw new UnsupportedOperationException("Application is not yet able to upload by file, only by URL");
         }
 
+        LOGGER.info("Uploading {} as {}..", url, filename);
         UploadApiResponse apiResponse = apiHttpPost(params, UploadApiResponse.class);
+        LOGGER.info("Upload of {} as {}: {}", url, filename, apiResponse);
         UploadError error = apiResponse.getError();
         if (error != null) {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
@@ -472,6 +474,11 @@ public class CommonsService {
         public void setServedBy(String servedBy) {
             this.servedBy = servedBy;
         }
+
+        @Override
+        public String toString() {
+            return "UploadApiResponse [upload=" + upload + ", error=" + error + ", servedBy=" + servedBy + "]";
+        }
     }
 
     static class UploadResponse {
@@ -483,6 +490,11 @@ public class CommonsService {
 
         public void setResult(String result) {
             this.result = result;
+        }
+
+        @Override
+        public String toString() {
+            return "UploadResponse [result=" + result + "]";
         }
     }
 
