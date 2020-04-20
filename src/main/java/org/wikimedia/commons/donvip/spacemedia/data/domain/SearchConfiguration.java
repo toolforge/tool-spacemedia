@@ -16,7 +16,7 @@ public class SearchConfiguration {
     private EntityManagerFactory entityManagerFactory;
 
     @PostConstruct
-    public void init() throws InterruptedException {
-        Search.getFullTextEntityManager(entityManagerFactory.createEntityManager()).createIndexer().startAndWait();
+    public void init() {
+        Search.getFullTextEntityManager(entityManagerFactory.createEntityManager()).createIndexer().start();
     }
 }
