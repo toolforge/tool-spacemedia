@@ -17,12 +17,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -46,6 +47,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
@@ -74,6 +79,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     protected final MediaRepository<T, ID, D> repository;
 
     @Autowired
+    @Qualifier("domainTransactionManager")
+    protected PlatformTransactionManager txManager;
+
+    @Autowired
     protected ProblemRepository problemRepository;
     @Autowired
     protected MediaService mediaService;
@@ -84,8 +93,8 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     private Environment env;
 
     @Autowired
-    @Qualifier("domainEntityManagerFactory")
-    private EntityManagerFactory entityManagerFactory;
+    @PersistenceContext(unitName = "domain")
+    private EntityManager entityManager;
 
     @Autowired
     private SearchService searchService;
@@ -217,43 +226,59 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
                 getMediaClass());
     }
 
+    protected final void doInTransaction(Runnable runnable) {
+        new TransactionTemplate(txManager).execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                runnable.run();
+            }
+        });
+    }
+
+    protected final <V> V doInTransaction(Callable<V> callable) {
+        return new TransactionTemplate(txManager).execute(status -> {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public final List<T> searchMedia(String q) {
-        return getFullTextQuery(q, entityManagerFactory.createEntityManager()).getResultList();
+        return doInTransaction(() -> getFullTextQuery(q, entityManager).getResultList());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public final Page<T> searchMedia(String q, Pageable page) {
-        EntityManager searchEntityManager = entityManagerFactory.createEntityManager();
-        searchEntityManager.getTransaction().begin();
-        try {
-            FullTextQuery fullTextQuery = getFullTextQuery(q, searchEntityManager);
+        return doInTransaction(() -> {
+            FullTextQuery fullTextQuery = getFullTextQuery(q, entityManager);
             fullTextQuery.setFirstResult(page.getPageNumber() * page.getPageSize());
             fullTextQuery.setMaxResults(page.getPageSize());
             return new PageImpl<>(fullTextQuery.getResultList(), page, fullTextQuery.getResultSize());
-        } finally {
-            searchEntityManager.getTransaction().commit();
-        }
+        });
     }
 
     @Override
     public final List<TermStats> getTopTerms() throws Exception {
-        EntityManager searchEntityManager = entityManagerFactory.createEntityManager();
-        SearchFactory searchFactory = Search.getFullTextEntityManager(searchEntityManager).getSearchFactory();
-        IndexReader indexReader = searchFactory.getIndexReaderAccessor().open(getTopTermsMediaClass());
-        try {
-            return Arrays
-                    .stream(HighFreqTerms.getHighFreqTerms(indexReader, 1000, "description", new DocFreqComparator()))
-                    .filter(ts -> {
-                        String s = ts.termtext.utf8ToString();
-                        return s.length() > 1 && !ignoredCommonTerms.contains(s) && !s.matches("\\d+");
-                    })
-                    .collect(Collectors.toList()).subList(0, 500);
-        } finally {
-            searchFactory.getIndexReaderAccessor().close(indexReader);
-        }
+        return doInTransaction(() -> {
+            SearchFactory searchFactory = Search.getFullTextEntityManager(entityManager).getSearchFactory();
+            IndexReader indexReader = searchFactory.getIndexReaderAccessor().open(getTopTermsMediaClass());
+            try {
+                return Arrays
+                        .stream(HighFreqTerms.getHighFreqTerms(indexReader, 1000, "description", new DocFreqComparator()))
+                        .filter(ts -> {
+                            String s = ts.termtext.utf8ToString();
+                            return s.length() > 1 && !ignoredCommonTerms.contains(s) && !s.matches("\\d+");
+                        })
+                        .collect(Collectors.toList()).subList(0, 500);
+            } finally {
+                searchFactory.getIndexReaderAccessor().close(indexReader);
+            }
+        });
     }
 
     /**
