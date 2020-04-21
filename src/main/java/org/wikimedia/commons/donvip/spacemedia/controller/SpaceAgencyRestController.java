@@ -11,7 +11,6 @@ import java.util.Objects;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.http.client.ClientProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -96,8 +95,7 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
     }
 
     @GetMapping("/wiki/{sha1}")
-    public final String wikiPreview(@PathVariable String sha1)
-            throws ClientProtocolException, IOException, ParserConfigurationException, SAXException {
+    public final String wikiPreview(@PathVariable String sha1) throws IOException, ParserConfigurationException, SAXException {
         return service.getWikiHtmlPreview(sha1);
     }
 

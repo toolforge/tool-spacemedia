@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -42,15 +41,10 @@ import org.hibernate.search.query.dsl.SimpleQueryStringMatchingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
@@ -61,6 +55,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenExc
 import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
+import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
 import org.xml.sax.SAXException;
 
@@ -79,8 +74,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     protected final MediaRepository<T, ID, D> repository;
 
     @Autowired
-    @Qualifier("domainTransactionManager")
-    protected PlatformTransactionManager txManager;
+    protected TransactionService transactionService;
 
     @Autowired
     protected ProblemRepository problemRepository;
@@ -226,35 +220,16 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
                 getMediaClass());
     }
 
-    protected final void doInTransaction(Runnable runnable) {
-        new TransactionTemplate(txManager).execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                runnable.run();
-            }
-        });
-    }
-
-    protected final <V> V doInTransaction(Callable<V> callable) {
-        return new TransactionTemplate(txManager).execute(status -> {
-            try {
-                return callable.call();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
     @Override
     @SuppressWarnings("unchecked")
     public final List<T> searchMedia(String q) {
-        return doInTransaction(() -> getFullTextQuery(q, entityManager).getResultList());
+        return transactionService.doInTransaction(() -> getFullTextQuery(q, entityManager).getResultList());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public final Page<T> searchMedia(String q, Pageable page) {
-        return doInTransaction(() -> {
+        return transactionService.doInTransaction(() -> {
             FullTextQuery fullTextQuery = getFullTextQuery(q, entityManager);
             fullTextQuery.setFirstResult(page.getPageNumber() * page.getPageSize());
             fullTextQuery.setMaxResults(page.getPageSize());
@@ -264,7 +239,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
 
     @Override
     public final List<TermStats> getTopTerms() throws Exception {
-        return doInTransaction(() -> {
+        return transactionService.doInTransaction(() -> {
             SearchFactory searchFactory = Search.getFullTextEntityManager(entityManager).getSearchFactory();
             IndexReader indexReader = searchFactory.getIndexReaderAccessor().open(getTopTermsMediaClass());
             try {
