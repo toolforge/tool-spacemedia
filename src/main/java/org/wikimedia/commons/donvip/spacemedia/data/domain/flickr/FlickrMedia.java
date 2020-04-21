@@ -18,11 +18,14 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -253,6 +256,17 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
 	}
 
 	@Override
+    public String getUploadTitle() {
+        if (UnitedStates.isVirin(title) && CollectionUtils.isNotEmpty(getPhotosets())) {
+            String albumTitle = getPhotosets().iterator().next().getTitle();
+            if (StringUtils.isNotBlank(albumTitle)) {
+                return albumTitle + " (" + getId() + ")";
+            }
+        }
+        return super.getUploadTitle();
+    }
+
+    @Override
     public int hashCode() {
         return 31 * super.hashCode() + Objects.hash(id, pathAlias);
     }

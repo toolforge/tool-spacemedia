@@ -270,7 +270,7 @@ public class CommonsService {
             Element list = self.isHiddenCategory(category) ? hiddenCatLinksList : normalCatLinksList;
             Element item = new Element("li");
             list.appendChild(item);
-            Utils.appendChildElement(item, "a", category.replace('_', ' '),
+            Utils.appendChildElement(item, "a", sanitizeCategory(category),
                     Map.of("href", href, "title", "Category:" + category));
             link.remove();
         }
@@ -354,18 +354,23 @@ public class CommonsService {
             return false;
         }
     }
+    
+    private static String sanitizeCategory(String category) {
+        return category.replace(' ', '_').split("#")[0];
+    }
 
     @Cacheable("categoryPages")
     public CommonsPage getCategoryPage(String category) {
         return pageRepository.findByCategoryTitle(categoryRepository
-                .findByTitle(category.replace(' ', '_')).orElseThrow(() -> new CategoryNotFoundException(category)).getTitle())
+                .findByTitle(sanitizeCategory(category))
+                    .orElseThrow(() -> new CategoryNotFoundException(category)).getTitle())
                 .orElseThrow(() -> new CategoryPageNotFoundException(category));
     }
 
     @Cacheable("subCategories")
     public Set<String> getSubCategories(String category) {
         return categoryLinkRepository
-                .findByTypeAndIdTo(CommonsCategoryLinkType.subcat, category.replace(' ', '_'))
+                .findByTypeAndIdTo(CommonsCategoryLinkType.subcat, sanitizeCategory(category))
                 .stream().map(c -> c.getId().getFrom().getTitle()).collect(Collectors.toSet());
     }
 
@@ -374,7 +379,7 @@ public class CommonsService {
         LocalDateTime start = now();
         LOGGER.debug("Fetching '{}' subcategories with depth {}...", category, depth);
         Set<String> subcats = self.getSubCategories(category);
-        Set<String> result = subcats.stream().map(s -> s.replace('_', ' '))
+        Set<String> result = subcats.stream().map(CommonsService::sanitizeCategory)
                 .collect(Collectors.toCollection(ConcurrentHashMap::newKeySet));
         if (depth > 0) {
             subcats.parallelStream().forEach(s -> result.addAll(self.getSubCategories(s, depth - 1)));

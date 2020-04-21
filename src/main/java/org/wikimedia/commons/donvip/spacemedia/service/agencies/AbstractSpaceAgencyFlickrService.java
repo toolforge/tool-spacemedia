@@ -39,6 +39,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
+import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
 import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.people.User;
@@ -226,6 +227,11 @@ public abstract class AbstractSpaceAgencyFlickrService
         List<String> result = super.findTemplates(media);
         result.add(FlickrFreeLicense.of(media.getLicense()).getWikiTemplate());
         result.add("Flickrreview");
+        try {
+            result.addAll(UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media)));
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
         return result;
     }
 
