@@ -51,7 +51,6 @@ public class IauService extends CommonEsoService<IauMedia> {
     @Override
     @Scheduled(fixedRateString = "${iau.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
-        waitIndexationInitialization();
         doUpdateMedia();
     }
 

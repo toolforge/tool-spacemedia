@@ -109,7 +109,6 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
 
 	@Scheduled(fixedDelay = 43200000L)
 	public void checkEsaCategories() {
-        waitIndexationInitialization();
 		checkCommonsCategories(esaMissions);
 		checkCommonsCategories(esaPeople);
 	}
@@ -339,7 +338,6 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
     @Override
     @Scheduled(fixedRateString = "${esa.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
-        waitIndexationInitialization();
         LocalDateTime start = startUpdateMedia();
         updateMissingImages();
         final URL url = new URL(searchLink);

@@ -91,7 +91,6 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
 
     @Scheduled(fixedDelay = 43200000L)
     public void checkEsoCategories() {
-        waitIndexationInitialization();
         checkCommonsCategories(esoCategories);
 		checkCommonsCategories(esoTypes);
     }

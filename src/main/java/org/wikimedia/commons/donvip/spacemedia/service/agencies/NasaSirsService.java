@@ -95,7 +95,6 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
     @Override
     @Scheduled(fixedRateString = "${nasa.sirs.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
-        waitIndexationInitialization();
         LocalDateTime start = startUpdateMedia();
         int count = 0;
         for (String category : loadCategories()) {

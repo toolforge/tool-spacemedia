@@ -1,8 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,15 +18,14 @@ public class SearchService {
     @Autowired
     private TransactionService transactionService;
 
-    private Future<?> future;
-
     @PostConstruct
     public void init() {
-        transactionService
-                .doInTransaction(() -> future = Search.getFullTextEntityManager(entityManager).createIndexer().start());
-    }
-
-    public void waitForInitialization() throws InterruptedException, ExecutionException {
-        future.get();
+        transactionService.doInTransaction(() -> {
+            try {
+                Search.getFullTextEntityManager(entityManager).createIndexer().startAndWait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

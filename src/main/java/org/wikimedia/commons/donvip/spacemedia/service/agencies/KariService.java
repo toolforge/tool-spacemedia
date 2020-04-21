@@ -89,7 +89,6 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer, 
     @Override
     @Scheduled(fixedRateString = "${kari.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() throws IOException {
-        waitIndexationInitialization();
         LocalDateTime start = startUpdateMedia();
         int consecutiveFailures = 0;
         int count = 0;

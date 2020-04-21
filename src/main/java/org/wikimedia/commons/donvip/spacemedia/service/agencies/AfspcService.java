@@ -23,7 +23,6 @@ public class AfspcService extends AbstractSpaceAgencyFlickrService {
     @Override
     @Scheduled(fixedRateString = "${afspc.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() {
-        waitIndexationInitialization();
         updateFlickrMedia();
     }
 
