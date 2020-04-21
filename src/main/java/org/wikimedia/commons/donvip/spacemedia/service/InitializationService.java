@@ -11,8 +11,13 @@ public class InitializationService implements ApplicationRunner {
     @Autowired
     private StatsService statsService;
 
+    @Autowired
+    private SearchService searchService;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        // Wait for Hibernate search indexation to complete
+        searchService.waitForInitialization();
         // Perform the most exhaustive data-fetching operation to populate all caches at startup
         statsService.getStats();
     }
