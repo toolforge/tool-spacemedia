@@ -1,25 +1,21 @@
 package org.wikimedia.commons.donvip.spacemedia.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.StatsService;
 
 @RestController
 public class StatsController {
 
     @Autowired
-    private List<AbstractSpaceAgencyService<?, ?, ?>> agencies;
+    private StatsService service;
 
     @GetMapping("/stats")
     public List<Statistics> stats() {
-        return agencies.parallelStream()
-                .map(AbstractSpaceAgencyService::getStatistics)
-                .sorted()
-                .collect(Collectors.toList());
+        return service.getStats();
     }
 }
