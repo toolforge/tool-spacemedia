@@ -11,6 +11,8 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 public class FlickrPhotoSet {
 
@@ -26,6 +28,7 @@ public class FlickrPhotoSet {
 	private String pathAlias;
 
 	@ManyToMany
+    @JsonIgnoreProperties("photosets")
 	protected Set<FlickrMedia> members = new HashSet<>();
 
 	public Long getId() {

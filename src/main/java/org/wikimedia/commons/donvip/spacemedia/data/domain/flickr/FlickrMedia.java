@@ -24,6 +24,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -86,6 +87,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     @Field(index = org.hibernate.search.annotations.Index.YES, analyze = Analyze.NO, store = Store.NO)
     private String pathAlias;
 
+    @JsonIgnoreProperties({ "pathAlias", "members" })
 	@ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, mappedBy = "members")
 	private Set<FlickrPhotoSet> photosets = new HashSet<>();
 
