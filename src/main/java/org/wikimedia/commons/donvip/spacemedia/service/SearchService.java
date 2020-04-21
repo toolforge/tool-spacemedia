@@ -22,7 +22,9 @@ public class SearchService {
     public void init() {
         transactionService.doInTransaction(() -> {
             try {
-                Search.getFullTextEntityManager(entityManager).createIndexer().threadsToLoadObjects(4).startAndWait();
+                // https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/?v=5.11#search-batchindexing-threadsandconnections
+                // threads = typesToIndexInParallel * (threadsToLoadObjects + 1)
+                Search.getFullTextEntityManager(entityManager).createIndexer().threadsToLoadObjects(7).startAndWait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
