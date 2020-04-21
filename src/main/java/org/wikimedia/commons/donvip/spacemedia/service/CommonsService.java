@@ -1,5 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import static java.time.LocalDateTime.now;
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
@@ -66,6 +69,11 @@ public class CommonsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonsService.class);
 
+    /**
+     * Minimal delay between successive uploads, in seconds.
+     */
+    private static final int DELAY = 5;
+
     @Autowired
     private CommonsImageRepository imageRepository;
 
@@ -110,6 +118,7 @@ public class CommonsService {
 
     private UserInfo userInfo;
     private String token;
+    private LocalDateTime lastUpload;
 
     public CommonsService(
             @Value("${application.version}") String appVersion,
@@ -170,7 +179,7 @@ public class CommonsService {
         return files;
     }
 
-    public Tokens queryTokens() throws IOException {
+    public synchronized Tokens queryTokens() throws IOException {
         return apiHttpGet("?action=query&meta=tokens", MetaQueryResponse.class).getQuery().getTokens();
     }
 
@@ -362,7 +371,7 @@ public class CommonsService {
 
     @Cacheable("subCategoriesByDepth")
     public Set<String> getSubCategories(String category, int depth) {
-        LocalDateTime start = LocalDateTime.now();
+        LocalDateTime start = now();
         LOGGER.debug("Fetching '{}' subcategories with depth {}...", category, depth);
         Set<String> subcats = self.getSubCategories(category);
         Set<String> result = subcats.stream().map(s -> s.replace('_', ' '))
@@ -371,12 +380,12 @@ public class CommonsService {
             subcats.parallelStream().forEach(s -> result.addAll(self.getSubCategories(s, depth - 1)));
         }
         LOGGER.debug("Fetching '{}' subcategories with depth {} completed in {}", category, depth,
-                Duration.between(LocalDateTime.now(), start));
+                Duration.between(now(), start));
         return result;
     }
 
     public Set<String> cleanupCategories(Set<String> categories) {
-        LocalDateTime start = LocalDateTime.now();
+        LocalDateTime start = now();
         LOGGER.info("Cleaning {} categories with depth {}...", categories.size(), catSearchDepth);
         Set<String> result = new HashSet<>();
         Set<String> lowerCategories = categories.stream().map(c -> c.toLowerCase(Locale.ENGLISH))
@@ -399,7 +408,7 @@ public class CommonsService {
             }
         }
         LOGGER.info("Cleaning {} categories with depth {} completed in {}", categories.size(), catSearchDepth,
-                Duration.between(LocalDateTime.now(), start));
+                Duration.between(now(), start));
         if (!categories.isEmpty() && result.isEmpty()) {
             throw new IllegalStateException("Cleaning " + categories + " removed all categories!");
         }
@@ -416,7 +425,7 @@ public class CommonsService {
         return doUpload(wikiCode, filename, url, sha1, true);
     }
 
-    public String doUpload(String wikiCode, String filename, URL url, String sha1, boolean renewTokenIfBadToken)
+    private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1, boolean renewTokenIfBadToken)
             throws IOException {
         Map<String, String> params = new HashMap<>(Map.of(
                 "action", "upload",
@@ -432,6 +441,8 @@ public class CommonsService {
         } else {
             throw new UnsupportedOperationException("Application is not yet able to upload by file, only by URL");
         }
+
+        ensureUploadRate();
 
         LOGGER.info("Uploading {} as {}..", url, filename);
         UploadApiResponse apiResponse = apiHttpPost(params, UploadApiResponse.class);
@@ -452,5 +463,17 @@ public class CommonsService {
                     "SHA1 mismatch for %s ! Expected %s, got %s", url, sha1, upload.getImageInfo().getSha1()));
         }
         return upload.getFilename();
+    }
+
+    private void ensureUploadRate() throws IOException {
+        LocalDateTime fiveSecondsAgo = now().minusSeconds(DELAY);
+        if (lastUpload != null && lastUpload.isAfter(fiveSecondsAgo)) {
+            try {
+                Thread.sleep(DELAY - SECONDS.between(now(), lastUpload.plusSeconds(DELAY)));
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+        }
+        lastUpload = now();
     }
 }
