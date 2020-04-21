@@ -22,7 +22,7 @@ public class SearchService {
     public void init() {
         transactionService.doInTransaction(() -> {
             try {
-                Search.getFullTextEntityManager(entityManager).createIndexer().startAndWait();
+                Search.getFullTextEntityManager(entityManager).createIndexer().threadsToLoadObjects(4).startAndWait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
