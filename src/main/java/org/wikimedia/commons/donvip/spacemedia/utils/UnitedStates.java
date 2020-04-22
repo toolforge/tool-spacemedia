@@ -25,6 +25,16 @@ public final class UnitedStates {
 
     }
 
+    public static boolean isClearPublicDomain(String description) {
+        return description != null
+                && (description.contains("U.S. Army photo")
+                    || description.contains("U.S. Navy photo")
+                    || description.contains("U.S. Air Force photo")
+                    || description.contains("U.S. Marine Corps photo")
+                    || description.contains("U.S. Coast Guard photo")
+                    || description.contains("U.S. Space Force photo"));
+    }
+
     public static boolean isVirin(String identifier) {
         return US_VIRIN.matcher(identifier).matches();
     }

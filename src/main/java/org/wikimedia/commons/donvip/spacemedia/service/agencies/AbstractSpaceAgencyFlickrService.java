@@ -232,6 +232,9 @@ public abstract class AbstractSpaceAgencyFlickrService
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+        if (result.contains("Flickr-public domain mark") && UnitedStates.isClearPublicDomain(media.getDescription())) {
+            result.remove("Flickr-public domain mark");
+        }
         return result;
     }
 

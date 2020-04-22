@@ -23,6 +23,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
+import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
 import com.flickr4java.flickr.FlickrException;
 import com.github.dozermapper.core.Mapper;
@@ -54,7 +55,7 @@ public class FlickrMediaProcessorService {
 		return "video".equals(media.getMedia()) && !getVideoUrl(media).equals(media.getAssetUrl());
 	}
 
-	@Transactional
+    @Transactional
     public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
             MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo)
 			throws IOException, URISyntaxException {
@@ -126,7 +127,8 @@ public class FlickrMediaProcessorService {
 			}
 		}
         if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark
-                && !Boolean.TRUE.equals(media.isIgnored())) {
+                && !Boolean.TRUE.equals(media.isIgnored())
+                && !UnitedStates.isClearPublicDomain(media.getDescription())) {
             media.setIgnored(true);
             media.setIgnoredReason("Public Domain Mark is not a legal license");
             save = true;
