@@ -11,7 +11,7 @@ public enum FlickrFreeLicense {
     No_known_copyright_restrictions(7, "Flickr-no known copyright restrictions"), // https://www.flickr.com/commons/usage/
     United_States_Government_Work(8, "PD-USGov"),                                 // https://www.usa.gov/copyright.shtml
     Public_Domain_Dedication_CC0(9, "Cc-zero"),                                   // https://creativecommons.org/publicdomain/zero/1.0/
-    Public_Domain_Mark(10, "CC-PD-Mark");                                         // https://creativecommons.org/publicdomain/mark/1.0/
+    Public_Domain_Mark(10, "Flickr-public domain mark");                          // https://creativecommons.org/publicdomain/mark/1.0/
 
     private final int code;
     private final String template;
