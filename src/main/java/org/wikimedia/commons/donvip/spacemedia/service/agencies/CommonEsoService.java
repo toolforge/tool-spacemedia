@@ -188,7 +188,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
                 save = ignoreFile(media, "Forbidden category.");
             }
         }
-        if (mediaService.updateMedia(media)) {
+        if (doCommonUpdate(media)) {
             save = true;
         }
         if (save) {

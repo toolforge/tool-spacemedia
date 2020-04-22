@@ -159,7 +159,7 @@ public class NasaService extends AbstractSpaceAgencyService<NasaMedia, String, Z
                 save = true;
             }
         }
-        if (mediaService.updateMedia(media)) {
+        if (doCommonUpdate(media)) {
             save = true;
         }
         if (save) {

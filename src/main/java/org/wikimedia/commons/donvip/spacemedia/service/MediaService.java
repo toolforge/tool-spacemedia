@@ -1,16 +1,20 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
@@ -23,7 +27,8 @@ public class MediaService {
     @Autowired
     private CommonsService commonsService;
 
-    public boolean updateMedia(Media<?, ?> media) throws IOException, URISyntaxException {
+    public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo)
+            throws IOException, URISyntaxException {
         boolean result = false;
         if (cleanupDescription(media)) {
             result = true;
@@ -33,6 +38,25 @@ public class MediaService {
         }
         if (findCommonsFilesWithSha1(media)) {
             result = true;
+        }
+        if (originalRepo != null) {
+            List<? extends Media<?, ?>> originals = originalRepo.findBySha1(media.getSha1());
+            if (isNotEmpty(originals)) {
+                Media<?, ?> original = originals.get(0);
+                if (!Boolean.TRUE.equals(media.isIgnored())) {
+                    media.setIgnored(true);
+                    media.setIgnoredReason("Already present in main repository.");
+                    result = true;
+                }
+                if (!Objects.equals(media.getCommonsFileNames(), original.getCommonsFileNames())) {
+                    media.setCommonsFileNames(original.getCommonsFileNames());
+                    if (media instanceof FullResMedia && original instanceof FullResMedia) {
+                        ((FullResMedia<?, ?>) media).setFullResCommonsFileNames(
+                                ((FullResMedia<?, ?>) original).getFullResCommonsFileNames());
+                    }
+                    result = true;
+                }
+            }
         }
         return result;
     }
@@ -91,7 +115,7 @@ public class MediaService {
      */
     public boolean findCommonsFilesWithSha1(Media<?, ?> media) throws IOException {
         boolean result = false;
-        if (media.getSha1() != null && CollectionUtils.isEmpty(media.getCommonsFileNames())) {
+        if (media.getSha1() != null && isEmpty(media.getCommonsFileNames())) {
             Set<String> files = commonsService.findFilesWithSha1(media.getSha1());
             if (!files.isEmpty()) {
                 media.setCommonsFileNames(files);
@@ -100,7 +124,7 @@ public class MediaService {
         }
         if (media instanceof FullResMedia) {
             FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
-            if (frMedia.getFullResSha1() != null && CollectionUtils.isEmpty(frMedia.getFullResCommonsFileNames())) {
+            if (frMedia.getFullResSha1() != null && isEmpty(frMedia.getFullResCommonsFileNames())) {
                 Set<String> files = commonsService.findFilesWithSha1(frMedia.getFullResSha1());
                 if (!files.isEmpty()) {
                     frMedia.setFullResCommonsFileNames(files);

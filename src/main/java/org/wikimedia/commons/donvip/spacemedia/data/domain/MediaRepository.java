@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain;
 import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -87,7 +86,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
 
     List<T> findByAssetUrl(URL imageUrl);
 
-    Optional<T> findBySha1(String sha1);
+    List<T> findBySha1(String sha1);
 
     List<T> findByIgnoredTrue();
 

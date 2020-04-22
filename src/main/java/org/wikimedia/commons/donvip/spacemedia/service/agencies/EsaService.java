@@ -267,7 +267,7 @@ public class EsaService extends AbstractFullResSpaceAgencyService<EsaMedia, Inte
         boolean ok = false;
         for (int i = 0; i < maxTries && !ok; i++) {
             try {
-                if (mediaService.updateMedia(media)) {
+                if (doCommonUpdate(media)) {
                     save = true;
                 }
                 ok = true;

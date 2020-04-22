@@ -315,7 +315,7 @@ public abstract class AbstractSpaceAgencyFlickrService
         int count = 0;
         for (FlickrMedia media : medias) {
             try {
-                processor.processFlickrMedia(media, flickrAccount);
+                processor.processFlickrMedia(media, flickrAccount, getOriginalRepository());
                 count++;
             } catch (IOException | URISyntaxException e) {
                 problem(getPhotoUrl(media), e);

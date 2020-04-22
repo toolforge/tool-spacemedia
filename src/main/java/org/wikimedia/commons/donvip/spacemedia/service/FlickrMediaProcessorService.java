@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
@@ -53,7 +55,8 @@ public class FlickrMediaProcessorService {
 	}
 
 	@Transactional
-	public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount)
+    public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
+            MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo)
 			throws IOException, URISyntaxException {
 		boolean save = false;
         boolean savePhotoSets = false;
@@ -122,12 +125,13 @@ public class FlickrMediaProcessorService {
 				}
 			}
 		}
-        if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark && !media.isIgnored()) {
+        if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark
+                && !Boolean.TRUE.equals(media.isIgnored())) {
             media.setIgnored(true);
             media.setIgnoredReason("Public Domain Mark is not a legal license");
             save = true;
         }
-		if (mediaService.updateMedia(media)) {
+        if (mediaService.updateMedia(media, originalRepo)) {
 			save = true;
 		}
 		if (save) {

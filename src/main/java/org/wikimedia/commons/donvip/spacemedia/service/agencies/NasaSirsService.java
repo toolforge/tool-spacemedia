@@ -137,7 +137,7 @@ public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, S
                             }
                             save = true;
                         }
-                        if (mediaService.updateMedia(media)) {
+                        if (doCommonUpdate(media)) {
                             save = true;
                         }
                         if (save) {

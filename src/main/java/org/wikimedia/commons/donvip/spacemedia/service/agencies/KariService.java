@@ -166,7 +166,7 @@ public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer, 
                 repository.delete(media);
             }
         }
-        if (mediaService.updateMedia(media)) {
+        if (doCommonUpdate(media)) {
             save = true;
         }
         return save ? repository.save(media) : media;

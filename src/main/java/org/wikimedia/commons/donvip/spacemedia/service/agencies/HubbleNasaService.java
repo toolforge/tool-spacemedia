@@ -291,7 +291,7 @@ public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleN
 				save = true;
 			}
 		}
-		if (mediaService.updateMedia(media)) {
+        if (doCommonUpdate(media)) {
 			save = true;
 		}
 		if (save) {

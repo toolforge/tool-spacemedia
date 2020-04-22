@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -278,7 +279,6 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     }
 
     protected final void endUpdateMedia(int count, LocalDateTime start) {
-        ignoreMediaInOriginalRepository();
         LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 Duration.between(LocalDateTime.now(), start));
     }
@@ -326,13 +326,20 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
             pb.setAgency(getName());
             pb.setErrorMessage(errorMessage);
             pb.setProblematicUrl(problematicUrl);
-            LOGGER.warn(pb.toString());
+            LOGGER.warn("{}", pb);
             return problemRepository.save(pb);
         }
     }
 
     protected T findBySha1OrThrow(String sha1) {
-        return repository.findBySha1(sha1).orElseThrow(() -> new ImageNotFoundException(sha1));
+        List<T> result = repository.findBySha1(sha1);
+        if (CollectionUtils.isEmpty(result)) {
+            throw new ImageNotFoundException(sha1);
+        }
+        if (result.size() > 1) {
+            throw new RuntimeException("Several images found for " + sha1);
+        }
+        return result.get(0);
     }
 
     public final boolean isUploadEnabled() {
@@ -461,20 +468,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     }
 
     public List<String> findTemplates(T media) {
-        // TODO
 		return new ArrayList<>();
-    }
-
-    protected void ignoreMediaInOriginalRepository() {
-        if (getOriginalRepository() != null) {
-            for (T m : repository.findMissingInCommons()) {
-                if (getOriginalRepository().countBySha1(m.getSha1()) > 0) {
-                    m.setIgnored(true);
-                    m.setIgnoredReason("Already present in main repository.");
-                    repository.save(m);
-                }
-            }
-        }
     }
 
     protected final String wikiLink(URL url, String text) {
@@ -498,7 +492,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         }
     }
 
-    protected MediaRepository<?, ?, ?> getOriginalRepository() {
+    protected MediaRepository<? extends Media<?, ?>, ?, ?> getOriginalRepository() {
         return null;
     }
 
@@ -516,6 +510,10 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
         media.setIgnored(Boolean.TRUE);
         media.setIgnoredReason(reason);
         return true;
+    }
+
+    protected final boolean doCommonUpdate(T media) throws IOException, URISyntaxException {
+        return mediaService.updateMedia(media, getOriginalRepository());
     }
 
     @Override
