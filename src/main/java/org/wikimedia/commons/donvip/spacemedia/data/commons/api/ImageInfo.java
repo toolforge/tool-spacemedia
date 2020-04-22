@@ -176,7 +176,7 @@ public class ImageInfo {
     public String toString() {
         return "ImageInfo [timestamp=" + timestamp + ", user=" + user + ", userId=" + userId + ", size=" + size
                 + ", width=" + width + ", height=" + height + ", comment=" + comment + ", parsedComment="
-                + parsedComment + ", html=" + html + ", canonicalTitle=" + canonicalTitle + ", url=" + url
+                + parsedComment + ", canonicalTitle=" + canonicalTitle + ", url=" + url
                 + ", descriptionUrl=" + descriptionUrl + ", sha1=" + sha1 + ", mime=" + mime + ", mediatype="
                 + mediatype + ", bitDepth=" + bitDepth + "]";
     }
