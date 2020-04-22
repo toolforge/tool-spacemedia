@@ -122,6 +122,11 @@ public class FlickrMediaProcessorService {
 				}
 			}
 		}
+        if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark && !media.isIgnored()) {
+            media.setIgnored(true);
+            media.setIgnoredReason("Public Domain Mark is not a legal license");
+            save = true;
+        }
 		if (mediaService.updateMedia(media)) {
 			save = true;
 		}
