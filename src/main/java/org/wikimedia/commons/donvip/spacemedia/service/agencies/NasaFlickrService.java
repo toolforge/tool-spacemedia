@@ -12,7 +12,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 
 @Service
-public class NasaFlickrService extends AbstractSpaceAgencyFlickrService {
+public class NasaFlickrService extends AbstractAgencyFlickrService {
 
     @Autowired
     private NasaMediaRepository<NasaMedia> nasaMediaRepository;

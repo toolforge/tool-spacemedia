@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
-public class PotentialFlickrService extends AbstractSpaceAgencyFlickrService {
+public class PotentialFlickrService extends AbstractAgencyFlickrService {
 
     @Autowired
     public PotentialFlickrService(FlickrMediaRepository repository,

@@ -7,28 +7,39 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
-public class AfspcService extends AbstractSpaceAgencyFlickrService {
+public class UsSmcFlickrService extends AbstractAgencyFlickrService {
 
     @Autowired
-    public AfspcService(FlickrMediaRepository repository,
-            @Value("${afspc.flickr.accounts}") Set<String> flickrAccounts) {
+    private DvidsMediaRepository<DvidsMedia> dvidsRepository;
+
+    @Autowired
+    public UsSmcFlickrService(FlickrMediaRepository repository,
+            @Value("${ussmc.flickr.accounts}") Set<String> flickrAccounts) {
         super(repository, flickrAccounts);
     }
 
     @Override
-    @Scheduled(fixedRateString = "${afspc.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${ussmc.flickr.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }
 
     @Override
     public String getName() {
-        return "Air Force Space Command";
+        return "U.S. Space and Missile Systems Center (Flickr)";
+    }
+
+    @Override
+    protected MediaRepository<?, ?, ?> getOriginalRepository() {
+        return dvidsRepository;
     }
 
     @Override
@@ -37,9 +48,7 @@ public class AfspcService extends AbstractSpaceAgencyFlickrService {
         if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.United_States_Government_Work
 				|| (media.getDescription() != null && media.getDescription().contains("Air Force photo"))) {
             result.remove(FlickrFreeLicense.United_States_Government_Work.getWikiTemplate());
-            if (!result.contains("PD-USGov-Military-Air Force")) {
-                result.add("PD-USGov-Military-Air Force");
-            }
+            result.add("PD-USGov-Military-Air Force");
         }
         return result;
     }
@@ -48,7 +57,7 @@ public class AfspcService extends AbstractSpaceAgencyFlickrService {
 	public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
 		Set<String> result = super.findCategories(media, includeHidden);
 		if (includeHidden) {
-			result.add("Photographs by the United States Air Force Space Command");
+			result.add("Photographs by the Space and Missile Systems Center");
 		}
         return result;
     }

@@ -34,7 +34,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsIma
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
 
 @Service
-public class NasaSirsService extends AbstractSpaceAgencyService<NasaSirsImage, String, LocalDate> {
+public class NasaSirsService extends AbstractAgencyService<NasaSirsImage, String, LocalDate> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaSirsService.class);
 

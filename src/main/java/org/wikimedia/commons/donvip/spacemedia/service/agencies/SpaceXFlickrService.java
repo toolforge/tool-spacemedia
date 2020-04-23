@@ -12,42 +12,32 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
-public class SmcService extends AbstractSpaceAgencyFlickrService {
+public class SpaceXFlickrService extends AbstractAgencyFlickrService {
 
     @Autowired
-    public SmcService(FlickrMediaRepository repository,
-			@Value("${smc.flickr.accounts}") Set<String> flickrAccounts) {
+    public SpaceXFlickrService(FlickrMediaRepository repository,
+            @Value("${spacex.flickr.accounts}") Set<String> flickrAccounts) {
         super(repository, flickrAccounts);
     }
 
     @Override
-	@Scheduled(fixedRateString = "${smc.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${spacex.flickr.update.rate}", initialDelayString = "${initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }
 
     @Override
     public String getName() {
-		return "Space and Missile Systems Center";
+        return "SpaceX";
     }
 
     @Override
     public List<String> findTemplates(FlickrMedia media) {
         List<String> result = super.findTemplates(media);
-        if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.United_States_Government_Work
-				|| (media.getDescription() != null && media.getDescription().contains("Air Force photo"))) {
-            result.remove(FlickrFreeLicense.United_States_Government_Work.getWikiTemplate());
-            result.add("PD-USGov-Military-Air Force");
+        if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Dedication_CC0) {
+            result.remove(FlickrFreeLicense.Public_Domain_Dedication_CC0.getWikiTemplate());
+            result.add("Cc-zero-SpaceX");
         }
-        return result;
-    }
-
-    @Override
-	public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
-		Set<String> result = super.findCategories(media, includeHidden);
-		if (includeHidden) {
-			result.add("Photographs by the Space and Missile Systems Center");
-		}
         return result;
     }
 }

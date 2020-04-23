@@ -8,7 +8,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +90,7 @@ public class FlickrMediaProcessorService {
 		} else {
 			save = true;
 		}
-		if (CollectionUtils.isEmpty(media.getPhotosets())) {
+		if (isEmpty(media.getPhotosets())) {
 			try {
 				Set<FlickrPhotoSet> sets = flickrService.findPhotoSets(media.getId().toString()).stream()
 						.map(ps -> flickrPhotoSetRepository.findById(Long.valueOf(ps.getId()))
@@ -99,7 +100,7 @@ public class FlickrMediaProcessorService {
                                     return flickrPhotoSetRepository.save(set);
                                 }))
 						.collect(Collectors.toSet());
-				if (CollectionUtils.isNotEmpty(sets)) {
+				if (isNotEmpty(sets)) {
 					sets.forEach(media::addPhotoSet);
                     savePhotoSets = true;
 					save = true;

@@ -6,6 +6,7 @@ import javax.persistence.PersistenceContext;
 
 import org.hibernate.search.jpa.Search;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,16 +19,31 @@ public class SearchService {
     @Autowired
     private TransactionService transactionService;
 
+    @Value("${search.enabled}")
+    private boolean searchEnabled;
+
     @PostConstruct
     public void init() {
-        transactionService.doInTransaction(() -> {
-            try {
-                // https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/?v=5.11#search-batchindexing-threadsandconnections
-                // threads = typesToIndexInParallel * (threadsToLoadObjects + 1)
-                Search.getFullTextEntityManager(entityManager).createIndexer().threadsToLoadObjects(7).startAndWait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        if (searchEnabled) {
+            transactionService.doInTransaction(() -> {
+                try {
+                    // https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/?v=5.11#search-batchindexing-threadsandconnections
+                    // threads = typesToIndexInParallel * (threadsToLoadObjects + 1)
+                    Search.getFullTextEntityManager(entityManager).createIndexer().threadsToLoadObjects(7).startAndWait();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+    }
+
+    public boolean isSearchEnabled() {
+        return searchEnabled;
+    }
+
+    public void checkSearchEnabled() {
+        if (!searchEnabled) {
+            throw new UnsupportedOperationException("Search is disabled");
+        }
     }
 }

@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AsyncSpaceAgencyUpdaterService;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceAgency;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.AsyncAgencyUpdaterService;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
 import org.xml.sax.SAXException;
 
 /**
@@ -36,11 +36,11 @@ import org.xml.sax.SAXException;
 public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D extends Temporal> {
 
     @Autowired
-    private AsyncSpaceAgencyUpdaterService async;
+    private AsyncAgencyUpdaterService async;
 
-    protected final SpaceAgency<T, ID, D> service;
+    protected final Agency<T, ID, D> service;
 
-    public SpaceAgencyRestController(AbstractSpaceAgencyService<T, ID, D> service) {
+    public SpaceAgencyRestController(AbstractAgencyService<T, ID, D> service) {
         this.service = Objects.requireNonNull(service);
     }
 

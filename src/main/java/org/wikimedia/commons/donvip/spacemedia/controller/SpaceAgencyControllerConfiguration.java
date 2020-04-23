@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceAgency;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
@@ -29,21 +29,21 @@ import net.bytebuddy.implementation.MethodCall;
 public class SpaceAgencyControllerConfiguration {
 
     @Autowired
-    private List<AbstractSpaceAgencyService<?, ?, ?>> agencies;
+    private List<AbstractAgencyService<?, ?, ?>> agencies;
 
     @Autowired
     private AbstractAutowireCapableBeanFactory factory;
 
     @PostConstruct
     void initSpaceAgencyControllers() throws ReflectiveOperationException {
-        for (SpaceAgency<?, ?, ?> agency : agencies) {
+        for (Agency<?, ?, ?> agency : agencies) {
             String agencyName = agency.getName().replace(" ", "").replace("(", "").replace(")", "");
             registerNewBean(agency, agencyName + "RestController", RestController.class, SpaceAgencyRestController.class, "/rest");
             registerNewBean(agency, agencyName + "WebController", Controller.class, SpaceAgencyWebController.class, "");
         }
     }
 
-    private void registerNewBean(SpaceAgency<?, ?, ?> agency, String controllerName,
+    private void registerNewBean(Agency<?, ?, ?> agency, String controllerName,
             Class<? extends Annotation> annotationClass, Class<?> parentClass, String pathSuffix)
             throws ReflectiveOperationException {
         Object controller = new ByteBuddy().subclass(parentClass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
@@ -51,7 +51,7 @@ public class SpaceAgencyControllerConfiguration {
                         ofType(RequestMapping.class)
                                 .define("path", of(new String[] {agency.getId() + pathSuffix})).build())
                 .defineConstructor(Visibility.PUBLIC).withParameters(agency.getClass())
-                .intercept(MethodCall.invoke(parentClass.getDeclaredConstructor(AbstractSpaceAgencyService.class))
+                .intercept(MethodCall.invoke(parentClass.getDeclaredConstructor(AbstractAgencyService.class))
                         .withAllArguments())
                 .annotateMethod(ofType(Autowired.class).build()).make().load(getClass().getClassLoader()).getLoaded()
                 .getConstructor(agency.getClass()).newInstance(agency);

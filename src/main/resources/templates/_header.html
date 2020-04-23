@@ -53,7 +53,7 @@
 	        <a class="nav-link" href="https://phabricator.wikimedia.org/source/tool-spacemedia/">Repository</a>
 	      </li>
 	    </ul>
-	    <form class="form-inline my-2 my-lg-0" th:action="@{/{id}/search(id=${agency.id})}" th:object="${search}" th:if="${agency}">
+	    <form class="form-inline my-2 my-lg-0" th:action="@{/{id}/search(id=${agency.id})}" th:object="${search}" th:if="${agency != null and search != null}">
 	      <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" th:field="*{q}">
 	      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
 	    </form>

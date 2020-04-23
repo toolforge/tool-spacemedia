@@ -22,11 +22,11 @@
 	    <a th:class="'nav-link' + ('problems' == ${tab} ? ' active' : '') + (${agency.getProblemsCount()} == 0 ? ' disabled': '')"
 	       th:href="@{/{id}/problems(id=${agency.id})}" th:text="'Problems (' + ${agency.getProblemsCount()} + ')'"></a>
 	  </li>
-	  <li class="nav-item">
+	  <li class="nav-item" th:if="${search != null}">
 	    <a th:class="'nav-link' + ('topterms' == ${tab} ? ' active' : '')"
 	       th:href="@{/{id}/topterms(id=${agency.id})}">Top terms</a>
 	  </li>
-	  <li class="nav-item" th:if="${search.q}">
+	  <li class="nav-item" th:if="${search != null and search.q != null}">
 	    <a th:class="'nav-link' + ('search' == ${tab} ? ' active' : '')"
 	       th:href="@{/{id}/search?q={q}(id=${agency.id},q=${search.q})}" th:text="'Search results (' + ${medias.totalElements} + ')'"></a>
 	  </li>
@@ -36,9 +36,9 @@
       <ul class="pagination">
         <li th:class="'page-item ' + (${pageNumber==page.number + 1} ? active)"
             th:each="pageNumber : ${pageNumbers}">
-          <a class="page-link" th:if="!${search.q}" th:href="@{''(size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
+          <a class="page-link" th:if="${search == null or search.q == null}" th:href="@{''(size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
           </a>
-          <a class="page-link" th:if="${search.q}" th:href="@{''(q=${search.q}, size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
+          <a class="page-link" th:if="${search != null and search.q != null}" th:href="@{''(q=${search.q}, size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
           </a>
         </li>
       </ul>

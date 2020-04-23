@@ -6,10 +6,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AsyncSpaceAgencyUpdaterService {
+public class AsyncAgencyUpdaterService {
 
     @Async
-    public void updateMedia(SpaceAgency<?, ?, ?> agency) throws IOException {
+    public void updateMedia(Agency<?, ?, ?> agency) throws IOException {
         agency.updateMedia();
     }
 }

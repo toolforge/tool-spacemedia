@@ -46,10 +46,10 @@ import com.flickr4java.flickr.people.User;
 import com.flickr4java.flickr.photos.Photo;
 import com.github.dozermapper.core.Mapper;
 
-public abstract class AbstractSpaceAgencyFlickrService
-        extends AbstractSpaceAgencyService<FlickrMedia, Long, LocalDateTime> {
+public abstract class AbstractAgencyFlickrService
+        extends AbstractAgencyService<FlickrMedia, Long, LocalDateTime> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpaceAgencyFlickrService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyFlickrService.class);
     private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"([0-9]+)\" not found \\(invalid ID\\)");
 
     @Autowired
@@ -64,7 +64,7 @@ public abstract class AbstractSpaceAgencyFlickrService
     protected final Set<String> flickrAccounts;
 	protected final Map<String, Map<String, String>> flickrPhotoSets;
 
-    public AbstractSpaceAgencyFlickrService(FlickrMediaRepository repository, Set<String> flickrAccounts) {
+    public AbstractAgencyFlickrService(FlickrMediaRepository repository, Set<String> flickrAccounts) {
         super(repository);
         this.flickrAccounts = Objects.requireNonNull(flickrAccounts);
 		this.flickrPhotoSets = new HashMap<>();
@@ -262,7 +262,7 @@ public abstract class AbstractSpaceAgencyFlickrService
         int count = 0;
         for (String flickrAccount : flickrAccounts) {
             try {
-                LOGGER.info("Fetching Flickr images from account '{}'...", flickrAccount);
+                LOGGER.info("Fetching Flickr media from account '{}'...", flickrAccount);
                 List<FlickrMedia> freePictures = buildFlickrMediaList(flickrService.findFreePhotos(flickrAccount));
                 count += processFlickrMedia(freePictures, flickrAccount);
                 Set<FlickrMedia> noLongerFreePictures = flickrRepository.findAll(Set.of(flickrAccount));
@@ -271,7 +271,7 @@ public abstract class AbstractSpaceAgencyFlickrService
                     count += updateNoLongerFreeFlickrMedia(flickrAccount, noLongerFreePictures);
                 }
 			} catch (FlickrException | MalformedURLException | RuntimeException e) {
-                LOGGER.error("Error while fetching Flickr images from account " + flickrAccount, e);
+                LOGGER.error("Error while fetching Flickr media from account " + flickrAccount, e);
             }
         }
         endUpdateMedia(count, start);

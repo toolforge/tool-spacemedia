@@ -8,13 +8,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
 
 @Controller
 public class WebAppController {
 
     @Autowired
-    private List<AbstractSpaceAgencyService<? extends Media<?, ?>, ?, ?>> agencies;
+    private List<AbstractAgencyService<? extends Media<?, ?>, ?, ?>> agencies;
 
     @GetMapping("/")
     public String index(Model model) {

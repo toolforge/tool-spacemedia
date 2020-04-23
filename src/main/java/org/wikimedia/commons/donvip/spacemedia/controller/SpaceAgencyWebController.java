@@ -4,7 +4,6 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDefaults.SIZE;
 import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDefaults.SORT;
 
-import java.io.IOException;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Objects;
@@ -19,8 +18,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Search;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractSpaceAgencyService;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.SpaceAgency;
+import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
 import org.wikimedia.commons.donvip.spacemedia.utils.Pagination;
 
 /**
@@ -33,11 +33,14 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Pagination;
 public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temporal> {
 
     @Autowired
-    private List<AbstractSpaceAgencyService<? extends Media<?, ?>, ?, ?>> agencies;
+    private List<AbstractAgencyService<? extends Media<?, ?>, ?, ?>> agencies;
 
-    protected final SpaceAgency<T, ID, D> service;
+    @Autowired
+    private SearchService searchService;
 
-    public SpaceAgencyWebController(AbstractSpaceAgencyService<T, ID, D> service) {
+    protected final Agency<T, ID, D> service;
+
+    public SpaceAgencyWebController(AbstractAgencyService<T, ID, D> service) {
         this.service = Objects.requireNonNull(service);
     }
 
@@ -67,19 +70,19 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
     }
 
     @GetMapping("/stats")
-    public String stats(Model model) throws IOException {
+    public String stats(Model model) {
         model.addAttribute("stats", service.getStatistics());
         return template(model, "agency_stats");
     }
 
     @GetMapping("/problems")
-    public String problems(Model model, @PageableDefault(size = SIZE) Pageable page) throws IOException {
-        return pageIndex(model, "problems", service.getProblems(page), "problems", new Search());
+    public String problems(Model model, @PageableDefault(size = SIZE) Pageable page) {
+        return pageIndex(model, "problems", service.getProblems(page), "problems", newSearch());
     }
 
     @GetMapping("/topterms")
     public final String topterms(Model model) throws Exception {
-        return index(model, "topterms", service.getTopTerms(), "topterms", new Search());
+        return index(model, "topterms", service.getTopTerms(), "topterms", newSearch());
     }
 
     @GetMapping("/search")
@@ -89,7 +92,7 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
     }
 
     private String template(Model model, String template) {
-        return template(model, template, new Search());
+        return template(model, template, newSearch());
     }
 
     private String template(Model model, String template, Search search) {
@@ -100,7 +103,7 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
     }
 
     private String media(Model model, String tab, Page<T> medias) {
-        return media(model, tab, medias, new Search());
+        return media(model, tab, medias, newSearch());
     }
 
     private String media(Model model, String tab, Page<T> medias, Search search) {
@@ -116,5 +119,9 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
     private String pageIndex(Model model, String tab, Page<?> items, String itemsName, Search search) {
         Pagination.setPageNumbers(model, items);
         return index(model, tab, items, itemsName, search);
+    }
+
+    private Search newSearch() {
+        return searchService.isSearchEnabled() ? new Search() : null;
     }
 }

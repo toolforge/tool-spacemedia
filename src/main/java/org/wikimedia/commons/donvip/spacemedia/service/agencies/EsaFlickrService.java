@@ -20,7 +20,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
-public class EsaFlickrService extends AbstractSpaceAgencyFlickrService {
+public class EsaFlickrService extends AbstractAgencyFlickrService {
 
     @Autowired
     private EsaMediaRepository esaRepository;

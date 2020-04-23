@@ -47,7 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.util.StringUtils;
 
 public abstract class CommonEsoService<T extends CommonEsoMedia>
-        extends AbstractFullResSpaceAgencyService<T, String, LocalDateTime> {
+        extends AbstractFullResAgencyService<T, String, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonEsoService.class);
 

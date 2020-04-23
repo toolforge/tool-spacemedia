@@ -27,7 +27,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMediaRepository;
 
 @Service
-public class KariService extends AbstractSpaceAgencyService<KariMedia, Integer, LocalDate> {
+public class KariService extends AbstractAgencyService<KariMedia, Integer, LocalDate> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KariService.class);
 

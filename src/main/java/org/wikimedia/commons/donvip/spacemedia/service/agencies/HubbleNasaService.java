@@ -47,7 +47,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNas
  * Service harvesting images from NASA Hubble / Jame Webb websites.
  */
 @Service
-public class HubbleNasaService extends AbstractFullResSpaceAgencyService<HubbleNasaMedia, Integer, ZonedDateTime> {
+public class HubbleNasaService extends AbstractFullResAgencyService<HubbleNasaMedia, Integer, ZonedDateTime> {
 
 	private static final DateTimeFormatter exposureDateformatter = DateTimeFormatter
 			.ofPattern("MMM dd, yyyy", Locale.ENGLISH);

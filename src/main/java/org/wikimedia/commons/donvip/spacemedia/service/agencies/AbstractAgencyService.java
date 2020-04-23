@@ -54,6 +54,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
 import org.xml.sax.SAXException;
@@ -65,10 +66,10 @@ import org.xml.sax.SAXException;
  * @param <ID> the type of the id of the entity the repository manages
  * @param <D> the media date type
  */
-public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D extends Temporal>
-        implements Comparable<AbstractSpaceAgencyService<T, ID, D>>, SpaceAgency<T, ID, D> {
+public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extends Temporal>
+        implements Comparable<AbstractAgencyService<T, ID, D>>, Agency<T, ID, D> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpaceAgencyService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyService.class);
 
     protected final MediaRepository<T, ID, D> repository;
 
@@ -81,6 +82,8 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     protected MediaService mediaService;
     @Autowired
     protected CommonsService commonsService;
+    @Autowired
+    private SearchService searchService;
 
     @Autowired
     private Environment env;
@@ -93,7 +96,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
 
     private boolean uploadEnabled;
 
-    public AbstractSpaceAgencyService(MediaRepository<T, ID, D> repository) {
+    public AbstractAgencyService(MediaRepository<T, ID, D> repository) {
         this.repository = Objects.requireNonNull(repository);
     }
 
@@ -101,7 +104,9 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     void init() throws IOException {
         ignoredCommonTerms = Csv.loadSet(getClass().getResource("/ignored.terms.csv"));
         uploadEnabled = env.getProperty(
-                getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH) + ".upload.enabled",
+                getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH)
+                        .replace("flickr", ".flickr").replace("dvids", ".dvids")
+                        + ".upload.enabled",
                 Boolean.class, Boolean.FALSE);
     }
 
@@ -219,12 +224,14 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     @Override
     @SuppressWarnings("unchecked")
     public final List<T> searchMedia(String q) {
+        searchService.checkSearchEnabled();
         return transactionService.doInTransaction(() -> getFullTextQuery(q, entityManager).getResultList());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public final Page<T> searchMedia(String q, Pageable page) {
+        searchService.checkSearchEnabled();
         return transactionService.doInTransaction(() -> {
             FullTextQuery fullTextQuery = getFullTextQuery(q, entityManager);
             fullTextQuery.setFirstResult(page.getPageNumber() * page.getPageSize());
@@ -235,6 +242,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
 
     @Override
     public final List<TermStats> getTopTerms() throws Exception {
+        searchService.checkSearchEnabled();
         return transactionService.doInTransaction(() -> {
             SearchFactory searchFactory = Search.getFullTextEntityManager(entityManager).getSearchFactory();
             IndexReader indexReader = searchFactory.getIndexReaderAccessor().open(getTopTermsMediaClass());
@@ -517,7 +525,7 @@ public abstract class AbstractSpaceAgencyService<T extends Media<ID, D>, ID, D e
     }
 
     @Override
-    public int compareTo(AbstractSpaceAgencyService<T, ID, D> o) {
+    public int compareTo(AbstractAgencyService<T, ID, D> o) {
         return getName().compareTo(o.getName());
     }
 }

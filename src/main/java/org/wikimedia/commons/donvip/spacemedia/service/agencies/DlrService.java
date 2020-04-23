@@ -10,7 +10,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
-public class DlrService extends AbstractSpaceAgencyFlickrService {
+public class DlrService extends AbstractAgencyFlickrService {
 
     @Autowired
     public DlrService(FlickrMediaRepository repository, @Value("${dlr.flickr.accounts}") Set<String> flickrAccounts) {
