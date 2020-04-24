@@ -90,11 +90,6 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     private Float rating;
 
     /**
-     * Url to resized image of asset as specified by thumb_XXX params.
-     */
-    private URL thumbnail;
-
-    /**
      * Date in ISO8601 format of when the asset was last updated.
      */
     private ZonedDateTime timestamp;
@@ -196,12 +191,16 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
         this.rating = rating;
     }
 
-    public URL getThumbnail() {
-        return thumbnail;
+    @Override
+    @JsonProperty("thumbnail")
+    public URL getThumbnailUrl() {
+        return super.getThumbnailUrl();
     }
 
-    public void setThumbnail(URL thumbnail) {
-        this.thumbnail = thumbnail;
+    @Override
+    @JsonProperty("thumbnail")
+    public void setThumbnailUrl(URL thumbnailUrl) {
+        super.setThumbnailUrl(thumbnailUrl);
     }
 
     public ZonedDateTime getTimestamp() {

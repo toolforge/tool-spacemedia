@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,9 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudioRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsGraphic;
@@ -189,5 +193,88 @@ public abstract class AbstractAgencyDvidsService
     @Override
     protected final String getAuthor(DvidsMedia media) throws MalformedURLException {
         return media.getCredit().toString(); // FIXME
+    }
+
+    @Override
+    public final long countAllMedia() {
+        return mediaRepository.count(units);
+    }
+
+    @Override
+    public final long countIgnored() {
+        return mediaRepository.countByIgnoredTrue(units);
+    }
+
+    @Override
+    public final long countMissingMedia() {
+        return mediaRepository.countMissingInCommons(units);
+    }
+
+    @Override
+    public final long countUploadedMedia() {
+        return mediaRepository.countUploadedToCommons(units);
+    }
+
+    @Override
+    public final Iterable<DvidsMedia> listAllMedia() {
+        return mediaRepository.findAll(units);
+    }
+
+    @Override
+    public final Page<DvidsMedia> listAllMedia(Pageable page) {
+        return mediaRepository.findAll(units, page);
+    }
+
+    @Override
+    public final List<DvidsMedia> listIgnoredMedia() {
+        return mediaRepository.findByIgnoredTrue(units);
+    }
+
+    @Override
+    public final Page<DvidsMedia> listIgnoredMedia(Pageable page) {
+        return mediaRepository.findByIgnoredTrue(units, page);
+    }
+
+    @Override
+    public final List<DvidsMedia> listMissingMedia() {
+        return mediaRepository.findMissingInCommons(units);
+    }
+
+    @Override
+    public final Page<DvidsMedia> listMissingMedia(Pageable page) {
+        return mediaRepository.findMissingInCommons(units, page);
+    }
+
+    @Override
+    public final List<DvidsMedia> listUploadedMedia() {
+        return mediaRepository.findUploadedToCommons(units);
+    }
+
+    @Override
+    public final Page<DvidsMedia> listUploadedMedia(Pageable page) {
+        return mediaRepository.findUploadedToCommons(units, page);
+    }
+
+    @Override
+    public final List<DvidsMedia> listDuplicateMedia() {
+        return mediaRepository.findDuplicateInCommons(units);
+    }
+
+    @Override
+    public Statistics getStatistics() {
+        Statistics stats = super.getStatistics();
+        if (units.size() > 1) {
+            stats.setDetails(units.stream()
+                    .map(this::getStatistics)
+                    .sorted().collect(Collectors.toList()));
+        }
+        return stats;
+    }
+
+    private Statistics getStatistics(String alias) {
+        Set<String> singleton = Collections.singleton(alias);
+        return new Statistics(alias, mediaRepository.count(singleton),
+                mediaRepository.countByIgnoredTrue(singleton),
+                mediaRepository.countMissingInCommons(singleton), null);
     }
 }

@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,5 +28,16 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService {
     @Override
     public String getName() {
         return "U.S. Space Force (DVIDS)";
+    }
+
+    @Override
+    public List<String> findTemplates(DvidsMedia media) {
+        List<String> result = super.findTemplates(media);
+        if (media.getDescription().contains("Space Force photo")) {
+            result.add("PD-USGov-Military-Space Force");
+        } else {
+            result.add("PD-USGov-Military-Air Force");
+        }
+        return result;
     }
 }
