@@ -144,7 +144,7 @@ public abstract class AbstractAgencyDvidsService
                             continue;
                         }
                         ApiPageInfo pageInfo = response.getPageInfo();
-                        if (pageInfo.getTotalResults() == MAX_RESULTS) {
+                        if (page == 2 && pageInfo.getTotalResults() == MAX_RESULTS) {
                             LOGGER.warn("Incomplete search! More criteria must be defined for {}s of '{}'!", type, unit);
                         }
                         List<String> results = response.getResults().stream().map(ApiSearchResult::getId)
