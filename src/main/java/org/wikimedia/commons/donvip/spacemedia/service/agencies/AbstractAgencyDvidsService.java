@@ -153,7 +153,7 @@ public abstract class AbstractAgencyDvidsService
                             try {
                                 count += processDvidsMedia(rest.getForObject(
                                         assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)),
-                                        ApiAssetResponse.class).getResults());
+                                        ApiAssetResponse.class).getResults(), unit);
                             } catch (IOException | URISyntaxException e) {
                                 LOGGER.error("Error while processing DVIDS " + id + " from unit " + unit, e);
                             }
@@ -168,12 +168,13 @@ public abstract class AbstractAgencyDvidsService
         endUpdateMedia(count, start);
     }
 
-    private int processDvidsMedia(DvidsMedia media) throws IOException, URISyntaxException {
+    private int processDvidsMedia(DvidsMedia media, String unit) throws IOException, URISyntaxException {
         boolean save = false;
         Optional<DvidsMedia> optMediaInRepo = mediaRepository.findById(media.getId());
         if (optMediaInRepo.isPresent()) {
             media = optMediaInRepo.get();
         } else {
+            media.setUnit(unit);
             save = true;
         }
         if (mediaService.updateMedia(media, getOriginalRepository())) {

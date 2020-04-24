@@ -71,6 +71,11 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     private String branch;
 
     /**
+     * DVIDS abbreviation of unit credited with media asset.
+     */
+    private String unit;
+
+    /**
      * Full name of unit credited with media asset.
      */
     @JsonProperty("unit_name")
@@ -165,6 +170,14 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
 
     public void setBranch(String branch) {
         this.branch = branch;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
     public String getUnitName() {
