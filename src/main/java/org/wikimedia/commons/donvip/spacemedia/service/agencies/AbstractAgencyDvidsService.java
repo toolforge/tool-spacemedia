@@ -7,6 +7,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,6 +46,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiAssetRes
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiPageInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResult;
+import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
+import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 
 /**
  * Service fetching images from https://api.dvidshub.net/
@@ -87,11 +90,17 @@ public abstract class AbstractAgencyDvidsService
     @Value("${dvids.api.search.url}")
     private UriTemplate searchApiEndpoint;
 
+    @Value("${dvids.api.search.year.url}")
+    private UriTemplate searchYearApiEndpoint;
+
     @Value("${dvids.api.asset.url}")
     private UriTemplate assetApiEndpoint;
 
     @Value("${dvids.media.url}")
     private UriTemplate mediaUrl;
+
+    @Value("${dvids.min.year}")
+    private int minYear;
 
     private final Set<String> units;
 
@@ -130,42 +139,95 @@ public abstract class AbstractAgencyDvidsService
         for (String unit : units) {
             for (DvidsMediaType type : new DvidsMediaType[] {
                     DvidsMediaType.image, DvidsMediaType.audio, DvidsMediaType.video }) {
+                LOGGER.info("Fetching DVIDS {}s from unit '{}'...", type, unit);
                 try {
-                    LOGGER.info("Fetching DVIDS {}s from unit '{}'...", type, unit);
                     boolean loop = true;
                     int page = 1;
                     while (loop) {
-                        ApiSearchResponse response = rest.getForObject(
-                                searchApiEndpoint
-                                        .expand(Map.of("api_key", apiKey, "type", type, "unit", unit, "page", page++)),
-                                ApiSearchResponse.class);
-                        if (response.getErrors() != null) {
-                            LOGGER.error("API error while fetching DVIDS {}s from unit '{}': {}", type, unit, response);
-                            continue;
-                        }
-                        ApiPageInfo pageInfo = response.getPageInfo();
-                        if (page == 2 && pageInfo.getTotalResults() == MAX_RESULTS) {
-                            LOGGER.warn("Incomplete search! More criteria must be defined for {}s of '{}'!", type, unit);
-                        }
-                        List<String> results = response.getResults().stream().map(ApiSearchResult::getId)
-                                .collect(Collectors.toList());
-                        for (String id : results) {
-                            try {
-                                count += processDvidsMedia(rest.getForObject(
-                                        assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)),
-                                        ApiAssetResponse.class).getResults(), unit);
-                            } catch (IOException | URISyntaxException e) {
-                                LOGGER.error("Error while processing DVIDS " + id + " from unit " + unit, e);
-                            }
-                        }
-                        loop = pageInfo.getResultsPerPage() > 0 && results.size() == pageInfo.getResultsPerPage();
+                        UpdateResult ur = doUpdateDvidsMedia(rest,
+                                searchDvidsMediaIds(rest, false, type, unit, 0, page++), unit);
+                        count += ur.count;
+                        loop = ur.loop;
                     }
-                } catch (RuntimeException e) {
+                } catch (TooManyResultsException ex) {
+                    LOGGER.trace("TooManyResults", ex);
+                    int year = LocalDateTime.now().getYear();
+                    while (year >= minYear) {
+                        try {
+                            boolean loop = true;
+                            int page = 1;
+                            while (loop) {
+                                UpdateResult ur = doUpdateDvidsMedia(rest,
+                                        searchDvidsMediaIds(rest, true, type, unit, year--, page++), unit);
+                                count += ur.count;
+                                loop = ur.loop;
+                            }
+                        } catch (ApiException | TooManyResultsException exx) {
+                            LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
+                        }
+                    }
+                } catch (RuntimeException | ApiException e) {
                     LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, e);
                 }
             }
         }
         endUpdateMedia(count, start);
+    }
+
+    private UpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
+        int count = 0;
+        List<String> results = response.getResults().stream().map(ApiSearchResult::getId).collect(Collectors.toList());
+        for (String id : results) {
+            try {
+                count += processDvidsMedia(rest.getForObject(
+                        assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)),
+                        ApiAssetResponse.class).getResults(), unit);
+            } catch (IOException | URISyntaxException e) {
+                LOGGER.error("Error while processing DVIDS " + id + " from unit " + unit, e);
+            }
+        }
+        ApiPageInfo pi = response.getPageInfo();
+        return new UpdateResult(pi.getResultsPerPage() > 0 && results.size() == pi.getResultsPerPage(), count);
+    }
+
+    private static class UpdateResult {
+        private boolean loop;
+        private int count;
+
+        public UpdateResult(boolean loop, int count) {
+            this.loop = loop;
+            this.count = count;
+        }
+    }
+
+    private ApiSearchResponse searchDvidsMediaIds(RestTemplate rest, boolean allowCappedResults, DvidsMediaType type,
+            String unit, int year, int page)
+            throws ApiException, TooManyResultsException {
+        Map<String, Object> variables = Map.of("api_key", apiKey, "type", type, "unit", unit, "page", page);
+        ApiSearchResponse response;
+        if (year <= 0) {
+            response = rest.getForObject(searchApiEndpoint.expand(variables), ApiSearchResponse.class);
+        } else {
+            variables = new HashMap<>(variables);
+            variables.put("from_date", year + "-01-01T00:00:00Z");
+            variables.put("to_date", year + "-12-31T23:59:59Z");
+            response = rest.getForObject(searchYearApiEndpoint.expand(variables), ApiSearchResponse.class);
+        }
+        if (response.getErrors() != null) {
+            throw new ApiException(
+                    String.format("API error while fetching DVIDS %ss from unit '%s': %s", type, unit, response));
+        }
+        ApiPageInfo pageInfo = response.getPageInfo();
+        if (pageInfo.getTotalResults() == MAX_RESULTS) {
+            String msg = String.format("Incomplete search! More criteria must be defined for %ss of '%s' (%d)!",
+                    type, unit, year);
+            if (allowCappedResults) {
+                LOGGER.warn(msg);
+            } else {
+                throw new TooManyResultsException(msg);
+            }
+        }
+        return response;
     }
 
     private int processDvidsMedia(DvidsMedia media, String unit) throws IOException, URISyntaxException {
