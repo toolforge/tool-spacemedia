@@ -138,7 +138,7 @@ public abstract class AbstractAgencyDvidsService
         int count = 0;
         for (String unit : units) {
             for (DvidsMediaType type : new DvidsMediaType[] {
-                    DvidsMediaType.image, DvidsMediaType.audio, DvidsMediaType.video }) {
+                    DvidsMediaType.image, DvidsMediaType.video }) {
                 LOGGER.info("Fetching DVIDS {}s from unit '{}'...", type, unit);
                 try {
                     boolean loop = true;
