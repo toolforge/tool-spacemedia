@@ -59,9 +59,11 @@
 		               th:href="@{https://commons.wikimedia.org/wiki/Category:{t}(t=${category})}"></a>
 		          </li></ul>
 		        </td>
-		        <td th:if="'ignored' == ${tab}" th:text="${media.ignoredReason}">
+		        <td th:if="'ignored' == ${tab}">
+		          <a th:text="${media.ignoredReason}"></a>
 		          <div th:each="original : ${agency.getOriginalMedia(media)}">
-		            <a th:text="${original.id}" th:href="${original.metadata.assetUrl}">
+		            <a th:text="${original.id}"></a>
+		            <a th:href="${original.metadata.assetUrl}">
 		              <img th:src="${original.metadata.assetUrl}" width="210px" />
 		            </a>
 		          </div>
