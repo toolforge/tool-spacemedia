@@ -29,6 +29,6 @@ public class SpacemediaApplication implements SchedulingConfigurer {
 
     @Bean(destroyMethod="shutdown")
     public Executor taskExecutor() {
-        return Executors.newScheduledThreadPool(16);
+        return Executors.newScheduledThreadPool(8);
     }
 }
