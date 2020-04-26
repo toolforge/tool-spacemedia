@@ -16,9 +16,17 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 
+import com.github.kilianB.hash.Hash;
+import com.github.kilianB.hashAlgorithms.HashingAlgorithm;
 import com.github.kilianB.hashAlgorithms.PerceptiveHash;
 
 public final class HashHelper {
+
+    private static final int bitResolution = 2 ^ 16;
+
+    private static final HashingAlgorithm algorithm = new PerceptiveHash(bitResolution);
+
+    private static final int algorithmId = algorithm.algorithmId();
 
     private HashHelper() {
         // Hide default constructor
@@ -44,6 +52,14 @@ public final class HashHelper {
 
     public static BigInteger computePerceptualHash(BufferedImage image, URL url)
             throws IOException, URISyntaxException, ImageDecodingException {
-        return new PerceptiveHash(2 ^ 16).hash(image != null ? image : Utils.readImage(url, false)).getHashValue();
+        return algorithm.hash(image != null ? image : Utils.readImage(url, false)).getHashValue();
+    }
+
+    public static double similarityScore(BigInteger phash1, BigInteger phash2) {
+        return newHash(phash1).normalizedHammingDistance(newHash(phash2));
+    }
+
+    private static Hash newHash(BigInteger phash) {
+        return new Hash(phash, bitResolution, algorithmId);
     }
 }

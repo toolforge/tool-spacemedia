@@ -17,6 +17,7 @@ import java.security.cert.CertificateFactory;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -25,6 +26,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -39,6 +42,9 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 public final class Utils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
+
+    private static final Set<String> IMAGE_EXTENSIONS = Set.of("bmp", "gif", "jpe", "jpg", "jpeg", "png", "tif",
+            "tiff");
 
     private Utils() {
         // Hide default constructor
@@ -100,30 +106,35 @@ public final class Utils {
         throw new UnsupportedOperationException("Unsupported DataBuffer type: " + dataBuffer.getClass().getName());
     }
 
+    public static String findExtension(String path) {
+        return path.substring(path.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH);
+    }
+
     public static BufferedImage readImage(URL url, boolean readMetadata)
             throws IOException, URISyntaxException, ImageDecodingException {
         URI uri = urlToUri(url);
         LOGGER.info("Reading image {}", uri);
-        String extension = uri.toString().substring(uri.toString().lastIndexOf('.')+1).toLowerCase(Locale.ENGLISH);
+        String extension = findExtension(uri.toString());
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
                 InputStream in = response.getEntity().getContent()) {
-            switch (extension) {
-                case "bmp":
-                case "gif":
-                case "jpe":
-                case "jpg":
-                case "jpeg":
-                case "png":
-                case "tif":
-                case "tiff":
-                    try {
-                        return readImage(ImageIO.createImageInputStream(in), readMetadata);
-					} catch (IOException | RuntimeException e) {
-                        throw new ImageDecodingException(e);
-                    }
-                default:
-                    throw new ImageDecodingException("Unsupported format: " + extension);
+            boolean ok = IMAGE_EXTENSIONS.contains(extension);
+            if (!ok) {
+                Header[] disposition = response.getHeaders("Content-Disposition");
+                if (ArrayUtils.isNotEmpty(disposition)) {
+                    extension = findExtension(disposition[0].getValue());
+                    ok = IMAGE_EXTENSIONS.contains(extension);
+                }
+            }
+            if (ok) {
+                try {
+                    return readImage(ImageIO.createImageInputStream(in), readMetadata);
+                } catch (IOException | RuntimeException e) {
+                    throw new ImageDecodingException(e);
+                }
+            } else {
+                throw new ImageDecodingException(
+                        "Unsupported format: " + extension + " / headers:" + response.getAllHeaders());
             }
         }
     }

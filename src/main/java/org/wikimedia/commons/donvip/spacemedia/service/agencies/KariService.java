@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -138,8 +137,6 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
                 try {
                     processMedia(save, media, view, mediaInRepo.isPresent());
                     count++;
-                } catch (URISyntaxException e) {
-                    LOGGER.error("Cannot compute SHA-1 of " + media, e);
                 } catch (TransactionException e) {
                     LOGGER.error("Transaction error when saving " + media, e);
                 }
@@ -149,8 +146,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         endUpdateMedia(count, start);
     }
 
-    protected KariMedia processMedia(boolean save, KariMedia media, URL view, boolean mediaInRepo)
-            throws IOException, URISyntaxException {
+    protected KariMedia processMedia(boolean save, KariMedia media, URL view, boolean mediaInRepo) throws IOException {
         if (StringUtils.isBlank(media.getDescription())) {
             problem(view, "Empty description");
         }

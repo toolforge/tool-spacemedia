@@ -129,7 +129,8 @@ public class MediaService {
                     }
                 }
             }
-            if (isImage && computePerceptualHash(media, bi, biFullRes)) {
+            if (isImage && Boolean.TRUE.equals(metadata.isReadableImage())
+                    && computePerceptualHash(media, bi, biFullRes)) {
                 result = true;
             }
             if (computeSha1(media, bi, biFullRes)) {
