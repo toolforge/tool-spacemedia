@@ -131,9 +131,10 @@ public class MediaService {
         try {
             boolean isImage = media.isImage();
             Metadata metadata = media.getMetadata();
-            if (isImage && metadata.isReadableImage() == null) {
+            URL assetUrl = metadata.getAssetUrl();
+            if (isImage && metadata.isReadableImage() == null && assetUrl != null) {
                 try {
-                    bi = Utils.readImage(metadata.getAssetUrl(), false);
+                    bi = Utils.readImage(assetUrl, false);
                     metadata.setReadableImage(Boolean.TRUE);
                 } catch (IOException | URISyntaxException | ImageDecodingException e) {
                     result = ignoreMedia(media, "Unreadable media", e);
@@ -143,9 +144,10 @@ public class MediaService {
             if (media instanceof FullResMedia<?, ?>) {
                 FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
                 Metadata frMetadata = frMedia.getFullResMetadata();
-                if (isImage && frMetadata.isReadableImage() == null) {
+                URL frAssetUrl = frMetadata.getAssetUrl();
+                if (isImage && frMetadata.isReadableImage() == null && frAssetUrl != null) {
                     try {
-                        biFullRes = Utils.readImage(frMetadata.getAssetUrl(), false);
+                        biFullRes = Utils.readImage(frAssetUrl, false);
                         frMetadata.setReadableImage(Boolean.TRUE);
                     } catch (IOException | URISyntaxException | ImageDecodingException e) {
                         result = ignoreMedia(frMedia, "Unreadable full-res media", e);
