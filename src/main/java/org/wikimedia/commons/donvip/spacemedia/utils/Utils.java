@@ -113,7 +113,7 @@ public final class Utils {
     public static BufferedImage readImage(URL url, boolean readMetadata)
             throws IOException, URISyntaxException, ImageDecodingException {
         URI uri = urlToUri(url);
-        LOGGER.info("Reading image {}", uri);
+        LOGGER.debug("Reading image {}", uri);
         String extension = findExtension(uri.toString());
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
