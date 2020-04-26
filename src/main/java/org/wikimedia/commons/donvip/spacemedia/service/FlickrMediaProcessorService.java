@@ -132,12 +132,16 @@ public class FlickrMediaProcessorService {
 				}
 			}
 		}
-        if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark
-                && !Boolean.TRUE.equals(media.isIgnored())
-                && !UnitedStates.isClearPublicDomain(media.getDescription())) {
-            media.setIgnored(true);
-            media.setIgnoredReason("Public Domain Mark is not a legal license");
-            save = true;
+        try {
+            if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark
+                    && !Boolean.TRUE.equals(media.isIgnored())
+                    && !UnitedStates.isClearPublicDomain(media.getDescription())) {
+                media.setIgnored(true);
+                media.setIgnoredReason("Public Domain Mark is not a legal license");
+                save = true;
+            }
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("Non-free Flickr licence: {}", e.getMessage());
         }
         if (mediaService.updateMedia(media, originalRepo)) {
 			save = true;
