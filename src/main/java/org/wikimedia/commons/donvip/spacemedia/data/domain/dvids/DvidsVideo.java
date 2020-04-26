@@ -12,6 +12,7 @@ import javax.persistence.Transient;
 import org.hibernate.search.annotations.Indexed;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @Entity
 @Indexed
@@ -72,6 +73,12 @@ public class DvidsVideo extends DvidsMedia {
 
     public void setDuration(Short duration) {
         this.duration = duration;
+    }
+
+    @Override
+    @JsonDeserialize(using = DvidsThumbnailDeserializer.class)
+    public void setThumbnailUrl(URL thumbnailUrl) {
+        super.setThumbnailUrl(thumbnailUrl);
     }
 
     @Override
