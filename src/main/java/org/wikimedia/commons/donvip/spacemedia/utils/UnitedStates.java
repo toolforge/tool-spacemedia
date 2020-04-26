@@ -14,12 +14,18 @@ public final class UnitedStates {
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitedStates.class);
 
     /**
-     * Pattern for US Military VIRIN identifiers. See
+     * Exact pattern for US Military VIRIN identifiers. See
      * https://commons.wikimedia.org/wiki/Commons:VIRIN
      * https://www.dimoc.mil/Submit-DoD-VI/Digital-VI-Toolkit-read-first/Create-a-VIRIN/
      */
     private static final Pattern US_VIRIN = Pattern.compile(
-            "([0-9]{6,8})-([A-Z])-([0-9A-Z]{5})-([0-9]{4})(?:-([A-Z]{2}))?");
+            "([0-9]{6})-([A-Z])-([0-9A-Z]{5})-([0-9]{4})(?:-([A-Z]{2}))?");
+
+    /**
+     * Fake pattern for US Military VIRIN identifiers as found on Flickr.
+     */
+    private static final Pattern FAKE_US_VIRIN = Pattern.compile(
+            "([0-9]{8})-([A-Z])-([0-9A-Z]{5})-([0-9]{4})");
 
     private UnitedStates() {
 
@@ -33,6 +39,10 @@ public final class UnitedStates {
                     || description.contains("U.S. Marine Corps photo")
                     || description.contains("U.S. Coast Guard photo")
                     || description.contains("U.S. Space Force photo"));
+    }
+
+    public static boolean isFakeVirin(String identifier) {
+        return FAKE_US_VIRIN.matcher(identifier).matches();
     }
 
     public static boolean isVirin(String identifier) {

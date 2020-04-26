@@ -254,7 +254,8 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
 
 	@Override
     public String getUploadTitle() {
-        if (UnitedStates.isVirin(title) && CollectionUtils.isNotEmpty(getPhotosets())) {
+        if ((UnitedStates.isVirin(title) || UnitedStates.isFakeVirin(title))
+                && CollectionUtils.isNotEmpty(getPhotosets())) {
             String albumTitle = getPhotosets().iterator().next().getTitle();
             if (StringUtils.isNotBlank(albumTitle)) {
                 return albumTitle + " (" + getId() + ")";
