@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaImageFiles;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaImageResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaImagesResponse;
@@ -47,7 +48,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNas
  * Service harvesting images from NASA Hubble / Jame Webb websites.
  */
 @Service
-public class HubbleNasaService extends AbstractFullResAgencyService<HubbleNasaMedia, Integer, ZonedDateTime> {
+public class HubbleNasaService extends
+        AbstractFullResAgencyService<HubbleNasaMedia, Integer, ZonedDateTime, HubbleNasaMedia, Integer, ZonedDateTime> {
 
 	private static final DateTimeFormatter exposureDateformatter = DateTimeFormatter
 			.ofPattern("MMM dd, yyyy", Locale.ENGLISH);
@@ -206,28 +208,30 @@ public class HubbleNasaService extends AbstractFullResAgencyService<HubbleNasaMe
 			media.setTitle(image.getName());
 			media.setCredits(image.getCredits());
 			media.setMission(image.getMission());
+			Metadata metadata = media.getMetadata();
+            Metadata frMetadata = media.getFullResMetadata();
 			for (HubbleNasaImageFiles imageFile : image.getImageFiles()) {
 				String fileUrl = imageFile.getFileUrl();
 				URL url = toUrl(fileUrl);
 				if (fileUrl.endsWith(".tif") || fileUrl.endsWith(".tiff")) {
-					media.setFullResAssetUrl(url);
+				    frMetadata.setAssetUrl(url);
                 } else if (fileUrl.endsWith(".png") || fileUrl.endsWith(".jpg") || fileUrl.endsWith(".pdf")) {
-					media.setAssetUrl(url);
+                    metadata.setAssetUrl(url);
 				}
 			}
-			if (media.getFullResAssetUrl() == null && image.getImageFiles().size() > 1) {
+			if (frMetadata.getAssetUrl() == null && image.getImageFiles().size() > 1) {
 				image.getImageFiles().stream().max(Comparator.comparingInt(HubbleNasaImageFiles::getFileSize))
 						.map(HubbleNasaImageFiles::getFileUrl).ifPresent(max -> {
 							try {
-								media.setFullResAssetUrl(toUrl(max));
+                                frMetadata.setAssetUrl(toUrl(max));
 							} catch (MalformedURLException e) {
 								LOGGER.error(max, e);
 							}
 						});
 			}
-			if (endsWith(media.getFullResAssetUrl(), ".png", ".jpg") && endsWith(media.getAssetUrl(), ".png", ".jpg")) {
-				media.setAssetUrl(media.getFullResAssetUrl());
-				media.setFullResAssetUrl(null);
+			if (endsWith(frMetadata.getAssetUrl(), ".png", ".jpg") && endsWith(metadata.getAssetUrl(), ".png", ".jpg")) {
+			    metadata.setAssetUrl(frMetadata.getAssetUrl());
+			    frMetadata.setAssetUrl(null);
 			}
 			save = true;
         }

@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -13,14 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
-public class EsaFlickrService extends AbstractAgencyFlickrService {
+public class EsaFlickrService extends AbstractAgencyFlickrService<EsaMedia, Integer, LocalDateTime> {
 
     @Autowired
     private EsaMediaRepository esaRepository;
@@ -54,8 +55,13 @@ public class EsaFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    protected MediaRepository<?, ?, ?> getOriginalRepository() {
+    protected EsaMediaRepository getOriginalRepository() {
         return esaRepository;
+    }
+
+    @Override
+    protected Integer getOriginalId(String id) {
+        return Integer.valueOf(id);
     }
 
     @Override

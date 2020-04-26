@@ -8,7 +8,7 @@ import org.hibernate.search.annotations.Indexed;
 
 @Entity
 @Indexed
-@Table(indexes = {@Index(columnList = "sha1,full_res_sha1")})
+@Table(indexes = { @Index(columnList = "sha1, full_res_sha1, phash, full_res_phash") })
 public class EsoMedia extends CommonEsoMedia {
 
 }

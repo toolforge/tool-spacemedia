@@ -1,18 +1,18 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 
 @Service
-public class NasaFlickrService extends AbstractAgencyFlickrService {
+public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, String, ZonedDateTime> {
 
     @Autowired
     private NasaMediaRepository<NasaMedia> nasaMediaRepository;
@@ -35,7 +35,12 @@ public class NasaFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    protected MediaRepository<?, ?, ?> getOriginalRepository() {
+    protected NasaMediaRepository<NasaMedia> getOriginalRepository() {
         return nasaMediaRepository;
+    }
+
+    @Override
+    protected String getOriginalId(String id) {
+        return id;
     }
 }

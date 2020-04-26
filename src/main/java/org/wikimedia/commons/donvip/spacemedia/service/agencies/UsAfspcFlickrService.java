@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -7,15 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaTypedId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
-public class UsAfspcFlickrService extends AbstractAgencyFlickrService {
+public class UsAfspcFlickrService extends AbstractAgencyFlickrService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
 
     @Autowired
     private DvidsMediaRepository<DvidsMedia> dvidsRepository;
@@ -38,8 +39,13 @@ public class UsAfspcFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    protected MediaRepository<?, ?, ?> getOriginalRepository() {
+    protected DvidsMediaRepository<DvidsMedia> getOriginalRepository() {
         return dvidsRepository;
+    }
+
+    @Override
+    protected DvidsMediaTypedId getOriginalId(String id) {
+        return new DvidsMediaTypedId(id);
     }
 
     @Override

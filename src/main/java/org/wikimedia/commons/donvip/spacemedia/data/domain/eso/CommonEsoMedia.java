@@ -233,13 +233,27 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
                 + (types != null ? "objectType=" + types + ", " : "")
                 + (categories != null ? "objectCategories=" + categories + ", " : "")
                 + (credit != null ? "credit=" + credit + ", " : "")
-                + (fullResSha1 != null ? "fullResSha1=" + fullResSha1 + ", " : "")
-                + (fullResAssetUrl != null ? "fullResAssetUrl=" + fullResAssetUrl + ", " : "")
-                + (sha1 != null ? "sha1=" + sha1 + ", " : "") + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "")
+                + (fullResMetadata != null ? "fullResMetadata=" + fullResMetadata + ", " : "")
+                + (metadata != null ? "sha1=" + metadata + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (commonsFileNames != null ? "commonsFileNames=" + commonsFileNames + ", " : "")
                 + (ignored != null ? "ignored=" + ignored + ", " : "")
                 + (ignoredReason != null ? "ignoredReason=" + ignoredReason : "") + "]";
+    }
+
+    @Override
+    public boolean isAudio() {
+        return false;
+    }
+
+    @Override
+    public boolean isImage() {
+        return true;
+    }
+
+    @Override
+    public boolean isVideo() {
+        return false;
     }
 }

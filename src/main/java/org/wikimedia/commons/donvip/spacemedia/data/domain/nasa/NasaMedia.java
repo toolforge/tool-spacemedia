@@ -14,6 +14,7 @@ import javax.persistence.Index;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
@@ -23,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@Table(indexes = {@Index(columnList = "sha1, center")})
+@Table(indexes = { @Index(columnList = "sha1, phash, center") })
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "media_type", visible = true)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = NasaAudio.class, name = "audio"),
@@ -95,16 +96,16 @@ public abstract class NasaMedia extends Media<String, ZonedDateTime> {
         this.mediaType = mediaType;
     }
 
-    @Override
+    @Transient
     @JsonProperty("asset_url")
     public URL getAssetUrl() {
-        return super.getAssetUrl();
+        return metadata.getAssetUrl();
     }
 
-    @Override
+    @Transient
     @JsonProperty("asset_url")
     public void setAssetUrl(URL assetUrl) {
-        super.setAssetUrl(assetUrl);
+        metadata.setAssetUrl(assetUrl);
     }
 
     @Override
@@ -133,6 +134,21 @@ public abstract class NasaMedia extends Media<String, ZonedDateTime> {
                 + (date != null ? "date=" + date + ", " : "")
                 + (mediaType != null ? "mediaType=" + mediaType + ", " : "")
                 + (getAssetUrl() != null ? "assetUrl=" + getAssetUrl() + ", " : "")
-                + (sha1 != null ? "sha1=" + sha1 : "") + "]";
+                + (metadata != null ? "metadata=" + metadata : "") + "]";
+    }
+
+    @Override
+    public final boolean isAudio() {
+        return mediaType == NasaMediaType.audio;
+    }
+
+    @Override
+    public final boolean isImage() {
+        return mediaType == NasaMediaType.image;
+    }
+
+    @Override
+    public final boolean isVideo() {
+        return mediaType == NasaMediaType.video;
     }
 }

@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -9,9 +10,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaTypedId;
 
 @Service
-public class UsSmcDvidsService extends AbstractAgencyDvidsService {
+public class UsSmcDvidsService extends AbstractAgencyDvidsService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
 
     @Autowired
     public UsSmcDvidsService(DvidsMediaRepository<DvidsMedia> repository,

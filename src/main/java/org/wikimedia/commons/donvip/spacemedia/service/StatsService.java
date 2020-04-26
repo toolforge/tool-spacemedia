@@ -12,7 +12,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencySe
 public class StatsService {
 
     @Autowired
-    private List<AbstractAgencyService<?, ?, ?>> agencies;
+    private List<AbstractAgencyService<?, ?, ?, ?, ?, ?>> agencies;
 
     public List<Statistics> getStats() {
         return agencies.parallelStream().map(AbstractAgencyService::getStatistics).sorted()

@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
+import java.math.BigInteger;
 import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.List;
@@ -12,13 +13,22 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 /**
  * Superclass of Media CRUD repositories, handling pagination and sorting.
  *
- * @param <T> the media type the repository manages
- * @param <ID> the type of the id of the entity the repository manages
- * @param <D> the media date type
+ * @param <T>  the media type the repository manages
+ * @param <ID> the identifier type of the entity the repository manages
+ * @param <D>  the media date type
  */
 @NoRepositoryBean
 public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
         extends PagingAndSortingRepository<T, ID> {
+
+    /**
+     * Count files matching the given perceptual hash.
+     * 
+     * @param phash perceptual hash
+     * 
+     * @return number of files matching the given perceptual hash
+     */
+    long countByMetadata_Phash(BigInteger phash);
 
     /**
      * Count files matching the given SHA-1.
@@ -27,7 +37,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      * 
      * @return number of files matching the given SHA-1
      */
-    long countBySha1(String sha1);
+    long countByMetadata_Sha1(String sha1);
 
     /**
      * Count files marked as ignored, that won't be uploaded.
@@ -84,9 +94,11 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
 
     List<T> findDuplicateInCommons();
 
-    List<T> findByAssetUrl(URL imageUrl);
+    List<T> findByMetadata_AssetUrl(URL imageUrl);
 
-    List<T> findBySha1(String sha1);
+    List<T> findByMetadata_Phash(BigInteger phash);
+
+    List<T> findByMetadata_Sha1(String sha1);
 
     List<T> findByIgnoredTrue();
 

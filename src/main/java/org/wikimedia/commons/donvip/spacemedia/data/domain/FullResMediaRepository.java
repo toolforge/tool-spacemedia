@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
+import java.math.BigInteger;
 import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.List;
@@ -14,28 +15,38 @@ import org.springframework.data.repository.NoRepositoryBean;
 public interface FullResMediaRepository<T extends FullResMedia<ID, D>, ID, D extends Temporal>
         extends MediaRepository<T, ID, D> {
 
-    long countByFullResSha1(String sha1);
+    long countByFullResMetadata_Phash(BigInteger phash);
 
-    List<T> findByFullResAssetUrl(URL imageUrl);
+    long countByFullResMetadata_Sha1(String sha1);
 
-    Optional<T> findByFullResSha1(String sha1);
+    List<T> findByFullResMetadata_AssetUrl(URL imageUrl);
 
-    default Optional<T> findBySha1OrFullResSha1(String sha1) {
-        return findBySha1OrFullResSha1(sha1, sha1);
+    Optional<T> findByFullResMetadata_Phash(BigInteger phash);
+
+    default List<T> findByMetadata_PhashOrFullResMetadata_Phash(BigInteger phash) {
+        return findByMetadata_PhashOrFullResMetadata_Phash(phash, phash);
     }
 
-    Optional<T> findBySha1OrFullResSha1(String sha1, String fullRessha1);
+    List<T> findByMetadata_PhashOrFullResMetadata_Phash(BigInteger phash, BigInteger fullResPhash);
+
+    Optional<T> findByFullResMetadata_Sha1(String sha1);
+
+    default List<T> findByMetadata_Sha1OrFullResMetadata_Sha1(String sha1) {
+        return findByMetadata_Sha1OrFullResMetadata_Sha1(sha1, sha1);
+    }
+
+    List<T> findByMetadata_Sha1OrFullResMetadata_Sha1(String sha1, String fullResSha1);
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResSha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
     List<T> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResSha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
     Page<T> findMissingInCommons(Pageable page);
 
     @Override
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResSha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
     long countMissingInCommons();
 
     @Override

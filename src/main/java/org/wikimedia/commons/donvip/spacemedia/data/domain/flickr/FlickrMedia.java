@@ -10,6 +10,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -33,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-@Table(indexes = {@Index(columnList = "sha1")})
+@Table(indexes = { @Index(columnList = "sha1, phash") })
 public class FlickrMedia extends Media<Long, LocalDateTime> {
 
     @Id
@@ -69,8 +71,9 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     private double accuracy;
 
     @NotNull
-    private String media;
-    
+    @Enumerated(EnumType.STRING)
+    private FlickrMediaType media;
+
     @JsonProperty("media_status")
     private String mediaStatus;
 
@@ -186,11 +189,11 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
         this.accuracy = accuracy;
     }
 
-    public String getMedia() {
+    public FlickrMediaType getMedia() {
         return media;
     }
 
-    public void setMedia(String media) {
+    public void setMedia(FlickrMediaType media) {
         this.media = media;
     }
 
@@ -207,13 +210,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     }
 
     public void setOriginalUrl(URL originalUrl) {
-        super.setAssetUrl(originalUrl);
-        this.originalUrl = originalUrl;
-    }
-
-    @Override
-    public void setAssetUrl(URL originalUrl) {
-        super.setAssetUrl(originalUrl);
+        metadata.setAssetUrl(originalUrl);
         this.originalUrl = originalUrl;
     }
 
@@ -286,6 +283,21 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
         return "FlickrMedia [" + (id != null ? "id=" + id + ", " : "") + (title != null ? "title=" + title + ", " : "")
                 + "license=" + license + ", " + (date != null ? "date=" + date + ", " : "")
                 + (pathAlias != null ? "pathAlias=" + pathAlias + ", " : "")
-                + (getAssetUrl() != null ? "getAssetUrl()=" + getAssetUrl() : "") + "]";
+                + "metadata=" + metadata + "]";
+    }
+
+    @Override
+    public boolean isAudio() {
+        return false;
+    }
+
+    @Override
+    public boolean isImage() {
+        return media == FlickrMediaType.photo;
+    }
+
+    @Override
+    public boolean isVideo() {
+        return media == FlickrMediaType.video;
     }
 }

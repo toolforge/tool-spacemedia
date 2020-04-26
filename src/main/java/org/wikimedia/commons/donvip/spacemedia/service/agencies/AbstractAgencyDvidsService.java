@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudioRepository;
@@ -53,8 +55,8 @@ import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException
  * Service fetching images from https://api.dvidshub.net/
  */
 @Service
-public abstract class AbstractAgencyDvidsService
-        extends AbstractAgencyService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
+public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID, OD extends Temporal>
+        extends AbstractAgencyService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime, OT, OID, OD> {
 
     private static final int MAX_RESULTS = 1000;
 

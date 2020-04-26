@@ -2,11 +2,11 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
@@ -27,14 +27,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
 
 @Service
-public class NasaSirsService extends AbstractAgencyService<NasaSirsImage, String, LocalDate> {
+public class NasaSirsService
+        extends AbstractAgencyService<NasaSirsImage, String, LocalDate, NasaMedia, String, ZonedDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaSirsService.class);
 
@@ -73,8 +73,13 @@ public class NasaSirsService extends AbstractAgencyService<NasaSirsImage, String
     }
 
     @Override
-    protected MediaRepository<?, ?, ?> getOriginalRepository() {
+    protected NasaMediaRepository<NasaMedia> getOriginalRepository() {
         return nasaMediaRepository;
+    }
+
+    @Override
+    protected String getOriginalId(String id) {
+        return id;
     }
 
     @Override
@@ -132,7 +137,7 @@ public class NasaSirsService extends AbstractAgencyService<NasaSirsImage, String
                             }
                             media.setThumbnailUrl(new URL(url.getProtocol(), url.getHost(), values.get(5)));
                             if (newMedia) {
-                                media.setAssetUrl(new URL(url.getProtocol(), url.getHost(), values.get(6)));
+                                media.getMetadata().setAssetUrl(new URL(url.getProtocol(), url.getHost(), values.get(6)));
                                 media.setDescription(values.get(7));
                             }
                             save = true;
@@ -144,8 +149,6 @@ public class NasaSirsService extends AbstractAgencyService<NasaSirsImage, String
                             repository.save(media);
                         }
                         count++;
-                    } catch (URISyntaxException e) {
-                        LOGGER.error("Cannot compute SHA-1 of " + media, e);
                     } catch (HttpStatusException e) {
                         problem(url, e);
                     }

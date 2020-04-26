@@ -14,7 +14,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
 @Entity
 @Indexed
-@Table(indexes = {@Index(columnList = "sha1")})
+@Table(indexes = { @Index(columnList = "sha1, phash") })
 public class KariMedia extends Media<Integer, LocalDate> {
 
     @Id
@@ -55,11 +55,11 @@ public class KariMedia extends Media<Integer, LocalDate> {
 
     @Override
     public String toString() {
-        return "KariMedia [id=" + id + ", " + (getAssetUrl() != null ? "url=" + getAssetUrl() + ", " : "")
+        return "KariMedia [id=" + id + ", " 
                 + (title != null ? "title=" + title + ", " : "") + (kariId != null ? "kariId=" + kariId + ", " : "")
                 + (date != null ? "date=" + date + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
-                + (sha1 != null ? "sha1=" + sha1 : "") + "]";
+                + "metadata=" + metadata + "]";
     }
 
     @Override
@@ -75,5 +75,20 @@ public class KariMedia extends Media<Integer, LocalDate> {
             return false;
         KariMedia other = (KariMedia) obj;
         return id == other.id && Objects.equals(kariId, other.kariId);
+    }
+
+    @Override
+    public boolean isAudio() {
+        return false;
+    }
+
+    @Override
+    public boolean isImage() {
+        return true;
+    }
+
+    @Override
+    public boolean isVideo() {
+        return false;
     }
 }

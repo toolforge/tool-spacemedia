@@ -4,6 +4,7 @@ import java.net.URL;
 
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.Transient;
 
 import org.hibernate.search.annotations.Indexed;
 
@@ -25,16 +26,14 @@ public class DvidsImage extends DvidsMedia {
     @Embedded
     private DvidsImageDimensions dimensions;
 
-    @Override
-    @JsonProperty("image")
-    public URL getAssetUrl() {
-        return super.getAssetUrl();
+    @Transient
+    public URL getImage() {
+        return metadata.getAssetUrl();
     }
 
-    @Override
-    @JsonProperty("image")
-    public void setAssetUrl(URL assetUrl) {
-        super.setAssetUrl(assetUrl);
+    @Transient
+    public void setImage(URL imageUrl) {
+        metadata.setAssetUrl(imageUrl);
     }
 
     public DvidsAspectRatio getAspectRatio() {

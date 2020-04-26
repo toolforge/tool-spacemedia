@@ -13,9 +13,9 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 
-public final class Csv {
+public final class CsvHelper {
 
-    private Csv() {
+    private CsvHelper() {
         // Hide default constructor
     }
 

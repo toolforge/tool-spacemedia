@@ -19,7 +19,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 
 @Entity
 @Indexed
-@Table(indexes = {@Index(columnList = "sha1,full_res_sha1")})
+@Table(indexes = { @Index(columnList = "sha1, full_res_sha1, phash, full_res_phash") })
 public class HubbleNasaMedia extends FullResMedia<Integer, ZonedDateTime> {
 
     @Id
@@ -145,4 +145,19 @@ public class HubbleNasaMedia extends FullResMedia<Integer, ZonedDateTime> {
 		return "HubbleNasaMedia [id=" + id + ", newsId=" + newsId + ", date=" + date + ", objectName=" + objectName
 				+ ", mission=" + mission + "]";
 	}
+
+    @Override
+    public boolean isAudio() {
+        return false;
+    }
+
+    @Override
+    public boolean isImage() {
+        return true;
+    }
+
+    @Override
+    public boolean isVideo() {
+        return false;
+    }
 }

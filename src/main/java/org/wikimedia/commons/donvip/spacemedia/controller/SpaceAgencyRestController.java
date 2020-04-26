@@ -22,8 +22,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AsyncAgencyUpdaterService;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
+import org.wikimedia.commons.donvip.spacemedia.service.agencies.AsyncAgencyUpdaterService;
 import org.xml.sax.SAXException;
 
 /**
@@ -40,7 +40,7 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
 
     protected final Agency<T, ID, D> service;
 
-    public SpaceAgencyRestController(AbstractAgencyService<T, ID, D> service) {
+    public SpaceAgencyRestController(AbstractAgencyService<T, ID, D, ?, ?, ?> service) {
         this.service = Objects.requireNonNull(service);
     }
 

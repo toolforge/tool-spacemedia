@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@Table(indexes = { @Index(columnList = "sha1") })
+@Table(indexes = { @Index(columnList = "sha1, phash") })
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "id", visible = true)
 @JsonTypeIdResolver(value = DvidsMediaTypeIdResolver.class)
 public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime> {
@@ -152,18 +152,6 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
         return id.getType();
     }
 
-    @Override
-    @JsonProperty("url")
-    public URL getAssetUrl() {
-        return super.getAssetUrl();
-    }
-
-    @Override
-    @JsonProperty("url")
-    public void setAssetUrl(URL assetUrl) {
-        super.setAssetUrl(assetUrl);
-    }
-
     public String getBranch() {
         return branch;
     }
@@ -265,7 +253,21 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
         return "DvidsMedia [" + (id != null ? "id=" + id + ", " : "")
                 + (title != null ? "title=" + title + ", " : "") + (datePublished != null ? "datePublished=" + datePublished + ", " : "")
                 + (date != null ? "date=" + date + ", " : "")
-                + (getAssetUrl() != null ? "assetUrl=" + getAssetUrl() + ", " : "")
-                + (sha1 != null ? "sha1=" + sha1 : "") + "]";
+                + (metadata != null ? "metadata=" + metadata : "") + "]";
+    }
+
+    @Override
+    public final boolean isAudio() {
+        return id.getType() == DvidsMediaType.audio;
+    }
+
+    @Override
+    public final boolean isImage() {
+        return id.getType() == DvidsMediaType.image || id.getType() == DvidsMediaType.graphic;
+    }
+
+    @Override
+    public final boolean isVideo() {
+        return id.getType() == DvidsMediaType.video;
     }
 }

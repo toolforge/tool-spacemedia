@@ -17,7 +17,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 
 @Entity
 @Indexed
-@Table(indexes = {@Index(columnList = "sha1,full_res_sha1")})
+@Table(indexes = { @Index(columnList = "sha1, full_res_sha1, phash, full_res_phash") })
 public class EsaMedia extends FullResMedia<Integer, LocalDateTime> {
 
     @Id
@@ -160,5 +160,20 @@ public class EsaMedia extends FullResMedia<Integer, LocalDateTime> {
                 + (locations != null ? "locations=" + locations + ", " : "")
                 + (keywords != null ? "keywords=" + keywords + ", " : "")
                 + (photoSet != null ? "photoSet=" + photoSet : "") + "]";
+    }
+
+    @Override
+    public boolean isAudio() {
+        return false;
+    }
+
+    @Override
+    public boolean isImage() {
+        return true;
+    }
+
+    @Override
+    public boolean isVideo() {
+        return false;
     }
 }

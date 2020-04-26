@@ -1,6 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,9 +24,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -52,18 +52,6 @@ public final class Utils {
             uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), null);
         }
         return new URI(uri.toASCIIString());
-    }
-
-    public static String computeSha1(URL url) throws IOException, URISyntaxException {
-        URI uri = urlToUri(url);
-        try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
-                InputStream in = response.getEntity().getContent()) {
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                throw new IOException(uri + " => " + response.getStatusLine());
-            }
-            return DigestUtils.sha1Hex(in);
-        }
     }
 
     /**
@@ -104,7 +92,16 @@ public final class Utils {
         }
     }
 
-    public static BufferedImage readImage(URL url, boolean readMetadata) throws IOException, URISyntaxException, ImageDecodingException {
+    public static InputStream getImageInputStream(BufferedImage image) {
+        DataBuffer dataBuffer = image.getData().getDataBuffer();
+        if (dataBuffer instanceof DataBufferByte) {
+            return new ByteArrayInputStream(((DataBufferByte) dataBuffer).getData());
+        }
+        throw new UnsupportedOperationException("Unsupported DataBuffer type: " + dataBuffer.getClass().getName());
+    }
+
+    public static BufferedImage readImage(URL url, boolean readMetadata)
+            throws IOException, URISyntaxException, ImageDecodingException {
         URI uri = urlToUri(url);
         LOGGER.info("Reading image {}", uri);
         String extension = uri.toString().substring(uri.toString().lastIndexOf('.')+1).toLowerCase(Locale.ENGLISH);

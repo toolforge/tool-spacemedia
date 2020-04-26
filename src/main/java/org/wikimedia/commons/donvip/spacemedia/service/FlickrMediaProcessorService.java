@@ -1,5 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -8,8 +11,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -53,7 +55,8 @@ public class FlickrMediaProcessorService {
 	}
 
 	public boolean isBadVideoEntry(FlickrMedia media) throws MalformedURLException {
-		return "video".equals(media.getMedia()) && !getVideoUrl(media).equals(media.getAssetUrl());
+        return FlickrMediaType.video == media.getMedia()
+                && !getVideoUrl(media).equals(media.getMetadata().getAssetUrl());
 	}
 
     @Transactional
@@ -110,9 +113,11 @@ public class FlickrMediaProcessorService {
 			}
 		}
 		if (isBadVideoEntry(media)) {
-			media.setAssetUrl(getVideoUrl(media));
+            URL videoUrl = getVideoUrl(media);
+            media.setOriginalUrl(videoUrl);
 			media.setCommonsFileNames(null);
-			media.setSha1(null);
+            media.getMetadata().setSha1(null);
+            media.getMetadata().setAssetUrl(videoUrl);
 			save = true;
 		}
 		if (StringUtils.isEmpty(media.getPathAlias())) {

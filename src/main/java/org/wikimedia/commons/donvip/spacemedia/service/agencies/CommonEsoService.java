@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
@@ -47,7 +48,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.util.StringUtils;
 
 public abstract class CommonEsoService<T extends CommonEsoMedia>
-        extends AbstractFullResAgencyService<T, String, LocalDateTime> {
+        extends AbstractFullResAgencyService<T, String, LocalDateTime, T, String, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonEsoService.class);
 
@@ -146,11 +147,13 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             Elements copyrights = div.getElementsByClass("copyright");
             if (!copyrights.isEmpty()
                     && !getCopyrightLink().equals(copyrights.get(0).getElementsByTag("a").get(0).attr("href"))) {
-                LOGGER.error("Invalid copyright for " + imgUrlLink);
+                LOGGER.error("Invalid copyright for {}", imgUrlLink);
                 return Optional.empty();
             }
 
             processObjectInfos(url, imgUrlLink, id, media, html);
+            Metadata metadata = media.getMetadata();
+            Metadata frMetadata = media.getFullResMetadata();
 
             for (Element link : html.getElementsByClass("archive_dl_text")) {
                 Elements innerLinks = link.getElementsByTag("a");
@@ -162,16 +165,16 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
                 if (assetUrlLink.endsWith(".psb")) {
                     continue; // format not supported by Wikimedia Commons
                 } else if (assetUrlLink.contains("/original/")) {
-                    media.setFullResAssetUrl(buildAssetUrl(assetUrlLink, url));
+                    frMetadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
                 } else if (assetUrlLink.contains("/large/")) {
-                    media.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+                    metadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
                 } else if (assetUrlLink.contains("/screen/")) {
                     media.setThumbnailUrl(buildAssetUrl(assetUrlLink, url));
-                } else if (media.getFullResAssetUrl() == null && assetUrlLink.contains(".tif")) {
-                    media.setFullResAssetUrl(buildAssetUrl(assetUrlLink, url));
-                } else if (media.getAssetUrl() == null && assetUrlLink.contains(".jp")) {
-                    media.setAssetUrl(buildAssetUrl(assetUrlLink, url));
-                } else if (media.getAssetUrl() != null && media.getFullResAssetUrl() != null && media.getThumbnailUrl() != null) {
+                } else if (frMetadata.getAssetUrl() == null && assetUrlLink.contains(".tif")) {
+                    frMetadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+                } else if (metadata.getAssetUrl() == null && assetUrlLink.contains(".jp")) {
+                    metadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+                } else if (metadata.getAssetUrl() != null && frMetadata.getAssetUrl() != null && media.getThumbnailUrl() != null) {
                     break;
                 }
             }

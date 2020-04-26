@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -11,6 +10,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -56,18 +56,21 @@ import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
-import org.wikimedia.commons.donvip.spacemedia.utils.Csv;
+import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.xml.sax.SAXException;
 
 /**
  * Superclass of space agencies services.
  * 
- * @param <T> the media type the repository manages
- * @param <ID> the type of the id of the entity the repository manages
- * @param <D> the media date type
+ * @param <T>   the media type the repository manages
+ * @param <ID>  the type of the id of the entity the repository manages
+ * @param <D>   the media date type
+ * @param <OT>  the media type the original repository manages
+ * @param <OID> the type of the id of the entity the original repository manages
+ * @param <OD>  the original media date type
  */
-public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extends Temporal>
-        implements Comparable<AbstractAgencyService<T, ID, D>>, Agency<T, ID, D> {
+public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extends Temporal, OT extends Media<OID, OD>, OID, OD extends Temporal>
+        implements Comparable<AbstractAgencyService<T, ID, D, OT, OID, OD>>, Agency<T, ID, D> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyService.class);
 
@@ -102,7 +105,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @PostConstruct
     void init() throws IOException {
-        ignoredCommonTerms = Csv.loadSet(getClass().getResource("/ignored.terms.csv"));
+        ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/ignored.terms.csv"));
         uploadEnabled = env.getProperty(
                 getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH)
                         .replace("flickr", ".flickr").replace("dvids", ".dvids")
@@ -340,7 +343,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected T findBySha1OrThrow(String sha1) {
-        List<T> result = repository.findBySha1(sha1);
+        List<T> result = repository.findByMetadata_Sha1(sha1);
         if (CollectionUtils.isEmpty(result)) {
             throw new ImageNotFoundException(sha1);
         }
@@ -367,14 +370,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected void doUpload(String wikiCode, T media) throws IOException {
         media.setCommonsFileNames(
-                Set.of(commonsService.upload(wikiCode, media.getUploadTitle(), media.getAssetUrl(), media.getSha1())));
+                Set.of(commonsService.upload(wikiCode, media.getUploadTitle(), media.getMetadata().getAssetUrl(),
+                        media.getMetadata().getSha1())));
     }
 
     @Override
     public String getWikiHtmlPreview(String sha1) throws IOException, ParserConfigurationException, SAXException {
         T media = findBySha1OrThrow(sha1);
         return commonsService.getWikiHtmlPreview(getWikiCode(media), getPageTile(media),
-                media.getAssetUrl().toExternalForm());
+                media.getMetadata().getAssetUrl().toExternalForm());
     }
 
     protected String getPageTile(T media) {
@@ -440,7 +444,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public final URL getThumbnailUrl(T media) {
-        return Optional.ofNullable(media.getThumbnailUrl()).orElse(media.getAssetUrl());
+        return Optional.ofNullable(media.getThumbnailUrl()).orElse(media.getMetadata().getAssetUrl());
     }
 
     protected Optional<Temporal> getCreationDate(T media) {
@@ -484,14 +488,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected void checkUploadPreconditions(T media) throws IOException {
-        if (media.isIgnored() == Boolean.TRUE) {
+        if (Boolean.TRUE.equals(media.isIgnored())) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored.");
         }
-        if (media.getSha1() == null) {
+        String sha1 = media.getMetadata().getSha1();
+        if (sha1 == null) {
             throw new ImageUploadForbiddenException(media + " SHA-1 has not been computed.");
         }
         // Forbid upload of duplicate medias for a single repo, they may have different descriptions
-        if (repository.countBySha1(media.getSha1()) > 1) {
+        if (repository.countByMetadata_Sha1(sha1) > 1) {
             throw new ImageUploadForbiddenException(media + " is present several times.");
         }
         // Double-check for duplicates before upload!
@@ -500,8 +505,21 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected MediaRepository<? extends Media<?, ?>, ?, ?> getOriginalRepository() {
+    protected MediaRepository<OT, OID, OD> getOriginalRepository() {
         return null;
+    }
+
+    protected OID getOriginalId(String id) {
+        return null;
+    }
+
+    public final List<OT> getOriginalMedia(T media) {
+        Set<String> originalIds = media.getOriginalIds();
+        return CollectionUtils.isEmpty(originalIds) ? Collections.emptyList()
+                : originalIds.stream().map(id -> getOriginalRepository().findById(getOriginalId(id)))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
     }
 
     protected abstract Class<T> getMediaClass();
@@ -511,7 +529,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
 	protected final Map<String, String> loadCsvMapping(String filename) throws IOException {
-		return Csv.loadMap(getClass().getResource("/mapping/" + filename));
+		return CsvHelper.loadMap(getClass().getResource("/mapping/" + filename));
 	}
 
     protected final boolean ignoreFile(T media, String reason) {
@@ -520,12 +538,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return true;
     }
 
-    protected final boolean doCommonUpdate(T media) throws IOException, URISyntaxException {
+    protected final boolean doCommonUpdate(T media) throws IOException {
         return mediaService.updateMedia(media, getOriginalRepository());
     }
 
     @Override
-    public int compareTo(AbstractAgencyService<T, ID, D> o) {
+    public int compareTo(AbstractAgencyService<T, ID, D, OT, OID, OD> o) {
         return getName().compareTo(o.getName());
     }
 }

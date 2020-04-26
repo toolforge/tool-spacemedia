@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
@@ -46,8 +47,8 @@ import com.flickr4java.flickr.people.User;
 import com.flickr4java.flickr.photos.Photo;
 import com.github.dozermapper.core.Mapper;
 
-public abstract class AbstractAgencyFlickrService
-        extends AbstractAgencyService<FlickrMedia, Long, LocalDateTime> {
+public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID, OD extends Temporal>
+        extends AbstractAgencyService<FlickrMedia, Long, LocalDateTime, OT, OID, OD> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyFlickrService.class);
     private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"([0-9]+)\" not found \\(invalid ID\\)");
@@ -225,7 +226,11 @@ public abstract class AbstractAgencyFlickrService
     @Override
     public List<String> findTemplates(FlickrMedia media) {
         List<String> result = super.findTemplates(media);
-        result.add(FlickrFreeLicense.of(media.getLicense()).getWikiTemplate());
+        try {
+            result.add(FlickrFreeLicense.of(media.getLicense()).getWikiTemplate());
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("Non-free Flickr licence for media {}: {}", media.getId(), e.getMessage());
+        }
         result.add("Flickrreview");
         try {
             result.addAll(UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media)));

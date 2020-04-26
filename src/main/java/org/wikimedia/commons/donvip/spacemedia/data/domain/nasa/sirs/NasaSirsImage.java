@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-@Table(indexes = {@Index(columnList = "sha1")})
+@Table(indexes = { @Index(columnList = "sha1, phash") })
 public class NasaSirsImage extends Media<String, LocalDate> {
 
     @Id
@@ -96,8 +96,7 @@ public class NasaSirsImage extends Media<String, LocalDate> {
                 + (year != null ? "photoYear=" + year + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (keywords != null ? "keywords=" + keywords + ", " : "")
-                + (getAssetUrl() != null ? "assetUrl=" + getAssetUrl() + ", " : "")
-                + (sha1 != null ? "sha1=" + sha1 : "") + "]";
+                + "metadata=" + metadata + "]";
     }
 
     @Override
@@ -113,5 +112,20 @@ public class NasaSirsImage extends Media<String, LocalDate> {
             return false;
         NasaSirsImage other = (NasaSirsImage) obj;
         return Objects.equals(id, other.id);
+    }
+
+    @Override
+    public boolean isAudio() {
+        return false;
+    }
+
+    @Override
+    public boolean isImage() {
+        return true;
+    }
+
+    @Override
+    public boolean isVideo() {
+        return false;
     }
 }

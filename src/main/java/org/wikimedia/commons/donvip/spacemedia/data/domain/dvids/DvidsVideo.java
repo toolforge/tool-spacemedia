@@ -1,17 +1,16 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.Transient;
 
 import org.hibernate.search.annotations.Indexed;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
@@ -47,17 +46,16 @@ public class DvidsVideo extends DvidsMedia {
     @JsonProperty("time_start")
     private Float timeStart;
 
-    @Override
-    @JsonIgnore
-    public URL getAssetUrl() {
-        return files.stream().max(Comparator.comparingLong(DvidsVideoFile::getSize))
-                .orElseThrow(() -> new IllegalStateException("No video file for video:" + getId())).getSrc();
+    @Transient
+    @JsonProperty("image")
+    public URL getVideo() {
+        return metadata.getAssetUrl();
     }
 
-    @Override
-    @JsonIgnore
-    public void setAssetUrl(URL assetUrl) {
-        throw new UnsupportedOperationException();
+    @Transient
+    @JsonProperty("image")
+    public void setVideo(URL videoUrl) {
+        metadata.setAssetUrl(videoUrl);
     }
 
     public DvidsAspectRatio getAspectRatio() {

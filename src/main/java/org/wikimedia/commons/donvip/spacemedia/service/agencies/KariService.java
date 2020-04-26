@@ -23,11 +23,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMediaRepository;
 
 @Service
-public class KariService extends AbstractAgencyService<KariMedia, Integer, LocalDate> {
+public class KariService extends AbstractAgencyService<KariMedia, Integer, LocalDate, KariMedia, Integer, LocalDate> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KariService.class);
 
@@ -153,13 +154,14 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         if (StringUtils.isBlank(media.getDescription())) {
             problem(view, "Empty description");
         }
-        if (media.getAssetUrl() != null) {
-            String mediaUrl = media.getAssetUrl().toExternalForm();
+        Metadata metadata = media.getMetadata();
+        if (metadata.getAssetUrl() != null) {
+            String mediaUrl = metadata.getAssetUrl().toExternalForm();
             if (StringUtils.isBlank(mediaUrl) || "https://www.kari.re.kr".equals(mediaUrl)) {
-                media.setAssetUrl(null);
+                metadata.setAssetUrl(null);
             }
         }
-        if (media.getAssetUrl() == null) {
+        if (metadata.getAssetUrl() == null) {
             problem(view, "No download link");
             save = false;
             if (mediaInRepo) {
@@ -183,7 +185,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         media.setDescription(div.getElementsByClass("photo_txt").get(0).text());
         String href = infos.getElementsByTag("a").attr("href");
         if (StringUtils.isNotBlank(href)) {
-            media.setAssetUrl(new URL(view.getProtocol(), view.getHost(), href));
+            media.getMetadata().setAssetUrl(new URL(view.getProtocol(), view.getHost(), href));
         }
         return media;
     }

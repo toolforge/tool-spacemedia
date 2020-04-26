@@ -53,7 +53,8 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
-public class NasaService extends AbstractAgencyService<NasaMedia, String, ZonedDateTime> {
+public class NasaService
+        extends AbstractAgencyService<NasaMedia, String, ZonedDateTime, NasaMedia, String, ZonedDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaService.class);
 

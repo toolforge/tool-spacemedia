@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -12,7 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
-public class SpaceXFlickrService extends AbstractAgencyFlickrService {
+public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
 
     @Autowired
     public SpaceXFlickrService(FlickrMediaRepository repository,
