@@ -141,7 +141,7 @@ public class FlickrMediaProcessorService {
                 save = true;
             }
         } catch (IllegalArgumentException e) {
-            LOGGER.warn("Non-free Flickr licence: {}", e.getMessage());
+            LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());
         }
         if (mediaService.updateMedia(media, originalRepo)) {
 			save = true;
