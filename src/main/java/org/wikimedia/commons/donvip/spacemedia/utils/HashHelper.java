@@ -22,7 +22,7 @@ import com.github.kilianB.hashAlgorithms.PerceptiveHash;
 
 public final class HashHelper {
 
-    private static final int bitResolution = 2 ^ 16;
+    private static final int bitResolution = 2 ^ 30;
 
     private static final HashingAlgorithm algorithm = new PerceptiveHash(bitResolution);
 
@@ -56,7 +56,7 @@ public final class HashHelper {
     }
 
     public static double similarityScore(BigInteger phash1, BigInteger phash2) {
-        return newHash(phash1).normalizedHammingDistance(newHash(phash2));
+        return newHash(phash1).normalizedHammingDistanceFast(newHash(phash2));
     }
 
     private static Hash newHash(BigInteger phash) {

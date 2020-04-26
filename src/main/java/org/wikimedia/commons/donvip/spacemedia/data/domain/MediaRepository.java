@@ -98,6 +98,8 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
 
     List<T> findByMetadata_Phash(BigInteger phash);
 
+    List<T> findByMetadata_PhashNotNull();
+
     List<T> findByMetadata_Sha1(String sha1);
 
     List<T> findByIgnoredTrue();

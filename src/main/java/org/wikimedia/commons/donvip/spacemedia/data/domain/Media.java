@@ -60,7 +60,7 @@ public abstract class Media<ID, D extends Temporal> {
     protected String ignoredReason;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    protected Set<String> originalIds;
+    protected Set<Duplicate> duplicates;
 
     @PostLoad
     protected void initData() {
@@ -145,23 +145,23 @@ public abstract class Media<ID, D extends Temporal> {
         throw new UnsupportedOperationException();
     }
 
-    public Set<String> getOriginalIds() {
-        return originalIds;
+    public Set<Duplicate> getDuplicates() {
+        return duplicates;
     }
 
-    public void setOriginalIds(Set<String> originalIds) {
-        this.originalIds = originalIds;
+    public void setDuplicates(Set<Duplicate> originalIds) {
+        this.duplicates = originalIds;
     }
 
-    public boolean addOriginalId(String originalId) {
-        if (originalIds == null) {
-            originalIds = new HashSet<>();
+    public boolean addDuplicate(Duplicate duplicate) {
+        if (duplicates == null) {
+            duplicates = new HashSet<>();
         }
-        return originalIds.add(originalId);
+        return duplicates.add(duplicate);
     }
 
-    public boolean removeOriginalId(String originalId) {
-        return originalIds != null && originalIds.remove(originalId);
+    public boolean removeDuplicate(Duplicate duplicate) {
+        return duplicates != null && duplicates.remove(duplicate);
     }
 
     @Override

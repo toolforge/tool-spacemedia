@@ -10,13 +10,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -37,6 +39,9 @@ public class MediaService {
 
     @Autowired
     private CommonsService commonsService;
+
+    @Value("${perceptual.threshold:0.07}")
+    private double perceptualThreshold;
 
     public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo)
             throws IOException {
@@ -60,7 +65,8 @@ public class MediaService {
         boolean result = false;
         // Find exact duplicates by SHA-1
         String sha1 = media.getMetadata().getSha1();
-        if (handleDuplicates(media,
+        if (handleExactDuplicates(
+                media,
                 repo instanceof FullResMediaRepository<?, ?, ?>
                         ? ((FullResMediaRepository<?, ?, ?>) repo).findByMetadata_Sha1OrFullResMetadata_Sha1(sha1)
                         : repo.findByMetadata_Sha1(sha1))) {
@@ -68,34 +74,52 @@ public class MediaService {
         }
         // Find exact duplicates by perceptual hash
         BigInteger phash = media.getMetadata().getPhash();
-        if (phash != null && handleDuplicates(media,
+        if (phash != null && handleExactDuplicates(
+                media,
                 repo instanceof FullResMediaRepository<?, ?, ?>
                         ? ((FullResMediaRepository<?, ?, ?>) repo).findByMetadata_PhashOrFullResMetadata_Phash(phash)
                         : repo.findByMetadata_Phash(phash))) {
             result = true;
         }
-        // TODO: almost duplicates by perceptual hash
+        // Find almost duplicates by perceptual hash
+        if (phash != null && handleDuplicates(media, repo.findByMetadata_PhashNotNull()
+                .parallelStream()
+                .filter(m -> !m.equals(media))
+                .map(m -> new DuplicateHolder(m, HashHelper.similarityScore(phash, m.getMetadata().getPhash())))
+                .filter(h -> h.similarityScore < perceptualThreshold)
+                .map(DuplicateHolder::toDuplicate)
+                .collect(Collectors.toList()))) {
+            result = true;
+        }
         return result;
     }
 
-    private static boolean handleDuplicates(Media<?, ?> media, List<? extends Media<?, ?>> originals) {
+    private static class DuplicateHolder {
+        private final Media<?, ?> media;
+        private final double similarityScore;
+
+        DuplicateHolder(Media<?, ?> media, double similarityScore) {
+            this.media = media;
+            this.similarityScore = similarityScore;
+        }
+
+        Duplicate toDuplicate() {
+            return new Duplicate(media.getId().toString(), similarityScore);
+        }
+    }
+
+    private static boolean handleExactDuplicates(Media<?, ?> media, List<? extends Media<?, ?>> exactDuplicates) {
+        return handleDuplicates(media, exactDuplicates.stream().map(d -> new Duplicate(d.getId().toString(), 0d))
+                .collect(Collectors.toList()));
+    }
+
+    private static boolean handleDuplicates(Media<?, ?> media, List<Duplicate> duplicates) {
         boolean result = false;
-        if (isNotEmpty(originals)) {
-            if (!Boolean.TRUE.equals(media.isIgnored())) {
-                media.setIgnored(true);
-                media.setIgnoredReason("Already present in main repository.");
-                originals.forEach(x -> media.addOriginalId(x.getId().toString()));
-                result = true;
-            }
-            Media<?, ?> original = originals.get(0);
-            if (!Objects.equals(media.getCommonsFileNames(), original.getCommonsFileNames())) {
-                media.setCommonsFileNames(original.getCommonsFileNames());
-                if (media instanceof FullResMedia && original instanceof FullResMedia) {
-                    ((FullResMedia<?, ?>) media)
-                            .setFullResCommonsFileNames(((FullResMedia<?, ?>) original).getFullResCommonsFileNames());
-                }
-                result = true;
-            }
+        if (isNotEmpty(duplicates)) {
+            media.setIgnored(true);
+            media.setIgnoredReason("Already present in main repository.");
+            duplicates.forEach(media::addDuplicate);
+            result = true;
         }
         return result;
     }

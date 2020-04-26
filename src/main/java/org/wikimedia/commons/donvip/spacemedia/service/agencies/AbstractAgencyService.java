@@ -45,6 +45,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
@@ -514,9 +515,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     public final List<OT> getOriginalMedia(T media) {
-        Set<String> originalIds = media.getOriginalIds();
-        return CollectionUtils.isEmpty(originalIds) ? Collections.emptyList()
-                : originalIds.stream().map(id -> getOriginalRepository().findById(getOriginalId(id)))
+        Set<Duplicate> dupes = media.getDuplicates();
+        return CollectionUtils.isEmpty(dupes) ? Collections.emptyList()
+                : dupes.stream().map(d -> getOriginalRepository().findById(getOriginalId(d.getOriginalId())))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
