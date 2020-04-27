@@ -10,14 +10,18 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -113,7 +117,7 @@ public final class Utils {
     public static BufferedImage readImage(URL url, boolean readMetadata)
             throws IOException, URISyntaxException, ImageDecodingException {
         URI uri = urlToUri(url);
-        LOGGER.debug("Reading image {}", uri);
+        LOGGER.info("Reading image {}", uri);
         String extension = findExtension(uri.toString());
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
@@ -212,4 +216,36 @@ public final class Utils {
 		sslContext.init(null, tmf.getTrustManagers(), null);
 		SSLContext.setDefault(sslContext);
 	}
+
+    /**
+     * Runs an external command and returns the standard output. Waits at most the specified time.
+     *
+     * @param command the command with arguments
+     * @param timeout the maximum time to wait
+     * @param unit    the time unit of the {@code timeout} argument. Must not be null
+     * @return the output
+     * @throws IOException          when there was an error, e.g. command does not exist
+     * @throws ExecutionException   when the return code is != 0. The output is can be retrieved in the exception message
+     * @throws InterruptedException if the current thread is {@linkplain Thread#interrupt() interrupted} by another thread while waiting
+     */
+    public static String execOutput(List<String> command, long timeout, TimeUnit unit)
+            throws IOException, ExecutionException, InterruptedException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.join(" ", command));
+        }
+        Path out = Files.createTempFile("spacemedia_exec_" + command.get(0) + "_", ".txt");
+        try {
+            Process p = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(out.toFile()).start();
+            if (!p.waitFor(timeout, unit) || p.exitValue() != 0) {
+                throw new ExecutionException(command.toString(), null);
+            }
+            return String.join("\n", Files.readAllLines(out)).trim();
+        } finally {
+            try {
+                Files.delete(out);
+            } catch (IOException e) {
+                LOGGER.warn("Error while deleting file", e);
+            }
+        }
+    }
 }
