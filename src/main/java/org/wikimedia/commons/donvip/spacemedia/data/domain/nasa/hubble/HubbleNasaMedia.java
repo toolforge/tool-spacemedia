@@ -1,7 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble;
 
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -153,7 +155,8 @@ public class HubbleNasaMedia extends FullResMedia<Integer, ZonedDateTime> {
 
     @Override
     public boolean isImage() {
-        return true;
+        URL assertUrl = getMetadata().getAssetUrl();
+        return assertUrl != null && !assertUrl.toExternalForm().toLowerCase(Locale.ENGLISH).endsWith(".pdf");
     }
 
     @Override
