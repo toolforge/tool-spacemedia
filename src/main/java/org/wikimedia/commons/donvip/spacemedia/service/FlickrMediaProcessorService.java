@@ -5,7 +5,6 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Set;
@@ -62,7 +61,7 @@ public class FlickrMediaProcessorService {
     @Transactional
     public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
             MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo)
-			throws IOException, URISyntaxException {
+            throws IOException {
 		boolean save = false;
         boolean savePhotoSets = false;
 		Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());

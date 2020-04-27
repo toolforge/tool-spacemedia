@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
@@ -193,7 +192,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
             URL profileUrl = flickrService.findUserProfileUrl(user.getId());
             return wikiLink(profileUrl, user.getUsername());
         } catch (FlickrException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -235,7 +234,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         try {
             result.addAll(UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media)));
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
         if (result.contains("Flickr-public domain mark") && UnitedStates.isClearPublicDomain(media.getDescription())) {
             result.remove("Flickr-public domain mark");
@@ -325,7 +324,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
             try {
                 processor.processFlickrMedia(media, flickrAccount, getOriginalRepository());
                 count++;
-            } catch (IOException | URISyntaxException e) {
+            } catch (IOException e) {
                 problem(getPhotoUrl(media), e);
             }
         }
