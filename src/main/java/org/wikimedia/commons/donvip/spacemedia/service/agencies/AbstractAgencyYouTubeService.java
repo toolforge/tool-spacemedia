@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -61,6 +62,11 @@ public abstract class AbstractAgencyYouTubeService
     @Override
     public URL getSourceUrl(YouTubeVideo video) throws MalformedURLException {
         return video.getMetadata().getAssetUrl();
+    }
+
+    @Override
+    protected Optional<Temporal> getUploadDate(YouTubeVideo video) {
+        return Optional.of(video.getDate());
     }
 
     protected void updateYouTubeVideos() {
