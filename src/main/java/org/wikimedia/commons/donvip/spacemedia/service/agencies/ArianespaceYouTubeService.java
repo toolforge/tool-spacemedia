@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.net.MalformedURLException;
 import java.time.Duration;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoR
 
 @Service
 public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
+
+    private static final List<String> TO_REMOVE = List.of("Category Science & Technology",
+            "Licence Creative Commons Attribution licence (reuse allowed)",
+            "Follow the launch live at http://www.arianespace.com and on http://www.youtube.com/arianespace",
+            "Since its creation in 1980 as the world's first commercial space transportation company, Arianespace has led the launch services industry with many operational firsts and numerous record-setting missions.");
 
     public ArianespaceYouTubeService(
             YouTubeVideoRepository repository,
@@ -36,8 +42,8 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
     }
 
     @Override
-    protected boolean applyIgnoreRules(YouTubeVideo video) {
-        boolean result = super.applyIgnoreRules(video);
+    protected boolean customProcessing(YouTubeVideo video) {
+        boolean result = super.customProcessing(video);
         if (!Boolean.TRUE.equals(video.isIgnored()) && video.getDescription().contains("copyright: ROSCOSMOS")) {
             video.setIgnored(Boolean.TRUE);
             video.setIgnoredReason("ROSCOSMOS copyright");
@@ -47,6 +53,12 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
             video.setIgnored(Boolean.TRUE);
             video.setIgnoredReason("Video longer than 6 minutes");
             result = true;
+        }
+        for (String toRemove : TO_REMOVE) {
+            if (video.getDescription().contains(toRemove)) {
+                video.setDescription(video.getDescription().replace(toRemove, "").trim());
+                result = true;
+            }
         }
         return result;
     }

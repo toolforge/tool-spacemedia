@@ -146,7 +146,7 @@ public abstract class AbstractAgencyYouTubeService
                 video.getMetadata().getSha1() == null ? downloadVideo(video) : null)) {
             save = true;
         }
-        if (applyIgnoreRules(video)) {
+        if (customProcessing(video)) {
             save = true;
         }
         if (save) {
@@ -178,8 +178,18 @@ public abstract class AbstractAgencyYouTubeService
                 + "\n<h4>Wikicode:</h4>\n<pre>" + wikiCode + "</pre>");
     }
 
-    protected boolean applyIgnoreRules(YouTubeVideo video) {
+    protected boolean customProcessing(YouTubeVideo video) {
         return false;
+    }
+
+    @Override
+    public Set<String> findCategories(YouTubeVideo media, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, includeHidden);
+        if (includeHidden) {
+            // To import by hand from personal account
+            result.remove("Spacemedia files uploaded by " + commonsService.getAccount());
+        }
+        return result;
     }
 
     @Override
