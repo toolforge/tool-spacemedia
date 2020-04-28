@@ -136,10 +136,13 @@ public class MediaService {
             boolean isImage = media.isImage();
             Metadata metadata = media.getMetadata();
             URL assetUrl = metadata.getAssetUrl();
-            if (isImage && metadata.isReadableImage() == null && assetUrl != null) {
+            if (isImage && shouldReadImage(assetUrl, metadata)) {
                 try {
                     bi = Utils.readImage(assetUrl, false);
-                    metadata.setReadableImage(Boolean.TRUE);
+                    if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
+                        metadata.setReadableImage(Boolean.TRUE);
+                        result = true;
+                    }
                 } catch (IOException | URISyntaxException | ImageDecodingException e) {
                     result = ignoreMedia(media, "Unreadable media", e);
                     metadata.setReadableImage(Boolean.FALSE);
@@ -149,10 +152,13 @@ public class MediaService {
                 FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
                 Metadata frMetadata = frMedia.getFullResMetadata();
                 URL frAssetUrl = frMetadata.getAssetUrl();
-                if (isImage && frMetadata.isReadableImage() == null && frAssetUrl != null) {
+                if (isImage && shouldReadImage(frAssetUrl, frMetadata)) {
                     try {
                         biFullRes = Utils.readImage(frAssetUrl, false);
-                        frMetadata.setReadableImage(Boolean.TRUE);
+                        if (!Boolean.TRUE.equals(frMetadata.isReadableImage())) {
+                            frMetadata.setReadableImage(Boolean.TRUE);
+                            result = true;
+                        }
                     } catch (IOException | URISyntaxException | ImageDecodingException e) {
                         result = ignoreMedia(frMedia, "Unreadable full-res media", e);
                         frMetadata.setReadableImage(Boolean.FALSE);
@@ -177,6 +183,12 @@ public class MediaService {
             }
         }
         return result;
+    }
+
+    private static boolean shouldReadImage(URL assetUrl, Metadata metadata) {
+        return assetUrl != null
+                && (metadata.isReadableImage() == null || (Boolean.TRUE.equals(metadata.isReadableImage())
+                        && (metadata.getPhash() == null || metadata.getSha1() == null)));
     }
 
     private static boolean ignoreMedia(Media<?, ?> media, String reason, Exception e) {
@@ -283,7 +295,7 @@ public class MediaService {
 
     private static boolean updatePerceptualHash(Metadata metadata, BufferedImage image)
             throws IOException, URISyntaxException, ImageDecodingException {
-        if (metadata.getPhash() == null && metadata.getAssetUrl() != null) {
+        if (metadata.getPhash() == null && image != null && metadata.getAssetUrl() != null) {
             metadata.setPhash(HashHelper.computePerceptualHash(image, metadata.getAssetUrl()));
             return true;
         }

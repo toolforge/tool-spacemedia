@@ -16,7 +16,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 
 import com.github.kilianB.hash.Hash;
 import com.github.kilianB.hashAlgorithms.HashingAlgorithm;
@@ -58,9 +57,8 @@ public final class HashHelper {
         }
     }
 
-    public static BigInteger computePerceptualHash(BufferedImage image, URL url)
-            throws IOException, URISyntaxException, ImageDecodingException {
-        return algorithm.hash(image != null ? image : Utils.readImage(url, false)).getHashValue();
+    public static BigInteger computePerceptualHash(BufferedImage image, URL url) {
+        return algorithm.hash(image).getHashValue();
     }
 
     public static double similarityScore(BigInteger phash1, BigInteger phash2) {
