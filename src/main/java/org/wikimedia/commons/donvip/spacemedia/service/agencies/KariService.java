@@ -87,7 +87,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
     }
 
     @Override
-    @Scheduled(fixedRateString = "${kari.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${kari.update.rate}", initialDelayString = "${kari.initial.delay}")
     public void updateMedia() throws IOException {
         LocalDateTime start = startUpdateMedia();
         int consecutiveFailures = 0;

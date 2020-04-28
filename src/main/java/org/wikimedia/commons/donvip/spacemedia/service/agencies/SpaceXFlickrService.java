@@ -22,7 +22,7 @@ public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia
     }
 
     @Override
-    @Scheduled(fixedRateString = "${spacex.flickr.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${spacex.flickr.update.rate}", initialDelayString = "${spacex.flickr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

@@ -20,7 +20,7 @@ public class PotentialFlickrService extends AbstractAgencyFlickrService<FlickrMe
     }
 
     @Override
-    @Scheduled(fixedRateString = "${potential.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${potential.update.rate}", initialDelayString = "${potential.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

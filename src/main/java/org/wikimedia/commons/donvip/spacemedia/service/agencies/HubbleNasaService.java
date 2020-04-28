@@ -111,7 +111,7 @@ public class HubbleNasaService extends
 	}
 
     @Override
-    @Scheduled(fixedRateString = "${hubble.nasa.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${hubble.nasa.update.rate}", initialDelayString = "${hubble.nasa.initial.delay}")
     public void updateMedia() throws IOException {
 		LocalDateTime start = startUpdateMedia();
 		RestTemplate rest = new RestTemplate();

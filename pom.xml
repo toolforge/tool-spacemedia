@@ -111,6 +111,17 @@
 			<artifactId>JImageHash</artifactId>
 			<version>3.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-youtube</artifactId>
+			<version>v3-rev20200402-1.30.9</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.oauth-client</groupId>
+					<artifactId>google-oauth-client</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

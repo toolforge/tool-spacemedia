@@ -30,7 +30,7 @@ public class EsoService extends CommonEsoService<EsoMedia> {
     }
 
     @Override
-    @Scheduled(fixedRateString = "${eso.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${eso.update.rate}", initialDelayString = "${eso.initial.delay}")
     public void updateMedia() throws IOException {
         doUpdateMedia();
     }

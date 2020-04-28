@@ -28,7 +28,7 @@ public class UsAfspcFlickrService extends AbstractAgencyFlickrService<DvidsMedia
     }
 
     @Override
-    @Scheduled(fixedRateString = "${usafspc.flickr.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${usafspc.flickr.update.rate}", initialDelayString = "${usafspc.flickr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

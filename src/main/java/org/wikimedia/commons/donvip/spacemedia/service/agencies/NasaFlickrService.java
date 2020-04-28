@@ -24,7 +24,7 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
     }
 
     @Override
-    @Scheduled(fixedRateString = "${nasa.flickr.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${nasa.flickr.update.rate}", initialDelayString = "${nasa.flickr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

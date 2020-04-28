@@ -334,7 +334,7 @@ public class NasaService
         }
     }
 
-    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${nasa.initial.delay}")
     public int updateImages() {
         int count = 0;
         // Recent years have a lot of photos: search by center to avoid more than 10k results

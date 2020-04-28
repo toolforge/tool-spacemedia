@@ -22,7 +22,7 @@ public class UsSpaceCommandDvidsService
     }
 
     @Override
-    @Scheduled(fixedRateString = "${usspacecommand.dvids.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${usspacecommand.dvids.update.rate}", initialDelayString = "${usspacecommand.dvids.initial.delay}")
     public void updateMedia() {
         updateDvidsMedia();
     }

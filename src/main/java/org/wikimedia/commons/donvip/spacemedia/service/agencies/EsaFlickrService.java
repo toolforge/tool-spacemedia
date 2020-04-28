@@ -44,7 +44,7 @@ public class EsaFlickrService extends AbstractAgencyFlickrService<EsaMedia, Inte
 	}
 
 	@Override
-    @Scheduled(fixedRateString = "${esa.flickr.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${esa.flickr.update.rate}", initialDelayString = "${esa.flickr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

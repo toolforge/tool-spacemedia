@@ -316,7 +316,7 @@ public class EsaService
     }
 
     @Override
-    @Scheduled(fixedRateString = "${esa.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${esa.update.rate}", initialDelayString = "${esa.initial.delay}")
     public void updateMedia() throws IOException {
         LocalDateTime start = startUpdateMedia();
         updateMissingImages();

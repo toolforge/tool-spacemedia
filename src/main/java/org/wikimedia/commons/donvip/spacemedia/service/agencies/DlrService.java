@@ -19,7 +19,7 @@ public class DlrService extends AbstractAgencyFlickrService<FlickrMedia, Long, L
     }
 
     @Override
-    @Scheduled(fixedRateString = "${dlr.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${dlr.update.rate}", initialDelayString = "${dlr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

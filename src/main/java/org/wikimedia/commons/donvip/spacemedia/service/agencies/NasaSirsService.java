@@ -98,7 +98,7 @@ public class NasaSirsService
     }
 
     @Override
-    @Scheduled(fixedRateString = "${nasa.sirs.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${nasa.sirs.update.rate}", initialDelayString = "${nasa.sirs.initial.delay}")
     public void updateMedia() throws IOException {
         LocalDateTime start = startUpdateMedia();
         int count = 0;

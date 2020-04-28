@@ -22,7 +22,7 @@ public class UsAfspcDvidsService extends AbstractAgencyDvidsService<DvidsMedia, 
     }
 
     @Override
-    @Scheduled(fixedRateString = "${usafspc.dvids.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${usafspc.dvids.update.rate}", initialDelayString = "${usafspc.dvids.initial.delay}")
     public void updateMedia() {
         updateDvidsMedia();
     }
