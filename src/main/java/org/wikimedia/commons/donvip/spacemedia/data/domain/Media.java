@@ -32,7 +32,7 @@ import org.hibernate.search.annotations.Store;
  * @param <D>  the media date type
  */
 @MappedSuperclass
-public abstract class Media<ID, D extends Temporal> {
+public abstract class Media<ID, D extends Temporal> implements MediaProjection<ID> {
 
     @Embedded
     protected Metadata metadata = new Metadata();
@@ -69,6 +69,7 @@ public abstract class Media<ID, D extends Temporal> {
         }
     }
 
+    @Override
     public Metadata getMetadata() {
         return metadata;
     }
@@ -128,8 +129,6 @@ public abstract class Media<ID, D extends Temporal> {
     public void setIgnoredReason(String ignoredReason) {
         this.ignoredReason = ignoredReason;
     }
-
-    public abstract ID getId();
 
     public abstract void setId(ID id);
 

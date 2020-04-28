@@ -2,15 +2,18 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.iau;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRepository;
 
 public interface IauMediaRepository extends CommonEsoMediaRepository<IauMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
-    @CacheEvict(allEntries = true, cacheNames = {"iauCount", "iauCountIgnored", "iauCountMissing", "iauCountUploaded"})
+    @CacheEvict(allEntries = true, cacheNames = {
+            "iauCount", "iauCountIgnored", "iauCountMissing", "iauCountUploaded", "iauFindByPhashNotNull"})
     @interface CacheEvictIauAll {
 
     }
@@ -32,6 +35,12 @@ public interface IauMediaRepository extends CommonEsoMediaRepository<IauMedia> {
     @Override
     @Cacheable("iauCountUploaded")
     long countUploadedToCommons();
+
+    // FIND
+
+    @Override
+    @Cacheable("iauFindByPhashNotNull")
+    List<MediaProjection<String>> findByMetadata_PhashNotNull();
 
     // SAVE
 

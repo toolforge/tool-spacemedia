@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
 public interface DvidsMediaRepository<T extends DvidsMedia>
@@ -18,7 +19,8 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "dvidsCount", "dvidsCountByUnit", "dvidsCountIgnored", "dvidsCountIgnoredByUnit",
-            "dvidsCountMissing", "dvidsCountMissingByUnit", "dvidsCountUploaded", "dvidsCountUploadedByUnit" })
+            "dvidsCountMissing", "dvidsCountMissingByUnit", "dvidsCountUploaded", "dvidsCountUploadedByUnit",
+            "dvidsFindByPhashNotNull" })
     @interface CacheEvictDvidsAll {
 
     }
@@ -107,6 +109,10 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
 
     @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) and m.unit in ?1")
     Page<T> findUploadedToCommons(Set<String> units, Pageable page);
+
+    @Override
+    @Cacheable("dvidsFindByPhashNotNull")
+    List<MediaProjection<DvidsMediaTypedId>> findByMetadata_PhashNotNull();
 
     // SAVE
 

@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
 public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long, LocalDateTime> {
@@ -18,7 +19,8 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "flickrCount", "flickrCountByAccount", "flickrCountIgnoredByAccount", "flickrCountMissing",
-            "flickrCountMissingByAccount", "flickrCountUploaded", "flickrCountUploadedByAccount"})
+            "flickrCountMissingByAccount", "flickrCountUploaded", "flickrCountUploadedByAccount",
+            "flickrFindByPhashNotNull" })
     @interface CacheEvictFlickrAll {
 
     }
@@ -103,6 +105,10 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
 
     @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2 and m.pathAlias in ?1")
     List<FlickrMedia> findDuplicateInCommons(Set<String> flickrAccounts);
+
+    @Override
+    @Cacheable("flickrFindByPhashNotNull")
+    List<MediaProjection<Long>> findByMetadata_PhashNotNull();
 
     // SAVE
 

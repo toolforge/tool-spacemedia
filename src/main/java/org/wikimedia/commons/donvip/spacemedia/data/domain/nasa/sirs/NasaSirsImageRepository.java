@@ -10,13 +10,14 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
 public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, String, LocalDate> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "nasaSirsCount", "nasaSirsCountIgnored", "nasaSirsCountMissing", "nasaSirsCountUploaded"})
+            "nasaSirsCount", "nasaSirsCountIgnored", "nasaSirsCountMissing", "nasaSirsCountUploaded", "nasaSirsFindByPhashNotNull"})
     @interface CacheEvictNasaSirsAll {
 
     }
@@ -62,6 +63,10 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
     @Override
     @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2")
     List<NasaSirsImage> findDuplicateInCommons();
+
+    @Override
+    @Cacheable("nasaSirsFindByPhashNotNull")
+    List<MediaProjection<String>> findByMetadata_PhashNotNull();
 
     // SAVE
 

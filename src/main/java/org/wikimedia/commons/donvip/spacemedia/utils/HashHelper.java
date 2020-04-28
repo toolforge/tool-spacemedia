@@ -7,6 +7,8 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
@@ -38,8 +40,14 @@ public final class HashHelper {
         }
     }
 
-    public static String computeSha1(URL url) throws IOException, URISyntaxException {
-        URI uri = Utils.urlToUri(url);
+    public static String computeSha1(Path localPath) throws IOException {
+        try (InputStream in = Files.newInputStream(localPath)) {
+            return DigestUtils.sha1Hex(in);
+        }
+    }
+
+    public static String computeSha1(URL httpUrl) throws IOException, URISyntaxException {
+        URI uri = Utils.urlToUri(httpUrl);
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
                 InputStream in = response.getEntity().getContent()) {

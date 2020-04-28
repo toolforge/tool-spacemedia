@@ -10,13 +10,14 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 
 public interface KariMediaRepository extends MediaRepository<KariMedia, Integer, LocalDate> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "kariCount", "kariCountIgnored", "kariCountMissing", "kariCountUploaded"})
+            "kariCount", "kariCountIgnored", "kariCountMissing", "kariCountUploaded", "kariFindByPhashNotNull" })
     @interface CacheEvictKariAll {
 
     }
@@ -62,6 +63,10 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
     @Override
     @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2")
     List<KariMedia> findDuplicateInCommons();
+
+    @Override
+    @Cacheable("kariFindByPhashNotNull")
+    List<MediaProjection<Integer>> findByMetadata_PhashNotNull();
 
     // SAVE
 

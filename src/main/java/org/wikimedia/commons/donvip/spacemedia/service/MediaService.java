@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -45,11 +46,16 @@ public class MediaService {
 
     public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo)
             throws IOException {
+        return updateMedia(media, originalRepo, null);
+    }
+
+    public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Path localPath)
+            throws IOException {
         boolean result = false;
         if (cleanupDescription(media)) {
             result = true;
         }
-        if (updateReadableStateAndHashes(media)) {
+        if (updateReadableStateAndHashes(media, localPath)) {
             result = true;
         }
         if (findCommonsFilesWithSha1(media)) {
@@ -65,8 +71,7 @@ public class MediaService {
         boolean result = false;
         // Find exact duplicates by SHA-1
         String sha1 = media.getMetadata().getSha1();
-        if (handleExactDuplicates(
-                media,
+        if (sha1 != null && handleExactDuplicates(media,
                 repo instanceof FullResMediaRepository<?, ?, ?>
                         ? ((FullResMediaRepository<?, ?, ?>) repo).findByMetadata_Sha1OrFullResMetadata_Sha1(sha1)
                         : repo.findByMetadata_Sha1(sha1))) {
@@ -74,8 +79,7 @@ public class MediaService {
         }
         // Find exact duplicates by perceptual hash
         BigInteger phash = media.getMetadata().getPhash();
-        if (phash != null && handleExactDuplicates(
-                media,
+        if (phash != null && handleExactDuplicates(media,
                 repo instanceof FullResMediaRepository<?, ?, ?>
                         ? ((FullResMediaRepository<?, ?, ?>) repo).findByMetadata_PhashOrFullResMetadata_Phash(phash)
                         : repo.findByMetadata_Phash(phash))) {
@@ -84,8 +88,8 @@ public class MediaService {
         // Find almost duplicates by perceptual hash
         if (phash != null && handleDuplicates(media, repo.findByMetadata_PhashNotNull()
                 .parallelStream()
-                .filter(m -> !m.equals(media))
-                .map(m -> new DuplicateHolder(m, HashHelper.similarityScore(phash, m.getMetadata().getPhash())))
+                .filter(m -> !m.getId().equals(media.getId()))
+                .map(m -> new DuplicateHolder(m.getId().toString(), HashHelper.similarityScore(phash, m.getMetadata().getPhash())))
                 .filter(h -> h.similarityScore < perceptualThreshold)
                 .map(DuplicateHolder::toDuplicate)
                 .collect(Collectors.toList()))) {
@@ -95,16 +99,16 @@ public class MediaService {
     }
 
     private static class DuplicateHolder {
-        private final Media<?, ?> media;
+        private final String mediaId;
         private final double similarityScore;
 
-        DuplicateHolder(Media<?, ?> media, double similarityScore) {
-            this.media = media;
+        DuplicateHolder(String mediaId, double similarityScore) {
+            this.mediaId = mediaId;
             this.similarityScore = similarityScore;
         }
 
         Duplicate toDuplicate() {
-            return new Duplicate(media.getId().toString(), similarityScore);
+            return new Duplicate(mediaId, similarityScore);
         }
     }
 
@@ -115,7 +119,7 @@ public class MediaService {
 
     private static boolean handleDuplicates(Media<?, ?> media, List<Duplicate> duplicates) {
         boolean result = false;
-        if (isNotEmpty(duplicates)) {
+        if (isNotEmpty(duplicates) && !media.getDuplicates().containsAll(duplicates)) {
             media.setIgnored(true);
             media.setIgnoredReason("Already present in main repository.");
             duplicates.forEach(media::addDuplicate);
@@ -124,7 +128,7 @@ public class MediaService {
         return result;
     }
 
-    public boolean updateReadableStateAndHashes(Media<?, ?> media) {
+    public boolean updateReadableStateAndHashes(Media<?, ?> media, Path localPath) {
         boolean result = false;
         BufferedImage bi = null;
         BufferedImage biFullRes = null;
@@ -159,7 +163,7 @@ public class MediaService {
                     && computePerceptualHash(media, bi, biFullRes)) {
                 result = true;
             }
-            if (computeSha1(media, bi, biFullRes)) {
+            if (computeSha1(media, bi, biFullRes, localPath)) {
                 result = true;
             }
         } catch (IOException | URISyntaxException | ImageDecodingException e) {
@@ -206,43 +210,46 @@ public class MediaService {
      * 
      * @param media media object
      * @param bi {@code BufferedImage} of main asset, can be null if not an image, or not computed 
-     * @param biFullRes {@code BufferedImage} of full-res asset, can be null if not an image, or not computed 
+     * @param biFullRes {@code BufferedImage} of full-res asset, can be null if not an image, or not computed
+     * @param localPath if set, use it instead of asset URL 
      * @return {@code true} if media has been updated with computed SHA-1 and must be persisted
      * @throws IOException        in case of I/O error
      * @throws URISyntaxException if URL cannot be converted to URI
      */
-    public boolean computeSha1(Media<?, ?> media, BufferedImage bi, BufferedImage biFullRes)
+    public boolean computeSha1(Media<?, ?> media, BufferedImage bi, BufferedImage biFullRes, Path localPath)
             throws IOException, URISyntaxException {
         boolean result = false;
-        if (updateSha1(media.getMetadata(), bi)) {
+        if (updateSha1(media.getMetadata(), bi, localPath)) {
             result = true;
         }
         if (media instanceof FullResMedia) {
             FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
-            if (updateSha1(frMedia.getFullResMetadata(), biFullRes)) {
+            if (updateSha1(frMedia.getFullResMetadata(), biFullRes, localPath)) {
                 result = true;
             }
         }
         return result;
     }
 
-    private static boolean updateSha1(Metadata metadata, BufferedImage image)
+    private static boolean updateSha1(Metadata metadata, BufferedImage image, Path localPath)
             throws IOException, URISyntaxException {
-        if (metadata.getSha1() == null && metadata.getAssetUrl() != null) {
-            metadata.setSha1(getSha1(image, metadata.getAssetUrl()));
+        if (metadata.getSha1() == null && (metadata.getAssetUrl() != null || localPath != null)) {
+            metadata.setSha1(getSha1(image, localPath, metadata.getAssetUrl()));
             return true;
         }
         return false;
     }
 
-    private static String getSha1(BufferedImage image, URL url) throws IOException, URISyntaxException {
+    private static String getSha1(BufferedImage image, Path localPath, URL url) throws IOException, URISyntaxException {
         if (image != null) {
             try {
                 return HashHelper.computeSha1(image);
             } catch (IOException e) {
-                LOGGER.error("Error suring SHA-1 computation", e);
+                LOGGER.error("Error during SHA-1 computation", e);
                 return HashHelper.computeSha1(url);
             }
+        } else if (localPath != null) {
+            return HashHelper.computeSha1(localPath);
         } else {
             return HashHelper.computeSha1(url);
         }

@@ -8,12 +8,12 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 @Embeddable
-public class Metadata {
+public class Metadata implements MetadataProjection {
 
     /**
      * SHA-1 hash.
      */
-    @Column(nullable = false, length = 42)
+    @Column(nullable = true, length = 42)
     private String sha1;
 
     /**
@@ -44,6 +44,7 @@ public class Metadata {
         this.sha1 = sha1;
     }
 
+    @Override
     public BigInteger getPhash() {
         return phash;
     }

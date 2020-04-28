@@ -2,14 +2,17 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.eso;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 
 public interface EsoMediaRepository extends CommonEsoMediaRepository<EsoMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
-    @CacheEvict(allEntries = true, cacheNames = {"esoCount", "esoCountIgnored", "esoCountMissing", "esoCountUploaded"})
+    @CacheEvict(allEntries = true, cacheNames = {
+            "esoCount", "esoCountIgnored", "esoCountMissing", "esoCountUploaded", "esoFindByPhashNotNull"})
     @interface CacheEvictEsoAll {
 
     }
@@ -31,6 +34,12 @@ public interface EsoMediaRepository extends CommonEsoMediaRepository<EsoMedia> {
     @Override
     @Cacheable("esoCountUploaded")
     long countUploadedToCommons();
+
+    // FIND
+
+    @Override
+    @Cacheable("esoFindByPhashNotNull")
+    List<MediaProjection<String>> findByMetadata_PhashNotNull();
 
     // SAVE
 
