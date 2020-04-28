@@ -142,7 +142,8 @@ public abstract class AbstractAgencyYouTubeService
         } else {
             save = true;
         }
-        if (mediaService.updateMedia(video, getOriginalRepository(), downloadVideo(video))) {
+        if (mediaService.updateMedia(video, getOriginalRepository(),
+                video.getMetadata().getSha1() == null ? downloadVideo(video) : null)) {
             save = true;
         }
         if (applyIgnoreRules(video)) {
