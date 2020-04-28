@@ -129,12 +129,21 @@ public class MediaService {
     }
 
     public boolean updateReadableStateAndHashes(Media<?, ?> media, Path localPath) {
+        boolean result = updateReadableStateAndHashes(media, media.getMetadata(), localPath);
+        if (media instanceof FullResMedia<?, ?>) {
+            FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
+            if (updateReadableStateAndHashes(frMedia, frMedia.getFullResMetadata(), localPath)) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    private boolean updateReadableStateAndHashes(Media<?, ?> media, Metadata metadata, Path localPath) {
+        boolean isImage = media.isImage();
         boolean result = false;
         BufferedImage bi = null;
-        BufferedImage biFullRes = null;
         try {
-            boolean isImage = media.isImage();
-            Metadata metadata = media.getMetadata();
             URL assetUrl = metadata.getAssetUrl();
             if (isImage && shouldReadImage(assetUrl, metadata)) {
                 try {
@@ -148,38 +157,17 @@ public class MediaService {
                     metadata.setReadableImage(Boolean.FALSE);
                 }
             }
-            if (media instanceof FullResMedia<?, ?>) {
-                FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
-                Metadata frMetadata = frMedia.getFullResMetadata();
-                URL frAssetUrl = frMetadata.getAssetUrl();
-                if (isImage && shouldReadImage(frAssetUrl, frMetadata)) {
-                    try {
-                        biFullRes = Utils.readImage(frAssetUrl, false);
-                        if (!Boolean.TRUE.equals(frMetadata.isReadableImage())) {
-                            frMetadata.setReadableImage(Boolean.TRUE);
-                            result = true;
-                        }
-                    } catch (IOException | URISyntaxException | ImageDecodingException e) {
-                        result = ignoreMedia(frMedia, "Unreadable full-res media", e);
-                        frMetadata.setReadableImage(Boolean.FALSE);
-                    }
-                }
-            }
-            if (isImage && Boolean.TRUE.equals(metadata.isReadableImage())
-                    && computePerceptualHash(media, bi, biFullRes)) {
+            if (isImage && Boolean.TRUE.equals(metadata.isReadableImage()) && updatePerceptualHash(metadata, bi)) {
                 result = true;
             }
-            if (computeSha1(media, bi, biFullRes, localPath)) {
+            if (updateSha1(metadata, bi, localPath)) {
                 result = true;
             }
-        } catch (IOException | URISyntaxException | ImageDecodingException e) {
+        } catch (IOException | URISyntaxException e) {
             LOGGER.error("Error while computing hashes", e);
         } finally {
             if (bi != null) {
                 bi.flush();
-            }
-            if (biFullRes != null) {
-                biFullRes.flush();
             }
         }
         return result;
@@ -228,22 +216,7 @@ public class MediaService {
      * @throws IOException        in case of I/O error
      * @throws URISyntaxException if URL cannot be converted to URI
      */
-    public boolean computeSha1(Media<?, ?> media, BufferedImage bi, BufferedImage biFullRes, Path localPath)
-            throws IOException, URISyntaxException {
-        boolean result = false;
-        if (updateSha1(media.getMetadata(), bi, localPath)) {
-            result = true;
-        }
-        if (media instanceof FullResMedia) {
-            FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
-            if (updateSha1(frMedia.getFullResMetadata(), biFullRes, localPath)) {
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    private static boolean updateSha1(Metadata metadata, BufferedImage image, Path localPath)
+    public static boolean updateSha1(Metadata metadata, BufferedImage image, Path localPath)
             throws IOException, URISyntaxException {
         if (metadata.getSha1() == null && (metadata.getAssetUrl() != null || localPath != null)) {
             metadata.setSha1(getSha1(image, localPath, metadata.getAssetUrl()));
@@ -278,23 +251,7 @@ public class MediaService {
      * @return {@code true} if media has been updated with computed perceptual hash
      *         and must be persisted
      */
-    public boolean computePerceptualHash(Media<?, ?> media, BufferedImage bi, BufferedImage biFullRes)
-            throws IOException, URISyntaxException, ImageDecodingException {
-        boolean result = false;
-        if (updatePerceptualHash(media.getMetadata(), bi)) {
-            result = true;
-        }
-        if (media instanceof FullResMedia) {
-            FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
-            if (updatePerceptualHash(frMedia.getFullResMetadata(), biFullRes)) {
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    private static boolean updatePerceptualHash(Metadata metadata, BufferedImage image)
-            throws IOException, URISyntaxException, ImageDecodingException {
+    public static boolean updatePerceptualHash(Metadata metadata, BufferedImage image) {
         if (metadata.getPhash() == null && image != null && metadata.getAssetUrl() != null) {
             metadata.setPhash(HashHelper.computePerceptualHash(image, metadata.getAssetUrl()));
             return true;
