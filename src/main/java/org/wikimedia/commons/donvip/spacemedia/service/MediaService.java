@@ -229,7 +229,7 @@ public class MediaService {
         if (image != null) {
             try {
                 return HashHelper.computeSha1(image);
-            } catch (IOException e) {
+            } catch (IOException | UnsupportedOperationException e) {
                 LOGGER.error("Error during SHA-1 computation", e);
                 return HashHelper.computeSha1(url);
             }
