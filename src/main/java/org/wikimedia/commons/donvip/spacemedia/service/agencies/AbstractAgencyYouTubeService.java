@@ -167,6 +167,17 @@ public abstract class AbstractAgencyYouTubeService
         return null;
     }
 
+    @Override
+    protected void doUpload(String wikiCode, YouTubeVideo video) throws IOException {
+        throw new UnsupportedOperationException("<h2>Spacemedia is not able to upload YouTube videos by itself.</h2>\n"
+                + "<p>Please go to <a href=\"https://tools.wmflabs.org/video2commons\">video2commons</a> and upload the <b>"
+                + video.getId()
+                + ".mp4</b> file, using following information:</p>\n"
+                + "<h4>Title:</h4>\n"
+                + video.getUploadTitle()
+                + "\n<h4>Wikicode:</h4>\n<pre>" + wikiCode + "</pre>");
+    }
+
     protected boolean applyIgnoreRules(YouTubeVideo video) {
         return false;
     }

@@ -110,6 +110,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         uploadEnabled = env.getProperty(
                 getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH)
                         .replace("flickr", ".flickr").replace("dvids", ".dvids")
+                        .replace("youtube", ".youtube")
                         + ".upload.enabled",
                 Boolean.class, Boolean.FALSE);
     }
