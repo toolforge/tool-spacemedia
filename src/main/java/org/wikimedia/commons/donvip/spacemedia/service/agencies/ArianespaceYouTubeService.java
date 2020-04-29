@@ -71,6 +71,8 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
                 result.add("Ariane 5 Launch Videos by Arianespace");
             } else if (video.getTitle().contains("VV")) {
                 result.add("Vega Launch Videos by Arianespace");
+            } else if (video.getTitle().contains("VS") || video.getTitle().contains("ST")) {
+                result.add("Soyouz Launch Videos by Arianespace");
             } else {
                 result.add("Videos by Arianespace");
             }

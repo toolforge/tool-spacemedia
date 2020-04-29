@@ -180,7 +180,7 @@ public abstract class AbstractAgencyYouTubeService
                 + video.getId()
                 + ".mp4</b> file, using following information:</p>\n"
                 + "<h4>Title:</h4>\n"
-                + video.getUploadTitle()
+                + commonsService.normalizeFilename(video.getUploadTitle())
                 + "\n<h4>Wikicode:</h4>\n<pre>" + wikiCode + "</pre>");
     }
 

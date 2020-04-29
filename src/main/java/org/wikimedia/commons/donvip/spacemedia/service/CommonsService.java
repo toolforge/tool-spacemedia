@@ -427,7 +427,12 @@ public class CommonsService {
     }
 
     public String upload(String wikiCode, String filename, URL url, String sha1) throws IOException {
-        return doUpload(wikiCode, filename, url, sha1, true);
+        return doUpload(wikiCode, normalizeFilename(filename), url, sha1, true);
+    }
+
+    public String normalizeFilename(String filename) {
+        // replace forbidden chars, see https://www.mediawiki.org/wiki/Manual:$wgIllegalFileChars
+        return filename.replace('/', '-').replace(':', '-').replace('\\', '-');
     }
 
     private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1, boolean renewTokenIfBadToken)
