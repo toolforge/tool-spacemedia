@@ -10,7 +10,7 @@ public class DvidsWebcast extends DvidsMedia {
 
     @Override
     public String toString() {
-        return "DvidsAudio ["
+        return "DvidsWebcast ["
                 + (getId() != null ? "id=" + getId() + ", " : "")
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")
                 + (getDatePublished() != null ? "datePublished=" + getDatePublished() + ", " : "")

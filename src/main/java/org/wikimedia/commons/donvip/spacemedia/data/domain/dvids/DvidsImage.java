@@ -54,7 +54,7 @@ public class DvidsImage extends DvidsMedia {
 
     @Override
     public String toString() {
-        return "DvidsAudio ["
+        return "DvidsImage ["
                 + (getId() != null ? "id=" + getId() + ", " : "")
                 + (getAspectRatio() != null ? "aspectRatio=" + getAspectRatio() + ", " : "")
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")

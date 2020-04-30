@@ -17,8 +17,9 @@ public class UsSpaceCommandDvidsService
 
     @Autowired
     public UsSpaceCommandDvidsService(DvidsMediaRepository<DvidsMedia> repository,
-            @Value("${usspacecommand.dvids.units}") Set<String> dvidsUnits) {
-        super(repository, dvidsUnits);
+            @Value("${usspacecommand.dvids.units}") Set<String> dvidsUnits,
+            @Value("${usspacecommand.dvids.min.year}") int minYear) {
+        super(repository, dvidsUnits, minYear);
     }
 
     @Override

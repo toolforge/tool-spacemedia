@@ -100,7 +100,7 @@ public class DvidsVideo extends DvidsMedia {
 
     @Override
     public String toString() {
-        return "DvidsAudio ["
+        return "DvidsVideo ["
                 + (getId() != null ? "id=" + getId() + ", " : "")
                 + (getAspectRatio() != null ? "aspectRatio=" + getAspectRatio() + ", " : "")
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")

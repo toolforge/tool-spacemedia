@@ -2,8 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -101,14 +101,14 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     @Value("${dvids.media.url}")
     private UriTemplate mediaUrl;
 
-    @Value("${dvids.min.year}")
-    private int minYear;
+    private final int minYear;
 
     private final Set<String> units;
 
-    public AbstractAgencyDvidsService(DvidsMediaRepository<DvidsMedia> repository, Set<String> units) {
+    public AbstractAgencyDvidsService(DvidsMediaRepository<DvidsMedia> repository, Set<String> units, int minYear) {
         super(repository);
         this.units = units;
+        this.minYear = minYear;
     }
 
     @Override
@@ -140,7 +140,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         int count = 0;
         for (String unit : units) {
             for (DvidsMediaType type : new DvidsMediaType[] {
-                    DvidsMediaType.image, DvidsMediaType.video }) {
+                    DvidsMediaType.video, DvidsMediaType.image }) {
+                LocalDateTime startBis = LocalDateTime.now();
+                int countBis = 0;
                 LOGGER.info("Fetching DVIDS {}s from unit '{}'...", type, unit);
                 try {
                     boolean loop = true;
@@ -148,9 +150,12 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                     while (loop) {
                         UpdateResult ur = doUpdateDvidsMedia(rest,
                                 searchDvidsMediaIds(rest, false, type, unit, 0, page++), unit);
+                        countBis += ur.count;
                         count += ur.count;
                         loop = ur.loop;
                     }
+                    LOGGER.info("{} {}s completed: {} {}s in {}", unit, type, countBis, type,
+                            Duration.between(LocalDateTime.now(), startBis));
                 } catch (TooManyResultsException ex) {
                     LOGGER.trace("TooManyResults", ex);
                     int year = LocalDateTime.now().getYear();
@@ -158,12 +163,19 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                         try {
                             boolean loop = true;
                             int page = 1;
+                            startBis = LocalDateTime.now();
+                            countBis = 0;
+                            LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {}...", type, unit, year);
                             while (loop) {
                                 UpdateResult ur = doUpdateDvidsMedia(rest,
-                                        searchDvidsMediaIds(rest, true, type, unit, year--, page++), unit);
+                                        searchDvidsMediaIds(rest, true, type, unit, year, page++), unit);
+                                countBis += ur.count;
                                 count += ur.count;
                                 loop = ur.loop;
                             }
+                            LOGGER.info("{} {}s for year {} completed: {} {}s in {}", unit, type, year,
+                                    countBis, type, Duration.between(LocalDateTime.now(), startBis));
+                            year--;
                         } catch (ApiException | TooManyResultsException exx) {
                             LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
                         }
@@ -178,18 +190,26 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     private UpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
         int count = 0;
-        List<String> results = response.getResults().stream().map(ApiSearchResult::getId).collect(Collectors.toList());
-        for (String id : results) {
+        for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted().collect(Collectors.toList())) {
             try {
-                count += processDvidsMedia(rest.getForObject(
-                        assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)),
-                        ApiAssetResponse.class).getResults(), unit);
-            } catch (IOException | URISyntaxException e) {
+                count += processDvidsMedia(mediaRepository.findById(new DvidsMediaTypedId(id))
+                        .orElseGet(() -> getMediaFromApi(rest, id, unit)));
+            } catch (HttpClientErrorException e) {
+                LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, e.getMessage());
+            } catch (IOException e) {
                 LOGGER.error("Error while processing DVIDS " + id + " from unit " + unit, e);
             }
         }
         ApiPageInfo pi = response.getPageInfo();
-        return new UpdateResult(pi.getResultsPerPage() > 0 && results.size() == pi.getResultsPerPage(), count);
+        return new UpdateResult(pi.getResultsPerPage() > 0 && response.getResults().size() == pi.getResultsPerPage(), count);
+    }
+
+    private DvidsMedia getMediaFromApi(RestTemplate rest, String id, String unit) {
+        DvidsMedia media = rest
+                .getForObject(assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)), ApiAssetResponse.class)
+                .getResults();
+        media.setUnit(unit);
+        return media;
     }
 
     private static class UpdateResult {
@@ -228,19 +248,16 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             } else {
                 throw new TooManyResultsException(msg);
             }
+        } else if (pageInfo.getTotalResults() == 0) {
+            LOGGER.warn("No {} for {} in year {}", type, unit, year);
+        } else if (page == 1) {
+            LOGGER.info("{} {}s to process for {}", pageInfo.getTotalResults(), type, unit);
         }
         return response;
     }
 
-    private int processDvidsMedia(DvidsMedia media, String unit) throws IOException, URISyntaxException {
-        boolean save = false;
-        Optional<DvidsMedia> optMediaInRepo = mediaRepository.findById(media.getId());
-        if (optMediaInRepo.isPresent()) {
-            media = optMediaInRepo.get();
-        } else {
-            media.setUnit(unit);
-            save = true;
-        }
+    private int processDvidsMedia(DvidsMedia media) throws IOException {
+        boolean save = !mediaRepository.existsById(media.getId());
         if (mediaService.updateMedia(media, getOriginalRepository())) {
             save = true;
         }
