@@ -203,7 +203,7 @@ public abstract class AbstractAgencyYouTubeService
         List<String> result = super.findTemplates(video);
         result.add("From YouTube |1= " + video.getId());
         result.add("YouTube CC-BY |1= " + video.getChannelTitle());
-        result.add("Licensereview");
+        result.add("LicenseReview");
         return result;
     }
 }
