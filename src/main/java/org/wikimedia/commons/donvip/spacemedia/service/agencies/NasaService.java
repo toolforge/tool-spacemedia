@@ -350,12 +350,12 @@ public class NasaService
         return count;
     }
 
-    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${nasa.initial.delay}")
     public int updateAudios() {
         return doUpdateMedia(NasaMediaType.audio);
     }
 
-    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${initial.delay}")
+    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${nasa.initial.delay}")
     public int updateVideos() {
         return doUpdateMedia(NasaMediaType.video);
     }
