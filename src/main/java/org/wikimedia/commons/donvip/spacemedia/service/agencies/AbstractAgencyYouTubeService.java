@@ -65,7 +65,7 @@ public abstract class AbstractAgencyYouTubeService
     }
 
     @Override
-    protected Optional<Temporal> getUploadDate(YouTubeVideo video) {
+    protected final Optional<Temporal> getUploadDate(YouTubeVideo video) {
         return Optional.of(video.getDate());
     }
 

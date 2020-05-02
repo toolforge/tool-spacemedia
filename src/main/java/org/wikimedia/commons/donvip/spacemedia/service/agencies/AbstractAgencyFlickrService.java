@@ -176,12 +176,12 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
-    protected Optional<Temporal> getCreationDate(FlickrMedia media) {
+    protected final Optional<Temporal> getCreationDate(FlickrMedia media) {
         return Optional.ofNullable(media.getDateTaken());
     }
 
     @Override
-    protected Optional<Temporal> getUploadDate(FlickrMedia media) {
+    protected final Optional<Temporal> getUploadDate(FlickrMedia media) {
         return Optional.of(media.getDate());
     }
 

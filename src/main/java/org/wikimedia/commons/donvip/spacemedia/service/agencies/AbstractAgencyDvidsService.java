@@ -11,9 +11,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +32,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudioRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsCredit;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsGraphic;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsGraphicRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImage;
@@ -57,6 +62,9 @@ import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException
 @Service
 public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID, OD extends Temporal>
         extends AbstractAgencyService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime, OT, OID, OD> {
+
+    private static final Pattern US_MEDIA_BY = Pattern
+            .compile(".*\\((U\\.S\\. .+ (?:photo|graphic|video) by )[^\\)]+\\)", Pattern.DOTALL);
 
     private static final int MAX_RESULTS = 1000;
 
@@ -274,7 +282,34 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     @Override
     protected final String getAuthor(DvidsMedia media) throws MalformedURLException {
-        return media.getCredit().toString(); // FIXME
+        StringBuilder result = new StringBuilder();
+        Matcher m = US_MEDIA_BY.matcher(media.getDescription());
+        if (m.matches()) {
+            result.append(m.group(1));
+        } else if (StringUtils.isNotBlank(media.getBranch()) && !"Joint".equals(media.getBranch())) {
+            result.append("U.S. ").append(media.getBranch()).append(' ').append(media.getId().getType()).append(" by ");
+        }
+        result.append(media.getCredit().stream().map(this::dvidsCreditToString).collect(Collectors.joining(", ")));
+        return result.toString();
+    }
+
+    private String dvidsCreditToString(DvidsCredit credit) {
+        StringBuilder result = new StringBuilder();
+        if (StringUtils.isNotBlank(credit.getRank())) {
+            result.append(credit.getRank()).append(' ');
+        }
+        result.append('[').append(credit.getUrl()).append(' ').append(credit.getName()).append(']');
+        return result.toString();
+    }
+
+    @Override
+    protected final Optional<Temporal> getCreationDate(DvidsMedia media) {
+        return Optional.of(media.getDate());
+    }
+
+    @Override
+    protected final Optional<Temporal> getUploadDate(DvidsMedia media) {
+        return Optional.of(media.getDatePublished());
     }
 
     @Override

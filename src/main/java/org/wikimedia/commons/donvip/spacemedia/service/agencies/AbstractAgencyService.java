@@ -404,12 +404,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 Temporal d = creationDate.get();
                 sb.append("\n| date = ");
                 if (d instanceof LocalDateTime || d instanceof ZonedDateTime || d instanceof Instant) {
-                    sb.append("{{Taken on|").append(d).append("}}");
+                    sb.append("{{Taken on|").append(toIso8601(d)).append("}}");
                 } else {
-                    sb.append("{{Taken in|").append(d).append("}}");
+                    sb.append("{{Taken in|").append(toIso8601(d)).append("}}");
                 }
             } else {
-                getUploadDate(media).ifPresent(d -> sb.append("\n| date = {{Upload date|").append(d).append("}}"));
+                getUploadDate(media)
+                        .ifPresent(d -> sb.append("\n| date = {{Upload date|").append(toIso8601(d)).append("}}"));
             }
             sb.append("\n| source = ").append(getSource(media)).append("\n| author = ").append(getAuthor(media));
             getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
@@ -424,6 +425,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String toIso8601(Temporal d) {
+        if (d instanceof ZonedDateTime) {
+            return toIso8601(((ZonedDateTime) d).toInstant());
+        }
+        return d.toString();
     }
 
     protected String getLanguage(T media) {

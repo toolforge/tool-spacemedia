@@ -47,13 +47,14 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     /**
      * Date media was acquired by shooter/producer. Date in ISO8601 format.
      */
+    @Column(nullable = false)
     private ZonedDateTime date;
 
     /**
      * Date/time item was published at DVIDS. Date in ISO8601 format.
      */
     @JsonProperty("date_published")
-    @Column(name = "date_published")
+    @Column(name = "date_published", nullable = false)
     private ZonedDateTime datePublished;
 
     /**

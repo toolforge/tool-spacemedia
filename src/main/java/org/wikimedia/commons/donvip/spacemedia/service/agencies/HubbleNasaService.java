@@ -380,12 +380,12 @@ public class HubbleNasaService extends
     }
 
 	@Override
-	protected Optional<Temporal> getCreationDate(HubbleNasaMedia media) {
+    protected Optional<Temporal> getCreationDate(HubbleNasaMedia media) {
 		return Optional.ofNullable(media.getExposureDate());
 	}
 
 	@Override
-	protected Optional<Temporal> getUploadDate(HubbleNasaMedia media) {
+    protected Optional<Temporal> getUploadDate(HubbleNasaMedia media) {
 		return Optional.of(media.getDate());
 	}
 }

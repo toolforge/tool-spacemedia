@@ -448,7 +448,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     }
 
     @Override
-    protected Optional<Temporal> getUploadDate(T media) {
+    protected final Optional<Temporal> getUploadDate(T media) {
         return Optional.of(media.getDate());
     }
 
