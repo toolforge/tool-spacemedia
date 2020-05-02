@@ -30,5 +30,8 @@ build/
 ### VS Code ###
 .vscode/
 
+/*.m4a
 /*.mp4
+/*.mkv
+/*.srt
 /*.webm

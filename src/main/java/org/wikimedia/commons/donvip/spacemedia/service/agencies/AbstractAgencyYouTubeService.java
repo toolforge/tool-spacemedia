@@ -164,7 +164,10 @@ public abstract class AbstractAgencyYouTubeService
         try {
             String url = video.getMetadata().getAssetUrl().toExternalForm();
             String line = Arrays.stream(Utils
-                    .execOutput(List.of("youtube-dl", "--no-progress", "--id", url), 30, TimeUnit.MINUTES).split("\n"))
+                    .execOutput(List.of(
+                            "youtube-dl", "--no-progress", "--id", "--write-auto-sub", "--convert-subs", "srt", url),
+                            30, TimeUnit.MINUTES)
+                    .split("\n"))
                     .filter(l -> l.contains("Destination:")).findFirst().get();
             return Paths.get(line.substring(line.indexOf(": ") + ": ".length()));
         } catch (IOException | ExecutionException | InterruptedException e) {
