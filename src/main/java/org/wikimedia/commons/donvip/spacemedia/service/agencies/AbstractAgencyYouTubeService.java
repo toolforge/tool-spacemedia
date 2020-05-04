@@ -178,7 +178,7 @@ public abstract class AbstractAgencyYouTubeService
                     .filter(l -> l.contains("Destination:")).findFirst().get();
             return Paths.get(line.substring(line.indexOf(": ") + ": ".length()));
         } catch (IOException | ExecutionException | InterruptedException e) {
-            LOGGER.error("Error while downloading YouTube video", e);
+            LOGGER.error("Error while downloading YouTube video: {}", e.getMessage());
         }
         return null;
     }
