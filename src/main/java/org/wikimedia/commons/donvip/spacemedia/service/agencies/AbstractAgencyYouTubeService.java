@@ -24,6 +24,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.YouTubeService;
@@ -81,6 +83,11 @@ public abstract class AbstractAgencyYouTubeService
                     pageToken = list.getNextPageToken();
                     count += processYouTubeVideos(buildYouTubeVideoList(list, youtubeService.listVideos(list)));
                 } while (pageToken != null);
+            } catch (HttpClientErrorException e) {
+                LOGGER.error("HttpClientError while fetching YouTube videos from channel {}: {}", channelId, e.getMessage());
+                if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                    break;
+                }
             } catch (IOException | RuntimeException e) {
                 LOGGER.error("Error while fetching YouTube videos from channel " + channelId, e);
             }

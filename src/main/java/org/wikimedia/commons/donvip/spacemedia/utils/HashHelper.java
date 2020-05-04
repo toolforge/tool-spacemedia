@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -16,6 +17,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.github.kilianB.hash.Hash;
 import com.github.kilianB.hashAlgorithms.HashingAlgorithm;
@@ -50,8 +53,16 @@ public final class HashHelper {
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
                 InputStream in = response.getEntity().getContent()) {
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                throw new IOException(uri + " => " + response.getStatusLine());
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != HttpStatus.SC_OK) {
+                org.springframework.http.HttpStatus status = org.springframework.http.HttpStatus.valueOf(statusCode);
+                String statusText = response.getStatusLine().toString();
+                if (statusCode >= 500) {
+                    throw HttpServerErrorException.create(status, statusText, null, null, StandardCharsets.UTF_8);
+                } else if (statusCode >= 400) {
+                    throw HttpClientErrorException.create(status, statusText, null, null, StandardCharsets.UTF_8);
+                }
+                throw new IOException(uri + " => " + statusText);
             }
             return DigestUtils.sha1Hex(in);
         }

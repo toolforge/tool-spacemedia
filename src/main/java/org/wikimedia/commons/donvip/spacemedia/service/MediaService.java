@@ -9,25 +9,44 @@ import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
+
+import io.micrometer.core.instrument.util.StringUtils;
 
 @Service
 public class MediaService {
@@ -38,8 +57,24 @@ public class MediaService {
 
     private static final List<String> STRINGS_TO_REPLACE_BY_SPACE = Arrays.asList("&nbsp;", "  ");
 
+    // Taken from https://github.com/eatcha-wikimedia/YouTubeReviewBot/blob/master/main.py
+    private static final Pattern FROM_YOUTUBE = Pattern.compile(
+            ".*\\{\\{\\s*?[Ff]rom\\s[Yy]ou[Tt]ube\\s*(?:\\||\\|1\\=|\\s*?)(?:\\s*)(?:1|=\\||)(?:=|)([^\"&?\\/ \\}]{11}).*",
+            Pattern.DOTALL);
+
+    // Taken from https://github.com/eatcha-wikimedia/YouTubeReviewBot/blob/master/main.py
+    private static final Pattern YOUTUBE_URL = Pattern.compile(
+            ".*https?\\:\\/\\/(?:www|m|)(?:|\\.)youtube\\.com/watch\\W(?:feature\\=player_embedded&)?v\\=([^\"&?\\/ \\}]{11}).*",
+            Pattern.DOTALL);
+
+    @Autowired
+    private MediaService self;
+
     @Autowired
     private CommonsService commonsService;
+
+    @Autowired
+    private YouTubeVideoRepository youtubeRepository;
 
     @Value("${perceptual.threshold:0.07}")
     private double perceptualThreshold;
@@ -289,5 +324,73 @@ public class MediaService {
             }
         }
         return result;
+    }
+
+    private static String findYouTubeId(String text) {
+        if (StringUtils.isNotBlank(text)) {
+            Matcher m = FROM_YOUTUBE.matcher(text);
+            if (m.matches()) {
+                return m.group(1);
+            } else {
+                m = YOUTUBE_URL.matcher(text);
+                if (m.matches()) {
+                    return m.group(1);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Scheduled(fixedRateString = "${youtube.sync.update.rate}", initialDelayString = "${youtube.sync.initial.delay}")
+    public void syncYouTubeVideos() {
+        if (CollectionUtils.isNotEmpty(self.syncYouTubeVideos("Spacemedia files (review needed)"))) {
+            self.syncYouTubeVideos("Media from YouTube");
+        }
+    }
+
+    @Transactional
+    public List<YouTubeVideo> syncYouTubeVideos(String category) {
+        List<YouTubeVideo> missingVideos = youtubeRepository.findMissingInCommons();
+        if (CollectionUtils.isNotEmpty(missingVideos)) {
+            LOGGER.info("Starting YouTube videos synchronization from {}...", category);
+            LocalDateTime start = LocalDateTime.now();
+            Pageable pageRequest = PageRequest.of(0, 500);
+            Page<CommonsCategoryLinkId> page = null;
+            do {
+                page = commonsService.getFilesInCategory(category, pageRequest);
+                for (CommonsCategoryLinkId link : page) {
+                    try {
+                        CommonsPage from = link.getFrom();
+                        String title = from.getTitle();
+                        if (title.endsWith(".ogv") || title.endsWith(".webm")) {
+                            String id = findYouTubeId(commonsService.getPageContent(from));
+                            if (StringUtils.isNotBlank(id)) {
+                                Optional<YouTubeVideo> opt = missingVideos.stream().filter(v -> v.getId().equals(id)).findFirst();
+                                if (opt.isPresent()) {
+                                    missingVideos.remove(self.updateYouTubeCommonsFileName(opt.get(), title));
+                                    if (missingVideos.isEmpty()) {
+                                        break;
+                                    }
+                                }
+                            } else {
+                                LOGGER.warn("Cannot find YouTube video identifier for: {}", title);
+                            }
+                        }
+                    } catch (IOException e) {
+                        LOGGER.error("Failed to get page content of " + link, e);
+                    }
+                }
+                pageRequest = page.nextPageable();
+            } while (page.hasNext() && !missingVideos.isEmpty());
+            LOGGER.info("YouTube videos synchronization from {} completed in {}", category,
+                    Duration.between(LocalDateTime.now(), start));
+        }
+        return missingVideos;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public YouTubeVideo updateYouTubeCommonsFileName(YouTubeVideo video, String filename) {
+        video.setCommonsFileNames(new HashSet<>(Set.of(filename)));
+        return youtubeRepository.save(video);
     }
 }

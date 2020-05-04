@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 
@@ -43,7 +44,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "page")
 @SecondaryTable(name = "redirect", pkJoinColumns = @PrimaryKeyJoinColumn(name = "rd_from"))
-public class CommonsPage {
+public class CommonsPage implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue
@@ -88,15 +91,15 @@ public class CommonsPage {
     private String lang;
 
     @JoinColumn(name = "pp_page")
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     private Set<CommonsPageProp> props;
 
     @JoinColumn(name = "cl_from")
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     private Set<CommonsCategoryLink> categoryLinks;
 
     @JoinColumn(name = "rd_from", table = "redirect", insertable = false, updatable = false)
-    @OneToOne(fetch = FetchType.EAGER, optional = true)
+    @OneToOne(fetch = FetchType.LAZY, optional = true)
     private CommonsRedirect redirect;
 
     public int getId() {

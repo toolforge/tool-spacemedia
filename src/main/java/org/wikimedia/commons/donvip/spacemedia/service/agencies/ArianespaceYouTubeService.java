@@ -54,6 +54,11 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
             video.setIgnoredReason("Video longer than 6 minutes");
             result = true;
         }
+        if ("yMy9IfNqJ2k".equals(video.getId())) {
+            video.setIgnored(Boolean.TRUE);
+            video.setIgnoredReason("Video duplicated");
+            result = true;
+        }
         for (String toRemove : TO_REMOVE) {
             if (video.getDescription().contains(toRemove)) {
                 video.setDescription(video.getDescription().replace(toRemove, "").trim());

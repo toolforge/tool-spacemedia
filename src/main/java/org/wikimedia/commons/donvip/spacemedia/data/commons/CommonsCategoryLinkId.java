@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
@@ -26,12 +27,21 @@ public class CommonsCategoryLinkId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cl_from", nullable = false)
     private CommonsPage from;
 
     @Column(name = "cl_to", nullable = false, length = 255, columnDefinition = "VARBINARY")
     private String to;
+
+    public CommonsCategoryLinkId() {
+        // Empty constructor required by JPA
+    }
+
+    public CommonsCategoryLinkId(CommonsPage from, String to) {
+        this.from = from;
+        this.to = to;
+    }
 
     public CommonsPage getFrom() {
         return from;

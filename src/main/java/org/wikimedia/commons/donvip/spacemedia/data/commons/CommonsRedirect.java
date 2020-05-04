@@ -1,13 +1,14 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * <a href="https://www.mediawiki.org/wiki/Manual:Redirect_table">Mediawiki
- * Redirect table</a>
+ * <a href="https://www.mediawiki.org/wiki/Manual:Redirect_table">Mediawiki Redirect table</a>
  * 
  * <pre>
  * +--------------+------------------+------+-----+---------+-------+
@@ -23,7 +24,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "redirect")
-public class CommonsRedirect {
+public class CommonsRedirect implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @Column(name = "rd_from", nullable = false, length = 10)

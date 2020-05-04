@@ -5,6 +5,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -33,7 +34,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryRepository;
@@ -47,6 +52,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Limit;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQueryResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsPage;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Tokens;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadApiResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadError;
@@ -202,16 +209,16 @@ public class CommonsService {
     }
 
     private <T> T httpGet(String url, Class<T> responseClass) throws IOException {
-        return httpCall(Verb.GET, url, responseClass, Collections.emptyMap(), Collections.emptyMap());
+        return httpCall(Verb.GET, url, responseClass, Collections.emptyMap(), Collections.emptyMap(), true);
     }
 
     private <T> T httpPost(String url, Class<T> responseClass, Map<String, String> params) throws IOException {
         return httpCall(Verb.POST, url, responseClass,
-                Map.of("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"), params);
+                Map.of("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"), params, true);
     }
 
     private <T> T httpCall(Verb verb, String url, Class<T> responseClass, Map<String, String> headers,
-            Map<String, String> params) throws IOException {
+            Map<String, String> params, boolean retryOnTimeout) throws IOException {
         OAuthRequest request = new OAuthRequest(verb, url);
         request.setCharset(StandardCharsets.UTF_8.name());
         params.forEach(request::addParameter);
@@ -220,9 +227,21 @@ public class CommonsService {
         oAuthService.signRequest(oAuthAccessToken, request);
         try {
             return jackson.readValue(oAuthService.execute(request).getBody(), responseClass);
+        } catch (SocketTimeoutException e) {
+            if (retryOnTimeout) {
+                return httpCall(verb, url, responseClass, headers, params, false);
+            } else {
+                throw e;
+            }
         } catch (InterruptedException | ExecutionException e) {
             throw new IOException(e);
         }
+    }
+
+    public String queryRevisionContent(int pageId) throws IOException {
+        RevisionsPage rp = apiHttpGet("?action=query&prop=revisions&rvprop=content&rvslots=main&rvlimit=1&pageids=" + pageId,
+                RevisionsQueryResponse.class).getQuery().getPages().get(pageId);
+        return rp != null ? rp.getRevisions().get(0).getSlots().get("main").getContent() : null;
     }
 
     public String getWikiHtmlPreview(String wikiCode, String pageTitle) throws IOException {
@@ -367,11 +386,12 @@ public class CommonsService {
                 .orElseThrow(() -> new CategoryPageNotFoundException(category));
     }
 
+    @Transactional
     @Cacheable("subCategories")
     public Set<String> getSubCategories(String category) {
         return categoryLinkRepository
-                .findByTypeAndIdTo(CommonsCategoryLinkType.subcat, sanitizeCategory(category))
-                .stream().map(c -> c.getId().getFrom().getTitle()).collect(Collectors.toSet());
+                .findIdByTypeAndIdTo(CommonsCategoryLinkType.subcat, sanitizeCategory(category)).stream()
+                .map(c -> c.getFrom().getTitle()).collect(Collectors.toSet());
     }
 
     @Cacheable("subCategoriesByDepth")
@@ -387,6 +407,24 @@ public class CommonsService {
         LOGGER.debug("Fetching '{}' subcategories with depth {} completed in {}", category, depth,
                 Duration.between(now(), start));
         return result;
+    }
+
+    @Transactional
+    @Cacheable("filesInCategory")
+    public Set<CommonsCategoryLinkId> getFilesInCategory(String category) {
+        return categoryLinkRepository
+                .findIdByTypeAndIdTo(CommonsCategoryLinkType.file, sanitizeCategory(category));
+    }
+
+    @Transactional
+    @Cacheable("filesPageInCategory")
+    public Page<CommonsCategoryLinkId> getFilesInCategory(String category, Pageable page) {
+        return categoryLinkRepository
+                .findIdByTypeAndIdTo(CommonsCategoryLinkType.file, sanitizeCategory(category), page);
+    }
+
+    public String getPageContent(CommonsPage page) throws IOException {
+        return queryRevisionContent(page.getId());
     }
 
     public Set<String> cleanupCategories(Set<String> categories) {
