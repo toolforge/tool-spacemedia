@@ -199,64 +199,11 @@ public class EsaService
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
         } else {
-            media = new EsaMedia();
-            media.setUrl(url);
-        }
-        if (!mediaInRepo.isPresent() || media.getThumbnailUrl() == null) { // FIXME migration code to remove later
-            save = true;
-            boolean ok = false;
-            for (int i = 0; i < maxTries && !ok; i++) {
-                try {
-                    Document html = Jsoup.connect(url.toExternalForm()).get();
-                    List<URL> files = new ArrayList<>();
-                    Optional<URL> lowRes = Optional.empty();
-                    for (Element element : html.getElementsByClass("dropdown__item")) {
-                        String text = element.text().toUpperCase(Locale.ENGLISH);
-                        if (text.startsWith("HI-RES") || text.startsWith("SOURCE")) {
-                            getImageUrl(element.attr("href"), url).ifPresent(files::add);
-                        } else {
-                            lowRes = getImageUrl(element.attr("href"), url);
-                        }
-                    }
-                    if (lowRes.isPresent()) {
-                        if (files.isEmpty()) {
-                            // No hi-res for some missions (Gaia, Visual Monitoring Camera, OSIRIS...)
-                            files.add(lowRes.get());
-                        }
-                        if (media.getThumbnailUrl() == null) {
-                            media.setThumbnailUrl(lowRes.get());
-                            save = true;
-                        }
-                    }
-                    int size = files.size();
-                    if (size == 0) {
-                        problem(media.getUrl(), "Image without any file");
-                        save = false;
-                    } else if (size == 1) {
-                        media.getMetadata().setAssetUrl(files.get(0));
-                    } else if (size == 2) {
-                        // When a file is a tif or png, the other is always a jpg (320+6 occurences), never something else
-                        for (URL fileUrl : files) {
-                            if (fileUrl.toExternalForm().endsWith(".tif")
-                                    || fileUrl.toExternalForm().endsWith(".png")) {
-                                media.getFullResMetadata().setAssetUrl(fileUrl);
-                            } else {
-                                media.getMetadata().setAssetUrl(fileUrl);
-                            }
-                        }
-                    } else {
-                        throw new IllegalStateException("Media with more than two files: " + media);
-                    }
-                    processHeader(media, html.getElementsByClass("modal__header").get(0));
-                    processShare(media, html.getElementsByClass("modal__share").get(0));
-                    processExtra(media, html.getElementsByClass("modal__extra").get(0));
-                    ok = true;
-                } catch (SocketTimeoutException e) {
-                    LOGGER.debug(url.toExternalForm(), e);
-                } catch (IOException | IllegalStateException e) {
-                    LOGGER.error(url.toExternalForm(), e);
-                }
+            media = fetchMedia(url);
+            if (media.getMetadata().getAssetUrl() == null) {
+                return Optional.empty();
             }
+            save = true;
         }
         if (!isCopyrightOk(media)) {
             problem(media.getUrl(), "Invalid copyright: " + media.getCopyright());
@@ -277,6 +224,63 @@ public class EsaService
             repository.save(media);
         }
         return Optional.of(media);
+    }
+
+    private EsaMedia fetchMedia(URL url) {
+        EsaMedia media = new EsaMedia();
+        media.setUrl(url);
+        boolean ok = false;
+        for (int i = 0; i < maxTries && !ok; i++) {
+            try {
+                Document html = Jsoup.connect(url.toExternalForm()).get();
+                List<URL> files = new ArrayList<>();
+                Optional<URL> lowRes = Optional.empty();
+                for (Element element : html.getElementsByClass("dropdown__item")) {
+                    String text = element.text().toUpperCase(Locale.ENGLISH);
+                    if (text.startsWith("HI-RES") || text.startsWith("SOURCE")) {
+                        getImageUrl(element.attr("href"), url).ifPresent(files::add);
+                    } else {
+                        lowRes = getImageUrl(element.attr("href"), url);
+                    }
+                }
+                if (lowRes.isPresent()) {
+                    if (files.isEmpty()) {
+                        // No hi-res for some missions (Gaia, Visual Monitoring Camera, OSIRIS...)
+                        files.add(lowRes.get());
+                    }
+                    if (media.getThumbnailUrl() == null) {
+                        media.setThumbnailUrl(lowRes.get());
+                    }
+                }
+                int size = files.size();
+                if (size == 0) {
+                    problem(media.getUrl(), "Image without any file");
+                } else if (size == 1) {
+                    media.getMetadata().setAssetUrl(files.get(0));
+                } else if (size == 2) {
+                    // When a file is a tif or png, the other is always a jpg (320+6 occurences),
+                    // never something else
+                    for (URL fileUrl : files) {
+                        if (fileUrl.toExternalForm().endsWith(".tif") || fileUrl.toExternalForm().endsWith(".png")) {
+                            media.getFullResMetadata().setAssetUrl(fileUrl);
+                        } else {
+                            media.getMetadata().setAssetUrl(fileUrl);
+                        }
+                    }
+                } else {
+                    throw new IllegalStateException("Media with more than two files: " + media);
+                }
+                processHeader(media, html.getElementsByClass("modal__header").get(0));
+                processShare(media, html.getElementsByClass("modal__share").get(0));
+                processExtra(media, html.getElementsByClass("modal__extra").get(0));
+                ok = true;
+            } catch (SocketTimeoutException e) {
+                LOGGER.debug(url.toExternalForm(), e);
+            } catch (IOException | IllegalStateException e) {
+                LOGGER.error(url.toExternalForm(), e);
+            }
+        }
+        return media;
     }
 
     private static final Set<String> set(String label) {

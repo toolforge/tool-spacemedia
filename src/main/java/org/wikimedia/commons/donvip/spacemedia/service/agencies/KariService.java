@@ -12,7 +12,6 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
@@ -104,8 +103,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
             }
             if (media == null || media.getThumbnailUrl() == null) {
                 try {
-                    Document html = Jsoup.connect(viewUrl).timeout(60_000).get();
-                    Element div = html.getElementsByClass("board_view").get(0);
+                    Element div = Jsoup.connect(viewUrl).timeout(60_000).get().getElementsByClass("board_view").get(0);
                     String title = div.getElementsByTag("h4").get(0).text();
                     if (!title.isEmpty()) {
                         consecutiveFailures = 0;

@@ -144,56 +144,59 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     protected void updateDvidsMedia() {
         LocalDateTime start = startUpdateMedia();
-        RestTemplate rest = new RestTemplate();
         int count = 0;
         for (String unit : units) {
             for (DvidsMediaType type : new DvidsMediaType[] {
                     DvidsMediaType.video, DvidsMediaType.image }) {
-                LocalDateTime startBis = LocalDateTime.now();
-                int countBis = 0;
-                LOGGER.info("Fetching DVIDS {}s from unit '{}'...", type, unit);
-                try {
-                    boolean loop = true;
-                    int page = 1;
-                    while (loop) {
-                        UpdateResult ur = doUpdateDvidsMedia(rest,
-                                searchDvidsMediaIds(rest, false, type, unit, 0, page++), unit);
-                        countBis += ur.count;
-                        count += ur.count;
-                        loop = ur.loop;
-                    }
-                    LOGGER.info("{} {}s completed: {} {}s in {}", unit, type, countBis, type,
-                            Duration.between(LocalDateTime.now(), startBis));
-                } catch (TooManyResultsException ex) {
-                    LOGGER.trace("TooManyResults", ex);
-                    int year = LocalDateTime.now().getYear();
-                    while (year >= minYear) {
-                        try {
-                            boolean loop = true;
-                            int page = 1;
-                            startBis = LocalDateTime.now();
-                            countBis = 0;
-                            LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {}...", type, unit, year);
-                            while (loop) {
-                                UpdateResult ur = doUpdateDvidsMedia(rest,
-                                        searchDvidsMediaIds(rest, true, type, unit, year, page++), unit);
-                                countBis += ur.count;
-                                count += ur.count;
-                                loop = ur.loop;
-                            }
-                            LOGGER.info("{} {}s for year {} completed: {} {}s in {}", unit, type, year,
-                                    countBis, type, Duration.between(LocalDateTime.now(), startBis));
-                            year--;
-                        } catch (ApiException | TooManyResultsException exx) {
-                            LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
-                        }
-                    }
-                } catch (RuntimeException | ApiException e) {
-                    LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, e);
-                }
+                count += updateDvidsMedia(unit, type);
             }
         }
         endUpdateMedia(count, start);
+    }
+
+    private int updateDvidsMedia(String unit, DvidsMediaType type) {
+        LocalDateTime start = LocalDateTime.now();
+        RestTemplate rest = new RestTemplate();
+        int count = 0;
+        LOGGER.info("Fetching DVIDS {}s from unit '{}'...", type, unit);
+        try {
+            boolean loop = true;
+            int page = 1;
+            while (loop) {
+                UpdateResult ur = doUpdateDvidsMedia(rest,
+                        searchDvidsMediaIds(rest, false, type, unit, 0, page++), unit);
+                count += ur.count;
+                loop = ur.loop;
+            }
+            LOGGER.info("{} {}s completed: {} {}s in {}", unit, type, count, type,
+                    Duration.between(LocalDateTime.now(), start));
+        } catch (TooManyResultsException ex) {
+            LOGGER.trace("TooManyResults", ex);
+            int year = LocalDateTime.now().getYear();
+            while (year >= minYear) {
+                try {
+                    boolean loop = true;
+                    int page = 1;
+                    start = LocalDateTime.now();
+                    count = 0;
+                    LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {}...", type, unit, year);
+                    while (loop) {
+                        UpdateResult ur = doUpdateDvidsMedia(rest,
+                                searchDvidsMediaIds(rest, true, type, unit, year, page++), unit);
+                        count += ur.count;
+                        loop = ur.loop;
+                    }
+                    LOGGER.info("{} {}s for year {} completed: {} {}s in {}", unit, type, year,
+                            count, type, Duration.between(LocalDateTime.now(), start));
+                    year--;
+                } catch (ApiException | TooManyResultsException exx) {
+                    LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
+                }
+            }
+        } catch (RuntimeException | ApiException e) {
+            LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, e);
+        }
+        return count;
     }
 
     private UpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {

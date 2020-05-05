@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -134,7 +133,7 @@ public class HubbleNasaService extends
 							} catch (HttpStatusException e) {
 								LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
 								problem(e.getUrl(), e);
-							} catch (IOException | URISyntaxException | RuntimeException e) {
+                            } catch (IOException | RuntimeException e) {
 								LOGGER.error(
 										"Error while fetching image " + imageId + " via Hubble news " + news.getId(),
 										e);
@@ -158,7 +157,7 @@ public class HubbleNasaService extends
                     } catch (HttpStatusException e) {
                         LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
                         problem(e.getUrl(), e);
-					} catch (IOException | URISyntaxException | RuntimeException e) {
+                    } catch (IOException | RuntimeException e) {
 						LOGGER.error("Error while fetching image " + image.getId() + " via Hubble images", e);
 					}
 				}
@@ -191,7 +190,7 @@ public class HubbleNasaService extends
 	}
 
 	private int doUpdateMedia(int id, HubbleNasaImageResponse image, HubbleNasaNewsReleaseResponse news)
-			throws IOException, URISyntaxException {
+            throws IOException {
 		if (image.getImageFiles() == null) {
 			problem(getImageDetailsLink(id), "No image files");
 			return 0;
@@ -246,52 +245,7 @@ public class HubbleNasaService extends
 		if (CollectionUtils.isEmpty(media.getKeywords())) {
 			URL sourceUrl = getImageUrl(media, true);
 			if (sourceUrl != null) {
-				Document html = null;
-				try {
-					html = fetchHtml(sourceUrl);
-				} catch (HttpStatusException e) {
-					if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND && media.getNewsId() != null) {
-						sourceUrl = getImageUrl(media, false);
-						if (sourceUrl != null) {
-							html = fetchHtml(sourceUrl);
-						}
-					} else {
-						throw e;
-					}
-				}
-				if (html == null) {
-					throw new IllegalStateException("Unable to fetch HTML page for image " + media.getId());
-				}
-				media.setKeywords(
-					html.getElementsByClass("keyword-tag").stream().map(Element::text).collect(Collectors.toSet()));
-				if (media.getKeywords().isEmpty()) {
-					media.getKeywords().add(NO_KEYWORD); // To avoid fetching HTML again on next update
-				}
-				Elements tds = html.getElementsByTag("td");
-				if (StringUtils.isEmpty(media.getObjectName())) {
-					findTd(tds, "Object Name").ifPresent(media::setObjectName);
-				}
-				if (media.getExposureDate() == null) {
-					findTd(tds, "Exposure Dates").ifPresent(dates -> {
-						try {
-							media.setExposureDate(LocalDate.parse(dates, exposureDateformatter));
-						} catch (DateTimeParseException e) {
-							LOGGER.debug(dates, e);
-						}
-					});
-				}
-				if (media.getDate() == null) {
-					List<Element> elems = html.getElementsByTag("p").stream()
-							.filter(p -> p.text().startsWith("Release Date:")).collect(Collectors.toList());
-					if (elems.size() == 1) {
-						String date = elems.get(0).text().replace("Release Date:", "").trim();
-						try {
-							media.setDate(ZonedDateTime.parse(date, releaseDateformatter));
-						} catch (DateTimeParseException e) {
-							LOGGER.debug(date, e);
-						}
-					}
-				}
+				fetchMetadata(media, sourceUrl);
 				save = true;
 			}
 		}
@@ -303,6 +257,55 @@ public class HubbleNasaService extends
 		}
 		return save ? 1 : 0;
 	}
+
+    private void fetchMetadata(HubbleNasaMedia media, URL sourceUrl) throws IOException {
+        Document html = null;
+        try {
+        	html = fetchHtml(sourceUrl);
+        } catch (HttpStatusException e) {
+        	if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND && media.getNewsId() != null) {
+        		sourceUrl = getImageUrl(media, false);
+        		if (sourceUrl != null) {
+        			html = fetchHtml(sourceUrl);
+        		}
+        	} else {
+        		throw e;
+        	}
+        }
+        if (html == null) {
+        	throw new IllegalStateException("Unable to fetch HTML page for image " + media.getId());
+        }
+        media.setKeywords(
+        	html.getElementsByClass("keyword-tag").stream().map(Element::text).collect(Collectors.toSet()));
+        if (media.getKeywords().isEmpty()) {
+        	media.getKeywords().add(NO_KEYWORD); // To avoid fetching HTML again on next update
+        }
+        Elements tds = html.getElementsByTag("td");
+        if (StringUtils.isEmpty(media.getObjectName())) {
+        	findTd(tds, "Object Name").ifPresent(media::setObjectName);
+        }
+        if (media.getExposureDate() == null) {
+        	findTd(tds, "Exposure Dates").ifPresent(dates -> {
+        		try {
+        			media.setExposureDate(LocalDate.parse(dates, exposureDateformatter));
+        		} catch (DateTimeParseException e) {
+        			LOGGER.debug(dates, e);
+        		}
+        	});
+        }
+        if (media.getDate() == null) {
+        	List<Element> elems = html.getElementsByTag("p").stream()
+        			.filter(p -> p.text().startsWith("Release Date:")).collect(Collectors.toList());
+        	if (elems.size() == 1) {
+        		String date = elems.get(0).text().replace("Release Date:", "").trim();
+        		try {
+        			media.setDate(ZonedDateTime.parse(date, releaseDateformatter));
+        		} catch (DateTimeParseException e) {
+        			LOGGER.debug(date, e);
+        		}
+        	}
+        }
+    }
 
 	private static Document fetchHtml(URL sourceUrl) throws IOException {
 		String sourceLink = sourceUrl.toExternalForm();

@@ -1,9 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -103,8 +101,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     protected abstract Matcher getLocalizedUrlMatcher(String imgUrlLink);
 
     private Optional<T> updateMediaForUrl(URL url, EsoFrontPageItem item)
-			throws IOException, URISyntaxException, InstantiationException, IllegalAccessException,
-			InvocationTargetException, NoSuchMethodException {
+            throws IOException, ReflectiveOperationException {
         String imgUrlLink = url.getProtocol() + "://" + url.getHost() + item.getUrl();
         Matcher m = getLocalizedUrlMatcher(imgUrlLink);
         if (m.matches()) {
@@ -121,63 +118,11 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
         } else {
-			media = mediaClass.getConstructor().newInstance();
-            media.setId(id);
-			save = true;
-        }
-        if (!mediaInRepo.isPresent() || media.getThumbnailUrl() == null) { // FIXME migration code to remove later
-            save = true;
-            LOGGER.info(imgUrlLink);
-            Document html = Jsoup.connect(imgUrlLink).timeout(60_000).get();
-            Element div = html.getElementsByClass("col-md-9").last();
-            // Find title
-            Elements h1s = div.getElementsByTag("h1");
-            if (h1s.isEmpty() || h1s.get(0).text().isEmpty()) {
-                scrapingError(imgUrlLink, h1s.toString());
-            }
-            media.setTitle(h1s.get(0).html());
-            // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
-            media.setDescription(findDescription(div).toString());
-            // Find credit
-            media.setCredit(findCredit(div));
-            if (media.getCredit().startsWith("<") && !media.getCredit().startsWith("<a")) {
-                scrapingError(imgUrlLink, media.getCredit());
-            }
-            // Check copyright is standard (CC-BY-4.0)
-            Elements copyrights = div.getElementsByClass("copyright");
-            if (!copyrights.isEmpty()
-                    && !getCopyrightLink().equals(copyrights.get(0).getElementsByTag("a").get(0).attr("href"))) {
-                LOGGER.error("Invalid copyright for {}", imgUrlLink);
+            media = fetchMedia(url, id, imgUrlLink);
+            if (media == null) {
                 return Optional.empty();
             }
-
-            processObjectInfos(url, imgUrlLink, id, media, html);
-            Metadata metadata = media.getMetadata();
-            Metadata frMetadata = media.getFullResMetadata();
-
-            for (Element link : html.getElementsByClass("archive_dl_text")) {
-                Elements innerLinks = link.getElementsByTag("a");
-                if (innerLinks.isEmpty()) {
-                    // Invalid page, see https://www.spacetelescope.org/images/heic1103a/
-                    innerLinks = link.parent().nextElementSiblings();
-                }
-                String assetUrlLink = innerLinks.get(0).attr("href");
-                if (assetUrlLink.endsWith(".psb")) {
-                    continue; // format not supported by Wikimedia Commons
-                } else if (assetUrlLink.contains("/original/")) {
-                    frMetadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
-                } else if (assetUrlLink.contains("/large/")) {
-                    metadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
-                } else if (assetUrlLink.contains("/screen/")) {
-                    media.setThumbnailUrl(buildAssetUrl(assetUrlLink, url));
-                } else if (frMetadata.getAssetUrl() == null && assetUrlLink.contains(".tif")) {
-                    frMetadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
-                } else if (metadata.getAssetUrl() == null && assetUrlLink.contains(".jp")) {
-                    metadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
-                } else if (metadata.getAssetUrl() != null && frMetadata.getAssetUrl() != null && media.getThumbnailUrl() != null) {
-                    break;
-                }
-            }
+            save = true;
         }
         if (media.getCategories() != null) {
             // Try to detect pictures of identifiable people, as per ESO conditions
@@ -198,6 +143,64 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             media = repository.save(media);
         }
         return Optional.of(media);
+    }
+
+    private T fetchMedia(URL url, String id, String imgUrlLink) throws ReflectiveOperationException, IOException {
+        T media = mediaClass.getConstructor().newInstance();
+        media.setId(id);
+        LOGGER.info(imgUrlLink);
+        Document html = Jsoup.connect(imgUrlLink).timeout(60_000).get();
+        Element div = html.getElementsByClass("col-md-9").last();
+        // Find title
+        Elements h1s = div.getElementsByTag("h1");
+        if (h1s.isEmpty() || h1s.get(0).text().isEmpty()) {
+            scrapingError(imgUrlLink, h1s.toString());
+        }
+        media.setTitle(h1s.get(0).html());
+        // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
+        media.setDescription(findDescription(div).toString());
+        // Find credit
+        media.setCredit(findCredit(div));
+        if (media.getCredit().startsWith("<") && !media.getCredit().startsWith("<a")) {
+            scrapingError(imgUrlLink, media.getCredit());
+        }
+        // Check copyright is standard (CC-BY-4.0)
+        Elements copyrights = div.getElementsByClass("copyright");
+        if (!copyrights.isEmpty()
+                && !getCopyrightLink().equals(copyrights.get(0).getElementsByTag("a").get(0).attr("href"))) {
+            LOGGER.error("Invalid copyright for {}", imgUrlLink);
+            return null;
+        }
+
+        processObjectInfos(url, imgUrlLink, id, media, html);
+        Metadata metadata = media.getMetadata();
+        Metadata frMetadata = media.getFullResMetadata();
+
+        for (Element link : html.getElementsByClass("archive_dl_text")) {
+            Elements innerLinks = link.getElementsByTag("a");
+            if (innerLinks.isEmpty()) {
+                // Invalid page, see https://www.spacetelescope.org/images/heic1103a/
+                innerLinks = link.parent().nextElementSiblings();
+            }
+            String assetUrlLink = innerLinks.get(0).attr("href");
+            if (assetUrlLink.endsWith(".psb")) {
+                continue; // format not supported by Wikimedia Commons
+            } else if (assetUrlLink.contains("/original/")) {
+                frMetadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+            } else if (assetUrlLink.contains("/large/")) {
+                metadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+            } else if (assetUrlLink.contains("/screen/")) {
+                media.setThumbnailUrl(buildAssetUrl(assetUrlLink, url));
+            } else if (frMetadata.getAssetUrl() == null && assetUrlLink.contains(".tif")) {
+                frMetadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+            } else if (metadata.getAssetUrl() == null && assetUrlLink.contains(".jp")) {
+                metadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+            } else if (metadata.getAssetUrl() != null && frMetadata.getAssetUrl() != null
+                    && media.getThumbnailUrl() != null) {
+                break;
+            }
+        }
+        return media;
     }
 
     protected Collection<String> getForbiddenCategories() {
@@ -431,8 +434,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             String urlLink = searchLink.replace("<idx>", Integer.toString(idx++));
             URL url = new URL(urlLink);
             try {
-                Document document = Jsoup.connect(urlLink).timeout(60_000).get();
-                for (Iterator<EsoFrontPageItem> it = findFrontPageItems(document); it.hasNext();) {
+                for (Iterator<EsoFrontPageItem> it = findFrontPageItems(
+                        Jsoup.connect(urlLink).timeout(60_000).get()); it.hasNext();) {
                     if (updateMediaForUrl(url, it.next()).isPresent()) {
                         count++;
                     }
@@ -440,7 +443,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             } catch (HttpStatusException e) {
                 // End of search when we receive an HTTP 404
                 loop = false;
-			} catch (IOException | URISyntaxException | ReflectiveOperationException | RuntimeException e) {
+            } catch (IOException | ReflectiveOperationException | RuntimeException e) {
                 LOGGER.error("Error when fetching " + url, e);
             }
         }
