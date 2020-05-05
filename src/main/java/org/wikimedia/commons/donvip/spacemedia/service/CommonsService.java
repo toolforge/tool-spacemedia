@@ -354,6 +354,7 @@ public class CommonsService {
      * @throws CategoryNotFoundException     if the category is not found
      * @throws CategoryPageNotFoundException if no page is found for the category
      */
+    @Transactional
     @Cacheable("hiddenCategories")
     public boolean isHiddenCategory(String category) {
         return self.getCategoryPage(category).getProps().stream().anyMatch(pp -> "hiddencat".equals(pp.getPropname()));
@@ -365,6 +366,7 @@ public class CommonsService {
      * @param category category to check
      * @return {@code true} if the category exists and is not a redirect
      */
+    @Transactional
     @Cacheable("upToDateCategories")
     public boolean isUpToDateCategory(String category) {
         try {
@@ -378,6 +380,7 @@ public class CommonsService {
         return category.replace(' ', '_').split("#")[0];
     }
 
+    @Transactional
     @Cacheable("categoryPages")
     public CommonsPage getCategoryPage(String category) {
         return pageRepository.findByCategoryTitle(categoryRepository
