@@ -262,7 +262,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         } else if (pageInfo.getTotalResults() == 0) {
             LOGGER.warn("No {} for {} in year {}", type, unit, year);
         } else if (page == 1) {
-            LOGGER.info("{} {}s to process for {}", pageInfo.getTotalResults(), type, unit);
+            LOGGER.debug("{} {}s to process for {}", pageInfo.getTotalResults(), type, unit);
         }
         return response;
     }
