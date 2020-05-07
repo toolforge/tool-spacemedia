@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -105,4 +107,8 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
     List<T> findByIgnoredTrue();
 
     Page<T> findByIgnoredTrue(Pageable page);
+
+    @Modifying
+    @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null")
+    int resetPerceptualHashes();
 }

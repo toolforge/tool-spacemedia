@@ -26,7 +26,7 @@ import com.github.kilianB.hashAlgorithms.PerceptiveHash;
 
 public final class HashHelper {
 
-    private static final int bitResolution = 2 ^ 30;
+    private static final int bitResolution = 256;
 
     private static final HashingAlgorithm algorithm = new PerceptiveHash(bitResolution);
 

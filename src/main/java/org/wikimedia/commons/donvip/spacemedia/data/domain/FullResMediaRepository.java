@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 
@@ -64,4 +65,9 @@ public interface FullResMediaRepository<T extends FullResMedia<ID, D>, ID, D ext
     @Override
     @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2 or size (m.fullResCommonsFileNames) >= 2")
     List<T> findDuplicateInCommons();
+
+    @Override
+    @Modifying
+    @Query("update #{#entityName} m set m.metadata.phash = null, m.fullResMetadata.phash = null where m.metadata.phash is not null or m.fullResMetadata.phash is not null")
+    int resetPerceptualHashes();
 }

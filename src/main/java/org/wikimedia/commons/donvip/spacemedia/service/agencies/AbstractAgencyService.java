@@ -556,4 +556,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     public int compareTo(AbstractAgencyService<T, ID, D, OT, OID, OD> o) {
         return getName().compareTo(o.getName());
     }
+
+    public final int resetPerceptualHashes() {
+        int result = repository.resetPerceptualHashes();
+        LOGGER.info("Reset {} perceptual hashes for agency {}", result, getName());
+        return result;
+    }
 }
