@@ -557,8 +557,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return getName().compareTo(o.getName());
     }
 
+    protected int doResetPerceptualHashes() {
+        return repository.resetPerceptualHashes();
+    }
+
     public final int resetPerceptualHashes() {
-        int result = repository.resetPerceptualHashes();
+        int result = doResetPerceptualHashes();
         LOGGER.info("Reset {} perceptual hashes for agency {}", result, getName());
         return result;
     }

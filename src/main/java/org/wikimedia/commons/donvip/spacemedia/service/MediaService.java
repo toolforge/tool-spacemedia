@@ -76,8 +76,11 @@ public class MediaService {
     @Autowired
     private YouTubeVideoRepository youtubeRepository;
 
-    @Value("${perceptual.threshold:0.07}")
+    @Value("${perceptual.threshold}")
     private double perceptualThreshold;
+
+    @Value("${update.fullres.images}")
+    private boolean updateFullResImages;
 
     public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo)
             throws IOException {
@@ -113,7 +116,7 @@ public class MediaService {
             result = true;
         }
         // Find exact duplicates by perceptual hash
-        BigInteger phash = media.getMetadata().getPhash();
+        String phash = media.getMetadata().getPhash();
         if (phash != null && handleExactDuplicates(media,
                 repo instanceof FullResMediaRepository<?, ?, ?>
                         ? ((FullResMediaRepository<?, ?, ?>) repo).findByMetadata_PhashOrFullResMetadata_Phash(phash)
@@ -121,10 +124,13 @@ public class MediaService {
             result = true;
         }
         // Find almost duplicates by perceptual hash
-        if (phash != null && handleDuplicates(media, repo.findByMetadata_PhashNotNull()
+        BigInteger perceptualHash = media.getMetadata().getPerceptualHash();
+        if (perceptualHash != null && handleDuplicates(media, repo
+                .findByMetadata_PhashNotNull()
                 .parallelStream()
                 .filter(m -> !m.getId().equals(media.getId()))
-                .map(m -> new DuplicateHolder(m.getId().toString(), HashHelper.similarityScore(phash, m.getMetadata().getPhash())))
+                .map(m -> new DuplicateHolder(m.getId().toString(), 
+                        HashHelper.similarityScore(perceptualHash, m.getMetadata().getPhash())))
                 .filter(h -> h.similarityScore < perceptualThreshold)
                 .map(DuplicateHolder::toDuplicate)
                 .collect(Collectors.toList()))) {
@@ -165,7 +171,8 @@ public class MediaService {
 
     public boolean updateReadableStateAndHashes(Media<?, ?> media, Path localPath) {
         boolean result = updateReadableStateAndHashes(media, media.getMetadata(), localPath);
-        if (media instanceof FullResMedia<?, ?>) {
+        // T230284 - Processing full-res images can lead to OOM errors
+        if (updateFullResImages && media instanceof FullResMedia<?, ?>) {
             FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
             if (updateReadableStateAndHashes(frMedia, frMedia.getFullResMetadata(), localPath)) {
                 result = true;
@@ -288,7 +295,7 @@ public class MediaService {
      */
     public static boolean updatePerceptualHash(Metadata metadata, BufferedImage image) {
         if (metadata.getPhash() == null && image != null && metadata.getAssetUrl() != null) {
-            metadata.setPhash(HashHelper.computePerceptualHash(image, metadata.getAssetUrl()));
+            metadata.setPerceptualHash(HashHelper.computePerceptualHash(image, metadata.getAssetUrl()));
             return true;
         }
         return false;

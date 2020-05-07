@@ -10,6 +10,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
@@ -137,4 +138,11 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Override
     @CacheEvictFlickrAll
     void deleteAll();
+
+    // UPDATE
+
+    @Modifying
+    @CacheEvictFlickrAll
+    @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null and m.pathAlias in ?1")
+    int resetPerceptualHashes(Set<String> flickrAccounts);
 }

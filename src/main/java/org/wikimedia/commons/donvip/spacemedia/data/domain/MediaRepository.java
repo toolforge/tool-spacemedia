@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
-import java.math.BigInteger;
 import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.List;
@@ -30,7 +29,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      * 
      * @return number of files matching the given perceptual hash
      */
-    long countByMetadata_Phash(BigInteger phash);
+    long countByMetadata_Phash(String phash);
 
     /**
      * Count files matching the given SHA-1.
@@ -98,7 +97,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
 
     List<T> findByMetadata_AssetUrl(URL imageUrl);
 
-    List<T> findByMetadata_Phash(BigInteger phash);
+    List<T> findByMetadata_Phash(String phash);
 
     List<MediaProjection<ID>> findByMetadata_PhashNotNull();
 

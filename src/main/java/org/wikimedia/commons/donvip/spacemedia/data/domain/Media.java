@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
@@ -13,6 +14,7 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
@@ -32,6 +34,7 @@ import org.hibernate.search.annotations.Store;
  * @param <D>  the media date type
  */
 @MappedSuperclass
+@EntityListeners(MediaListener.class)
 public abstract class Media<ID, D extends Temporal> implements MediaProjection<ID> {
 
     @Embedded
@@ -61,6 +64,9 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     @ElementCollection(fetch = FetchType.EAGER)
     protected Set<Duplicate> duplicates;
+
+    @Column(nullable = true)
+    protected LocalDateTime lastUpdate;
 
     @PostLoad
     protected void initData() {
@@ -186,6 +192,14 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
             result.add(sha1);
         }
         return result;
+    }
+
+    public LocalDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(LocalDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
     }
 
     /**

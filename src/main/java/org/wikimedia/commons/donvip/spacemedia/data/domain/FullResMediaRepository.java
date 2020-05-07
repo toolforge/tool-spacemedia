@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
-import java.math.BigInteger;
 import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.List;
@@ -16,19 +15,19 @@ import org.springframework.data.repository.NoRepositoryBean;
 public interface FullResMediaRepository<T extends FullResMedia<ID, D>, ID, D extends Temporal>
         extends MediaRepository<T, ID, D> {
 
-    long countByFullResMetadata_Phash(BigInteger phash);
+    long countByFullResMetadata_Phash(String phash);
 
     long countByFullResMetadata_Sha1(String sha1);
 
     List<T> findByFullResMetadata_AssetUrl(URL imageUrl);
 
-    Optional<T> findByFullResMetadata_Phash(BigInteger phash);
+    Optional<T> findByFullResMetadata_Phash(String phash);
 
-    default List<T> findByMetadata_PhashOrFullResMetadata_Phash(BigInteger phash) {
+    default List<T> findByMetadata_PhashOrFullResMetadata_Phash(String phash) {
         return findByMetadata_PhashOrFullResMetadata_Phash(phash, phash);
     }
 
-    List<T> findByMetadata_PhashOrFullResMetadata_Phash(BigInteger phash, BigInteger fullResPhash);
+    List<T> findByMetadata_PhashOrFullResMetadata_Phash(String phash, String fullResPhash);
 
     Optional<T> findByFullResMetadata_Sha1(String sha1);
 

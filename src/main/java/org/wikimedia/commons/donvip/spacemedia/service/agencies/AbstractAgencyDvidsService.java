@@ -397,4 +397,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 mediaRepository.countByIgnoredTrue(singleton),
                 mediaRepository.countMissingInCommons(singleton), null);
     }
+
+    @Override
+    protected final int doResetPerceptualHashes() {
+        return mediaRepository.resetPerceptualHashes(units);
+    }
 }

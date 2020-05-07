@@ -26,11 +26,13 @@ import com.github.kilianB.hashAlgorithms.PerceptiveHash;
 
 public final class HashHelper {
 
-    private static final int bitResolution = 256;
+    private static final int PHASH_RADIX = 36;
 
-    private static final HashingAlgorithm algorithm = new PerceptiveHash(bitResolution);
+    private static final int BIT_RESOLUTION = 256;
 
-    private static final int algorithmId = algorithm.algorithmId();
+    private static final HashingAlgorithm ALGORITHM = new PerceptiveHash(BIT_RESOLUTION);
+
+    private static final int ALGORITHM_ID = ALGORITHM.algorithmId();
 
     private HashHelper() {
         // Hide default constructor
@@ -69,7 +71,11 @@ public final class HashHelper {
     }
 
     public static BigInteger computePerceptualHash(BufferedImage image, URL url) {
-        return algorithm.hash(image).getHashValue();
+        return ALGORITHM.hash(image).getHashValue();
+    }
+
+    public static double similarityScore(BigInteger phash1, String phash2) {
+        return similarityScore(phash1, decode(phash2));
     }
 
     public static double similarityScore(BigInteger phash1, BigInteger phash2) {
@@ -77,6 +83,14 @@ public final class HashHelper {
     }
 
     private static Hash newHash(BigInteger phash) {
-        return new Hash(phash, bitResolution, algorithmId);
+        return new Hash(phash, BIT_RESOLUTION, ALGORITHM_ID);
+    }
+
+    public static BigInteger decode(String phash) {
+        return phash != null ? new BigInteger(phash, PHASH_RADIX) : null;
+    }
+
+    public static String encode(BigInteger phash) {
+        return phash != null ? phash.toString(PHASH_RADIX) : null;
     }
 }

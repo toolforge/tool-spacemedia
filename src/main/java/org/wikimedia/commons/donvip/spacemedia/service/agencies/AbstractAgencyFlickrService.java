@@ -338,4 +338,9 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                 .must(queryBuilder.simpleQueryString().onField("pathAlias").matching(String.join(" ", flickrAccounts)).createQuery())
                 .createQuery();
     }
+
+    @Override
+    protected final int doResetPerceptualHashes() {
+        return flickrRepository.resetPerceptualHashes(flickrAccounts);
+    }
 }

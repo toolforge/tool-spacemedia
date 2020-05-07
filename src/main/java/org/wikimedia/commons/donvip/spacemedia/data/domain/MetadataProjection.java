@@ -1,7 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
-import java.math.BigInteger;
-
 public interface MetadataProjection {
 
     /**
@@ -9,5 +7,5 @@ public interface MetadataProjection {
      * 
      * @return the perceptual hash value
      */
-    BigInteger getPhash();
+    String getPhash();
 }

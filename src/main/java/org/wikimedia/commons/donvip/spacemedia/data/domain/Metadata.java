@@ -6,6 +6,9 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Transient;
+
+import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 
 @Embeddable
 public class Metadata implements MetadataProjection {
@@ -19,8 +22,8 @@ public class Metadata implements MetadataProjection {
     /**
      * Perceptual hash.
      */
-    @Column(nullable = true)
-    private BigInteger phash;
+    @Column(nullable = true, columnDefinition = "VARCHAR", length = 52)
+    private String phash;
 
     /**
      * Determines if the image is readable:
@@ -45,12 +48,22 @@ public class Metadata implements MetadataProjection {
     }
 
     @Override
-    public BigInteger getPhash() {
+    public String getPhash() {
         return phash;
     }
 
-    public void setPhash(BigInteger phash) {
+    public void setPhash(String phash) {
         this.phash = phash;
+    }
+
+    @Transient
+    public BigInteger getPerceptualHash() {
+        return HashHelper.decode(getPhash());
+    }
+
+    @Transient
+    public void setPerceptualHash(BigInteger phash) {
+        setPhash(HashHelper.encode(phash));
     }
 
     public Boolean isReadableImage() {
