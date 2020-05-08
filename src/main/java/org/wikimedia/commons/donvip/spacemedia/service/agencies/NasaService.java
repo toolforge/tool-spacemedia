@@ -334,7 +334,6 @@ public class NasaService
         }
     }
 
-    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${nasa.initial.delay}")
     public int updateImages() {
         int count = 0;
         // Recent years have a lot of photos: search by center to avoid more than 10k results
@@ -350,17 +349,16 @@ public class NasaService
         return count;
     }
 
-    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${nasa.initial.delay}")
     public int updateAudios() {
         return doUpdateMedia(NasaMediaType.audio);
     }
 
-    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${nasa.initial.delay}")
     public int updateVideos() {
         return doUpdateMedia(NasaMediaType.video);
     }
 
     @Override
+    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${nasa.initial.delay}")
     public void updateMedia() {
         LocalDateTime start = startUpdateMedia();
         int count = 0;
