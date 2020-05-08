@@ -160,7 +160,8 @@ public class MediaService {
 
     private static boolean handleDuplicates(Media<?, ?> media, List<Duplicate> duplicates) {
         boolean result = false;
-        if (isNotEmpty(duplicates) && !media.getDuplicates().containsAll(duplicates)) {
+        if (isNotEmpty(duplicates)
+                && (isEmpty(media.getDuplicates()) || !media.getDuplicates().containsAll(duplicates))) {
             media.setIgnored(true);
             media.setIgnoredReason("Already present in main repository.");
             duplicates.forEach(media::addDuplicate);
