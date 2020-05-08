@@ -33,39 +33,39 @@ import com.github.dozermapper.core.Mapper;
 @Service
 public class FlickrMediaProcessorService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(FlickrMediaProcessorService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FlickrMediaProcessorService.class);
 
-	@Autowired
-	protected FlickrMediaRepository flickrRepository;
-	@Autowired
-	protected FlickrPhotoSetRepository flickrPhotoSetRepository;
-	@Autowired
-	protected FlickrService flickrService;
-	@Autowired
-	protected Mapper dozerMapper;
-	@Autowired
-	protected MediaService mediaService;
+    @Autowired
+    protected FlickrMediaRepository flickrRepository;
+    @Autowired
+    protected FlickrPhotoSetRepository flickrPhotoSetRepository;
+    @Autowired
+    protected FlickrService flickrService;
+    @Autowired
+    protected Mapper dozerMapper;
+    @Autowired
+    protected MediaService mediaService;
 
-	@Value("${flickr.video.download.url}")
-	private String flickrVideoDownloadUrl;
+    @Value("${flickr.video.download.url}")
+    private String flickrVideoDownloadUrl;
 
-	public URL getVideoUrl(FlickrMedia media) throws MalformedURLException {
-		return new URL(flickrVideoDownloadUrl.replace("<id>", media.getId().toString()));
-	}
+    public URL getVideoUrl(FlickrMedia media) throws MalformedURLException {
+        return new URL(flickrVideoDownloadUrl.replace("<id>", media.getId().toString()));
+    }
 
-	public boolean isBadVideoEntry(FlickrMedia media) throws MalformedURLException {
+    public boolean isBadVideoEntry(FlickrMedia media) throws MalformedURLException {
         return FlickrMediaType.video == media.getMedia()
                 && !getVideoUrl(media).equals(media.getMetadata().getAssetUrl());
-	}
+    }
 
     @Transactional
     public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
             MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo)
             throws IOException {
-		boolean save = false;
+        boolean save = false;
         boolean savePhotoSets = false;
-		Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
-		if (optMediaInRepo.isPresent()) {
+        Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
+        if (optMediaInRepo.isPresent()) {
             FlickrMedia mediaInRepo = optMediaInRepo.get();
             if (mediaInRepo.getLicense() != media.getLicense()) {
                 LOGGER.warn("Flickr license has changed for picture {} of {} from {} to {}", 
@@ -89,48 +89,48 @@ public class FlickrMediaProcessorService {
                 save = true;
             }
             media = mediaInRepo;
-		} else {
-			save = true;
-		}
-		if (isEmpty(media.getPhotosets())) {
-			try {
-				Set<FlickrPhotoSet> sets = flickrService.findPhotoSets(media.getId().toString()).stream()
-						.map(ps -> flickrPhotoSetRepository.findById(Long.valueOf(ps.getId()))
+        } else {
+            save = true;
+        }
+        if (isEmpty(media.getPhotosets())) {
+            try {
+                Set<FlickrPhotoSet> sets = flickrService.findPhotoSets(media.getId().toString()).stream()
+                        .map(ps -> flickrPhotoSetRepository.findById(Long.valueOf(ps.getId()))
                                 .orElseGet(() -> {
                                     FlickrPhotoSet set = dozerMapper.map(ps, FlickrPhotoSet.class);
                                     set.setPathAlias(flickrAccount);
                                     return flickrPhotoSetRepository.save(set);
                                 }))
-						.collect(Collectors.toSet());
-				if (isNotEmpty(sets)) {
-					sets.forEach(media::addPhotoSet);
+                        .collect(Collectors.toSet());
+                if (isNotEmpty(sets)) {
+                    sets.forEach(media::addPhotoSet);
                     savePhotoSets = true;
-					save = true;
-				}
-			} catch (FlickrException e) {
-				LOGGER.error("Failed to retrieve photosets of image " + media.getId(), e);
-			}
-		}
-		if (isBadVideoEntry(media)) {
+                    save = true;
+                }
+            } catch (FlickrException e) {
+                LOGGER.error("Failed to retrieve photosets of image " + media.getId(), e);
+            }
+        }
+        if (isBadVideoEntry(media)) {
             URL videoUrl = getVideoUrl(media);
             media.setOriginalUrl(videoUrl);
-			media.setCommonsFileNames(null);
+            media.setCommonsFileNames(null);
             media.getMetadata().setSha1(null);
             media.getMetadata().setAssetUrl(videoUrl);
-			save = true;
-		}
-		if (StringUtils.isEmpty(media.getPathAlias())) {
-			media.setPathAlias(flickrAccount);
-			save = true;
-		}
-		if (media.getPhotosets() != null) {
-			for (FlickrPhotoSet photoSet : media.getPhotosets()) {
-				if (StringUtils.isBlank(photoSet.getPathAlias())) {
-					photoSet.setPathAlias(flickrAccount);
+            save = true;
+        }
+        if (StringUtils.isEmpty(media.getPathAlias())) {
+            media.setPathAlias(flickrAccount);
+            save = true;
+        }
+        if (media.getPhotosets() != null) {
+            for (FlickrPhotoSet photoSet : media.getPhotosets()) {
+                if (StringUtils.isBlank(photoSet.getPathAlias())) {
+                    photoSet.setPathAlias(flickrAccount);
                     savePhotoSets = true;
-				}
-			}
-		}
+                }
+            }
+        }
         try {
             if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark
                     && !Boolean.TRUE.equals(media.isIgnored())
@@ -143,14 +143,14 @@ public class FlickrMediaProcessorService {
             LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());
         }
         if (mediaService.updateMedia(media, originalRepo)) {
-			save = true;
-		}
-		if (save) {
-			media = flickrRepository.save(media);
-		}
+            save = true;
+        }
+        if (save) {
+            media = flickrRepository.save(media);
+        }
         if (savePhotoSets) {
             media.getPhotosets().forEach(flickrPhotoSetRepository::save);
         }
-		return media;
-	}
+        return media;
+    }
 }

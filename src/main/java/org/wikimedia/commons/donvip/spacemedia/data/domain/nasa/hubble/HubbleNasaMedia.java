@@ -27,34 +27,34 @@ public class HubbleNasaMedia extends FullResMedia<Integer, ZonedDateTime> {
     @Id
     private Integer id;
 
-	@Column(length = 9)
-	private String newsId;
+    @Column(length = 9)
+    private String newsId;
 
-	@Column(name = "release_date", nullable = false)
-	private ZonedDateTime date;
+    @Column(name = "release_date", nullable = false)
+    private ZonedDateTime date;
 
-	@Column(name = "exposure_date", nullable = true)
-	private LocalDate exposureDate;
+    @Column(name = "exposure_date", nullable = true)
+    private LocalDate exposureDate;
 
-	@Column(length = 255)
-	private String objectName;
+    @Column(length = 255)
+    private String objectName;
 
-	/**
-	 * Image's credits and acknowledgments.
-	 */
-	@Lob
-	@Column(columnDefinition = "TEXT")
-	private String credits;
+    /**
+     * Image's credits and acknowledgments.
+     */
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String credits;
 
-	/**
-	 * Space Telescope or telescope website, the Image belongs to. It is usually
-	 * 'hubble', 'james_webb', etc.
-	 */
-	@Column(length = 10)
-	private String mission;
+    /**
+     * Space Telescope or telescope website, the Image belongs to. It is usually
+     * 'hubble', 'james_webb', etc.
+     */
+    @Column(length = 10)
+    private String mission;
 
-	@ElementCollection(fetch = FetchType.EAGER)
-	private Set<String> keywords;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> keywords;
 
     @Override
     public Integer getId() {
@@ -66,87 +66,87 @@ public class HubbleNasaMedia extends FullResMedia<Integer, ZonedDateTime> {
         this.id = id;
     }
 
-	public String getNewsId() {
-		return newsId;
-	}
+    public String getNewsId() {
+        return newsId;
+    }
 
-	public void setNewsId(String newsId) {
-		this.newsId = newsId;
-	}
+    public void setNewsId(String newsId) {
+        this.newsId = newsId;
+    }
 
-	@Override
-	public ZonedDateTime getDate() {
+    @Override
+    public ZonedDateTime getDate() {
         return date;
     }
 
     @Override
-	public void setDate(ZonedDateTime date) {
+    public void setDate(ZonedDateTime date) {
         this.date = date;
     }
 
-	public LocalDate getExposureDate() {
-		return exposureDate;
-	}
+    public LocalDate getExposureDate() {
+        return exposureDate;
+    }
 
-	public void setExposureDate(LocalDate exposureDate) {
-		this.exposureDate = exposureDate;
-	}
+    public void setExposureDate(LocalDate exposureDate) {
+        this.exposureDate = exposureDate;
+    }
 
-	public String getCredits() {
-		return credits;
-	}
+    public String getCredits() {
+        return credits;
+    }
 
-	public void setCredits(String credits) {
-		this.credits = credits;
-	}
+    public void setCredits(String credits) {
+        this.credits = credits;
+    }
 
-	public String getMission() {
-		return mission;
-	}
+    public String getMission() {
+        return mission;
+    }
 
-	public void setMission(String mission) {
-		this.mission = mission;
-	}
+    public void setMission(String mission) {
+        this.mission = mission;
+    }
 
-	public Set<String> getKeywords() {
-		return keywords;
-	}
+    public Set<String> getKeywords() {
+        return keywords;
+    }
 
-	public void setKeywords(Set<String> keywords) {
-		this.keywords = keywords;
-	}
+    public void setKeywords(Set<String> keywords) {
+        this.keywords = keywords;
+    }
 
-	public String getObjectName() {
-		return objectName;
-	}
+    public String getObjectName() {
+        return objectName;
+    }
 
-	public void setObjectName(String objectName) {
-		this.objectName = objectName;
-	}
+    public void setObjectName(String objectName) {
+        this.objectName = objectName;
+    }
 
-	@Override
-	public int hashCode() {
-		return 31 * super.hashCode() + Objects.hash(credits, date, id, mission, newsId, keywords, objectName);
-	}
+    @Override
+    public int hashCode() {
+        return 31 * super.hashCode() + Objects.hash(credits, date, id, mission, newsId, keywords, objectName);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj) || getClass() != obj.getClass())
-			return false;
-		HubbleNasaMedia other = (HubbleNasaMedia) obj;
-		return Objects.equals(credits, other.credits) && Objects.equals(date, other.date)
-				&& Objects.equals(id, other.id) && Objects.equals(mission, other.mission)
-				&& Objects.equals(newsId, other.newsId) && Objects.equals(keywords, other.keywords)
-				&& Objects.equals(objectName, other.objectName);
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj) || getClass() != obj.getClass())
+            return false;
+        HubbleNasaMedia other = (HubbleNasaMedia) obj;
+        return Objects.equals(credits, other.credits) && Objects.equals(date, other.date)
+                && Objects.equals(id, other.id) && Objects.equals(mission, other.mission)
+                && Objects.equals(newsId, other.newsId) && Objects.equals(keywords, other.keywords)
+                && Objects.equals(objectName, other.objectName);
+    }
 
-	@Override
-	public String toString() {
-		return "HubbleNasaMedia [id=" + id + ", newsId=" + newsId + ", date=" + date + ", objectName=" + objectName
-				+ ", mission=" + mission + "]";
-	}
+    @Override
+    public String toString() {
+        return "HubbleNasaMedia [id=" + id + ", newsId=" + newsId + ", date=" + date + ", objectName=" + objectName
+                + ", mission=" + mission + "]";
+    }
 
     @Override
     public boolean isAudio() {

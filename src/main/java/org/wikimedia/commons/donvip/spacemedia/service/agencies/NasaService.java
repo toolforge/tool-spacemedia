@@ -258,7 +258,7 @@ public class NasaService
                         } else {
                             LOGGER.error("Cannot process item " + item, e);
                         }
-					} catch (IOException | URISyntaxException | RuntimeException e) {
+                    } catch (IOException | URISyntaxException | RuntimeException e) {
                         LOGGER.error("Cannot process item " + item, e);
                     }
                 }

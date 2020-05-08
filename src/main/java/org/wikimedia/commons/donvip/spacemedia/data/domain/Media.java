@@ -49,7 +49,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     protected String title;
 
     @Lob
-	@Column(nullable = true, columnDefinition = "MEDIUMTEXT")
+    @Column(nullable = true, columnDefinition = "MEDIUMTEXT")
     @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
     protected String description;
 

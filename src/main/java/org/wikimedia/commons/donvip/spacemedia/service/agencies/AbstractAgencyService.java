@@ -116,15 +116,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     /**
-	 * Checks that given Commons categories exist and are not redirected. Otherwise,
-	 * log a warning.
-	 * 
-	 * @param categories Commons categories to check
-	 */
+     * Checks that given Commons categories exist and are not redirected. Otherwise,
+     * log a warning.
+     * 
+     * @param categories Commons categories to check
+     */
     protected void checkCommonsCategories(Map<String, String> categories) {
         Set<String> problematicCategories = categories.values().parallelStream()
-				.flatMap(s -> Arrays.stream(s.split(";")))
-				.filter(c -> !c.isEmpty() && !commonsService.isUpToDateCategory(c))
+                .flatMap(s -> Arrays.stream(s.split(";")))
+                .filter(c -> !c.isEmpty() && !commonsService.isUpToDateCategory(c))
                 .collect(Collectors.toSet());
         if (!problematicCategories.isEmpty()) {
             LOGGER.warn("problematicCategories : {}", problematicCategories);
@@ -332,13 +332,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return problem(problematicUrl, t.getMessage());
     }
 
-	protected final Problem problem(String problematicUrl, Throwable t) throws MalformedURLException {
-		return problem(problematicUrl, t.getMessage());
-	}
+    protected final Problem problem(String problematicUrl, Throwable t) throws MalformedURLException {
+        return problem(problematicUrl, t.getMessage());
+    }
 
-	protected final Problem problem(String problematicUrl, String errorMessage) throws MalformedURLException {
-		return problem(new URL(problematicUrl), errorMessage);
-	}
+    protected final Problem problem(String problematicUrl, String errorMessage) throws MalformedURLException {
+        return problem(new URL(problematicUrl), errorMessage);
+    }
 
     protected final Problem problem(URL problematicUrl, String errorMessage) {
         Optional<Problem> problem = problemRepository.findByAgencyAndProblematicUrl(getName(), problematicUrl);
@@ -429,8 +429,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
             sb.append("\n}}\n=={{int:license-header}}==\n");
             findTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
-			commonsService.cleanupCategories(findCategories(media, true))
-					.forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
+            commonsService.cleanupCategories(findCategories(media, true))
+                    .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
             return sb.toString();
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
@@ -491,16 +491,16 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return Optional.empty();
     }
 
-	public Set<String> findCategories(T media, boolean includeHidden) {
-		Set<String> result = new HashSet<>();
-		if (includeHidden) {
+    public Set<String> findCategories(T media, boolean includeHidden) {
+        Set<String> result = new HashSet<>();
+        if (includeHidden) {
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
-		}
-		return result;
+        }
+        return result;
     }
 
     public List<String> findTemplates(T media) {
-		return new ArrayList<>();
+        return new ArrayList<>();
     }
 
     protected final String wikiLink(URL url, String text) {
@@ -548,9 +548,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return getMediaClass();
     }
 
-	protected final Map<String, String> loadCsvMapping(String filename) throws IOException {
-		return CsvHelper.loadMap(getClass().getResource("/mapping/" + filename));
-	}
+    protected final Map<String, String> loadCsvMapping(String filename) throws IOException {
+        return CsvHelper.loadMap(getClass().getResource("/mapping/" + filename));
+    }
 
     protected final boolean ignoreFile(T media, String reason) {
         media.setIgnored(Boolean.TRUE);

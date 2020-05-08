@@ -94,8 +94,8 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     private String pathAlias;
 
     @JsonIgnoreProperties({ "pathAlias", "members" })
-	@ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, mappedBy = "members")
-	private Set<FlickrPhotoSet> photosets = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, mappedBy = "members")
+    private Set<FlickrPhotoSet> photosets = new HashSet<>();
 
     @Override
     public Long getId() {
@@ -238,21 +238,21 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
         this.pathAlias = pathAlias;
     }
 
-	public Set<FlickrPhotoSet> getPhotosets() {
-		return photosets;
-	}
+    public Set<FlickrPhotoSet> getPhotosets() {
+        return photosets;
+    }
 
-	public void addPhotoSet(FlickrPhotoSet photoset) {
-		this.photosets.add(photoset);
-		photoset.getMembers().add(this);
-	}
+    public void addPhotoSet(FlickrPhotoSet photoset) {
+        this.photosets.add(photoset);
+        photoset.getMembers().add(this);
+    }
 
-	public void removePhotoSet(FlickrPhotoSet photoset) {
-		this.photosets.remove(photoset);
-		photoset.getMembers().remove(this);
-	}
+    public void removePhotoSet(FlickrPhotoSet photoset) {
+        this.photosets.remove(photoset);
+        photoset.getMembers().remove(this);
+    }
 
-	@Override
+    @Override
     public String getUploadTitle() {
         if ((UnitedStates.isVirin(title) || UnitedStates.isFakeVirin(title))
                 && CollectionUtils.isNotEmpty(getPhotosets())) {

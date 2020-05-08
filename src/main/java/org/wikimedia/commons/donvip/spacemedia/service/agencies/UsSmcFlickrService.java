@@ -52,7 +52,7 @@ public class UsSmcFlickrService extends AbstractAgencyFlickrService<DvidsMedia, 
     public List<String> findTemplates(FlickrMedia media) {
         List<String> result = super.findTemplates(media);
         if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.United_States_Government_Work
-				|| (media.getDescription() != null && media.getDescription().contains("Air Force photo"))) {
+                || (media.getDescription() != null && media.getDescription().contains("Air Force photo"))) {
             result.remove(FlickrFreeLicense.United_States_Government_Work.getWikiTemplate());
             result.add("PD-USGov-Military-Air Force");
         }
@@ -60,11 +60,11 @@ public class UsSmcFlickrService extends AbstractAgencyFlickrService<DvidsMedia, 
     }
 
     @Override
-	public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
-		Set<String> result = super.findCategories(media, includeHidden);
-		if (includeHidden) {
-			result.add("Photographs by the Space and Missile Systems Center");
-		}
+    public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, includeHidden);
+        if (includeHidden) {
+            result.add("Photographs by the Space and Missile Systems Center");
+        }
         return result;
     }
 }

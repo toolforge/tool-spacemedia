@@ -93,9 +93,9 @@ public class FlickrService {
         return result;
     }
 
-	public List<PhotoSet> findPhotoSets(String photoId) throws FlickrException {
-		return flickr.getPhotosInterface().getAllContexts(photoId).getPhotoSetList();
-	}
+    public List<PhotoSet> findPhotoSets(String photoId) throws FlickrException {
+        return flickr.getPhotosInterface().getAllContexts(photoId).getPhotoSetList();
+    }
 
     // TODO: create a pull request at https://github.com/boncey/Flickr4Java
     static class UrlsInterfacePatched extends UrlsInterface {
@@ -119,7 +119,7 @@ public class FlickrService {
          * @throws FlickrException
          */
         public User lookupUserPatched(String url) throws FlickrException {
-			Map<String, Object> parameters = new HashMap<>();
+            Map<String, Object> parameters = new HashMap<>();
             parameters.put("method", METHOD_LOOKUP_USER);
             parameters.put("url", url);
 

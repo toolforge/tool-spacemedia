@@ -88,8 +88,8 @@ public class EsaService
 
     private DateTimeFormatter dateFormatter;
 
-	private Map<String, String> esaMissions;
-	private Map<String, String> esaPeople;
+    private Map<String, String> esaMissions;
+    private Map<String, String> esaPeople;
 
     @Autowired
     public EsaService(EsaMediaRepository repository) {
@@ -101,15 +101,15 @@ public class EsaService
     void init() throws IOException {
         super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern);
-		esaMissions = loadCsvMapping("esa.missions.csv");
-		esaPeople = loadCsvMapping("esa.people.csv");
+        esaMissions = loadCsvMapping("esa.missions.csv");
+        esaPeople = loadCsvMapping("esa.people.csv");
     }
 
-	@Scheduled(fixedDelay = 43200000L)
-	public void checkEsaCategories() {
-		checkCommonsCategories(esaMissions);
-		checkCommonsCategories(esaPeople);
-	}
+    @Scheduled(fixedDelay = 43200000L)
+    public void checkEsaCategories() {
+        checkCommonsCategories(esaMissions);
+        checkCommonsCategories(esaPeople);
+    }
 
     @Override
     protected Class<EsaMedia> getMediaClass() {
@@ -354,7 +354,7 @@ public class EsaService
                         LOGGER.debug(searchUrl, e);
                     }
                 }
-			} catch (IOException | RuntimeException e) {
+            } catch (IOException | RuntimeException e) {
                 LOGGER.error(searchUrl, e);
                 moreImages = false;
             }
@@ -395,23 +395,23 @@ public class EsaService
     }
 
     @Override
-	public Set<String> findCategories(EsaMedia media, boolean includeHidden) {
-		Set<String> result = super.findCategories(media, includeHidden);
-		if (includeHidden) {
-			result.add("ESA images (review needed)");
-		}
-		if (media.getMission() != null) {
-			String missionCats = esaMissions.get(media.getMission());
-			if (StringUtils.isNotBlank(missionCats)) {
-				Arrays.stream(missionCats.split(";")).forEach(result::add);
-			}
-		}
-		if (media.getPeople() != null) {
-			String peopleCats = esaPeople.get(media.getPeople());
-			if (StringUtils.isNotBlank(peopleCats)) {
-				Arrays.stream(peopleCats.split(";")).forEach(result::add);
-			}
-		}
+    public Set<String> findCategories(EsaMedia media, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, includeHidden);
+        if (includeHidden) {
+            result.add("ESA images (review needed)");
+        }
+        if (media.getMission() != null) {
+            String missionCats = esaMissions.get(media.getMission());
+            if (StringUtils.isNotBlank(missionCats)) {
+                Arrays.stream(missionCats.split(";")).forEach(result::add);
+            }
+        }
+        if (media.getPeople() != null) {
+            String peopleCats = esaPeople.get(media.getPeople());
+            if (StringUtils.isNotBlank(peopleCats)) {
+                Arrays.stream(peopleCats.split(";")).forEach(result::add);
+            }
+        }
         enrichEsaCategories(result, media);
         return result;
     }

@@ -65,8 +65,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     private String dateTimePattern;
 
     private Map<String, String> esoCategories;
-	private Map<String, String> esoNames;
-	private Map<String, String> esoTypes;
+    private Map<String, String> esoNames;
+    private Map<String, String> esoTypes;
 
     @Autowired
     private ObjectMapper jackson;
@@ -83,15 +83,15 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
         dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern, Locale.ENGLISH);
-		esoCategories = loadCsvMapping("eso.categories.csv");
-		esoNames = loadCsvMapping("eso.names.csv");
-		esoTypes = loadCsvMapping("eso.types.csv");
+        esoCategories = loadCsvMapping("eso.categories.csv");
+        esoNames = loadCsvMapping("eso.names.csv");
+        esoTypes = loadCsvMapping("eso.types.csv");
     }
 
     @Scheduled(fixedDelay = 43200000L)
     public void checkEsoCategories() {
         checkCommonsCategories(esoCategories);
-		checkCommonsCategories(esoTypes);
+        checkCommonsCategories(esoTypes);
     }
 
     private static void scrapingError(String url, String details) {
@@ -126,8 +126,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         }
         if (media.getCategories() != null) {
             // Try to detect pictures of identifiable people, as per ESO conditions
-			if (media.getCategories().size() == 1 && media.getCategories().iterator().next().contains(
-					"People") 
+            if (media.getCategories().size() == 1 && media.getCategories().iterator().next().contains(
+                    "People") 
                     && media.getTypes() != null
                     && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
                 save = ignoreFile(media,
@@ -461,22 +461,22 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     }
 
     @Override
-	public Set<String> findCategories(T media, boolean includeHidden) {
-		Set<String> result = super.findCategories(media, includeHidden);
+    public Set<String> findCategories(T media, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, includeHidden);
         if (media.getCategories() != null) {
-			result.addAll(media.getCategories().stream().map(esoCategories::get).filter(StringUtils::isNotBlank)
-					.collect(Collectors.toSet()));
+            result.addAll(media.getCategories().stream().map(esoCategories::get).filter(StringUtils::isNotBlank)
+                    .collect(Collectors.toSet()));
         }
-		if (media.getCategories() != null) {
-			result.addAll(media.getTypes().stream().map(esoTypes::get).filter(StringUtils::isNotBlank)
-					.collect(Collectors.toSet()));
-		}
-		if (media.getName() != null) {
-			String catName = esoNames.get(media.getName());
-			if (StringUtils.isNotBlank(catName)) {
-				result.add(catName);
-			}
-		}
+        if (media.getCategories() != null) {
+            result.addAll(media.getTypes().stream().map(esoTypes::get).filter(StringUtils::isNotBlank)
+                    .collect(Collectors.toSet()));
+        }
+        if (media.getName() != null) {
+            String catName = esoNames.get(media.getName());
+            if (StringUtils.isNotBlank(catName)) {
+                result.add(catName);
+            }
+        }
         return result;
     }
 }

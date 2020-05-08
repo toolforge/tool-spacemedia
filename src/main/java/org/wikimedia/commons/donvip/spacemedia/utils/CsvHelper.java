@@ -27,9 +27,9 @@ public final class CsvHelper {
     }
 
     public static Map<String, String> loadMap(URL url) throws IOException {
-		if (url == null) {
-			return null;
-		}
+        if (url == null) {
+            return null;
+        }
         Map<String, String> result = new TreeMap<>();
         CsvMapper mapper = new CsvMapper();
         mapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);

@@ -167,13 +167,13 @@ public final class Utils {
 
     public static boolean isTextFound(String fullText, String textToFind) {
         if (fullText != null) {
-			return isTextFoundLowercase(fullText.toLowerCase(Locale.ENGLISH), textToFind.toLowerCase(Locale.ENGLISH));
-		}
-		return false;
-	}
+            return isTextFoundLowercase(fullText.toLowerCase(Locale.ENGLISH), textToFind.toLowerCase(Locale.ENGLISH));
+        }
+        return false;
+    }
 
-	public static boolean isTextFoundLowercase(String fullTextLc, String textToFindLc) {
-		if (fullTextLc != null) {
+    public static boolean isTextFoundLowercase(String fullTextLc, String textToFindLc) {
+        if (fullTextLc != null) {
             if (textToFindLc.contains("+")) {
                 for (String word : textToFindLc.split("\\+")) {
                     if (!isTextFound(fullTextLc, word)) {
@@ -202,20 +202,20 @@ public final class Utils {
         return Character.isAlphabetic(c) || Character.isDigit(c) || c == '-' || c == '_';
     }
 
-	public static void addCertificate(String resource) throws GeneralSecurityException, IOException {
-		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-		try (InputStream is = Files.newInputStream(Paths.get(System.getProperty("java.home"), "lib", "security", "cacerts"))) {
-			keyStore.load(is, "changeit".toCharArray());
-		}
-		keyStore.setCertificateEntry(resource,
-				CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(
-						IOUtils.toByteArray(Utils.class.getClassLoader().getResourceAsStream(resource)))));
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-		tmf.init(keyStore);
-		SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-		sslContext.init(null, tmf.getTrustManagers(), null);
-		SSLContext.setDefault(sslContext);
-	}
+    public static void addCertificate(String resource) throws GeneralSecurityException, IOException {
+        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        try (InputStream is = Files.newInputStream(Paths.get(System.getProperty("java.home"), "lib", "security", "cacerts"))) {
+            keyStore.load(is, "changeit".toCharArray());
+        }
+        keyStore.setCertificateEntry(resource,
+                CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(
+                        IOUtils.toByteArray(Utils.class.getClassLoader().getResourceAsStream(resource)))));
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(keyStore);
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        sslContext.init(null, tmf.getTrustManagers(), null);
+        SSLContext.setDefault(sslContext);
+    }
 
     /**
      * Runs an external command and returns the standard output. Waits at most the specified time.

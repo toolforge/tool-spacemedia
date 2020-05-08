@@ -54,35 +54,35 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
 
     @Autowired
     protected FlickrMediaRepository flickrRepository;
-	@Autowired
+    @Autowired
     protected FlickrService flickrService;
     @Autowired
     protected Mapper dozerMapper;
-	@Autowired
-	protected FlickrMediaProcessorService processor;
+    @Autowired
+    protected FlickrMediaProcessorService processor;
 
     protected final Set<String> flickrAccounts;
-	protected final Map<String, Map<String, String>> flickrPhotoSets;
+    protected final Map<String, Map<String, String>> flickrPhotoSets;
 
     public AbstractAgencyFlickrService(FlickrMediaRepository repository, Set<String> flickrAccounts) {
         super(repository);
         this.flickrAccounts = Objects.requireNonNull(flickrAccounts);
-		this.flickrPhotoSets = new HashMap<>();
+        this.flickrPhotoSets = new HashMap<>();
     }
 
     @Override
-	@PostConstruct
-	void init() throws IOException {
-		super.init();
-		for (String account : flickrAccounts) {
-			Map<String, String> mapping = loadCsvMapping("flickr/" + account + ".photosets.csv");
-			if (mapping != null) {
-				flickrPhotoSets.put(account, mapping);
-			}
-		}
-	}
+    @PostConstruct
+    void init() throws IOException {
+        super.init();
+        for (String account : flickrAccounts) {
+            Map<String, String> mapping = loadCsvMapping("flickr/" + account + ".photosets.csv");
+            if (mapping != null) {
+                flickrPhotoSets.put(account, mapping);
+            }
+        }
+    }
 
-	@Override
+    @Override
     protected final Class<FlickrMedia> getMediaClass() {
         return FlickrMedia.class;
     }
@@ -213,23 +213,23 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
-	public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
-		Set<String> result = super.findCategories(media, includeHidden);
-		if (includeHidden) {
+    public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, includeHidden);
+        if (includeHidden) {
             result.remove("Spacemedia files uploaded by " + commonsService.getAccount());
             result.add("Spacemedia Flickr files uploaded by " + commonsService.getAccount());
-		}
-		if (CollectionUtils.isNotEmpty(media.getPhotosets())) {
-			Map<String, String> mapping = flickrPhotoSets.get(media.getPathAlias());
-			if (MapUtils.isNotEmpty(mapping)) {
-				for (FlickrPhotoSet album : media.getPhotosets()) {
+        }
+        if (CollectionUtils.isNotEmpty(media.getPhotosets())) {
+            Map<String, String> mapping = flickrPhotoSets.get(media.getPathAlias());
+            if (MapUtils.isNotEmpty(mapping)) {
+                for (FlickrPhotoSet album : media.getPhotosets()) {
                     String cats = mapping.get(album.getTitle());
                     if (StringUtils.isNotBlank(cats)) {
                         Arrays.stream(cats.split(";")).map(String::trim).forEach(result::add);
-					}
-				}
-			}
-		}
+                    }
+                }
+            }
+        }
         return result;
     }
 
@@ -256,7 +256,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     @Override
     protected void checkUploadPreconditions(FlickrMedia media) throws IOException {
         super.checkUploadPreconditions(media);
-		if (processor.isBadVideoEntry(media)) {
+        if (processor.isBadVideoEntry(media)) {
             throw new ImageUploadForbiddenException("Bad video download link: " + media);
         }
         if (!"ready".equals(media.getMediaStatus())) {
@@ -285,7 +285,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                 if (!noLongerFreePictures.isEmpty()) {
                     count += updateNoLongerFreeFlickrMedia(flickrAccount, noLongerFreePictures);
                 }
-			} catch (FlickrException | MalformedURLException | RuntimeException e) {
+            } catch (FlickrException | MalformedURLException | RuntimeException e) {
                 LOGGER.error("Error while fetching Flickr media from account " + flickrAccount, e);
             }
         }

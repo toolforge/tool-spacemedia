@@ -9,7 +9,7 @@ import org.hibernate.search.annotations.Indexed;
 @Indexed
 public class NasaImage extends NasaMedia {
 
-	@Column(length = 300)
+    @Column(length = 300)
     private String photographer;
 
     public NasaImage() {
