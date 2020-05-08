@@ -18,8 +18,8 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "nasaCount", "nasaCountByCenter", "nasaCountIgnored", "nasaCountIgnoredByCenter", "nasaCountMissing",
-            "nasaCountMissingByCenter", "nasaCountUploaded", "nasaCountUploadedByCenter", "nasaCenters",
-            "nasaFindByPhashNotNull" })
+            "nasaCountMissingByCenter", "nasaCountUploaded", "nasaCountUploadedByCenter", "nasaCountPhashNotNull",
+            "nasaCountPhashNotNullByCenter", "nasaCenters", "nasaFindByPhashNotNull" })
     @interface CacheEvictNasaAll {
 
     }
@@ -32,6 +32,13 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     @Cacheable("nasaCountByCenter")
     long countByCenter(String center);
+
+    @Override
+    @Cacheable("nasaCountPhashNotNull")
+    long countByMetadata_PhashNotNull();
+
+    @Cacheable("nasaCountPhashNotNullByCenter")
+    long countByMetadata_PhashNotNullAndCenter(String center);
 
     @Override
     @Cacheable("nasaCountIgnored")

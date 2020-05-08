@@ -32,6 +32,13 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
     long countByMetadata_Phash(String phash);
 
     /**
+     * Count files with a computed perceptual hash.
+     * 
+     * @return number of files with a computed perceptual hash
+     */
+    long countByMetadata_PhashNotNull();
+
+    /**
      * Count files matching the given SHA-1.
      * 
      * @param sha1 SHA-1 hash

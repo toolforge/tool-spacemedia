@@ -13,6 +13,7 @@
 	        <th>Name</th>
 	        <th>Free Media</th>
 	        <th>Uploaded</th>
+	        <th>Hashes</th>
 	        <th>To upload</th>
 	        <th>Ignored</th>
 	        <th>Problems</th>
@@ -23,6 +24,7 @@
 	        <td><a th:text="${agency.name}" th:href="@{/{id}(id=${agency.id})}"></a></td>
 	        <td><a th:text="${agency.countAllMedia()}" th:href="@{/{id}/all(id=${agency.id})}"></a></td>
 	        <td><a th:text="${agency.countUploadedMedia()}" th:href="@{/{id}/uploaded(id=${agency.id})}"></a></td>
+	        <td><a th:text="${agency.countPerceptualHashes()}" th:href="@{/{id}/uploaded(id=${agency.id})}"></a></td>
 	        <td><a th:text="${agency.countMissingMedia()}" th:href="@{/{id}/missing(id=${agency.id})}"></a></td>
 	        <td><a th:text="${agency.countIgnored()}" th:href="@{/{id}/ignored(id=${agency.id})}"></a></td>
 	        <td><a th:text="${agency.getProblemsCount()}" th:href="@{/{id}/problems(id=${agency.id})}"></a></td>

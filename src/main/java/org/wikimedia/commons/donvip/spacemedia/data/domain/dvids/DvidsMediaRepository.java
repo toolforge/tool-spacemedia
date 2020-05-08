@@ -21,7 +21,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "dvidsCount", "dvidsCountByUnit", "dvidsCountIgnored", "dvidsCountIgnoredByUnit",
             "dvidsCountMissing", "dvidsCountMissingByUnit", "dvidsCountUploaded", "dvidsCountUploadedByUnit",
-            "dvidsFindByPhashNotNull" })
+            "dvidsCountPhashNotNull", "dvidsCountPhashNotNullByAccount", "dvidsFindByPhashNotNull" })
     @interface CacheEvictDvidsAll {
 
     }
@@ -61,6 +61,14 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     @Cacheable("dvidsCountUploadedByUnit")
     @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames) and m.unit in ?1")
     long countUploadedToCommons(Set<String> units);
+
+    @Override
+    @Cacheable("dvidsCountPhashNotNull")
+    long countByMetadata_PhashNotNull();
+
+    @Cacheable("dvidsCountPhashNotNullByAccount")
+    @Query("select count(*) from #{#entityName} m where m.metadata.phash is not null and m.unit in ?1")
+    long countByMetadata_PhashNotNull(Set<String> units);
 
     // FIND
 

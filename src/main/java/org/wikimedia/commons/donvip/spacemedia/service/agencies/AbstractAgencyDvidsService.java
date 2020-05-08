@@ -331,6 +331,11 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
+    public final long countPerceptualHashes() {
+        return mediaRepository.countByMetadata_PhashNotNull(units);
+    }
+
+    @Override
     public final long countUploadedMedia() {
         return mediaRepository.countUploadedToCommons(units);
     }
@@ -395,7 +400,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         Set<String> singleton = Collections.singleton(alias);
         return new Statistics(alias, mediaRepository.count(singleton),
                 mediaRepository.countByIgnoredTrue(singleton),
-                mediaRepository.countMissingInCommons(singleton), null);
+                mediaRepository.countMissingInCommons(singleton),
+                mediaRepository.countByMetadata_PhashNotNull(singleton), null);
     }
 
     @Override

@@ -24,6 +24,8 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     long countMissingMedia();
 
+    long countPerceptualHashes();
+
     long countUploadedMedia();
 
     Iterable<T> listAllMedia();

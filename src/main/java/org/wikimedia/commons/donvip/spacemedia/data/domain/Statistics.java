@@ -8,19 +8,23 @@ public class Statistics implements Comparable<Statistics> {
     private final long totalMedia;
     private final long ignoredMedia;
     private final long missingMedia;
+    private final long hashedMedia;
     private final Long problemsCount;
     private List<Statistics> details;
 
-    public Statistics(String agency, long totalMedia, long ignoredMedia, long missingMedia, Long problemsCount) {
-        this(agency, totalMedia, ignoredMedia, missingMedia, problemsCount, null);
+    public Statistics(String agency, long totalMedia, long ignoredMedia, long missingMedia, long hashedMedia,
+            Long problemsCount) {
+        this(agency, totalMedia, ignoredMedia, missingMedia, hashedMedia, problemsCount, null);
     }
 
-    public Statistics(String agency, long totalMedia, long ignoredMedia, long missingMedia, Long problemsCount,
+    public Statistics(String agency, long totalMedia, long ignoredMedia, long missingMedia, long hashedMedia,
+            Long problemsCount,
             List<Statistics> details) {
         this.agency = Objects.requireNonNull(agency);
         this.totalMedia = totalMedia;
         this.ignoredMedia = ignoredMedia;
         this.missingMedia = missingMedia;
+        this.hashedMedia = hashedMedia;
         this.problemsCount = problemsCount;
         this.details = details;
     }
@@ -44,6 +48,13 @@ public class Statistics implements Comparable<Statistics> {
      */
     public long getMissingMedia() {
         return missingMedia;
+    }
+
+    /**
+     * @return the hashedMedia
+     */
+    public long getHashedMedia() {
+        return hashedMedia;
     }
 
     /**

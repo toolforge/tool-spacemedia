@@ -21,7 +21,7 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @CacheEvict(allEntries = true, cacheNames = {
             "flickrCount", "flickrCountByAccount", "flickrCountIgnoredByAccount", "flickrCountMissing",
             "flickrCountMissingByAccount", "flickrCountUploaded", "flickrCountUploadedByAccount",
-            "flickrFindByPhashNotNull" })
+            "flickrCountPhashNotNull", "flickrCountPhashNotNullByAccount", "flickrFindByPhashNotNull" })
     @interface CacheEvictFlickrAll {
 
     }
@@ -57,6 +57,14 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Cacheable("flickrCountUploadedByAccount")
     @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames) and m.pathAlias in ?1")
     long countUploadedToCommons(Set<String> flickrAccounts);
+
+    @Override
+    @Cacheable("flickrCountPhashNotNull")
+    long countByMetadata_PhashNotNull();
+
+    @Cacheable("flickrCountPhashNotNullByAccount")
+    @Query("select count(*) from #{#entityName} m where m.metadata.phash is not null and m.pathAlias in ?1")
+    long countByMetadata_PhashNotNull(Set<String> flickrAccounts);
 
     // FIND
 

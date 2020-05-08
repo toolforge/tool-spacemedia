@@ -407,7 +407,7 @@ public class NasaService
             stats.setDetails(centers.parallelStream()
                     .map(c -> new Statistics(Objects.toString(c), mediaRepository.countByCenter(c),
                             mediaRepository.countIgnoredByCenter(c), mediaRepository.countMissingInCommonsByCenter(c),
-                            null))
+                            mediaRepository.countByMetadata_PhashNotNullAndCenter(c), null))
                     .sorted().collect(Collectors.toList()));
         }
         return stats;

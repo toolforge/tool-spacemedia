@@ -147,6 +147,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
+    public long countPerceptualHashes() {
+        return repository.countByMetadata_PhashNotNull();
+    }
+
+    @Override
     public long countUploadedMedia() {
         return repository.countUploadedToCommons();
     }
@@ -300,7 +305,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     public Statistics getStatistics() {
         long problems = getProblemsCount();
         return new Statistics(getName(), countAllMedia(), countIgnored(), countMissingMedia(),
-                problems > 0 ? problems : null);
+                countPerceptualHashes(), problems > 0 ? problems : null);
     }
 
     @Override

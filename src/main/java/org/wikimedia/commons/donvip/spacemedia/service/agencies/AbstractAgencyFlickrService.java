@@ -103,6 +103,11 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
+    public final long countPerceptualHashes() {
+        return flickrRepository.countByMetadata_PhashNotNull(flickrAccounts);
+    }
+
+    @Override
     public final long countUploadedMedia() {
         return flickrRepository.countUploadedToCommons(flickrAccounts);
     }
@@ -167,7 +172,8 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         Set<String> singleton = Collections.singleton(alias);
         return new Statistics(alias, flickrRepository.count(singleton),
                 flickrRepository.countByIgnoredTrue(singleton),
-                flickrRepository.countMissingInCommons(singleton), null);
+                flickrRepository.countMissingInCommons(singleton),
+                flickrRepository.countByMetadata_PhashNotNull(singleton), null);
     }
 
     @Override
