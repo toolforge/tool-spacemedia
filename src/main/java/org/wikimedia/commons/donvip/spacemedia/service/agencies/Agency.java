@@ -36,6 +36,8 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     Page<T> listMissingMedia(Pageable page);
 
+    Page<T> listHashedMedia(Pageable page);
+
     List<T> listUploadedMedia();
 
     Page<T> listUploadedMedia(Pageable page);

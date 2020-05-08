@@ -11,6 +11,10 @@
 	       th:href="@{/{id}/uploaded(id=${agency.id})}" th:text="'Uploaded (' + ${agency.countUploadedMedia()} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
+	    <a th:class="'nav-link' + ('hashes' == ${tab} ? ' active' : '') + (${agency.countPerceptualHashes()} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/hashes(id=${agency.id})}" th:text="'Hashes (' + ${agency.countPerceptualHashes()} + ')'"></a>
+	  </li>
+	  <li class="nav-item">
 	    <a th:class="'nav-link' + ('missing' == ${tab} ? ' active' : '') + (${agency.countMissingMedia()} == 0 ? ' disabled': '')"
 	       th:href="@{/{id}/missing(id=${agency.id})}" th:text="'To upload (' + ${agency.countMissingMedia()} + ')'"></a>
 	  </li>

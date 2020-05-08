@@ -108,6 +108,8 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
 
     List<MediaProjection<ID>> findByMetadata_PhashNotNull();
 
+    Page<T> findByMetadata_PhashNotNull(Pageable page);
+
     List<T> findByMetadata_Sha1(String sha1);
 
     List<T> findByIgnoredTrue();

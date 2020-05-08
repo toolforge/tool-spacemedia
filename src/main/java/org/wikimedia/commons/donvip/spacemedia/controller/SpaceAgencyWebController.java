@@ -59,6 +59,11 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
         return media(model, "missing", service.listMissingMedia(page));
     }
 
+    @GetMapping("/hashes")
+    public String hashes(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return media(model, "hashes", service.listHashedMedia(page));
+    }
+
     @GetMapping("/uploaded")
     public String uploaded(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
         return media(model, "uploaded", service.listUploadedMedia(page));

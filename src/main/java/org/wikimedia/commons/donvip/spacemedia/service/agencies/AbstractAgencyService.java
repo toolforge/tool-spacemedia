@@ -177,6 +177,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
+    public Page<T> listHashedMedia(Pageable page) {
+        return repository.findByMetadata_PhashNotNull(page);
+    }
+
+    @Override
     public List<T> listUploadedMedia() {
         return repository.findUploadedToCommons();
     }

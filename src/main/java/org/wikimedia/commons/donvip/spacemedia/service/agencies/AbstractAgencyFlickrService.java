@@ -143,6 +143,11 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
+    public final Page<FlickrMedia> listHashedMedia(Pageable page) {
+        return flickrRepository.findByMetadata_PhashNotNull(flickrAccounts, page);
+    }
+
+    @Override
     public final List<FlickrMedia> listUploadedMedia() {
         return flickrRepository.findUploadedToCommons(flickrAccounts);
     }

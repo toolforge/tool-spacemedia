@@ -119,6 +119,9 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Cacheable("flickrFindByPhashNotNull")
     List<MediaProjection<Long>> findByMetadata_PhashNotNull();
 
+    @Query("select m from #{#entityName} m where m.metadata.phash is not null and m.pathAlias in ?1")
+    Page<FlickrMedia> findByMetadata_PhashNotNull(Set<String> flickrAccounts, Pageable page);
+
     // SAVE
 
     @Override

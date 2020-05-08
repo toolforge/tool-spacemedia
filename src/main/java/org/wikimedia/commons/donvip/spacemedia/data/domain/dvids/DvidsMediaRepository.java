@@ -123,6 +123,9 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     @Cacheable("dvidsFindByPhashNotNull")
     List<MediaProjection<DvidsMediaTypedId>> findByMetadata_PhashNotNull();
 
+    @Query("select m from #{#entityName} m where m.metadata.phash is not null and m.unit in ?1")
+    Page<T> findByMetadata_PhashNotNull(Set<String> units, Pageable page);
+
     // SAVE
 
     @Override

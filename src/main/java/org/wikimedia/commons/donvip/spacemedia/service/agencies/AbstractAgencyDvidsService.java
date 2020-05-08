@@ -371,6 +371,11 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
+    public final Page<DvidsMedia> listHashedMedia(Pageable page) {
+        return mediaRepository.findByMetadata_PhashNotNull(units, page);
+    }
+
+    @Override
     public final List<DvidsMedia> listUploadedMedia() {
         return mediaRepository.findUploadedToCommons(units);
     }
