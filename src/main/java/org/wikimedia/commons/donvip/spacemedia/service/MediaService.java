@@ -286,17 +286,14 @@ public class MediaService {
     /**
      * Computes the perceptual hash of an image, if required.
      *
-     * @param media     image media object
-     * @param bi        {@code BufferedImage} of main asset, can be null if not
-     *                  computed
-     * @param biFullRes {@code BufferedImage} of full-res asset, can be null if not
-     *                  an image, or not computed
+     * @param metadata  image media metadata
+     * @param image     {@code BufferedImage} of asset, can be null if not computed
      * @return {@code true} if media has been updated with computed perceptual hash
      *         and must be persisted
      */
     public static boolean updatePerceptualHash(Metadata metadata, BufferedImage image) {
         if (metadata.getPhash() == null && image != null && metadata.getAssetUrl() != null) {
-            metadata.setPerceptualHash(HashHelper.computePerceptualHash(image, metadata.getAssetUrl()));
+            metadata.setPerceptualHash(HashHelper.computePerceptualHash(image));
             return true;
         }
         return false;

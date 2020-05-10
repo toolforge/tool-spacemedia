@@ -70,7 +70,7 @@ public final class HashHelper {
         }
     }
 
-    public static BigInteger computePerceptualHash(BufferedImage image, URL url) {
+    public static BigInteger computePerceptualHash(BufferedImage image) {
         return ALGORITHM.hash(image).getHashValue();
     }
 
