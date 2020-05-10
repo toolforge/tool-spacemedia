@@ -133,7 +133,7 @@ public class MediaService {
                         HashHelper.similarityScore(perceptualHash, m.getMetadata().getPhash())))
                 .filter(h -> h.similarityScore < perceptualThreshold)
                 .map(DuplicateHolder::toDuplicate)
-                .collect(Collectors.toList()))) {
+                .collect(Collectors.toSet()))) {
             result = true;
         }
         return result;
@@ -155,10 +155,10 @@ public class MediaService {
 
     private static boolean handleExactDuplicates(Media<?, ?> media, List<? extends Media<?, ?>> exactDuplicates) {
         return handleDuplicates(media, exactDuplicates.stream().map(d -> new Duplicate(d.getId().toString(), 0d))
-                .collect(Collectors.toList()));
+                .collect(Collectors.toSet()));
     }
 
-    private static boolean handleDuplicates(Media<?, ?> media, List<Duplicate> duplicates) {
+    private static boolean handleDuplicates(Media<?, ?> media, Set<Duplicate> duplicates) {
         boolean result = false;
         if (isNotEmpty(duplicates)
                 && (isEmpty(media.getDuplicates()) || !media.getDuplicates().containsAll(duplicates))) {
