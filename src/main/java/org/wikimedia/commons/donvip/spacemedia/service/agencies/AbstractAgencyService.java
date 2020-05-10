@@ -459,11 +459,6 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected abstract String getAuthor(T media) throws MalformedURLException;
 
-    @Override
-    public final URL getThumbnailUrl(T media) {
-        return Optional.ofNullable(media.getThumbnailUrl()).orElse(media.getMetadata().getAssetUrl());
-    }
-
     protected Optional<Temporal> getCreationDate(T media) {
         return Optional.empty();
     }

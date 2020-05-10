@@ -50,14 +50,14 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     /**
      * Returns the space agency name, used in statistics and logs.
-     * 
+     *
      * @return the space agency name
      */
     String getName();
 
     /**
      * Returns an unique identifier used for REST controllers.
-     * 
+     *
      * @return an unique identifier based on class name
      */
     String getId();
@@ -81,8 +81,6 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
     String getWikiCode(T media);
 
     URL getSourceUrl(T media) throws MalformedURLException;
-
-    URL getThumbnailUrl(T media);
 
     List<T> searchMedia(String q);
 

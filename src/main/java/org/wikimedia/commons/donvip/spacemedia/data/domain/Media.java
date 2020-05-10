@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -229,4 +230,13 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return {@code true} if this media is a video
      */
     public abstract boolean isVideo();
+
+    /**
+     * Returns the preview URL to display in UI. Thumbnail if available, otherwise asset.
+     *
+     * @return the preview URL to display in UI. Thumbnail if available, otherwise asset.
+     */
+    public final URL getPreviewUrl() {
+        return Optional.ofNullable(getThumbnailUrl()).orElse(getMetadata().getAssetUrl());
+    }
 }
