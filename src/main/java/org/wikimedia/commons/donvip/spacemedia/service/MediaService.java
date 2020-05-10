@@ -129,7 +129,7 @@ public class MediaService {
                 .findByMetadata_PhashNotNull()
                 .parallelStream()
                 .filter(m -> !m.getId().equals(media.getId()))
-                .map(m -> new DuplicateHolder(m.getId().toString(), 
+                .map(m -> new DuplicateHolder(m.getId().toString(),
                         HashHelper.similarityScore(perceptualHash, m.getMetadata().getPhash())))
                 .filter(h -> h.similarityScore < perceptualThreshold)
                 .map(DuplicateHolder::toDuplicate)
@@ -163,7 +163,7 @@ public class MediaService {
         if (isNotEmpty(duplicates)
                 && (isEmpty(media.getDuplicates()) || !media.getDuplicates().containsAll(duplicates))) {
             media.setIgnored(true);
-            media.setIgnoredReason("Already present in main repository.");
+            media.setIgnoredReason("Already present in main repository");
             duplicates.forEach(media::addDuplicate);
             result = true;
         }
@@ -250,11 +250,11 @@ public class MediaService {
 
     /**
      * Computes the media SHA-1.
-     * 
+     *
      * @param media media object
-     * @param bi {@code BufferedImage} of main asset, can be null if not an image, or not computed 
+     * @param bi {@code BufferedImage} of main asset, can be null if not an image, or not computed
      * @param biFullRes {@code BufferedImage} of full-res asset, can be null if not an image, or not computed
-     * @param localPath if set, use it instead of asset URL 
+     * @param localPath if set, use it instead of asset URL
      * @return {@code true} if media has been updated with computed SHA-1 and must be persisted
      * @throws IOException        in case of I/O error
      * @throws URISyntaxException if URL cannot be converted to URI
@@ -304,7 +304,7 @@ public class MediaService {
 
     /**
      * Looks for Wikimedia Commons files matching the media SHA-1, if required.
-     * 
+     *
      * @param media media object
      * @return {@code true} if media has been updated with list of Wikimedia Commons
      *         files and must be persisted

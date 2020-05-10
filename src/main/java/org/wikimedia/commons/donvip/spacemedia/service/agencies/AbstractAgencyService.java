@@ -45,6 +45,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.DuplicateMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
@@ -531,13 +532,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return null;
     }
 
-    public final List<OT> getOriginalMedia(T media) {
+    public final List<DuplicateMedia<OID, OD, OT>> getOriginalMedia(T media) {
         Set<Duplicate> dupes = media.getDuplicates();
         return CollectionUtils.isEmpty(dupes) ? Collections.emptyList()
-                : dupes.stream().map(d -> getOriginalRepository().findById(getOriginalId(d.getOriginalId())))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+                : dupes.stream().sorted().map(this::mapDuplicateMedia).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    private DuplicateMedia<OID, OD, OT> mapDuplicateMedia(Duplicate duplicate) {
+        Optional<OT> optional = getOriginalRepository().findById(getOriginalId(duplicate.getOriginalId()));
+        return optional.isPresent() ? new DuplicateMedia<>(duplicate, optional.get()) : null;
     }
 
     protected abstract Class<T> getMediaClass();

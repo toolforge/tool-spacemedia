@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="_header :: common_header(~{::title},~{})">
+    <title>Spacemedia</title>
+  </head>
+  <body>
+    <nav th:replace="_header :: navbar"></nav>
+    <h1 th:text="'Error: ' + ${error}"></h1>
+    <span th:utext="${message}"></span>
+    <span th:utext="${stack}"></span>
+  </body>
+</html>
