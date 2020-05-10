@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -54,8 +56,10 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Limit;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQueryResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Revision;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsQueryResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Slot;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Tokens;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadApiResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadError;
@@ -243,7 +247,20 @@ public class CommonsService {
     public String queryRevisionContent(int pageId) throws IOException {
         RevisionsPage rp = apiHttpGet("?action=query&prop=revisions&rvprop=content&rvslots=main&rvlimit=1&pageids=" + pageId,
                 RevisionsQueryResponse.class).getQuery().getPages().get(pageId);
-        return rp != null ? rp.getRevisions().get(0).getSlots().get("main").getContent() : null;
+        if (rp != null) {
+            List<Revision> revisions = rp.getRevisions();
+            if (CollectionUtils.isNotEmpty(revisions)) {
+                Map<String, Slot> slots = revisions.get(0).getSlots();
+                if (MapUtils.isNotEmpty(slots)) {
+                    Slot main = slots.get("main");
+                    if (main != null) {
+                        return main.getContent();
+                    }
+                }
+            }
+        }
+        LOGGER.error("Couldn't find page content for {}: {}", pageId, rp);
+        return null;
     }
 
     public String getWikiHtmlPreview(String wikiCode, String pageTitle) throws IOException {

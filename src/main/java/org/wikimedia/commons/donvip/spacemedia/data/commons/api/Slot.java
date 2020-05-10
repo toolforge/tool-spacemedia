@@ -36,4 +36,9 @@ public class Slot {
     public void setContent(String content) {
         this.content = content;
     }
+
+    @Override
+    public String toString() {
+        return "Slot [contentModel=" + contentModel + ", contentFormat=" + contentFormat + ", content=" + content + "]";
+    }
 }

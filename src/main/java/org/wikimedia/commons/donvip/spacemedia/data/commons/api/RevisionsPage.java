@@ -46,4 +46,9 @@ public class RevisionsPage {
     public void setRevisions(List<Revision> revisions) {
         this.revisions = revisions;
     }
+
+    @Override
+    public String toString() {
+        return "RevisionsPage [pageId=" + pageId + ", ns=" + ns + ", title=" + title + ", revisions=" + revisions + "]";
+    }
 }

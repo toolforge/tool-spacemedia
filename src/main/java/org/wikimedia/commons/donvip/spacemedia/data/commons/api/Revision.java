@@ -13,4 +13,9 @@ public class Revision {
     public void setSlots(Map<String, Slot> slots) {
         this.slots = slots;
     }
+
+    @Override
+    public String toString() {
+        return "Revision [slots=" + slots + "]";
+    }
 }
