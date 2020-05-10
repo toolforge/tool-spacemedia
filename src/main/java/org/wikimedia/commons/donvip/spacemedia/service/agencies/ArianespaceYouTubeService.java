@@ -22,7 +22,7 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
     public ArianespaceYouTubeService(
             YouTubeVideoRepository repository,
             @Value("${arianespace.youtube.channels}") Set<String> youtubeChannels) {
-        super(repository, youtubeChannels);
+        super(repository, "arianespace", youtubeChannels);
     }
 
     @Override

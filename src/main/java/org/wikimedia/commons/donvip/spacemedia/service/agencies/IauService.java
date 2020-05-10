@@ -40,7 +40,7 @@ public class IauService extends CommonEsoService<IauMedia> {
 
     @Autowired
     public IauService(IauMediaRepository repository, @Value("${iau.search.link}") String searchLink) {
-        super(repository, searchLink, IauMedia.class);
+        super(repository, "iau", searchLink, IauMedia.class);
     }
 
     @Override

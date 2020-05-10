@@ -27,7 +27,7 @@ public class HubbleEsaService extends CommonEsoService<HubbleEsaMedia> {
     @Autowired
     public HubbleEsaService(HubbleEsaMediaRepository repository,
             @Value("${hubble.esa.search.link}") String searchLink) {
-        super(repository, searchLink, HubbleEsaMedia.class);
+        super(repository, "hubble.esa", searchLink, HubbleEsaMedia.class);
     }
 
     @Override

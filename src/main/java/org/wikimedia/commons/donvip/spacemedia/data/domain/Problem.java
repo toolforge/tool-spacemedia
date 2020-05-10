@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import java.net.URL;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,6 +16,9 @@ public class Problem {
     @GeneratedValue
     private Integer id;
 
+    /**
+     * Agency identifier.
+     */
     @Column(nullable = false)
     private String agency;
 
@@ -24,6 +28,9 @@ public class Problem {
     @Column(nullable = false, length = 380)
     private URL problematicUrl;
 
+    @Column(nullable = false)
+    private LocalDateTime date;
+
     public Integer getId() {
         return id;
     }
@@ -32,10 +39,20 @@ public class Problem {
         this.id = id;
     }
 
+    /**
+     * Returns the agency identifier.
+     *
+     * @return the agency identifier
+     */
     public String getAgency() {
         return agency;
     }
 
+    /**
+     * Sets the agency identifier.
+     *
+     * @param agency the agency identifier
+     */
     public void setAgency(String agency) {
         this.agency = agency;
     }
@@ -54,6 +71,24 @@ public class Problem {
 
     public void setProblematicUrl(URL problematicUrl) {
         this.problematicUrl = problematicUrl;
+    }
+
+    /**
+     * Returns the date at which the problem occurred.
+     *
+     * @return the date at which the problem occurred
+     */
+    public LocalDateTime getDate() {
+        return date;
+    }
+
+    /**
+     * Sets the date at which the problem occurred.
+     *
+     * @param date the date at which the problem occurred
+     */
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
 
     @Override

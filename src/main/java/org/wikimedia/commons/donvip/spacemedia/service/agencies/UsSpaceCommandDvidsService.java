@@ -19,7 +19,7 @@ public class UsSpaceCommandDvidsService
     public UsSpaceCommandDvidsService(DvidsMediaRepository<DvidsMedia> repository,
             @Value("${usspacecommand.dvids.units}") Set<String> dvidsUnits,
             @Value("${usspacecommand.dvids.min.year}") int minYear) {
-        super(repository, dvidsUnits, minYear);
+        super(repository, "usspacecommand.dvids", dvidsUnits, minYear);
     }
 
     @Override

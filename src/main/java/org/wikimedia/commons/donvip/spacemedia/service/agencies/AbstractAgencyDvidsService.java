@@ -113,8 +113,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     private final Set<String> units;
 
-    public AbstractAgencyDvidsService(DvidsMediaRepository<DvidsMedia> repository, Set<String> units, int minYear) {
-        super(repository);
+    public AbstractAgencyDvidsService(DvidsMediaRepository<DvidsMedia> repository, String id, Set<String> units, int minYear) {
+        super(repository, id);
         this.units = units;
         this.minYear = minYear;
     }
@@ -410,7 +410,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
-    protected final int doResetPerceptualHashes() {
+    protected final long doResetPerceptualHashes() {
         return mediaRepository.resetPerceptualHashes(units);
     }
 }

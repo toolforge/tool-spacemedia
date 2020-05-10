@@ -32,7 +32,7 @@ public class EsaFlickrService extends AbstractAgencyFlickrService<EsaMedia, Inte
     @Autowired
     public EsaFlickrService(FlickrMediaRepository repository,
             @Value("${esa.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, flickrAccounts);
+        super(repository, "esa.flickr", flickrAccounts);
     }
 
     @Override

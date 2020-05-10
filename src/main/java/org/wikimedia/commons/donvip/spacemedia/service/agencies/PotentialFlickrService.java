@@ -16,11 +16,11 @@ public class PotentialFlickrService extends AbstractAgencyFlickrService<FlickrMe
     @Autowired
     public PotentialFlickrService(FlickrMediaRepository repository,
             @Value("${potential.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, flickrAccounts);
+        super(repository, "potential.flickr", flickrAccounts);
     }
 
     @Override
-    @Scheduled(fixedRateString = "${potential.update.rate}", initialDelayString = "${potential.initial.delay}")
+    @Scheduled(fixedRateString = "${potential.flickr.update.rate}", initialDelayString = "${potential.flickr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

@@ -15,7 +15,7 @@ public class DlrService extends AbstractAgencyFlickrService<FlickrMedia, Long, L
 
     @Autowired
     public DlrService(FlickrMediaRepository repository, @Value("${dlr.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, flickrAccounts);
+        super(repository, "dlr", flickrAccounts);
     }
 
     @Override

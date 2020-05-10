@@ -20,7 +20,7 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
     @Autowired
     public NasaFlickrService(FlickrMediaRepository repository,
             @Value("${nasa.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, flickrAccounts);
+        super(repository, "nasa.flickr", flickrAccounts);
     }
 
     @Override

@@ -90,7 +90,7 @@ public class NasaService
 
     @Autowired
     public NasaService(NasaMediaRepository<NasaMedia> repository) {
-        super(repository);
+        super(repository, "nasa");
     }
 
     @Override

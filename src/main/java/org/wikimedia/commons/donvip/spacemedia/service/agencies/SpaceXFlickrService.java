@@ -18,7 +18,7 @@ public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia
     @Autowired
     public SpaceXFlickrService(FlickrMediaRepository repository,
             @Value("${spacex.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, flickrAccounts);
+        super(repository, "spacex.flickr", flickrAccounts);
     }
 
     @Override

@@ -18,7 +18,7 @@ public class UsSmcDvidsService extends AbstractAgencyDvidsService<DvidsMedia, Dv
     @Autowired
     public UsSmcDvidsService(DvidsMediaRepository<DvidsMedia> repository,
             @Value("${ussmc.dvids.units}") Set<String> dvidsUnits, @Value("${ussmc.dvids.min.year}") int minYear) {
-        super(repository, dvidsUnits, minYear);
+        super(repository, "ussmc.dvids", dvidsUnits, minYear);
     }
 
     @Override

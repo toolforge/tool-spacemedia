@@ -17,8 +17,8 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
 
     private FullResMediaRepository<T, ID, D> fullResRepository;
 
-    public AbstractFullResAgencyService(FullResMediaRepository<T, ID, D> repository) {
-        super(repository);
+    public AbstractFullResAgencyService(FullResMediaRepository<T, ID, D> repository, String id) {
+        super(repository, id);
         this.fullResRepository = repository;
     }
 

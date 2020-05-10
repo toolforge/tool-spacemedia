@@ -75,8 +75,8 @@ public class EsaService
     private EsaMediaRepository mediaRepository;
 
     @Value("${esa.search.link}")
-    private String searchLink; 
-    
+    private String searchLink;
+
     @Value("${esa.max.tries}")
     private int maxTries;
 
@@ -93,7 +93,7 @@ public class EsaService
 
     @Autowired
     public EsaService(EsaMediaRepository repository) {
-        super(repository);
+        super(repository, "esa");
     }
 
     @Override

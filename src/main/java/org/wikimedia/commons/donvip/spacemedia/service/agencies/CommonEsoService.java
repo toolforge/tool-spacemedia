@@ -71,8 +71,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     @Autowired
     private ObjectMapper jackson;
 
-    public CommonEsoService(CommonEsoMediaRepository<T> repository, String searchLink, Class<T> mediaClass) {
-        super(repository);
+    public CommonEsoService(CommonEsoMediaRepository<T> repository, String id, String searchLink, Class<T> mediaClass) {
+        super(repository, id);
         this.searchLink = Objects.requireNonNull(searchLink);
         this.mediaClass = Objects.requireNonNull(mediaClass);
     }
@@ -127,7 +127,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         if (media.getCategories() != null) {
             // Try to detect pictures of identifiable people, as per ESO conditions
             if (media.getCategories().size() == 1 && media.getCategories().iterator().next().contains(
-                    "People") 
+                    "People")
                     && media.getTypes() != null
                     && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
                 save = ignoreFile(media,

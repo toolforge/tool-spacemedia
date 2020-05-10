@@ -24,7 +24,7 @@ public class UsAfspcFlickrService extends AbstractAgencyFlickrService<DvidsMedia
     @Autowired
     public UsAfspcFlickrService(FlickrMediaRepository repository,
             @Value("${usafspc.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, flickrAccounts);
+        super(repository, "usafspc.flickr", flickrAccounts);
     }
 
     @Override

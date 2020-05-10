@@ -51,8 +51,8 @@ public abstract class AbstractAgencyYouTubeService
 
     protected final Set<String> youtubeChannels;
 
-    public AbstractAgencyYouTubeService(YouTubeVideoRepository repository, Set<String> youtubeChannels) {
-        super(repository);
+    public AbstractAgencyYouTubeService(YouTubeVideoRepository repository, String id, Set<String> youtubeChannels) {
+        super(repository, id);
         this.youtubeChannels = Objects.requireNonNull(youtubeChannels);
     }
 

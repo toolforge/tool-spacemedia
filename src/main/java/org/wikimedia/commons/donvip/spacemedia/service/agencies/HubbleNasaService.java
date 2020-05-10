@@ -81,7 +81,7 @@ public class HubbleNasaService extends
 
     @Autowired
     public HubbleNasaService(HubbleNasaMediaRepository repository) {
-        super(repository);
+        super(repository, "hubble.nasa");
     }
 
     @Override

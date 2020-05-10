@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -62,7 +61,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Superclass of space agencies services.
- * 
+ *
  * @param <T>   the media type the repository manages
  * @param <ID>  the type of the id of the entity the repository manages
  * @param <D>   the media date type
@@ -76,6 +75,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyService.class);
 
     protected final MediaRepository<T, ID, D> repository;
+
+    private final String id;
 
     @Autowired
     protected TransactionService transactionService;
@@ -100,25 +101,21 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     private boolean uploadEnabled;
 
-    public AbstractAgencyService(MediaRepository<T, ID, D> repository) {
+    public AbstractAgencyService(MediaRepository<T, ID, D> repository, String id) {
         this.repository = Objects.requireNonNull(repository);
+        this.id = Objects.requireNonNull(id);
     }
 
     @PostConstruct
     void init() throws IOException {
         ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/ignored.terms.csv"));
-        uploadEnabled = env.getProperty(
-                getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH)
-                        .replace("flickr", ".flickr").replace("dvids", ".dvids")
-                        .replace("youtube", ".youtube")
-                        + ".upload.enabled",
-                Boolean.class, Boolean.FALSE);
+        uploadEnabled = env.getProperty(id + ".upload.enabled", Boolean.class, Boolean.FALSE);
     }
 
     /**
      * Checks that given Commons categories exist and are not redirected. Otherwise,
      * log a warning.
-     * 
+     *
      * @param categories Commons categories to check
      */
     protected void checkCommonsCategories(Map<String, String> categories) {
@@ -208,7 +205,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     /**
      * Builds the Lucene search query to provide to Hibernate Search.
-     * 
+     *
      * @param queryBuilder the query builder
      * @param context a simple query search context, initialized to search on
      *            "title" and "description"
@@ -222,7 +219,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     /**
      * Builds the Hibernate Search query.
-     * 
+     *
      * @param q the search string
      * @return the Hibernate Search query
      */
@@ -277,20 +274,20 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     /**
      * Returns the space agency name, used in statistics and logs.
-     * 
+     *
      * @return the space agency name
      */
     @Override
     public abstract String getName();
 
     /**
-     * Returns an unique identifier used for REST controllers.
-     * 
-     * @return an unique identifier based on class name
+     * Returns an unique identifier used for REST controllers and database entries.
+     *
+     * @return an unique identifier specified by implementations
      */
     @Override
-    public String getId() {
-        return getClass().getSimpleName().replace("Service", "").toLowerCase(Locale.ENGLISH);
+    public final String getId() {
+        return id;
     }
 
     @Override
@@ -315,17 +312,17 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public final List<Problem> getProblems() {
-        return problemRepository.findByAgency(getName());
+        return problemRepository.findByAgency(getId());
     }
 
     @Override
     public final Page<Problem> getProblems(Pageable page) {
-        return problemRepository.findByAgency(getName(), page);
+        return problemRepository.findByAgency(getId(), page);
     }
 
     @Override
     public final long getProblemsCount() {
-        return problemRepository.countByAgency(getName());
+        return problemRepository.countByAgency(getId());
     }
 
     protected final Problem problem(URL problematicUrl, Throwable t) {
@@ -341,14 +338,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final Problem problem(URL problematicUrl, String errorMessage) {
-        Optional<Problem> problem = problemRepository.findByAgencyAndProblematicUrl(getName(), problematicUrl);
+        Optional<Problem> problem = problemRepository.findByAgencyAndProblematicUrl(getId(), problematicUrl);
         if (problem.isPresent()) {
             return problem.get();
         } else {
             Problem pb = new Problem();
-            pb.setAgency(getName());
+            pb.setAgency(getId());
             pb.setErrorMessage(errorMessage);
             pb.setProblematicUrl(problematicUrl);
+            pb.setDate(LocalDateTime.now());
             LOGGER.warn("{}", pb);
             return problemRepository.save(pb);
         }
@@ -567,13 +565,23 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return getName().compareTo(o.getName());
     }
 
-    protected int doResetPerceptualHashes() {
+    protected long doResetPerceptualHashes() {
         return repository.resetPerceptualHashes();
     }
 
-    public final int resetPerceptualHashes() {
-        int result = doResetPerceptualHashes();
+    protected long doResetProblems() {
+        return problemRepository.deleteByAgency(getId());
+    }
+
+    public final long resetPerceptualHashes() {
+        long result = doResetPerceptualHashes();
         LOGGER.info("Reset {} perceptual hashes for agency {}", result, getName());
+        return result;
+    }
+
+    public final long resetProblems() {
+        long result = doResetProblems();
+        LOGGER.info("Reset {} problems for agency {}", result, getName());
         return result;
     }
 }

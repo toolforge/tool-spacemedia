@@ -159,5 +159,5 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     @Modifying
     @CacheEvictDvidsAll
     @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null and m.unit in ?1")
-    int resetPerceptualHashes(Set<String> units);
+    long resetPerceptualHashes(Set<String> units);
 }

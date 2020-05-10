@@ -19,7 +19,7 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService<DvidsMe
     public UsSpaceForceDvidsService(DvidsMediaRepository<DvidsMedia> repository,
             @Value("${usspaceforce.dvids.units}") Set<String> dvidsUnits,
             @Value("${usspaceforce.dvids.min.year}") int minYear) {
-        super(repository, dvidsUnits, minYear);
+        super(repository, "usspaceforce.dvids", dvidsUnits, minYear);
     }
 
     @Override

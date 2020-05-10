@@ -59,7 +59,7 @@ public class NasaSirsService
     private NasaMediaRepository<NasaMedia> nasaMediaRepository;
 
     public NasaSirsService(NasaSirsImageRepository repository) {
-        super(repository);
+        super(repository, "nasa.sirs");
     }
 
     @Override

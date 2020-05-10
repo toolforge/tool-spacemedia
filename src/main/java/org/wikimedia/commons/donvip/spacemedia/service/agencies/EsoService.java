@@ -26,7 +26,7 @@ public class EsoService extends CommonEsoService<EsoMedia> {
 
     @Autowired
     public EsoService(EsoMediaRepository repository, @Value("${eso.search.link}") String searchLink) {
-        super(repository, searchLink, EsoMedia.class);
+        super(repository, "eso", searchLink, EsoMedia.class);
     }
 
     @Override

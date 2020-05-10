@@ -32,7 +32,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
 
     @Autowired
     public KariService(KariMediaRepository repository) {
-        super(repository);
+        super(repository, "kari");
     }
 
     @Value("${kari.view.link}")
