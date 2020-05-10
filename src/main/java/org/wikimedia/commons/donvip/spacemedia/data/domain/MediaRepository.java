@@ -24,78 +24,78 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
 
     /**
      * Count files matching the given perceptual hash.
-     * 
+     *
      * @param phash perceptual hash
-     * 
+     *
      * @return number of files matching the given perceptual hash
      */
     long countByMetadata_Phash(String phash);
 
     /**
      * Count files with a computed perceptual hash.
-     * 
+     *
      * @return number of files with a computed perceptual hash
      */
     long countByMetadata_PhashNotNull();
 
     /**
      * Count files matching the given SHA-1.
-     * 
+     *
      * @param sha1 SHA-1 hash
-     * 
+     *
      * @return number of files matching the given SHA-1
      */
     long countByMetadata_Sha1(String sha1);
 
     /**
      * Count files marked as ignored, that won't be uploaded.
-     * 
+     *
      * @return number of ignored files
      */
     long countByIgnoredTrue();
 
     /**
      * Count files not yet uploaded to Wikimedia Commons.
-     * 
+     *
      * @return number of files not yet uploaded to Wikimedia Commons
      */
     long countMissingInCommons();
 
     /**
      * Find files not yet uploaded to Wikimedia Commons.
-     * 
+     *
      * @return files not yet uploaded to Wikimedia Commons
      */
     List<T> findMissingInCommons();
 
     /**
      * Find files not yet uploaded to Wikimedia Commons.
-     * 
+     *
      * @param page pagination information
-     * 
+     *
      * @return files not yet uploaded to Wikimedia Commons
      */
     Page<T> findMissingInCommons(Pageable page);
 
     /**
      * Count files already uploaded to Wikimedia Commons.
-     * 
+     *
      * @return number of files already uploaded to Wikimedia Commons
      */
     long countUploadedToCommons();
 
     /**
      * Find files already uploaded to Wikimedia Commons.
-     * 
+     *
      * @return files already uploaded to Wikimedia Commons
      */
     List<T> findUploadedToCommons();
 
     /**
      * Find files already uploaded to Wikimedia Commons.
-     * 
+     *
      * @param page pagination information
-     * 
+     *
      * @return files already uploaded to Wikimedia Commons
      */
     Page<T> findUploadedToCommons(Pageable page);
@@ -115,6 +115,8 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
     List<T> findByIgnoredTrue();
 
     Page<T> findByIgnoredTrue(Pageable page);
+
+    List<T> findByDuplicatesIsNotEmpty();
 
     @Modifying
     @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null")

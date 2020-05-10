@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 public interface ProblemRepository extends PagingAndSortingRepository<Problem, Integer> {
@@ -16,7 +17,8 @@ public interface ProblemRepository extends PagingAndSortingRepository<Problem, I
 
     long countByAgency(String agencyId);
 
-    long deleteByAgency(String agencyId);
+    @Modifying
+    int deleteByAgency(String agencyId);
 
     Optional<Problem> findByAgencyAndProblematicUrl(String agencyId, URL problematicUrl);
 }

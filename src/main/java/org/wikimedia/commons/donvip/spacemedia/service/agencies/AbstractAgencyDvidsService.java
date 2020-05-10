@@ -414,7 +414,12 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
-    protected final long doResetPerceptualHashes() {
+    protected final List<DvidsMedia> findDuplicates() {
+        return mediaRepository.findByDuplicatesIsNotEmpty(units);
+    }
+
+    @Override
+    protected final int doResetPerceptualHashes() {
         return mediaRepository.resetPerceptualHashes(units);
     }
 }

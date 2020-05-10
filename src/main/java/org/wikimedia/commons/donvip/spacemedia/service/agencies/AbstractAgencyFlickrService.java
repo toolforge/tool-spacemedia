@@ -351,7 +351,12 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
-    protected final long doResetPerceptualHashes() {
+    protected final List<FlickrMedia> findDuplicates() {
+        return flickrRepository.findByDuplicatesIsNotEmpty(flickrAccounts);
+    }
+
+    @Override
+    protected final int doResetPerceptualHashes() {
         return flickrRepository.resetPerceptualHashes(flickrAccounts);
     }
 }

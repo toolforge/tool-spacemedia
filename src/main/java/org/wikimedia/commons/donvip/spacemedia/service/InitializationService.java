@@ -26,6 +26,9 @@ public class InitializationService implements ApplicationRunner {
     @Autowired
     private List<AbstractAgencyService<?, ?, ?, ?, ?, ?>> agencies;
 
+    @Value("${reset.duplicates}")
+    private boolean resetDuplicates;
+
     @Value("${reset.hashes}")
     private boolean resetHashes;
 
@@ -37,6 +40,9 @@ public class InitializationService implements ApplicationRunner {
         if (resetProblems) {
             LOGGER.info("Reset a total number of {} problems", self.resetProblems());
         }
+        if (resetDuplicates) {
+            LOGGER.info("Reset a total number of {} duplicates", self.resetDuplicates());
+        }
         if (resetHashes) {
             LOGGER.info("Reset a total number of {} perceptual hashes", self.resetHashes());
         }
@@ -45,12 +51,17 @@ public class InitializationService implements ApplicationRunner {
     }
 
     @Transactional
-    public long resetHashes() {
-        return agencies.stream().mapToLong(AbstractAgencyService::resetPerceptualHashes).sum();
+    public long resetDuplicates() {
+        return agencies.stream().mapToLong(AbstractAgencyService::resetDuplicates).sum();
     }
 
     @Transactional
-    public long resetProblems() {
-        return agencies.stream().mapToLong(AbstractAgencyService::resetProblems).sum();
+    public int resetHashes() {
+        return agencies.stream().mapToInt(AbstractAgencyService::resetPerceptualHashes).sum();
+    }
+
+    @Transactional
+    public int resetProblems() {
+        return agencies.stream().mapToInt(AbstractAgencyService::resetProblems).sum();
     }
 }

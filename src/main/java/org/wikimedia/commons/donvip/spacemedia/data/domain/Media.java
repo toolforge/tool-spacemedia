@@ -170,6 +170,12 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         return duplicates != null && duplicates.remove(duplicate);
     }
 
+    public void clearDuplicates() {
+        if (duplicates != null) {
+            duplicates.clear();
+        }
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(commonsFileNames, metadata);

@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -565,22 +566,42 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return getName().compareTo(o.getName());
     }
 
-    protected long doResetPerceptualHashes() {
+    protected List<T> findDuplicates() {
+        return repository.findByDuplicatesIsNotEmpty();
+    }
+
+    protected long doResetDuplicates() {
+        return StreamSupport.stream(repository.saveAll(
+                findDuplicates().stream().map(m -> {
+                    m.clearDuplicates();
+                    m.setIgnoredReason(null);
+                    m.setIgnored(null);
+                    return m;
+            }).collect(Collectors.toList())).spliterator(), false).count();
+    }
+
+    protected int doResetPerceptualHashes() {
         return repository.resetPerceptualHashes();
     }
 
-    protected long doResetProblems() {
+    protected int doResetProblems() {
         return problemRepository.deleteByAgency(getId());
     }
 
-    public final long resetPerceptualHashes() {
-        long result = doResetPerceptualHashes();
+    public final long resetDuplicates() {
+        long result = doResetDuplicates();
+        LOGGER.info("Reset {} duplicates for agency {}", result, getName());
+        return result;
+    }
+
+    public final int resetPerceptualHashes() {
+        int result = doResetPerceptualHashes();
         LOGGER.info("Reset {} perceptual hashes for agency {}", result, getName());
         return result;
     }
 
-    public final long resetProblems() {
-        long result = doResetProblems();
+    public final int resetProblems() {
+        int result = doResetProblems();
         LOGGER.info("Reset {} problems for agency {}", result, getName());
         return result;
     }
