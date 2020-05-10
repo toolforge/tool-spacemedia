@@ -368,7 +368,6 @@ public class CommonsService {
      * @param category category to check
      * @return {@code true} if the category exists and is not a redirect
      */
-    @Transactional
     @Cacheable("upToDateCategories")
     public boolean isUpToDateCategory(String category) {
         try {
@@ -378,7 +377,6 @@ public class CommonsService {
         }
     }
 
-    @Transactional
     public Set<String> findNonUpToDateCategories(Collection<String> categories) {
         return categories.parallelStream()
             .flatMap(s -> Arrays.stream(s.split(";")))
@@ -390,7 +388,6 @@ public class CommonsService {
         return category.replace(' ', '_').split("#")[0];
     }
 
-    @Transactional
     @Cacheable("categoryPages")
     public CommonsPage getCategoryPage(String category) {
         return pageRepository.findByCategoryTitle(categoryRepository
