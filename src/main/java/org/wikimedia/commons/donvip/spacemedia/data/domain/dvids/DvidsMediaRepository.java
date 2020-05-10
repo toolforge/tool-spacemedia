@@ -161,6 +161,11 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
 
     @Modifying
     @CacheEvictDvidsAll
+    @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true and m.unit in ?1")
+    int resetIgnored(Set<String> units);
+
+    @Modifying
+    @CacheEvictDvidsAll
     @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null and m.unit in ?1")
     int resetPerceptualHashes(Set<String> units);
 }

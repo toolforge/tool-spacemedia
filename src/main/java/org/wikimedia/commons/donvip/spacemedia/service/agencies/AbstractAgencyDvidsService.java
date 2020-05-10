@@ -419,6 +419,11 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
+    protected final int doResetIgnored() {
+        return mediaRepository.resetIgnored(units);
+    }
+
+    @Override
     protected final int doResetPerceptualHashes() {
         return mediaRepository.resetPerceptualHashes(units);
     }

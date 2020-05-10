@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository.CacheEvictDvidsAll;
 
 public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long, LocalDateTime> {
 
@@ -154,6 +155,11 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     void deleteAll();
 
     // UPDATE
+
+    @Modifying
+    @CacheEvictDvidsAll
+    @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true and m.pathAlias in ?1")
+    int resetIgnored(Set<String> flickrAccounts);
 
     @Modifying
     @CacheEvictFlickrAll

@@ -29,6 +29,9 @@ public class InitializationService implements ApplicationRunner {
     @Value("${reset.duplicates}")
     private boolean resetDuplicates;
 
+    @Value("${reset.ignored}")
+    private boolean resetIgnored;
+
     @Value("${reset.hashes}")
     private boolean resetHashes;
 
@@ -43,6 +46,9 @@ public class InitializationService implements ApplicationRunner {
         if (resetDuplicates) {
             LOGGER.info("Reset a total number of {} duplicates", self.resetDuplicates());
         }
+        if (resetIgnored) {
+            LOGGER.info("Reset a total number of {} ignored media", self.resetIgnored());
+        }
         if (resetHashes) {
             LOGGER.info("Reset a total number of {} perceptual hashes", self.resetHashes());
         }
@@ -53,6 +59,11 @@ public class InitializationService implements ApplicationRunner {
     @Transactional
     public long resetDuplicates() {
         return agencies.stream().mapToLong(AbstractAgencyService::resetDuplicates).sum();
+    }
+
+    @Transactional
+    public int resetIgnored() {
+        return agencies.stream().mapToInt(AbstractAgencyService::resetIgnored).sum();
     }
 
     @Transactional

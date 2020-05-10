@@ -119,6 +119,10 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
     List<T> findByDuplicatesIsNotEmpty();
 
     @Modifying
+    @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true")
+    int resetIgnored();
+
+    @Modifying
     @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null")
     int resetPerceptualHashes();
 }

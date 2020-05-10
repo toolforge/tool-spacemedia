@@ -584,6 +584,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return repository.resetPerceptualHashes();
     }
 
+    protected int doResetIgnored() {
+        return repository.resetIgnored();
+    }
+
     protected int doResetProblems() {
         return problemRepository.deleteByAgency(getId());
     }
@@ -591,6 +595,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     public final long resetDuplicates() {
         long result = doResetDuplicates();
         LOGGER.info("Reset {} duplicates for agency {}", result, getName());
+        return result;
+    }
+
+    public final int resetIgnored() {
+        int result = doResetIgnored();
+        LOGGER.info("Reset {} ignored media for agency {}", result, getName());
         return result;
     }
 

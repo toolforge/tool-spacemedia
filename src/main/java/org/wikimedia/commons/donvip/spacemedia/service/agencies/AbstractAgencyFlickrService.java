@@ -356,6 +356,11 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
+    protected final int doResetIgnored() {
+        return flickrRepository.resetIgnored(flickrAccounts);
+    }
+
+    @Override
     protected final int doResetPerceptualHashes() {
         return flickrRepository.resetPerceptualHashes(flickrAccounts);
     }
