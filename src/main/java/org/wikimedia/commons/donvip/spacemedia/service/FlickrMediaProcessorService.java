@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -60,7 +61,7 @@ public class FlickrMediaProcessorService {
 
     @Transactional
     public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
-            MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo)
+            MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Predicate<FlickrMedia> customProcessor)
             throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
@@ -68,7 +69,7 @@ public class FlickrMediaProcessorService {
         if (optMediaInRepo.isPresent()) {
             FlickrMedia mediaInRepo = optMediaInRepo.get();
             if (mediaInRepo.getLicense() != media.getLicense()) {
-                LOGGER.warn("Flickr license has changed for picture {} of {} from {} to {}", 
+                LOGGER.warn("Flickr license has changed for picture {} of {} from {} to {}",
                         media.getId(), flickrAccount, mediaInRepo.getLicense(), media.getLicense());
                 try {
                     if (FlickrFreeLicense.of(media.getLicense()) != null && mediaInRepo.isIgnored()
@@ -143,6 +144,9 @@ public class FlickrMediaProcessorService {
             LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());
         }
         if (mediaService.updateMedia(media, originalRepo)) {
+            save = true;
+        }
+        if (customProcessor.test(media)) {
             save = true;
         }
         if (save) {

@@ -333,13 +333,18 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         int count = 0;
         for (FlickrMedia media : medias) {
             try {
-                processor.processFlickrMedia(media, flickrAccount, getOriginalRepository());
+                processor.processFlickrMedia(media, flickrAccount, getOriginalRepository(), this::customProcessing);
                 count++;
             } catch (IOException e) {
                 problem(getPhotoUrl(media), e);
             }
         }
         return count;
+    }
+
+    protected boolean customProcessing(FlickrMedia media) {
+        // TO be overriden for custom processing
+        return false;
     }
 
     @Override
