@@ -222,6 +222,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
      * Builds the Hibernate Search query.
      *
      * @param q the search string
+     * @param searchEntityManager the entity manager
      * @return the Hibernate Search query
      */
     private FullTextQuery getFullTextQuery(String q, EntityManager searchEntityManager) {

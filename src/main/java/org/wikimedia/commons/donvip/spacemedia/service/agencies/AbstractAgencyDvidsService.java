@@ -58,6 +58,10 @@ import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException
 
 /**
  * Service fetching images from https://api.dvidshub.net/
+ *
+ * @param <OT> Original media type
+ * @param <OID> Original media identifier type
+ * @param <OD> Original media date type
  */
 @Service
 public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID, OD extends Temporal>

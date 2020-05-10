@@ -251,9 +251,8 @@ public class MediaService {
     /**
      * Computes the media SHA-1.
      *
-     * @param media media object
-     * @param bi {@code BufferedImage} of main asset, can be null if not an image, or not computed
-     * @param biFullRes {@code BufferedImage} of full-res asset, can be null if not an image, or not computed
+     * @param metadata media object metadata
+     * @param image {@code BufferedImage} of asset, can be null if not an image, or not computed
      * @param localPath if set, use it instead of asset URL
      * @return {@code true} if media has been updated with computed SHA-1 and must be persisted
      * @throws IOException        in case of I/O error
