@@ -62,6 +62,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     @Column(nullable = true)
     protected String ignoredReason;
 
+    @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
     protected Set<Duplicate> duplicates;
 
@@ -204,21 +205,21 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     /**
      * Determines if this media is an audio.
-     * 
+     *
      * @return {@code true} if this media is an audio
      */
     public abstract boolean isAudio();
 
     /**
      * Determines if this media is an image.
-     * 
+     *
      * @return {@code true} if this media is an image
      */
     public abstract boolean isImage();
 
     /**
      * Determines if this media is a video.
-     * 
+     *
      * @return {@code true} if this media is a video
      */
     public abstract boolean isVideo();
