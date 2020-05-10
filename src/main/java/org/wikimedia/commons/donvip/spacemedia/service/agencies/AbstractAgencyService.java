@@ -114,16 +114,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     /**
-     * Checks that given Commons categories exist and are not redirected. Otherwise,
-     * log a warning.
+     * Checks that given Commons categories exist and are not redirected. Otherwise, log a warning.
      *
      * @param categories Commons categories to check
      */
     protected void checkCommonsCategories(Map<String, String> categories) {
-        Set<String> problematicCategories = categories.values().parallelStream()
-                .flatMap(s -> Arrays.stream(s.split(";")))
-                .filter(c -> !c.isEmpty() && !commonsService.isUpToDateCategory(c))
-                .collect(Collectors.toSet());
+        Set<String> problematicCategories = commonsService.findNonUpToDateCategories(categories.values());
         if (!problematicCategories.isEmpty()) {
             LOGGER.warn("problematicCategories : {}", problematicCategories);
         }

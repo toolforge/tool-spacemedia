@@ -10,6 +10,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -174,7 +176,7 @@ public class CommonsService {
 
     public Set<String> findFilesWithSha1(String sha1) throws IOException {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
-        // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters 
+        // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters
         String sha1base36 = String.format("%31s", new BigInteger(sha1, 16).toString(36)).replace(' ', '0');
         Set<String> files = imageRepository.findBySha1(sha1base36).stream().map(CommonsImage::getName).collect(Collectors.toSet());
         if (files.isEmpty()) {
@@ -348,7 +350,7 @@ public class CommonsService {
      * Determines if a Commons category is hidden, using the special
      * {@code __HIDDENCAT__} behavior switch. See <a href=
      * "https://www.mediawiki.org/wiki/Help:Magic_words#Behavior_switches">documentation</a>.
-     * 
+     *
      * @param category category to check
      * @return {@code true} if the category is hidden
      * @throws CategoryNotFoundException     if the category is not found
@@ -362,7 +364,7 @@ public class CommonsService {
 
     /**
      * Determines if a Commons category exists and is not a redirect.
-     * 
+     *
      * @param category category to check
      * @return {@code true} if the category exists and is not a redirect
      */
@@ -375,7 +377,15 @@ public class CommonsService {
             return false;
         }
     }
-    
+
+    @Transactional
+    public Set<String> findNonUpToDateCategories(Collection<String> categories) {
+        return categories.parallelStream()
+            .flatMap(s -> Arrays.stream(s.split(";")))
+            .filter(c -> !c.isEmpty() && !self.isUpToDateCategory(c))
+            .collect(Collectors.toSet());
+    }
+
     private static String sanitizeCategory(String category) {
         return category.replace(' ', '_').split("#")[0];
     }
