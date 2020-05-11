@@ -191,7 +191,7 @@ public class MediaService {
             if (isImage && shouldReadImage(assetUrl, metadata)) {
                 try {
                     bi = Utils.readImage(assetUrl, false);
-                    if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
+                    if (bi != null && !Boolean.TRUE.equals(metadata.isReadableImage())) {
                         metadata.setReadableImage(Boolean.TRUE);
                         result = true;
                     }
