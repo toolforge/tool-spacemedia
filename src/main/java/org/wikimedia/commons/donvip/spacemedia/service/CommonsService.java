@@ -53,6 +53,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImageRepos
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQuery;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Limit;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQueryResponse;
@@ -202,8 +203,9 @@ public class CommonsService {
     }
 
     public List<FileArchive> queryFileArchive(String sha1base36) throws IOException {
-        return apiHttpGet("?action=query&list=filearchive&fasha1base36=" + sha1base36,
-                FileArchiveQueryResponse.class).getQuery().getFilearchive();
+        FileArchiveQuery query = apiHttpGet("?action=query&list=filearchive&fasha1base36=" + sha1base36,
+                FileArchiveQueryResponse.class).getQuery();
+        return query != null ? query.getFilearchive() : Collections.emptyList();
     }
 
     private <T> T apiHttpGet(String path, Class<T> responseClass) throws IOException {

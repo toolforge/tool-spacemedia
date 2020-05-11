@@ -93,6 +93,9 @@ public final class Utils {
         }
 
         ImageReader reader = iter.next();
+        if (iter.hasNext()) {
+            LOGGER.warn("At least another image reader is available and ignored: {}", iter.next());
+        }
         reader.setInput(stream, true, !readMetadata);
         try {
             return reader.read(0, reader.getDefaultReadParam());
