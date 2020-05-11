@@ -81,7 +81,16 @@ public abstract class AbstractAgencyYouTubeService
                 do {
                     SearchListResponse list = youtubeService.searchVideos(channelId, pageToken);
                     pageToken = list.getNextPageToken();
-                    count += processYouTubeVideos(buildYouTubeVideoList(list, youtubeService.listVideos(list)));
+                    List<YouTubeVideo> freeVideos = buildYouTubeVideoList(list, youtubeService.listVideos(list));
+                    count += processYouTubeVideos(freeVideos);
+                    Set<YouTubeVideo> noLongerFreeVideos = youtubeRepository.findAll(Set.of(channelId));
+                    noLongerFreeVideos.removeAll(freeVideos);
+                    if (!noLongerFreeVideos.isEmpty()) {
+                        LOGGER.warn("Deleting {} videos no longer-free for channel {}: {}",
+                                noLongerFreeVideos.size(), channelId, noLongerFreeVideos);
+                        youtubeRepository.deleteAll(noLongerFreeVideos);
+                        count += noLongerFreeVideos.size();
+                    }
                 } while (pageToken != null);
             } catch (HttpClientErrorException e) {
                 LOGGER.error("HttpClientError while fetching YouTube videos from channel {}: {}", channelId, e.getMessage());
