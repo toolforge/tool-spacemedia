@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.xml.sax.SAXException;
 
 public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
@@ -72,11 +73,12 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     long getProblemsCount();
 
-    T upload(String sha1) throws IOException;
+    T upload(String sha1) throws IOException, TooManyResultsException;
 
-    String getWikiHtmlPreview(String sha1) throws IOException, ParserConfigurationException, SAXException;
+    String getWikiHtmlPreview(String sha1)
+            throws IOException, ParserConfigurationException, SAXException, TooManyResultsException;
 
-    String getWikiCode(String sha1);
+    String getWikiCode(String sha1) throws TooManyResultsException;
 
     String getWikiCode(T media);
 

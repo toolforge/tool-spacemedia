@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AsyncAgencyUpdaterService;
@@ -90,17 +91,18 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
     }
 
     @GetMapping("/upload/{sha1}")
-    public final T upload(@PathVariable String sha1) throws IOException {
+    public final T upload(@PathVariable String sha1) throws IOException, TooManyResultsException {
         return service.upload(sha1);
     }
 
     @GetMapping("/wiki/{sha1}")
-    public final String wikiPreview(@PathVariable String sha1) throws IOException, ParserConfigurationException, SAXException {
+    public final String wikiPreview(@PathVariable String sha1)
+            throws IOException, ParserConfigurationException, SAXException, TooManyResultsException {
         return service.getWikiHtmlPreview(sha1);
     }
 
     @GetMapping("/wikicode/{sha1}")
-    public final String wikiCode(@PathVariable String sha1) {
+    public final String wikiCode(@PathVariable String sha1) throws TooManyResultsException {
         return service.getWikiCode(sha1);
     }
 }

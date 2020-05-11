@@ -51,9 +51,12 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ProblemRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeData;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
+import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
@@ -74,6 +77,8 @@ import org.xml.sax.SAXException;
 public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extends Temporal, OT extends Media<OID, OD>, OID, OD extends Temporal>
         implements Comparable<AbstractAgencyService<T, ID, D, OT, OID, OD>>, Agency<T, ID, D> {
 
+    protected static final String EN = "en";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyService.class);
 
     protected final MediaRepository<T, ID, D> repository;
@@ -83,6 +88,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Autowired
     protected TransactionService transactionService;
 
+    @Autowired
+    protected RuntimeDataRepository runtimeDataRepository;
     @Autowired
     protected ProblemRepository problemRepository;
     @Autowired
@@ -272,14 +279,6 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     /**
-     * Returns the space agency name, used in statistics and logs.
-     *
-     * @return the space agency name
-     */
-    @Override
-    public abstract String getName();
-
-    /**
      * Returns an unique identifier used for REST controllers and database entries.
      *
      * @return an unique identifier specified by implementations
@@ -289,17 +288,20 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return id;
     }
 
-    @Override
-    public abstract void updateMedia() throws IOException;
-
     protected final LocalDateTime startUpdateMedia() {
         LOGGER.info("Starting {} medias update...", getName());
-        return LocalDateTime.now();
+        RuntimeData runtimeData = getRuntimeData();
+        runtimeData.setLastUpdateStart(LocalDateTime.now());
+        return runtimeDataRepository.save(runtimeData).getLastUpdateStart();
     }
 
     protected final void endUpdateMedia(int count, LocalDateTime start) {
+        RuntimeData runtimeData = getRuntimeData();
+        LocalDateTime end = LocalDateTime.now();
+        runtimeData.setLastUpdateEnd(end);
+        runtimeData.setLastUpdateDuration(Duration.between(start, end));
         LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
-                Duration.between(LocalDateTime.now(), start));
+                runtimeDataRepository.save(runtimeData).getLastUpdateDuration());
     }
 
     @Override
@@ -351,13 +353,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected T findBySha1OrThrow(String sha1) {
+    protected T findBySha1OrThrow(String sha1) throws TooManyResultsException {
         List<T> result = repository.findByMetadata_Sha1(sha1);
         if (CollectionUtils.isEmpty(result)) {
             throw new ImageNotFoundException(sha1);
         }
         if (result.size() > 1) {
-            throw new RuntimeException("Several images found for " + sha1);
+            throw new TooManyResultsException("Several images found for " + sha1);
         }
         return result.get(0);
     }
@@ -367,7 +369,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public final T upload(String sha1) throws IOException {
+    public final T upload(String sha1) throws IOException, TooManyResultsException {
         if (!isUploadEnabled()) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
@@ -384,7 +386,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public String getWikiHtmlPreview(String sha1) throws IOException, ParserConfigurationException, SAXException {
+    public String getWikiHtmlPreview(String sha1)
+            throws IOException, ParserConfigurationException, SAXException, TooManyResultsException {
         T media = findBySha1OrThrow(sha1);
         return commonsService.getWikiHtmlPreview(getWikiCode(media), getPageTile(media),
                 media.getMetadata().getAssetUrl().toExternalForm());
@@ -395,7 +398,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public final String getWikiCode(String sha1) {
+    public final String getWikiCode(String sha1) throws TooManyResultsException {
         return getWikiCode(findBySha1OrThrow(sha1));
     }
 
@@ -441,17 +444,20 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return d.toString();
     }
 
+    /**
+     * Returns the ISO 639 (alpha-2) language code for the title/description of the given media. English by default
+     *
+     * @param media media for which irs title/description language is wanted
+     * @return the ISO 639 (alpha-2) language code for the title/description of {@code media}. English by default.
+     */
     protected String getLanguage(T media) {
-        return "en";
+        return EN;
     }
 
     protected String getDescription(T media) {
         String description = media.getDescription();
         return StringUtils.isBlank(description) ? media.getTitle() : description;
     }
-
-    @Override
-    public abstract URL getSourceUrl(T media) throws MalformedURLException;
 
     protected String getSource(T media) throws MalformedURLException {
         return wikiLink(getSourceUrl(media), media.getTitle());
@@ -483,6 +489,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return Optional.empty();
     }
 
+    /**
+     * Returns the list of Wikimedia Commons categories to apply to the given media.
+     *
+     * @param media the media for which category names are wanted
+     * @param includeHidden {@code true} if hidden categories are wanted
+     * @return the list of Wikimedia Commons categories to apply to {@code media}
+     */
     public Set<String> findCategories(T media, boolean includeHidden) {
         Set<String> result = new HashSet<>();
         if (includeHidden) {
@@ -491,6 +504,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return result;
     }
 
+    /**
+     * Returns the list of Wikimedia Commons templates to apply to the given media.
+     *
+     * @param media the media for which template names are wanted
+     * @return the list of Wikimedia Commons templates to apply to {@code media}
+     */
     public List<String> findTemplates(T media) {
         return new ArrayList<>();
     }
@@ -521,6 +540,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return null;
     }
 
+    /**
+     * Returns the original media identifier for the given string representation.
+     *
+     * @param id the string representation of an original media identifier
+     * @return the original media identifier for the given string representation
+     */
     protected OID getOriginalId(String id) {
         return null;
     }
@@ -609,5 +634,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         int result = doResetProblems();
         LOGGER.info("Reset {} problems for agency {}", result, getName());
         return result;
+    }
+
+    protected final RuntimeData getRuntimeData() {
+        return runtimeDataRepository.findById(getId()).orElseGet(() -> new RuntimeData(getId()));
     }
 }

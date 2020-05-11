@@ -272,7 +272,7 @@ public class MediaService {
             try {
                 return HashHelper.computeSha1(image);
             } catch (IOException | UnsupportedOperationException e) {
-                LOGGER.error("Error during SHA-1 computation", e);
+                LOGGER.warn("Error during direct SHA-1 computation ({}), retrying from {}", e.getMessage(), url);
                 return HashHelper.computeSha1(url);
             }
         } else if (localPath != null) {
