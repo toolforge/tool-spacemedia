@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -77,21 +78,23 @@ public abstract class AbstractAgencyYouTubeService
         for (String channelId : youtubeChannels) {
             try {
                 LOGGER.info("Fetching YouTube videos from channel '{}'...", channelId);
+                List<YouTubeVideo> freeVideos = new ArrayList<>();
                 String pageToken = null;
                 do {
                     SearchListResponse list = youtubeService.searchVideos(channelId, pageToken);
                     pageToken = list.getNextPageToken();
-                    List<YouTubeVideo> freeVideos = buildYouTubeVideoList(list, youtubeService.listVideos(list));
-                    count += processYouTubeVideos(freeVideos);
-                    Set<YouTubeVideo> noLongerFreeVideos = youtubeRepository.findAll(Set.of(channelId));
-                    noLongerFreeVideos.removeAll(freeVideos);
-                    if (!noLongerFreeVideos.isEmpty()) {
-                        LOGGER.warn("Deleting {} videos no longer-free for channel {}: {}",
-                                noLongerFreeVideos.size(), channelId, noLongerFreeVideos);
-                        youtubeRepository.deleteAll(noLongerFreeVideos);
-                        count += noLongerFreeVideos.size();
-                    }
+                    List<YouTubeVideo> videos = buildYouTubeVideoList(list, youtubeService.listVideos(list));
+                    count += processYouTubeVideos(videos);
+                    freeVideos.addAll(videos);
                 } while (pageToken != null);
+                Set<YouTubeVideo> noLongerFreeVideos = youtubeRepository.findAll(Set.of(channelId));
+                noLongerFreeVideos.removeAll(freeVideos);
+                if (!noLongerFreeVideos.isEmpty()) {
+                    LOGGER.warn("Deleting {} videos no longer-free for channel {}: {}",
+                            noLongerFreeVideos.size(), channelId, noLongerFreeVideos);
+                    youtubeRepository.deleteAll(noLongerFreeVideos);
+                    count += noLongerFreeVideos.size();
+                }
             } catch (HttpClientErrorException e) {
                 LOGGER.error("HttpClientError while fetching YouTube videos from channel {}: {}", channelId, e.getMessage());
                 if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
