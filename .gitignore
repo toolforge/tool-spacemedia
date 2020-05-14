@@ -30,10 +30,13 @@ build/
 ### VS Code ###
 .vscode/
 
+/*.hprof
 /*.m4a
 /*.mp4
 /*.mkv
+/*.part
 /*.srt
+/*.vtt
 /*.webm
-/*.hprof
+/*.ytdl
 /*.zip
