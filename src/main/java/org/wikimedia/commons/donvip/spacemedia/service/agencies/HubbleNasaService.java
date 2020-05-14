@@ -131,7 +131,7 @@ public class HubbleNasaService extends
                             try {
                                 count += doUpdateMedia(imageId, getImageDetails(rest, imageId), details);
                             } catch (HttpStatusException e) {
-                                LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
+                                LOGGER.error("Error {} while requesting {}: {}", e.getStatusCode(), e.getUrl(), e.getMessage());
                                 problem(e.getUrl(), e);
                             } catch (IOException | RuntimeException e) {
                                 LOGGER.error(
