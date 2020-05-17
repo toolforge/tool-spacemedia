@@ -32,6 +32,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
@@ -206,7 +207,7 @@ public class MediaService {
             if (updateSha1(metadata, bi, localPath)) {
                 result = true;
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | RestClientException | URISyntaxException e) {
             LOGGER.error("Error while computing hashes", e);
         } finally {
             if (bi != null) {
