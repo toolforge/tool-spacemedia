@@ -98,7 +98,11 @@ public abstract class AbstractAgencyYouTubeService
             } catch (HttpClientErrorException e) {
                 LOGGER.error("HttpClientError while fetching YouTube videos from channel {}: {}", channelId, e.getMessage());
                 if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                    break;
+                    try {
+                        processYouTubeVideos(youtubeRepository.findAll(Set.of(channelId)));
+                    } catch (MalformedURLException ex) {
+                        LOGGER.error("Error", ex);
+                    }
                 }
             } catch (IOException | RuntimeException e) {
                 LOGGER.error("Error while fetching YouTube videos from channel " + channelId, e);
@@ -146,7 +150,7 @@ public abstract class AbstractAgencyYouTubeService
                 : null;
     }
 
-    private int processYouTubeVideos(List<YouTubeVideo> videos) throws MalformedURLException {
+    private int processYouTubeVideos(Iterable<YouTubeVideo> videos) throws MalformedURLException {
         int count = 0;
         for (YouTubeVideo video : videos) {
             try {
