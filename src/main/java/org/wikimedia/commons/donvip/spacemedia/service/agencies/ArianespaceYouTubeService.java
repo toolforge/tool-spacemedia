@@ -73,15 +73,24 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
         Set<String> result = super.findCategories(video, includeHidden);
         if (includeHidden) {
             if (video.getTitle().contains("VA")) {
-                result.add("Ariane 5 Launch Videos by Arianespace");
+                result.add("Videos of Ariane 5 launches by Arianespace");
             } else if (video.getTitle().contains("VV")) {
-                result.add("Vega Launch Videos by Arianespace");
+                result.add("Videos of Vega launches by Arianespace");
             } else if (video.getTitle().contains("VS") || video.getTitle().contains("ST")) {
-                result.add("Soyouz Launch Videos by Arianespace");
+                result.add("Videos of Soyouz launches by Arianespace");
             } else {
                 result.add("Videos by Arianespace");
             }
         }
         return result;
+    }
+
+    @Override
+    protected List<String> getAgencyCategories() {
+        return List.of("Videos by Arianespace",
+                "Videos of Ariane launches by Arianespace",
+                "Videos of Ariane 5 launches by Arianespace",
+                "Videos of Soyouz launches by Arianespace",
+                "Videos of Vega launches by Arianespace");
     }
 }

@@ -19,6 +19,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -44,6 +46,9 @@ public abstract class AbstractAgencyYouTubeService
         extends AbstractAgencyService<YouTubeVideo, String, Instant, YouTubeVideo, String, Instant> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyYouTubeService.class);
+
+    private static final Pattern MERGING_DL = Pattern.compile("\\[ffmpeg\\] Merging formats into \"(\\S{11}\\.\\S{3,4})\"");
+    private static final Pattern ALREADY_DL = Pattern.compile("\\[download\\] (\\S{11}\\.\\S{3,4}) has already been downloaded and merged");
 
     @Autowired
     protected YouTubeVideoRepository youtubeRepository;
@@ -83,8 +88,8 @@ public abstract class AbstractAgencyYouTubeService
                 do {
                     SearchListResponse list = youtubeService.searchVideos(channelId, pageToken);
                     pageToken = list.getNextPageToken();
-                    List<YouTubeVideo> videos = buildYouTubeVideoList(list, youtubeService.listVideos(list));
-                    count += processYouTubeVideos(videos);
+                    List<YouTubeVideo> videos = processYouTubeVideos(buildYouTubeVideoList(list, youtubeService.listVideos(list)));
+                    count += videos.size();
                     freeVideos.addAll(videos);
                 } while (pageToken != null);
                 if (!freeVideos.isEmpty()) {
@@ -110,6 +115,7 @@ public abstract class AbstractAgencyYouTubeService
                 LOGGER.error("Error while fetching YouTube videos from channel " + channelId, e);
             }
         }
+        syncYouTubeVideos();
         endUpdateMedia(count, start);
     }
 
@@ -152,20 +158,19 @@ public abstract class AbstractAgencyYouTubeService
                 : null;
     }
 
-    private int processYouTubeVideos(Iterable<YouTubeVideo> videos) throws MalformedURLException {
-        int count = 0;
+    private List<YouTubeVideo> processYouTubeVideos(Iterable<YouTubeVideo> videos) throws MalformedURLException {
+        List<YouTubeVideo> result = new ArrayList<>();
         for (YouTubeVideo video : videos) {
             try {
-                processYouTubeVideo(video);
-                count++;
+                result.add(processYouTubeVideo(video));
             } catch (IOException e) {
                 problem(getSourceUrl(video), e);
             }
         }
-        return count;
+        return result;
     }
 
-    private void processYouTubeVideo(YouTubeVideo video) throws IOException {
+    private YouTubeVideo processYouTubeVideo(YouTubeVideo video) throws IOException {
         boolean save = false;
         Optional<YouTubeVideo> optVideoInRepo = youtubeRepository.findById(video.getId());
         if (optVideoInRepo.isPresent()) {
@@ -180,21 +185,22 @@ public abstract class AbstractAgencyYouTubeService
         if (customProcessing(video)) {
             save = true;
         }
-        if (save) {
-            youtubeRepository.save(video);
-        }
+        return save ? youtubeRepository.save(video) : video;
     }
 
     private Path downloadVideo(YouTubeVideo video) {
         try {
             String url = video.getMetadata().getAssetUrl().toExternalForm();
-            String line = Arrays.stream(Utils
-                    .execOutput(List.of(
-                            "youtube-dl", "--no-progress", "--id", "--write-auto-sub", "--convert-subs", "srt", url),
-                            30, TimeUnit.MINUTES)
-                    .split("\n"))
-                    .filter(l -> l.contains("Destination:")).findFirst().get();
-            return Paths.get(line.substring(line.indexOf(": ") + ": ".length()));
+            String[] output = Utils.execOutput(List.of(
+                "youtube-dl", "--no-progress", "--id", "--write-auto-sub", "--convert-subs", "srt", url),
+                30, TimeUnit.MINUTES).split("\n");
+            Optional<Matcher> matcher = Arrays.stream(output).map(ALREADY_DL::matcher).filter(Matcher::matches).findFirst();
+            if (matcher.isEmpty()) {
+                matcher = Arrays.stream(output).map(MERGING_DL::matcher).filter(Matcher::matches).findFirst();
+            }
+            if (matcher.isPresent()) {
+                return Paths.get(matcher.get().group(1));
+            }
         } catch (IOException | ExecutionException | InterruptedException e) {
             LOGGER.error("Error while downloading YouTube video: {}", e.getMessage());
         }
@@ -206,7 +212,7 @@ public abstract class AbstractAgencyYouTubeService
         throw new UnsupportedOperationException("<h2>Spacemedia is not able to upload YouTube videos by itself.</h2>\n"
                 + "<p>Please go to <a href=\"https://tools.wmflabs.org/video2commons\">video2commons</a> and upload the <b>"
                 + video.getId()
-                + ".mp4</b> file, using following information:</p>\n"
+                + ".mkv/mp4/webm</b> file, using following information:</p>\n"
                 + "<h4>Title:</h4>\n"
                 + commonsService.normalizeFilename(video.getUploadTitle())
                 + "\n<h4>Wikicode:</h4>\n<pre>" + wikiCode + "</pre>");
@@ -215,6 +221,17 @@ public abstract class AbstractAgencyYouTubeService
     protected boolean customProcessing(YouTubeVideo video) {
         return false;
     }
+
+    private void syncYouTubeVideos() {
+        List<String> categories = new ArrayList<>();
+        categories.add("Spacemedia files (review needed)");
+        categories.addAll(getAgencyCategories());
+        categories.add("Media from YouTube");
+        mediaService.syncYouTubeVideos(
+                youtubeRepository.findMissingInCommons(youtubeChannels), categories);
+    }
+
+    protected abstract List<String> getAgencyCategories();
 
     @Override
     public Set<String> findCategories(YouTubeVideo media, boolean includeHidden) {

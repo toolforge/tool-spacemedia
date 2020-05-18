@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -335,27 +334,27 @@ public class MediaService {
         if (StringUtils.isNotBlank(text)) {
             Matcher m = FROM_YOUTUBE.matcher(text);
             if (m.matches()) {
-                return m.group(1);
+                return m.group(1).strip();
             } else {
                 m = YOUTUBE_URL.matcher(text);
                 if (m.matches()) {
-                    return m.group(1);
+                    return m.group(1).strip();
                 }
             }
         }
         return null;
     }
 
-    @Scheduled(fixedRateString = "${youtube.sync.update.rate}", initialDelayString = "${youtube.sync.initial.delay}")
-    public void syncYouTubeVideos() {
-        if (CollectionUtils.isNotEmpty(self.syncYouTubeVideos("Spacemedia files (review needed)"))) {
-            self.syncYouTubeVideos("Media from YouTube");
+    public void syncYouTubeVideos(List<YouTubeVideo> videos, List<String> categories) {
+        for (String category : categories) {
+            if (CollectionUtils.isEmpty(self.syncYouTubeVideos(videos, category))) {
+                break;
+            }
         }
     }
 
     @Transactional
-    public List<YouTubeVideo> syncYouTubeVideos(String category) {
-        List<YouTubeVideo> missingVideos = youtubeRepository.findMissingInCommons();
+    public List<YouTubeVideo> syncYouTubeVideos(List<YouTubeVideo> missingVideos, String category) {
         if (CollectionUtils.isNotEmpty(missingVideos)) {
             LOGGER.info("Starting YouTube videos synchronization from {}...", category);
             LocalDateTime start = LocalDateTime.now();
