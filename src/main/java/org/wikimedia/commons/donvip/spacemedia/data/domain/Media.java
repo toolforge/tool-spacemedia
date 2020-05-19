@@ -179,7 +179,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     @Override
     public int hashCode() {
-        return Objects.hash(commonsFileNames, metadata);
+        return Objects.hash(title, metadata);
     }
 
     @Override
@@ -189,7 +189,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         if (obj == null || getClass() != obj.getClass())
             return false;
         Media<?, ?> other = (Media<?, ?>) obj;
-        return Objects.equals(commonsFileNames, other.commonsFileNames)
+        return Objects.equals(title, other.title)
                 && Objects.equals(metadata, other.metadata);
     }
 
