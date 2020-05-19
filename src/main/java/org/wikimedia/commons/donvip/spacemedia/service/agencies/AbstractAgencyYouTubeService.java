@@ -5,6 +5,7 @@ import static java.util.Optional.ofNullable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -178,9 +179,12 @@ public abstract class AbstractAgencyYouTubeService
         } else {
             save = true;
         }
-        if (mediaService.updateMedia(video, getOriginalRepository(),
-                video.getMetadata().getSha1() == null ? downloadVideo(video) : null)) {
+        Path path = video.getMetadata().getSha1() == null ? downloadVideo(video) : null;
+        if (mediaService.updateMedia(video, getOriginalRepository(), path)) {
             save = true;
+        }
+        if (path != null) {
+            Files.deleteIfExists(path);
         }
         if (customProcessing(video)) {
             save = true;
