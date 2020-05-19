@@ -53,7 +53,7 @@ public class InitializationService implements ApplicationRunner {
             LOGGER.info("Reset a total number of {} perceptual hashes", self.resetHashes());
         }
         // Perform the most exhaustive data-fetching operation to populate all caches at startup
-        statsService.getStats();
+        statsService.getStats(true);
     }
 
     @Transactional

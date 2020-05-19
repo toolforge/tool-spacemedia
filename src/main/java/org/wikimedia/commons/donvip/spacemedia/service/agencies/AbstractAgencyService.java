@@ -305,9 +305,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public Statistics getStatistics() {
+    public Statistics getStatistics(boolean details) {
         long problems = getProblemsCount();
-        return new Statistics(getName(), countAllMedia(), countIgnored(), countMissingMedia(),
+        return new Statistics(getName(), getId(), countAllMedia(), countUploadedMedia(), countIgnored(), countMissingMedia(),
                 countPerceptualHashes(), problems > 0 ? problems : null);
     }
 

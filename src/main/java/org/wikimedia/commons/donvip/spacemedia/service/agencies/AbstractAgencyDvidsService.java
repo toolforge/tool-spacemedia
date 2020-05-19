@@ -395,9 +395,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
-    public Statistics getStatistics() {
-        Statistics stats = super.getStatistics();
-        if (units.size() > 1) {
+    public Statistics getStatistics(boolean details) {
+        Statistics stats = super.getStatistics(details);
+        if (details && units.size() > 1) {
             stats.setDetails(units.stream()
                     .map(this::getStatistics)
                     .sorted().collect(Collectors.toList()));
@@ -407,7 +407,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     private Statistics getStatistics(String alias) {
         Set<String> singleton = Collections.singleton(alias);
-        return new Statistics(alias, mediaRepository.count(singleton),
+        return new Statistics(alias, alias,
+                mediaRepository.count(singleton),
+                mediaRepository.countUploadedToCommons(singleton),
                 mediaRepository.countByIgnoredTrue(singleton),
                 mediaRepository.countMissingInCommons(singleton),
                 mediaRepository.countByMetadata_PhashNotNull(singleton), null);

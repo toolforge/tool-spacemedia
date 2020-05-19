@@ -7,7 +7,7 @@
     <nav th:replace="_header :: navbar"></nav>
     <h2>Sources</h2>
 
-    <table class="table table-sm table-hover">
+    <table id="agencies_table" class="table table-sm table-hover">
       <thead class="thead-dark">
 	      <tr>
 	        <th>Name</th>
@@ -17,20 +17,43 @@
 	        <th>To upload</th>
 	        <th>Ignored</th>
 	        <th>Problems</th>
-	      <tr>
-      </thead>
-      <tbody>
-	      <tr th:each="agency : ${agencies}">
-	        <td><a th:text="${agency.name}" th:href="@{/{id}(id=${agency.id})}"></a></td>
-	        <td><a th:text="${agency.countAllMedia()}" th:href="@{/{id}/all(id=${agency.id})}"></a></td>
-	        <td><a th:text="${agency.countUploadedMedia()}" th:href="@{/{id}/uploaded(id=${agency.id})}"></a></td>
-	        <td><a th:text="${agency.countPerceptualHashes()}" th:href="@{/{id}/hashes(id=${agency.id})}"></a></td>
-	        <td><a th:text="${agency.countMissingMedia()}" th:href="@{/{id}/missing(id=${agency.id})}"></a></td>
-	        <td><a th:text="${agency.countIgnored()}" th:href="@{/{id}/ignored(id=${agency.id})}"></a></td>
-	        <td><a th:text="${agency.getProblemsCount()}" th:href="@{/{id}/problems(id=${agency.id})}"></a></td>
 	      </tr>
-      </tbody>
+      </thead>
     </table>
     <div th:replace="_header :: scripts"></div>
+    <script>
+    $('#agencies_table').DataTable({
+    	"info": false,
+    	"paging": false,
+    	"searching": false,
+        "ajax": {
+        	"url": "/stats?details=false",
+        	"dataSrc": ""
+        },
+        "columns": [
+            {"data": "agency", "fnCreatedCell": function (td, s, o, i, j) {
+                $(td).html("<a href='/"+o.id+"'>"+s+"</a>");
+            }},
+            {"data": "total_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+                $(td).html("<a href='/"+o.id+"/all'>"+s+"</a>");
+            }},
+            {"data": "uploaded_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+                $(td).html("<a href='/"+o.id+"/uploaded'>"+s+"</a>");
+            }},
+            {"data": "hashed_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+                $(td).html("<a href='/"+o.id+"/hashes'>"+s+"</a>");
+            }},
+            {"data": "missing_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+                $(td).html("<a href='/"+o.id+"/missing'>"+s+"</a>");
+            }},
+            {"data": "ignored_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+                $(td).html("<a href='/"+o.id+"/ignored'>"+s+"</a>");
+            }},
+            {"data": "problem_count", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+                    $(td).html("<a href='/"+o.id+"/problems'>"+s+"</a>");
+                }}
+        ]
+    });
+	</script>
   </body>
 </html>

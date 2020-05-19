@@ -398,15 +398,20 @@ public class NasaService
     }
 
     @Override
-    public Statistics getStatistics() {
-        Statistics stats = super.getStatistics();
-        List<String> centers = mediaRepository.findCenters();
-        if (centers.size() > 1) {
-            stats.setDetails(centers.parallelStream()
-                    .map(c -> new Statistics(Objects.toString(c), mediaRepository.countByCenter(c),
-                            mediaRepository.countIgnoredByCenter(c), mediaRepository.countMissingInCommonsByCenter(c),
-                            mediaRepository.countByMetadata_PhashNotNullAndCenter(c), null))
-                    .sorted().collect(Collectors.toList()));
+    public Statistics getStatistics(boolean details) {
+        Statistics stats = super.getStatistics(details);
+        if (details) {
+            List<String> centers = mediaRepository.findCenters();
+            if (centers.size() > 1) {
+                stats.setDetails(centers.parallelStream()
+                        .map(c -> new Statistics(Objects.toString(c), Objects.toString(c),
+                                mediaRepository.countByCenter(c),
+                                mediaRepository.countUploadedToCommonsByCenter(c),
+                                mediaRepository.countIgnoredByCenter(c),
+                                mediaRepository.countMissingInCommonsByCenter(c),
+                                mediaRepository.countByMetadata_PhashNotNullAndCenter(c), null))
+                        .sorted().collect(Collectors.toList()));
+            }
         }
         return stats;
     }

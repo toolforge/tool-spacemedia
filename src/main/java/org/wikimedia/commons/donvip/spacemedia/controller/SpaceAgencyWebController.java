@@ -76,7 +76,7 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
 
     @GetMapping("/stats")
     public String stats(Model model) {
-        model.addAttribute("stats", service.getStatistics());
+        model.addAttribute("stats", service.getStatistics(true));
         return template(model, "agency_stats");
     }
 

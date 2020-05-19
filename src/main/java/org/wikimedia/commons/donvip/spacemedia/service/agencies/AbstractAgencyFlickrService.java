@@ -163,9 +163,9 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
-    public Statistics getStatistics() {
-        Statistics stats = super.getStatistics();
-        if (flickrAccounts.size() > 1) {
+    public Statistics getStatistics(boolean details) {
+        Statistics stats = super.getStatistics(details);
+        if (details && flickrAccounts.size() > 1) {
             stats.setDetails(flickrAccounts.stream()
                     .map(this::getStatistics)
                     .sorted().collect(Collectors.toList()));
@@ -175,7 +175,9 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
 
     private Statistics getStatistics(String alias) {
         Set<String> singleton = Collections.singleton(alias);
-        return new Statistics(alias, flickrRepository.count(singleton),
+        return new Statistics(alias, alias,
+                flickrRepository.count(singleton),
+                flickrRepository.countUploadedToCommons(singleton),
                 flickrRepository.countByIgnoredTrue(singleton),
                 flickrRepository.countMissingInCommons(singleton),
                 flickrRepository.countByMetadata_PhashNotNull(singleton), null);

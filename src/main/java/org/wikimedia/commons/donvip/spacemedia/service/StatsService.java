@@ -14,8 +14,8 @@ public class StatsService {
     @Autowired
     private List<AbstractAgencyService<?, ?, ?, ?, ?, ?>> agencies;
 
-    public List<Statistics> getStats() {
-        return agencies.parallelStream().map(AbstractAgencyService::getStatistics).sorted()
+    public List<Statistics> getStats(boolean details) {
+        return agencies.parallelStream().map(a -> a.getStatistics(details)).sorted()
                 .collect(Collectors.toList());
     }
 }

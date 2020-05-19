@@ -65,7 +65,7 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     void updateMedia() throws IOException;
 
-    Statistics getStatistics();
+    Statistics getStatistics(boolean details);
 
     List<Problem> getProblems();
 

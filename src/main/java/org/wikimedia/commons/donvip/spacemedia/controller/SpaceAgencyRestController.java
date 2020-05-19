@@ -47,7 +47,7 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
 
     @GetMapping("/stats")
     public final Statistics getStats() {
-        return service.getStatistics();
+        return service.getStatistics(true);
     }
 
     @GetMapping("/all")
