@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -82,6 +84,9 @@ import com.github.scribejava.core.oauth.OAuth10aService;
 public class CommonsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonsService.class);
+
+    private static final Pattern EXACT_DUPE_ERROR = Pattern.compile(
+            "The upload is an exact duplicate of the current version of \\[\\[:File:(.+)\\]\\]\\.");
 
     /**
      * Minimal delay between successive uploads, in seconds.
@@ -530,6 +535,12 @@ public class CommonsService {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
                 token = queryTokens().getCsrftoken();
                 return doUpload(wikiCode, filename, url, sha1, false);
+            }
+            if ("fileexists-no-change".equals(error.getCode())) {
+                Matcher m = EXACT_DUPE_ERROR.matcher(error.getInfo());
+                if (m.matches()) {
+                    return m.group(1);
+                }
             }
             throw new IllegalArgumentException(error.toString());
         } else if (!"Success".equals(upload.getResult())) {

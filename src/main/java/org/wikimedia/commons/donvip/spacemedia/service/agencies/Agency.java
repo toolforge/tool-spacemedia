@@ -73,7 +73,9 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     long getProblemsCount();
 
-    T upload(String sha1) throws IOException, TooManyResultsException;
+    T uploadAndSave(String sha1) throws IOException, TooManyResultsException;
+
+    T upload(T media);
 
     String getWikiHtmlPreview(String sha1)
             throws IOException, ParserConfigurationException, SAXException, TooManyResultsException;

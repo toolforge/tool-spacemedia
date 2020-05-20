@@ -92,7 +92,7 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
 
     @GetMapping("/upload/{sha1}")
     public final T upload(@PathVariable String sha1) throws IOException, TooManyResultsException {
-        return service.upload(sha1);
+        return service.uploadAndSave(sha1);
     }
 
     @GetMapping("/wiki/{sha1}")

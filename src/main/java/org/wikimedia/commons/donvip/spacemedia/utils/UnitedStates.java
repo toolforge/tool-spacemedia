@@ -19,13 +19,13 @@ public final class UnitedStates {
      * https://www.dimoc.mil/Submit-DoD-VI/Digital-VI-Toolkit-read-first/Create-a-VIRIN/
      */
     private static final Pattern US_VIRIN = Pattern.compile(
-            "([0-9]{6})-([A-Z])-([0-9A-Z]{5})-([0-9]{4})(?:-([A-Z]{2}))?");
+            "([0-9]{6})-([A-Z])-([0-9A-Z]{5})-([0-9]{3,4})(?:-([A-Z]{2}))?");
 
     /**
      * Fake pattern for US Military VIRIN identifiers as found on Flickr.
      */
     private static final Pattern FAKE_US_VIRIN = Pattern.compile(
-            "([0-9]{8})-([A-Z])-([0-9A-Z]{5})-([0-9]{4})");
+            "([0-9]{8})-([A-Z])-([0-9A-Z]{5})-([0-9]{3,4})");
 
     private UnitedStates() {
 

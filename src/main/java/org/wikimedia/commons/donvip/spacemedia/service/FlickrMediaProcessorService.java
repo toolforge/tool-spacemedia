@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
@@ -61,7 +63,9 @@ public class FlickrMediaProcessorService {
 
     @Transactional
     public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
-            MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Predicate<FlickrMedia> customProcessor)
+            MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
+            Predicate<FlickrMedia> customProcessor, UploadMode uploadMode,
+            Function<FlickrMedia, FlickrMedia> uploader)
             throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
@@ -69,25 +73,7 @@ public class FlickrMediaProcessorService {
         if (optMediaInRepo.isPresent()) {
             FlickrMedia mediaInRepo = optMediaInRepo.get();
             if (mediaInRepo.getLicense() != media.getLicense()) {
-                LOGGER.warn("Flickr license has changed for picture {} of {} from {} to {}",
-                        media.getId(), flickrAccount, mediaInRepo.getLicense(), media.getLicense());
-                try {
-                    if (FlickrFreeLicense.of(media.getLicense()) != null && mediaInRepo.isIgnored()
-                            && mediaInRepo.getIgnoredReason() != null
-                            && mediaInRepo.getIgnoredReason().endsWith("is no longer free!")) {
-                        LOGGER.info("Flickr license for picture {} of {} is free again!", media.getId(), flickrAccount);
-                        mediaInRepo.setIgnored(Boolean.FALSE);
-                        mediaInRepo.setIgnoredReason(null);
-                    }
-                } catch (IllegalArgumentException e) {
-                    String message = String.format("Flickr license for picture %d of %s is no longer free!",
-                            media.getId(), flickrAccount);
-                    mediaInRepo.setIgnored(Boolean.TRUE);
-                    mediaInRepo.setIgnoredReason(message);
-                    LOGGER.warn(message);
-                }
-                mediaInRepo.setLicense(media.getLicense());
-                save = true;
+                save = handleLicenseChange(media, flickrAccount, mediaInRepo);
             }
             media = mediaInRepo;
         } else {
@@ -95,14 +81,7 @@ public class FlickrMediaProcessorService {
         }
         if (isEmpty(media.getPhotosets())) {
             try {
-                Set<FlickrPhotoSet> sets = flickrService.findPhotoSets(media.getId().toString()).stream()
-                        .map(ps -> flickrPhotoSetRepository.findById(Long.valueOf(ps.getId()))
-                                .orElseGet(() -> {
-                                    FlickrPhotoSet set = dozerMapper.map(ps, FlickrPhotoSet.class);
-                                    set.setPathAlias(flickrAccount);
-                                    return flickrPhotoSetRepository.save(set);
-                                }))
-                        .collect(Collectors.toSet());
+                Set<FlickrPhotoSet> sets = getPhotoSets(media, flickrAccount);
                 if (isNotEmpty(sets)) {
                     sets.forEach(media::addPhotoSet);
                     savePhotoSets = true;
@@ -113,12 +92,7 @@ public class FlickrMediaProcessorService {
             }
         }
         if (isBadVideoEntry(media)) {
-            URL videoUrl = getVideoUrl(media);
-            media.setOriginalUrl(videoUrl);
-            media.setCommonsFileNames(null);
-            media.getMetadata().setSha1(null);
-            media.getMetadata().setAssetUrl(videoUrl);
-            save = true;
+            save = handleBadVideo(media);
         }
         if (StringUtils.isEmpty(media.getPathAlias())) {
             media.setPathAlias(flickrAccount);
@@ -149,6 +123,11 @@ public class FlickrMediaProcessorService {
         if (customProcessor.test(media)) {
             save = true;
         }
+        if (uploadMode == UploadMode.AUTO && !Boolean.TRUE.equals(media.isIgnored())
+                && isEmpty(media.getCommonsFileNames())) {
+            media = uploader.apply(media);
+            save = true;
+        }
         if (save) {
             media = flickrRepository.save(media);
         }
@@ -156,5 +135,47 @@ public class FlickrMediaProcessorService {
             media.getPhotosets().forEach(flickrPhotoSetRepository::save);
         }
         return media;
+    }
+
+    private boolean handleBadVideo(FlickrMedia media) throws MalformedURLException {
+        URL videoUrl = getVideoUrl(media);
+        media.setOriginalUrl(videoUrl);
+        media.setCommonsFileNames(null);
+        media.getMetadata().setSha1(null);
+        media.getMetadata().setAssetUrl(videoUrl);
+        return true;
+    }
+
+    private Set<FlickrPhotoSet> getPhotoSets(FlickrMedia media, String flickrAccount) throws FlickrException {
+        return flickrService.findPhotoSets(media.getId().toString()).stream()
+                .map(ps -> flickrPhotoSetRepository.findById(Long.valueOf(ps.getId()))
+                        .orElseGet(() -> {
+                            FlickrPhotoSet set = dozerMapper.map(ps, FlickrPhotoSet.class);
+                            set.setPathAlias(flickrAccount);
+                            return flickrPhotoSetRepository.save(set);
+                        }))
+                .collect(Collectors.toSet());
+    }
+
+    private boolean handleLicenseChange(FlickrMedia media, String flickrAccount, FlickrMedia mediaInRepo) {
+        LOGGER.warn("Flickr license has changed for picture {} of {} from {} to {}",
+                media.getId(), flickrAccount, mediaInRepo.getLicense(), media.getLicense());
+        try {
+            if (FlickrFreeLicense.of(media.getLicense()) != null && mediaInRepo.isIgnored()
+                    && mediaInRepo.getIgnoredReason() != null
+                    && mediaInRepo.getIgnoredReason().endsWith("is no longer free!")) {
+                LOGGER.info("Flickr license for picture {} of {} is free again!", media.getId(), flickrAccount);
+                mediaInRepo.setIgnored(Boolean.FALSE);
+                mediaInRepo.setIgnoredReason(null);
+            }
+        } catch (IllegalArgumentException e) {
+            String message = String.format("Flickr license for picture %d of %s is no longer free!",
+                    media.getId(), flickrAccount);
+            mediaInRepo.setIgnored(Boolean.TRUE);
+            mediaInRepo.setIgnoredReason(message);
+            LOGGER.warn(message);
+        }
+        mediaInRepo.setLicense(media.getLicense());
+        return true;
     }
 }

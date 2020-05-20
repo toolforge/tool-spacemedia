@@ -54,7 +54,9 @@ public class UsSmcFlickrService extends AbstractAgencyFlickrService<DvidsMedia, 
         if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.United_States_Government_Work
                 || (media.getDescription() != null && media.getDescription().contains("Air Force photo"))) {
             result.remove(FlickrFreeLicense.United_States_Government_Work.getWikiTemplate());
-            result.add("PD-USGov-Military-Air Force");
+            if (!result.contains("PD-USGov-Military-Air Force")) {
+                result.add("PD-USGov-Military-Air Force");
+            }
         }
         return result;
     }

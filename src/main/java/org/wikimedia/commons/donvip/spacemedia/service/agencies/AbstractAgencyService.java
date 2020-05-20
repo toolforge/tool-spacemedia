@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -54,6 +55,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
@@ -108,7 +110,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     private Set<String> ignoredCommonTerms;
 
-    private boolean uploadEnabled;
+    private UploadMode uploadMode;
 
     public AbstractAgencyService(MediaRepository<T, ID, D> repository, String id) {
         this.repository = Objects.requireNonNull(repository);
@@ -118,7 +120,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @PostConstruct
     void init() throws IOException {
         ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/ignored.terms.csv"));
-        uploadEnabled = env.getProperty(id + ".upload.enabled", Boolean.class, Boolean.FALSE);
+        uploadMode = UploadMode.valueOf(
+                env.getProperty(id + ".upload", String.class, UploadMode.DISABLED.name())
+                    .toUpperCase(Locale.ENGLISH));
     }
 
     /**
@@ -365,24 +369,32 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     public final boolean isUploadEnabled() {
-        return uploadEnabled;
+        return uploadMode == UploadMode.MANUAL || uploadMode == UploadMode.AUTO;
     }
 
     @Override
-    public final T upload(String sha1) throws IOException, TooManyResultsException {
+    public final T uploadAndSave(String sha1) throws IOException, TooManyResultsException {
+        return repository.save(upload(findBySha1OrThrow(sha1)));
+    }
+
+    @Override
+    public final T upload(T media) {
         if (!isUploadEnabled()) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
-        T media = findBySha1OrThrow(sha1);
-        checkUploadPreconditions(media);
-        doUpload(getWikiCode(media), media);
-        return repository.save(media);
+        try {
+            checkUploadPreconditions(media);
+            doUpload(getWikiCode(media), media);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return media;
     }
 
     protected void doUpload(String wikiCode, T media) throws IOException {
-        media.setCommonsFileNames(
+        media.setCommonsFileNames(new HashSet<>(
                 Set.of(commonsService.upload(wikiCode, media.getUploadTitle(), media.getMetadata().getAssetUrl(),
-                        media.getMetadata().getSha1())));
+                        media.getMetadata().getSha1()))));
     }
 
     @Override
@@ -638,5 +650,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final RuntimeData getRuntimeData() {
         return runtimeDataRepository.findById(getId()).orElseGet(() -> new RuntimeData(getId()));
+    }
+
+    protected final UploadMode getUploadMode() {
+        return uploadMode;
     }
 }
