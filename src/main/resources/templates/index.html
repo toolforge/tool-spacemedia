@@ -21,37 +21,43 @@
       </thead>
     </table>
     <div th:replace="_header :: scripts"></div>
-    <script>
+    <script type="text/javascript" th:inline="javascript">
+    function alink(o, path = "") {
+    	return "[(@{/})]" + o.id + path;
+    }
+    function ahref(td, s, link) {
+    	$(td).html("<a href='"+link+"'>"+s+"</a>");
+    }
     $('#agencies_table').DataTable({
     	"info": false,
     	"paging": false,
     	"searching": false,
         "ajax": {
-        	"url": "/stats?details=false",
+        	"url": "[(@{/stats?details=false})]",
         	"dataSrc": ""
         },
         "columns": [
             {"data": "agency", "fnCreatedCell": function (td, s, o, i, j) {
-                $(td).html("<a href='/"+o.id+"'>"+s+"</a>");
+            	ahref(td, s, alink(o));
             }},
             {"data": "total_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-                $(td).html("<a href='/"+o.id+"/all'>"+s+"</a>");
+            	ahref(td, s, alink(o, "/all"));
             }},
             {"data": "uploaded_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-                $(td).html("<a href='/"+o.id+"/uploaded'>"+s+"</a>");
+            	ahref(td, s, alink(o, "/uploaded"));
             }},
             {"data": "hashed_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-                $(td).html("<a href='/"+o.id+"/hashes'>"+s+"</a>");
+            	ahref(td, s, alink(o, "/hashes"));
             }},
             {"data": "missing_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-                $(td).html("<a href='/"+o.id+"/missing'>"+s+"</a>");
+            	ahref(td, s, alink(o, "/missing"));
             }},
             {"data": "ignored_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-                $(td).html("<a href='/"+o.id+"/ignored'>"+s+"</a>");
+            	ahref(td, s, alink(o, "/ignored"));
             }},
             {"data": "problem_count", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-                    $(td).html("<a href='/"+o.id+"/problems'>"+s+"</a>");
-                }}
+            	ahref(td, s, alink(o, "/problems"));
+            }}
         ]
     });
 	</script>
