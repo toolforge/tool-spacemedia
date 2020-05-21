@@ -504,7 +504,7 @@ public class CommonsService {
 
     public String normalizeFilename(String filename) {
         // replace forbidden chars, see https://www.mediawiki.org/wiki/Manual:$wgIllegalFileChars
-        return filename.replace('/', '-').replace(':', '-').replace('\\', '-');
+        return filename.replace('/', '-').replace(':', '-').replace('\\', '-').replace('.', '_');
     }
 
     private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1, boolean renewTokenIfBadToken)
