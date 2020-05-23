@@ -271,4 +271,9 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     public final boolean isVideo() {
         return id.getType() == DvidsMediaType.video;
     }
+
+    @Override
+    public final String getUploadTitle() {
+        return title + " (" + getId().getId() + ")";
+    }
 }
