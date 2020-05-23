@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
@@ -14,7 +15,7 @@ import javax.persistence.Table;
 /**
  * <a href="https://www.mediawiki.org/wiki/Manual:Page_props_table">Mediawiki
  * page_props table</a>
- * 
+ *
  * <pre>
  * +-------------+---------------+------+-----+---------+-------+
  * | Field       | Type          | Null | Key | Default | Extra |
@@ -33,7 +34,7 @@ public class CommonsPageProp implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pp_page", nullable = false)
     private CommonsPage page;
 

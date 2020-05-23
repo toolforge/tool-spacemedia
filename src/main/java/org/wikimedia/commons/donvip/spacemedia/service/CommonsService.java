@@ -385,7 +385,7 @@ public class CommonsService {
      * @throws CategoryNotFoundException     if the category is not found
      * @throws CategoryPageNotFoundException if no page is found for the category
      */
-    @Transactional
+    @Transactional(transactionManager = "commonsTransactionManager")
     @Cacheable("hiddenCategories")
     public boolean isHiddenCategory(String category) {
         return self.getCategoryPage(category).getProps().stream().anyMatch(pp -> "hiddencat".equals(pp.getPropname()));
@@ -425,7 +425,7 @@ public class CommonsService {
                 .orElseThrow(() -> new CategoryPageNotFoundException(category));
     }
 
-    @Transactional
+    @Transactional(transactionManager = "commonsTransactionManager")
     @Cacheable("subCategories")
     public Set<String> getSubCategories(String category) {
         return categoryLinkRepository
@@ -448,14 +448,14 @@ public class CommonsService {
         return result;
     }
 
-    @Transactional
+    @Transactional(transactionManager = "commonsTransactionManager")
     @Cacheable("filesInCategory")
     public Set<CommonsCategoryLinkId> getFilesInCategory(String category) {
         return categoryLinkRepository
                 .findIdByTypeAndIdTo(CommonsCategoryLinkType.file, sanitizeCategory(category));
     }
 
-    @Transactional
+    @Transactional(transactionManager = "commonsTransactionManager")
     @Cacheable("filesPageInCategory")
     public Page<CommonsCategoryLinkId> getFilesInCategory(String category, Pageable page) {
         return categoryLinkRepository
