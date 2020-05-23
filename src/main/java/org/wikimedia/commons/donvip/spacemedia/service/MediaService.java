@@ -206,7 +206,9 @@ public class MediaService {
             if (updateSha1(metadata, bi, localPath)) {
                 result = true;
             }
-        } catch (IOException | RestClientException | URISyntaxException e) {
+        } catch (RestClientException e) {
+            LOGGER.error("Error while computing hashes for {}: {}", media, e.getMessage());
+        } catch (IOException | URISyntaxException e) {
             LOGGER.error("Error while computing hashes for " + media, e);
         } finally {
             if (bi != null) {

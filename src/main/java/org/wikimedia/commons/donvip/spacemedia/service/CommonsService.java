@@ -417,6 +417,7 @@ public class CommonsService {
         return category.replace(' ', '_').split("#")[0];
     }
 
+    @Transactional(transactionManager = "commonsTransactionManager")
     @Cacheable("categoryPages")
     public CommonsPage getCategoryPage(String category) {
         return pageRepository.findByCategoryTitle(categoryRepository

@@ -20,7 +20,7 @@ import javax.persistence.Table;
 /**
  * <a href="https://www.mediawiki.org/wiki/Manual:Page_table">Mediawiki Page
  * table</a>
- * 
+ *
  * <pre>
  * +--------------------+---------------------+------+-----+----------------+----------------+
  * | Field              | Type                | Null | Key | Default        | Extra          |
@@ -91,15 +91,15 @@ public class CommonsPage implements Serializable {
     private String lang;
 
     @JoinColumn(name = "pp_page")
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.EAGER)
     private Set<CommonsPageProp> props;
 
     @JoinColumn(name = "cl_from")
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.EAGER)
     private Set<CommonsCategoryLink> categoryLinks;
 
     @JoinColumn(name = "rd_from", table = "redirect", insertable = false, updatable = false)
-    @OneToOne(fetch = FetchType.LAZY, optional = true)
+    @OneToOne(fetch = FetchType.EAGER, optional = true)
     private CommonsRedirect redirect;
 
     public int getId() {
