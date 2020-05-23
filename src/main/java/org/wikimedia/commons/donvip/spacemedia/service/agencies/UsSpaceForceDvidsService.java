@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +21,11 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService<DvidsMe
         super(repository, "usspaceforce.dvids", dvidsUnits, minYear);
     }
 
+    @Scheduled(fixedDelay = 43200000L)
+    public final void checkDvidsCategories() {
+        checkCommonsCategories(KEYWORDS_CATS);
+    }
+
     @Override
     @Scheduled(fixedRateString = "${usspaceforce.dvids.update.rate}", initialDelayString = "${usspaceforce.dvids.initial.delay}")
     public void updateMedia() {
@@ -31,16 +35,5 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService<DvidsMe
     @Override
     public String getName() {
         return "U.S. Space Force (DVIDS)";
-    }
-
-    @Override
-    public List<String> findTemplates(DvidsMedia media) {
-        List<String> result = super.findTemplates(media);
-        if (media.getDescription().contains("Space Force photo")) {
-            result.add("PD-USGov-Military-Space Force");
-        } else {
-            result.add("PD-USGov-Military-Air Force");
-        }
-        return result;
     }
 }

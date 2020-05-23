@@ -32,4 +32,13 @@ public class UsSpaceCommandDvidsService
     public String getName() {
         return "U.S. Space Command (DVIDS)";
     }
+
+    @Override
+    public Set<String> findCategories(DvidsMedia media, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, includeHidden);
+        if (includeHidden) {
+            result.add("Photographs by the United States Space Command");
+        }
+        return result;
+    }
 }

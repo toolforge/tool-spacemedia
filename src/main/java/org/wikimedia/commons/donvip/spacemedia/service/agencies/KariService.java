@@ -7,8 +7,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -79,8 +79,8 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
     }
 
     @Override
-    public List<String> findTemplates(KariMedia media) {
-        List<String> result = super.findTemplates(media);
+    public Set<String> findTemplates(KariMedia media) {
+        Set<String> result = super.findTemplates(media);
         result.add("KOGL");
         return result;
     }

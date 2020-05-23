@@ -40,6 +40,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenExc
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
+import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 
 import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.people.User;
@@ -236,8 +237,8 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
-    public List<String> findTemplates(FlickrMedia media) {
-        List<String> result = super.findTemplates(media);
+    public Set<String> findTemplates(FlickrMedia media) {
+        Set<String> result = super.findTemplates(media);
         try {
             result.add(FlickrFreeLicense.of(media.getLicense()).getWikiTemplate());
         } catch (IllegalArgumentException e) {
@@ -245,7 +246,13 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         }
         result.add("Flickrreview");
         try {
-            result.addAll(UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media)));
+            VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media));
+            if (t != null) {
+                result.add(t.getVirinTemplate());
+                if (StringUtils.isNotBlank(t.getPdTemplate())) {
+                    result.add(t.getPdTemplate());
+                }
+            }
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException(e);
         }

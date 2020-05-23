@@ -5,13 +5,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -417,29 +420,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Override
     public final String getWikiCode(T media) {
         try {
-            StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n{{Information\n| description = ")
-                    .append("{{").append(getLanguage(media)).append(
-                            "|1=")
-                    .append(CommonsService.formatWikiCode(getDescription(media))).append("}}");
-            Optional<Temporal> creationDate = getCreationDate(media);
-            if (creationDate.isPresent()) {
-                Temporal d = creationDate.get();
-                sb.append("\n| date = ");
-                if (d instanceof LocalDateTime || d instanceof ZonedDateTime || d instanceof Instant) {
-                    sb.append("{{Taken on|").append(toIso8601(d)).append("}}");
-                } else {
-                    sb.append("{{Taken in|").append(toIso8601(d)).append("}}");
-                }
-            } else {
-                getUploadDate(media)
-                        .ifPresent(d -> sb.append("\n| date = {{Upload date|").append(toIso8601(d)).append("}}"));
-            }
-            sb.append("\n| source = ").append(getSource(media)).append("\n| author = ").append(getAuthor(media));
-            getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
-            getOtherVersions(media).ifPresent(s -> sb.append("\n| other versions = ").append(s));
-            getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
-            getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
-            sb.append("\n}}\n=={{int:license-header}}==\n");
+            StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n")
+                    .append(getWikiFileDesc(media))
+                    .append("\n=={{int:license-header}}==\n");
             findTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
             commonsService.cleanupCategories(findCategories(media, true))
                     .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
@@ -449,9 +432,44 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    private String toIso8601(Temporal d) {
+    protected String getWikiFileDesc(T media) throws MalformedURLException {
+        StringBuilder sb = new StringBuilder("{{Information\n| description = ")
+                .append("{{").append(getLanguage(media)).append("|1=")
+                .append(CommonsService.formatWikiCode(getDescription(media))).append("}}");
+        getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
+        sb.append("\n| source = ").append(getSource(media))
+          .append("\n| author = ").append(getAuthor(media));
+        getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
+        getOtherVersions(media).ifPresent(s -> sb.append("\n| other versions = ").append(s));
+        getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
+        getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
+        sb.append("\n}}");
+        return sb.toString();
+    }
+
+    protected final Optional<String> getWikiDate(T media) {
+        Optional<Temporal> creationDate = getCreationDate(media);
+        if (creationDate.isPresent()) {
+            Temporal d = creationDate.get();
+            return Optional.of(String.format("{{Taken %s|%s}}",
+                    d instanceof LocalDate || d instanceof LocalDateTime || d instanceof ZonedDateTime || d instanceof Instant ? "on" : "in",
+                            toIso8601(d)));
+        } else {
+            return getUploadDate(media).map(d -> String.format("{{Upload date|%s}}", toIso8601(d)));
+        }
+    }
+
+    protected final String toIso8601(Temporal t) {
+        Temporal d = t;
+        if (d instanceof Instant) {
+            d = ((Instant) d).atZone(ZoneOffset.UTC);
+        }
+        if ((d instanceof LocalDateTime || d instanceof ZonedDateTime)
+                && d.get(ChronoField.SECOND_OF_MINUTE) == 0 && d.get(ChronoField.MINUTE_OF_HOUR) == 0) {
+            d = LocalDate.of(d.get(ChronoField.YEAR), d.get(ChronoField.MONTH_OF_YEAR), d.get(ChronoField.DAY_OF_MONTH));
+        }
         if (d instanceof ZonedDateTime) {
-            return toIso8601(((ZonedDateTime) d).toInstant());
+            return ((ZonedDateTime) d).toInstant().toString();
         }
         return d.toString();
     }
@@ -522,8 +540,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
      * @param media the media for which template names are wanted
      * @return the list of Wikimedia Commons templates to apply to {@code media}
      */
-    public List<String> findTemplates(T media) {
-        return new ArrayList<>();
+    public Set<String> findTemplates(T media) {
+        return new LinkedHashSet<>();
     }
 
     protected final String wikiLink(URL url, String text) {
@@ -579,8 +597,16 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return getMediaClass();
     }
 
-    protected final Map<String, String> loadCsvMapping(String filename) throws IOException {
-        return CsvHelper.loadMap(getClass().getResource("/mapping/" + filename));
+    protected final Map<String, String> loadCsvMapping(String filename) {
+        return loadCsvMapping(getClass(), filename);
+    }
+
+    protected static final Map<String, String> loadCsvMapping(Class<?> klass, String filename) {
+        try {
+            return CsvHelper.loadMap(klass.getResource("/mapping/" + filename));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     protected final boolean ignoreFile(T media, String reason) {

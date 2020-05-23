@@ -327,8 +327,8 @@ public class HubbleNasaService extends
     }
 
     @Override
-    public List<String> findTemplates(HubbleNasaMedia media) {
-        List<String> result = super.findTemplates(media);
+    public Set<String> findTemplates(HubbleNasaMedia media) {
+        Set<String> result = super.findTemplates(media);
         result.add("PD-Hubble");
         return result;
     }

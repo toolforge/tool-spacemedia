@@ -248,8 +248,8 @@ public abstract class AbstractAgencyYouTubeService
     }
 
     @Override
-    public List<String> findTemplates(YouTubeVideo video) {
-        List<String> result = super.findTemplates(video);
+    public Set<String> findTemplates(YouTubeVideo video) {
+        Set<String> result = super.findTemplates(video);
         result.add("From YouTube |1= " + video.getId());
         result.add("YouTube CC-BY |1= " + video.getChannelTitle());
         result.add("LicenseReview");

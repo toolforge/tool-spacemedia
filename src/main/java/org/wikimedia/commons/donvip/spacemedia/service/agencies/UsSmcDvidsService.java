@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,17 +29,6 @@ public class UsSmcDvidsService extends AbstractAgencyDvidsService<DvidsMedia, Dv
     @Override
     public String getName() {
         return "U.S. Space and Missile Systems Center (DVIDS)";
-    }
-
-    @Override
-    public List<String> findTemplates(DvidsMedia media) {
-        List<String> result = super.findTemplates(media);
-        if (media.getDescription().contains("Space Force photo")) {
-            result.add("PD-USGov-Military-Space Force");
-        } else {
-            result.add("PD-USGov-Military-Air Force");
-        }
-        return result;
     }
 
     @Override

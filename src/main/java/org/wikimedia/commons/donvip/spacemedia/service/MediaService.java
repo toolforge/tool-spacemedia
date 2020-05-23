@@ -207,7 +207,7 @@ public class MediaService {
                 result = true;
             }
         } catch (IOException | RestClientException | URISyntaxException e) {
-            LOGGER.error("Error while computing hashes", e);
+            LOGGER.error("Error while computing hashes for " + media, e);
         } finally {
             if (bi != null) {
                 bi.flush();

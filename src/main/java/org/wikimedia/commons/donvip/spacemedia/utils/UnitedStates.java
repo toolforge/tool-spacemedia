@@ -1,8 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import java.net.URL;
-import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,43 +48,61 @@ public final class UnitedStates {
         return US_VIRIN.matcher(identifier).matches();
     }
 
-    public static List<String> getUsVirinTemplates(String virin, URL url) {
+    public static class VirinTemplates {
+        private final String virinTemplate;
+        private final String pdTemplate;
+
+        VirinTemplates(String virinTemplate, String pdTemplate) {
+            this.virinTemplate = Objects.requireNonNull(virinTemplate);
+            this.pdTemplate = pdTemplate;
+        }
+
+        public String getVirinTemplate() {
+            return virinTemplate;
+        }
+
+        public String getPdTemplate() {
+            return pdTemplate;
+        }
+    }
+
+    public static VirinTemplates getUsVirinTemplates(String virin, URL url) {
         return getUsVirinTemplates(virin, url.toExternalForm());
     }
 
-    public static List<String> getUsVirinTemplates(String virin, String url) {
+    public static VirinTemplates getUsVirinTemplates(String virin, String url) {
         Matcher m = US_VIRIN.matcher(virin);
         if (m.matches()) {
             String letter = m.group(2);
             switch (letter) {
             case "A":
-                return List.of(virinTemplate(virin, "Army", url), "PD-USGov-Military-Army");
+                return new VirinTemplates(virinTemplate(virin, "Army", url), "PD-USGov-Military-Army");
             case "D":
-                return List.of(virinTemplate(virin, "Department of Defense", url), "PD-USGov-Military");
+                return new VirinTemplates(virinTemplate(virin, "Department of Defense", url), "PD-USGov-Military");
             case "F":
-                return List.of(virinTemplate(virin, "Air Force", url), "PD-USGov-Military-Air Force");
+                return new VirinTemplates(virinTemplate(virin, "Air Force", url), "PD-USGov-Military-Air Force");
             case "G":
-                return List.of(virinTemplate(virin, "Coast Guard", url), "PD-USCG");
+                return new VirinTemplates(virinTemplate(virin, "Coast Guard", url), "PD-USCG");
             case "H":
-                return List.of(virinTemplate(virin, "Department of Homeland Security", url), "PD-USGov-DHS");
+                return new VirinTemplates(virinTemplate(virin, "Department of Homeland Security", url), "PD-USGov-DHS");
             case "M":
-                return List.of(virinTemplate(virin, "Marine Corps", url), "PD-USGov-Military-Marines");
+                return new VirinTemplates(virinTemplate(virin, "Marine Corps", url), "PD-USGov-Military-Marines");
             case "N":
-                return List.of(virinTemplate(virin, "Navy", url), "PD-USGov-Military-Navy");
+                return new VirinTemplates(virinTemplate(virin, "Navy", url), "PD-USGov-Military-Navy");
             case "O":
-                return List.of(virinTemplate(virin, "Other", url));
+                return new VirinTemplates(virinTemplate(virin, "Other", url), null);
             case "P":
-                return List.of(virinTemplate(virin, "Executive Office of the President", url), "PD-USGov-POTUS");
+                return new VirinTemplates(virinTemplate(virin, "Executive Office of the President", url), "PD-USGov-POTUS");
             case "S":
-                return List.of(virinTemplate(virin, "Department of State", url), "PD-USGov-DOS");
+                return new VirinTemplates(virinTemplate(virin, "Department of State", url), "PD-USGov-DOS");
             case "Z":
-                return List.of(virinTemplate(virin, "National Guard", url), "PD-USGov-Military-National Guard");
+                return new VirinTemplates(virinTemplate(virin, "National Guard", url), "PD-USGov-Military-National Guard");
             default:
                 LOGGER.error("Unknown US military organization letter: {}", letter);
-                return List.of(virinTemplate(virin, "Armed Forces", url));
+                return new VirinTemplates(virinTemplate(virin, "Armed Forces", url), null);
             }
         }
-        return Collections.emptyList();
+        return null;
     }
 
     private static String virinTemplate(String virin, String organization, String url) {

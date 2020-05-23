@@ -3,7 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,8 +46,8 @@ public class EsoService extends CommonEsoService<EsoMedia> {
     }
 
     @Override
-    public List<String> findTemplates(EsoMedia media) {
-        List<String> result = super.findTemplates(media);
+    public Set<String> findTemplates(EsoMedia media) {
+        Set<String> result = super.findTemplates(media);
         result.add("ESO");
         return result;
     }

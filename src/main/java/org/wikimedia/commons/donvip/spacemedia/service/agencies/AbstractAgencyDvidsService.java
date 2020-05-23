@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +56,9 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchRe
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResult;
 import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
+import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
+import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 
 /**
  * Service fetching images from https://api.dvidshub.net/
@@ -73,6 +77,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     private static final int MAX_RESULTS = 1000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyDvidsService.class);
+
+    protected static final Map<String, String> KEYWORDS_CATS = loadCsvMapping(
+            AbstractAgencyDvidsService.class, "dvids.keywords.csv");
 
     @Autowired
     private DvidsAudioRepository audioRepository;
@@ -317,6 +324,60 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     @Override
     protected final Optional<Temporal> getUploadDate(DvidsMedia media) {
         return Optional.of(media.getDatePublished());
+    }
+
+    @Override
+    protected final String getWikiFileDesc(DvidsMedia media) throws MalformedURLException {
+        StringBuilder sb = new StringBuilder("{{milim\n| description = ")
+                .append("{{").append(getLanguage(media)).append("|1=")
+                .append(CommonsService.formatWikiCode(getDescription(media))).append("}}");
+        getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
+        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getMetadata().getAssetUrl());
+        sb.append("\n| source = ").append(t !=null ? "{{" + t.getVirinTemplate() + "}}" : getSource(media))
+          .append("\n| author = ").append(getAuthor(media));
+        getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
+        Optional.ofNullable(media.getLocation()).ifPresent(l -> sb.append("\n| location = ").append(l));
+        sb.append("\n| virin = ").append(media.getVirin());
+        Optional.ofNullable(media.getDatePublished()).ifPresent(p -> sb.append("\n| dateposted = ").append(toIso8601(p)));
+        Optional.ofNullable(media.getRating()).ifPresent(r -> sb.append("\n| stars = ").append(r.intValue()));
+        sb.append("\n}}");
+        Optional<String> ov = getOtherVersions(media);
+        Optional<String> of = getOtherFields(media);
+        Optional<String> of1 = getOtherFields1(media);
+        if (ov.isPresent() || of.isPresent() || of1.isPresent()) {
+            sb.append("\n{{Information");
+            ov.ifPresent(s -> sb.append("\n| other versions = ").append(s));
+            of.ifPresent(s -> sb.append("\n| other fields = ").append(s));
+            of1.ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
+            sb.append("\n}}");
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public Set<String> findCategories(DvidsMedia media, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, includeHidden);
+        result.addAll(media.getKeywords().stream().map(KEYWORDS_CATS::get)
+                .filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(";")))
+                .collect(Collectors.toSet()));
+        if (includeHidden) {
+            result.add("Photographs by Defense Video and Imagery Distribution System");
+        }
+        return result;
+    }
+
+    @Override
+    public Set<String> findTemplates(DvidsMedia media) {
+        Set<String> result = super.findTemplates(media);
+        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getMetadata().getAssetUrl());
+        if (t != null && StringUtils.isNotBlank(t.getPdTemplate())) {
+            result.add(t.getPdTemplate());
+        }
+        if (media.getDescription().contains("Space Force photo")) {
+            result.add("PD-USGov-Military-Space Force");
+            result.remove("PD-USGov-Military-Air Force");
+        }
+        return result;
     }
 
     @Override

@@ -1,13 +1,13 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Transient;
 
 import org.hibernate.search.annotations.Indexed;
 
@@ -47,16 +47,17 @@ public class DvidsVideo extends DvidsMedia {
     @JsonProperty("time_start")
     private Float timeStart;
 
-    @Transient
-    @JsonProperty("image")
-    public URL getVideo() {
-        return metadata.getAssetUrl();
+    /**
+     * Url to full resolution frame capture from asset
+     */
+    private URL image;
+
+    public URL getImage() {
+        return image;
     }
 
-    @Transient
-    @JsonProperty("image")
-    public void setVideo(URL videoUrl) {
-        metadata.setAssetUrl(videoUrl);
+    public void setImage(URL image) {
+        this.image = image;
     }
 
     public DvidsAspectRatio getAspectRatio() {
@@ -79,6 +80,32 @@ public class DvidsVideo extends DvidsMedia {
     @JsonDeserialize(using = DvidsThumbnailDeserializer.class)
     public void setThumbnailUrl(URL thumbnailUrl) {
         super.setThumbnailUrl(thumbnailUrl);
+    }
+
+    public Set<DvidsVideoFile> getFiles() {
+        return files;
+    }
+
+    public void setFiles(Set<DvidsVideoFile> files) {
+        this.files = files;
+        this.metadata.setAssetUrl(files.stream().max(Comparator.comparing(DvidsVideoFile::getSize))
+                .map(DvidsVideoFile::getSrc).orElse(null));
+    }
+
+    public URL getHlsUrl() {
+        return hlsUrl;
+    }
+
+    public void setHlsUrl(URL hlsUrl) {
+        this.hlsUrl = hlsUrl;
+    }
+
+    public Float getTimeStart() {
+        return timeStart;
+    }
+
+    public void setTimeStart(Float timeStart) {
+        this.timeStart = timeStart;
     }
 
     @Override

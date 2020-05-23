@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,8 +108,8 @@ public class IauService extends CommonEsoService<IauMedia> {
     }
 
     @Override
-    public List<String> findTemplates(IauMedia media) {
-        List<String> result = super.findTemplates(media);
+    public Set<String> findTemplates(IauMedia media) {
+        Set<String> result = super.findTemplates(media);
         result.add("IAU");
         return result;
     }

@@ -312,7 +312,12 @@ public class CommonsService {
         for (Element link : lastSection.getElementsByTag("link")) {
             String category = link.attr("href").replace("#" + pageTitle.replace(" ", "%20"), "").replace("./Category:", "");
             String href = "https://commons.wikimedia.org/wiki/Category:" + category;
-            Element list = self.isHiddenCategory(category) ? hiddenCatLinksList : normalCatLinksList;
+            Element list = normalCatLinksList;
+            try {
+                list = self.isHiddenCategory(category) ? hiddenCatLinksList : normalCatLinksList;
+            } catch (CategoryNotFoundException | CategoryPageNotFoundException e) {
+                LOGGER.warn("Category/page not found: {}", e.getMessage());
+            }
             Element item = new Element("li");
             list.appendChild(item);
             Utils.appendChildElement(item, "a", sanitizeCategory(category),

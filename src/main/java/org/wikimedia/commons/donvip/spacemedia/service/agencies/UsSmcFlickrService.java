@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,14 +48,12 @@ public class UsSmcFlickrService extends AbstractAgencyFlickrService<DvidsMedia, 
     }
 
     @Override
-    public List<String> findTemplates(FlickrMedia media) {
-        List<String> result = super.findTemplates(media);
+    public Set<String> findTemplates(FlickrMedia media) {
+        Set<String> result = super.findTemplates(media);
         if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.United_States_Government_Work
                 || (media.getDescription() != null && media.getDescription().contains("Air Force photo"))) {
             result.remove(FlickrFreeLicense.United_States_Government_Work.getWikiTemplate());
-            if (!result.contains("PD-USGov-Military-Air Force")) {
-                result.add("PD-USGov-Military-Air Force");
-            }
+            result.add("PD-USGov-Military-Air Force");
         }
         return result;
     }

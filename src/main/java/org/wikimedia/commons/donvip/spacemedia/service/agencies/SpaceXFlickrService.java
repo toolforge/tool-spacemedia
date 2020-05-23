@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +32,8 @@ public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia
     }
 
     @Override
-    public List<String> findTemplates(FlickrMedia media) {
-        List<String> result = super.findTemplates(media);
+    public Set<String> findTemplates(FlickrMedia media) {
+        Set<String> result = super.findTemplates(media);
         if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Dedication_CC0) {
             result.remove(FlickrFreeLicense.Public_Domain_Dedication_CC0.getWikiTemplate());
             result.add("Cc-zero-SpaceX");

@@ -3,7 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,8 +47,8 @@ public class HubbleEsaService extends CommonEsoService<HubbleEsaMedia> {
     }
 
     @Override
-    public List<String> findTemplates(HubbleEsaMedia media) {
-        List<String> result = super.findTemplates(media);
+    public Set<String> findTemplates(HubbleEsaMedia media) {
+        Set<String> result = super.findTemplates(media);
         if (media.getDate().getYear() < 2009) {
             result.add("PD-Hubble");
         } else {

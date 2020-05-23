@@ -1,6 +1,11 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import javax.persistence.Embeddable;
+
+import org.apache.commons.lang3.StringUtils;
 
 @Embeddable
 public class DvidsLocation {
@@ -33,5 +38,10 @@ public class DvidsLocation {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.asList(city, state, country).stream().filter(StringUtils::isNotBlank).collect(Collectors.joining(", "));
     }
 }
