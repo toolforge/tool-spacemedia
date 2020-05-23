@@ -343,7 +343,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         for (FlickrMedia media : medias) {
             try {
                 processor.processFlickrMedia(media, flickrAccount, getOriginalRepository(),
-                        this::customProcessing, getUploadMode(), this::upload);
+                        this::customProcessing, this::shouldUploadAuto, this::upload);
                 count++;
             } catch (IOException e) {
                 problem(getPhotoUrl(media), e);

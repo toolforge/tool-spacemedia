@@ -283,6 +283,10 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         if (mediaService.updateMedia(media, getOriginalRepository())) {
             save = true;
         }
+        if (shouldUploadAuto(media)) {
+            media = upload(media);
+            save = true;
+        }
         if (save) {
             save(media);
         }

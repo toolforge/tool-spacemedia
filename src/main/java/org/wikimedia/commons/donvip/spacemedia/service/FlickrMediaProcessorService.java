@@ -8,8 +8,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
@@ -64,8 +63,8 @@ public class FlickrMediaProcessorService {
     @Transactional
     public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
             MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
-            Predicate<FlickrMedia> customProcessor, UploadMode uploadMode,
-            Function<FlickrMedia, FlickrMedia> uploader)
+            Predicate<FlickrMedia> customProcessor, Predicate<FlickrMedia> shouldUploadAuto,
+            UnaryOperator<FlickrMedia> uploader)
             throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
@@ -123,8 +122,7 @@ public class FlickrMediaProcessorService {
         if (customProcessor.test(media)) {
             save = true;
         }
-        if (uploadMode == UploadMode.AUTO && !Boolean.TRUE.equals(media.isIgnored())
-                && isEmpty(media.getCommonsFileNames())) {
+        if (shouldUploadAuto.test(media)) {
             media = uploader.apply(media);
             save = true;
         }

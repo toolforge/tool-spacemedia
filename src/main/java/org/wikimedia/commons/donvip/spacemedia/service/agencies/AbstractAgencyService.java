@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -680,5 +682,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final UploadMode getUploadMode() {
         return uploadMode;
+    }
+
+    protected final boolean shouldUploadAuto(T media) {
+        return getUploadMode() == UploadMode.AUTO && !Boolean.TRUE.equals(media.isIgnored())
+            && isEmpty(media.getCommonsFileNames());
     }
 }
