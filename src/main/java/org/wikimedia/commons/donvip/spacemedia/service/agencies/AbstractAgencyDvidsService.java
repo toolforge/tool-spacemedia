@@ -340,17 +340,10 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         sb.append("\n| virin = ").append(media.getVirin());
         Optional.ofNullable(media.getDatePublished()).ifPresent(p -> sb.append("\n| dateposted = ").append(toIso8601(p)));
         Optional.ofNullable(media.getRating()).ifPresent(r -> sb.append("\n| stars = ").append(r.intValue()));
+        getOtherVersions(media).ifPresent(s -> sb.append("\n| other versions = ").append(s));
+        getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
+        getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
-        Optional<String> ov = getOtherVersions(media);
-        Optional<String> of = getOtherFields(media);
-        Optional<String> of1 = getOtherFields1(media);
-        if (ov.isPresent() || of.isPresent() || of1.isPresent()) {
-            sb.append("\n{{Information");
-            ov.ifPresent(s -> sb.append("\n| other versions = ").append(s));
-            of.ifPresent(s -> sb.append("\n| other fields = ").append(s));
-            of1.ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
-            sb.append("\n}}");
-        }
         return sb.toString();
     }
 
