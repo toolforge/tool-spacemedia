@@ -40,3 +40,5 @@ build/
 /*.webm
 /*.ytdl
 /*.zip
+/pom.xml.releaseBackup
+/release.properties
