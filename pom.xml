@@ -23,6 +23,12 @@
 		<scribejava-version>6.9.0</scribejava-version>
 	</properties>
 
+	<scm>
+		<connection>scm:git:https://phabricator.wikimedia.org/source/tool-spacemedia.git</connection>
+		<tag>HEAD</tag>
+		<url>https://phabricator.wikimedia.org/source/tool-spacemedia/</url>
+	</scm>
+
 	<dependencyManagement>
 	    <dependencies>
 	        <dependency>
