@@ -299,6 +299,13 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
+    protected final String getSource(DvidsMedia media) throws MalformedURLException {
+        URL sourceUrl = getSourceUrl(media);
+        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), sourceUrl);
+        return t != null ? "{{" + t.getVirinTemplate() + "}}" : sourceUrl.toExternalForm();
+    }
+
+    @Override
     protected final String getAuthor(DvidsMedia media) throws MalformedURLException {
         StringBuilder result = new StringBuilder();
         Matcher m = US_MEDIA_BY.matcher(media.getDescription());
@@ -307,7 +314,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         } else if (StringUtils.isNotBlank(media.getBranch()) && !"Joint".equals(media.getBranch())) {
             result.append("U.S. ").append(media.getBranch()).append(' ').append(media.getId().getType()).append(" by ");
         }
-        result.append(media.getCredit().stream().map(this::dvidsCreditToString).collect(Collectors.joining(", ")));
+        result.append(media.getCredit().stream().map(this::dvidsCreditToString).distinct().collect(Collectors.joining(", ")));
         return result.toString();
     }
 
@@ -336,8 +343,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 .append("{{").append(getLanguage(media)).append("|1=")
                 .append(CommonsService.formatWikiCode(getDescription(media))).append("}}");
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
-        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getMetadata().getAssetUrl());
-        sb.append("\n| source = ").append(t !=null ? "{{" + t.getVirinTemplate() + "}}" : getSource(media))
+        sb.append("\n| source = ").append(getSource(media))
           .append("\n| author = ").append(getAuthor(media));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
         Optional.ofNullable(media.getLocation()).ifPresent(l -> sb.append("\n| location = ").append(l));
