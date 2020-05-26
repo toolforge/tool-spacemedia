@@ -12,6 +12,7 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -101,6 +102,24 @@ public class NasaSirsService
     @Scheduled(fixedRateString = "${nasa.sirs.update.rate}", initialDelayString = "${nasa.sirs.initial.delay}")
     public void updateMedia() throws IOException {
         LocalDateTime start = startUpdateMedia();
+        int count = updateFromSirs();
+        Set<String> processedImages = new HashSet<>();
+        for (NasaSirsImage image : repository.findAll()) {
+            if (!processedImages.contains(image.getId())) {
+                for (NasaSirsImage dupe : repository.findByMetadata_Sha1(image.getMetadata().getSha1())) {
+                    if (!dupe.getId().equals(image.getId())) {
+                        processedImages.add(dupe.getId());
+                        LOGGER.warn("Deleting {} SIRS image (duplicate of {})", dupe.getId(), image.getId());
+                        repository.delete(dupe);
+                        count++;
+                    }
+                }
+            }
+        }
+        endUpdateMedia(count, start);
+    }
+
+    private int updateFromSirs() throws IOException {
         int count = 0;
         for (String category : loadCategories()) {
             LOGGER.info("{} medias update for '{}'...", getName(), category);
@@ -112,50 +131,50 @@ public class NasaSirsService
                 for (String imageLink : imageLinks) {
                     String id = imageLink.substring(imageLink.lastIndexOf('=') + 1);
                     URL url = new URL(imageLink);
+                    if ("$id\\\"".equals(id)) {
+                        problem(url, "invalid id");
+                        return count;
+                    }
                     NasaSirsImage media = null;
                     try {
                         boolean save = false;
                         Optional<NasaSirsImage> mediaInRepo = repository.findById(id);
                         if (mediaInRepo.isPresent()) {
                             media = mediaInRepo.get();
-                        }
-                        if (media == null || media.getThumbnailUrl() == null) {
+                        } else {
                             List<String> values = loadImageValues(imageLink);
-                            boolean newMedia = null == media; // FIXME migration code, to remove later
-                            if (newMedia) {
-                                media = new NasaSirsImage();
-                                media.setId(id);
-                                media.setTitle(values.get(0));
-                                media.setCategory(values.get(1));
-                                try {
-                                    media.setDate(LocalDate.parse(values.get(3), usDateformatter));
-                                    media.setYear(Year.of(media.getDate().getYear()));
-                                } catch (DateTimeParseException e) {
-                                    media.setYear(Year.parse(values.get(3)));
-                                }
-                                media.setKeywords(NasaService.normalizeKeywords(Collections.singleton(values.get(4))));
+                            media = new NasaSirsImage();
+                            media.setId(id);
+                            media.setTitle(values.get(0));
+                            media.setCategory(values.get(1));
+                            try {
+                                media.setDate(LocalDate.parse(values.get(3), usDateformatter));
+                                media.setYear(Year.of(media.getDate().getYear()));
+                            } catch (DateTimeParseException e) {
+                                media.setYear(Year.parse(values.get(3)));
                             }
+                            media.setKeywords(NasaService.normalizeKeywords(Collections.singleton(values.get(4))));
                             media.setThumbnailUrl(new URL(url.getProtocol(), url.getHost(), values.get(5)));
-                            if (newMedia) {
-                                media.getMetadata().setAssetUrl(new URL(url.getProtocol(), url.getHost(), values.get(6)));
-                                media.setDescription(values.get(7));
+                            media.getMetadata().setAssetUrl(new URL(url.getProtocol(), url.getHost(), values.get(6)));
+                            media.setDescription(values.get(7));
+                            save = true;
+                        }
+                        if (media != null) {
+                            if (doCommonUpdate(media)) {
+                                save = true;
                             }
-                            save = true;
+                            if (save) {
+                                repository.save(media);
+                            }
+                            count++;
                         }
-                        if (doCommonUpdate(media)) {
-                            save = true;
-                        }
-                        if (save) {
-                            repository.save(media);
-                        }
-                        count++;
                     } catch (HttpStatusException e) {
                         problem(url, e);
                     }
                 }
             }
         }
-        endUpdateMedia(count, start);
+        return count;
     }
 
     private static List<String> loadImageValues(String imageLink) throws IOException {
@@ -184,5 +203,28 @@ public class NasaSirsService
     private Set<String> loadCategories() throws IOException {
         return Jsoup.connect(categoriesUrl).timeout(15_000).get().getElementsByTag("tbody").get(0)
                 .getElementsByTag("input").stream().map(e -> e.attr("value")).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<String> findCategories(NasaSirsImage media, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, includeHidden);
+        if (includeHidden) {
+            result.add("Stennis Space Center in " + media.getYear());
+        }
+        return result;
+    }
+
+    @Override
+    protected String getSource(NasaSirsImage media) throws MalformedURLException {
+        return super.getSource(media)
+                + " ([" + media.getMetadata().getAssetUrl() + " direct link])\n"
+                + "{{NASA-image|id=" + media.getId() + "|center=SSC}}";
+    }
+
+    @Override
+    public Set<String> findTemplates(NasaSirsImage media) {
+        Set<String> result = super.findTemplates(media);
+        result.add("PD-USGov-NASA");
+        return result;
     }
 }

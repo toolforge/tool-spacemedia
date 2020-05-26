@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import java.net.MalformedURLException;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -67,5 +68,17 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
             }
         }
         return !Objects.equals(originalDescription, media.getDescription());
+    }
+
+    @Override
+    protected String getSource(FlickrMedia media) throws MalformedURLException {
+        return super.getSource(media) + "\n{{NASA-image|id=" + media.getId() + "|center=}}";
+    }
+
+    @Override
+    public Set<String> findTemplates(FlickrMedia media) {
+        Set<String> result = super.findTemplates(media);
+        result.add("PD-USGov-NASA");
+        return result;
     }
 }

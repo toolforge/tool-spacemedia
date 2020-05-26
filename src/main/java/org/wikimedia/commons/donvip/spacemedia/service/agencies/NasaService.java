@@ -416,6 +416,18 @@ public class NasaService
         return stats;
     }
 
+    @Override
+    protected String getSource(NasaMedia media) throws MalformedURLException {
+        return "{{NASA-image|id=" + media.getId() + "|center=" + media.getCenter() + "}}";
+    }
+
+    @Override
+    public Set<String> findTemplates(NasaMedia media) {
+        Set<String> result = super.findTemplates(media);
+        result.add("PD-USGov-NASA");
+        return result;
+    }
+
     static class Counter {
         int count = 0;
     }
