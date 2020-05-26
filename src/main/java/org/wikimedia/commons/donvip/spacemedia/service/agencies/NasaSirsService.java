@@ -95,7 +95,7 @@ public class NasaSirsService
 
     @Override
     protected Optional<Temporal> getCreationDate(NasaSirsImage media) {
-        return Optional.of(media.getDate());
+        return Optional.of(media.getDate() != null ? media.getDate() : media.getYear());
     }
 
     @Override
