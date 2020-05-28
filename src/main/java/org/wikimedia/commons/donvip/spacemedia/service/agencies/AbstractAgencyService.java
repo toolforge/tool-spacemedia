@@ -14,6 +14,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -687,5 +688,18 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     protected final boolean shouldUploadAuto(T media) {
         return getUploadMode() == UploadMode.AUTO && !Boolean.TRUE.equals(media.isIgnored())
             && isEmpty(media.getCommonsFileNames());
+    }
+
+    protected static void addOtherField(StringBuilder sb, String name, Collection<?> values) {
+        if (CollectionUtils.isNotEmpty(values)) {
+            addOtherField(sb, name + (values.size() > 1 ? "s" : ""),
+                    values.stream().filter(Objects::nonNull).map(Object::toString).filter(StringUtils::isNotBlank).collect(Collectors.joining("; ")));
+        }
+    }
+
+    protected static void addOtherField(StringBuilder sb, String name, String value) {
+        if (StringUtils.isNotBlank(value)) {
+            sb.append("{{information field|name=").append(name).append("|value=").append(value).append("}}");
+        }
     }
 }

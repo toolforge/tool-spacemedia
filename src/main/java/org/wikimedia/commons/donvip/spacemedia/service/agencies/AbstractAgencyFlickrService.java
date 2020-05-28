@@ -216,6 +216,15 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
+    protected Optional<String> getOtherFields(FlickrMedia media) {
+        StringBuilder sb = new StringBuilder();
+        addOtherField(sb, "Flickr set", media.getPhotosets());
+        addOtherField(sb, "Flickr tag", media.getTags());
+        String s = sb.toString();
+        return s.isEmpty() ? Optional.empty() : Optional.of(s);
+    }
+
+    @Override
     public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
         Set<String> result = super.findCategories(media, includeHidden);
         if (includeHidden) {

@@ -80,6 +80,6 @@ public class FlickrPhotoSet {
 
     @Override
     public String toString() {
-        return "FlickrPhotoSet [id=" + id + ", title=" + title + "]";
+        return title;
     }
 }

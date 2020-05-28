@@ -395,6 +395,21 @@ public class EsaService
     }
 
     @Override
+    protected Optional<String> getOtherFields(EsaMedia media) {
+        StringBuilder sb = new StringBuilder();
+        addOtherField(sb, "Action", media.getAction());
+        addOtherField(sb, "Activity", media.getActivity());
+        addOtherField(sb, "Keyword", media.getKeywords());
+        addOtherField(sb, "Location", media.getLocations());
+        addOtherField(sb, "Mission", media.getMission());
+        addOtherField(sb, "People", media.getPeople());
+        addOtherField(sb, "Set", media.getPhotoSet());
+        addOtherField(sb, "System", media.getSystems());
+        String s = sb.toString();
+        return s.isEmpty() ? Optional.empty() : Optional.of(s);
+    }
+
+    @Override
     public Set<String> findCategories(EsaMedia media, boolean includeHidden) {
         Set<String> result = super.findCategories(media, includeHidden);
         if (includeHidden) {
@@ -412,34 +427,81 @@ public class EsaService
                 Arrays.stream(peopleCats.split(";")).forEach(result::add);
             }
         }
-        enrichEsaCategories(result, media);
+        enrichEsaCategories(result, media, media.getCopyright());
         return result;
     }
 
-    public static void enrichEsaCategories(Set<String> categories, Media<?, ?> media) {
+    public static void enrichEsaCategories(Set<String> categories, Media<?, ?> media, String author) {
         if (media.getDescription() != null) {
-            if (categories.contains("Photos by Mars Express") && media.getDescription().contains("ESA/DLR/FU Berlin")) {
-                categories.remove("Photos by Mars Express");
-                categories.add("Photos by HRSC");
+            enrichEnvisat(categories, media, author);
+            enrichMarsExpress(categories, media, author);
+        }
+    }
+
+    private static void enrichEnvisat(Set<String> categories, Media<?, ?> media, String author) {
+        String descLc = media.getDescription().toLowerCase(Locale.ENGLISH);
+        String titleLc = media.getTitle().toLowerCase(Locale.ENGLISH);
+        if (categories.contains("Envisat") &&
+                (descLc.contains("medium resolution imaging spectrometer") || descLc.contains("(meris)"))) {
+            categories.remove("Envisat");
+            if (titleLc.contains("bloom")) {
+                categories.add("Photos of phytoplankton by Envisat MERIS");
+            } else {
+                categories.add("Envisat MERIS images");
             }
-            if (categories.contains("Photos by HRSC")
-                    // Catch lowercase, normalcase, english and german
-                    && (media.getTitle().contains("opographi") || media.getDescription().contains("opographi"))) {
-                categories.remove("Photos by HRSC");
-                categories.add("Mars false-color topographic views by HRSC");
-            }
-            if (categories.contains("Photos by HRSC")
-                    // Catch lowercase, normalcase, english and german
-                    && (media.getTitle().contains("3D") || media.getTitle().contains("3-D") || media.getTitle().contains("naglyph"))) {
-                categories.remove("Photos by HRSC");
-                categories.add("Mars 3D anaglyphs by HRSC");
-            }
-            if (categories.contains("Photos by HRSC")
-                    // Catch lowercase, normalcase, english and german
-                    && (media.getTitle().contains("erspectiv") || media.getTitle().contains("erspektiv"))) {
-                categories.remove("Photos by HRSC");
-                categories.add("Mars perspective views by HRSC");
-            }
+        }
+        if (categories.contains("Envisat") &&
+                (descLc.contains("advanced synthetic aperture radar") || descLc.contains("(asar)"))) {
+            categories.remove("Envisat");
+            categories.add("Envisat Advanced Synthetic Aperture Radar images");
+        }
+        if (categories.contains("Envisat") &&
+                (descLc.contains("this envisat") || descLc.contains("acquired by envisat"))) {
+            categories.remove("Envisat");
+            categories.add("Envisat images");
+        }
+    }
+
+    private static void enrichMarsExpress(Set<String> categories, Media<?, ?> media, String author) {
+        if ((categories.contains("Mars Express") || categories.contains("Photos by Mars Express"))
+                && (media.getDescription().contains("ESA/DLR/FU Berlin") || author.contains("ESA/DLR/FU Berlin"))) {
+            categories.remove("Mars Express");
+            categories.remove("Photos by Mars Express");
+            categories.add("Photos by HRSC");
+        }
+        String titleLc = media.getTitle().toLowerCase(Locale.ENGLISH);
+        if (categories.contains("Photos by HRSC")
+                // Catch english and german
+                && (titleLc.contains("topographi") || media.getDescription().contains("topographi"))) {
+            categories.remove("Photos by HRSC");
+            categories.add("Mars false-color topographic views by HRSC");
+        }
+        if (categories.contains("Photos by HRSC")
+                // Catch english and german
+                && (titleLc.contains("3d") || titleLc.contains("3-d") || titleLc.contains("anaglyph"))) {
+            categories.remove("Photos by HRSC");
+            categories.add("Mars 3D anaglyphs by HRSC");
+        }
+        if (categories.contains("Photos by HRSC")
+                // Catch english and german
+                && (titleLc.contains("perspectiv") || titleLc.contains("perspektiv"))) {
+            categories.remove("Photos by HRSC");
+            categories.add("Mars perspective views by HRSC");
+        }
+        if (categories.contains("Photos by HRSC")
+                && (titleLc.contains("black") && titleLc.contains("white"))) {
+            categories.remove("Photos by HRSC");
+            categories.add("Black and white nadir views of Mars by HRSC");
+        }
+        if (categories.contains("Photos by HRSC")
+                && (titleLc.contains("colour") && !titleLc.contains("false"))) {
+            categories.remove("Photos by HRSC");
+            categories.add("Colour nadir views of Mars by HRSC");
+        }
+        if (categories.contains("Photos by HRSC")
+                && (titleLc.contains("colour") && titleLc.contains("false"))) {
+            categories.remove("Photos by HRSC");
+            categories.add("False-colour nadir views of Mars by HRSC");
         }
     }
 

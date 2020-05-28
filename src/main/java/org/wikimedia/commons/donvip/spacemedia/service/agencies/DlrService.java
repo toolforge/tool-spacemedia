@@ -30,7 +30,7 @@ public class DlrService extends AbstractAgencyFlickrService<FlickrMedia, Long, L
         if (includeHidden) {
             result.add("Files from Deutsches Zentrum für Luft- und Raumfahrt Flickr stream");
         }
-        EsaService.enrichEsaCategories(result, media);
+        EsaService.enrichEsaCategories(result, media, "");
         return result;
     }
 
