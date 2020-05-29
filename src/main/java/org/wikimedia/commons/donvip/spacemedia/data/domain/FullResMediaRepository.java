@@ -29,7 +29,7 @@ public interface FullResMediaRepository<T extends FullResMedia<ID, D>, ID, D ext
 
     List<T> findByMetadata_PhashOrFullResMetadata_Phash(String phash, String fullResPhash);
 
-    Optional<T> findByFullResMetadata_Sha1(String sha1);
+    List<T> findByFullResMetadata_Sha1(String sha1);
 
     default List<T> findByMetadata_Sha1OrFullResMetadata_Sha1(String sha1) {
         return findByMetadata_Sha1OrFullResMetadata_Sha1(sha1, sha1);

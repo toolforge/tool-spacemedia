@@ -24,13 +24,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -56,6 +57,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.DuplicateMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeData;
@@ -70,7 +72,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
-import org.xml.sax.SAXException;
 
 /**
  * Superclass of space agencies services.
@@ -363,10 +364,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected T findBySha1OrThrow(String sha1) throws TooManyResultsException {
-        List<T> result = repository.findByMetadata_Sha1(sha1);
+    protected final T findBySomeSha1OrThrow(String sha1, Function<String, List<T>> finder, boolean throwIfNotFound)
+            throws TooManyResultsException {
+        List<T> result = finder.apply(sha1);
         if (CollectionUtils.isEmpty(result)) {
-            throw new ImageNotFoundException(sha1);
+            if (throwIfNotFound) {
+                throw new ImageNotFoundException(sha1);
+            } else {
+                return null;
+            }
         }
         if (result.size() > 1) {
             throw new TooManyResultsException("Several images found for " + sha1);
@@ -374,13 +380,17 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return result.get(0);
     }
 
+    protected final T findBySha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {
+        return findBySomeSha1OrThrow(sha1, repository::findByMetadata_Sha1, throwIfNotFound);
+    }
+
     public final boolean isUploadEnabled() {
         return uploadMode == UploadMode.MANUAL || uploadMode == UploadMode.AUTO;
     }
 
     @Override
-    public final T uploadAndSave(String sha1) throws IOException, TooManyResultsException {
-        return repository.save(upload(findBySha1OrThrow(sha1)));
+    public T uploadAndSave(String sha1) throws IOException, TooManyResultsException {
+        return repository.save(upload(findBySha1OrThrow(sha1, true)));
     }
 
     @Override
@@ -390,25 +400,36 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
         try {
             checkUploadPreconditions(media);
-            doUpload(getWikiCode(media), media);
+            doUpload(media);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return media;
     }
 
-    protected void doUpload(String wikiCode, T media) throws IOException {
-        media.setCommonsFileNames(new HashSet<>(
-                Set.of(commonsService.upload(wikiCode, media.getUploadTitle(), media.getMetadata().getAssetUrl(),
-                        media.getMetadata().getSha1()))));
+    protected void doUpload(T media) throws IOException {
+        doUpload(getWikiCode(media, media.getMetadata()), media, media.getMetadata(), media::setCommonsFileNames);
+    }
+
+    protected final void doUpload(String wikiCode, T media, Metadata metadata, Consumer<Set<String>> setter) throws IOException {
+        setter.accept(new HashSet<>(
+                Set.of(commonsService.upload(wikiCode, media.getUploadTitle(), metadata.getAssetUrl(), metadata.getSha1()))));
     }
 
     @Override
-    public String getWikiHtmlPreview(String sha1)
-            throws IOException, ParserConfigurationException, SAXException, TooManyResultsException {
-        T media = findBySha1OrThrow(sha1);
-        return commonsService.getWikiHtmlPreview(getWikiCode(media), getPageTile(media),
-                media.getMetadata().getAssetUrl().toExternalForm());
+    public String getWikiHtmlPreview(String sha1) throws TooManyResultsException {
+        T media = findBySha1OrThrow(sha1, true);
+        Metadata metadata = media.getMetadata();
+        return getWikiHtmlPreview(media, metadata);
+    }
+
+    protected final String getWikiHtmlPreview(T media, Metadata metadata) {
+        try {
+            return commonsService.getWikiHtmlPreview(getWikiCode(media, metadata), getPageTile(media),
+                    metadata.getAssetUrl().toExternalForm());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected String getPageTile(T media) {
@@ -416,15 +437,16 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public final String getWikiCode(String sha1) throws TooManyResultsException {
-        return getWikiCode(findBySha1OrThrow(sha1));
+    public String getWikiCode(String sha1) throws TooManyResultsException {
+        T media = findBySha1OrThrow(sha1, true);
+        return getWikiCode(media, media.getMetadata());
     }
 
     @Override
-    public final String getWikiCode(T media) {
+    public final String getWikiCode(T media, Metadata metadata) {
         try {
             StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n")
-                    .append(getWikiFileDesc(media))
+                    .append(getWikiFileDesc(media, metadata))
                     .append("\n=={{int:license-header}}==\n");
             findTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
             commonsService.cleanupCategories(findCategories(media, true))
@@ -435,7 +457,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected String getWikiFileDesc(T media) throws MalformedURLException {
+    protected String getWikiFileDesc(T media, Metadata metadata) throws MalformedURLException {
         StringBuilder sb = new StringBuilder("{{Information\n| description = ")
                 .append("{{").append(getLanguage(media)).append("|1=")
                 .append(CommonsService.formatWikiCode(getDescription(media))).append("}}");
@@ -443,7 +465,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         sb.append("\n| source = ").append(getSource(media))
           .append("\n| author = ").append(getAuthor(media));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
-        getOtherVersions(media).ifPresent(s -> sb.append("\n| other versions = ").append(s));
+        getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| other versions = ").append(s));
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
@@ -510,7 +532,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return Optional.empty();
     }
 
-    protected Optional<String> getOtherVersions(T media) {
+    protected Optional<String> getOtherVersions(T media, Metadata metadata) {
         return Optional.empty();
     }
 
@@ -520,6 +542,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected Optional<String> getOtherFields1(T media) {
         return Optional.empty();
+    }
+
+    protected static String gallery(String file, String text) {
+        return "<gallery>" + file + '|' + text + "</gallery>";
     }
 
     /**
@@ -690,16 +716,39 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             && isEmpty(media.getCommonsFileNames());
     }
 
-    protected static void addOtherField(StringBuilder sb, String name, Collection<?> values) {
+    protected static void addOtherField(StringBuilder sb, String name, Collection<?> values, Map<String, String> catMapping) {
         if (CollectionUtils.isNotEmpty(values)) {
             addOtherField(sb, name + (values.size() > 1 ? "s" : ""),
-                    values.stream().filter(Objects::nonNull).map(Object::toString).filter(StringUtils::isNotBlank).collect(Collectors.joining("; ")));
+                    values.stream().filter(Objects::nonNull).map(Object::toString).filter(StringUtils::isNotBlank).map(s -> {
+                        if (catMapping != null) {
+                            String cat = catMapping.get(s);
+                            if (StringUtils.isNotBlank(cat)) {
+                                return "[[:Category:" + cat + '|' + s + "]]";
+                            }
+                        }
+                        return s;
+                    }).collect(Collectors.joining("; ")));
         }
     }
 
+    protected static void addOtherField(StringBuilder sb, String name, Collection<?> values) {
+        addOtherField(sb, name, values, null);
+    }
+
     protected static void addOtherField(StringBuilder sb, String name, String value) {
+        addOtherField(sb, name, value, null);
+    }
+
+    protected static void addOtherField(StringBuilder sb, String name, String value, Map<String, String> catMapping) {
         if (StringUtils.isNotBlank(value)) {
-            sb.append("{{information field|name=").append(name).append("|value=").append(value).append("}}");
+            String s = value;
+            if (catMapping != null) {
+                String cat = catMapping.get(value);
+                if (StringUtils.isNotBlank(cat)) {
+                    s = "[[:Category:" + cat + '|' + value + "]]";
+                }
+            }
+            sb.append("{{information field|name=").append(name).append("|value=").append(s).append("}}");
         }
     }
 }

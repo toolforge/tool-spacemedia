@@ -88,8 +88,10 @@ public class EsaService
 
     private DateTimeFormatter dateFormatter;
 
+    private Map<String, String> esaLocations;
     private Map<String, String> esaMissions;
     private Map<String, String> esaPeople;
+    private Map<String, String> esaSystems;
 
     @Autowired
     public EsaService(EsaMediaRepository repository) {
@@ -101,14 +103,18 @@ public class EsaService
     void init() throws IOException {
         super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern);
+        esaLocations = loadCsvMapping("esa.locations.csv");
         esaMissions = loadCsvMapping("esa.missions.csv");
         esaPeople = loadCsvMapping("esa.people.csv");
+        esaSystems = loadCsvMapping("esa.systems.csv");
     }
 
     @Scheduled(fixedDelay = 43200000L)
     public void checkEsaCategories() {
+        checkCommonsCategories(esaLocations);
         checkCommonsCategories(esaMissions);
         checkCommonsCategories(esaPeople);
+        checkCommonsCategories(esaSystems);
     }
 
     @Override
@@ -401,10 +407,10 @@ public class EsaService
         addOtherField(sb, "Activity", media.getActivity());
         addOtherField(sb, "Keyword", media.getKeywords());
         addOtherField(sb, "Location", media.getLocations());
-        addOtherField(sb, "Mission", media.getMission());
-        addOtherField(sb, "People", media.getPeople());
+        addOtherField(sb, "Mission", media.getMission(), esaMissions);
+        addOtherField(sb, "People", media.getPeople(), esaPeople);
         addOtherField(sb, "Set", media.getPhotoSet());
-        addOtherField(sb, "System", media.getSystems());
+        addOtherField(sb, "System", media.getSystems(), esaSystems);
         String s = sb.toString();
         return s.isEmpty() ? Optional.empty() : Optional.of(s);
     }
@@ -415,16 +421,27 @@ public class EsaService
         if (includeHidden) {
             result.add("ESA images (review needed)");
         }
-        if (media.getMission() != null) {
-            String missionCats = esaMissions.get(media.getMission());
-            if (StringUtils.isNotBlank(missionCats)) {
-                Arrays.stream(missionCats.split(";")).forEach(result::add);
+        String mission = media.getMission();
+        if (mission != null) {
+            String cats = esaMissions.get(mission);
+            if (StringUtils.isNotBlank(cats)) {
+                Arrays.stream(cats.split(";")).forEach(result::add);
             }
         }
         if (media.getPeople() != null) {
-            String peopleCats = esaPeople.get(media.getPeople());
-            if (StringUtils.isNotBlank(peopleCats)) {
-                Arrays.stream(peopleCats.split(";")).forEach(result::add);
+            String cats = esaPeople.get(media.getPeople());
+            if (StringUtils.isNotBlank(cats)) {
+                Arrays.stream(cats.split(";")).forEach(result::add);
+            }
+        }
+        if (media.getLocations() != null) {
+            for (String location : media.getLocations()) {
+                String cats = esaLocations.get(location);
+                if (StringUtils.isNotBlank(cats)
+                        && ("ESOC".equals(cats) || cats.endsWith(" Station") || (cats.startsWith("Satellite")
+                        && (mission.contains("Sentinel") || mission.contains("Envisat") || media.getSystems().contains("Copernicus"))))) {
+                    Arrays.stream(cats.split(";")).forEach(result::add);
+                }
             }
         }
         enrichEsaCategories(result, media, media.getCopyright());

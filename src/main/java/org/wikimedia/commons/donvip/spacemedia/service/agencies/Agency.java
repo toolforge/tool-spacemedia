@@ -6,16 +6,14 @@ import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.lucene.misc.TermStats;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
-import org.xml.sax.SAXException;
 
 public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
@@ -77,12 +75,11 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     T upload(T media);
 
-    String getWikiHtmlPreview(String sha1)
-            throws IOException, ParserConfigurationException, SAXException, TooManyResultsException;
+    String getWikiHtmlPreview(String sha1) throws TooManyResultsException;
 
     String getWikiCode(String sha1) throws TooManyResultsException;
 
-    String getWikiCode(T media);
+    String getWikiCode(T media, Metadata metadata);
 
     URL getSourceUrl(T media) throws MalformedURLException;
 

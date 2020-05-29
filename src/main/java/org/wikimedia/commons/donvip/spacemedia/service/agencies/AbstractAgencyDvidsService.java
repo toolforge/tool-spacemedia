@@ -30,6 +30,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudioRepository;
@@ -338,7 +339,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
-    protected final String getWikiFileDesc(DvidsMedia media) throws MalformedURLException {
+    protected final String getWikiFileDesc(DvidsMedia media, Metadata metadata) throws MalformedURLException {
         StringBuilder sb = new StringBuilder("{{milim\n| description = ")
                 .append("{{").append(getLanguage(media)).append("|1=")
                 .append(CommonsService.formatWikiCode(getDescription(media))).append("}}");
@@ -350,7 +351,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         sb.append("\n| virin = ").append(media.getVirin());
         Optional.ofNullable(media.getDatePublished()).ifPresent(p -> sb.append("\n| dateposted = ").append(toIso8601(p)));
         Optional.ofNullable(media.getRating()).ifPresent(r -> sb.append("\n| stars = ").append(r.intValue()));
-        getOtherVersions(media).ifPresent(s -> sb.append("\n| other versions = ").append(s));
+        getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| other versions = ").append(s));
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");

@@ -3,6 +3,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +15,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 
 @Service
 public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpaceXFlickrService.class);
 
     @Autowired
     public SpaceXFlickrService(FlickrMediaRepository repository,
@@ -34,9 +38,13 @@ public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia
     @Override
     public Set<String> findTemplates(FlickrMedia media) {
         Set<String> result = super.findTemplates(media);
-        if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Dedication_CC0) {
-            result.remove(FlickrFreeLicense.Public_Domain_Dedication_CC0.getWikiTemplate());
-            result.add("Cc-zero-SpaceX");
+        try {
+            if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Dedication_CC0) {
+                result.remove(FlickrFreeLicense.Public_Domain_Dedication_CC0.getWikiTemplate());
+                result.add("Cc-zero-SpaceX");
+            }
+        } catch (IllegalArgumentException e) {
+            LOGGER.debug(e.getMessage());
         }
         return result;
     }

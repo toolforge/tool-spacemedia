@@ -163,6 +163,11 @@ public class EsaMedia extends FullResMedia<Integer, LocalDateTime> {
     }
 
     @Override
+    public String getUploadTitle() {
+        return title + " ESA" + getId();
+    }
+
+    @Override
     public boolean isAudio() {
         return false;
     }
