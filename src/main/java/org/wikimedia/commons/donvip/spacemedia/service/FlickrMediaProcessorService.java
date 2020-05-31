@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -63,7 +64,7 @@ public class FlickrMediaProcessorService {
     @Transactional
     public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
             MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
-            Predicate<FlickrMedia> customProcessor, Predicate<FlickrMedia> shouldUploadAuto,
+            Predicate<FlickrMedia> customProcessor, BiPredicate<FlickrMedia, Set<String>> shouldUploadAuto,
             UnaryOperator<FlickrMedia> uploader)
             throws IOException {
         boolean save = false;
@@ -122,7 +123,7 @@ public class FlickrMediaProcessorService {
         if (customProcessor.test(media)) {
             save = true;
         }
-        if (shouldUploadAuto.test(media)) {
+        if (shouldUploadAuto.test(media, media.getCommonsFileNames())) {
             media = uploader.apply(media);
             save = true;
         }

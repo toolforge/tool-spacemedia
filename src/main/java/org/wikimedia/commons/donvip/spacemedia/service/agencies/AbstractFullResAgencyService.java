@@ -46,8 +46,8 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
 
     @Override
     protected final void doUpload(T media) throws IOException {
-        super.doUpload(media);
-        doUpload(getWikiCode(media, media.getFullResMetadata()), media, media.getFullResMetadata(), media::setFullResCommonsFileNames);
+        doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames);
+        doUpload(media, media.getFullResMetadata(), media::getFullResCommonsFileNames, media::setFullResCommonsFileNames);
     }
 
     protected final T findByFullResSha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {

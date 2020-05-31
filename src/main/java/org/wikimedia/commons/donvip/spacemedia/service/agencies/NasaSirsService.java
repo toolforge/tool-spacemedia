@@ -104,6 +104,7 @@ public class NasaSirsService
         LocalDateTime start = startUpdateMedia();
         int count = updateFromSirs();
         Set<String> processedImages = new HashSet<>();
+        // SIRS doesn"t work anymore so make sure we're still able to handle existing files
         for (NasaSirsImage image : repository.findMissingInCommons()) {
             if (!processedImages.contains(image.getId())) {
                 for (NasaSirsImage dupe : repository.findByMetadata_Sha1(image.getMetadata().getSha1())) {
@@ -113,7 +114,10 @@ public class NasaSirsService
                         repository.delete(dupe);
                         count++;
                     }
-                    if (shouldUploadAuto(image)) {
+                    if (doCommonUpdate(image)) {
+                        image = repository.save(image);
+                    }
+                    if (shouldUploadAuto(image, image.getCommonsFileNames())) {
                         repository.save(upload(image));
                     }
                 }
