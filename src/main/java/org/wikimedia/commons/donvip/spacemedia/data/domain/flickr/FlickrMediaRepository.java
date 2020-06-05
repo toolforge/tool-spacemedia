@@ -165,4 +165,9 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @CacheEvictFlickrAll
     @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null and m.pathAlias in ?1")
     int resetPerceptualHashes(Set<String> flickrAccounts);
+
+    @Modifying
+    @CacheEvictFlickrAll
+    @Query("update #{#entityName} m set m.metadata.sha1 = null where m.metadata.sha1 is not null and m.pathAlias in ?1")
+    int resetSha1Hashes(Set<String> flickrAccounts);
 }

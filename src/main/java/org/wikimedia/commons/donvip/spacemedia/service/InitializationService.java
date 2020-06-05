@@ -32,8 +32,11 @@ public class InitializationService implements ApplicationRunner {
     @Value("${reset.ignored}")
     private boolean resetIgnored;
 
-    @Value("${reset.hashes}")
-    private boolean resetHashes;
+    @Value("${reset.perceptual.hashes}")
+    private boolean resetPerceptualHashes;
+
+    @Value("${reset.sha1.hashes}")
+    private boolean resetSha1Hashes;
 
     @Value("${reset.problems}")
     private boolean resetProblems;
@@ -49,8 +52,11 @@ public class InitializationService implements ApplicationRunner {
         if (resetIgnored) {
             LOGGER.info("Reset a total number of {} ignored media", self.resetIgnored());
         }
-        if (resetHashes) {
-            LOGGER.info("Reset a total number of {} perceptual hashes", self.resetHashes());
+        if (resetPerceptualHashes) {
+            LOGGER.info("Reset a total number of {} perceptual hashes", self.resetPerceptualHashes());
+        }
+        if (resetSha1Hashes) {
+            LOGGER.info("Reset a total number of {} SHA-1 hashes", self.resetSha1Hashes());
         }
         // Perform the most exhaustive data-fetching operation to populate all caches at startup
         statsService.getStats(true);
@@ -67,8 +73,13 @@ public class InitializationService implements ApplicationRunner {
     }
 
     @Transactional
-    public int resetHashes() {
+    public int resetPerceptualHashes() {
         return agencies.stream().mapToInt(AbstractAgencyService::resetPerceptualHashes).sum();
+    }
+
+    @Transactional
+    public int resetSha1Hashes() {
+        return agencies.stream().mapToInt(AbstractAgencyService::resetSha1Hashes).sum();
     }
 
     @Transactional

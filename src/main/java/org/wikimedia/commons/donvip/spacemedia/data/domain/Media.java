@@ -63,9 +63,19 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     @Column(nullable = true)
     protected String ignoredReason;
 
+    /**
+     * Duplicates are other media considered strictly or nearly identical, thus ignored and not to be uploaded.
+     */
     @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
     protected Set<Duplicate> duplicates;
+
+    /**
+     * Variants are other media considered similar but not identical, thus not ignored and to be uploaded and linked to this media.
+     */
+    @Column(nullable = false)
+    @ElementCollection(fetch = FetchType.EAGER)
+    protected Set<Duplicate> variants;
 
     @Column(nullable = true)
     protected LocalDateTime lastUpdate;
@@ -152,6 +162,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Set<Duplicate> getDuplicates() {
         return duplicates;
     }
@@ -174,6 +185,32 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     public void clearDuplicates() {
         if (duplicates != null) {
             duplicates.clear();
+        }
+    }
+
+    @Override
+    public Set<Duplicate> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(Set<Duplicate> originalIds) {
+        this.variants = originalIds;
+    }
+
+    public boolean addVariant(Duplicate variant) {
+        if (variants == null) {
+            variants = new HashSet<>();
+        }
+        return variants.add(variant);
+    }
+
+    public boolean removeVariant(Duplicate variant) {
+        return variants != null && variants.remove(variant);
+    }
+
+    public void clearVariants() {
+        if (variants != null) {
+            variants.clear();
         }
     }
 
@@ -238,5 +275,25 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      */
     public final URL getPreviewUrl() {
         return Optional.ofNullable(getThumbnailUrl()).orElse(getMetadata().getAssetUrl());
+    }
+
+    /**
+     * Determines if other media with a low but positive perceptual hash difference are considered as variants instead of duplicates.
+     *
+     * @return {@code true} if other media with a low but positive perceptual hash difference are considered as variants instead of duplicates.
+     */
+    public boolean considerVariants() {
+        return false;
+    }
+
+    /**
+     * Returns either the first file name found in Commons database, or the upload title followed by the given extension.
+     *
+     * @param commonsFileNames file names found in Commons database
+     * @param ext file extension to be appended to upload title no filename is found in Commons database
+     * @return either the first file name found in Commons database, or the upload title followed by the given extension
+     */
+    public final String getFirstCommonsFileNameOrUploadTitle(Set<String> commonsFileNames, String ext) {
+        return CollectionUtils.isEmpty(commonsFileNames) ? getUploadTitle() + '.' + ext : commonsFileNames.iterator().next();
     }
 }

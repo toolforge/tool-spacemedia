@@ -1,8 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,14 +101,6 @@ public final class Utils {
             reader.dispose();
             stream.close();
         }
-    }
-
-    public static InputStream getImageInputStream(BufferedImage image) {
-        DataBuffer dataBuffer = image.getData().getDataBuffer();
-        if (dataBuffer instanceof DataBufferByte) {
-            return new ByteArrayInputStream(((DataBufferByte) dataBuffer).getData());
-        }
-        throw new UnsupportedOperationException("Unsupported DataBuffer type: " + dataBuffer.getClass().getName());
     }
 
     public static String findExtension(String path) {

@@ -38,12 +38,6 @@ public final class HashHelper {
         // Hide default constructor
     }
 
-    public static String computeSha1(BufferedImage image) throws IOException {
-        try (InputStream in = Utils.getImageInputStream(image)) {
-            return DigestUtils.sha1Hex(in);
-        }
-    }
-
     public static String computeSha1(Path localPath) throws IOException {
         try (InputStream in = Files.newInputStream(localPath)) {
             return DigestUtils.sha1Hex(in);

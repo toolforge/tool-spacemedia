@@ -375,6 +375,16 @@ public class EsaService
     }
 
     @Override
+    protected EsaMediaRepository getOriginalRepository() {
+        return mediaRepository;
+    }
+
+    @Override
+    protected Integer getOriginalId(String id) {
+        return Integer.valueOf(id);
+    }
+
+    @Override
     public URL getSourceUrl(EsaMedia media) throws MalformedURLException {
         URL url = media.getUrl();
         String externalForm = url.toExternalForm();

@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -76,20 +75,23 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
 
     @Override
     protected Optional<String> getOtherVersions(T media, Metadata metadata) {
+        Optional<String> variants = super.getOtherVersions(media, metadata);
         if (metadata.equals(media.getMetadata()) && media.getFullResMetadata() != null && media.getFullResMetadata().getAssetUrl() != null) {
-            return getOtherVersion(media, media.getFullResMetadata(), media.getFullResCommonsFileNames());
+            return getOtherVersion(media, variants, media.getFullResMetadata(), media.getFullResCommonsFileNames());
         } else if (metadata.equals(media.getFullResMetadata()) && media.getMetadata() != null && media.getMetadata().getAssetUrl() != null) {
-            return getOtherVersion(media, media.getMetadata(), media.getCommonsFileNames());
+            return getOtherVersion(media, variants, media.getMetadata(), media.getCommonsFileNames());
         }
-        return Optional.empty();
+        return variants;
     }
 
-    private final Optional<String> getOtherVersion(T media, Metadata metadata, Set<String> commonsFileNames) {
+    private final Optional<String> getOtherVersion(T media, Optional<String> variants, Metadata metadata, Set<String> commonsFileNames) {
         String url = metadata.getAssetUrl().toExternalForm();
         String ext = url.substring(url.lastIndexOf('.') + 1);
-        String filename = CollectionUtils.isEmpty(commonsFileNames)
-                ? media.getUploadTitle() + '.' + ext
-                : commonsFileNames.iterator().next();
-        return Optional.of(gallery(filename, ext.toUpperCase(Locale.ENGLISH) + " version"));
+        String filename = media.getFirstCommonsFileNameOrUploadTitle(commonsFileNames, ext);
+        String result = filename + '|' + ext.toUpperCase(Locale.ENGLISH) + " version";
+        if (variants.isPresent()) {
+            result += "\n" + variants;
+        }
+        return Optional.of(result);
     }
 }

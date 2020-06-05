@@ -125,4 +125,8 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
     @Modifying
     @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null")
     int resetPerceptualHashes();
+
+    @Modifying
+    @Query("update #{#entityName} m set m.metadata.sha1 = null where m.metadata.sha1 is not null")
+    int resetSha1Hashes();
 }

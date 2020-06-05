@@ -69,4 +69,9 @@ public interface FullResMediaRepository<T extends FullResMedia<ID, D>, ID, D ext
     @Modifying
     @Query("update #{#entityName} m set m.metadata.phash = null, m.fullResMetadata.phash = null where m.metadata.phash is not null or m.fullResMetadata.phash is not null")
     int resetPerceptualHashes();
+
+    @Override
+    @Modifying
+    @Query("update #{#entityName} m set m.metadata.sha1 = null, m.fullResMetadata.sha1 = null where m.metadata.sha1 is not null or m.fullResMetadata.sha1 is not null")
+    int resetSha1Hashes();
 }

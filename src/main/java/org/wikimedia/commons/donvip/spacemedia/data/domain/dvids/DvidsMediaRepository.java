@@ -168,4 +168,9 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     @CacheEvictDvidsAll
     @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null and m.unit in ?1")
     int resetPerceptualHashes(Set<String> units);
+
+    @Modifying
+    @CacheEvictDvidsAll
+    @Query("update #{#entityName} m set m.metadata.sha1 = null where m.metadata.sha1 is not null and m.unit in ?1")
+    int resetSha1Hashes(Set<String> units);
 }

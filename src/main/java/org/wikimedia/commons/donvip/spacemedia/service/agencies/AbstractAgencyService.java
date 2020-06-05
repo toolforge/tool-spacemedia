@@ -16,6 +16,7 @@ import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -468,7 +469,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         sb.append("\n| source = ").append(getSource(media))
           .append("\n| author = ").append(getAuthor(media));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
-        getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| other versions = ").append(s));
+        getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| other versions = <gallery>\n").append(s).append("\n</gallery>"));
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
@@ -536,7 +537,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected Optional<String> getOtherVersions(T media, Metadata metadata) {
-        return Optional.empty();
+        Set<Duplicate> variants = media.getVariants();
+        return variants.isEmpty()
+                ? Optional.empty()
+                : Optional.of(variants.stream().sorted(Comparator.comparing(Duplicate::getOriginalId))
+                    .map(v -> getOriginalRepository().findById(getOriginalId(v.getOriginalId())))
+                    .filter(Optional::isPresent).map(Optional::get).map(OT::getUploadTitle)
+                    .collect(Collectors.joining("\n")));
     }
 
     protected Optional<String> getOtherFields(T media) {
@@ -545,10 +552,6 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected Optional<String> getOtherFields1(T media) {
         return Optional.empty();
-    }
-
-    protected static String gallery(String file, String text) {
-        return "<gallery>" + file + '|' + text + "</gallery>";
     }
 
     /**
@@ -674,6 +677,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return repository.resetPerceptualHashes();
     }
 
+    protected int doResetSha1Hashes() {
+        return repository.resetSha1Hashes();
+    }
+
     protected int doResetIgnored() {
         return repository.resetIgnored();
     }
@@ -697,6 +704,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     public final int resetPerceptualHashes() {
         int result = doResetPerceptualHashes();
         LOGGER.info("Reset {} perceptual hashes for agency {}", result, getName());
+        return result;
+    }
+
+    public final int resetSha1Hashes() {
+        int result = doResetSha1Hashes();
+        LOGGER.info("Reset {} SHA-1 hashes for agency {}", result, getName());
         return result;
     }
 

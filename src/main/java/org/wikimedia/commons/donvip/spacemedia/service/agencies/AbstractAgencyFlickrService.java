@@ -388,4 +388,9 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     protected final int doResetPerceptualHashes() {
         return flickrRepository.resetPerceptualHashes(flickrAccounts);
     }
+
+    @Override
+    protected final int doResetSha1Hashes() {
+        return flickrRepository.resetSha1Hashes(flickrAccounts);
+    }
 }

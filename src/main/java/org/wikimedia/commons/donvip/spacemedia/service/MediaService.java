@@ -12,10 +12,13 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,8 +41,10 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.MetadataProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
@@ -78,6 +83,9 @@ public class MediaService {
 
     @Value("${perceptual.threshold}")
     private double perceptualThreshold;
+
+    @Value("${perceptual.threshold.variant}")
+    private double perceptualThresholdVariant;
 
     @Value("${update.fullres.images}")
     private boolean updateFullResImages;
@@ -125,14 +133,12 @@ public class MediaService {
         }
         // Find almost duplicates by perceptual hash
         BigInteger perceptualHash = media.getMetadata().getPerceptualHash();
-        if (perceptualHash != null && handleDuplicates(media, repo
+        if (perceptualHash != null && handleDuplicatesAndVariants(media, repo
                 .findByMetadata_PhashNotNull()
                 .parallelStream()
                 .filter(m -> !m.getId().equals(media.getId()))
-                .map(m -> new DuplicateHolder(m.getId().toString(),
-                        HashHelper.similarityScore(perceptualHash, m.getMetadata().getPhash())))
+                .map(m -> new DuplicateHolder(m, HashHelper.similarityScore(perceptualHash, m.getMetadata().getPhash())))
                 .filter(h -> h.similarityScore < perceptualThreshold)
-                .map(DuplicateHolder::toDuplicate)
                 .collect(Collectors.toSet()))) {
             result = true;
         }
@@ -140,34 +146,98 @@ public class MediaService {
     }
 
     private static class DuplicateHolder {
-        private final String mediaId;
+        private final MediaProjection<?> media;
         private final double similarityScore;
 
-        DuplicateHolder(String mediaId, double similarityScore) {
-            this.mediaId = mediaId;
+        DuplicateHolder(MediaProjection<?> media, double similarityScore) {
+            this.media = media;
             this.similarityScore = similarityScore;
         }
 
         Duplicate toDuplicate() {
-            return new Duplicate(mediaId, similarityScore);
+            return new Duplicate(media.getId().toString(), similarityScore);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(media.getId());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null || getClass() != obj.getClass())
+                return false;
+            return Objects.equals(media.getId(), ((DuplicateHolder) obj).media.getId());
         }
     }
 
-    private static boolean handleExactDuplicates(Media<?, ?> media, List<? extends Media<?, ?>> exactDuplicates) {
-        return handleDuplicates(media, exactDuplicates.stream().map(d -> new Duplicate(d.getId().toString(), 0d))
+    private static class DuplicateIdMediaProjection implements MediaProjection<Object> {
+
+        private final Object id;
+
+        DuplicateIdMediaProjection(Object id) {
+            this.id = id;
+        }
+
+        @Override
+        public Object getId() {
+            return id;
+        }
+
+        @Override
+        public MetadataProjection getMetadata() {
+            return null;
+        }
+
+        @Override
+        public Set<Duplicate> getDuplicates() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<Duplicate> getVariants() {
+            return Collections.emptySet();
+        }
+    }
+
+    private boolean handleExactDuplicates(Media<?, ?> media, List<? extends Media<?, ?>> exactDuplicates) {
+        return handleDuplicatesAndVariants(media, exactDuplicates.stream()
+                .filter(x -> !Objects.equals(x.getId(), media.getId()))
+                .map(d -> new DuplicateHolder(new DuplicateIdMediaProjection(d.getId()), 0d))
                 .collect(Collectors.toSet()));
     }
 
-    private static boolean handleDuplicates(Media<?, ?> media, Set<Duplicate> duplicates) {
+    private boolean handleDuplicatesAndVariants(Media<?, ?> media, Set<DuplicateHolder> duplicateHolders) {
         boolean result = false;
-        if (isNotEmpty(duplicates)
-                && (isEmpty(media.getDuplicates()) || !media.getDuplicates().containsAll(duplicates))) {
+        Set<Duplicate> duplicates = duplicateHolders.stream()
+                .filter(h -> !media.considerVariants() || h.similarityScore < perceptualThresholdVariant)
+                .map(DuplicateHolder::toDuplicate).collect(Collectors.toSet());
+        if (isNewDuplicateOrVariant(media, duplicateHolders, duplicates, MediaProjection::getDuplicates)) {
             media.setIgnored(true);
             media.setIgnoredReason("Already present in main repository");
             duplicates.forEach(media::addDuplicate);
             result = true;
         }
+        Set<Duplicate> variants = duplicateHolders.stream()
+                .filter(h -> media.considerVariants() && h.similarityScore >= perceptualThresholdVariant)
+                .map(DuplicateHolder::toDuplicate).collect(Collectors.toSet());
+        if (isNewDuplicateOrVariant(media, duplicateHolders, variants, MediaProjection::getVariants)) {
+            variants.forEach(media::addVariant);
+            result = true;
+        }
         return result;
+    }
+
+    private static boolean isNewDuplicateOrVariant(Media<?, ?> media, Set<DuplicateHolder> duplicateHolders,
+            Set<Duplicate> set, Function<MediaProjection<?>, Set<Duplicate>> getter) {
+        return isNotEmpty(set)
+                // Only consider media that are not already known duplicates/variants of the given set
+                && (isEmpty(getter.apply(media)) || !getter.apply(media).containsAll(set))
+                // Only consider media that are not already known originals for the given set of duplicates/variants
+                && duplicateHolders.stream().noneMatch(h -> getter.apply(h.media).stream().anyMatch(
+                        d -> d.getOriginalId().equals(media.getId())));
     }
 
     public boolean updateReadableStateAndHashes(Media<?, ?> media, Path localPath) {
@@ -203,7 +273,11 @@ public class MediaService {
             if (isImage && Boolean.TRUE.equals(metadata.isReadableImage()) && updatePerceptualHash(metadata, bi)) {
                 result = true;
             }
-            if (updateSha1(metadata, bi, localPath)) {
+            if (bi != null) {
+                bi.flush();
+                bi = null;
+            }
+            if (updateSha1(metadata, localPath)) {
                 result = true;
             }
         } catch (RestClientException e) {
@@ -254,30 +328,22 @@ public class MediaService {
      * Computes the media SHA-1.
      *
      * @param metadata media object metadata
-     * @param image {@code BufferedImage} of asset, can be null if not an image, or not computed
      * @param localPath if set, use it instead of asset URL
      * @return {@code true} if media has been updated with computed SHA-1 and must be persisted
      * @throws IOException        in case of I/O error
      * @throws URISyntaxException if URL cannot be converted to URI
      */
-    public static boolean updateSha1(Metadata metadata, BufferedImage image, Path localPath)
+    public static boolean updateSha1(Metadata metadata, Path localPath)
             throws IOException, URISyntaxException {
         if (metadata.getSha1() == null && (metadata.getAssetUrl() != null || localPath != null)) {
-            metadata.setSha1(getSha1(image, localPath, metadata.getAssetUrl()));
+            metadata.setSha1(getSha1(localPath, metadata.getAssetUrl()));
             return true;
         }
         return false;
     }
 
-    private static String getSha1(BufferedImage image, Path localPath, URL url) throws IOException, URISyntaxException {
-        if (image != null) {
-            try {
-                return HashHelper.computeSha1(image);
-            } catch (IOException | UnsupportedOperationException e) {
-                LOGGER.warn("Error during direct SHA-1 computation ({}), retrying from {}", e.getMessage(), url);
-                return HashHelper.computeSha1(url);
-            }
-        } else if (localPath != null) {
+    private static String getSha1(Path localPath, URL url) throws IOException, URISyntaxException {
+        if (localPath != null) {
             return HashHelper.computeSha1(localPath);
         } else {
             return HashHelper.computeSha1(url);

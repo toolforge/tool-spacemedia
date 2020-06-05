@@ -494,4 +494,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     protected final int doResetPerceptualHashes() {
         return mediaRepository.resetPerceptualHashes(units);
     }
+
+    @Override
+    protected final int doResetSha1Hashes() {
+        return mediaRepository.resetSha1Hashes(units);
+    }
 }
