@@ -82,6 +82,12 @@ public class Metadata implements MetadataProjection {
         this.assetUrl = assetUrl;
     }
 
+    @Transient
+    public String getFileExtension() {
+        String url = getAssetUrl().toExternalForm();
+        return url.substring(url.lastIndexOf('.') + 1);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(phash, sha1, readableImage, assetUrl);

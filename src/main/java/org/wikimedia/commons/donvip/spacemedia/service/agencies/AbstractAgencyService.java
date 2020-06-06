@@ -542,7 +542,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 ? Optional.empty()
                 : Optional.of(variants.stream().sorted(Comparator.comparing(Duplicate::getOriginalId))
                     .map(v -> getOriginalRepository().findById(getOriginalId(v.getOriginalId())))
-                    .filter(Optional::isPresent).map(Optional::get).map(OT::getUploadTitle)
+                    .filter(Optional::isPresent).map(Optional::get)
+                    .map(o -> o.getFirstCommonsFileNameOrUploadTitle(o.getCommonsFileNames(), o.getMetadata().getFileExtension()))
                     .collect(Collectors.joining("\n")));
     }
 
