@@ -461,6 +461,7 @@ public class EsaService
     public static void enrichEsaCategories(Set<String> categories, Media<?, ?> media, String author) {
         if (media.getDescription() != null) {
             enrichEnvisat(categories, media, author);
+            enrichExoMars(categories, media, author);
             enrichMarsExpress(categories, media, author);
         }
     }
@@ -486,6 +487,13 @@ public class EsaService
                 (descLc.contains("this envisat") || descLc.contains("acquired by envisat"))) {
             categories.remove("Envisat");
             categories.add("Envisat images");
+        }
+    }
+
+    private static void enrichExoMars(Set<String> categories, Media<?, ?> media, String author) {
+        if ("ESA/Roscosmos/CaSSIS".equalsIgnoreCase(author)) {
+            categories.remove("ExoMars");
+            categories.add("Photos by CaSSIS");
         }
     }
 
