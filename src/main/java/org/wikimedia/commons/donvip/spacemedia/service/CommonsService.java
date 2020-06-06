@@ -239,7 +239,11 @@ public class CommonsService {
         request.addHeader("User-Agent", userAgent);
         oAuthService.signRequest(oAuthAccessToken, request);
         try {
-            return jackson.readValue(oAuthService.execute(request).getBody(), responseClass);
+            String body = oAuthService.execute(request).getBody();
+            if (retryOnTimeout && "upstream request timeout".equals(body)) {
+                return httpCall(verb, url, responseClass, headers, params, false);
+            }
+            return jackson.readValue(body, responseClass);
         } catch (SocketTimeoutException e) {
             if (retryOnTimeout) {
                 return httpCall(verb, url, responseClass, headers, params, false);
