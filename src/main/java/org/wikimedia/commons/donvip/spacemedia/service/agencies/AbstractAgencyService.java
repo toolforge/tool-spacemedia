@@ -404,7 +404,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             checkUploadPreconditions(media);
             doUpload(media);
         } catch (IOException e) {
+            LOGGER.error("Failed to upload " + media, e);
             throw new RuntimeException(e);
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to upload " + media, e);
+            throw e;
         }
         return media;
     }
@@ -415,6 +419,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final void doUpload(T media, Metadata metadata, Supplier<Set<String>> getter, Consumer<Set<String>> setter) throws IOException {
         if (metadata != null && metadata.getAssetUrl() != null && shouldUpload(media, getter.get())) {
+            checkUploadPreconditions(media, metadata, getter.get());
             setter.accept(new HashSet<>(Set.of(
                     commonsService.upload(getWikiCode(media, metadata), media.getUploadTitle(), metadata.getAssetUrl(), metadata.getSha1()))));
         }
@@ -588,7 +593,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         if (Boolean.TRUE.equals(media.isIgnored())) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored.");
         }
-        String sha1 = media.getMetadata().getSha1();
+    }
+
+    protected void checkUploadPreconditions(T media, Metadata metadata, Set<String> commonsFileNames) throws IOException {
+        String sha1 = metadata.getSha1();
         if (sha1 == null) {
             throw new ImageUploadForbiddenException(media + " SHA-1 has not been computed.");
         }
@@ -597,7 +605,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             throw new ImageUploadForbiddenException(media + " is present several times.");
         }
         // Double-check for duplicates before upload!
-        if (CollectionUtils.isNotEmpty(media.getCommonsFileNames()) || mediaService.findCommonsFilesWithSha1(media)) {
+        if (CollectionUtils.isNotEmpty(commonsFileNames) || mediaService.findCommonsFilesWithSha1(media)) {
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
         }
     }

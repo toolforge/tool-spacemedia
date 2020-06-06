@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -85,7 +86,12 @@ public class Metadata implements MetadataProjection {
     @Transient
     public String getFileExtension() {
         String url = getAssetUrl().toExternalForm();
-        return url.substring(url.lastIndexOf('.') + 1);
+        String ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH);
+        switch (ext) {
+            case "jpg": return "jpeg";
+            case "tif": return "tiff";
+            default: return ext;
+        }
     }
 
     @Override
