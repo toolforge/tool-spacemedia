@@ -87,13 +87,7 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     private final Optional<String> getOtherVersion(T media, Optional<String> variants, Metadata metadata, Set<String> commonsFileNames) {
         String ext = metadata.getFileExtension();
         String filename = media.getFirstCommonsFileNameOrUploadTitle(commonsFileNames, ext);
-        String extUC = ext.toUpperCase(Locale.ENGLISH);
-        if ("JPG".equals(extUC)) {
-            extUC = "JPEG";
-        } else if ("TIF".equals(extUC)) {
-            extUC = "TIFF";
-        }
-        String result = filename + '|' + extUC + " version";
+        String result = filename + '|' + ext.toUpperCase(Locale.ENGLISH) + " version";
         if (variants.isPresent()) {
             result += "\n" + variants;
         }

@@ -11,6 +11,8 @@ import javax.persistence.Transient;
 
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Embeddable
 public class Metadata implements MetadataProjection {
 
@@ -84,6 +86,7 @@ public class Metadata implements MetadataProjection {
     }
 
     @Transient
+    @JsonIgnore
     public String getFileExtension() {
         String url = getAssetUrl().toExternalForm();
         String ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH);
