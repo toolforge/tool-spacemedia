@@ -88,7 +88,13 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
         String url = metadata.getAssetUrl().toExternalForm();
         String ext = url.substring(url.lastIndexOf('.') + 1);
         String filename = media.getFirstCommonsFileNameOrUploadTitle(commonsFileNames, ext);
-        String result = filename + '|' + ext.toUpperCase(Locale.ENGLISH) + " version";
+        String extUC = ext.toUpperCase(Locale.ENGLISH);
+        if ("JPG".equals(extUC)) {
+            extUC = "JPEG";
+        } else if ("TIF".equals(extUC)) {
+            extUC = "TIFF";
+        }
+        String result = filename + '|' + extUC + " version";
         if (variants.isPresent()) {
             result += "\n" + variants;
         }
