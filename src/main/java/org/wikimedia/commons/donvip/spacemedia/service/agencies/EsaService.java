@@ -226,7 +226,7 @@ public class EsaService
                     repository.save(upload(media));
                 }
                 ok = true;
-            } catch (IOException e) {
+            } catch (IOException | IllegalArgumentException e) {
                 LOGGER.error(media.toString(), e);
             }
         }
