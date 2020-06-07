@@ -240,8 +240,12 @@ public class CommonsService {
         oAuthService.signRequest(oAuthAccessToken, request);
         try {
             String body = oAuthService.execute(request).getBody();
-            if (retryOnTimeout && "upstream request timeout".equals(body)) {
-                return httpCall(verb, url, responseClass, headers, params, false);
+            if ("upstream request timeout".equalsIgnoreCase(body)) {
+                if (retryOnTimeout) {
+                    return httpCall(verb, url, responseClass, headers, params, false);
+                } else {
+                    throw new IOException(body);
+                }
             }
             return jackson.readValue(body, responseClass);
         } catch (SocketTimeoutException e) {
