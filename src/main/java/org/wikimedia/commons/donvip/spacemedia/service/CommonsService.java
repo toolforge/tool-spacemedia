@@ -170,8 +170,12 @@ public class CommonsService {
         if (!hasUploadRight() && !hasUploadByUrlRight()) {
             LOGGER.warn("Wikimedia Commons user account has no upload right!");
         }
-        Limit uploadRate = userInfo.getRateLimits().getUpload().getUser();
-        LOGGER.info("Upload rate limited to {} hits every {} seconds.", uploadRate.getHits(), uploadRate.getSeconds());
+        if (userInfo.getRateLimits() != null && userInfo.getRateLimits().getUpload() != null) {
+            Limit uploadRate = userInfo.getRateLimits().getUpload().getUser();
+            LOGGER.info("Upload rate limited to {} hits every {} seconds.", uploadRate.getHits(), uploadRate.getSeconds());
+        } else {
+            LOGGER.warn("Cannot retrieve upload rate for Wikimedia Commons user account!");
+        }
         // Fetch CSRF token, mandatory for upload using the Mediawiki API
         token = queryTokens().getCsrftoken();
     }
