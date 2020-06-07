@@ -221,6 +221,10 @@ public class EsaService
                 if (doCommonUpdate(media)) {
                     save = true;
                 }
+                if (shouldUploadAuto(media, media.getCommonsFileNames())
+                        || shouldUploadAuto(media, media.getFullResCommonsFileNames())) {
+                    repository.save(upload(media));
+                }
                 ok = true;
             } catch (IOException e) {
                 LOGGER.error(media.toString(), e);
