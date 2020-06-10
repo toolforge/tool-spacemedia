@@ -495,8 +495,9 @@ public class EsaService
     }
 
     private static void enrichExoMars(Set<String> categories, Media<?, ?> media, String author) {
-        if ("ESA/Roscosmos/CaSSIS".equalsIgnoreCase(author)) {
+        if (author != null && author.startsWith("ESA/Roscosmos/CaSSIS")) {
             categories.remove("ExoMars");
+            categories.remove("ExoMars 2016");
             categories.add("Photos by CaSSIS");
         }
     }
