@@ -228,6 +228,11 @@ public class EsaService
                 ok = true;
             } catch (IOException | IllegalArgumentException e) {
                 LOGGER.error(media.toString(), e);
+                if (e.getMessage() != null && e.getMessage().contains("The uploaded file contains errors: tiffinfo command failed")) {
+                    problem(media.getFullResMetadata().getAssetUrl(), e.getMessage());
+                    ignoreFile(media, e.getMessage());
+                    break;
+                }
             }
         }
         if (save) {
