@@ -229,7 +229,8 @@ public class EsaService
                 break;
             } catch (IOException | IllegalArgumentException | UploadException e) {
                 LOGGER.error(media.toString(), e);
-                if (e.getMessage() != null && e.getMessage().contains("The uploaded file contains errors: tiffinfo command failed")) {
+                if (e.getMessage() != null &&
+                        (e.getMessage().contains("tiffinfo command failed") || e.getMessage().contains("upstream request timeout"))) {
                     problem(media.getFullResMetadata().getAssetUrl(), e.getMessage());
                     ignoreFile(media, e.getMessage());
                     save = true;
