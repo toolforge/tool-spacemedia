@@ -38,6 +38,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 import com.github.dozermapper.core.Mapper;
 
@@ -226,7 +227,7 @@ public class EsaService
                     save = false;
                 }
                 break;
-            } catch (IOException | IllegalArgumentException e) {
+            } catch (IOException | IllegalArgumentException | UploadException e) {
                 LOGGER.error(media.toString(), e);
                 if (e.getMessage() != null && e.getMessage().contains("The uploaded file contains errors: tiffinfo command failed")) {
                     problem(media.getFullResMetadata().getAssetUrl(), e.getMessage());

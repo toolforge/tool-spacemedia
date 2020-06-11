@@ -13,6 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>, ID, D extends Temporal, OT extends Media<OID, OD>, OID, OD extends Temporal>
         extends AbstractAgencyService<T, ID, D, OT, OID, OD> {
@@ -35,7 +36,7 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     }
 
     @Override
-    public final T uploadAndSave(String sha1) throws IOException, TooManyResultsException {
+    public final T uploadAndSave(String sha1) throws UploadException, TooManyResultsException {
         T media = findBySha1OrThrow(sha1, false);
         if (media == null) {
             media = findByFullResSha1OrThrow(sha1, true);
@@ -44,7 +45,7 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     }
 
     @Override
-    protected final void doUpload(T media) throws IOException {
+    protected final void doUpload(T media) throws IOException, UploadException {
         doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames);
         doUpload(media, media.getFullResMetadata(), media::getFullResCommonsFileNames, media::setFullResCommonsFileNames);
     }

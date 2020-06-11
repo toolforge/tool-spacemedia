@@ -69,6 +69,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
@@ -391,33 +392,30 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public T uploadAndSave(String sha1) throws IOException, TooManyResultsException {
+    public T uploadAndSave(String sha1) throws UploadException, TooManyResultsException {
         return repository.save(upload(findBySha1OrThrow(sha1, true)));
     }
 
     @Override
-    public final T upload(T media) {
+    public final T upload(T media) throws UploadException {
         if (!isUploadEnabled()) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
         try {
             checkUploadPreconditions(media);
             doUpload(media);
-        } catch (IOException e) {
-            LOGGER.error("Failed to upload " + media, e);
-            throw new RuntimeException(e);
-        } catch (RuntimeException e) {
-            LOGGER.error("Failed to upload " + media, e);
-            throw e;
+        } catch (IOException | RuntimeException e) {
+            throw new UploadException(e);
         }
         return media;
     }
 
-    protected void doUpload(T media) throws IOException {
+    protected void doUpload(T media) throws IOException, UploadException {
         doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames);
     }
 
-    protected final void doUpload(T media, Metadata metadata, Supplier<Set<String>> getter, Consumer<Set<String>> setter) throws IOException {
+    protected final void doUpload(T media, Metadata metadata, Supplier<Set<String>> getter, Consumer<Set<String>> setter)
+            throws IOException, UploadException {
         if (metadata != null && metadata.getAssetUrl() != null && shouldUpload(media, getter.get())) {
             checkUploadPreconditions(media, metadata, getter.get());
             setter.accept(new HashSet<>(Set.of(

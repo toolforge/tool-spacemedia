@@ -14,6 +14,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
@@ -61,7 +62,7 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
      */
     String getId();
 
-    void updateMedia() throws IOException;
+    void updateMedia() throws IOException, UploadException;
 
     Statistics getStatistics(boolean details);
 
@@ -71,9 +72,9 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     long getProblemsCount();
 
-    T uploadAndSave(String sha1) throws IOException, TooManyResultsException;
+    T uploadAndSave(String sha1) throws UploadException, TooManyResultsException;
 
-    T upload(T media);
+    T upload(T media) throws UploadException;
 
     String getWikiHtmlPreview(String sha1) throws TooManyResultsException;
 

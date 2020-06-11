@@ -70,6 +70,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UserInfo;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -516,7 +517,7 @@ public class CommonsService {
         return badWikiCode.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", "[$1 $2]");
     }
 
-    public String upload(String wikiCode, String filename, URL url, String sha1) throws IOException {
+    public String upload(String wikiCode, String filename, URL url, String sha1) throws IOException, UploadException {
         return doUpload(wikiCode, normalizeFilename(filename), url, sha1, true);
     }
 
@@ -526,7 +527,7 @@ public class CommonsService {
     }
 
     private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1, boolean renewTokenIfBadToken)
-            throws IOException {
+            throws IOException, UploadException {
         Map<String, String> params = new HashMap<>(Map.of(
                 "action", "upload",
                 "comment", "#Spacemedia - Upload of " + url + " via [[:Commons:Spacemedia]]",
@@ -560,9 +561,9 @@ public class CommonsService {
                     return m.group(1);
                 }
             }
-            throw new IllegalArgumentException(error.toString());
+            throw new UploadException(error.toString());
         } else if (!"Success".equals(upload.getResult())) {
-            throw new IllegalArgumentException(apiResponse.toString());
+            throw new UploadException(apiResponse.toString());
         }
         if (!sha1.equalsIgnoreCase(upload.getImageInfo().getSha1())) {
             throw new IllegalStateException(String.format(
@@ -571,13 +572,13 @@ public class CommonsService {
         return upload.getFilename();
     }
 
-    private void ensureUploadRate() throws IOException {
+    private void ensureUploadRate() throws UploadException {
         LocalDateTime fiveSecondsAgo = now().minusSeconds(DELAY);
         if (lastUpload != null && lastUpload.isAfter(fiveSecondsAgo)) {
             try {
                 Thread.sleep(DELAY - SECONDS.between(now(), lastUpload.plusSeconds(DELAY)));
             } catch (InterruptedException e) {
-                throw new IOException(e);
+                throw new UploadException(e);
             }
         }
         lastUpload = now();

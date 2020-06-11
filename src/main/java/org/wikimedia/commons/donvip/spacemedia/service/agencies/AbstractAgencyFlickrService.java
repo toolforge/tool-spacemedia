@@ -37,6 +37,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -352,13 +353,21 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         for (FlickrMedia media : medias) {
             try {
                 processor.processFlickrMedia(media, flickrAccount, getOriginalRepository(),
-                        this::customProcessing, this::shouldUploadAuto, this::upload);
+                        this::customProcessing, this::shouldUploadAuto, this::uploadWrapped);
                 count++;
             } catch (IOException e) {
                 problem(getPhotoUrl(media), e);
             }
         }
         return count;
+    }
+
+    protected final FlickrMedia uploadWrapped(FlickrMedia media) {
+        try {
+            return upload(media);
+        } catch (UploadException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected boolean customProcessing(FlickrMedia media) {

@@ -57,6 +57,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchRe
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResult;
 import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
@@ -219,7 +220,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                         .orElseGet(() -> getMediaFromApi(rest, id, unit)));
             } catch (HttpClientErrorException e) {
                 LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, e.getMessage());
-            } catch (IOException e) {
+            } catch (IOException | UploadException e) {
                 LOGGER.error("Error while processing DVIDS " + id + " from unit " + unit, e);
             }
         }
@@ -279,7 +280,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         return response;
     }
 
-    private int processDvidsMedia(DvidsMedia media) throws IOException {
+    private int processDvidsMedia(DvidsMedia media) throws IOException, UploadException {
         boolean save = !mediaRepository.existsById(media.getId());
         if (mediaService.updateMedia(media, getOriginalRepository())) {
             save = true;

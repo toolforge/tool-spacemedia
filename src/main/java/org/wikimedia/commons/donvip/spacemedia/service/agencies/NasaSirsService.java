@@ -32,6 +32,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 @Service
 public class NasaSirsService
@@ -100,7 +101,7 @@ public class NasaSirsService
 
     @Override
     @Scheduled(fixedRateString = "${nasa.sirs.update.rate}", initialDelayString = "${nasa.sirs.initial.delay}")
-    public void updateMedia() throws IOException {
+    public void updateMedia() throws IOException, UploadException {
         LocalDateTime start = startUpdateMedia();
         int count = updateFromSirs();
         Set<String> processedImages = new HashSet<>();

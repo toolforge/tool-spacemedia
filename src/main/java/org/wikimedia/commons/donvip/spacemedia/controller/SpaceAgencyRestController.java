@@ -22,6 +22,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AsyncAgencyUpdaterService;
@@ -86,12 +87,12 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
     }
 
     @GetMapping("/update")
-    public final void update() throws IOException {
+    public final void update() throws IOException, UploadException {
         async.updateMedia(service);
     }
 
     @GetMapping("/upload/{sha1}")
-    public final T upload(@PathVariable String sha1) throws IOException, TooManyResultsException {
+    public final T upload(@PathVariable String sha1) throws IOException, UploadException, TooManyResultsException {
         return service.uploadAndSave(sha1);
     }
 
