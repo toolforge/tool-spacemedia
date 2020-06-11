@@ -7,6 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 
 @Entity
 public class Problem {
@@ -22,7 +23,8 @@ public class Problem {
     @Column(nullable = false)
     private String agency;
 
-    @Column(length = 500)
+    @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String errorMessage;
 
     @Column(nullable = false, length = 380)

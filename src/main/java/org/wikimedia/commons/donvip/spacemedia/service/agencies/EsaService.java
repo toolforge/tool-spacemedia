@@ -215,8 +215,7 @@ public class EsaService
             problem(media.getUrl(), "Invalid copyright: " + media.getCopyright());
             return Optional.empty();
         }
-        boolean ok = false;
-        for (int i = 0; i < maxTries && !ok; i++) {
+        for (int i = 0; i < maxTries; i++) {
             try {
                 if (doCommonUpdate(media)) {
                     save = true;
@@ -224,13 +223,15 @@ public class EsaService
                 if (shouldUploadAuto(media, media.getCommonsFileNames())
                         || shouldUploadAuto(media, media.getFullResCommonsFileNames())) {
                     repository.save(upload(media));
+                    save = false;
                 }
-                ok = true;
+                break;
             } catch (IOException | IllegalArgumentException e) {
                 LOGGER.error(media.toString(), e);
                 if (e.getMessage() != null && e.getMessage().contains("The uploaded file contains errors: tiffinfo command failed")) {
                     problem(media.getFullResMetadata().getAssetUrl(), e.getMessage());
                     ignoreFile(media, e.getMessage());
+                    save = true;
                     break;
                 }
             }
