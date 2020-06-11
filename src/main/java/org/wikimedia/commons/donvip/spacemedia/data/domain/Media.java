@@ -60,7 +60,8 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     @Column(nullable = true)
     protected Boolean ignored;
 
-    @Column(nullable = true)
+    @Lob
+    @Column(nullable = true, columnDefinition = "TEXT")
     protected String ignoredReason;
 
     /**
