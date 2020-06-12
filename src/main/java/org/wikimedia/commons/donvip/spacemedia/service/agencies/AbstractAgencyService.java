@@ -751,7 +751,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                         if (catMapping != null) {
                             String cat = catMapping.get(s);
                             if (StringUtils.isNotBlank(cat)) {
-                                return "[[:Category:" + cat + '|' + s + "]]";
+                                return Arrays.stream(cat.split(";"))
+                                        .map(c -> "[[:Category:" + c + '|' + s + "]]")
+                                        .collect(Collectors.joining("; "));
                             }
                         }
                         return s;
