@@ -443,8 +443,8 @@ public class EsaService
         if (includeHidden) {
             result.add("ESA images (review needed)");
         }
-        String mission = media.getMission();
-        if (mission != null) {
+        String mission = Optional.ofNullable(media.getMission()).orElse("");
+        if (StringUtils.isNotBlank(mission)) {
             String cats = esaMissions.get(mission);
             if (StringUtils.isNotBlank(cats)) {
                 Arrays.stream(cats.split(";")).forEach(result::add);
