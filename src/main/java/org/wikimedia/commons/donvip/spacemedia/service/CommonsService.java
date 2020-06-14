@@ -6,6 +6,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.SocketTimeoutException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -518,7 +519,7 @@ public class CommonsService {
     }
 
     public String upload(String wikiCode, String filename, URL url, String sha1) throws IOException, UploadException {
-        return doUpload(wikiCode, normalizeFilename(filename), url, sha1, true);
+        return doUpload(wikiCode, normalizeFilename(filename), url, sha1, true, true);
     }
 
     public String normalizeFilename(String filename) {
@@ -526,7 +527,8 @@ public class CommonsService {
         return filename.replace('/', '-').replace(':', '-').replace('\\', '-').replace('.', '_');
     }
 
-    private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1, boolean renewTokenIfBadToken)
+    private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1,
+            boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl)
             throws IOException, UploadException {
         Map<String, String> params = new HashMap<>(Map.of(
                 "action", "upload",
@@ -553,7 +555,14 @@ public class CommonsService {
         if (error != null) {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
                 token = queryTokens().getCsrftoken();
-                return doUpload(wikiCode, filename, url, sha1, false);
+                return doUpload(wikiCode, filename, url, sha1, false, retryWithSanitizedUrl);
+            }
+            if (retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
+                try {
+                    return doUpload(wikiCode, filename, Utils.urlToUri(url).toURL(), sha1, renewTokenIfBadToken, false);
+                } catch (URISyntaxException e) {
+                    throw new UploadException(error.getCode(), e);
+                }
             }
             if ("fileexists-no-change".equals(error.getCode())) {
                 Matcher m = EXACT_DUPE_ERROR.matcher(error.getInfo());
