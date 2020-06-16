@@ -40,7 +40,13 @@ public class Metadata implements MetadataProjection {
     private Boolean readableImage;
 
     @Column(nullable = false, length = 380)
-    protected URL assetUrl;
+    private URL assetUrl;
+
+    /**
+     * File size in bytes.
+     */
+    @Column(nullable = true)
+    private Long size;
 
     public String getSha1() {
         return sha1;
@@ -85,6 +91,14 @@ public class Metadata implements MetadataProjection {
         this.assetUrl = assetUrl;
     }
 
+    public Long getSize() {
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
+    }
+
     @Transient
     @JsonIgnore
     public String getFileExtension() {
@@ -99,7 +113,7 @@ public class Metadata implements MetadataProjection {
 
     @Override
     public int hashCode() {
-        return Objects.hash(phash, sha1, readableImage, assetUrl);
+        return Objects.hash(phash, sha1, readableImage, assetUrl, size);
     }
 
     @Override
@@ -109,7 +123,7 @@ public class Metadata implements MetadataProjection {
         if (obj == null || getClass() != obj.getClass())
             return false;
         Metadata other = (Metadata) obj;
-        return Objects.equals(phash, other.phash) && Objects.equals(sha1, other.sha1)
+        return size == other.size && Objects.equals(phash, other.phash) && Objects.equals(sha1, other.sha1)
                 && Objects.equals(readableImage, other.readableImage) && Objects.equals(assetUrl, other.assetUrl);
     }
 

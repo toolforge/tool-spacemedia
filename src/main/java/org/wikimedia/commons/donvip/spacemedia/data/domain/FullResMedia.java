@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import java.time.temporal.Temporal;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -30,6 +31,7 @@ public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> 
     @AttributeOverrides(value = {
             @AttributeOverride(column = @Column(name = "full_res_asset_url"), name = "assetUrl"),
             @AttributeOverride(column = @Column(name = "full_res_readable_image"), name = "readableImage"),
+            @AttributeOverride(column = @Column(name = "full_res_size"), name = "size"),
             @AttributeOverride(column = @Column(name = "full_res_sha1"), name = "sha1"),
             @AttributeOverride(column = @Column(name = "full_res_phash"), name = "phash") })
     protected Metadata fullResMetadata = new Metadata();
@@ -85,6 +87,13 @@ public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> 
         if (StringUtils.isNotBlank(fullResSha1) && CollectionUtils.isEmpty(getFullResCommonsFileNames())) {
             result.add(fullResSha1);
         }
+        return result;
+    }
+
+    @Override
+    public Set<String> getAllCommonsFileNames() {
+        Set<String> result = new LinkedHashSet<>(getCommonsFileNames());
+        result.addAll(getFullResCommonsFileNames());
         return result;
     }
 }

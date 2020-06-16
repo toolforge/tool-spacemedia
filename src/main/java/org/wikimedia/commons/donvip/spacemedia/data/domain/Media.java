@@ -20,6 +20,7 @@ import javax.persistence.FetchType;
 import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PostLoad;
+import javax.persistence.Transient;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +28,8 @@ import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Store;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Base class of all media.
@@ -123,6 +126,12 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Transient
+    @JsonIgnore
+    public Set<String> getAllCommonsFileNames() {
+        return getCommonsFileNames();
     }
 
     public Set<String> getCommonsFileNames() {
