@@ -68,6 +68,9 @@
 		            <a th:href="${original.media.metadata.assetUrl}">
 		              <img th:src="${original.media.previewUrl}" width="210px" />
 		            </a>
+		            <div th:each="file : ${original.media.allCommonsFileNames}">
+		              <a th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a><br>
+		            </div>
 		          </div>
 		        </td>
 		      </tr>
