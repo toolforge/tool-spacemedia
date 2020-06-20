@@ -209,17 +209,28 @@ public class MediaService {
                 .collect(Collectors.toSet()));
     }
 
+    /**
+     * Handles duplicates and variants for a given media.
+     *
+     * @param media The currently considered media
+     * @param duplicateHolders set of identified duplicates and variants, with their similiarity score
+     * @return {@code true} if media has been updated and must be persisted
+     */
     private boolean handleDuplicatesAndVariants(Media<?, ?> media, Set<DuplicateHolder> duplicateHolders) {
         boolean result = false;
+        // Duplicates are media with a low similarity score. Usually exact duplicates with small variations in resolution
         Set<Duplicate> duplicates = duplicateHolders.stream()
                 .filter(h -> !media.considerVariants() || h.similarityScore < perceptualThresholdVariant)
                 .map(DuplicateHolder::toDuplicate).collect(Collectors.toSet());
         if (isNewDuplicateOrVariant(media, duplicateHolders, duplicates, MediaProjection::getDuplicates)) {
-            media.setIgnored(true);
-            media.setIgnoredReason("Already present in main repository");
+            if (media.getAllCommonsFileNames().isEmpty()) {
+                media.setIgnored(true);
+                media.setIgnoredReason("Already present in main repository");
+            }
             duplicates.forEach(media::addDuplicate);
             result = true;
         }
+        // Variants are media with an higher similarity score. Usually same shapes with different colors
         Set<Duplicate> variants = duplicateHolders.stream()
                 .filter(h -> media.considerVariants() && h.similarityScore >= perceptualThresholdVariant)
                 .map(DuplicateHolder::toDuplicate).collect(Collectors.toSet());
@@ -230,6 +241,15 @@ public class MediaService {
         return result;
     }
 
+    /**
+     * Determines if we just found a new duplicate or variant.
+     *
+     * @param media The currently considered media
+     * @param duplicateHolders set of identified duplicates and variants, with their similiarity score
+     * @param set set or duplicates or variants
+     * @param getter getter method to retrieve duplicates or variants of a given media
+     * @return {@code true} if we just found a new duplicate or variant
+     */
     private static boolean isNewDuplicateOrVariant(Media<?, ?> media, Set<DuplicateHolder> duplicateHolders,
             Set<Duplicate> set, Function<MediaProjection<?>, Set<Duplicate>> getter) {
         return isNotEmpty(set)
