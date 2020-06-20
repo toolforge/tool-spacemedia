@@ -741,7 +741,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final boolean shouldUploadAuto(T media, Set<String> commonsFilenames) {
         return getUploadMode() == UploadMode.AUTO
-            && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames);
+            && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames) && isEmpty(media.getDuplicates());
     }
 
     protected static void addOtherField(StringBuilder sb, String name, Collection<?> values, Map<String, String> catMapping) {
