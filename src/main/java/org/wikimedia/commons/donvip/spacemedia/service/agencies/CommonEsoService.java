@@ -94,6 +94,11 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         checkCommonsCategories(esoTypes);
     }
 
+    @Override
+    protected final String getMediaId(String id) {
+        return id;
+    }
+
     private static void scrapingError(String url, String details) {
         throw new IllegalStateException("ESO scraping code must be updated, see " + url + " - Details: " + details);
     }

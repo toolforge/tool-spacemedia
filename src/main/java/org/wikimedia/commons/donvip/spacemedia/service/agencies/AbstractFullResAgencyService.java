@@ -26,28 +26,28 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     }
 
     @Override
-    protected void checkUploadPreconditions(T media) throws IOException {
-        super.checkUploadPreconditions(media);
+    protected void checkUploadPreconditions(T media, boolean checkUnicity) throws IOException {
+        super.checkUploadPreconditions(media, checkUnicity);
         // Forbid upload of duplicate medias for a single repo, they may have different descriptions
         String fullResSha1 = media.getFullResMetadata().getSha1();
-        if (fullResSha1 != null && fullResRepository.countByFullResMetadata_Sha1(fullResSha1) > 1) {
+        if (checkUnicity && fullResSha1 != null && fullResRepository.countByFullResMetadata_Sha1(fullResSha1) > 1) {
             throw new ImageUploadForbiddenException(media + " is present several times.");
         }
     }
 
     @Override
-    public final T uploadAndSave(String sha1) throws UploadException, TooManyResultsException {
+    public final T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException {
         T media = findBySha1OrThrow(sha1, false);
         if (media == null) {
             media = findByFullResSha1OrThrow(sha1, true);
         }
-        return repository.save(upload(media));
+        return repository.save(upload(media, true));
     }
 
     @Override
-    protected final void doUpload(T media) throws IOException, UploadException {
-        doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames);
-        doUpload(media, media.getFullResMetadata(), media::getFullResCommonsFileNames, media::setFullResCommonsFileNames);
+    protected final void doUpload(T media, boolean checkUnicity) throws IOException, UploadException {
+        doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames, checkUnicity);
+        doUpload(media, media.getFullResMetadata(), media::getFullResCommonsFileNames, media::setFullResCommonsFileNames, checkUnicity);
     }
 
     protected final T findByFullResSha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {

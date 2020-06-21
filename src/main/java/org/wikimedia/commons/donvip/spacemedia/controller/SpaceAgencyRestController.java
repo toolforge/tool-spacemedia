@@ -9,8 +9,6 @@ import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Objects;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +24,6 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AsyncAgencyUpdaterService;
-import org.xml.sax.SAXException;
 
 /**
  * Superclass of space agencies REST controllers. Sub-classes are created dynamically.
@@ -92,13 +89,17 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
     }
 
     @GetMapping("/upload/{sha1}")
-    public final T upload(@PathVariable String sha1) throws IOException, UploadException, TooManyResultsException {
-        return service.uploadAndSave(sha1);
+    public final T upload(@PathVariable String sha1) throws UploadException, TooManyResultsException {
+        return service.uploadAndSaveBySha1(sha1);
+    }
+
+    @GetMapping("/uploadmedia/{id}")
+    public final T uploadMedia(@PathVariable String id) throws UploadException, TooManyResultsException {
+        return service.uploadAndSaveById(id);
     }
 
     @GetMapping("/wiki/{sha1}")
-    public final String wikiPreview(@PathVariable String sha1)
-            throws IOException, ParserConfigurationException, SAXException, TooManyResultsException {
+    public final String wikiPreview(@PathVariable String sha1) throws TooManyResultsException {
         return service.getWikiHtmlPreview(sha1);
     }
 

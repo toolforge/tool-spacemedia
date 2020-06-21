@@ -101,6 +101,11 @@ public class HubbleNasaService extends
         return HubbleNasaMedia.class;
     }
 
+    @Override
+    protected final Integer getMediaId(String id) {
+        return Integer.parseUnsignedInt(id);
+    }
+
     private String getImageDetailsLink(int imageId) {
         return detailEndpoint.replace("<id>", Integer.toString(imageId));
     }

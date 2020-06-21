@@ -103,6 +103,11 @@ public class NasaService
         return NasaImage.class; // TODO can't get a direct lucene reader on NasaMedia
     }
 
+    @Override
+    protected final String getMediaId(String id) {
+        return id;
+    }
+
     private NasaMedia save(NasaMedia media) {
         switch (media.getMediaType()) {
         case image: return imageRepository.save((NasaImage) media);

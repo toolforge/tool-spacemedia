@@ -45,6 +45,11 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
     private int maxFailures;
 
     @Override
+    protected final Integer getMediaId(String id) {
+        return Integer.parseUnsignedInt(id);
+    }
+
+    @Override
     public final String getName() {
         return "KARI";
     }

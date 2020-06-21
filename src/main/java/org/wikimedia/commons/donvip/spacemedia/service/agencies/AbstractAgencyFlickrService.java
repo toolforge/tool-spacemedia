@@ -273,8 +273,8 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
-    protected void checkUploadPreconditions(FlickrMedia media) throws IOException {
-        super.checkUploadPreconditions(media);
+    protected void checkUploadPreconditions(FlickrMedia media, boolean checkUnicity) throws IOException {
+        super.checkUploadPreconditions(media, checkUnicity);
         if (processor.isBadVideoEntry(media)) {
             throw new ImageUploadForbiddenException("Bad video download link: " + media);
         }
@@ -364,7 +364,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
 
     protected final FlickrMedia uploadWrapped(FlickrMedia media) {
         try {
-            return upload(media);
+            return upload(media, true);
         } catch (UploadException e) {
             throw new RuntimeException(e);
         }
@@ -381,6 +381,11 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                 .must(super.getSearchQuery(queryBuilder, context, q))
                 .must(queryBuilder.simpleQueryString().onField("pathAlias").matching(String.join(" ", flickrAccounts)).createQuery())
                 .createQuery();
+    }
+
+    @Override
+    protected final Long getMediaId(String id) {
+        return Long.parseLong(id);
     }
 
     @Override

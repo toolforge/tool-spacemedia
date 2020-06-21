@@ -84,6 +84,11 @@ public class NasaSirsService
     }
 
     @Override
+    protected String getMediaId(String id) {
+        return id;
+    }
+
+    @Override
     public URL getSourceUrl(NasaSirsImage media) throws MalformedURLException {
         return new URL(detailsUrl.replace("<id>", media.getId()));
     }
@@ -117,7 +122,7 @@ public class NasaSirsService
                         image = repository.save(image);
                     }
                     if (shouldUploadAuto(image, image.getCommonsFileNames())) {
-                        repository.save(upload(image));
+                        repository.save(upload(image, true));
                     }
                 }
             }

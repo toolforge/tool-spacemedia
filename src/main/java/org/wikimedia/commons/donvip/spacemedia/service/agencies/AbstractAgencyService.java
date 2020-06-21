@@ -392,32 +392,37 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public T uploadAndSave(String sha1) throws UploadException, TooManyResultsException {
-        return repository.save(upload(findBySha1OrThrow(sha1, true)));
+    public final T uploadAndSaveById(String id) throws UploadException, TooManyResultsException {
+        return repository.save(upload(repository.findById(getMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id)), false));
     }
 
     @Override
-    public final T upload(T media) throws UploadException {
+    public T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException {
+        return repository.save(upload(findBySha1OrThrow(sha1, true), true));
+    }
+
+    @Override
+    public final T upload(T media, boolean checkUnicity) throws UploadException {
         if (!isUploadEnabled()) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
         try {
-            checkUploadPreconditions(media);
-            doUpload(media);
+            checkUploadPreconditions(media, checkUnicity);
+            doUpload(media, checkUnicity);
         } catch (IOException | RuntimeException e) {
             throw new UploadException(e);
         }
         return media;
     }
 
-    protected void doUpload(T media) throws IOException, UploadException {
-        doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames);
+    protected void doUpload(T media, boolean checkUnicity) throws IOException, UploadException {
+        doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames, checkUnicity);
     }
 
-    protected final void doUpload(T media, Metadata metadata, Supplier<Set<String>> getter, Consumer<Set<String>> setter)
+    protected final void doUpload(T media, Metadata metadata, Supplier<Set<String>> getter, Consumer<Set<String>> setter, boolean checkUnicity)
             throws IOException, UploadException {
         if (metadata != null && metadata.getAssetUrl() != null && shouldUpload(media, getter.get())) {
-            checkUploadPreconditions(media, metadata, getter.get());
+            checkUploadPreconditions(media, metadata, getter.get(), checkUnicity);
             setter.accept(new HashSet<>(Set.of(
                     commonsService.upload(getWikiCode(media, metadata), media.getUploadTitle(), metadata.getAssetUrl(), metadata.getSha1()))));
         }
@@ -587,19 +592,19 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return "[" + Objects.requireNonNull(url, "url") + " " + Objects.requireNonNull(text, "text") + "]";
     }
 
-    protected void checkUploadPreconditions(T media) throws IOException {
+    protected void checkUploadPreconditions(T media, boolean checkUnicity) throws IOException {
         if (Boolean.TRUE.equals(media.isIgnored())) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored.");
         }
     }
 
-    protected void checkUploadPreconditions(T media, Metadata metadata, Set<String> commonsFileNames) throws IOException {
+    protected void checkUploadPreconditions(T media, Metadata metadata, Set<String> commonsFileNames, boolean checkUnicity) throws IOException {
         String sha1 = metadata.getSha1();
         if (sha1 == null) {
             throw new ImageUploadForbiddenException(media + " SHA-1 has not been computed.");
         }
         // Forbid upload of duplicate medias for a single repo, they may have different descriptions
-        if (repository.countByMetadata_Sha1(sha1) > 1) {
+        if (checkUnicity && repository.countByMetadata_Sha1(sha1) > 1) {
             throw new ImageUploadForbiddenException(media + " is present several times.");
         }
         // Double-check for duplicates before upload!
@@ -634,6 +639,14 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected abstract Class<T> getMediaClass();
+
+    /**
+     * Returns the media identifier for the given string representation.
+     *
+     * @param id the string representation of a media identifier
+     * @return the media identifier for the given string representation
+     */
+    protected abstract ID getMediaId(String id);
 
     protected Class<? extends T> getTopTermsMediaClass() {
         return getMediaClass();

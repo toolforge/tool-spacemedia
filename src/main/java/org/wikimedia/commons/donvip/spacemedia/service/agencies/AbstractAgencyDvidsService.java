@@ -142,6 +142,11 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         return DvidsImage.class; // TODO can't get a direct lucene reader on DvidsMedia
     }
 
+    @Override
+    protected final DvidsMediaTypedId getMediaId(String id) {
+        return new DvidsMediaTypedId(id);
+    }
+
     private DvidsMedia save(DvidsMedia media) {
         switch (media.getMediaType()) {
         case image: return imageRepository.save((DvidsImage) media);
@@ -286,7 +291,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             save = true;
         }
         if (shouldUploadAuto(media, media.getCommonsFileNames())) {
-            media = upload(media);
+            media = upload(media, true);
             save = true;
         }
         if (save) {

@@ -123,6 +123,11 @@ public class EsaService
         return EsaMedia.class;
     }
 
+    @Override
+    protected final Integer getMediaId(String id) {
+        return Integer.parseUnsignedInt(id);
+    }
+
     private static Optional<URL> getImageUrl(String src, URL imageUrl) throws MalformedURLException {
         if (src.startsWith("http://") || src.startsWith("https://")) {
             return Optional.of(new URL(src.replace("esamultimeda.esa.int", "esamultimedia.esa.int")));
@@ -223,7 +228,7 @@ public class EsaService
                 }
                 if (shouldUploadAuto(media, media.getCommonsFileNames())
                         || shouldUploadAuto(media, media.getFullResCommonsFileNames())) {
-                    repository.save(upload(media));
+                    repository.save(upload(media, true));
                     save = false;
                 }
                 break;

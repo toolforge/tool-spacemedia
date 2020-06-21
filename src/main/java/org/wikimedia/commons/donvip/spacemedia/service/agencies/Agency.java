@@ -72,9 +72,11 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     long getProblemsCount();
 
-    T uploadAndSave(String sha1) throws UploadException, TooManyResultsException;
+    T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException;
 
-    T upload(T media) throws UploadException;
+    T uploadAndSaveById(String id) throws UploadException, TooManyResultsException;
+
+    T upload(T media, boolean checkUnicity) throws UploadException;
 
     String getWikiHtmlPreview(String sha1) throws TooManyResultsException;
 

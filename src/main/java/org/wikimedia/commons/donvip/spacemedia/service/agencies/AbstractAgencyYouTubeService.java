@@ -212,7 +212,7 @@ public abstract class AbstractAgencyYouTubeService
     }
 
     @Override
-    protected final void doUpload(YouTubeVideo video) throws IOException {
+    protected final void doUpload(YouTubeVideo video, boolean checkUnicity) throws IOException {
         throw new UnsupportedOperationException("<h2>Spacemedia is not able to upload YouTube videos by itself.</h2>\n"
                 + "<p>Please go to <a href=\"https://tools.wmflabs.org/video2commons\">video2commons</a> and upload the <b>"
                 + video.getId()
@@ -224,6 +224,11 @@ public abstract class AbstractAgencyYouTubeService
 
     protected boolean customProcessing(YouTubeVideo video) {
         return false;
+    }
+
+    @Override
+    protected final String getMediaId(String id) {
+        return id;
     }
 
     private void syncYouTubeVideos() {
