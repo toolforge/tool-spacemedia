@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -35,7 +36,6 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.misc.HighFreqTerms;
@@ -370,7 +370,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     protected final T findBySomeSha1OrThrow(String sha1, Function<String, List<T>> finder, boolean throwIfNotFound)
             throws TooManyResultsException {
         List<T> result = finder.apply(sha1);
-        if (CollectionUtils.isEmpty(result)) {
+        if (isEmpty(result)) {
             if (throwIfNotFound) {
                 throw new ImageNotFoundException(sha1);
             } else {
@@ -608,7 +608,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             throw new ImageUploadForbiddenException(media + " is present several times.");
         }
         // Double-check for duplicates before upload!
-        if (CollectionUtils.isNotEmpty(commonsFileNames) || mediaService.findCommonsFilesWithSha1(media)) {
+        if (isNotEmpty(commonsFileNames)) {
+            throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
+        }
+        if (mediaService.findCommonsFilesWithSha1(media)) {
+            media = repository.save(media);
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
         }
     }
@@ -629,7 +633,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     public final List<DuplicateMedia<OID, OD, OT>> getOriginalMedia(T media) {
         Set<Duplicate> dupes = media.getDuplicates();
-        return CollectionUtils.isEmpty(dupes) ? Collections.emptyList()
+        return isEmpty(dupes) ? Collections.emptyList()
                 : dupes.stream().sorted().map(this::mapDuplicateMedia).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
@@ -758,7 +762,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected static void addOtherField(StringBuilder sb, String name, Collection<?> values, Map<String, String> catMapping) {
-        if (CollectionUtils.isNotEmpty(values)) {
+        if (isNotEmpty(values)) {
             addOtherField(sb, name + (values.size() > 1 ? "s" : ""),
                     values.stream().filter(Objects::nonNull).map(Object::toString).filter(StringUtils::isNotBlank).map(s -> {
                         if (catMapping != null) {
