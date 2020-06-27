@@ -285,7 +285,7 @@ public class CommonsService {
     }
 
     public String getWikiHtmlPreview(String wikiCode, String pageTitle) throws IOException {
-        VisualEditorResponse apiResponse = apiHttpPost(Map.of(
+        VeApiResponse apiResponse = apiHttpPost(Map.of(
                 "action", "visualeditor",
                 "format", "json",
                 "formatversion", "2",
@@ -293,12 +293,16 @@ public class CommonsService {
                 "page", pageTitle,
                 "wikitext", wikiCode,
                 "pst", "true"
-        ), VeApiResponse.class).getVisualeditor();
-
-        if (!"success".equals(apiResponse.getResult())) {
-            throw new IllegalArgumentException(apiResponse.toString());
+        ), VeApiResponse.class);
+        if (apiResponse.getError() != null) {
+            throw new IllegalArgumentException(apiResponse.getError().toString());
         }
-        return apiResponse.getContent();
+
+        VisualEditorResponse veResponse = apiResponse.getVisualeditor();
+        if (!"success".equals(veResponse.getResult())) {
+            throw new IllegalArgumentException(veResponse.toString());
+        }
+        return veResponse.getContent();
     }
 
     public String getWikiHtmlPreview(String wikiCode, String pageTitle, String imgUrl) throws IOException {
@@ -341,8 +345,45 @@ public class CommonsService {
         return doc.toString();
     }
 
+    static class VeApiError {
+        private String code;
+        private String info;
+        private String docref;
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public String getInfo() {
+            return info;
+        }
+
+        public void setInfo(String info) {
+            this.info = info;
+        }
+
+        public String getDocref() {
+            return docref;
+        }
+
+        public void setDocref(String docref) {
+            this.docref = docref;
+        }
+
+        @Override
+        public String toString() {
+            return "VeApiError [" + (code != null ? "code=" + code + ", " : "")
+                    + (info != null ? "info=" + info + ", " : "") + (docref != null ? "docref=" + docref : "") + "]";
+        }
+    }
+
     static class VeApiResponse {
         private VisualEditorResponse visualeditor;
+        private VeApiError error;
 
         public VisualEditorResponse getVisualeditor() {
             return visualeditor;
@@ -350,6 +391,20 @@ public class CommonsService {
 
         public void setVisualeditor(VisualEditorResponse visualeditor) {
             this.visualeditor = visualeditor;
+        }
+
+        public VeApiError getError() {
+            return error;
+        }
+
+        public void setError(VeApiError error) {
+            this.error = error;
+        }
+
+        @Override
+        public String toString() {
+            return "VeApiResponse [" + (visualeditor != null ? "visualeditor=" + visualeditor + ", " : "")
+                    + (error != null ? "error=" + error : "") + "]";
         }
     }
 
