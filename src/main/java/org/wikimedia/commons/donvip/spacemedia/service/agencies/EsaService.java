@@ -228,7 +228,7 @@ public class EsaService
                 }
                 if (shouldUploadAuto(media, media.getCommonsFileNames())
                         || shouldUploadAuto(media, media.getFullResCommonsFileNames())) {
-                    repository.save(upload(media, true));
+                    repository.save(upload(save ? repository.save(media) : media, true));
                     save = false;
                 }
                 break;
