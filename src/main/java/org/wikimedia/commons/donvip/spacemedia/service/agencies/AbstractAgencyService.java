@@ -546,7 +546,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected Optional<String> getOtherVersions(T media, Metadata metadata) {
         Set<Duplicate> variants = media.getVariants();
-        return variants.isEmpty()
+        return isEmpty(variants)
                 ? Optional.empty()
                 : Optional.of(variants.stream().sorted(Comparator.comparing(Duplicate::getOriginalId))
                     .map(v -> getOriginalRepository().findById(getOriginalId(v.getOriginalId())))
