@@ -28,9 +28,9 @@
 		<sonar.projectKey>tool-spacemedia</sonar.projectKey>
 
 		<collections4-version>4.4</collections4-version>
-		<flickr4java-version>3.0.4</flickr4java-version>
-		<scribejava-version>6.9.0</scribejava-version>
-		<springboot-version>2.2.7.RELEASE</springboot-version>
+		<flickr4java-version>3.0.6</flickr4java-version>
+		<scribejava-version>8.3.1</scribejava-version>
+		<springboot-version>2.2.13.RELEASE</springboot-version>
 	</properties>
 
 	<scm>
