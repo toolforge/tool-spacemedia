@@ -8,5 +8,27 @@
     </parent>
     <artifactId>sm-youtube</artifactId>
 	<description>YouTube support</description>
+	<dependencies>
+		<!-- Project dependencies -->
+		<!-- Third-party dependencies -->
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-youtube</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.oauth-client</groupId>
+					<artifactId>google-oauth-client</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>	   
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>	   
+		</dependency>
+	</dependencies>
 
 </project>

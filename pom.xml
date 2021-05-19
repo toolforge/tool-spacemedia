@@ -29,6 +29,7 @@
 
 		<collections4-version>4.4</collections4-version>
 		<flickr4java-version>3.0.6</flickr4java-version>
+		<google-api-services-youtube-version>v3-rev20210410-1.31.0</google-api-services-youtube-version>
 		<scribejava-version>8.3.1</scribejava-version>
 		<springboot-version>2.2.13.RELEASE</springboot-version>
 	</properties>
@@ -57,6 +58,11 @@
 				<groupId>com.github.scribejava</groupId>
 				<artifactId>scribejava-apis</artifactId>
 				<version>${scribejava-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.apis</groupId>
+				<artifactId>google-api-services-youtube</artifactId>
+				<version>${google-api-services-youtube-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>

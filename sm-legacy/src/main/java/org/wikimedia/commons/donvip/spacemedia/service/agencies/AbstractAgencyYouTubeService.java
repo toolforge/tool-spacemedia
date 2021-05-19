@@ -32,7 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.YouTubeService;
+import org.wikimedia.commons.donvip.spacemedia.repo.youtube.YouTubeApiService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.google.api.client.util.DateTime;
@@ -54,7 +54,7 @@ public abstract class AbstractAgencyYouTubeService
     @Autowired
     protected YouTubeVideoRepository youtubeRepository;
     @Autowired
-    private YouTubeService youtubeService;
+    private YouTubeApiService youtubeService;
 
     protected final Set<String> youtubeChannels;
 
