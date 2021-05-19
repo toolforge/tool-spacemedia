@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service;
+package org.wikimedia.commons.donvip.spacemedia.repo.flickr;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,7 +18,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
@@ -33,7 +32,7 @@ import com.flickr4java.flickr.photos.SearchParameters;
 import com.flickr4java.flickr.urls.UrlsInterface;
 
 @Service
-public class FlickrService {
+public class FlickrApiService {
 
     private static final int MAX_PER_PAGE = 500;
 
@@ -45,7 +44,7 @@ public class FlickrService {
     private final Flickr flickr;
 
     @Autowired
-    public FlickrService(
+    public FlickrApiService(
             @Value("${flickr.api.key}") String flickrApiKey, 
             @Value("${flickr.secret}") String flickrSecret) {
         flickr = new Flickr(flickrApiKey, flickrSecret, new REST());

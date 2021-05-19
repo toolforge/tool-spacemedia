@@ -33,13 +33,13 @@ import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.commons.api.exceptions.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
+import org.wikimedia.commons.donvip.spacemedia.repo.flickr.FlickrFreeLicense;
+import org.wikimedia.commons.donvip.spacemedia.repo.flickr.FlickrApiService;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrMediaProcessorService;
-import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 
@@ -57,7 +57,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     @Autowired
     protected FlickrMediaRepository flickrRepository;
     @Autowired
-    protected FlickrService flickrService;
+    protected FlickrApiService flickrService;
     @Autowired
     protected Mapper dozerMapper;
     @Autowired

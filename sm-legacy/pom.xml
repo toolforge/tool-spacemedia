@@ -21,6 +21,11 @@
 			<artifactId>sm-commons-data</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.wikimedia.commons.donvip</groupId>
+			<artifactId>sm-flickr</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- Third-party dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -67,11 +72,6 @@
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-tiff</artifactId>
 			<version>3.5</version>
-		</dependency>
-		<dependency>
-			<groupId>com.flickr4java</groupId>
-			<artifactId>flickr4java</artifactId>
-			<version>${flickr4java-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.dozermapper</groupId>

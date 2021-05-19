@@ -49,6 +49,11 @@
 	            <scope>import</scope>
 	        </dependency>
 			<dependency>
+				<groupId>com.flickr4java</groupId>
+				<artifactId>flickr4java</artifactId>
+				<version>${flickr4java-version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.github.scribejava</groupId>
 				<artifactId>scribejava-apis</artifactId>
 				<version>${scribejava-version}</version>

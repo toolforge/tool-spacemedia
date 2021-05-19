@@ -8,5 +8,20 @@
     </parent>
     <artifactId>sm-flickr</artifactId>
 	<description>Flickr support</description>
-
+	<dependencies>
+		<!-- Project dependencies -->
+		<!-- Third-party dependencies -->
+		<dependency>
+			<groupId>com.flickr4java</groupId>
+			<artifactId>flickr4java</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>	   
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>	   
+		</dependency>
+	</dependencies>
 </project>

@@ -22,12 +22,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
+import org.wikimedia.commons.donvip.spacemedia.repo.flickr.FlickrFreeLicense;
+import org.wikimedia.commons.donvip.spacemedia.repo.flickr.FlickrApiService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
 import com.flickr4java.flickr.FlickrException;
@@ -43,7 +44,7 @@ public class FlickrMediaProcessorService {
     @Autowired
     protected FlickrPhotoSetRepository flickrPhotoSetRepository;
     @Autowired
-    protected FlickrService flickrService;
+    protected FlickrApiService flickrService;
     @Autowired
     protected Mapper dozerMapper;
     @Autowired

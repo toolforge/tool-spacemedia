@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
+package org.wikimedia.commons.donvip.spacemedia.repo.flickr;
 
 import java.util.Objects;
 
