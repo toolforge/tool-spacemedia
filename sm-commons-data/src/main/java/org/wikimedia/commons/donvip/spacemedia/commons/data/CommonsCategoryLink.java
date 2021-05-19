@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.commons;
+package org.wikimedia.commons.donvip.spacemedia.commons.data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

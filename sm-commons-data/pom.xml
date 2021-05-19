@@ -9,4 +9,21 @@
     <artifactId>sm-commons-data</artifactId>
 	<description>Data classes to access Wikimedia Commons database replica</description>
 
+	<dependencies>
+		<!-- Project dependencies -->
+		<!-- Third-party dependencies -->
+		<dependency>
+			<groupId>jakarta.persistence</groupId>
+			<artifactId>jakarta.persistence-api</artifactId>	   
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>	   
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>	   
+		</dependency>
+	</dependencies>
+
 </project>

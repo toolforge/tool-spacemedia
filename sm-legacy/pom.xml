@@ -10,11 +10,18 @@
 	<description>Legacy monolithic webapp</description>
 
 	<dependencies>
+		<!-- Project dependencies -->
 		<dependency>
 			<groupId>org.wikimedia.commons.donvip</groupId>
 			<artifactId>sm-commons-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.wikimedia.commons.donvip</groupId>
+			<artifactId>sm-commons-data</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- Third-party dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
