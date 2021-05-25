@@ -144,6 +144,10 @@
         <element xmi:type="uml:EnumerationLiteral" href="spacemedia.uml#_NYGeoLQsEeuutcpwF_b_dw"/>
         <layoutConstraint xmi:type="notation:Location" xmi:id="_NYWWQbQsEeuutcpwF_b_dw"/>
       </children>
+      <children xmi:type="notation:Shape" xmi:id="_Dg_SgLmxEeuaJvI--rCU5A" type="EnumerationLiteral_LiteralLabel">
+        <element xmi:type="uml:EnumerationLiteral" href="spacemedia.uml#_Dd134LmxEeuaJvI--rCU5A"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_Dg_SgbmxEeuaJvI--rCU5A"/>
+      </children>
       <styles xmi:type="notation:TitleStyle" xmi:id="_J8J8M7QsEeuutcpwF_b_dw"/>
       <styles xmi:type="notation:SortingStyle" xmi:id="_J8J8NLQsEeuutcpwF_b_dw"/>
       <styles xmi:type="notation:FilteringStyle" xmi:id="_J8J8NbQsEeuutcpwF_b_dw"/>

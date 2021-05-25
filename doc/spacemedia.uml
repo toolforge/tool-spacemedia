@@ -44,6 +44,7 @@
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_MR-kELQsEeuutcpwF_b_dw" name="JPEG"/>
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_NYGeoLQsEeuutcpwF_b_dw" name="PNG"/>
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_OUE-sLQsEeuutcpwF_b_dw" name="TIFF"/>
+    <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_Dd134LmxEeuaJvI--rCU5A" name="GIF"/>
   </packagedElement>
   <packagedElement xmi:type="uml:Class" xmi:id="_nb6ecLQvEeuutcpwF_b_dw" name="Organization">
     <generalization xmi:type="uml:Generalization" xmi:id="_2L3EkLW3EeuapsaONW0OGA" general="_RI4hILW3EeuapsaONW0OGA"/>
@@ -67,7 +68,7 @@
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_3ay7wbdKEeuT8JOpLDwGxQ" value="*"/>
     </ownedAttribute>
   </packagedElement>
-  <packagedElement xmi:type="uml:Class" xmi:id="_RI4hILW3EeuapsaONW0OGA" name="Person">
+  <packagedElement xmi:type="uml:Class" xmi:id="_RI4hILW3EeuapsaONW0OGA" name="Person" isAbstract="true">
     <ownedAttribute xmi:type="uml:Property" xmi:id="_pLx5cLW3EeuapsaONW0OGA" name="name" isReadOnly="true">
       <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
     </ownedAttribute>

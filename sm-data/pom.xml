@@ -7,6 +7,15 @@
         <version>0.5.0-SNAPSHOT</version>
     </parent>
     <artifactId>sm-data</artifactId>
-	<description>Data classes</description>
+	<description>JPA data classes</description>
+
+	<dependencies>
+		<!-- Project dependencies -->
+		<!-- Third-party dependencies -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+	</dependencies>
 
 </project>
