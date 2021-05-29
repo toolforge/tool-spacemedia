@@ -3,11 +3,11 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.kari;
 import java.time.LocalDate;
 import java.util.Objects;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.search.annotations.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -18,7 +18,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 public class KariMedia extends Media<Integer, LocalDate> {
 
     @Id
-    @NotNull
+    @Column(nullable = false)
     private Integer id;
 
     private String kariId;

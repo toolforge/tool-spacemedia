@@ -18,7 +18,6 @@ import javax.persistence.Index;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,10 +38,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class FlickrMedia extends Media<Long, LocalDateTime> {
 
     @Id
-    @NotNull
+    @Column(nullable = false)
     private Long id;
 
-    @NotNull
+    @Column(nullable = false)
     private int license;
 
     @JsonProperty("dateupload")
@@ -70,7 +69,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     
     private double accuracy;
 
-    @NotNull
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private FlickrMediaType media;
 
@@ -88,7 +87,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     @JsonProperty("width_o")
     private int originalWidth;
 
-    @NotNull
+    @Column(nullable = false)
     @JsonProperty("pathalias")
     @Field(index = org.hibernate.search.annotations.Index.YES, analyze = Analyze.NO, store = Store.NO)
     private String pathAlias;

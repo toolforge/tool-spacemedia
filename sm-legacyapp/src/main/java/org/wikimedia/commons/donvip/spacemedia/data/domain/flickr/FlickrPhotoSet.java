@@ -9,7 +9,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
-import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -17,14 +16,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class FlickrPhotoSet {
 
     @Id
-    @NotNull
+    @Column(nullable = false)
     private Long id;
 
     @Lob
     @Column(columnDefinition = "TEXT", nullable = false)
     private String title;
 
-    @NotNull
+    @Column(nullable = false)
     private String pathAlias;
 
     @ManyToMany
