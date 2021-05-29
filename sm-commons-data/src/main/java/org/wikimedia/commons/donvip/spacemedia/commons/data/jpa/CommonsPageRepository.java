@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.commons.data;
+package org.wikimedia.commons.donvip.spacemedia.commons.data.jpa;
 
 import java.util.Optional;
 

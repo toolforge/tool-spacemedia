@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data;
+package org.wikimedia.commons.donvip.spacemedia.data.jpa;
 
 import java.net.URL;
 import java.util.Objects;
