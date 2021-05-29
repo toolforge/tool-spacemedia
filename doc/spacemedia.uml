@@ -48,9 +48,6 @@
   </packagedElement>
   <packagedElement xmi:type="uml:Class" xmi:id="_nb6ecLQvEeuutcpwF_b_dw" name="Organization">
     <generalization xmi:type="uml:Generalization" xmi:id="_2L3EkLW3EeuapsaONW0OGA" general="_RI4hILW3EeuapsaONW0OGA"/>
-    <ownedAttribute xmi:type="uml:Property" xmi:id="_uojEQLQvEeuutcpwF_b_dw" name="website" isReadOnly="true">
-      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
-    </ownedAttribute>
     <ownedAttribute xmi:type="uml:Property" xmi:id="_hjJ3ALW-EeuapsaONW0OGA" name="mediarepository" type="_VFSpILWzEeuapsaONW0OGA" association="_hjGMoLW-EeuapsaONW0OGA">
       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_hjJ3AbW-EeuapsaONW0OGA"/>
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_hjJ3ArW-EeuapsaONW0OGA" value="*"/>
