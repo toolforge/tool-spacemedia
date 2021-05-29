@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.wikimedia.commons.donvip</groupId>
-        <artifactId>spacemedia</artifactId>
+        <artifactId>sm-cronjobs</artifactId>
         <version>0.5.0-SNAPSHOT</version>
     </parent>
-    <artifactId>sm-webapp</artifactId>
-	<description>Web application</description>
+    <artifactId>sm-harvester-nasa-earth-observatory</artifactId>
+	<description>Harvests media from NASA Earth Observatory website</description>
 
 </project>

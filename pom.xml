@@ -8,14 +8,13 @@
 	<description>Find free media released by space agencies missing in Wikimedia Commons</description>
 
     <modules>
-        <module>sm-backend</module>
+        <module>sm-apps</module>
         <module>sm-commons-api</module>
         <module>sm-commons-data</module>
         <module>sm-data</module>
-        <module>sm-legacy</module>
+        <module>sm-legacyapp</module>
         <module>sm-repositories</module>
         <module>sm-utils</module>
-        <module>sm-webapp</module>
     </modules>
 
 	<properties>

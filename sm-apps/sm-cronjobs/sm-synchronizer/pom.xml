@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.wikimedia.commons.donvip</groupId>
-        <artifactId>sm-repositories</artifactId>
+        <artifactId>sm-cronjobs</artifactId>
         <version>0.5.0-SNAPSHOT</version>
     </parent>
-    <artifactId>sm-nasa</artifactId>
-	<description>NASA (National Aeronautics and Space Administration) support</description>
+    <artifactId>sm-synchronizer</artifactId>
+	<description>Synchronizes local database with Commons replica to follow external imports made by other users</description>
 
 </project>
