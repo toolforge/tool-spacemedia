@@ -11,6 +11,7 @@
         <module>sm-apps</module>
         <module>sm-commons-api</module>
         <module>sm-commons-data</module>
+        <module>sm-core</module>
         <module>sm-data</module>
         <module>sm-legacyapp</module>
         <module>sm-repositories</module>
@@ -67,6 +68,11 @@
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-collections4</artifactId>
 				<version>${collections4-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jsoup</groupId>
+				<artifactId>jsoup</artifactId>
+				<version>1.13.1</version>
 			</dependency>
 	    </dependencies>
 	</dependencyManagement>

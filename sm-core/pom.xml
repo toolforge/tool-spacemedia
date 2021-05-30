@@ -6,31 +6,28 @@
         <artifactId>spacemedia</artifactId>
         <version>0.5.0-SNAPSHOT</version>
     </parent>
-    <artifactId>sm-apps</artifactId>
-	<packaging>pom</packaging>
-	<description>Applications</description>
-
-    <modules>
-        <module>sm-backend</module>
-        <module>sm-cronjobs</module>
-        <module>sm-webapp</module>
-    </modules>
+    <artifactId>sm-core</artifactId>
+	<description>Core application classes</description>
 
 	<dependencies>
 		<!-- Project dependencies -->
 		<dependency>
 			<groupId>org.wikimedia.commons.donvip</groupId>
-			<artifactId>sm-core</artifactId>
-			<version>${project.version}</version>	   
+			<artifactId>sm-data</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- Third-party dependencies -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>	   
 		</dependency>
 		<dependency>
-			<groupId>org.mariadb.jdbc</groupId>
-			<artifactId>mariadb-java-client</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>	   
+		</dependency>
+		<dependency>
+	        <groupId>jakarta.annotation</groupId>
+		    <artifactId>jakarta.annotation-api</artifactId>
 		</dependency>
 	</dependencies>
 

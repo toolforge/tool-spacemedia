@@ -53,7 +53,7 @@
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_hjJ3ArW-EeuapsaONW0OGA" value="*"/>
     </ownedAttribute>
   </packagedElement>
-  <packagedElement xmi:type="uml:Class" xmi:id="_VFSpILWzEeuapsaONW0OGA" name="Repository">
+  <packagedElement xmi:type="uml:Class" xmi:id="_VFSpILWzEeuapsaONW0OGA" name="PublicationRepository">
     <ownedAttribute xmi:type="uml:Property" xmi:id="_K9YvkLW0EeuapsaONW0OGA" name="name" isReadOnly="true">
       <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
     </ownedAttribute>

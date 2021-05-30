@@ -9,4 +9,11 @@
     <artifactId>sm-harvester-esa-website</artifactId>
 	<description>Harvests media from ESA (European Space Agency) website</description>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+		</dependency>
+	</dependencies>
+
 </project>
