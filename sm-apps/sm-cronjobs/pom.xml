@@ -36,8 +36,7 @@
         <module>sm-harvester-nasa-ntrs</module>
         <module>sm-harvester-nasa-photojournal</module>
         <module>sm-harvester-nso-website</module>
-        <module>sm-harvester-usaf-laafb-flickr</module>
-        <module>sm-harvester-usaf-spacecommand-flickr</module>
+        <module>sm-harvester-usaf-flickr</module>
         <module>sm-harvester-ussf-website</module>
     </modules>
 
