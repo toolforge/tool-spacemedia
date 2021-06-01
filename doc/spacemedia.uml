@@ -22,20 +22,23 @@
       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_ZvyXcLgmEeuL-K_B4Ic8Pw"/>
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_ZvyXcbgmEeuL-K_B4Ic8Pw" value="*"/>
     </ownedAttribute>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_-mD0wMMgEeui070yEk46sQ" name="metadata" type="_uMr_0LguEeubm-MCTF08wg" association="_-mCmoMMgEeui070yEk46sQ">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_-mD0wcMgEeui070yEk46sQ"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_-mEb0MMgEeui070yEk46sQ" value="1"/>
+    </ownedAttribute>
   </packagedElement>
   <packagedElement xmi:type="uml:Class" xmi:id="_Zy294LQmEeuutcpwF_b_dw" name="ImageFile">
     <generalization xmi:type="uml:Generalization" xmi:id="_n5VJULQmEeuutcpwF_b_dw" general="_JdQDYLQQEeuutcpwF_b_dw"/>
+    <generalization xmi:type="uml:Generalization" xmi:id="_f_JKQMMqEeui070yEk46sQ" general="_YoQcQMMqEeui070yEk46sQ"/>
     <ownedAttribute xmi:type="uml:Property" xmi:id="_QUld4LQsEeuutcpwF_b_dw" name="format" type="_J8Hf8LQsEeuutcpwF_b_dw" isUnique="false" isReadOnly="true"/>
     <ownedAttribute xmi:type="uml:Property" xmi:id="_fvMVQLQtEeuutcpwF_b_dw" name="phash" isUnique="false" isReadOnly="true">
       <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
     </ownedAttribute>
-    <ownedAttribute xmi:type="uml:Property" xmi:id="_hhecALgvEeubm-MCTF08wg" name="imagemetadata" type="_Y2awYLgvEeubm-MCTF08wg" association="_hhdN4LgvEeubm-MCTF08wg">
-      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_hhecAbgvEeubm-MCTF08wg"/>
-      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_hhecArgvEeubm-MCTF08wg" value="*"/>
-    </ownedAttribute>
   </packagedElement>
   <packagedElement xmi:type="uml:Class" xmi:id="_amv48LQmEeuutcpwF_b_dw" name="VideoFile">
     <generalization xmi:type="uml:Generalization" xmi:id="_oifbELQmEeuutcpwF_b_dw" general="_JdQDYLQQEeuutcpwF_b_dw"/>
+    <generalization xmi:type="uml:Generalization" xmi:id="_hEFZEMMqEeui070yEk46sQ" general="_YoQcQMMqEeui070yEk46sQ"/>
+    <generalization xmi:type="uml:Generalization" xmi:id="_h0C2YMMqEeui070yEk46sQ" general="_dIg7YMMqEeui070yEk46sQ"/>
   </packagedElement>
   <packagedElement xmi:type="uml:Class" xmi:id="_bhg4ELQmEeuutcpwF_b_dw" name="PdfFile">
     <generalization xmi:type="uml:Generalization" xmi:id="_pHdwYLQmEeuutcpwF_b_dw" general="_JdQDYLQQEeuutcpwF_b_dw"/>
@@ -53,7 +56,7 @@
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_hjJ3ArW-EeuapsaONW0OGA" value="*"/>
     </ownedAttribute>
   </packagedElement>
-  <packagedElement xmi:type="uml:Class" xmi:id="_VFSpILWzEeuapsaONW0OGA" name="PublicationRepository">
+  <packagedElement xmi:type="uml:Class" xmi:id="_VFSpILWzEeuapsaONW0OGA" name="Depot">
     <ownedAttribute xmi:type="uml:Property" xmi:id="_K9YvkLW0EeuapsaONW0OGA" name="name" isReadOnly="true">
       <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
     </ownedAttribute>
@@ -63,6 +66,9 @@
     <ownedAttribute xmi:type="uml:Property" xmi:id="_3ayUsrdKEeuT8JOpLDwGxQ" name="publication" type="_r7ENYLW7EeuapsaONW0OGA" association="_3axtoLdKEeuT8JOpLDwGxQ">
       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_3ay7wLdKEeuT8JOpLDwGxQ"/>
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_3ay7wbdKEeuT8JOpLDwGxQ" value="*"/>
+    </ownedAttribute>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_uLZ1sMJbEeu05ILfWzJiYA" name="id">
+      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
     </ownedAttribute>
   </packagedElement>
   <packagedElement xmi:type="uml:Class" xmi:id="_RI4hILW3EeuapsaONW0OGA" name="Person" isAbstract="true">
@@ -187,6 +193,9 @@
     <ownedAttribute xmi:type="uml:Property" xmi:id="_hd7w8LdMEeuT8JOpLDwGxQ" name="description">
       <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
     </ownedAttribute>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_gHNXkMMeEeui070yEk46sQ" name="lang">
+      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+    </ownedAttribute>
   </packagedElement>
   <packagedElement xmi:type="uml:Association" xmi:id="_gdAqALdNEeuT8JOpLDwGxQ" name="author" memberEnd="_gdE7cLdNEeuT8JOpLDwGxQ _gdFigLdNEeuT8JOpLDwGxQ">
     <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_gdEUYLdNEeuT8JOpLDwGxQ" source="org.eclipse.papyrus">
@@ -207,7 +216,7 @@
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_zpeTULdXEeuT8JOpLDwGxQ" name="CC-BY-SA-4.0"/>
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_ZE_SkLdYEeuT8JOpLDwGxQ" name="PD-USGov"/>
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_j0rvcLdYEeuT8JOpLDwGxQ" name="CC0-1.0"/>
-    <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_qD4coLdYEeuT8JOpLDwGxQ" name="Flickr-NoKnownCopyrightRestructions"/>
+    <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_qD4coLdYEeuT8JOpLDwGxQ" name="Flickr-NoKnownCopyrightRestrictions"/>
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_uODXALdYEeuT8JOpLDwGxQ" name="Flickr-PublicDomainMark"/>
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_4HYzoLdYEeuT8JOpLDwGxQ" name="Open-Licence-2.0"/>
   </packagedElement>
@@ -252,7 +261,7 @@
     <ownedEnd xmi:type="uml:Property" xmi:id="_ZvyXcrgmEeuL-K_B4Ic8Pw" name="file" type="_JdQDYLQQEeuutcpwF_b_dw" association="_ZvvUILgmEeuL-K_B4Ic8Pw"/>
   </packagedElement>
   <packagedElement xmi:type="uml:Class" xmi:id="_uMr_0LguEeubm-MCTF08wg" name="Metadata">
-    <ownedAttribute xmi:type="uml:Property" xmi:id="_wF5kMLguEeubm-MCTF08wg" name="type">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_wF5kMLguEeubm-MCTF08wg" name="key">
       <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
     </ownedAttribute>
     <ownedAttribute xmi:type="uml:Property" xmi:id="_y0KhQLguEeubm-MCTF08wg" name="value">
@@ -267,20 +276,21 @@
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_9htCALguEeubm-MCTF08wg" value="*"/>
     </ownedEnd>
   </packagedElement>
-  <packagedElement xmi:type="uml:Class" xmi:id="_Y2awYLgvEeubm-MCTF08wg" name="ImageMetadata">
-    <ownedAttribute xmi:type="uml:Property" xmi:id="_bC_8sLgvEeubm-MCTF08wg" name="tag">
-      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
-    </ownedAttribute>
-    <ownedAttribute xmi:type="uml:Property" xmi:id="_eGYOILgvEeubm-MCTF08wg" name="value">
-      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
-    </ownedAttribute>
-  </packagedElement>
-  <packagedElement xmi:type="uml:Association" xmi:id="_hhdN4LgvEeubm-MCTF08wg" memberEnd="_hhecALgvEeubm-MCTF08wg _hhecA7gvEeubm-MCTF08wg">
-    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_hhd08LgvEeubm-MCTF08wg" source="org.eclipse.papyrus">
-      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_hhd08bgvEeubm-MCTF08wg" key="nature" value="UML_Nature"/>
+  <packagedElement xmi:type="uml:Association" xmi:id="_-mCmoMMgEeui070yEk46sQ" memberEnd="_-mD0wMMgEeui070yEk46sQ _-mEb0cMgEeui070yEk46sQ">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_-mDNsMMgEeui070yEk46sQ" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_-mDNscMgEeui070yEk46sQ" key="nature" value="UML_Nature"/>
     </eAnnotations>
-    <ownedEnd xmi:type="uml:Property" xmi:id="_hhecA7gvEeubm-MCTF08wg" name="imagefile" type="_Zy294LQmEeuutcpwF_b_dw" association="_hhdN4LgvEeubm-MCTF08wg">
-      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_kQHzkLgvEeubm-MCTF08wg" value="*"/>
-    </ownedEnd>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_-mEb0cMgEeui070yEk46sQ" name="file" type="_JdQDYLQQEeuutcpwF_b_dw" association="_-mCmoMMgEeui070yEk46sQ"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_MD_qcMMqEeui070yEk46sQ" name="AudioFile">
+    <generalization xmi:type="uml:Generalization" xmi:id="_PGM3MMMqEeui070yEk46sQ" general="_JdQDYLQQEeuutcpwF_b_dw"/>
+    <generalization xmi:type="uml:Generalization" xmi:id="_inDnsMMqEeui070yEk46sQ" general="_dIg7YMMqEeui070yEk46sQ"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Interface" xmi:id="_YoQcQMMqEeui070yEk46sQ" name="Visual">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_mMyYQMMqEeui070yEk46sQ" name="width"/>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_oGqrAMMqEeui070yEk46sQ" name="height"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Interface" xmi:id="_dIg7YMMqEeui070yEk46sQ" name="Temporal">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_pSHKcMMqEeui070yEk46sQ" name="duration"/>
   </packagedElement>
 </uml:Model>
