@@ -321,7 +321,7 @@ public class EsaService
 
     private void updateMissingImages() {
         for (EsaMedia media : listMissingMedia()) {
-            // Envisat pictures are released in two versions: 1 hi-res TIFF file and 1 not-so-shi-res JPEG file
+            // Envisat pictures are released in two versions: 1 hi-res TIFF file and 1 not-so-hi-res JPEG file
             // On wikimedia commons, the TIFF file has been uploaded in both TIFF and JPEG format to benefit from hi-res
             Metadata metadata = media.getMetadata();
             Metadata fullResMetadata = media.getFullResMetadata();
