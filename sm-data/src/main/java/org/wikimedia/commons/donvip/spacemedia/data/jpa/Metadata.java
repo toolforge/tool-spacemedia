@@ -6,8 +6,10 @@ import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 
 @Entity
+@IdClass(value = Metadata.class)
 public class Metadata implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -19,6 +21,15 @@ public class Metadata implements Serializable {
     @Id
     @Column(name = "v", length = 255)
     private String value;
+
+    public Metadata() {
+
+    }
+
+    public Metadata(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
 
     public String getKey() {
         return key;

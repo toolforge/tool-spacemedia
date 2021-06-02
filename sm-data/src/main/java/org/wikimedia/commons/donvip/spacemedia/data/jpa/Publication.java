@@ -2,9 +2,12 @@ package org.wikimedia.commons.donvip.spacemedia.data.jpa;
 
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -25,6 +28,7 @@ public abstract class Publication {
 
     private ZonedDateTime publicationDateTime;
 
+    @Column(nullable = false, unique = true)
     private URL url;
 
     private String credit;
@@ -35,7 +39,7 @@ public abstract class Publication {
     private URL thumbnailUrl;
 
     @ManyToMany
-    private Set<Metadata> metadata;
+    private Set<Metadata> metadata = new HashSet<>();
 
     public PublicationKey getId() {
         return id;
@@ -97,8 +101,17 @@ public abstract class Publication {
         return metadata;
     }
 
+    public Set<String> getMetadataValues(String key) {
+        return metadata.stream().filter(m -> m.getKey().equals(key)).map(Metadata::getValue)
+                .collect(Collectors.toSet());
+    }
+
     public void setMetadata(Set<Metadata> metadata) {
         this.metadata = metadata;
+    }
+
+    public boolean addMetadata(Metadata md) {
+        return metadata.add(md);
     }
 
     @Override

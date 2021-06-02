@@ -3,14 +3,20 @@ package org.wikimedia.commons.donvip.spacemedia.data.jpa;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public abstract class ContentPublication extends Publication {
 
+    @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String title;
 
+    @Lob
+    @Column(nullable = true, columnDefinition = "MEDIUMTEXT")
     private String description;
 
     /**

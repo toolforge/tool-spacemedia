@@ -17,6 +17,15 @@ public class PublicationKey implements Serializable {
     @Column(length = 64)
     private String id;
 
+    public PublicationKey() {
+
+    }
+
+    public PublicationKey(String depot_id, String id) {
+        this.depot_id = depot_id;
+        this.id = id;
+    }
+
     public String getDepotId() {
         return depot_id;
     }
