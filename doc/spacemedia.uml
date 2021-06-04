@@ -26,11 +26,11 @@
       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_-mD0wcMgEeui070yEk46sQ"/>
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_-mEb0MMgEeui070yEk46sQ" value="1"/>
     </ownedAttribute>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_db7vEMTJEeucgdjsTI0DrA" name="format" type="_J8Hf8LQsEeuutcpwF_b_dw"/>
   </packagedElement>
   <packagedElement xmi:type="uml:Class" xmi:id="_Zy294LQmEeuutcpwF_b_dw" name="ImageFile">
     <generalization xmi:type="uml:Generalization" xmi:id="_n5VJULQmEeuutcpwF_b_dw" general="_JdQDYLQQEeuutcpwF_b_dw"/>
     <generalization xmi:type="uml:Generalization" xmi:id="_f_JKQMMqEeui070yEk46sQ" general="_YoQcQMMqEeui070yEk46sQ"/>
-    <ownedAttribute xmi:type="uml:Property" xmi:id="_QUld4LQsEeuutcpwF_b_dw" name="format" type="_J8Hf8LQsEeuutcpwF_b_dw" isUnique="false" isReadOnly="true"/>
     <ownedAttribute xmi:type="uml:Property" xmi:id="_fvMVQLQtEeuutcpwF_b_dw" name="phash" isUnique="false" isReadOnly="true">
       <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
     </ownedAttribute>
@@ -43,11 +43,16 @@
   <packagedElement xmi:type="uml:Class" xmi:id="_bhg4ELQmEeuutcpwF_b_dw" name="PdfFile">
     <generalization xmi:type="uml:Generalization" xmi:id="_pHdwYLQmEeuutcpwF_b_dw" general="_JdQDYLQQEeuutcpwF_b_dw"/>
   </packagedElement>
-  <packagedElement xmi:type="uml:Enumeration" xmi:id="_J8Hf8LQsEeuutcpwF_b_dw" name="ImageFormat">
+  <packagedElement xmi:type="uml:Enumeration" xmi:id="_J8Hf8LQsEeuutcpwF_b_dw" name="FileFormat">
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_MR-kELQsEeuutcpwF_b_dw" name="JPEG"/>
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_NYGeoLQsEeuutcpwF_b_dw" name="PNG"/>
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_OUE-sLQsEeuutcpwF_b_dw" name="TIFF"/>
     <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_Dd134LmxEeuaJvI--rCU5A" name="GIF"/>
+    <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_iBI_oMTJEeucgdjsTI0DrA" name="MP4"/>
+    <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_jqEsUMTJEeucgdjsTI0DrA" name="PDF"/>
+    <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_kdJvEMTJEeucgdjsTI0DrA" name="WEBA"/>
+    <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_lXw9MMTJEeucgdjsTI0DrA" name="WEBM"/>
+    <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="_mSSrwMTJEeucgdjsTI0DrA" name="WEBP"/>
   </packagedElement>
   <packagedElement xmi:type="uml:Class" xmi:id="_nb6ecLQvEeuutcpwF_b_dw" name="Organization">
     <generalization xmi:type="uml:Generalization" xmi:id="_2L3EkLW3EeuapsaONW0OGA" general="_RI4hILW3EeuapsaONW0OGA"/>

@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.utils;
+package org.wikimedia.commons.donvip.spacemedia.downloader;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -19,6 +19,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.wikimedia.commons.donvip.spacemedia.utils.UriUrlUtils;
 
 import com.github.kilianB.hash.Hash;
 import com.github.kilianB.hashAlgorithms.HashingAlgorithm;

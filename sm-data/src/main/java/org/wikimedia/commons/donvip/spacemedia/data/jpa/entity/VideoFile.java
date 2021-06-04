@@ -3,38 +3,36 @@ package org.wikimedia.commons.donvip.spacemedia.data.jpa.entity;
 import java.time.Duration;
 import java.util.Objects;
 
-import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
+@DiscriminatorValue(value = "V")
 public class VideoFile extends File implements Visual, Temporal {
 
-    @Column(nullable = false)
-    private short height;
+    private int height;
 
-    @Column(nullable = false)
-    private short width;
+    private int width;
 
-    @Column(nullable = false)
     private Duration duration;
 
     @Override
-    public short getHeight() {
+    public int getHeight() {
         return height;
     }
 
     @Override
-    public void setHeight(short height) {
+    public void setHeight(int height) {
         this.height = height;
     }
 
     @Override
-    public short getWidth() {
+    public int getWidth() {
         return width;
     }
 
     @Override
-    public void setWidth(short width) {
+    public void setWidth(int width) {
         this.width = width;
     }
 

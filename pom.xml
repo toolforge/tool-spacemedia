@@ -56,6 +56,21 @@
 				<version>${flickr4java-version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.github.kilianB</groupId>
+				<artifactId>JImageHash</artifactId>
+				<version>3.0.0</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.openjfx</groupId>
+						<artifactId>javafx-swing</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.openjfx</groupId>
+						<artifactId>javafx-graphics</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
 				<groupId>com.github.scribejava</groupId>
 				<artifactId>scribejava-apis</artifactId>
 				<version>${scribejava-version}</version>

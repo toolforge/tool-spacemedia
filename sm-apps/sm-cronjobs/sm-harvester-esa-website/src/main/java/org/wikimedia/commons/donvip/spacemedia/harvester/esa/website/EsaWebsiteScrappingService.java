@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.harvester.esa.website.service;
+package org.wikimedia.commons.donvip.spacemedia.harvester.esa.website;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -32,18 +32,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.FilePublication;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Licence;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.MediaPublication;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.PublicationKey;
-import org.wikimedia.commons.donvip.spacemedia.harvester.esa.website.data.EsaMetadataCategory;
 
 @Service
 public class EsaWebsiteScrappingService extends AbstractHarvesterService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaWebsiteScrappingService.class);
-
-    /**
-     * Resulting SHA-1 hash of an HTML error page.
-     * See <a href="https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2006/10/envisat_sees_madagascar/10084739-2-eng-GB/Envisat_sees_Madagascar.tiff">this example</a>
-     */
-    private static final String SHA1_ERROR = "860f6466c5f3da5d62b2065c33aa5548697d817c";
 
     protected static final Pattern COPERNICUS_CREDIT = Pattern.compile(
                     ".*Copernicus[ -](?:Sentinel[ -])?dat(?:a|en)(?:/ESA)? [\\(\\[](2[0-9]{3}(?:[-–/][0-9]{2,4})?)[\\)\\]].*",

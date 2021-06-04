@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.harvester.esa.website.data;
+package org.wikimedia.commons.donvip.spacemedia.harvester.esa.website;
 
 import java.util.Set;
 

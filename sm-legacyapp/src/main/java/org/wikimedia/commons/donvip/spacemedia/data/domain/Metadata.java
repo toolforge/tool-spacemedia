@@ -9,7 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
 
-import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
+import org.wikimedia.commons.donvip.spacemedia.downloader.HashHelper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

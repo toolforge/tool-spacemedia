@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 
 @Entity
 public class FilePublication extends Publication {
@@ -19,6 +20,9 @@ public class FilePublication extends Publication {
 
     @ManyToMany(mappedBy = "filePublications", cascade = CascadeType.REMOVE)
     private Set<MediaPublication> mediaPublications;
+
+    @ManyToOne
+    private File file;
 
     public FilePublication() {
 
@@ -52,6 +56,14 @@ public class FilePublication extends Publication {
 
     public void setMediaPublications(Set<MediaPublication> mediaPublications) {
         this.mediaPublications = mediaPublications;
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
     }
 
     @Override

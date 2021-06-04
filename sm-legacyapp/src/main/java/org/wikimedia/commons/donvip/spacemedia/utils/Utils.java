@@ -13,7 +13,6 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -22,8 +21,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -39,6 +36,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wikimedia.commons.donvip.spacemedia.downloader.ImageHelper;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 
 public final class Utils {
@@ -50,47 +48,6 @@ public final class Utils {
 
     private Utils() {
         // Hide default constructor
-    }
-
-    /**
-     * Returns a <code>BufferedImage</code> as the result of decoding
-     * a supplied <code>ImageInputStream</code> with an
-     * <code>ImageReader</code> chosen automatically from among those
-     * currently registered.  If no registered
-     * <code>ImageReader</code> claims to be able to read the stream,
-     * <code>null</code> is returned.
-     *
-     * <p>This method <em>does</em>
-     * close the provided <code>ImageInputStream</code> after the read
-     * operation has completed, unless <code>null</code> is returned,
-     * in which case this method <em>does not</em> close the stream.
-     *
-     * @param stream an <code>ImageInputStream</code> to read from.
-     * @param readMetadata if {@code true}, makes sure to read image metadata
-     *
-     * @return a <code>BufferedImage</code> containing the decoded
-     * contents of the input, or <code>null</code>.
-     *
-     * @throws IllegalArgumentException if <code>stream</code> is <code>null</code>.
-     * @throws IOException if an error occurs during reading.
-     */
-    public static BufferedImage readImage(ImageInputStream stream, boolean readMetadata) throws IOException {
-        Iterator<ImageReader> iter = ImageIO.getImageReaders(stream);
-        if (!iter.hasNext()) {
-            return null;
-        }
-
-        ImageReader reader = iter.next();
-        if (iter.hasNext()) {
-            LOGGER.debug("At least another image reader is available and ignored: {}", iter.next());
-        }
-        reader.setInput(stream, true, !readMetadata);
-        try {
-            return reader.read(0, reader.getDefaultReadParam());
-        } finally {
-            reader.dispose();
-            stream.close();
-        }
     }
 
     public static String findExtension(String path) {
@@ -115,7 +72,7 @@ public final class Utils {
             }
             if (ok) {
                 try {
-                    return readImage(ImageIO.createImageInputStream(in), readMetadata);
+                    return ImageHelper.readImage(ImageIO.createImageInputStream(in), readMetadata);
                 } catch (IOException | RuntimeException e) {
                     throw new ImageDecodingException(e);
                 }

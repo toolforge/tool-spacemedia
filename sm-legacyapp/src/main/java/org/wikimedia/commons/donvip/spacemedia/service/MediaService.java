@@ -47,8 +47,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MetadataProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.downloader.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
-import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import io.micrometer.core.instrument.util.StringUtils;

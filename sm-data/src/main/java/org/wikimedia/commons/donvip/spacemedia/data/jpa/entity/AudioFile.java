@@ -3,13 +3,13 @@ package org.wikimedia.commons.donvip.spacemedia.data.jpa.entity;
 import java.time.Duration;
 import java.util.Objects;
 
-import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
+@DiscriminatorValue(value = "A")
 public class AudioFile extends File implements Temporal {
 
-    @Column(nullable = false)
     private Duration duration;
 
     @Override

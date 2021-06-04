@@ -2,11 +2,11 @@ package org.wikimedia.commons.donvip.spacemedia.data.jpa.entity;
 
 public interface Visual {
 
-    short getHeight();
+    int getHeight();
 
-    void setHeight(short height);
+    void setHeight(int height);
 
-    short getWidth();
+    int getWidth();
 
-    void setWidth(short width);
+    void setWidth(int width);
 }

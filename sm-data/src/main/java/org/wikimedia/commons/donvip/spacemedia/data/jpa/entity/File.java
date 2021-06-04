@@ -4,12 +4,22 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.ManyToMany;
-import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToMany;
 
-@MappedSuperclass
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "discriminator", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorValue(value = "F")
 public abstract class File {
 
     /**
@@ -24,6 +34,9 @@ public abstract class File {
      */
     @Column(nullable = false)
     private Long size;
+
+    @Enumerated(EnumType.STRING)
+    private FileFormat format;
 
     @ManyToMany
     private Set<Metadata> metadata;
@@ -47,6 +60,14 @@ public abstract class File {
         this.sha1 = sha1;
     }
 
+    public FileFormat getFormat() {
+        return format;
+    }
+
+    public void setFormat(FileFormat format) {
+        this.format = format;
+    }
+
     public Set<Metadata> getMetadata() {
         return metadata;
     }
@@ -65,7 +86,7 @@ public abstract class File {
 
     @Override
     public int hashCode() {
-        return Objects.hash(commonsFiles, metadata, sha1, size);
+        return Objects.hash(commonsFiles, metadata, sha1, size, format);
     }
 
     @Override
@@ -76,6 +97,12 @@ public abstract class File {
             return false;
         File other = (File) obj;
         return Objects.equals(commonsFiles, other.commonsFiles) && Objects.equals(metadata, other.metadata)
-                && Objects.equals(sha1, other.sha1) && Objects.equals(size, other.size);
+                && Objects.equals(sha1, other.sha1) && Objects.equals(size, other.size) && format == other.format;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [" + (sha1 != null ? "sha1=" + sha1 + ", " : "")
+                + (size != null ? "size=" + size + ", " : "") + (format != null ? "format=" + format : "") + "]";
     }
 }

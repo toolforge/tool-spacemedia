@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.harvester.esa.website.service;
+package org.wikimedia.commons.donvip.spacemedia.harvester.esa.website;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
