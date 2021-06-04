@@ -12,5 +12,5 @@ public interface FilePublicationRepository extends CrudRepository<FilePublicatio
 
     Optional<FilePublication> findByUrl(URL url);
 
-    List<FilePublication> findByFileNull();
+    List<FilePublication> findByFileNullOrderByIdId();
 }

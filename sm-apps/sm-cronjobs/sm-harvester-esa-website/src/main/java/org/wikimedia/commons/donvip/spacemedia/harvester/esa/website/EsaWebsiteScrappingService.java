@@ -38,6 +38,8 @@ public class EsaWebsiteScrappingService extends AbstractHarvesterService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaWebsiteScrappingService.class);
 
+    private static final String DEPOT_ID = "esa-website";
+
     protected static final Pattern COPERNICUS_CREDIT = Pattern.compile(
                     ".*Copernicus[ -](?:Sentinel[ -])?dat(?:a|en)(?:/ESA)? [\\(\\[](2[0-9]{3}(?:[-–/][0-9]{2,4})?)[\\)\\]].*",
                     Pattern.CASE_INSENSITIVE);
@@ -71,28 +73,27 @@ public class EsaWebsiteScrappingService extends AbstractHarvesterService {
 
     @Override
     public void harvestMedia() throws IOException {
-        final String depotId = "esa-website";
-        LocalDateTime start = startUpdateMedia(depotId);
+        LocalDateTime start = startUpdateMedia(DEPOT_ID);
         final URL url = new URL(searchLink);
         final String proto = url.getProtocol();
         final String host = url.getHost();
         boolean moreMedia = true;
         int count = 0;
         int index = 0;
-        Depot depot = depotRepository.findById(depotId).orElseThrow();
+        Depot depot = depotRepository.findById(DEPOT_ID).orElseThrow();
         do {
             String searchUrl = searchLink.replace("<idx>", Integer.toString(index));
             try {
                 boolean ok = false;
                 for (int i = 0; i < maxTries && !ok; i++) {
                     try {
-                        LOGGER.debug("Fetching {} media: {}", depotId, searchUrl);
+                        LOGGER.debug("Fetching {} media: {}", DEPOT_ID, searchUrl);
                         Document html = Jsoup.connect(searchUrl).timeout(15_000).get();
                         Elements divs = html.getElementsByClass("grid-item");
                         for (Element div : divs) {
                             URL mediaUrl = new URL(proto, host, div.select("a").get(0).attr("href"));
                             index++;
-                            LOGGER.debug("Checking {} media {}: {}", depotId, index, mediaUrl);
+                            LOGGER.debug("Checking {} media {}: {}", DEPOT_ID, index, mediaUrl);
                             if (checkEsaMedia(mediaUrl, depot) != null) {
                                 count++;
                             }
@@ -109,7 +110,7 @@ public class EsaWebsiteScrappingService extends AbstractHarvesterService {
                 moreMedia = false;
             }
         } while (moreMedia);
-        endUpdateMedia(depotId, count, start);
+        endUpdateMedia(DEPOT_ID, count, start);
     }
 
     private MediaPublication checkEsaMedia(URL url, Depot depot) {
@@ -246,9 +247,9 @@ public class EsaWebsiteScrappingService extends AbstractHarvesterService {
         for (EsaMetadataCategory cat : EsaMetadataCategory.values()) {
             if (cat.getMarkers().contains(title)) {
                 if (cat.isMultiValues()) {
-                    addMetadata(media, cat.name(), set(label));
+                    addMetadata(media, DEPOT_ID, cat.name(), set(label));
                 } else {
-                    addMetadata(media, cat.name(), label);
+                    addMetadata(media, DEPOT_ID, cat.name(), label);
                 }
                 return;
             }

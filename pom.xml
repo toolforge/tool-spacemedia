@@ -51,6 +51,11 @@
 	            <scope>import</scope>
 	        </dependency>
 			<dependency>
+				<groupId>com.drewnoakes</groupId>
+				<artifactId>metadata-extractor</artifactId>
+				<version>2.16.0</version>
+			</dependency>
+			<dependency>
 				<groupId>com.flickr4java</groupId>
 				<artifactId>flickr4java</artifactId>
 				<version>${flickr4java-version}</version>

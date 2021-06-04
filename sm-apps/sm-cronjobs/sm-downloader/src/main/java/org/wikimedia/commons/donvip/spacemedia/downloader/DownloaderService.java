@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.downloader;
 
-import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -11,9 +10,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +42,11 @@ public class DownloaderService {
     @Autowired
     private FilePublicationRepository filePublicationRepository;
 
+    @Autowired
+    private ImageProcessorService imageProcessorService;
+
     public void downloadFiles() {
-        for (FilePublication fp : filePublicationRepository.findByFileNull()) {
+        for (FilePublication fp : filePublicationRepository.findByFileNullOrderByIdId()) {
             URL url = fp.getUrl();
             try {
                 Path temp = Files.createTempFile("tmp-", ".file");
@@ -74,15 +73,7 @@ public class DownloaderService {
                         file.setSha1(sha1);
                         file.setSize(bytes);
                         if (file instanceof ImageFile) {
-                            ImageFile imageFile = ((ImageFile) file);
-                            BufferedImage image;
-                            try (ImageInputStream in = ImageIO.createImageInputStream(Files.newInputStream(temp))) {
-                                image = ImageHelper.readImage(in, true);
-                            }
-                            imageFile.setHeight(image.getHeight());
-                            imageFile.setWidth(image.getWidth());
-                            // TODO: phash
-                            // TODO: EXIF metadata
+                            imageProcessorService.processImageFile(((ImageFile) file), temp);
                         } else if (file instanceof VideoFile) {
                             // TODO
                         } else if (file instanceof AudioFile) {

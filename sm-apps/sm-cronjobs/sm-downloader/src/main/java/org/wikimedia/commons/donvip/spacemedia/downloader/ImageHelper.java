@@ -23,9 +23,8 @@ public class ImageHelper {
      * <code>null</code> is returned.
      *
      * <p>
-     * This method <em>does</em> close the provided <code>ImageInputStream</code>
-     * after the read operation has completed, unless <code>null</code> is returned,
-     * in which case this method <em>does not</em> close the stream.
+     * This method <em>does not</em> close the provided
+     * <code>ImageInputStream</code>.
      *
      * @param stream an <code>ImageInputStream</code> to read from.
      * @param readMetadata if {@code true}, makes sure to read image metadata

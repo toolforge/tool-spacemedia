@@ -4,7 +4,6 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -12,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.MediaPublication;
-import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.repository.DepotRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.repository.FilePublicationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.repository.MediaPublicationRepository;
@@ -55,14 +53,12 @@ public abstract class AbstractHarvesterService implements Harvester {
         return new TreeSet<>(Arrays.asList(label.replace(", ", ",").split(",")));
     }
 
-    protected void addMetadata(MediaPublication pub, String key, Set<String> values) {
-        values.forEach(v -> addMetadata(pub, key, v));
+    protected void addMetadata(MediaPublication pub, String context, String key, Set<String> values) {
+        values.forEach(v -> addMetadata(pub, context, key, v));
     }
 
-    protected void addMetadata(MediaPublication pub, String key, String value) {
-        Metadata metadata = new Metadata(key, value);
-        Optional<Metadata> opt = metadataRepository.findById(metadata);
-        pub.addMetadata(opt.isPresent() ? opt.get() : metadataRepository.save(metadata));
+    protected void addMetadata(MediaPublication pub, String context, String key, String value) {
+        pub.addMetadata(metadataRepository.findOrCreate(context, key, value));
     }
 
     protected final void problem(URL problematicUrl, String errorMessage) {

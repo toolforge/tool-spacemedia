@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.jpa.entity;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
@@ -38,11 +40,11 @@ public abstract class File {
     @Enumerated(EnumType.STRING)
     private FileFormat format;
 
-    @ManyToMany
-    private Set<Metadata> metadata;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Metadata> metadata = new HashSet<>();
 
-    @OneToMany
-    private Set<CommonsFile> commonsFiles;
+    @OneToMany(fetch = FetchType.EAGER)
+    private Set<CommonsFile> commonsFiles = new HashSet<>();
 
     public Long getSize() {
         return size;
@@ -74,6 +76,10 @@ public abstract class File {
 
     public void setMetadata(Set<Metadata> metadata) {
         this.metadata = metadata;
+    }
+
+    public boolean addMetadata(Metadata metadata) {
+        return this.metadata.add(metadata);
     }
 
     public Set<CommonsFile> getCommonsFiles() {

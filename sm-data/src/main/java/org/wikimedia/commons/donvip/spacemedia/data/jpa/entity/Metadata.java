@@ -3,40 +3,51 @@ package org.wikimedia.commons.donvip.spacemedia.data.jpa.entity;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
+import javax.persistence.Lob;
+import javax.persistence.Transient;
 
 @Entity
-@IdClass(value = Metadata.class)
 public class Metadata implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Id
-    @Column(name = "k", length = 32)
-    private String key;
+    @EmbeddedId
+    private MetadataKey mkey;
 
-    @Id
-    @Column(name = "v", length = 255)
+    @Lob
     private String value;
 
     public Metadata() {
 
     }
 
-    public Metadata(String key, String value) {
-        this.key = key;
+    public Metadata(MetadataKey mkey, String value) {
+        this.mkey = mkey;
         this.value = value;
     }
 
-    public String getKey() {
-        return key;
+    public Metadata(String context, String key, String value) {
+        this(MetadataKey.from(context, key, value), value);
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public MetadataKey getMkey() {
+        return mkey;
+    }
+
+    public void setMkey(MetadataKey mkey) {
+        this.mkey = mkey;
+    }
+
+    @Transient
+    public String getKey() {
+        return mkey.getKey();
+    }
+
+    @Transient
+    public String getContext() {
+        return mkey.getContext();
     }
 
     public String getValue() {
@@ -49,7 +60,7 @@ public class Metadata implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(key, value);
+        return mkey.hashCode();
     }
 
     @Override
@@ -59,6 +70,6 @@ public class Metadata implements Serializable {
         if (obj == null || getClass() != obj.getClass())
             return false;
         Metadata other = (Metadata) obj;
-        return Objects.equals(key, other.key) && Objects.equals(value, other.value);
+        return Objects.equals(mkey, other.mkey);
     }
 }
