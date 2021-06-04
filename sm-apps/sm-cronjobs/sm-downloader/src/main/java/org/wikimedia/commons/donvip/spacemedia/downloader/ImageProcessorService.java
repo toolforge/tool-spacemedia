@@ -43,7 +43,7 @@ public class ImageProcessorService {
         return HashHelper.encode(HashHelper.computePerceptualHash(bufferedImage));
     }
 
-    protected BufferedImage readImage(Path temp) throws IOException, IIOException {
+    protected BufferedImage readImage(Path temp) throws IOException {
         BufferedImage image;
         try (ImageInputStream in = ImageIO.createImageInputStream(Files.newInputStream(temp))) {
             try {
@@ -68,6 +68,17 @@ public class ImageProcessorService {
                 } else {
                     throw e;
                 }
+            } catch (IllegalArgumentException e) {
+                // Error seen with:
+                // https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2013/11/operations_engineer2/15538111-1-eng-GB/Operations_engineer.jpg
+                // -
+                // java.lang.IllegalArgumentException: Numbers of source Raster bands and source color space components do not match
+                // at java.awt.image.ColorConvertOp.filter(ColorConvertOp.java:482)
+                // at com.sun.imageio.plugins.jpeg.JPEGImageReader.acceptPixels(JPEGImageReader.java:1356)
+                // at com.sun.imageio.plugins.jpeg.JPEGImageReader.readImage(Native Method)
+                // at com.sun.imageio.plugins.jpeg.JPEGImageReader.readInternal(JPEGImageReader.java:1323)
+                // at com.sun.imageio.plugins.jpeg.JPEGImageReader.read(JPEGImageReader.java:1122)
+                throw new IOException(e);
             }
         }
         if (image == null) {
