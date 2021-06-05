@@ -79,6 +79,13 @@ public class ImageProcessorService {
                 // at com.sun.imageio.plugins.jpeg.JPEGImageReader.readInternal(JPEGImageReader.java:1323)
                 // at com.sun.imageio.plugins.jpeg.JPEGImageReader.read(JPEGImageReader.java:1122)
                 throw new IOException(e);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // Error seen with:
+                // https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2020/04/copernicus_sentinel-2_maps_chernobyl_fire/21957341-1-eng-GB/Copernicus_Sentinel-2_maps_Chernobyl_fire.gif
+                // -
+                // java.lang.ArrayIndexOutOfBoundsException: Index 4096 out of bounds for length 4096
+                // at com.sun.imageio.plugins.gif.GIFImageReader.read(GIFImageReader.java:1013)
+                throw new IOException(e);
             }
         }
         if (image == null) {
