@@ -195,7 +195,8 @@ public class EsoHarvesterService extends AbstractHarvesterService {
         media.setId(key);
         LOGGER.info(imgUrlLink);
         Document html = Jsoup.connect(imgUrlLink).timeout(60_000).get();
-        media.setLang(html.getElementsByTag("html").attr("lang"));
+        String lang = html.getElementsByTag("html").attr("lang");
+        media.setLang(lang.isEmpty() ? "en" : lang);
         Element div = html.getElementsByClass("col-md-9").last();
         // Find title
         Elements h1s = div.getElementsByTag("h1");
