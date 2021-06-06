@@ -32,7 +32,7 @@ public abstract class Publication {
     @Column(nullable = false, unique = true, length = 320)
     private URL url;
 
-    @Column(nullable = true, length = 300)
+    @Column(nullable = true, length = 460)
     private String credit;
 
     @Enumerated(EnumType.STRING)
