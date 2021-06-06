@@ -12,6 +12,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
@@ -32,7 +33,8 @@ public abstract class Publication {
     @Column(nullable = false, unique = true, length = 320)
     private URL url;
 
-    @Column(nullable = true, length = 460)
+    @Lob
+    @Column(nullable = true)
     private String credit;
 
     @Enumerated(EnumType.STRING)
