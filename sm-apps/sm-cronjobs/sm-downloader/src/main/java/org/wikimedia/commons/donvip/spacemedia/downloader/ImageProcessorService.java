@@ -12,6 +12,7 @@ import javax.imageio.stream.ImageInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.ImageFile;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.repository.MetadataRepository;
@@ -26,6 +27,9 @@ import com.drew.metadata.Tag;
 public class ImageProcessorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageProcessorService.class);
+
+    @Value("${maxRasterBytesForPerceptualHash:1810980990}")
+    private long maxRasterBytesForPerceptualHash;
 
     @Autowired
     private MetadataRepository metadataRepository;
@@ -97,7 +101,14 @@ public class ImageProcessorService {
     protected void processBufferedImage(ImageFile imageFile, BufferedImage image) {
         imageFile.setHeight(image.getHeight());
         imageFile.setWidth(image.getWidth());
-        imageFile.setPhash(computePerceptualHash(image));
+        // T230284 - cannot allocate more than 6GB of memory
+        // Not enough to compute perceptual hash for this image:
+        // https://esamultimedia.esa.int/img/2017/12/Amazon_delta_S2A_22August2017_432_MM.tif - 1810980990 bytes
+        int rasterSize = image.getRaster().getDataBuffer().getSize();
+        if (rasterSize < maxRasterBytesForPerceptualHash) {
+            LOGGER.info("computing perceptual hash for a raster of {} bytes", rasterSize);
+            imageFile.setPhash(computePerceptualHash(image));
+        }
     }
 
     private void processMetadata(ImageFile imageFile, Metadata metadata) {
