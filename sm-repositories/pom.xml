@@ -12,6 +12,7 @@
 
     <modules>
         <module>sm-dvids</module>
+        <module>sm-eso</module>
         <module>sm-flickr</module>
         <module>sm-youtube</module>
     </modules>

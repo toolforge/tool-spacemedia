@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain.eso;
+package org.wikimedia.commons.donvip.spacemedia.repo.eso;
 
 public enum EsoMediaType {
     Artwork,

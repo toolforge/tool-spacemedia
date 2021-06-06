@@ -31,6 +31,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Depot;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.FilePublication;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Licence;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.MediaPublication;
+import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Organization;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.PublicationKey;
 
 @Service
@@ -81,6 +82,7 @@ public class EsaWebsiteScrappingService extends AbstractHarvesterService {
         int count = 0;
         int index = 0;
         Depot depot = depotRepository.findById(DEPOT_ID).orElseThrow();
+        Organization esa = organizationRepository.findById("ESA").orElseThrow();
         do {
             String searchUrl = searchLink.replace("<idx>", Integer.toString(index));
             try {
@@ -94,7 +96,7 @@ public class EsaWebsiteScrappingService extends AbstractHarvesterService {
                             URL mediaUrl = new URL(proto, host, div.select("a").get(0).attr("href"));
                             index++;
                             LOGGER.debug("Checking {} media {}: {}", DEPOT_ID, index, mediaUrl);
-                            if (checkEsaMedia(mediaUrl, depot) != null) {
+                            if (checkEsaMedia(mediaUrl, depot, esa) != null) {
                                 count++;
                             }
                         }
@@ -113,14 +115,14 @@ public class EsaWebsiteScrappingService extends AbstractHarvesterService {
         endUpdateMedia(DEPOT_ID, count, start);
     }
 
-    private MediaPublication checkEsaMedia(URL url, Depot depot) {
+    private MediaPublication checkEsaMedia(URL url, Depot depot, Organization esa) {
         MediaPublication pub;
         boolean save = false;
         Optional<MediaPublication> pubInRepo = mediaPublicationRepository.findByUrl(url);
         if (pubInRepo.isPresent()) {
             pub = pubInRepo.get();
         } else {
-            pub = fetchMedia(url, depot);
+            pub = fetchMedia(url, depot, esa);
             save = true;
         }
         if (!isCopyrightOk(pub)) {
@@ -133,9 +135,10 @@ public class EsaWebsiteScrappingService extends AbstractHarvesterService {
         return pub;
     }
 
-    private MediaPublication fetchMedia(URL url, Depot depot) {
+    private MediaPublication fetchMedia(URL url, Depot depot, Organization esa) {
         MediaPublication media = new MediaPublication();
         media.setDepot(depot);
+        media.addAuthor(esa);
         media.setUrl(url);
         boolean ok = false;
         for (int i = 0; i < maxTries && !ok; i++) {

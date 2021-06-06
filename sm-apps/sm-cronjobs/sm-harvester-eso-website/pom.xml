@@ -9,4 +9,16 @@
     <artifactId>sm-harvester-eso-website</artifactId>
 	<description>Harvests media from ESO (European Southern Observatory) website</description>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.wikimedia.commons.donvip</groupId>
+			<artifactId>sm-eso</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+		</dependency>
+	</dependencies>
+
 </project>

@@ -18,9 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.repo.eso.EsoFrontPageItem;
 
 @Service
 public class IauService extends CommonEsoService<IauMedia> {

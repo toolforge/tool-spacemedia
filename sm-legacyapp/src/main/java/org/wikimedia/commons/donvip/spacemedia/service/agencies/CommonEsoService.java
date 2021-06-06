@@ -38,8 +38,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
+import org.wikimedia.commons.donvip.spacemedia.repo.eso.EsoFrontPageItem;
+import org.wikimedia.commons.donvip.spacemedia.repo.eso.EsoMediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -286,7 +286,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
                     }
                 }
                 if ("Colours & filters".equals(h3.text())) {
-                    processColooursAndFilters(imgUrlLink, media, h3);
+                    processColoursAndFilters(imgUrlLink, media, h3);
                 }
             }
         }
@@ -383,7 +383,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         }
     }
 
-    protected void processColooursAndFilters(String imgUrlLink, T media, Element h3) {
+    protected void processColoursAndFilters(String imgUrlLink, T media, Element h3) {
         Element table = h3.nextElementSibling();
         int telescopeIndex = -1;
         int index = 0;

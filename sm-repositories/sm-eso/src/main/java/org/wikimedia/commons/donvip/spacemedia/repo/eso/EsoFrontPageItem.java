@@ -1,9 +1,10 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain.eso;
+package org.wikimedia.commons.donvip.spacemedia.repo.eso;
 
 import java.net.URL;
+import java.util.Objects;
 
 public class EsoFrontPageItem {
-    /** ESO identifier. Example: 'eso1907a' */ 
+    /** ESO identifier. Example: 'eso1907a' */
     private String id;
     /** Image title. Example: 'First Image of a Black Hole' */
     private String title;
@@ -72,5 +73,24 @@ public class EsoFrontPageItem {
 
     public void setPotw(String potw) {
         this.potw = potw;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(height, id, potw, src, title, url, width);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        EsoFrontPageItem other = (EsoFrontPageItem) obj;
+        return height == other.height && Objects.equals(id, other.id) && Objects.equals(potw, other.potw)
+                && Objects.equals(src, other.src) && Objects.equals(title, other.title)
+                && Objects.equals(url, other.url) && width == other.width;
     }
 }

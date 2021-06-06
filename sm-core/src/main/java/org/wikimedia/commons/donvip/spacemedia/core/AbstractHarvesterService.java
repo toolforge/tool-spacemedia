@@ -15,6 +15,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.jpa.repository.DepotReposito
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.repository.FilePublicationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.repository.MediaPublicationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.repository.MetadataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.jpa.repository.OrganizationRepository;
 
 public abstract class AbstractHarvesterService implements Harvester {
 
@@ -31,6 +32,9 @@ public abstract class AbstractHarvesterService implements Harvester {
 
     @Autowired
     protected DepotRepository depotRepository;
+
+    @Autowired
+    protected OrganizationRepository organizationRepository;
 
     protected final LocalDateTime startUpdateMedia(String name) {
         LOGGER.info("Starting {} media update...", name);
@@ -64,5 +68,13 @@ public abstract class AbstractHarvesterService implements Harvester {
     protected final void problem(URL problematicUrl, String errorMessage) {
         // TODO persist
         LOGGER.error("{}: {}", problematicUrl, errorMessage);
+    }
+
+    protected final boolean ignoreFile(MediaPublication media, String reason) {
+        // media.setIgnored(Boolean.TRUE);
+        // media.setIgnoredReason(reason);
+        // TODO ignore
+        LOGGER.error("TODO Ignore {}: {}", media, reason);
+        return true;
     }
 }

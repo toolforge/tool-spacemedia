@@ -44,6 +44,9 @@ public abstract class Publication {
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Metadata> metadata = new HashSet<>();
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Person> authors = new HashSet<>();
+
     public PublicationKey getId() {
         return id;
     }
@@ -115,6 +118,18 @@ public abstract class Publication {
 
     public boolean addMetadata(Metadata md) {
         return metadata.add(md);
+    }
+
+    public Set<Person> getAuthors() {
+        return authors;
+    }
+
+    public void setAuthors(Set<Person> authors) {
+        this.authors = authors;
+    }
+
+    public boolean addAuthor(Person person) {
+        return authors.add(person);
     }
 
     @Override

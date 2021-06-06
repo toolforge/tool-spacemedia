@@ -1,11 +1,15 @@
 package org.wikimedia.commons.donvip.spacemedia.data.jpa.entity;
 
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 @Entity
 public class Depot {
@@ -19,6 +23,9 @@ public class Depot {
 
     @Column(nullable = false, unique = true)
     private URL website;
+
+    @OneToMany(fetch = FetchType.EAGER)
+    private Set<Person> operators = new HashSet<>();
 
     public String getId() {
         return id;
@@ -42,6 +49,14 @@ public class Depot {
 
     public void setWebsite(URL website) {
         this.website = website;
+    }
+
+    public Set<Person> getOperators() {
+        return operators;
+    }
+
+    public void setOperators(Set<Person> operators) {
+        this.operators = operators;
     }
 
     @Override

@@ -13,6 +13,7 @@ import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
+import org.wikimedia.commons.donvip.spacemedia.repo.eso.EsoMediaType;
 
 @MappedSuperclass
 public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime> {
