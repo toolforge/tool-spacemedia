@@ -65,6 +65,10 @@ public abstract class AbstractHarvesterService implements Harvester {
         pub.addMetadata(metadataRepository.findOrCreate(context, key, value));
     }
 
+    protected final void problem(URL problematicUrl, Throwable error) {
+        problem(problematicUrl, error.getMessage());
+    }
+
     protected final void problem(URL problematicUrl, String errorMessage) {
         // TODO persist
         LOGGER.error("{}: {}", problematicUrl, errorMessage);

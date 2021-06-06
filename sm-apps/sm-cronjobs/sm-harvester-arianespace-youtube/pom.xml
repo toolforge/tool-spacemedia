@@ -9,4 +9,11 @@
     <artifactId>sm-harvester-arianespace-youtube</artifactId>
 	<description>Harvests videos from Arianespace YouTube channel</description>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.wikimedia.commons.donvip</groupId>
+			<artifactId>sm-youtube</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 </project>

@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.jpa.repository;
 
 import java.net.URL;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.repository.CrudRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.MediaPublication;
@@ -15,4 +16,5 @@ public interface MediaPublicationRepository extends CrudRepository<MediaPublicat
 
     Optional<MediaPublication> findByUrl(URL imageUrl);
 
+    Set<MediaPublication> findByDepotIdIn(Set<String> depotIds);
 }

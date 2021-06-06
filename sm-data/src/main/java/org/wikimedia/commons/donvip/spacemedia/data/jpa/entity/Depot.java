@@ -15,7 +15,7 @@ import javax.persistence.OneToMany;
 public class Depot {
 
     @Id
-    @Column(nullable = false, length = 32)
+    @Column(nullable = false, length = 50)
     private String id;
 
     @Column(nullable = false, unique = true)
@@ -26,6 +26,17 @@ public class Depot {
 
     @OneToMany(fetch = FetchType.EAGER)
     private Set<Person> operators = new HashSet<>();
+
+    public Depot() {
+
+    }
+
+    public Depot(String id, String name, URL website, Set<? extends Person> operators) {
+        this.id = id;
+        this.name = name;
+        this.website = website;
+        this.operators.addAll(operators);
+    }
 
     public String getId() {
         return id;
