@@ -17,6 +17,10 @@
 		</dependency>
 		<!-- Third-party dependencies -->
 		<dependency>
+			<groupId>com.github.sealedtx</groupId>
+			<artifactId>java-youtube-downloader</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-youtube</artifactId>
 			<exclusions>
@@ -25,6 +29,10 @@
 					<artifactId>google-oauth-client</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -37,10 +45,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
 		</dependency>
 	</dependencies>
 

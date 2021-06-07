@@ -9,7 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 
 @Entity
 public class Depot {
@@ -24,7 +24,7 @@ public class Depot {
     @Column(nullable = false, unique = true)
     private URL website;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Person> operators = new HashSet<>();
 
     public Depot() {

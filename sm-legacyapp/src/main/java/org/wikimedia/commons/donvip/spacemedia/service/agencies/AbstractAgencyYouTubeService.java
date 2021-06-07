@@ -87,7 +87,7 @@ public abstract class AbstractAgencyYouTubeService
                 List<YouTubeVideo> freeVideos = new ArrayList<>();
                 String pageToken = null;
                 do {
-                    SearchListResponse list = youtubeService.searchVideos(channelId, pageToken);
+                    SearchListResponse list = youtubeService.searchCreativeCommonsVideos(channelId, pageToken);
                     pageToken = list.getNextPageToken();
                     List<YouTubeVideo> videos = processYouTubeVideos(buildYouTubeVideoList(list, youtubeService.listVideos(list)));
                     count += videos.size();

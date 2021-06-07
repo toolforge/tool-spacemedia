@@ -16,10 +16,13 @@ import com.google.api.services.youtube.YouTubeRequest;
 import com.google.api.services.youtube.model.ResourceId;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
+import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 
 @Service
 public class YouTubeApiService {
+
+    private static final String CREATIVE_COMMON = "creativeCommon";
 
     @Value("${youtube.api.key}")
     private String apiKey;
@@ -36,8 +39,13 @@ public class YouTubeApiService {
         return request.setKey(apiKey).execute();
     }
 
-    public SearchListResponse searchVideos(String channelId, String pageToken) throws IOException {
-        return executeRequest(youtube.search().list(List.of("snippet")).setType(List.of("video")).setVideoLicense("creativeCommon")
+    public SearchListResponse searchCreativeCommonsVideos(String channelId, String pageToken) throws IOException {
+        return executeRequest(youtube.search().list(List.of("snippet")).setType(List.of("video"))
+                .setVideoLicense(CREATIVE_COMMON).setChannelId(channelId).setMaxResults(50L).setPageToken(pageToken));
+    }
+
+    public SearchListResponse searchVideos(String channelId, String pageToken, String licenseText) throws IOException {
+        return executeRequest(youtube.search().list(List.of("snippet")).setType(List.of("video")).setQ(licenseText)
                 .setChannelId(channelId).setMaxResults(50L).setPageToken(pageToken));
     }
 
@@ -47,6 +55,10 @@ public class YouTubeApiService {
     }
 
     public VideoListResponse listVideos(List<String> videoIds) throws IOException {
-        return executeRequest(youtube.videos().list(List.of("contentDetails","snippet")).setId(videoIds));
+        return executeRequest(youtube.videos().list(List.of("contentDetails", "snippet", "status")).setId(videoIds));
+    }
+
+    public static boolean isCreativeCommons(Video video) {
+        return CREATIVE_COMMON.equals(video.getStatus().getLicense());
     }
 }

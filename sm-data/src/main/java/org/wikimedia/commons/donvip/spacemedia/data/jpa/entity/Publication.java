@@ -30,7 +30,7 @@ public abstract class Publication {
 
     private ZonedDateTime publicationDateTime;
 
-    @Column(nullable = false, unique = true, length = 320)
+    @Column(nullable = false, unique = true, length = 1048)
     private URL url;
 
     @Lob

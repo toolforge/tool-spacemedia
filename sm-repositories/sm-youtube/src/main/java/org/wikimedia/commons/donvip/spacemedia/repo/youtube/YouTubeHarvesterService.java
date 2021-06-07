@@ -1,5 +1,15 @@
 package org.wikimedia.commons.donvip.spacemedia.repo.youtube;
 
+import static com.github.kiulian.downloader.model.quality.VideoQuality.hd1080;
+import static com.github.kiulian.downloader.model.quality.VideoQuality.hd1440;
+import static com.github.kiulian.downloader.model.quality.VideoQuality.hd2160;
+import static com.github.kiulian.downloader.model.quality.VideoQuality.hd2880p;
+import static com.github.kiulian.downloader.model.quality.VideoQuality.hd720;
+import static com.github.kiulian.downloader.model.quality.VideoQuality.highres;
+import static com.github.kiulian.downloader.model.quality.VideoQuality.large;
+import static com.github.kiulian.downloader.model.quality.VideoQuality.medium;
+import static com.github.kiulian.downloader.model.quality.VideoQuality.small;
+import static com.github.kiulian.downloader.model.quality.VideoQuality.tiny;
 import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
@@ -10,9 +20,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -25,11 +37,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.wikimedia.commons.donvip.spacemedia.core.AbstractHarvesterService;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Depot;
+import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.FilePublication;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Licence;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.MediaPublication;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Organization;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.PublicationKey;
 
+import com.github.kiulian.downloader.YoutubeDownloader;
+import com.github.kiulian.downloader.YoutubeException;
+import com.github.kiulian.downloader.model.YoutubeVideo;
+import com.github.kiulian.downloader.model.formats.VideoFormat;
+import com.github.kiulian.downloader.model.quality.VideoQuality;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.ThumbnailDetails;
 import com.google.api.services.youtube.model.Video;
@@ -68,30 +86,50 @@ public class YouTubeHarvesterService extends AbstractHarvesterService {
     @Value("${youtube.duplicatedIds}")
     private Set<String> duplicatedIds;
 
+    @Value("${youtube.licence.text}")
+    private String licenceText;
+
+    @Value("${youtube.licence}")
+    private Licence licence;
+
     @Autowired
     private YouTubeApiService youtubeService;
+
+    private IOException error;
 
     @Override
     public void harvestMedia() throws IOException {
         LocalDateTime start = startUpdateMedia(depotIdPrefix);
         int count = 0;
+        Organization org = organizationRepository.findById(orgId).orElseThrow();
+        Set<Organization> operators = Set.of(org, organizationRepository.findById("YouTube").orElseThrow());
         for (String channelId : youtubeChannels) {
             try {
-                Organization org = organizationRepository.findById(orgId).orElseThrow();
                 Depot depot = depotRepository.findOrCreate(depotIdPrefix + '-' + channelId,
                         depotNamePrefix + ' ' + channelId, new URL("https://www.youtube.com/channel/" + channelId),
-                        Set.of(org, organizationRepository.findById("YouTube").orElseThrow()));
+                        operators);
                 LOGGER.info("Fetching YouTube videos from channel '{}'...", channelId);
                 List<MediaPublication> freeVideos = new ArrayList<>();
-                String pageToken = null;
-                do {
-                    SearchListResponse list = youtubeService.searchVideos(channelId, pageToken);
-                    pageToken = list.getNextPageToken();
-                    List<MediaPublication> videos = processYouTubeVideos(
-                            buildYouTubeVideoList(depot, org, list, youtubeService.listVideos(list)));
-                    count += videos.size();
-                    freeVideos.addAll(videos);
-                } while (pageToken != null);
+                count += performSearch(freeVideos, depot, org,
+                        pageToken -> {
+                            try {
+                                return youtubeService.searchCreativeCommonsVideos(channelId, pageToken);
+                            } catch (IOException e) {
+                                error = e;
+                                return null;
+                            }
+                        });
+                if (licenceText != null) {
+                    count += performSearch(freeVideos, depot, org,
+                            pageToken -> {
+                                try {
+                                    return youtubeService.searchVideos(channelId, pageToken, licenceText);
+                                } catch (IOException e) {
+                                    error = e;
+                                    return null;
+                                }
+                            });
+                }
                 if (!freeVideos.isEmpty()) {
                     Set<MediaPublication> noLongerFreeVideos = mediaPublicationRepository
                             .findByDepotIdIn(Set.of(channelId));
@@ -115,40 +153,106 @@ public class YouTubeHarvesterService extends AbstractHarvesterService {
                 }
             } catch (IOException | RuntimeException e) {
                 LOGGER.error("Error while fetching YouTube videos from channel " + channelId, e);
+                error = null;
             }
         }
         endUpdateMedia(depotIdPrefix, count, start);
     }
 
-    private List<MediaPublication> buildYouTubeVideoList(Depot depot, Organization org, SearchListResponse searchList,
-            VideoListResponse videoList) {
+    private int performSearch(List<MediaPublication> freeVideos, Depot depot, Organization org,
+            Function<String, SearchListResponse> search) throws IOException {
+        String pageToken = null;
+        int count = 0;
+        do {
+            SearchListResponse list = search.apply(pageToken);
+            if (list != null) {
+                pageToken = list.getNextPageToken();
+                List<MediaPublication> videos = processYouTubeVideos(
+                        buildMediaPublicationList(depot, org, list, youtubeService.listVideos(list)));
+                count += videos.size();
+                freeVideos.addAll(videos);
+            } else {
+                pageToken = null;
+            }
+        } while (pageToken != null);
+        if (error != null) {
+            throw error;
+        }
+        return count;
+    }
+
+    private List<MediaPublication> buildMediaPublicationList(Depot depot, Organization org,
+            SearchListResponse searchList, VideoListResponse videoList) {
+        YoutubeDownloader downloader = new YoutubeDownloader();
         return searchList.getItems().stream()
-                .map(sr -> toYouTubeVideo(depot, org, videoList.getItems().stream()
+                .map(sr -> toMediaPublication(depot, org, downloader, videoList.getItems().stream()
                         .filter(v -> sr.getId().getVideoId().equals(v.getId())).findFirst().get()))
                 .collect(Collectors.toList());
     }
 
-    private MediaPublication toYouTubeVideo(Depot depot, Organization org, Video ytVideo) {
-        MediaPublication video = new MediaPublication();
-        video.setId(new PublicationKey(depot.getId(), ytVideo.getId()));
-        video.setLicence(Licence.CC_BY_3_0);
-        video.setDepot(depot);
-        video.addAuthor(org);
-        video.setUrl(newURL("https://www.youtube.com/watch?v=" + video.getId().getId()));
+    private MediaPublication toMediaPublication(Depot depot, Organization org, YoutubeDownloader downloader,
+            Video ytVideo) {
+        String description = ytVideo.getSnippet().getDescription();
+        MediaPublication media = new MediaPublication();
+        media.setId(new PublicationKey(depot.getId(), ytVideo.getId()));
+        ytVideo.getContentDetails().getLicensedContent();
+        if (YouTubeApiService.isCreativeCommons(ytVideo)) {
+            media.setLicence(Licence.CC_BY_3_0);
+        } else if (licenceText != null && licence != null && description != null && description.contains(licenceText)) {
+            media.setLicence(licence);
+        }
+        media.setDepot(depot);
+        media.addAuthor(org);
+        String id = media.getId().getId();
+        media.setUrl(newURL("https://www.youtube.com/watch?v=" + id));
         VideoSnippet snippet = ytVideo.getSnippet();
         ofNullable(snippet.getDefaultLanguage()).or(() -> ofNullable(snippet.getDefaultAudioLanguage()))
-                .ifPresent(video::setLang);
+                .ifPresent(media::setLang);
         ofNullable(snippet.getPublishedAt()).map(x -> Instant.parse(x.toStringRfc3339()).atZone(ZoneOffset.UTC))
-                .ifPresent(video::setPublicationDateTime);
-        ofNullable(snippet.getDescription()).ifPresent(video::setDescription);
-        ofNullable(getBestThumbnailUrl(snippet.getThumbnails())).ifPresent(video::setThumbnailUrl);
-        ofNullable(snippet.getTitle()).ifPresent(video::setTitle);
+                .ifPresent(media::setPublicationDateTime);
+        ofNullable(snippet.getDescription()).ifPresent(media::setDescription);
+        ofNullable(getBestThumbnailUrl(snippet.getThumbnails())).ifPresent(media::setThumbnailUrl);
+        ofNullable(snippet.getTitle()).ifPresent(media::setTitle);
         VideoContentDetails details = ytVideo.getContentDetails();
         ofNullable(details.getDuration()).map(Duration::parse)
-                .ifPresent(x -> addYouTubeMetadata(video, YouTubeMetadata.DURATION, x));
+                .ifPresent(x -> addYouTubeMetadata(media, YouTubeMetadata.DURATION, x));
         ofNullable(details.getCaption()).map(Boolean::valueOf)
-                .ifPresent(x -> addYouTubeMetadata(video, YouTubeMetadata.CAPTION, x));
-        return video;
+                .ifPresent(x -> addYouTubeMetadata(media, YouTubeMetadata.CAPTION, x));
+        try {
+            for (VideoFormat format : findVideosInBestQuality(downloader, id)) {
+                FilePublication file = new FilePublication(depot, id, new URL(format.url()));
+                file.setCredit(media.getCredit());
+                file.setLicence(media.getLicence());
+                file.setThumbnailUrl(media.getThumbnailUrl());
+                file.setPublicationDateTime(media.getPublicationDateTime());
+                media.addFilePublication(filePublicationRepository.save(file));
+            }
+        } catch (YoutubeException | MalformedURLException e) {
+            LOGGER.error("Error while retrieving YouTube download link", e);
+        }
+        return media;
+    }
+
+    private List<VideoFormat> findVideosInBestQuality(YoutubeDownloader downloader, String id) throws YoutubeException {
+        YoutubeVideo video = downloader.getVideo(id);
+        for (VideoQuality quality : new VideoQuality[] {
+                highres, // 3072p
+                hd2880p,
+                hd2160,
+                hd1440,
+                hd1080,
+                hd720,
+                large, // 480p
+                medium, // 360p
+                small, // 240p
+                tiny // 144p
+        }) {
+            List<VideoFormat> formats = video.findVideoWithQuality(quality);
+            if (!formats.isEmpty()) {
+                return formats;
+            }
+        }
+        return Collections.emptyList();
     }
 
     private boolean addYouTubeMetadata(MediaPublication video, YouTubeMetadata key, Object value) {
@@ -206,7 +310,8 @@ public class YouTubeHarvesterService extends AbstractHarvesterService {
             }
         }
         Set<String> durations = video.getMetadataValues(YouTubeMetadata.DURATION.name());
-        if (!durations.isEmpty() && Duration.parse(durations.iterator().next()).compareTo(maxDuration) > 0) {
+        if (maxDuration != null && !durations.isEmpty()
+                && Duration.parse(durations.iterator().next()).compareTo(maxDuration) > 0) {
             ignoreFile(video, "Video longer than " + maxDuration);
             result = true;
         }

@@ -9,4 +9,11 @@
     <artifactId>sm-harvester-esa-youtube</artifactId>
 	<description>Harvests videos from ESA YouTube channel</description>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.wikimedia.commons.donvip</groupId>
+			<artifactId>sm-youtube</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 </project>
