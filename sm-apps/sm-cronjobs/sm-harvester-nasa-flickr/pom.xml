@@ -9,4 +9,11 @@
     <artifactId>sm-harvester-nasa-flickr</artifactId>
 	<description>Harvests media from NASA Flickr accounts</description>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.wikimedia.commons.donvip</groupId>
+			<artifactId>sm-flickr</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 </project>

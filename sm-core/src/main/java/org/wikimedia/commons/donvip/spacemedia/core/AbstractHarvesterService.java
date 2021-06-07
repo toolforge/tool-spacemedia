@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.core;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -80,5 +81,13 @@ public abstract class AbstractHarvesterService implements Harvester {
         // TODO ignore
         LOGGER.error("TODO Ignore {}: {}", media, reason);
         return true;
+    }
+
+    protected static URL newURL(String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

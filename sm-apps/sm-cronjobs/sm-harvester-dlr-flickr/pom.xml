@@ -9,4 +9,16 @@
     <artifactId>sm-harvester-dlr-flickr</artifactId>
 	<description>Harvests media from DLR Flickr account</description>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.wikimedia.commons.donvip</groupId>
+			<artifactId>sm-flickr</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

@@ -41,7 +41,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.FilePublication;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Licence;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.MediaPublication;
 import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Organization;
-import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.PublicationKey;
 
 import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.YoutubeException;
@@ -192,19 +191,16 @@ public class YouTubeHarvesterService extends AbstractHarvesterService {
 
     private MediaPublication toMediaPublication(Depot depot, Organization org, YoutubeDownloader downloader,
             Video ytVideo) {
+        String id = ytVideo.getId();
         String description = ytVideo.getSnippet().getDescription();
-        MediaPublication media = new MediaPublication();
-        media.setId(new PublicationKey(depot.getId(), ytVideo.getId()));
+        MediaPublication media = new MediaPublication(depot, id, newURL("https://www.youtube.com/watch?v=" + id));
         ytVideo.getContentDetails().getLicensedContent();
         if (YouTubeApiService.isCreativeCommons(ytVideo)) {
             media.setLicence(Licence.CC_BY_3_0);
         } else if (licenceText != null && licence != null && description != null && description.contains(licenceText)) {
             media.setLicence(licence);
         }
-        media.setDepot(depot);
         media.addAuthor(org);
-        String id = media.getId().getId();
-        media.setUrl(newURL("https://www.youtube.com/watch?v=" + id));
         VideoSnippet snippet = ytVideo.getSnippet();
         ofNullable(snippet.getDefaultLanguage()).or(() -> ofNullable(snippet.getDefaultAudioLanguage()))
                 .ifPresent(media::setLang);
@@ -257,14 +253,6 @@ public class YouTubeHarvesterService extends AbstractHarvesterService {
 
     private boolean addYouTubeMetadata(MediaPublication video, YouTubeMetadata key, Object value) {
         return video.addMetadata(metadataRepository.findOrCreate(YOUTUBE_CONTEXT, key.name(), value.toString()));
-    }
-
-    private static URL newURL(String url) {
-        try {
-            return new URL(url);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(e);
-        }
     }
 
     private static URL getBestThumbnailUrl(ThumbnailDetails td) {

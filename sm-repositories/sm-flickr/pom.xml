@@ -10,6 +10,11 @@
 	<description>Flickr support</description>
 	<dependencies>
 		<!-- Project dependencies -->
+		<dependency>
+			<groupId>org.wikimedia.commons.donvip</groupId>
+			<artifactId>sm-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- Third-party dependencies -->
 		<dependency>
 			<groupId>com.flickr4java</groupId>
