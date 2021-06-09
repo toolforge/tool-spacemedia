@@ -26,7 +26,7 @@
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.organization>toolforge</sonar.organization>
 		<sonar.projectKey>tool-spacemedia</sonar.projectKey>
-		<sonar.moduleKey>${artifactId}</sonar.moduleKey>
+		<sonar.moduleKey>${project.artifactId}</sonar.moduleKey>
 
 		<collections4-version>4.4</collections4-version>
 		<flickr4java-version>3.0.6</flickr4java-version>
@@ -119,4 +119,11 @@
 		</repository>
 	</repositories>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

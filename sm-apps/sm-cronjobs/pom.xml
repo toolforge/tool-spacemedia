@@ -1,43 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.wikimedia.commons.donvip</groupId>
-        <artifactId>sm-apps</artifactId>
-        <version>0.5.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>sm-cronjobs</artifactId>
+	<parent>
+		<groupId>org.wikimedia.commons.donvip</groupId>
+		<artifactId>sm-apps</artifactId>
+		<version>0.5.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>sm-cronjobs</artifactId>
 	<packaging>pom</packaging>
 	<description>Cronjob Applications</description>
 
-    <modules>
-        <!-- Technical cronjobs -->
-        <module>sm-downloader</module>
-        <module>sm-synchronizer</module>
-        <!-- Harvesters -->
-        <module>sm-harvester-arianespace-youtube</module>
-        <module>sm-harvester-dlr-flickr</module>
-        <module>sm-harvester-dlr-website</module>
-        <module>sm-harvester-esa-flickr</module>
-        <module>sm-harvester-esa-hubble</module>
-        <module>sm-harvester-esa-website</module>
-        <module>sm-harvester-esa-youtube</module>
-        <module>sm-harvester-eso-website</module>
-        <module>sm-harvester-eumetsat-learning-zone</module>
-        <module>sm-harvester-iau-website</module>
-        <module>sm-harvester-kari-website</module>
-        <module>sm-harvester-lsst-website</module>
-        <module>sm-harvester-nasa-earth-observatory</module>
-        <module>sm-harvester-nasa-flickr</module>
-        <module>sm-harvester-nasa-hubble</module>
-        <module>sm-harvester-nasa-image-video-library</module>
-        <module>sm-harvester-nasa-iotd</module>
-        <module>sm-harvester-nasa-jwst</module>
-        <module>sm-harvester-nasa-ntrs</module>
-        <module>sm-harvester-nasa-photojournal</module>
-        <module>sm-harvester-nso-website</module>
-        <module>sm-harvester-usaf-flickr</module>
-        <module>sm-harvester-ussf-website</module>
-    </modules>
+	<modules>
+		<!-- Technical cronjobs -->
+		<module>sm-downloader</module>
+		<module>sm-synchronizer</module>
+		<!-- Harvesters -->
+		<module>sm-harvester-arianespace-youtube</module>
+		<module>sm-harvester-dlr-flickr</module>
+		<module>sm-harvester-dlr-website</module>
+		<module>sm-harvester-esa-flickr</module>
+		<module>sm-harvester-esa-hubble</module>
+		<module>sm-harvester-esa-website</module>
+		<module>sm-harvester-esa-youtube</module>
+		<module>sm-harvester-eso-website</module>
+		<module>sm-harvester-eumetsat-learning-zone</module>
+		<module>sm-harvester-iau-website</module>
+		<module>sm-harvester-kari-website</module>
+		<module>sm-harvester-lsst-website</module>
+		<module>sm-harvester-nasa-earth-observatory</module>
+		<module>sm-harvester-nasa-flickr</module>
+		<module>sm-harvester-nasa-hubble</module>
+		<module>sm-harvester-nasa-image-video-library</module>
+		<module>sm-harvester-nasa-iotd</module>
+		<module>sm-harvester-nasa-jwst</module>
+		<module>sm-harvester-nasa-ntrs</module>
+		<module>sm-harvester-nasa-photojournal</module>
+		<module>sm-harvester-nso-website</module>
+		<module>sm-harvester-usaf-flickr</module>
+		<module>sm-harvester-ussf-website</module>
+	</modules>
 
+	<properties>
+		<cronjob-schedule>*/1 * * * *</cronjob-schedule>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}</outputDirectory>
+							<fileNameFiltering>true</fileNameFiltering>
+							<resources>
+								<resource>
+									<directory>../../../templates</directory>
+									<include>cronjob-@project.artifactId@.yaml</include>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

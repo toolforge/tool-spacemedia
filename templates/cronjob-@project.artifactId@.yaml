@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: @project.artifactId@
+  labels:
+    name: tool-spacemedia.@project.artifactId@
+    version: @project.version@
+    # The toolforge=tool label will cause $HOME and other paths to be mounted from Toolforge
+    toolforge: tool
+spec:
+  schedule: "@cronjob-schedule@"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            toolforge: tool
+        spec:
+          containers:
+          - name: @project.artifactId@
+            workingDir: /data/project/spacemedia
+            image: docker-registry.tools.wmflabs.org/toolforge-jdk11-sssd-base:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - java
+            - -jar
+            - bin/@project.artifactId@-@project.version@.jar
+          env:
+          - name: HOME
+            value: /data/project/spacemedia
+          restartPolicy: OnFailure
