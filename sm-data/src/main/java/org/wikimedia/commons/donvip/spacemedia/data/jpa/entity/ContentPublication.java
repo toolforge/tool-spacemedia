@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.jpa.entity;
 
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -30,6 +31,14 @@ public abstract class ContentPublication extends Publication {
 
     @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     private Set<FilePublication> filePublications = new HashSet<>();
+
+    protected ContentPublication() {
+
+    }
+
+    protected ContentPublication(Depot depot, PublicationKey key, URL url) {
+        super(depot, key, url);
+    }
 
     public String getTitle() {
         return title;

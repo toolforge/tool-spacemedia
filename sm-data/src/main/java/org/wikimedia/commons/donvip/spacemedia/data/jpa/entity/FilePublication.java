@@ -28,10 +28,12 @@ public class FilePublication extends Publication {
 
     }
 
+    public FilePublication(Depot depot, PublicationKey key, URL url) {
+        super(depot, key, url);
+    }
+
     public FilePublication(Depot depot, String id, URL url) {
-        setId(new PublicationKey(depot.getId(), id));
-        setDepot(depot);
-        setUrl(url);
+        this(depot, new PublicationKey(depot.getId(), id), url);
     }
 
     public ZonedDateTime getCaptureDateTime() {

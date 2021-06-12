@@ -188,11 +188,8 @@ public class EsoHarvesterService extends AbstractHarvesterService {
 
     private MediaPublication fetchMedia(URL url, PublicationKey key, String imgUrlLink, Depot depot, Organization org)
             throws ReflectiveOperationException, IOException {
-        MediaPublication media = new MediaPublication();
-        media.setUrl(new URL(imgUrlLink));
-        media.setDepot(depot);
+        MediaPublication media = new MediaPublication(depot, key, new URL(imgUrlLink));
         media.addAuthor(org);
-        media.setId(key);
         LOGGER.info(imgUrlLink);
         Document html = Jsoup.connect(imgUrlLink).timeout(60_000).get();
         String lang = html.getElementsByTag("html").attr("lang");

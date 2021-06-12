@@ -17,10 +17,12 @@ public class MediaPublication extends ContentPublication {
 
     }
 
+    public MediaPublication(Depot depot, PublicationKey key, URL url) {
+        super(depot, key, url);
+    }
+
     public MediaPublication(Depot depot, String id, URL url) {
-        setId(new PublicationKey(depot.getId(), id));
-        setDepot(depot);
-        setUrl(url);
+        this(depot, new PublicationKey(depot.getId(), id), url);
     }
 
     public Set<WebPublication> getWebPublications() {

@@ -5,6 +5,7 @@ insert ignore into person(discriminator, name, wikidata) values('O', 'ESA', 'Q42
 insert ignore into person(discriminator, name, wikidata) values('O', 'ESO', 'Q151991')
 insert ignore into person(discriminator, name, wikidata) values('O', 'EUMETSAT', 'Q692163')
 insert ignore into person(discriminator, name, wikidata) values('O', 'IAU', 'Q6867')
+insert ignore into person(discriminator, name, wikidata) values('O', 'INPE', 'Q1108347')
 insert ignore into person(discriminator, name, wikidata) values('O', 'KARI', 'Q494948')
 insert ignore into person(discriminator, name, wikidata) values('O', 'LSST', 'Q672021')
 insert ignore into person(discriminator, name, wikidata) values('O', 'NASA', 'Q23548')

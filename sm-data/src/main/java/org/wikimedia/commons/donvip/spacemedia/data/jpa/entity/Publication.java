@@ -49,6 +49,19 @@ public abstract class Publication {
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Person> authors = new HashSet<>();
 
+    protected Publication() {
+
+    }
+
+    protected Publication(Depot depot, PublicationKey key, URL url) {
+        setId(Objects.requireNonNull(key));
+        setDepot(Objects.requireNonNull(depot));
+        setUrl(Objects.requireNonNull(url));
+        if (!Objects.equals(depot.getId(), id.getDepotId())) {
+            throw new IllegalArgumentException("Mismatching depot ids");
+        }
+    }
+
     public PublicationKey getId() {
         return id;
     }
