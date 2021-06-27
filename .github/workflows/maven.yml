@@ -21,8 +21,9 @@ jobs:
       with:
         java-version: 11
     - name: Build with Maven
-      run: mvn -e -B -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+      run: mvn -e -B -ntp -Dstyle.color=always --show-version verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
       env:
+        MAVEN_OPTS: -Djansi.passthrough=true
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
