@@ -1,15 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.repo.youtube;
 
-import static com.github.kiulian.downloader.model.quality.VideoQuality.hd1080;
-import static com.github.kiulian.downloader.model.quality.VideoQuality.hd1440;
-import static com.github.kiulian.downloader.model.quality.VideoQuality.hd2160;
-import static com.github.kiulian.downloader.model.quality.VideoQuality.hd2880p;
-import static com.github.kiulian.downloader.model.quality.VideoQuality.hd720;
-import static com.github.kiulian.downloader.model.quality.VideoQuality.highres;
-import static com.github.kiulian.downloader.model.quality.VideoQuality.large;
-import static com.github.kiulian.downloader.model.quality.VideoQuality.medium;
-import static com.github.kiulian.downloader.model.quality.VideoQuality.small;
-import static com.github.kiulian.downloader.model.quality.VideoQuality.tiny;
 import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
@@ -20,7 +10,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -44,9 +33,9 @@ import org.wikimedia.commons.donvip.spacemedia.data.jpa.entity.Organization;
 
 import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.YoutubeException;
-import com.github.kiulian.downloader.model.YoutubeVideo;
-import com.github.kiulian.downloader.model.formats.VideoFormat;
-import com.github.kiulian.downloader.model.quality.VideoQuality;
+import com.github.kiulian.downloader.downloader.request.RequestVideoInfo;
+import com.github.kiulian.downloader.model.videos.VideoInfo;
+import com.github.kiulian.downloader.model.videos.formats.VideoFormat;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.ThumbnailDetails;
 import com.google.api.services.youtube.model.Video;
@@ -215,40 +204,22 @@ public class YouTubeHarvesterService extends AbstractHarvesterService {
         ofNullable(details.getCaption()).map(Boolean::valueOf)
                 .ifPresent(x -> addYouTubeMetadata(media, YouTubeMetadata.CAPTION, x));
         try {
-            for (VideoFormat format : findVideosInBestQuality(downloader, id)) {
-                FilePublication file = new FilePublication(depot, id, new URL(format.url()));
-                file.setCredit(media.getCredit());
-                file.setLicence(media.getLicence());
-                file.setThumbnailUrl(media.getThumbnailUrl());
-                file.setPublicationDateTime(media.getPublicationDateTime());
-                media.addFilePublication(filePublicationRepository.save(file));
-            }
+            VideoFormat format = findVideoInBestQuality(downloader, id);
+            FilePublication file = new FilePublication(depot, id, new URL(format.url()));
+            file.setCredit(media.getCredit());
+            file.setLicence(media.getLicence());
+            file.setThumbnailUrl(media.getThumbnailUrl());
+            file.setPublicationDateTime(media.getPublicationDateTime());
+            media.addFilePublication(filePublicationRepository.save(file));
         } catch (YoutubeException | MalformedURLException e) {
             LOGGER.error("Error while retrieving YouTube download link", e);
         }
         return media;
     }
 
-    private List<VideoFormat> findVideosInBestQuality(YoutubeDownloader downloader, String id) throws YoutubeException {
-        YoutubeVideo video = downloader.getVideo(id);
-        for (VideoQuality quality : new VideoQuality[] {
-                highres, // 3072p
-                hd2880p,
-                hd2160,
-                hd1440,
-                hd1080,
-                hd720,
-                large, // 480p
-                medium, // 360p
-                small, // 240p
-                tiny // 144p
-        }) {
-            List<VideoFormat> formats = video.findVideoWithQuality(quality);
-            if (!formats.isEmpty()) {
-                return formats;
-            }
-        }
-        return Collections.emptyList();
+    private VideoFormat findVideoInBestQuality(YoutubeDownloader downloader, String id) throws YoutubeException {
+        VideoInfo video = downloader.getVideoInfo(new RequestVideoInfo(id)).data();
+        return Optional.ofNullable(video.bestVideoWithAudioFormat()).orElseGet(() -> video.bestVideoFormat());
     }
 
     private boolean addYouTubeMetadata(MediaPublication video, YouTubeMetadata key, Object value) {

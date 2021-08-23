@@ -18,7 +18,7 @@
 		</dependency>
 		<!-- Third-party dependencies -->
 		<dependency>
-			<groupId>com.github.kilianB</groupId>
+			<groupId>dev.brachtendorf</groupId>
 			<artifactId>JImageHash</artifactId>
 		</dependency>
 		<dependency>

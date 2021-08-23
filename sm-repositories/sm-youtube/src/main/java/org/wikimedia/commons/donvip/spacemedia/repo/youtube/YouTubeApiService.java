@@ -20,6 +20,7 @@ import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 
 @Service
+@SuppressWarnings("deprecation")
 public class YouTubeApiService {
 
     private static final String CREATIVE_COMMON = "creativeCommon";
@@ -31,6 +32,7 @@ public class YouTubeApiService {
 
     public YouTubeApiService(@Value("${youtube.app.name:Spacemedia}") String applicationName)
             throws GeneralSecurityException, IOException {
+        // Google wants us to use com.google.api.client.json.GsonFactory instead, I don't
         youtube = new YouTube.Builder(newTrustedTransport(), JacksonFactory.getDefaultInstance(), request -> {
         }).setApplicationName(applicationName).build();
     }
