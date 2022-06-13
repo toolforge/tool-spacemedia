@@ -28,7 +28,6 @@ import javax.persistence.Table;
  * | page_id            | int(10) unsigned    | NO   | PRI | NULL           | auto_increment |
  * | page_namespace     | int(11)             | NO   | MUL | NULL           |                |
  * | page_title         | varbinary(255)      | NO   |     | NULL           |                |
- * | page_restrictions  | tinyblob            | NO   |     | NULL           |                |
  * | page_is_redirect   | tinyint(3) unsigned | NO   | MUL | 0              |                |
  * | page_is_new        | tinyint(3) unsigned | NO   |     | 0              |                |
  * | page_random        | double unsigned     | NO   | MUL | NULL           |                |
@@ -58,10 +57,6 @@ public class CommonsPage implements Serializable {
 
     @Column(name = "page_title", nullable = false, length = 255, columnDefinition = "VARBINARY")
     private String title;
-
-    @Lob
-    @Column(name = "page_restrictions", nullable = false, columnDefinition = "TINYBLOB")
-    private String restrictions;
 
     @Column(name = "page_is_redirect", nullable = false)
     private Boolean isRedirect;
@@ -124,14 +119,6 @@ public class CommonsPage implements Serializable {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getRestrictions() {
-        return restrictions;
-    }
-
-    public void setRestrictions(String restrictions) {
-        this.restrictions = restrictions;
     }
 
     public Boolean getIsRedirect() {
@@ -249,7 +236,6 @@ public class CommonsPage implements Serializable {
     public String toString() {
         return "CommonsPage [id=" + id + ", namespace=" + namespace + ", "
                 + (title != null ? "title=" + title + ", " : "")
-                + (restrictions != null ? "restrictions=" + restrictions + ", " : "")
                 + (isRedirect != null ? "isRedirect=" + isRedirect + ", " : "")
                 + (isNew != null ? "isNew=" + isNew + ", " : "") + "random=" + random + ", "
                 + (touched != null ? "touched=" + touched + ", " : "")
