@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.wikimedia.commons.donvip</groupId>
 	<artifactId>spacemedia</artifactId>
-	<version>0.4.0-SNAPSHOT</version>
+	<version>0.4.1-SNAPSHOT</version>
 	<name>spacemedia</name>
 	<description>Find free media released by space agencies missing in Wikimedia Commons</description>
 
