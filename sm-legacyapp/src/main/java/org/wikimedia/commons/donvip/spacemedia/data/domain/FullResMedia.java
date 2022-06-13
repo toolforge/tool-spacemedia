@@ -4,6 +4,7 @@ import java.time.temporal.Temporal;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
@@ -93,7 +94,7 @@ public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> 
     @Override
     public Set<String> getAllCommonsFileNames() {
         Set<String> result = new LinkedHashSet<>(getCommonsFileNames());
-        result.addAll(getFullResCommonsFileNames());
+        Optional.ofNullable(getFullResCommonsFileNames()).ifPresent(result::addAll);
         return result;
     }
 }
