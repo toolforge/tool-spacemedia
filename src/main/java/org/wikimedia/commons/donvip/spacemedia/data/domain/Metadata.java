@@ -25,7 +25,7 @@ public class Metadata implements MetadataProjection {
     /**
      * Perceptual hash.
      */
-    @Column(nullable = true, columnDefinition = "VARCHAR", length = 52)
+    @Column(nullable = true, columnDefinition = "VARCHAR(52)", length = 52)
     private String phash;
 
     /**
@@ -45,7 +45,7 @@ public class Metadata implements MetadataProjection {
     /**
      * File size in bytes.
      */
-    @Column(nullable = true)
+    @Column(name = "`size`", nullable = true)
     private Long size;
 
     public String getSha1() {

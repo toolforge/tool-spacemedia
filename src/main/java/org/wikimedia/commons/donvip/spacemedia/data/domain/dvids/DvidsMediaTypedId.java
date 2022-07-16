@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 import java.io.Serializable;
 import java.util.Objects;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,6 +15,7 @@ public class DvidsMediaTypedId implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @JsonIgnore
+    @Column(name = "`type`")
     private DvidsMediaType type;
 
     @JsonIgnore
