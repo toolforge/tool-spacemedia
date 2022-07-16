@@ -85,18 +85,18 @@ public class HubbleNasaNewsReleaseResponse {
     private String keystoneImage2x;
 
     /**
-     * List of integers which identify ids of related images. With those image_ids,
+     * List of ids of related images. With those image_ids,
      * it can be gathered more information using the image API call.
      */
     @JsonProperty("release_images")
-    private List<Integer> releaseImages;
+    private List<String> releaseImages;
 
     /**
-     * List of integers which identify ids of related videos. With those video_ids,
+     * List of ids of related videos. With those video_ids,
      * it can be gathered more information using the video API call.
      */
     @JsonProperty("release_videos")
-    private List<Integer> releaseVideos;
+    private List<String> releaseVideos;
 
     public String getId() {
         return id;
@@ -202,19 +202,19 @@ public class HubbleNasaNewsReleaseResponse {
         this.keystoneImage2x = keystoneImage2x;
     }
 
-    public List<Integer> getReleaseImages() {
+    public List<String> getReleaseImages() {
         return releaseImages;
     }
 
-    public void setReleaseImages(List<Integer> releaseImages) {
+    public void setReleaseImages(List<String> releaseImages) {
         this.releaseImages = releaseImages;
     }
 
-    public List<Integer> getReleaseVideos() {
+    public List<String> getReleaseVideos() {
         return releaseVideos;
     }
 
-    public void setReleaseVideos(List<Integer> releaseVideos) {
+    public void setReleaseVideos(List<String> releaseVideos) {
         this.releaseVideos = releaseVideos;
     }
 

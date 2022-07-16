@@ -8,7 +8,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-public class EsaServiceTest {
+class EsaServiceTest {
 
     @Test
     void testCopernicusCredit() {

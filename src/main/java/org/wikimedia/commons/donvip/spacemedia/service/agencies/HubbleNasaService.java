@@ -1,5 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,7 +18,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -23,7 +25,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -33,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaImageFiles;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaImageResponse;
@@ -48,12 +48,10 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNas
  */
 @Service
 public class HubbleNasaService extends
-        AbstractFullResAgencyService<HubbleNasaMedia, Integer, ZonedDateTime, HubbleNasaMedia, Integer, ZonedDateTime> {
+        AbstractFullResAgencyService<HubbleNasaMedia, String, ZonedDateTime, HubbleNasaMedia, String, ZonedDateTime> {
 
     private static final DateTimeFormatter exposureDateformatter = DateTimeFormatter
             .ofPattern("MMM dd, yyyy", Locale.ENGLISH);
-    private static final DateTimeFormatter releaseDateformatter = DateTimeFormatter
-            .ofPattern("MMMM dd, yyyy h:mma (zz)", Locale.ENGLISH);
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HubbleNasaService.class);
 
@@ -71,11 +69,8 @@ public class HubbleNasaService extends
     @Value("${hubble.nasa.detail.link}")
     private String detailEndpoint;
 
-    @Value("${hubble.nasa.image.link}")
-    private String imageLink;
-
-    @Value("${hubble.nasa.news.image.link}")
-    private String newsImageLink;
+    @Autowired
+    private StsciService stsci;
 
     private Map<String, String> hubbleCategories;
 
@@ -102,39 +97,52 @@ public class HubbleNasaService extends
     }
 
     @Override
-    protected final Integer getMediaId(String id) {
-        return Integer.parseUnsignedInt(id);
+    protected final String getMediaId(String id) {
+        return id;
     }
 
-    private String getImageDetailsLink(int imageId) {
-        return detailEndpoint.replace("<id>", Integer.toString(imageId));
+    private String getImageDetailsLink(String imageId) {
+        return detailEndpoint.replace("<id>", imageId);
     }
 
-    private HubbleNasaImageResponse getImageDetails(RestTemplate rest, int imageId) {
-        return rest.getForObject(getImageDetailsLink(imageId), HubbleNasaImageResponse.class);
+    private HubbleNasaImageResponse getImageDetails(String imageId) throws IOException {
+        String urlLink = getImageDetailsLink(imageId);
+        return stsci.getImageDetailsByScrapping(urlLink);
+    }
+
+    private HubbleNasaNewsResponse[] fetchNews(int idx) throws IOException {
+        String urlLink = newsEndpoint.replace("<idx>", Integer.toString(idx));
+        return stsci.fetchNewsByScrapping(urlLink);
+    }
+
+    private HubbleNasaNewsReleaseResponse getNewsDetails(HubbleNasaNewsResponse news) throws IOException {
+        String urlLink = newsDetailEndpoint.replace("<id>", news.getId()).replace("<year>", news.getId().split("-")[0]);
+        return stsci.getNewsDetailsByScrapping(urlLink);
+    }
+
+    private HubbleNasaImagesResponse[] fetchImages(int idx) {
+        String urlLink = searchEndpoint.replace("<idx>", Integer.toString(idx));
+        return new HubbleNasaImagesResponse[] {}; // TODO
     }
 
     @Override
     @Scheduled(fixedRateString = "${hubble.nasa.update.rate}", initialDelayString = "${hubble.nasa.initial.delay}")
     public void updateMedia() throws IOException {
         LocalDateTime start = startUpdateMedia();
-        RestTemplate rest = new RestTemplate();
         int count = 0;
         // Step 1: loop over news, as they include more details than what is returned by images API
         boolean loop = true;
         int idx = 1;
         while (loop) {
-            String urlLink = newsEndpoint.replace("<idx>", Integer.toString(idx++));
-            HubbleNasaNewsResponse[] response = rest.getForObject(urlLink, HubbleNasaNewsResponse[].class);
+            HubbleNasaNewsResponse[] response = fetchNews(idx++);
             loop = response != null && response.length > 0;
             if (loop) {
                 for (HubbleNasaNewsResponse news : response) {
-                    HubbleNasaNewsReleaseResponse details = rest.getForObject(
-                            newsDetailEndpoint.replace("<id>", news.getId()), HubbleNasaNewsReleaseResponse.class);
+                    HubbleNasaNewsReleaseResponse details = getNewsDetails(news);
                     if (details.getReleaseImages() != null) {
-                        for (int imageId : details.getReleaseImages()) {
+                        for (String imageId : details.getReleaseImages()) {
                             try {
-                                count += doUpdateMedia(imageId, getImageDetails(rest, imageId), details);
+                                count += doUpdateMedia(imageId, getImageDetails(imageId), details);
                             } catch (HttpStatusException e) {
                                 LOGGER.error("Error {} while requesting {}: {}", e.getStatusCode(), e.getUrl(), e.getMessage());
                                 problem(e.getUrl(), e);
@@ -152,13 +160,12 @@ public class HubbleNasaService extends
         loop = true;
         idx = 1;
         while (loop) {
-            String urlLink = searchEndpoint.replace("<idx>", Integer.toString(idx++));
-            HubbleNasaImagesResponse[] response = rest.getForObject(urlLink, HubbleNasaImagesResponse[].class);
+            HubbleNasaImagesResponse[] response = fetchImages(idx++);
             loop = response != null && response.length > 0;
             if (loop) {
                 for (HubbleNasaImagesResponse image : response) {
                     try {
-                        count += doUpdateMedia(image.getId(), getImageDetails(rest, image.getId()), null);
+                        count += doUpdateMedia(image.getId(), getImageDetails(image.getId()), null);
                     } catch (HttpStatusException e) {
                         LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
                         problem(e.getUrl(), e);
@@ -194,7 +201,7 @@ public class HubbleNasaService extends
         return false;
     }
 
-    private int doUpdateMedia(int id, HubbleNasaImageResponse image, HubbleNasaNewsReleaseResponse news)
+    private int doUpdateMedia(String id, HubbleNasaImageResponse image, HubbleNasaNewsReleaseResponse news)
             throws IOException {
         if (image.getImageFiles() == null) {
             problem(getImageDetailsLink(id), "No image files");
@@ -248,7 +255,7 @@ public class HubbleNasaService extends
             save = true;
         }
         if (CollectionUtils.isEmpty(media.getKeywords())) {
-            URL sourceUrl = getImageUrl(media, true);
+            URL sourceUrl = getImageUrl(media);
             if (sourceUrl != null) {
                 fetchMetadata(media, sourceUrl);
                 save = true;
@@ -266,13 +273,11 @@ public class HubbleNasaService extends
     private void fetchMetadata(HubbleNasaMedia media, URL sourceUrl) throws IOException {
         Document html = null;
         try {
-            html = fetchHtml(sourceUrl);
+            html = StsciService.fetchHtml(sourceUrl);
         } catch (HttpStatusException e) {
             if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND && media.getNewsId() != null) {
-                sourceUrl = getImageUrl(media, false);
-                if (sourceUrl != null) {
-                    html = fetchHtml(sourceUrl);
-                }
+                sourceUrl = getImageUrl(media);
+                html = StsciService.fetchHtml(sourceUrl);
             } else {
                 throw e;
             }
@@ -281,7 +286,7 @@ public class HubbleNasaService extends
             throw new IllegalStateException("Unable to fetch HTML page for image " + media.getId());
         }
         media.setKeywords(
-            html.getElementsByClass("keyword-tag").stream().map(Element::text).collect(Collectors.toSet()));
+            html.getElementsByClass("keyword-tag").stream().map(Element::text).collect(toSet()));
         if (media.getKeywords().isEmpty()) {
             media.getKeywords().add(NO_KEYWORD); // To avoid fetching HTML again on next update
         }
@@ -300,11 +305,11 @@ public class HubbleNasaService extends
         }
         if (media.getDate() == null) {
             List<Element> elems = html.getElementsByTag("p").stream()
-                    .filter(p -> p.text().startsWith("Release Date:")).collect(Collectors.toList());
+                    .filter(p -> p.text().startsWith("Release Date:")).collect(toList());
             if (elems.size() == 1) {
                 String date = elems.get(0).text().replace("Release Date:", "").trim();
                 try {
-                    media.setDate(ZonedDateTime.parse(date, releaseDateformatter));
+                    media.setDate(ZonedDateTime.parse(date, StsciService.releaseDateformatter));
                 } catch (DateTimeParseException e) {
                     LOGGER.debug(date, e);
                 }
@@ -312,14 +317,8 @@ public class HubbleNasaService extends
         }
     }
 
-    private static Document fetchHtml(URL sourceUrl) throws IOException {
-        String sourceLink = sourceUrl.toExternalForm();
-        LOGGER.debug(sourceLink);
-        return Jsoup.connect(sourceLink).timeout(60_000).get();
-    }
-
     private static Optional<String> findTd(Elements tds, String label) {
-        List<Element> matches = tds.stream().filter(x -> label.equalsIgnoreCase(x.text())).collect(Collectors.toList());
+        List<Element> matches = tds.stream().filter(x -> label.equalsIgnoreCase(x.text())).collect(toList());
         if (matches.size() == 2) {
             return Optional.ofNullable(matches.get(0).nextElementSibling()).map(Element::text);
         }
@@ -343,43 +342,18 @@ public class HubbleNasaService extends
         Set<String> result = super.findCategories(media, includeHidden);
         if (media.getKeywords() != null) {
             result.addAll(media.getKeywords().stream().map(hubbleCategories::get).filter(StringUtils::isNotBlank)
-                    .collect(Collectors.toSet()));
+                    .collect(toSet()));
         }
         return result;
     }
 
     @Override
     public URL getSourceUrl(HubbleNasaMedia media) throws MalformedURLException {
-        return getImageUrl(media, true);
+        return getImageUrl(media);
     }
 
-    private URL getImageUrl(HubbleNasaMedia media, boolean allowNews) throws MalformedURLException {
-        if (media.getMission() != null) {
-            String website = getWebsite(media.getMission());
-            if (website != null) {
-                if (allowNews && media.getNewsId() != null) {
-                    return new URL(newsImageLink.replace("<website>", website)
-                            .replace("<news_id>", media.getNewsId().replace('-', '/'))
-                            .replace("<img_id>", media.getId().toString()));
-                } else {
-                    return new URL(imageLink
-                            .replace("<website>", website)
-                            .replace("<img_id>", media.getId().toString()));
-                }
-            }
-        }
-        return null;
-    }
-
-    private String getWebsite(String mission) {
-        switch (mission) {
-        case "hubble":
-            return "hubblesite.org";
-        case "james_webb":
-            return "webbtelescope.org";
-        default:
-            return null;
-        }
+    private URL getImageUrl(HubbleNasaMedia media) throws MalformedURLException {
+        return new URL(detailEndpoint.replace("<id>", media.getId()));
     }
 
     @Override

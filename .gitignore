@@ -41,4 +41,6 @@ build/
 /*.ytdl
 /*.zip
 /pom.xml.releaseBackup
-/release.properties
+/release.propertie
+
+cache/

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
 
-public class NasaServiceTest {
+class NasaServiceTest {
 
     @Test
     void testFindOriginalMedia() throws Exception {

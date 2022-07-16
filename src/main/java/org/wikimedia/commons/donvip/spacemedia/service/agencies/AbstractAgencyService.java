@@ -122,7 +122,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     private UploadMode uploadMode;
 
-    public AbstractAgencyService(MediaRepository<T, ID, D> repository, String id) {
+    protected AbstractAgencyService(MediaRepository<T, ID, D> repository, String id) {
         this.repository = Objects.requireNonNull(repository);
         this.id = Objects.requireNonNull(id);
     }

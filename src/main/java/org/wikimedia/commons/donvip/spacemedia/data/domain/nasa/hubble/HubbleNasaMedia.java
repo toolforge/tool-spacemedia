@@ -22,10 +22,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, full_res_sha1, phash, full_res_phash") })
-public class HubbleNasaMedia extends FullResMedia<Integer, ZonedDateTime> {
+public class HubbleNasaMedia extends FullResMedia<String, ZonedDateTime> {
 
     @Id
-    private Integer id;
+    @Column(length = 35)
+    private String id;
 
     @Column(length = 9)
     private String newsId;
@@ -57,12 +58,12 @@ public class HubbleNasaMedia extends FullResMedia<Integer, ZonedDateTime> {
     private Set<String> keywords;
 
     @Override
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
     @Override
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

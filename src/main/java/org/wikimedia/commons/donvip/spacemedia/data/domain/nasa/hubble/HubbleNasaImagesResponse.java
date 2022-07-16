@@ -12,7 +12,7 @@ public class HubbleNasaImagesResponse {
      * Internal key to identify the image. It can be used to gather more information
      * using the details API call (below).
      */
-    private int id;
+    private String id;
 
     /**
      * Name given to the Image
@@ -40,20 +40,20 @@ public class HubbleNasaImagesResponse {
     /**
      * Returns the internal key to identify the image. It can be used to gather more
      * information using the details API call (below).
-     * 
+     *
      * @return the internal key to identify the image
      */
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
     /**
      * Returns the name given to the Image.
-     * 
+     *
      * @return the name given to the Image
      */
     public String getName() {
@@ -67,7 +67,7 @@ public class HubbleNasaImagesResponse {
     /**
      * Returns the legacy name given to this image in a news release. Usually is
      * 'a', 'b', 'c', ...
-     * 
+     *
      * @return the legacy name given to this image in a news release
      */
     public String getNewsName() {
@@ -80,7 +80,7 @@ public class HubbleNasaImagesResponse {
 
     /**
      * Returns the collection name the image belongs to.
-     * 
+     *
      * @return the collection name the image belongs to.
      */
     public String getCollection() {
@@ -94,7 +94,7 @@ public class HubbleNasaImagesResponse {
     /**
      * Returns the Space Telescope or telescope website, the image belongs to. It is
      * usually 'hubble', 'james_webb', etc.
-     * 
+     *
      * @return the Space Telescope or telescope website, the image belongs to. It is
      *         usually 'hubble', 'james_webb', etc.
      */

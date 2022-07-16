@@ -10,7 +10,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 
-public interface HubbleNasaMediaRepository extends FullResMediaRepository<HubbleNasaMedia, Integer, ZonedDateTime> {
+public interface HubbleNasaMediaRepository extends FullResMediaRepository<HubbleNasaMedia, String, ZonedDateTime> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -41,7 +41,7 @@ public interface HubbleNasaMediaRepository extends FullResMediaRepository<Hubble
 
     @Override
     @Cacheable("hubNasaFindByPhashNotNull")
-    List<MediaProjection<Integer>> findByMetadata_PhashNotNull();
+    List<MediaProjection<String>> findByMetadata_PhashNotNull();
 
     // SAVE
 
@@ -57,7 +57,7 @@ public interface HubbleNasaMediaRepository extends FullResMediaRepository<Hubble
 
     @Override
     @CacheEvictHubNasaAll
-    void deleteById(Integer id);
+    void deleteById(String id);
 
     @Override
     @CacheEvictHubNasaAll
