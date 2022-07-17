@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.stsci;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -22,7 +22,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, full_res_sha1, phash, full_res_phash") })
-public class HubbleNasaMedia extends FullResMedia<String, ZonedDateTime> {
+public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
 
     @Id
     @Column(length = 35)
@@ -49,7 +49,7 @@ public class HubbleNasaMedia extends FullResMedia<String, ZonedDateTime> {
 
     /**
      * Space Telescope or telescope website, the Image belongs to. It is usually
-     * 'hubble', 'james_webb', etc.
+     * 'hubble', 'webb', etc.
      */
     @Column(length = 10)
     private String mission;
@@ -136,7 +136,7 @@ public class HubbleNasaMedia extends FullResMedia<String, ZonedDateTime> {
             return true;
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
-        HubbleNasaMedia other = (HubbleNasaMedia) obj;
+        StsciMedia other = (StsciMedia) obj;
         return Objects.equals(credits, other.credits) && Objects.equals(date, other.date)
                 && Objects.equals(id, other.id) && Objects.equals(mission, other.mission)
                 && Objects.equals(newsId, other.newsId) && Objects.equals(keywords, other.keywords)

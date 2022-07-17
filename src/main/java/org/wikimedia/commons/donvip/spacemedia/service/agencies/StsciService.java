@@ -1,14 +1,20 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,82 +24,145 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaImageFiles;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaImageResponse;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaNewsReleaseResponse;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble.HubbleNasaNewsResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciImageFiles;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 
 @Service
 public class StsciService {
 
+    private static final DateTimeFormatter exposureDateformatter = DateTimeFormatter.ofPattern("MMM dd, yyyy",
+            Locale.ENGLISH);
+
     public static final DateTimeFormatter releaseDateformatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy h:mma (zz)",
             Locale.ENGLISH);
 
-    private static final Pattern FILE_DOWNLOAD_TEXT = Pattern
-            .compile("(?:(?:(\\d+) X (\\d+))|(?:Text Description)), (PDF|PNG|TIF) \\((\\d+\\.\\d+) (KB|MB|GB)\\)");
+    private static final Pattern FILE_DOWNLOAD_TEXT = Pattern.compile(
+            "(?:(?:(?:Annotated|Unannotated|Clean))? ?(?:Full Res|Image|Medium|Half Res)?, )?(?:(?:(?:(\\d+) X (\\d+))|(?:Text Description)), )?(JPE?G|PDF|PNG|TIFF?) \\((\\d+\\.\\d+) (KB|MB|GB)\\)");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StsciService.class);
 
-    public HubbleNasaNewsResponse[] fetchNewsByScrapping(String urlLink) throws IOException {
-        Document html = fetchHtml(new URL(urlLink));
-        Elements divs = html.getElementsByClass("news-listing");
-        HubbleNasaNewsResponse[] result = new HubbleNasaNewsResponse[divs.size()];
-        int i = 0;
-        for (Element div : divs) {
-            HubbleNasaNewsResponse news = new HubbleNasaNewsResponse();
-            news.setId(div.getElementsByClass("news-release-id").first().ownText().substring(12));
-            news.setName(div.getElementsByTag("h3").first().ownText());
-            news.setUrl(div.getElementsByTag("a").first().ownText());
-            result[i++] = news;
-        }
-        return result;
-    }
-
-    @Cacheable("stsciNewsDetailsByScrapping")
-    public HubbleNasaNewsReleaseResponse getNewsDetailsByScrapping(String urlLink) throws IOException {
+    public String[] fetchImagesByScrapping(String urlLink) throws IOException {
         URL url = new URL(urlLink);
         Document html = fetchHtml(url);
-        Element details = html.getElementsByClass("news-listing-details").first();
-        HubbleNasaNewsReleaseResponse result = new HubbleNasaNewsReleaseResponse();
-        result.setUrl(urlLink);
-        result.setMission(getMission(url.getHost()));
-        result.setName(html.getElementsByClass("news-listing__intro").first().getElementsByTag("h2").first().text());
-        result.setId(details.getElementsByClass("news-release-id").first().ownText().substring(12));
-        result.setPublication(ZonedDateTime.parse(details.getElementsByClass("news-release-date").first().text(),
-                releaseDateformatter));
-        result.setAbstract(html.getElementsByClass("page-intro__main").first().text());
-        Element releaseImages = html.getElementsByClass("news-release-images").first();
-        if (releaseImages != null) {
-            result.setReleaseImages(extractReleases(releaseImages));
-        }
-        Element releaseVideos = html.getElementsByClass("news-release-videos").first();
-        if (releaseVideos != null) {
-            result.setReleaseVideos(extractReleases(releaseVideos));
+        Elements divs = html.getElementsByClass("ad-research-box");
+        String[] result = new String[divs.size()];
+        int i = 0;
+        for (Element div : divs) {
+            String href = div.getElementsByTag("a").first().attr("href").replace("/contents/media/images/", "");
+            result[i++] = href.substring(0, href.indexOf('?'));
         }
         return result;
     }
 
-    public HubbleNasaImageResponse getImageDetailsByScrapping(String urlLink) throws IOException {
+    public StsciMedia getImageDetailsByScrapping(String id, String urlLink) throws IOException {
         URL url = new URL(urlLink);
         Document html = fetchHtml(url);
         Element main = html.getElementById("main-content");
-        HubbleNasaImageResponse result = new HubbleNasaImageResponse();
+        StsciMedia result = new StsciMedia();
+        result.setId(id);
         result.setMission(getMission(url.getHost()));
-        result.setName(main.getElementsByTag("h2").first().text());
+        result.setTitle(main.getElementsByTag("h2").first().text());
         result.setCredits(main.getElementsByTag("footer").first().getElementsByTag("p").first().ownText().trim());
         result.setDescription(main.getElementsByClass("col-md-8").first().getElementsByTag("p").first().text());
-        List<HubbleNasaImageFiles> files = new ArrayList<>();
+        List<StsciImageFiles> files = new ArrayList<>();
         for (Element a : main.getElementsByClass("media-library-links-list").first().getElementsByTag("a")) {
             files.add(extractFile(urlLink, a.attr("href"), a.ownText()));
         }
-        result.setImageFiles(files);
+        if (files.isEmpty()) {
+            throw new IOException("No file found at " + urlLink);
+        }
+        Metadata metadata = result.getMetadata();
+        Metadata frMetadata = result.getFullResMetadata();
+        for (StsciImageFiles imageFile : files) {
+            String fileUrl = imageFile.getFileUrl();
+            URL assetUrl = toUrl(fileUrl);
+            if (fileUrl.endsWith(".tif") || fileUrl.endsWith(".tiff")) {
+                frMetadata.setAssetUrl(assetUrl);
+                frMetadata.setSize((long) imageFile.getFileSize());
+            } else if ((fileUrl.endsWith(".png") || fileUrl.endsWith(".jpg") || fileUrl.endsWith(".pdf"))
+                    && (metadata.getAssetUrl() == null || metadata.getSize().intValue() < imageFile.getFileSize())) {
+                metadata.setAssetUrl(assetUrl);
+                metadata.setSize((long) imageFile.getFileSize());
+            }
+        }
+        if (frMetadata.getAssetUrl() == null && files.size() > 1) {
+            files.stream().max(Comparator.comparingInt(StsciImageFiles::getFileSize))
+                    .map(StsciImageFiles::getFileUrl).ifPresent(max -> {
+                        try {
+                            frMetadata.setAssetUrl(toUrl(max));
+                        } catch (MalformedURLException e) {
+                            LOGGER.error(max, e);
+                        }
+                    });
+        }
+        if (endsWith(frMetadata.getAssetUrl(), ".png", ".jpg") && endsWith(metadata.getAssetUrl(), ".png", ".jpg")) {
+            metadata.setAssetUrl(frMetadata.getAssetUrl());
+            frMetadata.setAssetUrl(null);
+        }
+
+        result.setKeywords(html.getElementsByClass("keyword-tag").stream().map(Element::text).collect(toSet()));
+        Elements tds = html.getElementsByTag("td");
+        findTd(tds, "Object Name").ifPresent(result::setObjectName);
+        findTd(tds, "Exposure Dates").ifPresent(dates -> {
+            try {
+                result.setExposureDate(LocalDate.parse(dates, exposureDateformatter));
+            } catch (DateTimeParseException e) {
+                LOGGER.debug(dates, e);
+            }
+        });
+        Elements paragraphs = html.getElementsByTag("p");
+        List<Element> elems = paragraphs.stream().filter(p -> p.text().startsWith("Release Date:")).collect(toList());
+        if (elems.size() == 1) {
+            String date = elems.get(0).text().replace("Release Date:", "").trim();
+            try {
+                result.setDate(ZonedDateTime.parse(date, StsciService.releaseDateformatter));
+            } catch (DateTimeParseException e) {
+                LOGGER.debug(date, e);
+            }
+        }
+        elems = paragraphs.stream().filter(p -> p.text().startsWith("Read the Release:")).collect(toList());
+        if (elems.size() == 1) {
+            result.setNewsId(elems.get(0).getElementsByTag("a").first().text());
+        }
+
         return result;
     }
 
-    protected static HubbleNasaImageFiles extractFile(String urlLink, String href, String text) throws IOException {
-        HubbleNasaImageFiles file = new HubbleNasaImageFiles();
+    private static URL toUrl(String fileUrl) throws MalformedURLException {
+        if (fileUrl.startsWith("//")) {
+            fileUrl = "https:" + fileUrl;
+        }
+        if (fileUrl.startsWith("https://imgsrc.hubblesite.org/")) {
+            // Broken https, redirected anyway to https://hubblesite.org/ without hvi folder
+            fileUrl = fileUrl.replace("imgsrc.", "").replace("/hvi/", "/");
+        }
+        return new URL(fileUrl);
+    }
+
+    private static boolean endsWith(URL url, String... exts) {
+        if (url != null) {
+            String externalForm = url.toExternalForm();
+            for (String ext : exts) {
+                if (externalForm.endsWith(ext)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static Optional<String> findTd(Elements tds, String label) {
+        List<Element> matches = tds.stream().filter(x -> label.equalsIgnoreCase(x.text())).collect(toList());
+        if (matches.size() == 2) {
+            return Optional.ofNullable(matches.get(0).nextElementSibling()).map(Element::text);
+        }
+        return Optional.empty();
+    }
+
+    protected static StsciImageFiles extractFile(String urlLink, String href, String text) throws IOException {
+        StsciImageFiles file = new StsciImageFiles();
         file.setFileUrl("https:" + href);
         Matcher m = FILE_DOWNLOAD_TEXT.matcher(text);
         if (m.matches()) {
@@ -122,15 +191,7 @@ public class StsciService {
         return file;
     }
 
-    private static List<String> extractReleases(Element releaseImages) {
-        return releaseImages.getElementsByClass("grid-view").first().getElementsByTag("a").stream()
-                .map(a -> a.attr("href").replace("?news=true", "")
-                        .replace("/contents/media/images/", "")
-                        .replace("/contents/media/videos/", ""))
-                .collect(toList());
-    }
-
-    public static Document fetchHtml(URL sourceUrl) throws IOException {
+    private static Document fetchHtml(URL sourceUrl) throws IOException {
         String sourceLink = sourceUrl.toExternalForm();
         LOGGER.info(sourceLink);
         return Jsoup.connect(sourceLink).timeout(60_000).get();
@@ -140,7 +201,7 @@ public class StsciService {
         switch (mission) {
         case "hubble":
             return "hubblesite.org";
-        case "james_webb":
+        case "webb":
             return "webbtelescope.org";
         default:
             return null;
@@ -152,7 +213,7 @@ public class StsciService {
         case "hubblesite.org":
             return "hubble";
         case "webbtelescope.org":
-            return "james_webb";
+            return "webb";
         default:
             return null;
         }

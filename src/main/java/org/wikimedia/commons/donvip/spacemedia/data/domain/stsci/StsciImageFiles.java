@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.hubble;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.stsci;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * containing images, etc. See
  * <a href="http://hubblesite.org/api/documentation#images">documentation</a>.
  */
-public class HubbleNasaImageFiles {
+public class StsciImageFiles {
 
     /**
      * HTTPS URL of the image file.

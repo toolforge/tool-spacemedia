@@ -66,7 +66,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     protected final Set<String> flickrAccounts;
     protected final Map<String, Map<String, String>> flickrPhotoSets;
 
-    public AbstractAgencyFlickrService(FlickrMediaRepository repository, String id, Set<String> flickrAccounts) {
+    protected AbstractAgencyFlickrService(FlickrMediaRepository repository, String id, Set<String> flickrAccounts) {
         super(repository, id);
         this.flickrAccounts = Objects.requireNonNull(flickrAccounts);
         this.flickrPhotoSets = new HashMap<>();
