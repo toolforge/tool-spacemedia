@@ -33,8 +33,8 @@ public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> 
             @AttributeOverride(column = @Column(name = "full_res_asset_url"), name = "assetUrl"),
             @AttributeOverride(column = @Column(name = "full_res_readable_image"), name = "readableImage"),
             @AttributeOverride(column = @Column(name = "full_res_size"), name = "size"),
-            @AttributeOverride(column = @Column(name = "full_res_sha1"), name = "sha1"),
-            @AttributeOverride(column = @Column(name = "full_res_phash"), name = "phash") })
+            @AttributeOverride(column = @Column(name = "full_res_sha1", length = 42), name = "sha1"),
+            @AttributeOverride(column = @Column(name = "full_res_phash", columnDefinition = "VARCHAR(52)", length = 52), name = "phash") })
     protected Metadata fullResMetadata = new Metadata();
 
     @ElementCollection(fetch = FetchType.EAGER)
