@@ -15,26 +15,26 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
-public class UsSmcFlickrService extends AbstractAgencyFlickrService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
+public class UsSscFlickrService extends AbstractAgencyFlickrService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
 
     @Autowired
     private DvidsMediaRepository<DvidsMedia> dvidsRepository;
 
     @Autowired
-    public UsSmcFlickrService(FlickrMediaRepository repository,
-            @Value("${ussmc.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, "ussmc.flickr", flickrAccounts);
+    public UsSscFlickrService(FlickrMediaRepository repository,
+            @Value("${usssc.flickr.accounts}") Set<String> flickrAccounts) {
+        super(repository, "usssc.flickr", flickrAccounts);
     }
 
     @Override
-    @Scheduled(fixedRateString = "${ussmc.flickr.update.rate}", initialDelayString = "${ussmc.flickr.initial.delay}")
+    @Scheduled(fixedRateString = "${usssc.flickr.update.rate}", initialDelayString = "${usssc.flickr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }
 
     @Override
     public String getName() {
-        return "U.S. Space and Missile Systems Center (Flickr)";
+        return "U.S. Space Systems Command (Flickr)";
     }
 
     @Override
@@ -62,7 +62,7 @@ public class UsSmcFlickrService extends AbstractAgencyFlickrService<DvidsMedia, 
     public Set<String> findCategories(FlickrMedia media, boolean includeHidden) {
         Set<String> result = super.findCategories(media, includeHidden);
         if (includeHidden) {
-            result.add("Photographs by the Space and Missile Systems Center");
+            result.add("Photographs by the Space Systems Command");
         }
         return result;
     }
