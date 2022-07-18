@@ -326,7 +326,10 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                     if (m.matches()) {
                         String id = m.group(1);
                         LOGGER.warn("Flickr image {} has been deleted for account '{}'", id, flickrAccount);
-                        flickrRepository.deleteById(Long.valueOf(id));
+                        flickrRepository.findById(Long.valueOf(id)).ifPresent(media -> {
+                            media.getPhotosets().clear();
+                            flickrRepository.delete(flickrRepository.save(media));
+                        });
                         count++;
                     } else {
                         LOGGER.error("Error while processing non-free Flickr image " + picture.getId()
