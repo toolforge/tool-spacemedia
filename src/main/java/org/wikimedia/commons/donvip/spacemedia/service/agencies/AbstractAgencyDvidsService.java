@@ -224,9 +224,11 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 count += processDvidsMedia(mediaRepository.findById(new DvidsMediaTypedId(id))
                         .orElseGet(() -> getMediaFromApi(rest, id, unit)));
             } catch (HttpClientErrorException e) {
-                LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, e.getMessage());
-            } catch (IOException | UploadException e) {
-                LOGGER.error("Error while processing DVIDS " + id + " from unit " + unit, e);
+                LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, e);
+            } catch (IOException e) {
+                LOGGER.error("I/O error while processing DVIDS {} from unit {}: {}", id, unit, e);
+            } catch (UploadException e) {
+                LOGGER.error("Upload error while processing DVIDS {} from unit {}: {}", id, unit, e);
             }
         }
         ApiPageInfo pi = response.getPageInfo();
