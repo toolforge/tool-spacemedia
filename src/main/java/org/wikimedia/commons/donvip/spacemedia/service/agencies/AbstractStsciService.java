@@ -77,7 +77,8 @@ public abstract class AbstractStsciService
                         LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
                         problem(e.getUrl(), e);
                     } catch (IOException | RuntimeException e) {
-                        LOGGER.error("Error while fetching image " + imageId + " via Hubble images", e);
+                        LOGGER.error("Error while fetching image " + imageId, e);
+                        problem(getImageDetailsLink(imageId), e);
                     }
                 }
             }
