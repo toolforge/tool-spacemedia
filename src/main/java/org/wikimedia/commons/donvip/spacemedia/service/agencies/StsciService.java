@@ -38,8 +38,10 @@ public class StsciService {
     public static final DateTimeFormatter releaseDateformatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy h:mma (zz)",
             Locale.ENGLISH);
 
-    private static final Pattern FILE_DOWNLOAD_TEXT = Pattern.compile(
-            "(?:(?:(?:Annotated|Unannotated|Clean))? ?(?:Full Res|Image|Medium|Half Res)?, )?(?:(?:(?:(\\d+) X (\\d+))|(?:Text Description)), )?(JPE?G|PDF|PNG|TIFF?) \\((\\d+\\.\\d+) (KB|MB|GB)\\)");
+    private static final Pattern FILE_DIMENSIONS = Pattern.compile("(\\d+) X (\\d+)");
+
+    private static final Pattern FILE_TYPE_SIZE = Pattern
+            .compile("(?:JPE?G|PDF|PNG|TIFF?) \\((\\d+\\.\\d+) (KB|MB|GB)\\)");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StsciService.class);
 
@@ -164,29 +166,31 @@ public class StsciService {
     protected static StsciImageFiles extractFile(String urlLink, String href, String text) throws IOException {
         StsciImageFiles file = new StsciImageFiles();
         file.setFileUrl("https:" + href);
-        Matcher m = FILE_DOWNLOAD_TEXT.matcher(text);
-        if (m.matches()) {
-            if (!"PDF".equals(m.group(3))) {
+        for (String segment : text.split(", ")) {
+            Matcher m = FILE_DIMENSIONS.matcher(segment);
+            if (m.matches()) {
                 file.setWidth(Integer.parseInt(m.group(1)));
                 file.setHeight(Integer.parseInt(m.group(2)));
+            } else {
+                m = FILE_TYPE_SIZE.matcher(segment);
+                if (m.matches()) {
+                    double size = Double.parseDouble(m.group(1));
+                    switch (m.group(2)) {
+                    case "KB":
+                        size *= 1024;
+                        break;
+                    case "MB":
+                        size *= 1024 * 1024;
+                        break;
+                    case "GB":
+                        size *= 1024 * 1024 * 1024;
+                        break;
+                    default:
+                        throw new IOException("Unsupported file size unit: '" + m.group(2) + "' at " + urlLink);
+                    }
+                    file.setFileSize((int) size);
+                }
             }
-            double size = Double.parseDouble(m.group(4));
-            switch (m.group(5)) {
-            case "KB":
-                size *= 1024;
-                break;
-            case "MB":
-                size *= 1024 * 1024;
-                break;
-            case "GB":
-                size *= 1024 * 1024 * 1024;
-                break;
-            default:
-                throw new IOException("Unsupported file size unit: '" + m.group(4) + "' at " + urlLink);
-            }
-            file.setFileSize((int) size);
-        } else {
-            throw new IOException("Unsupported file download text: '" + text + "' at " + urlLink);
         }
         return file;
     }
