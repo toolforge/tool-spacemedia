@@ -223,7 +223,7 @@ public class MediaService {
                 .filter(h -> !media.considerVariants() || h.similarityScore < perceptualThresholdVariant)
                 .map(DuplicateHolder::toDuplicate).collect(Collectors.toSet());
         if (isNewDuplicateOrVariant(media, duplicateHolders, duplicates, MediaProjection::getDuplicates)) {
-            if (media.getAllCommonsFileNames().isEmpty()) {
+            if (CollectionUtils.isEmpty(media.getAllCommonsFileNames())) {
                 media.setIgnored(true);
                 media.setIgnoredReason("Already present in main repository");
             }
