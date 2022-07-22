@@ -1,13 +1,13 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CommonsServiceTest {
+class CommonsServiceTest {
 
     @Test
-    public void testFormatWikiCode() {
+    void testFormatWikiCode() {
         assertEquals(
                 "Learn more: [http://www.spacex.com/news/2015/05/06/crew-dragon-completes-pad-abort-test www.spacex.com/news/2015/05/06/crew-dragon-completes-pad-...] and [http://www.spacex.com/news/2015/05/04/5-things-know-about-spacexs-pad-abort-test www.spacex.com/news/2015/05/04/5-things-know-about-spacex...]",
                 CommonsService.formatWikiCode(
