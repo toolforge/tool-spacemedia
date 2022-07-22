@@ -290,8 +290,22 @@ public class EsaService
                             media.getMetadata().setAssetUrl(fileUrl);
                         }
                     }
+                } else if (size == 3) {
+                    // assume tif + png + jpg:
+                    // https://www.esa.int/ESA_Multimedia/Images/2020/11/Kiruna_Sweden
+                    // https://www.esa.int/ESA_Multimedia/Images/2021/11/Shetland_Islands
+                    for (URL fileUrl : files) {
+                        if (fileUrl.toExternalForm().endsWith(".tif")) {
+                            media.getFullResMetadata().setAssetUrl(fileUrl);
+                        } else if (fileUrl.toExternalForm().endsWith(".png")) {
+                            media.getMetadata().setAssetUrl(fileUrl);
+                        }
+                    }
                 } else {
-                    throw new IllegalStateException("Media with more than two files: " + media);
+                    throw new IllegalStateException("Media with more than three files: " + media);
+                }
+                if (size > 1) {
+                    checkAssetUrlCorrectness(media);
                 }
                 processHeader(media, html.getElementsByClass("modal__header").get(0));
                 processShare(media, html.getElementsByClass("modal__share").get(0));
@@ -304,6 +318,12 @@ public class EsaService
             }
         }
         return media;
+    }
+
+    private void checkAssetUrlCorrectness(EsaMedia media) {
+        if (media.getMetadata().getAssetUrl() == null || media.getFullResMetadata().getAssetUrl() == null) {
+            problem(media.getUrl(), "Image without two asset URLs");
+        }
     }
 
     private static final Set<String> set(String label) {
