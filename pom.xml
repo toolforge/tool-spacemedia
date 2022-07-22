@@ -16,7 +16,7 @@
 		<sonar.organization>toolforge</sonar.organization>
 		<sonar.projectKey>tool-spacemedia</sonar.projectKey>
 
-		<flickr4java-version>3.0.4</flickr4java-version>
+		<flickr4java-version>3.0.6</flickr4java-version>
 		<springboot-version>2.2.7.RELEASE</springboot-version>
 		<scribejava-version>6.9.0</scribejava-version>
 	</properties>
