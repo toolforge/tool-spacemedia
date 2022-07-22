@@ -305,6 +305,7 @@ public class NasaService
         logStartUpdate(mediaType, startYear, endYear, centers);
         Counter count = new Counter();
         RestTemplate rest = new RestTemplate();
+        rest.getMessageConverters().add(new NasaResponseHtmlErrorHandler());
         String nextUrl = searchEndpoint + "media_type=" + mediaType + "&year_start=" + startYear + "&year_end=" + endYear;
         if (centers != null) {
             nextUrl += "&center=" + String.join(",", centers);
