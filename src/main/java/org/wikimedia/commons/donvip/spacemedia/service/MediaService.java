@@ -441,7 +441,7 @@ public class MediaService {
         }
     }
 
-    @Transactional
+    @Transactional(transactionManager = "commonsTransactionManager")
     public List<YouTubeVideo> syncYouTubeVideos(List<YouTubeVideo> missingVideos, String category) {
         if (CollectionUtils.isNotEmpty(missingVideos)) {
             LOGGER.info("Starting YouTube videos synchronization from {}...", category);
