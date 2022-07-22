@@ -281,7 +281,9 @@ public class NasaService
                 if (!CollectionUtils.isEmpty(collection.getLinks())) {
                     Optional<NasaLink> next = collection.getLinks().stream().filter(l -> "next".equals(l.getRel())).findFirst();
                     if (next.isPresent()) {
-                        return next.get().getHref().toExternalForm();
+                        // API returns http links with 301 redirect in text/html
+                        // not correctly handled by RestTemplate, so switch to https
+                        return next.get().getHref().toExternalForm().replace("http://", "https://");
                     }
                 }
             } catch (RestClientException | IOException e) {
