@@ -1,5 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.time.LocalDateTime.now;
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -58,6 +61,11 @@ public class NasaService
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaService.class);
 
+    /**
+     * Minimal delay between successive API requests, in seconds.
+     */
+    private static final int DELAY = 4;
+
     @Value("${nasa.search.link}")
     private String searchEndpoint;
 
@@ -87,6 +95,8 @@ public class NasaService
 
     @Autowired
     private Environment env;
+
+    private LocalDateTime lastRequest;
 
     @Autowired
     public NasaService(NasaMediaRepository<NasaMedia> repository) {
@@ -249,6 +259,7 @@ public class NasaService
         boolean ok = false;
         for (int i = 0; i < maxTries && !ok; i++) {
             try {
+                ensureApiLimit();
                 NasaCollection collection = rest.getForObject(searchUrl, NasaResponse.class).getCollection();
                 ok = true;
                 for (NasaItem item : collection.getItems()) {
@@ -273,7 +284,7 @@ public class NasaService
                         return next.get().getHref().toExternalForm();
                     }
                 }
-            } catch (RestClientException e) {
+            } catch (RestClientException | IOException e) {
                 LOGGER.error("Unable to process search results for " + searchUrl, e);
             }
         }
@@ -435,5 +446,17 @@ public class NasaService
 
     static class Counter {
         int count = 0;
+    }
+
+    private void ensureApiLimit() throws IOException {
+        LocalDateTime fourSecondsAgo = now().minusSeconds(DELAY);
+        if (lastRequest != null && lastRequest.isAfter(fourSecondsAgo)) {
+            try {
+                Thread.sleep(DELAY - SECONDS.between(now(), lastRequest.plusSeconds(DELAY)));
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+        }
+        lastRequest = now();
     }
 }
