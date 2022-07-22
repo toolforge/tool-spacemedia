@@ -4,6 +4,7 @@ import static com.google.api.client.googleapis.javanet.GoogleNetHttpTransport.ne
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -15,18 +16,23 @@ import com.google.api.services.youtube.YouTubeRequest;
 import com.google.api.services.youtube.model.ResourceId;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
+import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 
 @Service
-public class YouTubeService {
+@SuppressWarnings("deprecation")
+public class YouTubeApiService {
+
+    private static final String CREATIVE_COMMON = "creativeCommon";
 
     @Value("${youtube.api.key}")
     private String apiKey;
 
     private final YouTube youtube;
 
-    public YouTubeService(@Value("${youtube.app.name:Spacemedia}") String applicationName)
+    public YouTubeApiService(@Value("${youtube.app.name:Spacemedia}") String applicationName)
             throws GeneralSecurityException, IOException {
+        // Google wants us to use com.google.api.client.json.GsonFactory instead, I don't
         youtube = new YouTube.Builder(newTrustedTransport(), JacksonFactory.getDefaultInstance(), request -> {
         }).setApplicationName(applicationName).build();
     }
@@ -35,8 +41,13 @@ public class YouTubeService {
         return request.setKey(apiKey).execute();
     }
 
-    public SearchListResponse searchVideos(String channelId, String pageToken) throws IOException {
-        return executeRequest(youtube.search().list("snippet").setType("video").setVideoLicense("creativeCommon")
+    public SearchListResponse searchCreativeCommonsVideos(String channelId, String pageToken) throws IOException {
+        return executeRequest(youtube.search().list(List.of("snippet")).setType(List.of("video"))
+                .setVideoLicense(CREATIVE_COMMON).setChannelId(channelId).setMaxResults(50L).setPageToken(pageToken));
+    }
+
+    public SearchListResponse searchVideos(String channelId, String pageToken, String licenseText) throws IOException {
+        return executeRequest(youtube.search().list(List.of("snippet")).setType(List.of("video")).setQ(licenseText)
                 .setChannelId(channelId).setMaxResults(50L).setPageToken(pageToken));
     }
 
@@ -45,7 +56,11 @@ public class YouTubeService {
                 .collect(Collectors.toList()));
     }
 
-    public VideoListResponse listVideos(Iterable<String> videoIds) throws IOException {
-        return executeRequest(youtube.videos().list("contentDetails,snippet").setId(String.join(",", videoIds)));
+    public VideoListResponse listVideos(List<String> videoIds) throws IOException {
+        return executeRequest(youtube.videos().list(List.of("contentDetails", "snippet", "status")).setId(videoIds));
+    }
+
+    public static boolean isCreativeCommons(Video video) {
+        return CREATIVE_COMMON.equals(video.getStatus().getLicense());
     }
 }

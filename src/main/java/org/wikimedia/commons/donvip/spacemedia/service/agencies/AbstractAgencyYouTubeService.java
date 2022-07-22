@@ -32,7 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.YouTubeService;
+import org.wikimedia.commons.donvip.spacemedia.service.YouTubeApiService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.google.api.client.util.DateTime;
@@ -54,11 +54,11 @@ public abstract class AbstractAgencyYouTubeService
     @Autowired
     protected YouTubeVideoRepository youtubeRepository;
     @Autowired
-    private YouTubeService youtubeService;
+    private YouTubeApiService youtubeService;
 
     protected final Set<String> youtubeChannels;
 
-    public AbstractAgencyYouTubeService(YouTubeVideoRepository repository, String id, Set<String> youtubeChannels) {
+    protected AbstractAgencyYouTubeService(YouTubeVideoRepository repository, String id, Set<String> youtubeChannels) {
         super(repository, id);
         this.youtubeChannels = Objects.requireNonNull(youtubeChannels);
     }
@@ -87,7 +87,7 @@ public abstract class AbstractAgencyYouTubeService
                 List<YouTubeVideo> freeVideos = new ArrayList<>();
                 String pageToken = null;
                 do {
-                    SearchListResponse list = youtubeService.searchVideos(channelId, pageToken);
+                    SearchListResponse list = youtubeService.searchCreativeCommonsVideos(channelId, pageToken);
                     pageToken = list.getNextPageToken();
                     List<YouTubeVideo> videos = processYouTubeVideos(buildYouTubeVideoList(list, youtubeService.listVideos(list)));
                     count += videos.size();
