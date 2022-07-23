@@ -132,8 +132,11 @@ public class CommonsService {
     @Value("${commons.duplicate.url}")
     private URL duplicateUrl;
 
-    @Value("${commons.ignored.duplicates}")
-    private Set<String> ignoredDuplicates;
+    @Value("${commons.ignored.duplicates.sha1}")
+    private Set<String> ignoredDuplicatesSha1;
+
+    @Value("${commons.ignored.duplicates.name}")
+    private Set<String> ignoredDuplicatesName;
 
     @Value("${commons.cat.search.depth}")
     private int catSearchDepth;
@@ -667,9 +670,11 @@ public class CommonsService {
                 if (!title.contains("-_DPLA_-")) {
                     CommonsImage image = imageRepository.findById(title)
                             .orElseThrow(() -> new IllegalStateException("no image named " + title));
-                    if (image.getWidth() > 1 && image.getHeight() > 1 && !ignoredDuplicates.contains(image.getSha1())) {
+                    if (image.getWidth() > 1 && image.getHeight() > 1
+                            && !ignoredDuplicatesSha1.contains(image.getSha1())) {
                         List<CommonsImage> duplicates = imageRepository.findBySha1OrderByTimestamp(image.getSha1());
-                        if (duplicates.size() > 1) {
+                        if (duplicates.size() > 1
+                                && duplicates.stream().noneMatch(d -> ignoredDuplicatesName.contains(d.getName()))) {
                             CommonsImage olderImage = duplicates.get(0);
                             for (int i = 1; i < duplicates.size(); i++) {
                                 CommonsImage dupe = duplicates.get(i);
