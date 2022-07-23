@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -26,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -43,6 +44,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
@@ -55,6 +57,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.ApiError;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.EditApiResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQuery;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQueryResponse;
@@ -66,7 +70,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsQueryRe
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Slot;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Tokens;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadApiResponse;
-import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadError;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UserInfo;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
@@ -125,6 +128,12 @@ public class CommonsService {
 
     @Value("${commons.api.rest.url}")
     private URL restApiUrl;
+
+    @Value("${commons.duplicate.url}")
+    private URL duplicateUrl;
+
+    @Value("${commons.ignored.duplicates}")
+    private Set<String> ignoredDuplicates;
 
     @Value("${commons.cat.search.depth}")
     private int catSearchDepth;
@@ -194,12 +203,14 @@ public class CommonsService {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
         // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters
         String sha1base36 = String.format("%31s", new BigInteger(sha1, 16).toString(36)).replace(' ', '0');
-        Set<String> files = imageRepository.findBySha1(sha1base36).stream().map(CommonsImage::getName).collect(Collectors.toSet());
+        Set<String> files = imageRepository.findBySha1OrderByTimestamp(sha1base36).stream().map(CommonsImage::getName)
+                .collect(toSet());
         if (files.isEmpty()) {
-            files.addAll(oldImageRepository.findBySha1(sha1base36).stream().map(CommonsOldImage::getName).collect(Collectors.toSet()));
+            files.addAll(
+                    oldImageRepository.findBySha1(sha1base36).stream().map(CommonsOldImage::getName).collect(toSet()));
         }
         if (files.isEmpty()) {
-            files.addAll(queryFileArchive(sha1base36).stream().map(FileArchive::getName).collect(Collectors.toSet()));
+            files.addAll(queryFileArchive(sha1base36).stream().map(FileArchive::getName).collect(toSet()));
         }
         return files;
     }
@@ -479,7 +490,7 @@ public class CommonsService {
         return categories.parallelStream()
             .flatMap(s -> Arrays.stream(s.split(";")))
             .filter(c -> !c.isEmpty() && !self.isUpToDateCategory(c))
-            .collect(Collectors.toSet());
+                .collect(toSet());
     }
 
     private static String sanitizeCategory(String category) {
@@ -500,7 +511,7 @@ public class CommonsService {
     public Set<String> getSubCategories(String category) {
         return categoryLinkRepository
                 .findIdByTypeAndIdTo(CommonsCategoryLinkType.subcat, sanitizeCategory(category)).stream()
-                .map(c -> c.getFrom().getTitle()).collect(Collectors.toSet());
+                .map(c -> c.getFrom().getTitle()).collect(toSet());
     }
 
     @Cacheable("subCategoriesByDepth")
@@ -509,7 +520,7 @@ public class CommonsService {
         LOGGER.debug("Fetching '{}' subcategories with depth {}...", category, depth);
         Set<String> subcats = self.getSubCategories(category);
         Set<String> result = subcats.stream().map(CommonsService::sanitizeCategory)
-                .collect(Collectors.toCollection(ConcurrentHashMap::newKeySet));
+                .collect(toCollection(ConcurrentHashMap::newKeySet));
         if (depth > 0) {
             subcats.parallelStream().forEach(s -> result.addAll(self.getSubCategories(s, depth - 1)));
         }
@@ -540,8 +551,7 @@ public class CommonsService {
         LocalDateTime start = now();
         LOGGER.info("Cleaning {} categories with depth {}...", categories.size(), catSearchDepth);
         Set<String> result = new HashSet<>();
-        Set<String> lowerCategories = categories.stream().map(c -> c.toLowerCase(Locale.ENGLISH))
-                .collect(Collectors.toSet());
+        Set<String> lowerCategories = categories.stream().map(c -> c.toLowerCase(Locale.ENGLISH)).collect(toSet());
         for (Iterator<String> it = categories.iterator(); it.hasNext();) {
             String c = it.next().toLowerCase(Locale.ENGLISH);
             if (c.endsWith("s")) {
@@ -606,7 +616,7 @@ public class CommonsService {
         UploadApiResponse apiResponse = apiHttpPost(params, UploadApiResponse.class);
         LOGGER.info("Upload of {} as {}: {}", url, filename, apiResponse);
         UploadResponse upload = apiResponse.getUpload();
-        UploadError error = apiResponse.getError();
+        ApiError error = apiResponse.getError();
         if (error != null) {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
                 token = queryTokens().getCsrftoken();
@@ -646,5 +656,44 @@ public class CommonsService {
             }
         }
         lastUpload = now();
+    }
+
+    @Scheduled(fixedDelay = 43200000L, initialDelay = 1000)
+    public void checkExactDuplicateFiles() throws IOException {
+        for (int offset = 0; offset < 5000; offset += 500) {
+            for (Element li : Jsoup.connect(duplicateUrl.toExternalForm() + "&limit=500&offset=" + offset).get()
+                    .getElementsByClass("special").first().getElementsByTag("li")) {
+                String title = li.getElementsByTag("a").first().attr("title").substring(5).replace(' ', '_');
+                if (!title.contains("-_DPLA_-")) {
+                    CommonsImage image = imageRepository.findById(title)
+                            .orElseThrow(() -> new IllegalStateException("no image named " + title));
+                    if (image.getWidth() > 1 && image.getHeight() > 1 && !ignoredDuplicates.contains(image.getSha1())) {
+                        List<CommonsImage> duplicates = imageRepository.findBySha1OrderByTimestamp(image.getSha1());
+                        if (duplicates.size() > 1) {
+                            CommonsImage olderImage = duplicates.get(0);
+                            for (int i = 1; i < duplicates.size(); i++) {
+                                CommonsImage dupe = duplicates.get(i);
+                                CommonsPage dupePage = pageRepository.findByFileTitle(dupe.getName())
+                                        .orElseThrow(() -> new IllegalStateException("No page named " + dupe.getName()));
+                                if (!categoryLinkRepository
+                                        .existsById(new CommonsCategoryLinkId(dupePage, "Duplicate"))) {
+                                    EditApiResponse response = apiHttpPost(
+                                            Map.of("action", "edit", "title", "File:" + dupe.getName(), "format",
+                                                    "json", "summary",
+                                                    "Duplicate of [[:File:" + olderImage.getName() + "]]",
+                                                    "prependtext", "{{duplicate|" + olderImage.getName() + "}}",
+                                                    "token", token),
+                                            EditApiResponse.class);
+                                    if (response.getEdit() == null || response.getError() != null
+                                            || !"Success".equalsIgnoreCase(response.getEdit().getResult())) {
+                                        throw new IllegalStateException(response.toString());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -8,6 +8,10 @@ public interface CommonsPageRepository extends CrudRepository<CommonsPage, Integ
 
     Optional<CommonsPage> findByNamespaceAndTitle(int namespace, String title);
 
+    default Optional<CommonsPage> findByFileTitle(String title) {
+        return findByNamespaceAndTitle(6, title);
+    }
+
     default Optional<CommonsPage> findByCategoryTitle(String title) {
         return findByNamespaceAndTitle(14, title);
     }

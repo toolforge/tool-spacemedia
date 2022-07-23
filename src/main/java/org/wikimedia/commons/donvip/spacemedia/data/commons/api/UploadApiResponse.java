@@ -6,7 +6,7 @@ public class UploadApiResponse {
 
     private UploadResponse upload;
 
-    private UploadError error;
+    private ApiError error;
 
     @JsonProperty("servedby")
     private String servedBy;
@@ -19,11 +19,11 @@ public class UploadApiResponse {
         this.upload = upload;
     }
 
-    public UploadError getError() {
+    public ApiError getError() {
         return error;
     }
 
-    public void setError(UploadError error) {
+    public void setError(ApiError error) {
         this.error = error;
     }
 

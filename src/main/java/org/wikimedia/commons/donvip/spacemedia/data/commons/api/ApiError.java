@@ -2,11 +2,13 @@ package org.wikimedia.commons.donvip.spacemedia.data.commons.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class UploadError {
+public class ApiError {
 
     private String code;
 
     private String info;
+
+    private AbuseFilter abusefilter;
 
     @JsonProperty("*")
     private String star;
@@ -27,6 +29,14 @@ public class UploadError {
         this.info = info;
     }
 
+    public AbuseFilter getAbusefilter() {
+        return abusefilter;
+    }
+
+    public void setAbusefilter(AbuseFilter abusefilter) {
+        this.abusefilter = abusefilter;
+    }
+
     public String getStar() {
         return star;
     }
@@ -37,9 +47,8 @@ public class UploadError {
 
     @Override
     public String toString() {
-        return "UploadError [" + (code != null ? "code=" + code + ", " : "")
-                + (info != null ? "info=" + info + ", " : "")
-                + (star != null ? "*=" + star : "")
-                + "]";
+        return "ApiError [" + (code != null ? "code=" + code + ", " : "") + (info != null ? "info=" + info + ", " : "")
+                + (abusefilter != null ? "abusefilter=" + abusefilter + ", " : "")
+                + (star != null ? "star=" + star : "") + "]";
     }
 }
