@@ -83,10 +83,14 @@ public class StsciService {
             if (fileUrl.endsWith(".tif") || fileUrl.endsWith(".tiff")) {
                 frMetadata.setAssetUrl(assetUrl);
                 frMetadata.setSize((long) imageFile.getFileSize());
-            } else if ((fileUrl.endsWith(".png") || fileUrl.endsWith(".jpg") || fileUrl.endsWith(".pdf"))
-                    && (metadata.getAssetUrl() == null || metadata.getSize().intValue() < imageFile.getFileSize())) {
-                metadata.setAssetUrl(assetUrl);
-                metadata.setSize((long) imageFile.getFileSize());
+            } else if ((fileUrl.endsWith(".png") || fileUrl.endsWith(".jpg") || fileUrl.endsWith(".pdf"))) {
+                int size = metadata.getSize().intValue();
+                if (metadata.getAssetUrl() == null || size < imageFile.getFileSize()) {
+                    metadata.setAssetUrl(assetUrl);
+                    metadata.setSize((long) imageFile.getFileSize());
+                } else if (size > imageFile.getFileSize() && !fileUrl.endsWith(".pdf")) {
+                    result.setThumbnailUrl(assetUrl);
+                }
             }
         }
         if (frMetadata.getAssetUrl() == null && files.size() > 1) {
