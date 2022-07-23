@@ -266,7 +266,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             for (Element h3 : info.getElementsByTag("h3")) {
                 for (Element title : h3.nextElementSibling().getElementsByClass(getObjectInfoTitleClass())) {
                     Element sibling = title.nextElementSibling();
-                    if (!sibling.tagName().equals(title.tagName())) {
+                    if (!Objects.equals(sibling.tagName(), title.tagName())) {
                         sibling = sibling.nextElementSibling();
                     }
                     String html = sibling.html();
