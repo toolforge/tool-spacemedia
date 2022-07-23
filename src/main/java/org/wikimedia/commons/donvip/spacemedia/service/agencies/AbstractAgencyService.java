@@ -341,11 +341,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final Problem problem(URL problematicUrl, Throwable t) {
-        return problem(problematicUrl, t.getMessage());
+        return problem(problematicUrl, t.toString());
     }
 
     protected final Problem problem(String problematicUrl, Throwable t) throws MalformedURLException {
-        return problem(problematicUrl, t.getMessage());
+        return problem(problematicUrl, t.toString());
     }
 
     protected final Problem problem(String problematicUrl, String errorMessage) throws MalformedURLException {
