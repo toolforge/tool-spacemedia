@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -668,8 +669,7 @@ public class CommonsService {
                     .getElementsByClass("special").first().getElementsByTag("li")) {
                 String title = li.getElementsByTag("a").first().attr("title").substring(5).replace(' ', '_');
                 if (!title.contains("-_DPLA_-")) {
-                    CommonsImage image = imageRepository.findById(title)
-                            .orElseThrow(() -> new IllegalStateException("no image named " + title));
+                    CommonsImage image = findImage(title);
                     if (image.getWidth() > 1 && image.getHeight() > 1
                             && !ignoredDuplicatesSha1.contains(image.getSha1())) {
                         List<CommonsImage> duplicates = imageRepository.findBySha1OrderByTimestamp(image.getSha1());
@@ -700,5 +700,21 @@ public class CommonsService {
                 }
             }
         }
+    }
+
+    private CommonsImage findImage(String title) {
+        Optional<CommonsImage> imageOpt = imageRepository.findById(title);
+        if (imageOpt.isEmpty()) {
+            // Check if it's a redirect
+            String errorMessage = "No image or page named " + title;
+            CommonsPage page = pageRepository.findByFileTitle(title)
+                    .orElseThrow(() -> new IllegalStateException(errorMessage));
+            if (Boolean.TRUE.equals(page.getIsRedirect())) {
+                title = page.getRedirect().getTitle();
+                imageOpt = imageRepository.findById(title);
+            }
+        }
+        String errorMessage = "No image named " + title;
+        return imageOpt.orElseThrow(() -> new IllegalStateException(errorMessage));
     }
 }
