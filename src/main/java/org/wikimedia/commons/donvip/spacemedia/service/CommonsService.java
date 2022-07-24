@@ -5,6 +5,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.SocketTimeoutException;
@@ -33,6 +34,7 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.jsoup.Jsoup;
@@ -44,7 +46,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,9 +78,13 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Tokens;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadApiResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UserInfo;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
+import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -117,6 +125,9 @@ public class CommonsService {
 
     @Autowired
     private CommonsPageRestrictionsRepository restrictionsRepository;
+
+    @Autowired
+    private HashAssociationRepository hashRepository;
 
     @Autowired
     private ObjectMapper jackson;
@@ -729,5 +740,35 @@ public class CommonsService {
         }
         String errorMessage = "No image named " + title;
         return imageOpt.orElseThrow(() -> new IllegalStateException(errorMessage));
+    }
+
+    @Scheduled(fixedRateString = "${commons.hashes.update.rate}", initialDelayString = "${commons.hashes.initial.delay}")
+    public void computeHashesOfAllFiles() {
+        int pageIndex = 0;
+        Page<CommonsImage> page = null;
+        do {
+            page = imageRepository.findByMinorMimeIn(Set.of("gif", "jpeg", "png", "tiff", "webp"),
+                    PageRequest.of(pageIndex++, 500, Sort.Direction.ASC, "timestamp"));
+            for (CommonsImage image : page.getContent()) {
+                if (!hashRepository.existsById(image.getSha1())) {
+                    BufferedImage bi = null;
+                    try {
+                        String md5 = DigestUtils.md5Hex(image.getName());
+                        bi = Utils.readImage(
+                                new URL(String.format("https://upload.wikimedia.org/wikipedia/commons/%c/%s/%s",
+                                        md5.charAt(0), md5.substring(0, 2), image.getName())),
+                                false);
+                        hashRepository.save(new HashAssociation(image.getSha1(),
+                                HashHelper.encode(HashHelper.computePerceptualHash(bi))));
+                    } catch (IOException | URISyntaxException | ImageDecodingException e) {
+                        LOGGER.error("Failed to compute/save hash of {}: {}", image, e.toString());
+                    } finally {
+                        if (bi != null) {
+                            bi.flush();
+                        }
+                    }
+                }
+            }
+        } while (page.hasNext());
     }
 }

@@ -1,10 +1,15 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons;
 
+import java.util.Collection;
 import java.util.List;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface CommonsImageRepository extends CrudRepository<CommonsImage, String> {
+public interface CommonsImageRepository extends PagingAndSortingRepository<CommonsImage, String> {
 
     List<CommonsImage> findBySha1OrderByTimestamp(String sha1);
+
+    Page<CommonsImage> findByMinorMimeIn(Collection<String> minorMimes, Pageable pageable);
 }

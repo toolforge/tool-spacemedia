@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons;
 
+import java.util.Arrays;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,7 +13,7 @@ import javax.persistence.Table;
 /**
  * <a href="https://www.mediawiki.org/wiki/Manual:Image_table">Mediawiki Image
  * table</a>
- * 
+ *
  * <pre>
  * +--------------------+-------------------------------------------------------------------------------------------------------------+------+-----+---------+-------+
  * | Field              | Type                                                                                                        | Null | Key | Default | Extra |
@@ -56,9 +58,9 @@ public class CommonsImage {
     private CommonsMediaType mediaType;
     @Column(name = "img_major_mime", nullable = false)
     @Enumerated(EnumType.STRING)
-    private CommonsMajorMime majorMime; 
+    private CommonsMajorMime majorMime;
     @Column(name = "img_minor_mime", nullable = false, length = 100, columnDefinition = "VARBINARY")
-    private byte[] minorMime;
+    private String minorMime;
     @Column(name = "img_description_id", nullable = false, length = 20, columnDefinition = "BIGINT")
     private long descriptionId;
     @Column(name = "img_actor", nullable = false, length = 20, columnDefinition = "BIGINT")
@@ -118,10 +120,12 @@ public class CommonsImage {
     public void setMajorMime(CommonsMajorMime majorMime) {
         this.majorMime = majorMime;
     }
-    public byte[] getMinorMime() {
+
+    public String getMinorMime() {
         return minorMime;
     }
-    public void setMinorMime(byte[] minorMime) {
+
+    public void setMinorMime(String minorMime) {
         this.minorMime = minorMime;
     }
     public double getDescriptionId() {
@@ -147,5 +151,17 @@ public class CommonsImage {
     }
     public void setSha1(String sha1) {
         this.sha1 = sha1;
+    }
+
+    @Override
+    public String toString() {
+        return "CommonsImage [" + (name != null ? "name=" + name + ", " : "") + "size=" + size + ", width=" + width
+                + ", height=" + height + ", " + (metadata != null ? "metadata=" + metadata + ", " : "") + "bits=" + bits
+                + ", " + (mediaType != null ? "mediaType=" + mediaType + ", " : "")
+                + (majorMime != null ? "majorMime=" + majorMime + ", " : "")
+                + (minorMime != null ? "minorMime=" + minorMime + ", " : "") + "descriptionId="
+                + descriptionId + ", actor=" + actor + ", "
+                + (timestamp != null ? "timestamp=" + Arrays.toString(timestamp) + ", " : "")
+                + (sha1 != null ? "sha1=" + sha1 : "") + "]";
     }
 }
