@@ -58,6 +58,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRestrictionsRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.ApiError;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.EditApiResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
@@ -113,6 +114,9 @@ public class CommonsService {
 
     @Autowired
     private CommonsCategoryLinkRepository categoryLinkRepository;
+
+    @Autowired
+    private CommonsPageRestrictionsRepository restrictionsRepository;
 
     @Autowired
     private ObjectMapper jackson;
@@ -681,7 +685,8 @@ public class CommonsService {
                                 CommonsPage dupePage = pageRepository.findByFileTitle(dupe.getName())
                                         .orElseThrow(() -> new IllegalStateException("No page named " + dupe.getName()));
                                 if (!categoryLinkRepository
-                                        .existsById(new CommonsCategoryLinkId(dupePage, "Duplicate"))) {
+                                        .existsById(new CommonsCategoryLinkId(dupePage, "Duplicate"))
+                                        && !restrictionsRepository.existsByPageAndType(dupePage, "edit")) {
                                     EditApiResponse response = apiHttpPost(
                                             Map.of("action", "edit", "title", "File:" + dupe.getName(), "format",
                                                     "json", "summary",
