@@ -1,5 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,8 +20,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -219,7 +223,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     private UpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
         int count = 0;
-        for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted().collect(Collectors.toList())) {
+        for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted()
+                .collect(toList())) {
             try {
                 count += processDvidsMedia(mediaRepository.findById(new DvidsMediaTypedId(id))
                         .orElseGet(() -> getMediaFromApi(rest, id, unit)));
@@ -327,7 +332,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         } else if (StringUtils.isNotBlank(media.getBranch()) && !"Joint".equals(media.getBranch())) {
             result.append("U.S. ").append(media.getBranch()).append(' ').append(media.getId().getType()).append(" by ");
         }
-        result.append(media.getCredit().stream().map(this::dvidsCreditToString).distinct().collect(Collectors.joining(", ")));
+        result.append(media.getCredit().stream().map(this::dvidsCreditToString).distinct().collect(joining(", ")));
         return result.toString();
     }
 
@@ -373,9 +378,10 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     @Override
     public Set<String> findCategories(DvidsMedia media, boolean includeHidden) {
         Set<String> result = super.findCategories(media, includeHidden);
-        result.addAll(media.getKeywords().stream().map(KEYWORDS_CATS::get)
-                .filter(StringUtils::isNotBlank).flatMap(s -> Arrays.stream(s.split(";")))
-                .collect(Collectors.toSet()));
+        if (CollectionUtils.isNotEmpty(media.getKeywords())) {
+            result.addAll(media.getKeywords().stream().map(KEYWORDS_CATS::get).filter(StringUtils::isNotBlank)
+                    .flatMap(s -> Arrays.stream(s.split(";"))).collect(toSet()));
+        }
         if (includeHidden) {
             result.add("Photographs by Defense Video and Imagery Distribution System");
         }
@@ -477,7 +483,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         if (details && units.size() > 1) {
             stats.setDetails(units.stream()
                     .map(this::getStatistics)
-                    .sorted().collect(Collectors.toList()));
+                    .sorted().collect(toList()));
         }
         return stats;
     }
