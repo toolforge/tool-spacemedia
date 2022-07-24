@@ -40,6 +40,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
@@ -80,6 +82,9 @@ public class MediaService {
 
     @Autowired
     private YouTubeVideoRepository youtubeRepository;
+
+    @Autowired
+    private HashAssociationRepository hashRepository;
 
     @Value("${perceptual.threshold}")
     private double perceptualThreshold;
@@ -378,9 +383,13 @@ public class MediaService {
      * @return {@code true} if media has been updated with computed perceptual hash
      *         and must be persisted
      */
-    public static boolean updatePerceptualHash(Metadata metadata, BufferedImage image) {
+    public boolean updatePerceptualHash(Metadata metadata, BufferedImage image) {
         if (metadata.getPhash() == null && image != null && metadata.getAssetUrl() != null) {
-            metadata.setPerceptualHash(HashHelper.computePerceptualHash(image));
+            String phash = HashHelper.encode(HashHelper.computePerceptualHash(image));
+            metadata.setPhash(phash);
+            if (!hashRepository.existsById(metadata.getSha1())) {
+                hashRepository.save(new HashAssociation(metadata.getSha1(), phash));
+            }
             return true;
         }
         return false;
