@@ -688,7 +688,7 @@ public class CommonsService {
                 String title = li.getElementsByTag("a").first().ownText().replace(' ', '_');
                 if (!title.contains("-_DPLA_-")) {
                     CommonsImage image = findImage(title);
-                    if (image.getWidth() > 1 && image.getHeight() > 1
+                    if (image != null && image.getWidth() > 1 && image.getHeight() > 1
                             && !ignoredDuplicatesSha1.contains(image.getSha1())) {
                         List<CommonsImage> duplicates = imageRepository.findBySha1OrderByTimestamp(image.getSha1());
                         if (duplicates.size() > 1
@@ -730,10 +730,11 @@ public class CommonsService {
         Optional<CommonsImage> imageOpt = imageRepository.findById(title);
         if (imageOpt.isEmpty()) {
             // Check if it's a redirect
-            String errorMessage = "No image or page named " + title;
-            CommonsPage page = pageRepository.findByFileTitle(title)
-                    .orElseThrow(() -> new IllegalStateException(errorMessage));
-            if (Boolean.TRUE.equals(page.getIsRedirect())) {
+            CommonsPage page = pageRepository.findByFileTitle(title).orElse(null);
+            if (page == null) {
+                // Probably already deleted
+                return null;
+            } else if (Boolean.TRUE.equals(page.getIsRedirect())) {
                 title = page.getRedirect().getTitle();
                 imageOpt = imageRepository.findById(title);
             }
