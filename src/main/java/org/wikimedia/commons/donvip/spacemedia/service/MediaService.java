@@ -358,10 +358,10 @@ public class MediaService {
      * @throws IOException        in case of I/O error
      * @throws URISyntaxException if URL cannot be converted to URI
      */
-    public static boolean updateSha1(Metadata metadata, Path localPath)
-            throws IOException, URISyntaxException {
+    public boolean updateSha1(Metadata metadata, Path localPath) throws IOException, URISyntaxException {
         if (metadata.getSha1() == null && (metadata.getAssetUrl() != null || localPath != null)) {
             metadata.setSha1(getSha1(localPath, metadata.getAssetUrl()));
+            updateHashes(metadata.getSha1(), metadata.getPhash());
             return true;
         }
         return false;
@@ -375,6 +375,12 @@ public class MediaService {
         }
     }
 
+    private void updateHashes(String sha1, String phash) {
+        if (sha1 != null && !hashRepository.existsById(sha1)) {
+            hashRepository.save(new HashAssociation(sha1, phash));
+        }
+    }
+
     /**
      * Computes the perceptual hash of an image, if required.
      *
@@ -385,11 +391,8 @@ public class MediaService {
      */
     public boolean updatePerceptualHash(Metadata metadata, BufferedImage image) {
         if (metadata.getPhash() == null && image != null && metadata.getAssetUrl() != null) {
-            String phash = HashHelper.encode(HashHelper.computePerceptualHash(image));
-            metadata.setPhash(phash);
-            if (!hashRepository.existsById(metadata.getSha1())) {
-                hashRepository.save(new HashAssociation(metadata.getSha1(), phash));
-            }
+            metadata.setPhash(HashHelper.encode(HashHelper.computePerceptualHash(image)));
+            updateHashes(metadata.getSha1(), metadata.getPhash());
             return true;
         }
         return false;
