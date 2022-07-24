@@ -674,7 +674,7 @@ public class CommonsService {
         for (int offset = 0; offset < 5000; offset += 500) {
             for (Element li : Jsoup.connect(duplicateUrl.toExternalForm() + "&limit=500&offset=" + offset).get()
                     .getElementsByClass("special").first().getElementsByTag("li")) {
-                String title = li.getElementsByTag("a").first().attr("title").substring(5).replace(' ', '_');
+                String title = li.getElementsByTag("a").first().ownText().replace(' ', '_');
                 if (!title.contains("-_DPLA_-")) {
                     CommonsImage image = findImage(title);
                     if (image.getWidth() > 1 && image.getHeight() > 1
