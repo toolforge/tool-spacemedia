@@ -760,7 +760,7 @@ public class CommonsService {
                                 false);
                         hashRepository.save(new HashAssociation(image.getSha1(),
                                 HashHelper.encode(HashHelper.computePerceptualHash(bi))));
-                    } catch (IOException | URISyntaxException | ImageDecodingException e) {
+                    } catch (IOException | URISyntaxException | ImageDecodingException | IllegalArgumentException e) {
                         LOGGER.error("Failed to compute/save hash of {}: {}", image, e.toString());
                     } finally {
                         if (bi != null) {
