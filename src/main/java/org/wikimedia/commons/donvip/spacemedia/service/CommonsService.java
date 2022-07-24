@@ -666,8 +666,11 @@ public class CommonsService {
         lastUpload = now();
     }
 
-    @Scheduled(fixedDelay = 43200000L, initialDelay = 1000)
+    @Scheduled(fixedRateString = "${commons.duplicates.update.rate}", initialDelayString = "${commons.duplicates.initial.delay}")
     public void checkExactDuplicateFiles() throws IOException {
+        LOGGER.info("Looking for duplicate files in Commons...");
+        LocalDateTime start = LocalDateTime.now();
+        int count = 0;
         for (int offset = 0; offset < 5000; offset += 500) {
             for (Element li : Jsoup.connect(duplicateUrl.toExternalForm() + "&limit=500&offset=" + offset).get()
                     .getElementsByClass("special").first().getElementsByTag("li")) {
@@ -681,28 +684,33 @@ public class CommonsService {
                                 && duplicates.stream().noneMatch(d -> ignoredDuplicatesName.contains(d.getName()))) {
                             CommonsImage olderImage = duplicates.get(0);
                             for (int i = 1; i < duplicates.size(); i++) {
-                                CommonsImage dupe = duplicates.get(i);
-                                CommonsPage dupePage = pageRepository.findByFileTitle(dupe.getName())
-                                        .orElseThrow(() -> new IllegalStateException("No page named " + dupe.getName()));
-                                if (!categoryLinkRepository
-                                        .existsById(new CommonsCategoryLinkId(dupePage, "Duplicate"))
-                                        && !restrictionsRepository.existsByPageAndType(dupePage, "edit")) {
-                                    EditApiResponse response = apiHttpPost(
-                                            Map.of("action", "edit", "title", "File:" + dupe.getName(), "format",
-                                                    "json", "summary",
-                                                    "Duplicate of [[:File:" + olderImage.getName() + "]]",
-                                                    "prependtext", "{{duplicate|" + olderImage.getName() + "}}",
-                                                    "token", token),
-                                            EditApiResponse.class);
-                                    if (response.getEdit() == null || response.getError() != null
-                                            || !"Success".equalsIgnoreCase(response.getEdit().getResult())) {
-                                        throw new IllegalStateException(response.toString());
-                                    }
-                                }
+                                handleDuplicateFile(olderImage, duplicates.get(i));
+                                count++;
                             }
                         }
                     }
                 }
+            }
+        }
+        LOGGER.info("{} duplicate files handled in {}", count, Duration.between(start, LocalDateTime.now()));
+    }
+
+    private void handleDuplicateFile(CommonsImage olderImage, CommonsImage dupe) throws IOException {
+        CommonsPage dupePage = pageRepository.findByFileTitle(dupe.getName())
+                .orElseThrow(() -> new IllegalStateException("No page named " + dupe.getName()));
+        if (!categoryLinkRepository
+                .existsById(new CommonsCategoryLinkId(dupePage, "Duplicate"))
+                && !restrictionsRepository.existsByPageAndType(dupePage, "edit")) {
+            EditApiResponse response = apiHttpPost(
+                    Map.of("action", "edit", "title", "File:" + dupe.getName(), "format",
+                            "json", "summary",
+                            "Duplicate of [[:File:" + olderImage.getName() + "]]",
+                            "prependtext", "{{duplicate|" + olderImage.getName() + "}}",
+                            "token", token),
+                    EditApiResponse.class);
+            if (response.getEdit() == null || response.getError() != null
+                    || !"Success".equalsIgnoreCase(response.getEdit().getResult())) {
+                throw new IllegalStateException(response.toString());
             }
         }
     }
