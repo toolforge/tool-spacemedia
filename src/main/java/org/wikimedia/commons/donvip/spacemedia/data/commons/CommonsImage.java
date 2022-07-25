@@ -1,7 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons;
 
-import java.util.Arrays;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -66,7 +64,7 @@ public class CommonsImage {
     @Column(name = "img_actor", nullable = false, length = 20, columnDefinition = "BIGINT")
     private long actor;
     @Column(name = "img_timestamp", nullable = false, length = 14)
-    private byte[] timestamp;
+    private String timestamp;
     @Column(name = "img_sha1", nullable = false, length = 32, columnDefinition = "VARBINARY")
     private String sha1;
 
@@ -140,10 +138,12 @@ public class CommonsImage {
     public void setActor(long actor) {
         this.actor = actor;
     }
-    public byte[] getTimestamp() {
+
+    public String getTimestamp() {
         return timestamp;
     }
-    public void setTimestamp(byte[] timestamp) {
+
+    public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
     public String getSha1() {
@@ -161,7 +161,7 @@ public class CommonsImage {
                 + (majorMime != null ? "majorMime=" + majorMime + ", " : "")
                 + (minorMime != null ? "minorMime=" + minorMime + ", " : "") + "descriptionId="
                 + descriptionId + ", actor=" + actor + ", "
-                + (timestamp != null ? "timestamp=" + Arrays.toString(timestamp) + ", " : "")
+                + (timestamp != null ? "timestamp=" + timestamp + ", " : "")
                 + (sha1 != null ? "sha1=" + sha1 : "") + "]";
     }
 }

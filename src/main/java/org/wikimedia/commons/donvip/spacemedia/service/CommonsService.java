@@ -80,6 +80,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UserInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeData;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
@@ -99,6 +101,8 @@ import com.github.scribejava.core.oauth.OAuth10aService;
 public class CommonsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonsService.class);
+
+    private static final String COMMONS = "commons";
 
     private static final Pattern EXACT_DUPE_ERROR = Pattern.compile(
             "The upload is an exact duplicate of the current version of \\[\\[:File:(.+)\\]\\]\\.");
@@ -130,6 +134,9 @@ public class CommonsService {
     private HashAssociationRepository hashRepository;
 
     @Autowired
+    protected RuntimeDataRepository runtimeDataRepository;
+
+    @Autowired
     private ObjectMapper jackson;
 
     /**
@@ -159,6 +166,9 @@ public class CommonsService {
 
     @Value("${commons.img.preview.width}")
     private int imgPreviewWidth;
+
+    @Value("${commons.permitted.file.types}")
+    private Set<String> permittedFileTypes;
 
     private final String account;
     private final String userAgent;
@@ -611,9 +621,16 @@ public class CommonsService {
         return filename.replace('/', '-').replace(':', '-').replace('\\', '-').replace('.', '_');
     }
 
+    public boolean isPermittedFileType(String url) {
+        return permittedFileTypes.stream().anyMatch(type -> url.endsWith("." + type));
+    }
+
     private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1,
             boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl)
             throws IOException, UploadException {
+        if (!isPermittedFileType(url.toExternalForm())) {
+            throw new UploadException(url + " does not match any supported file type: " + permittedFileTypes);
+        }
         Map<String, String> params = new HashMap<>(Map.of(
                 "action", "upload",
                 "comment", "#Spacemedia - Upload of " + url + " via [[:Commons:Spacemedia]]",
@@ -748,11 +765,14 @@ public class CommonsService {
         int pageIndex = 0;
         Page<CommonsImage> page = null;
         LOGGER.info("Computing perceptual hashes of files in Commons...");
+        RuntimeData runtime = runtimeDataRepository.findById(COMMONS).orElseGet(() -> new RuntimeData(COMMONS));
         LocalDateTime start = LocalDateTime.now();
         int count = 0;
         do {
-            page = imageRepository.findByMinorMimeIn(Set.of("gif", "jpeg", "png", "tiff", "webp"),
-                    PageRequest.of(pageIndex++, 500, Sort.Direction.ASC, "timestamp"));
+            page = imageRepository.findByMinorMimeInAndTimestampGreaterThanEqual(
+                    Set.of("gif", "jpeg", "png", "tiff", "webp"),
+                    Optional.ofNullable(runtime.getLastTimestamp()).orElse("20010101000000"),
+                    PageRequest.of(pageIndex++, 1000, Sort.Direction.ASC, "timestamp"));
             for (CommonsImage image : page.getContent()) {
                 if (!hashRepository.existsById(image.getSha1())) {
                     BufferedImage bi = null;
@@ -765,10 +785,6 @@ public class CommonsService {
                         hashRepository.save(new HashAssociation(image.getSha1(),
                                 HashHelper.encode(HashHelper.computePerceptualHash(bi))));
                         count++;
-                        if (count % 1000 == 0) {
-                            LOGGER.info("{} perceptual hashes of files in Commons computed in {}", count,
-                                    Duration.between(start, LocalDateTime.now()));
-                        }
                     } catch (IOException | URISyntaxException | ImageDecodingException | IllegalArgumentException e) {
                         LOGGER.error("Failed to compute/save hash of {}: {}", image, e.toString());
                     } finally {
@@ -777,7 +793,11 @@ public class CommonsService {
                         }
                     }
                 }
+                runtime.setLastTimestamp(image.getTimestamp());
+                runtimeDataRepository.save(runtime);
             }
+            LOGGER.info("{} perceptual hashes of files in Commons computed in {} ({} pages)", count,
+                    Duration.between(start, LocalDateTime.now()), pageIndex);
         } while (page.hasNext());
         LOGGER.info("{} perceptual hashes of files in Commons computed in {}", count,
                 Duration.between(start, LocalDateTime.now()));

@@ -26,6 +26,12 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     }
 
     @Override
+    protected final boolean isPermittedFileType(T media) {
+        return commonsService.isPermittedFileType(media.getMetadata().getAssetUrl().toExternalForm())
+                && commonsService.isPermittedFileType(media.getFullResMetadata().getAssetUrl().toExternalForm());
+    }
+
+    @Override
     protected void checkUploadPreconditions(T media, boolean checkUnicity) throws IOException {
         super.checkUploadPreconditions(media, checkUnicity);
         // Forbid upload of duplicate medias for a single repo, they may have different descriptions

@@ -24,6 +24,9 @@ public class RuntimeData {
     @Column(nullable = true)
     private Duration lastUpdateDuration;
 
+    @Column(nullable = false)
+    private String lastTimestamp;
+
     public RuntimeData() {
         // No-arg constructor required by JPA
     }
@@ -64,9 +67,17 @@ public class RuntimeData {
         this.lastUpdateDuration = lastUpdateDuration;
     }
 
+    public String getLastTimestamp() {
+        return lastTimestamp;
+    }
+
+    public void setLastTimestamp(String lastTimestamp) {
+        this.lastTimestamp = lastTimestamp;
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(agencyId, lastUpdateDuration, lastUpdateEnd, lastUpdateStart);
+        return Objects.hash(agencyId, lastUpdateDuration, lastUpdateEnd, lastUpdateStart, lastTimestamp);
     }
 
     @Override
@@ -78,7 +89,8 @@ public class RuntimeData {
         RuntimeData other = (RuntimeData) obj;
         return Objects.equals(agencyId, other.agencyId) && Objects.equals(lastUpdateDuration, other.lastUpdateDuration)
                 && Objects.equals(lastUpdateEnd, other.lastUpdateEnd)
-                && Objects.equals(lastUpdateStart, other.lastUpdateStart);
+                && Objects.equals(lastUpdateStart, other.lastUpdateStart)
+                && Objects.equals(lastTimestamp, other.lastTimestamp);
     }
 
     @Override

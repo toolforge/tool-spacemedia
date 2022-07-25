@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -29,7 +31,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
@@ -285,7 +286,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                             String s = ts.termtext.utf8ToString();
                             return s.length() > 1 && !ignoredCommonTerms.contains(s) && !s.matches("\\d+");
                         })
-                        .collect(Collectors.toList()).subList(0, 500);
+                        .collect(toList()).subList(0, 500);
             } finally {
                 searchFactory.getIndexReaderAccessor().close(indexReader);
             }
@@ -552,7 +553,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                     .map(v -> getOriginalRepository().findById(getOriginalId(v.getOriginalId())))
                     .filter(Optional::isPresent).map(Optional::get)
                     .map(o -> o.getFirstCommonsFileNameOrUploadTitle(o.getCommonsFileNames(), o.getMetadata().getFileExtension()))
-                    .collect(Collectors.joining("\n")));
+                        .collect(joining("\n")));
     }
 
     protected Optional<String> getOtherFields(T media) {
@@ -634,7 +635,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     public final List<DuplicateMedia<OID, OD, OT>> getOriginalMedia(T media) {
         Set<Duplicate> dupes = media.getDuplicates();
         return isEmpty(dupes) ? Collections.emptyList()
-                : dupes.stream().sorted().map(this::mapDuplicateMedia).filter(Objects::nonNull).collect(Collectors.toList());
+                : dupes.stream().sorted().map(this::mapDuplicateMedia).filter(Objects::nonNull).collect(toList());
     }
 
     private DuplicateMedia<OID, OD, OT> mapDuplicateMedia(Duplicate duplicate) {
@@ -694,7 +695,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                     m.setIgnoredReason(null);
                     m.setIgnored(null);
                     return m;
-            }).collect(Collectors.toList())).spliterator(), false).count();
+                }).collect(toList())).spliterator(), false).count();
     }
 
     protected int doResetPerceptualHashes() {
@@ -751,14 +752,19 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return uploadMode;
     }
 
+    protected boolean isPermittedFileType(T media) {
+        return commonsService.isPermittedFileType(media.getMetadata().getAssetUrl().toExternalForm());
+    }
+
     protected final boolean shouldUpload(T media, Set<String> commonsFilenames) {
         return (getUploadMode() == UploadMode.AUTO || getUploadMode() == UploadMode.MANUAL)
-            && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames);
+                && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames) && isPermittedFileType(media);
     }
 
     protected final boolean shouldUploadAuto(T media, Set<String> commonsFilenames) {
         return getUploadMode() == UploadMode.AUTO
-            && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames) && isEmpty(media.getDuplicates());
+                && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames)
+                && isEmpty(media.getDuplicates()) && isPermittedFileType(media);
     }
 
     protected static void addOtherField(StringBuilder sb, String name, Collection<?> values, Map<String, String> catMapping) {
@@ -770,11 +776,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                             if (StringUtils.isNotBlank(cat)) {
                                 return Arrays.stream(cat.split(";"))
                                         .map(c -> "[[:Category:" + c + '|' + s + "]]")
-                                        .collect(Collectors.joining("; "));
+                                        .collect(joining("; "));
                             }
                         }
                         return s;
-                    }).collect(Collectors.joining("; ")));
+                    }).collect(joining("; ")));
         }
     }
 

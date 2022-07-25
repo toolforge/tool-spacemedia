@@ -11,5 +11,6 @@ public interface CommonsImageRepository extends PagingAndSortingRepository<Commo
 
     List<CommonsImage> findBySha1OrderByTimestamp(String sha1);
 
-    Page<CommonsImage> findByMinorMimeIn(Collection<String> minorMimes, Pageable pageable);
+    Page<CommonsImage> findByMinorMimeInAndTimestampGreaterThanEqual(Collection<String> minorMimes, String timestamp,
+            Pageable pageable);
 }
