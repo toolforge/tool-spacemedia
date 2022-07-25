@@ -747,6 +747,9 @@ public class CommonsService {
     public void computeHashesOfAllFiles() {
         int pageIndex = 0;
         Page<CommonsImage> page = null;
+        LOGGER.info("Computing perceptual hashes of files in Commons...");
+        LocalDateTime start = LocalDateTime.now();
+        int count = 0;
         do {
             page = imageRepository.findByMinorMimeIn(Set.of("gif", "jpeg", "png", "tiff", "webp"),
                     PageRequest.of(pageIndex++, 500, Sort.Direction.ASC, "timestamp"));
@@ -761,6 +764,11 @@ public class CommonsService {
                                 false);
                         hashRepository.save(new HashAssociation(image.getSha1(),
                                 HashHelper.encode(HashHelper.computePerceptualHash(bi))));
+                        count++;
+                        if (count % 1000 == 0) {
+                            LOGGER.info("{} perceptual hashes of files in Commons computed in {}", count,
+                                    Duration.between(start, LocalDateTime.now()));
+                        }
                     } catch (IOException | URISyntaxException | ImageDecodingException | IllegalArgumentException e) {
                         LOGGER.error("Failed to compute/save hash of {}: {}", image, e.toString());
                     } finally {
@@ -771,5 +779,7 @@ public class CommonsService {
                 }
             }
         } while (page.hasNext());
+        LOGGER.info("{} perceptual hashes of files in Commons computed in {}", count,
+                Duration.between(start, LocalDateTime.now()));
     }
 }
