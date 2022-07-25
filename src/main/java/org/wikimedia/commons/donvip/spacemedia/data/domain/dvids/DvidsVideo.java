@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -33,7 +34,7 @@ public class DvidsVideo extends DvidsMedia {
      * List of mp4 files associated with asset
      */
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<DvidsVideoFile> files;
+    private Set<DvidsVideoFile> files = new HashSet<>();
 
     /**
      * Url to master m3u8 playlist for asset if video has been encoded for HLS playback

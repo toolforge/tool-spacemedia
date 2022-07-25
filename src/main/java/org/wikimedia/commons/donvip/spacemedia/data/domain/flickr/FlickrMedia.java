@@ -58,7 +58,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     private int dateTakenGranularity;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> tags;
+    private Set<String> tags = new HashSet<>();
 
     @JsonProperty("originalformat")
     private String originalFormat;

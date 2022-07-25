@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.stsci;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
@@ -55,7 +56,7 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
     private String mission;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> keywords;
+    private Set<String> keywords = new HashSet<>();
 
     @Override
     public String getId() {

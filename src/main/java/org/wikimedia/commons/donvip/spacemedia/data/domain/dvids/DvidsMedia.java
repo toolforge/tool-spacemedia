@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -64,7 +65,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     @ElementCollection(fetch = FetchType.EAGER)
     @JsonDeserialize(converter = DvidsStringSetConverter.class)
     @JsonSerialize(converter = DvidsSetStringConverter.class)
-    private Set<String> keywords;
+    private Set<String> keywords = new HashSet<>();
 
     /**
      * Name of branch that produced this asset.

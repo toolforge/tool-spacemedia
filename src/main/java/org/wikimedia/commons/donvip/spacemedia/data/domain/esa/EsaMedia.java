@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.esa;
 
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -38,11 +39,11 @@ public class EsaMedia extends FullResMedia<Integer, LocalDateTime> {
     @Column(length = 50)
     private String action;
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> systems;
+    private Set<String> systems = new HashSet<>();
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> locations;
+    private Set<String> locations = new HashSet<>();
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> keywords;
+    private Set<String> keywords = new HashSet<>();
     @Column(length = 80)
     private String photoSet;
 

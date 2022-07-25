@@ -58,7 +58,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     protected String description;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    protected Set<String> commonsFileNames;
+    protected Set<String> commonsFileNames = new HashSet<>();
 
     @Column(nullable = true)
     protected Boolean ignored;
@@ -72,14 +72,14 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      */
     @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
-    protected Set<Duplicate> duplicates;
+    protected Set<Duplicate> duplicates = new HashSet<>();
 
     /**
      * Variants are other media considered similar but not identical, thus not ignored and to be uploaded and linked to this media.
      */
     @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
-    protected Set<Duplicate> variants;
+    protected Set<Duplicate> variants = new HashSet<>();
 
     @Column(nullable = true)
     protected LocalDateTime lastUpdate;

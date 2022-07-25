@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs;
 
 import java.time.LocalDate;
 import java.time.Year;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -39,7 +40,7 @@ public class NasaSirsImage extends Media<String, LocalDate> {
 
     @Column(length = 340)
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> keywords;
+    private Set<String> keywords = new HashSet<>();
 
     @Override
     public String getId() {

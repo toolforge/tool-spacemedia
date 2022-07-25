@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.eso;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -30,11 +31,11 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
 
     @Column(nullable = true, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> relatedAnnouncements;
+    private Set<String> relatedAnnouncements = new HashSet<>();
 
     @Column(nullable = true, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> relatedReleases;
+    private Set<String> relatedReleases = new HashSet<>();
 
     private int width;
     private int height;
@@ -62,15 +63,15 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
 
     @Column(nullable = true, length = 63)
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> telescopes;
+    private Set<String> telescopes = new HashSet<>();
 
     @Column(nullable = false, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> types;
+    private Set<String> types = new HashSet<>();
 
     @Column(nullable = false, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> categories;
+    private Set<String> categories = new HashSet<>();
 
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")

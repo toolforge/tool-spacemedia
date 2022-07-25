@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import java.time.temporal.Temporal;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +39,7 @@ public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> 
     protected Metadata fullResMetadata = new Metadata();
 
     @ElementCollection(fetch = FetchType.EAGER)
-    protected Set<String> fullResCommonsFileNames;
+    protected Set<String> fullResCommonsFileNames = new HashSet<>();
 
     @Override
     @PostLoad

@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa;
 
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -50,7 +51,7 @@ public abstract class NasaMedia extends Media<String, ZonedDateTime> {
 
     @Column(length = 340)
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> keywords;
+    private Set<String> keywords = new HashSet<>();
 
     @Override
     public String getId() {
