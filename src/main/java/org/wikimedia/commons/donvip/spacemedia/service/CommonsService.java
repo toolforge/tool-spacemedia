@@ -100,6 +100,8 @@ import com.github.scribejava.core.oauth.OAuth10aService;
 @Service
 public class CommonsService {
 
+    private static final String DUPLICATE = "Duplicate";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonsService.class);
 
     private static final String COMMONS = "commons";
@@ -154,6 +156,9 @@ public class CommonsService {
 
     @Value("${commons.duplicate.url}")
     private URL duplicateUrl;
+
+    @Value("${commons.duplicates.max.files}")
+    private long duplicateMaxFiles;
 
     @Value("${commons.ignored.duplicates.sha1}")
     private Set<String> ignoredDuplicatesSha1;
@@ -698,6 +703,12 @@ public class CommonsService {
     public void checkExactDuplicateFiles() throws IOException {
         LOGGER.info("Looking for duplicate files in Commons...");
         LocalDateTime start = LocalDateTime.now();
+        long currentDupes = categoryLinkRepository.countByTypeAndIdTo(CommonsCategoryLinkType.file, DUPLICATE);
+        LOGGER.info("There are currently {} duplicate files identified as such in Commons", currentDupes);
+        if (currentDupes >= duplicateMaxFiles) {
+            LOGGER.warn("Too much backlog, skipping");
+            return;
+        }
         int count = 0;
         for (int offset = 0; offset < 5000; offset += 500) {
             for (Element li : Jsoup.connect(duplicateUrl.toExternalForm() + "&limit=500&offset=" + offset).get()
@@ -727,8 +738,10 @@ public class CommonsService {
         CommonsPage dupePage = pageRepository.findByFileTitle(dupe.getName())
                 .orElseThrow(() -> new IllegalStateException("No page named " + dupe.getName()));
         if (!categoryLinkRepository
-                .existsById(new CommonsCategoryLinkId(dupePage, "Duplicate"))
-                && !restrictionsRepository.existsByPageAndType(dupePage, "edit")) {
+                .existsById(new CommonsCategoryLinkId(dupePage, DUPLICATE))
+                && !restrictionsRepository.existsByPageAndType(dupePage, "edit")
+                && categoryLinkRepository.countByTypeAndIdTo(CommonsCategoryLinkType.file,
+                        DUPLICATE) < duplicateMaxFiles) {
             EditApiResponse response = apiHttpPost(
                     Map.of("action", "edit", "title", "File:" + dupe.getName(), "format",
                             "json", "summary",
