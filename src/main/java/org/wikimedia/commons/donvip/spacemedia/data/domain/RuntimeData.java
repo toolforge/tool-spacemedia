@@ -24,7 +24,7 @@ public class RuntimeData {
     @Column(nullable = true)
     private Duration lastUpdateDuration;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String lastTimestamp;
 
     public RuntimeData() {
