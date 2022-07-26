@@ -27,8 +27,7 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
 
     @Override
     protected final boolean isPermittedFileType(T media) {
-        return commonsService.isPermittedFileType(media.getMetadata().getAssetUrl().toExternalForm())
-                && commonsService.isPermittedFileType(media.getFullResMetadata().getAssetUrl().toExternalForm());
+        return isPermittedFileType(media.getMetadata()) && isPermittedFileType(media.getFullResMetadata());
     }
 
     @Override

@@ -752,8 +752,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return uploadMode;
     }
 
+    protected final boolean isPermittedFileType(Metadata metadata) {
+        return metadata.getAssetUrl() == null
+                || commonsService.isPermittedFileType(metadata.getAssetUrl().toExternalForm());
+    }
+
     protected boolean isPermittedFileType(T media) {
-        return commonsService.isPermittedFileType(media.getMetadata().getAssetUrl().toExternalForm());
+        return isPermittedFileType(media.getMetadata());
     }
 
     protected final boolean shouldUpload(T media, Set<String> commonsFilenames) {
