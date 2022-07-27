@@ -746,7 +746,7 @@ public class CommonsService {
                     Map.of("action", "edit", "title", "File:" + dupe.getName(), "format",
                             "json", "summary",
                             "Duplicate of [[:File:" + olderImage.getName() + "]]",
-                            "prependtext", "{{duplicate|" + olderImage.getName() + "}}",
+                            "prependtext", "{{duplicate|" + olderImage.getName() + "}}\n",
                             "token", token),
                     EditApiResponse.class);
             if (response.getEdit() == null || response.getError() != null
