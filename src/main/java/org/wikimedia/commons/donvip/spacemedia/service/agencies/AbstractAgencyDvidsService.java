@@ -130,7 +130,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     private final Set<String> units;
 
-    public AbstractAgencyDvidsService(DvidsMediaRepository<DvidsMedia> repository, String id, Set<String> units, int minYear) {
+    protected AbstractAgencyDvidsService(DvidsMediaRepository<DvidsMedia> repository, String id, Set<String> units, int minYear) {
         super(repository, id);
         this.units = units;
         this.minYear = minYear;
@@ -275,7 +275,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             variables.put("to_date", year + "-12-31T23:59:59Z");
             response = rest.getForObject(searchYearApiEndpoint.expand(variables), ApiSearchResponse.class);
         }
-        if (response.getErrors() != null) {
+        if (response == null || response.getErrors() != null) {
             throw new ApiException(
                     String.format("API error while fetching DVIDS %ss from unit '%s': %s", type, unit, response));
         }
