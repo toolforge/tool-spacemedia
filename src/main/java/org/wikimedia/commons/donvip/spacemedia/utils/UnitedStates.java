@@ -95,6 +95,8 @@ public final class UnitedStates {
                 return new VirinTemplates(virinTemplate(virin, "Executive Office of the President", url), "PD-USGov-POTUS");
             case "S":
                 return new VirinTemplates(virinTemplate(virin, "Department of State", url), "PD-USGov-DOS");
+            case "X":
+                return new VirinTemplates(virinTemplate(virin, "Space Force", url), "PD-USGov-Military-Space Force");
             case "Z":
                 return new VirinTemplates(virinTemplate(virin, "National Guard", url), "PD-USGov-Military-National Guard");
             default:
