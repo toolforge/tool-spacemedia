@@ -36,6 +36,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLice
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.FlickrMediaProcessorService;
@@ -56,6 +57,8 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
 
     @Autowired
     protected FlickrMediaRepository flickrRepository;
+    @Autowired
+    protected FlickrPhotoSetRepository photosetRepository;
     @Autowired
     protected FlickrService flickrService;
     @Autowired
@@ -327,6 +330,11 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                         String id = m.group(1);
                         LOGGER.warn("Flickr image {} has been deleted for account '{}'", id, flickrAccount);
                         flickrRepository.findById(Long.valueOf(id)).ifPresent(media -> {
+                            media.getPhotosets().forEach(ps -> {
+                                if (ps.getMembers().remove(media)) {
+                                    photosetRepository.save(ps);
+                                }
+                            });
                             media.getPhotosets().clear();
                             flickrRepository.delete(flickrRepository.save(media));
                         });
