@@ -68,6 +68,10 @@ public final class HashHelper {
         return ALGORITHM.hash(image).getHashValue();
     }
 
+    public static double similarityScore(String phash1, String phash2) {
+        return similarityScore(decode(phash1), decode(phash2));
+    }
+
     public static double similarityScore(BigInteger phash1, String phash2) {
         return similarityScore(phash1, decode(phash2));
     }
