@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -21,7 +22,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -144,7 +144,7 @@ public class MediaService {
                 .filter(m -> !m.getId().equals(media.getId()))
                 .map(m -> new DuplicateHolder(m, HashHelper.similarityScore(perceptualHash, m.getMetadata().getPhash())))
                 .filter(h -> h.similarityScore < perceptualThreshold)
-                .collect(Collectors.toSet()))) {
+                .collect(toSet()))) {
             result = true;
         }
         return result;
@@ -211,7 +211,7 @@ public class MediaService {
         return handleDuplicatesAndVariants(media, exactDuplicates.stream()
                 .filter(x -> !Objects.equals(x.getId(), media.getId()))
                 .map(d -> new DuplicateHolder(new DuplicateIdMediaProjection(d.getId()), 0d))
-                .collect(Collectors.toSet()));
+                .collect(toSet()));
     }
 
     /**
@@ -226,7 +226,7 @@ public class MediaService {
         // Duplicates are media with a low similarity score. Usually exact duplicates with small variations in resolution
         Set<Duplicate> duplicates = duplicateHolders.stream()
                 .filter(h -> !media.considerVariants() || h.similarityScore < perceptualThresholdVariant)
-                .map(DuplicateHolder::toDuplicate).collect(Collectors.toSet());
+                .map(DuplicateHolder::toDuplicate).collect(toSet());
         if (isNewDuplicateOrVariant(media, duplicateHolders, duplicates, MediaProjection::getDuplicates)) {
             if (CollectionUtils.isEmpty(media.getAllCommonsFileNames())) {
                 media.setIgnored(true);
@@ -238,7 +238,7 @@ public class MediaService {
         // Variants are media with an higher similarity score. Usually same shapes with different colors
         Set<Duplicate> variants = duplicateHolders.stream()
                 .filter(h -> media.considerVariants() && h.similarityScore >= perceptualThresholdVariant)
-                .map(DuplicateHolder::toDuplicate).collect(Collectors.toSet());
+                .map(DuplicateHolder::toDuplicate).collect(toSet());
         if (isNewDuplicateOrVariant(media, duplicateHolders, variants, MediaProjection::getVariants)) {
             variants.forEach(media::addVariant);
             result = true;

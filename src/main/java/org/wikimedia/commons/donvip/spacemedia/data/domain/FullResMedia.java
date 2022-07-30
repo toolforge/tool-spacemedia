@@ -1,5 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import java.time.temporal.Temporal;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -16,9 +19,6 @@ import javax.persistence.Embedded;
 import javax.persistence.FetchType;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PostLoad;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Media that can have an optional full-res variant of the main media (ex: big TIFF file).
@@ -86,7 +86,7 @@ public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> 
     public List<String> getAssetsToUpload() {
         List<String> result = super.getAssetsToUpload();
         String fullResSha1 = fullResMetadata.getSha1();
-        if (StringUtils.isNotBlank(fullResSha1) && CollectionUtils.isEmpty(getFullResCommonsFileNames())) {
+        if (isNotBlank(fullResSha1) && isEmpty(getFullResCommonsFileNames())) {
             result.add(fullResSha1);
         }
         return result;

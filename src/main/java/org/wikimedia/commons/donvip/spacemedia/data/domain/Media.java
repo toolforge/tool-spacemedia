@@ -1,5 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -22,8 +25,6 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.PostLoad;
 import javax.persistence.Transient;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
@@ -243,7 +244,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     public List<String> getAssetsToUpload() {
         List<String> result = new ArrayList<>();
         String sha1 = metadata.getSha1();
-        if (StringUtils.isNotBlank(sha1) && CollectionUtils.isEmpty(getCommonsFileNames())) {
+        if (isNotBlank(sha1) && isEmpty(getCommonsFileNames())) {
             result.add(sha1);
         }
         return result;
@@ -304,6 +305,6 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return either the first file name found in Commons database, or the upload title followed by the given extension
      */
     public final String getFirstCommonsFileNameOrUploadTitle(Set<String> commonsFileNames, String ext) {
-        return CollectionUtils.isEmpty(commonsFileNames) ? getUploadTitle() + '.' + ext : commonsFileNames.iterator().next();
+        return isEmpty(commonsFileNames) ? getUploadTitle() + '.' + ext : commonsFileNames.iterator().next();
     }
 }

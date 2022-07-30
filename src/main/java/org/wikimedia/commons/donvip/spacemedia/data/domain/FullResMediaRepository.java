@@ -38,15 +38,15 @@ public interface FullResMediaRepository<T extends FullResMedia<ID, D>, ID, D ext
     List<T> findByMetadata_Sha1OrFullResMetadata_Sha1(String sha1, String fullResSha1);
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.duplicates) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
     List<T> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.duplicates) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
     Page<T> findMissingInCommons(Pageable page);
 
     @Override
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.duplicates) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
     long countMissingInCommons();
 
     @Override
