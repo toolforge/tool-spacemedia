@@ -723,8 +723,7 @@ public class CommonsService {
                                 && duplicates.stream().noneMatch(d -> ignoredDuplicatesName.contains(d.getName()))) {
                             CommonsImage olderImage = duplicates.get(0);
                             for (int i = 1; i < duplicates.size(); i++) {
-                                handleDuplicateFile(olderImage, duplicates.get(i));
-                                count++;
+                                count += handleDuplicateFile(olderImage, duplicates.get(i), count);
                             }
                         }
                     }
@@ -734,12 +733,14 @@ public class CommonsService {
         LOGGER.info("{} duplicate files handled in {}", count, Duration.between(start, LocalDateTime.now()));
     }
 
-    private void handleDuplicateFile(CommonsImage olderImage, CommonsImage dupe) throws IOException {
+    private int handleDuplicateFile(CommonsImage olderImage, CommonsImage dupe, int count) throws IOException {
+        int result = 0;
         CommonsPage dupePage = pageRepository.findByFileTitle(dupe.getName())
                 .orElseThrow(() -> new IllegalStateException("No page named " + dupe.getName()));
         if (!categoryLinkRepository
                 .existsById(new CommonsCategoryLinkId(dupePage, DUPLICATE))
                 && !restrictionsRepository.existsByPageAndType(dupePage, "edit")
+                && count < duplicateMaxFiles
                 && categoryLinkRepository.countByTypeAndIdTo(CommonsCategoryLinkType.file,
                         DUPLICATE) < duplicateMaxFiles) {
             EditApiResponse response = apiHttpPost(
@@ -749,11 +750,13 @@ public class CommonsService {
                             "prependtext", "{{duplicate|" + olderImage.getName() + "}}\n",
                             "token", token),
                     EditApiResponse.class);
+            result = 1;
             if (response.getEdit() == null || response.getError() != null
                     || !"Success".equalsIgnoreCase(response.getEdit().getResult())) {
                 throw new IllegalStateException(response.toString());
             }
         }
+        return result;
     }
 
     private CommonsImage findImage(String title) {
