@@ -12,7 +12,7 @@ import javax.persistence.ManyToOne;
 /**
  * <a href="https://www.mediawiki.org/wiki/Manual:Categorylinks_table">ID for
  * Mediawiki Category Links table</a>
- * 
+ *
  * <pre>
  * +---------+------------------+------+-----+---------+-------+
  * | Field   | Type             | Null | Key | Default | Extra |

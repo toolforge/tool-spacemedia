@@ -166,6 +166,9 @@ public class CommonsService {
     @Value("${commons.ignored.duplicates.name}")
     private Set<String> ignoredDuplicatesName;
 
+    @Value("${commons.ignored.duplicates.cats}")
+    private Set<String> ignoredDuplicatesCategories;
+
     @Value("${commons.cat.search.depth}")
     private int catSearchDepth;
 
@@ -720,7 +723,9 @@ public class CommonsService {
                             && !ignoredDuplicatesSha1.contains(image.getSha1())) {
                         List<CommonsImage> duplicates = imageRepository.findBySha1OrderByTimestamp(image.getSha1());
                         if (duplicates.size() > 1
-                                && duplicates.stream().noneMatch(d -> ignoredDuplicatesName.contains(d.getName()))) {
+                                && duplicates.stream().noneMatch(
+                                        d -> ignoredDuplicatesName.contains(d.getName())
+                                                || self.isInIgnoredCategory(d))) {
                             CommonsImage olderImage = duplicates.get(0);
                             for (int i = 1; i < duplicates.size(); i++) {
                                 count += handleDuplicateFile(olderImage, duplicates.get(i), count);
@@ -731,6 +736,15 @@ public class CommonsService {
             }
         }
         LOGGER.info("{} duplicate files handled in {}", count, Duration.between(start, LocalDateTime.now()));
+    }
+
+    @Transactional(transactionManager = "commonsTransactionManager")
+    public boolean isInIgnoredCategory(CommonsImage d) {
+        return categoryLinkRepository
+                .findByIdFrom(pageRepository.findByFileTitle(d.getName())
+                        .orElseThrow(() -> new IllegalStateException("No page named " + d.getName())))
+                .stream()
+                .anyMatch(c -> ignoredDuplicatesCategories.stream().anyMatch(x -> c.getId().getTo().startsWith(x)));
     }
 
     private int handleDuplicateFile(CommonsImage olderImage, CommonsImage dupe, int count) throws IOException {
