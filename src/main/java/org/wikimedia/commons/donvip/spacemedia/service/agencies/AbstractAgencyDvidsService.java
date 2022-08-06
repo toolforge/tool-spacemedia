@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -21,7 +22,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +39,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudioRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsCredit;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsCreditRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsGraphic;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsGraphicRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImage;
@@ -110,6 +111,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     @Autowired
     private DvidsMediaRepository<DvidsMedia> mediaRepository;
+
+    @Autowired
+    private DvidsCreditRepository creditRepository;
 
     @Value("${dvids.api.key}")
     private String apiKey;
@@ -306,6 +310,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             save = true;
         }
         if (save) {
+            if (isNotEmpty(media.getCredit())) {
+                creditRepository.saveAll(media.getCredit());
+            }
             save(media);
         }
         return 1;
@@ -378,7 +385,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     @Override
     public Set<String> findCategories(DvidsMedia media, boolean includeHidden) {
         Set<String> result = super.findCategories(media, includeHidden);
-        if (CollectionUtils.isNotEmpty(media.getKeywords())) {
+        if (isNotEmpty(media.getKeywords())) {
             result.addAll(media.getKeywords().stream().map(KEYWORDS_CATS::get).filter(StringUtils::isNotBlank)
                     .flatMap(s -> Arrays.stream(s.split(";"))).collect(toSet()));
         }
