@@ -29,6 +29,9 @@
 		          <a th:href="${agency.getSourceUrl(media)}">
 		            <img th:src="${media.PreviewUrl}" width="210px" />
 		          </a>
+                  <a th:href="@{/{id}/rest/refreshmedia/{mid}(id=${agency.id},mid=${media.id})}" target="_blank">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.id}" th:src="@{/Gtk-refresh.svg}">
+                  </a>
                   <a th:href="@{/{id}/rest/uploadmedia/{mid}(id=${agency.id},mid=${media.id})}" target="_blank" th:if="${agency.uploadEnabled}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.id}" th:src="@{/Wlm-icon-upload-black.svg}">
                   </a>

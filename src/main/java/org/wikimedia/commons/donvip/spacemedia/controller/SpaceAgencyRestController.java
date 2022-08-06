@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
@@ -39,7 +40,7 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
 
     protected final Agency<T, ID, D> service;
 
-    public SpaceAgencyRestController(AbstractAgencyService<T, ID, D, ?, ?, ?> service) {
+    protected SpaceAgencyRestController(AbstractAgencyService<T, ID, D, ?, ?, ?> service) {
         this.service = Objects.requireNonNull(service);
     }
 
@@ -96,6 +97,11 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
     @GetMapping("/uploadmedia/{id}")
     public final T uploadMedia(@PathVariable String id) throws UploadException, TooManyResultsException {
         return service.uploadAndSaveById(id);
+    }
+
+    @GetMapping("/refreshmedia/{id}")
+    public final T refreshMedia(@PathVariable String id) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveById(id);
     }
 
     @GetMapping("/wiki/{sha1}")

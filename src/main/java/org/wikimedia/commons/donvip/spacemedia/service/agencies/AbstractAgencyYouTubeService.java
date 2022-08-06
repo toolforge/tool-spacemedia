@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -22,7 +23,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -124,13 +124,17 @@ public abstract class AbstractAgencyYouTubeService
         return searchList.getItems().stream()
                 .map(sr -> toYouTubeVideo(
                         videoList.getItems().stream().filter(v -> sr.getId().getVideoId().equals(v.getId())).findFirst().get()))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private static YouTubeVideo toYouTubeVideo(Video ytVideo) {
         YouTubeVideo video = new YouTubeVideo();
         video.setId(ytVideo.getId());
         video.getMetadata().setAssetUrl(newURL("https://www.youtube.com/watch?v=" + video.getId()));
+        return fillVideoSnippetAndDetails(video, ytVideo);
+    }
+
+    private static YouTubeVideo fillVideoSnippetAndDetails(YouTubeVideo video, Video ytVideo) {
         VideoSnippet snippet = ytVideo.getSnippet();
         ofNullable(snippet.getChannelId()).ifPresent(video::setChannelId);
         ofNullable(snippet.getChannelTitle()).ifPresent(video::setChannelTitle);
@@ -180,7 +184,7 @@ public abstract class AbstractAgencyYouTubeService
             save = true;
         }
         Path path = video.getMetadata().getSha1() == null ? downloadVideo(video) : null;
-        if (mediaService.updateMedia(video, getOriginalRepository(), path)) {
+        if (mediaService.updateMedia(video, getOriginalRepository(), false, path)) {
             save = true;
         }
         if (path != null) {
@@ -220,6 +224,11 @@ public abstract class AbstractAgencyYouTubeService
                 + "<h4>Title:</h4>\n"
                 + commonsService.normalizeFilename(video.getUploadTitle())
                 + "\n<h4>Wikicode:</h4>\n<pre>" + getWikiCode(video, video.getMetadata()) + "</pre>");
+    }
+
+    @Override
+    protected final YouTubeVideo refresh(YouTubeVideo video) throws IOException {
+        return fillVideoSnippetAndDetails(video, youtubeService.getVideo(video.getId()));
     }
 
     protected boolean customProcessing(YouTubeVideo video) {

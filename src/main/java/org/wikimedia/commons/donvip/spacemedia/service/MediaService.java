@@ -95,18 +95,18 @@ public class MediaService {
     @Value("${update.fullres.images}")
     private boolean updateFullResImages;
 
-    public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo)
-            throws IOException {
-        return updateMedia(media, originalRepo, null);
+    public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
+            boolean forceUpdate) throws IOException {
+        return updateMedia(media, originalRepo, forceUpdate, null);
     }
 
-    public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Path localPath)
-            throws IOException {
+    public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
+            boolean forceUpdate, Path localPath) throws IOException {
         boolean result = false;
         if (cleanupDescription(media)) {
             result = true;
         }
-        if (updateReadableStateAndHashes(media, localPath)) {
+        if (updateReadableStateAndHashes(media, localPath, forceUpdate)) {
             result = true;
         }
         if (findCommonsFilesWithSha1(media)) {
@@ -265,25 +265,26 @@ public class MediaService {
                         d -> d.getOriginalId().equals(media.getId())));
     }
 
-    public boolean updateReadableStateAndHashes(Media<?, ?> media, Path localPath) {
-        boolean result = updateReadableStateAndHashes(media, media.getMetadata(), localPath);
+    public boolean updateReadableStateAndHashes(Media<?, ?> media, Path localPath, boolean forceUpdateOfHashes) {
+        boolean result = updateReadableStateAndHashes(media, media.getMetadata(), localPath, forceUpdateOfHashes);
         // T230284 - Processing full-res images can lead to OOM errors
         if (updateFullResImages && media instanceof FullResMedia<?, ?>) {
             FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
-            if (updateReadableStateAndHashes(frMedia, frMedia.getFullResMetadata(), localPath)) {
+            if (updateReadableStateAndHashes(frMedia, frMedia.getFullResMetadata(), localPath, forceUpdateOfHashes)) {
                 result = true;
             }
         }
         return result;
     }
 
-    private boolean updateReadableStateAndHashes(Media<?, ?> media, Metadata metadata, Path localPath) {
+    private boolean updateReadableStateAndHashes(Media<?, ?> media, Metadata metadata, Path localPath,
+            boolean forceUpdateOfHashes) {
         boolean isImage = media.isImage();
         boolean result = false;
         BufferedImage bi = null;
         try {
             URL assetUrl = metadata.getAssetUrl();
-            if (isImage && shouldReadImage(assetUrl, metadata)) {
+            if (isImage && shouldReadImage(assetUrl, metadata, forceUpdateOfHashes)) {
                 try {
                     bi = Utils.readImage(assetUrl, false);
                     if (bi != null && !Boolean.TRUE.equals(metadata.isReadableImage())) {
@@ -295,14 +296,15 @@ public class MediaService {
                     metadata.setReadableImage(Boolean.FALSE);
                 }
             }
-            if (isImage && Boolean.TRUE.equals(metadata.isReadableImage()) && updatePerceptualHash(metadata, bi)) {
+            if (isImage && Boolean.TRUE.equals(metadata.isReadableImage())
+                    && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
                 result = true;
             }
             if (bi != null) {
                 bi.flush();
                 bi = null;
             }
-            if (updateSha1(metadata, localPath)) {
+            if (updateSha1(metadata, localPath, forceUpdateOfHashes)) {
                 result = true;
             }
         } catch (RestClientException e) {
@@ -317,10 +319,10 @@ public class MediaService {
         return result;
     }
 
-    private static boolean shouldReadImage(URL assetUrl, Metadata metadata) {
+    private static boolean shouldReadImage(URL assetUrl, Metadata metadata, boolean forceUpdateOfHashes) {
         return assetUrl != null
                 && (metadata.isReadableImage() == null || (Boolean.TRUE.equals(metadata.isReadableImage())
-                        && (metadata.getPhash() == null || metadata.getSha1() == null)));
+                        && (metadata.getPhash() == null || metadata.getSha1() == null || forceUpdateOfHashes)));
     }
 
     private static boolean ignoreMedia(Media<?, ?> media, String reason, Exception e) {
@@ -354,12 +356,14 @@ public class MediaService {
      *
      * @param metadata media object metadata
      * @param localPath if set, use it instead of asset URL
+     * @param forceUpdate {@code true} to force update of an existing hash
      * @return {@code true} if media has been updated with computed SHA-1 and must be persisted
      * @throws IOException        in case of I/O error
      * @throws URISyntaxException if URL cannot be converted to URI
      */
-    public boolean updateSha1(Metadata metadata, Path localPath) throws IOException, URISyntaxException {
-        if (metadata.getSha1() == null && (metadata.getAssetUrl() != null || localPath != null)) {
+    public boolean updateSha1(Metadata metadata, Path localPath, boolean forceUpdate)
+            throws IOException, URISyntaxException {
+        if ((metadata.getSha1() == null || forceUpdate) && (metadata.getAssetUrl() != null || localPath != null)) {
             metadata.setSha1(getSha1(localPath, metadata.getAssetUrl()));
             updateHashes(metadata.getSha1(), metadata.getPhash());
             return true;
@@ -386,11 +390,12 @@ public class MediaService {
      *
      * @param metadata  image media metadata
      * @param image     {@code BufferedImage} of asset, can be null if not computed
+     * @param forceUpdate {@code true} to force update of an existing hash
      * @return {@code true} if media has been updated with computed perceptual hash
      *         and must be persisted
      */
-    public boolean updatePerceptualHash(Metadata metadata, BufferedImage image) {
-        if (metadata.getPhash() == null && image != null && metadata.getAssetUrl() != null) {
+    public boolean updatePerceptualHash(Metadata metadata, BufferedImage image, boolean forceUpdate) {
+        if (image != null && metadata.getAssetUrl() != null && (metadata.getPhash() == null || forceUpdate)) {
             metadata.setPhash(HashHelper.encode(HashHelper.computePerceptualHash(image)));
             updateHashes(metadata.getSha1(), metadata.getPhash());
             return true;

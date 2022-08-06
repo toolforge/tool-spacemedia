@@ -238,4 +238,9 @@ public class NasaSirsService
         result.add("PD-USGov-NASA");
         return result;
     }
+
+    @Override
+    protected NasaSirsImage refresh(NasaSirsImage media) throws IOException {
+        throw new UnsupportedOperationException(); // TODO
+    }
 }

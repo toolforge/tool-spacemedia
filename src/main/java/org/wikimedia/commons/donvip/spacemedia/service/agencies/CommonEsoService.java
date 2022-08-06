@@ -71,7 +71,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     @Autowired
     private ObjectMapper jackson;
 
-    public CommonEsoService(CommonEsoMediaRepository<T> repository, String id, String searchLink, Class<T> mediaClass) {
+    protected CommonEsoService(CommonEsoMediaRepository<T> repository, String id, String searchLink, Class<T> mediaClass) {
         super(repository, id);
         this.searchLink = Objects.requireNonNull(searchLink);
         this.mediaClass = Objects.requireNonNull(mediaClass);
@@ -206,6 +206,11 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             }
         }
         return media;
+    }
+
+    @Override
+    protected T refresh(T media) throws IOException {
+        throw new UnsupportedOperationException(); // TODO
     }
 
     protected Collection<String> getForbiddenCategories() {

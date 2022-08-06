@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,7 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -173,7 +174,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         if (details && flickrAccounts.size() > 1) {
             stats.setDetails(flickrAccounts.stream()
                     .map(this::getStatistics)
-                    .sorted().collect(Collectors.toList()));
+                    .sorted().collect(toList()));
         }
         return stats;
     }
@@ -321,7 +322,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         for (FlickrMedia picture : pictures) {
             try {
                 count += processFlickrMedia(
-                        buildFlickrMediaList(flickrService.findPhotos(Set.of(picture.getId().toString()))),
+                        buildFlickrMediaList(List.of(flickrService.findPhoto(picture.getId().toString()))),
                         flickrAccount);
             } catch (FlickrException e) {
                 if (e.getErrorMessage() != null) {
@@ -353,10 +354,12 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     private List<FlickrMedia> buildFlickrMediaList(List<Photo> photos) {
-        return photos.stream()
-                .map(p -> flickrRepository.findById(Long.parseLong(p.getId()))
-                        .orElseGet(() -> dozerMapper.map(p, FlickrMedia.class)))
-                .collect(Collectors.toList());
+        return photos.stream().map(this::photoToFlickrMedia).collect(toList());
+    }
+
+    private FlickrMedia photoToFlickrMedia(Photo p) {
+        return flickrRepository.findById(Long.parseLong(p.getId()))
+                .orElseGet(() -> dozerMapper.map(p, FlickrMedia.class));
     }
 
     private int processFlickrMedia(Iterable<FlickrMedia> medias, String flickrAccount) throws MalformedURLException {
@@ -378,6 +381,16 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
             return upload(media, true);
         } catch (UploadException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected final FlickrMedia refresh(FlickrMedia media) throws IOException {
+        try {
+            return media.copyDataFrom(
+                    dozerMapper.map(flickrService.findPhoto(media.getId().toString()), FlickrMedia.class));
+        } catch (FlickrException e) {
+            throw new IOException(e);
         }
     }
 

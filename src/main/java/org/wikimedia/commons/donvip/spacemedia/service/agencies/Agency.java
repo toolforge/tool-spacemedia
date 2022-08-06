@@ -13,6 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
@@ -77,6 +78,8 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
     T uploadAndSaveById(String id) throws UploadException, TooManyResultsException;
 
     T upload(T media, boolean checkUnicity) throws UploadException;
+
+    T refreshAndSaveById(String id) throws ImageNotFoundException, IOException;
 
     String getWikiHtmlPreview(String sha1) throws TooManyResultsException;
 

@@ -302,7 +302,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     private int processDvidsMedia(DvidsMedia media) throws IOException, UploadException {
         boolean save = !mediaRepository.existsById(media.getId());
-        if (mediaService.updateMedia(media, getOriginalRepository())) {
+        if (mediaService.updateMedia(media, getOriginalRepository(), false)) {
             save = true;
         }
         if (shouldUploadAuto(media, media.getCommonsFileNames())) {
@@ -316,6 +316,11 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             save(media);
         }
         return 1;
+    }
+
+    @Override
+    protected final DvidsMedia refresh(DvidsMedia media) throws IOException {
+        return media.copyDataFrom(getMediaFromApi(new RestTemplate(), media.getId().toString(), media.getUnit()));
     }
 
     @Override

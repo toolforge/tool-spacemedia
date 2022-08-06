@@ -39,14 +39,14 @@ public class FlickrService {
 
     private static final Set<String> EXTRAS = new HashSet<>(Arrays.asList(
             "description", "license", "date_upload", "date_taken",
-            "original_format", "last_update", "geo", "tags", 
+            "original_format", "last_update", "geo", "tags",
             "media", "path_alias", "url_m", "url_o"));
 
     private final Flickr flickr;
 
     @Autowired
     public FlickrService(
-            @Value("${flickr.api.key}") String flickrApiKey, 
+            @Value("${flickr.api.key}") String flickrApiKey,
             @Value("${flickr.secret}") String flickrSecret) {
         flickr = new Flickr(flickrApiKey, flickrSecret, new REST());
     }
@@ -66,10 +66,14 @@ public class FlickrService {
         return new URL(flickr.getUrlsInterface().getUserProfile(nsid));
     }
 
+    public Photo findPhoto(String photoId) throws FlickrException {
+        return flickr.getPhotosInterface().getPhoto(photoId);
+    }
+
     public List<Photo> findPhotos(Set<String> photoIds) throws FlickrException {
         List<Photo> result = new ArrayList<>();
         for (String photoId : photoIds) {
-            result.add(flickr.getPhotosInterface().getPhoto(photoId));
+            result.add(findPhoto(photoId));
         }
         return result;
     }
@@ -113,7 +117,7 @@ public class FlickrService {
 
         /**
          * Lookup the userid and username for the specified User URL.
-         * 
+         *
          * @param url The user profile URL
          * @return The userid and username
          * @throws FlickrException

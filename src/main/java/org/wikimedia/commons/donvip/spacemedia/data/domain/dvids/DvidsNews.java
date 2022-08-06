@@ -30,4 +30,13 @@ public class DvidsNews extends DvidsMedia {
                 + (getDate() != null ? "date=" + getDate() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() : "") + "]";
     }
+
+    @Override
+    public DvidsNews copyDataFrom(DvidsMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        if (mediaFromApi instanceof DvidsNews) {
+            this.category = ((DvidsNews) mediaFromApi).category;
+        }
+        return this;
+    }
 }

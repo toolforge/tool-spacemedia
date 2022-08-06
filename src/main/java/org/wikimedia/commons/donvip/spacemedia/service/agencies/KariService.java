@@ -188,4 +188,9 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         }
         return media;
     }
+
+    @Override
+    protected KariMedia refresh(KariMedia media) throws IOException {
+        throw new UnsupportedOperationException(); // TODO
+    }
 }

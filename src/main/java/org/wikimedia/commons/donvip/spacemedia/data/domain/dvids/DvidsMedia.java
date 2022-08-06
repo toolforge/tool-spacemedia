@@ -277,4 +277,20 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     public final String getUploadTitle() {
         return title + " (" + getId().getId() + ")";
     }
+
+    public DvidsMedia copyDataFrom(DvidsMedia mediaFromApi) {
+        this.branch = mediaFromApi.branch;
+        this.date = mediaFromApi.date;
+        this.datePublished = mediaFromApi.datePublished;
+        this.description = mediaFromApi.description;
+        this.keywords = mediaFromApi.keywords;
+        this.rating = mediaFromApi.rating;
+        this.thumbnailUrl = mediaFromApi.thumbnailUrl;
+        this.timestamp = mediaFromApi.timestamp;
+        this.title = mediaFromApi.title;
+        this.unit = mediaFromApi.unit;
+        this.unitName = mediaFromApi.unitName;
+        this.virin = mediaFromApi.virin;
+        return this;
+    }
 }

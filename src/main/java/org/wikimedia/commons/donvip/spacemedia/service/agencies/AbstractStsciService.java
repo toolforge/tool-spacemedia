@@ -106,6 +106,11 @@ public abstract class AbstractStsciService
     }
 
     @Override
+    protected StsciMedia refresh(StsciMedia media) throws IOException {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
     public final Set<String> findTemplates(StsciMedia media) {
         Set<String> result = super.findTemplates(media);
         switch (media.getMission()) {

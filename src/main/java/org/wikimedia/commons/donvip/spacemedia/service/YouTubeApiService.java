@@ -1,11 +1,11 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
 import static com.google.api.client.googleapis.javanet.GoogleNetHttpTransport.newTrustedTransport;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -41,23 +41,31 @@ public class YouTubeApiService {
         return request.setKey(apiKey).execute();
     }
 
+    private YouTube.Search.List searchVideos(String channelId, String pageToken) throws IOException {
+        return youtube.search().list(List.of("snippet")).setType(List.of("video")).setChannelId(channelId)
+                .setMaxResults(50L)
+                .setPageToken(pageToken);
+    }
+
     public SearchListResponse searchCreativeCommonsVideos(String channelId, String pageToken) throws IOException {
-        return executeRequest(youtube.search().list(List.of("snippet")).setType(List.of("video"))
-                .setVideoLicense(CREATIVE_COMMON).setChannelId(channelId).setMaxResults(50L).setPageToken(pageToken));
+        return executeRequest(searchVideos(channelId, pageToken).setVideoLicense(CREATIVE_COMMON));
     }
 
     public SearchListResponse searchVideos(String channelId, String pageToken, String licenseText) throws IOException {
-        return executeRequest(youtube.search().list(List.of("snippet")).setType(List.of("video")).setQ(licenseText)
-                .setChannelId(channelId).setMaxResults(50L).setPageToken(pageToken));
+        return executeRequest(searchVideos(channelId, pageToken).setQ(licenseText));
     }
 
     public VideoListResponse listVideos(SearchListResponse searchList) throws IOException {
         return listVideos(searchList.getItems().stream().map(SearchResult::getId).map(ResourceId::getVideoId)
-                .collect(Collectors.toList()));
+                .collect(toList()));
     }
 
     public VideoListResponse listVideos(List<String> videoIds) throws IOException {
         return executeRequest(youtube.videos().list(List.of("contentDetails", "snippet", "status")).setId(videoIds));
+    }
+
+    public Video getVideo(String videoId) throws IOException {
+        return listVideos(List.of(videoId)).getItems().get(0);
     }
 
     public static boolean isCreativeCommons(Video video) {

@@ -30,4 +30,13 @@ public class DvidsAudio extends DvidsMedia {
                 + (getDate() != null ? "date=" + getDate() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() : "") + "]";
     }
+
+    @Override
+    public DvidsAudio copyDataFrom(DvidsMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        if (mediaFromApi instanceof DvidsAudio) {
+            this.duration = ((DvidsAudio) mediaFromApi).duration;
+        }
+        return this;
+    }
 }

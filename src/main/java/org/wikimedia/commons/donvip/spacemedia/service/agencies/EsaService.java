@@ -594,6 +594,11 @@ public class EsaService
         return result;
     }
 
+    @Override
+    protected EsaMedia refresh(EsaMedia media) throws IOException {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
     static Optional<String> getCopernicusProcessedBy(String credit) {
         for (Pattern p : COPERNICUS_PROCESSED_BY) {
             Matcher m = p.matcher(credit);

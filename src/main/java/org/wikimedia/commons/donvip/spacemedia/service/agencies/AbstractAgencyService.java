@@ -388,6 +388,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return findBySomeSha1OrThrow(sha1, repository::findByMetadata_Sha1, throwIfNotFound);
     }
 
+    @Override
+    public final T refreshAndSaveById(String id) throws ImageNotFoundException, IOException {
+        T media = refresh(repository.findById(getMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id)));
+        doCommonUpdate(media, true);
+        return repository.save(media);
+    }
+
+    protected abstract T refresh(T media) throws IOException;
+
     public final boolean isUploadEnabled() {
         return uploadMode == UploadMode.MANUAL || uploadMode == UploadMode.AUTO;
     }
@@ -675,8 +684,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return true;
     }
 
+    protected final boolean doCommonUpdate(T media, boolean forceUpdate) throws IOException {
+        return mediaService.updateMedia(media, getOriginalRepository(), forceUpdate);
+    }
+
     protected final boolean doCommonUpdate(T media) throws IOException {
-        return mediaService.updateMedia(media, getOriginalRepository());
+        return doCommonUpdate(media, false);
     }
 
     @Override

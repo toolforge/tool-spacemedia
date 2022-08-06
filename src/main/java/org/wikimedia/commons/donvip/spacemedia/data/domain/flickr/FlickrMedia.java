@@ -302,4 +302,25 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     public boolean isVideo() {
         return media == FlickrMediaType.video;
     }
+
+    public FlickrMedia copyDataFrom(FlickrMedia mediaFromApi) {
+        this.license = mediaFromApi.license;
+        this.date = mediaFromApi.date;
+        this.lastUpdate = mediaFromApi.lastUpdate;
+        this.dateTaken = mediaFromApi.dateTaken;
+        this.dateTakenGranularity = mediaFromApi.dateTakenGranularity;
+        this.tags = mediaFromApi.tags;
+        this.originalFormat = mediaFromApi.originalFormat;
+        this.latitude = mediaFromApi.latitude;
+        this.longitude = mediaFromApi.longitude;
+        this.accuracy = mediaFromApi.accuracy;
+        this.media = mediaFromApi.media;
+        this.mediaStatus = mediaFromApi.mediaStatus;
+        this.originalUrl = mediaFromApi.originalUrl;
+        this.originalHeight = mediaFromApi.originalHeight;
+        this.originalWidth = mediaFromApi.originalWidth;
+        this.pathAlias = mediaFromApi.pathAlias;
+        this.metadata.setAssetUrl(originalUrl);
+        return this;
+    }
 }

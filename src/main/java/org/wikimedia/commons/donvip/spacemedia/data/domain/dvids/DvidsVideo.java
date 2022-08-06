@@ -136,4 +136,19 @@ public class DvidsVideo extends DvidsMedia {
                 + (getDate() != null ? "date=" + getDate() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() : "") + "]";
     }
+
+    @Override
+    public DvidsVideo copyDataFrom(DvidsMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        if (mediaFromApi instanceof DvidsVideo) {
+            DvidsVideo vidFromApi = (DvidsVideo) mediaFromApi;
+            this.aspectRatio = vidFromApi.aspectRatio;
+            this.duration = vidFromApi.duration;
+            this.files = vidFromApi.files;
+            this.hlsUrl = vidFromApi.hlsUrl;
+            this.timeStart = vidFromApi.timeStart;
+            this.image = vidFromApi.image;
+        }
+        return this;
+    }
 }

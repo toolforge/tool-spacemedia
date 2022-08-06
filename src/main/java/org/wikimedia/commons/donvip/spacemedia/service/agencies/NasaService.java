@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -22,7 +24,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -195,7 +196,7 @@ public class NasaService
         for (String sep : Arrays.asList(",", ";")) {
             if (kw.contains(sep) && looksLikeMultipleValues(kw, sep)) {
                 return Arrays.stream(kw.split(sep)).map(String::trim).filter(s -> !s.isEmpty())
-                        .collect(Collectors.toSet());
+                        .collect(toSet());
             }
         }
         return keywords;
@@ -429,7 +430,7 @@ public class NasaService
                                 mediaRepository.countIgnoredByCenter(c),
                                 mediaRepository.countMissingInCommonsByCenter(c),
                                 mediaRepository.countByMetadata_PhashNotNullAndCenter(c), null))
-                        .sorted().collect(Collectors.toList()));
+                        .sorted().collect(toList()));
             }
         }
         return stats;
@@ -461,5 +462,10 @@ public class NasaService
             }
         }
         lastRequest = now();
+    }
+
+    @Override
+    protected NasaMedia refresh(NasaMedia media) throws IOException {
+        throw new UnsupportedOperationException(); // TODO
     }
 }

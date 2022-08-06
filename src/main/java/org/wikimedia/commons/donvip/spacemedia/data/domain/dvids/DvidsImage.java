@@ -62,4 +62,15 @@ public class DvidsImage extends DvidsMedia {
                 + (getDate() != null ? "date=" + getDate() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() : "") + "]";
     }
+
+    @Override
+    public DvidsImage copyDataFrom(DvidsMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        if (mediaFromApi instanceof DvidsImage) {
+            DvidsImage imgFromApi = (DvidsImage) mediaFromApi;
+            this.aspectRatio = imgFromApi.aspectRatio;
+            this.dimensions = imgFromApi.dimensions;
+        }
+        return this;
+    }
 }
