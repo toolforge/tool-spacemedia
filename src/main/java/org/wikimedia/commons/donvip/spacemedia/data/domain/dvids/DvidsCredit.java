@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -54,8 +55,24 @@ public class DvidsCredit {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(id, name, rank, url);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        DvidsCredit other = (DvidsCredit) obj;
+        return Objects.equals(id, other.id) && Objects.equals(name, other.name) && Objects.equals(rank, other.rank)
+                && Objects.equals(url, other.url);
+    }
+
+    @Override
     public String toString() {
         return "DvidsCredit [name=" + name + ", "
-                + (StringUtils.isNotBlank(rank) ? "rank=" + rank + ", " : "") + (url != null ? "url=" + url : "") + "]";
+                + (StringUtils.isNotBlank(rank) ? "rank=" + rank + ", " : "") + (url != null ? "url=" + url : "") + ']';
     }
 }

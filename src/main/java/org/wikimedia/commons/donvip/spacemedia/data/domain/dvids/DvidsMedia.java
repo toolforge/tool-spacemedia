@@ -86,7 +86,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     /**
      * Who created the asset.
      */
-    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
+    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH })
     @JsonDeserialize(using = DvidsCreditDeserializer.class)
     private List<DvidsCredit> credit;
 
