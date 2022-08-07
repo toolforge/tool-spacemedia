@@ -14,6 +14,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -187,6 +190,8 @@ public class CommonsService {
     private UserInfo userInfo;
     private String token;
     private LocalDateTime lastUpload;
+
+    private final DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     public CommonsService(
             @Value("${application.version}") String appVersion,
@@ -792,45 +797,61 @@ public class CommonsService {
     }
 
     @Scheduled(fixedRateString = "${commons.hashes.update.rate}", initialDelayString = "${commons.hashes.initial.delay}")
-    public void computeHashesOfAllFiles() {
-        int pageIndex = 0;
+    public void computeHashesOfAllFilesAsc() {
+        computeHashesOfAllFiles(Sort.Direction.ASC);
+    }
+
+    @Scheduled(fixedRateString = "${commons.hashes.update.rate}", initialDelayString = "${commons.hashes.initial.delay}")
+    public void computeHashesOfAllFilesDesc() {
+        computeHashesOfAllFiles(Sort.Direction.DESC);
+    }
+
+    private void computeHashesOfAllFiles(Sort.Direction order) {
+        LOGGER.info("Computing perceptual hashes of files in Commons ({} order)...", order);
+        final RuntimeData runtime = runtimeDataRepository.findById(COMMONS).orElseGet(() -> new RuntimeData(COMMONS));
+        final String startingTimestamp = Optional.ofNullable(runtime.getLastTimestamp()).orElse("20010101000000");
+        final String endingTimestamp = ZonedDateTime.now(ZoneId.of("UTC")).format(timestampFormatter);
+        final LocalDateTime start = LocalDateTime.now();
         Page<CommonsImageProjection> page = null;
-        LOGGER.info("Computing perceptual hashes of files in Commons...");
-        RuntimeData runtime = runtimeDataRepository.findById(COMMONS).orElseGet(() -> new RuntimeData(COMMONS));
-        LocalDateTime start = LocalDateTime.now();
-        int count = 0;
+        int hashCount = 0;
+        int pageIndex = 0;
         do {
-            page = imageRepository.findByMinorMimeInAndTimestampGreaterThanEqual(
-                    Set.of("gif", "jpeg", "png", "tiff", "webp"),
-                    Optional.ofNullable(runtime.getLastTimestamp()).orElse("20010101000000"),
-                    PageRequest.of(pageIndex++, 1000, Sort.Direction.ASC, "timestamp"));
+            page = imageRepository.findByMinorMimeInAndTimestampBetween(Set.of("gif", "jpeg", "png", "tiff", "webp"),
+                    startingTimestamp, endingTimestamp, PageRequest.of(pageIndex++, 1000, order, "timestamp"));
             for (CommonsImageProjection image : page.getContent()) {
-                if (!hashRepository.existsById(image.getSha1())) {
-                    BufferedImage bi = null;
-                    try {
-                        String md5 = DigestUtils.md5Hex(image.getName());
-                        bi = Utils.readImage(
-                                new URL(String.format("https://upload.wikimedia.org/wikipedia/commons/%c/%s/%s",
-                                        md5.charAt(0), md5.substring(0, 2), image.getName())),
-                                false);
-                        hashRepository.save(new HashAssociation(image.getSha1(),
-                                HashHelper.encode(HashHelper.computePerceptualHash(bi))));
-                        count++;
-                    } catch (IOException | URISyntaxException | ImageDecodingException | IllegalArgumentException e) {
-                        LOGGER.error("Failed to compute/save hash of {}: {}", image, e.toString());
-                    } finally {
-                        if (bi != null) {
-                            bi.flush();
-                        }
-                    }
+                hashCount += computeAndSaveHash(image);
+                if (Sort.Direction.ASC == order) {
+                    runtime.setLastTimestamp(image.getTimestamp());
+                    runtimeDataRepository.save(runtime);
                 }
-                runtime.setLastTimestamp(image.getTimestamp());
-                runtimeDataRepository.save(runtime);
             }
-            LOGGER.info("{} perceptual hashes of files in Commons computed in {} ({} pages)", count,
-                    Duration.between(start, LocalDateTime.now()), pageIndex);
+            LOGGER.info(
+                    "{} perceptual hashes of files in Commons ({} order) computed in {} ({} pages). Current timestamp: {}",
+                    hashCount, order, Duration.between(start, LocalDateTime.now()), pageIndex,
+                    runtime.getLastTimestamp());
         } while (page.hasNext());
-        LOGGER.info("{} perceptual hashes of files in Commons computed in {}", count,
+        LOGGER.info("{} perceptual hashes of files in Commons ({} order) computed in {}", hashCount, order,
                 Duration.between(start, LocalDateTime.now()));
+    }
+
+    private int computeAndSaveHash(CommonsImageProjection image) {
+        if (!hashRepository.existsById(image.getSha1())) {
+            BufferedImage bi = null;
+            try {
+                String md5 = DigestUtils.md5Hex(image.getName());
+                bi = Utils.readImage(new URL(String.format("https://upload.wikimedia.org/wikipedia/commons/%c/%s/%s",
+                        md5.charAt(0), md5.substring(0, 2), image.getName())), false);
+                hashRepository.save(
+                        new HashAssociation(image.getSha1(), HashHelper.encode(HashHelper.computePerceptualHash(bi))));
+                return 1;
+            } catch (IOException | URISyntaxException | ImageDecodingException | IllegalArgumentException e) {
+                LOGGER.error("Failed to compute/save hash of {}: {}", image, e.toString());
+            } finally {
+                if (bi != null) {
+                    bi.flush();
+                }
+            }
+        }
+        return 0;
     }
 }
