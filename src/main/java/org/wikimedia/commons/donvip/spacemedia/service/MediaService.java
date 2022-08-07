@@ -396,7 +396,11 @@ public class MediaService {
      */
     public boolean updatePerceptualHash(Metadata metadata, BufferedImage image, boolean forceUpdate) {
         if (image != null && metadata.getAssetUrl() != null && (metadata.getPhash() == null || forceUpdate)) {
-            metadata.setPhash(HashHelper.encode(HashHelper.computePerceptualHash(image)));
+            try {
+                metadata.setPhash(HashHelper.encode(HashHelper.computePerceptualHash(image)));
+            } catch (RuntimeException e) {
+                LOGGER.error("Failed to update perceptual hash for {}", metadata, e);
+            }
             updateHashes(metadata.getSha1(), metadata.getPhash());
             return true;
         }

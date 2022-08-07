@@ -862,7 +862,7 @@ public class CommonsService {
                 hashRepository.save(
                         new HashAssociation(image.getSha1(), HashHelper.encode(HashHelper.computePerceptualHash(bi))));
                 return 1;
-            } catch (IOException | URISyntaxException | ImageDecodingException | IllegalArgumentException e) {
+            } catch (IOException | URISyntaxException | ImageDecodingException | RuntimeException e) {
                 LOGGER.error("Failed to compute/save hash of {}: {}", image, e.toString());
             } finally {
                 if (bi != null) {

@@ -64,6 +64,14 @@ public final class HashHelper {
         }
     }
 
+    /**
+     * Computes the perceptual hash of the given image
+     *
+     * @param image buferred image
+     * @return perceptual hash
+     * @throws NullPointerException deep into JDK for some images (at
+     *                              java.desktop/java.awt.image.ComponentColorModel.getDataElements(ComponentColorModel.java:1557))
+     */
     public static BigInteger computePerceptualHash(BufferedImage image) {
         return ALGORITHM.hash(image).getHashValue();
     }
