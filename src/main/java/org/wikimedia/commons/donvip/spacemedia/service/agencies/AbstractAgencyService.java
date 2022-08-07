@@ -621,7 +621,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         if (isNotEmpty(commonsFileNames)) {
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
         }
-        if (mediaService.findCommonsFilesWithSha1(media)) {
+        if (mediaService.findCommonsFilesWithSha1(media) || mediaService.findCommonsFilesWithPhash(media)) {
             media = repository.save(media);
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
         }

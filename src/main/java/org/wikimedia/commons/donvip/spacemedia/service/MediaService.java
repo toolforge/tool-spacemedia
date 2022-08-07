@@ -109,7 +109,7 @@ public class MediaService {
         if (updateReadableStateAndHashes(media, localPath, forceUpdate)) {
             result = true;
         }
-        if (findCommonsFilesWithSha1(media)) {
+        if (findCommonsFilesWithSha1(media) || findCommonsFilesWithPhash(media)) {
             result = true;
         }
         if (originalRepo != null && findDuplicatesInRepository(media, originalRepo)) {
@@ -429,6 +429,45 @@ public class MediaService {
                 if (!files.isEmpty()) {
                     frMedia.setFullResCommonsFileNames(files);
                     result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Looks for Wikimedia Commons files matching exactly the media perceptual hash,
+     * if required.
+     *
+     * @param media media object
+     * @return {@code true} if media has been updated with list of Wikimedia Commons
+     *         files and must be persisted
+     * @throws IOException in case of I/O error
+     */
+    public boolean findCommonsFilesWithPhash(Media<?, ?> media) throws IOException {
+        boolean result = false;
+        String phash = media.getMetadata().getPhash();
+        if (phash != null && isEmpty(media.getCommonsFileNames())) {
+            List<String> sha1s = hashRepository.findSha1ByPhash(phash);
+            if (!sha1s.isEmpty()) {
+                Set<String> files = commonsService.findFilesWithSha1(sha1s);
+                if (!files.isEmpty()) {
+                    media.setCommonsFileNames(files);
+                    result = true;
+                }
+            }
+        }
+        if (media instanceof FullResMedia) {
+            FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
+            String fullResPhash = frMedia.getFullResMetadata().getPhash();
+            if (fullResPhash != null && isEmpty(frMedia.getFullResCommonsFileNames())) {
+                List<String> fullResSha1s = hashRepository.findSha1ByPhash(fullResPhash);
+                if (!fullResSha1s.isEmpty()) {
+                    Set<String> files = commonsService.findFilesWithSha1(fullResSha1s);
+                    if (!files.isEmpty()) {
+                        frMedia.setFullResCommonsFileNames(files);
+                        result = true;
+                    }
                 }
             }
         }

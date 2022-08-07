@@ -243,17 +243,26 @@ public class CommonsService {
     }
 
     public Set<String> findFilesWithSha1(String sha1) throws IOException {
+        return findFilesWithSha1(List.of(sha1));
+    }
+
+    public Set<String> findFilesWithSha1(Collection<String> sha1s) throws IOException {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
         // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters
-        String sha1base36 = String.format("%31s", new BigInteger(sha1, 16).toString(36)).replace(' ', '0');
-        Set<String> files = imageRepository.findBySha1OrderByTimestamp(sha1base36).stream().map(CommonsImage::getName)
+        Set<String> sha1base36 = sha1s.stream()
+                .map(sha1 -> String.format("%31s", new BigInteger(sha1, 16).toString(36)).replace(' ', '0'))
+                .collect(toSet());
+        Set<String> files = imageRepository.findBySha1InOrderByTimestamp(sha1base36).stream().map(CommonsImage::getName)
                 .collect(toSet());
         if (files.isEmpty()) {
             files.addAll(
-                    oldImageRepository.findBySha1(sha1base36).stream().map(CommonsOldImage::getName).collect(toSet()));
+                    oldImageRepository.findBySha1In(sha1base36).stream().map(CommonsOldImage::getName)
+                            .collect(toSet()));
         }
         if (files.isEmpty()) {
-            files.addAll(queryFileArchive(sha1base36).stream().map(FileArchive::getName).collect(toSet()));
+            for (String s : sha1base36) {
+                files.addAll(queryFileArchive(s).stream().map(FileArchive::getName).collect(toSet()));
+            }
         }
         return files;
     }
