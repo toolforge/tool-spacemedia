@@ -88,7 +88,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         esoTypes = loadCsvMapping("eso.types.csv");
     }
 
-    @Scheduled(fixedDelay = 43200000L)
+    @Scheduled(fixedRateString = "${commons.categories.check.rate}", initialDelayString = "${commons.categories.check.initial.delay}")
     public void checkEsoCategories() {
         checkCommonsCategories(esoCategories);
         checkCommonsCategories(esoTypes);

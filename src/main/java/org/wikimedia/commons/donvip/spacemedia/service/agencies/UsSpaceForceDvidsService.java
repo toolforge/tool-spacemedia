@@ -21,7 +21,7 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService<DvidsMe
         super(repository, "usspaceforce.dvids", dvidsUnits, minYear);
     }
 
-    @Scheduled(fixedDelay = 43200000L)
+    @Scheduled(fixedRateString = "${commons.categories.check.rate}", initialDelayString = "${commons.categories.check.initial.delay}")
     public final void checkDvidsCategories() {
         checkCommonsCategories(KEYWORDS_CATS);
     }

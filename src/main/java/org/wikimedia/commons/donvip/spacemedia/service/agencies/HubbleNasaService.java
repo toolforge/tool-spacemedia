@@ -49,7 +49,7 @@ public class HubbleNasaService extends AbstractStsciService {
         super.updateMedia();
     }
 
-    @Scheduled(fixedDelay = 43200000L)
+    @Scheduled(fixedRateString = "${commons.categories.check.rate}", initialDelayString = "${commons.categories.check.initial.delay}")
     public void checkHubbleCategories() {
         checkCommonsCategories(hubbleCategories);
     }
