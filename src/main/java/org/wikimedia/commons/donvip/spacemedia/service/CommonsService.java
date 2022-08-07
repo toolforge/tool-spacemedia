@@ -246,11 +246,20 @@ public class CommonsService {
         return findFilesWithSha1(List.of(sha1));
     }
 
+    /**
+     * Finds files in Wikimedia Commons by their SHA-1 hash.
+     *
+     * @param sha1s SHA-1 hashes, can be either in base 36 (31 characters) or base
+     *              16 (40 characters)
+     * @return Set of Commons file names matching the given SHA-1 hashes
+     * @throws IOException in case of I/O error
+     */
     public Set<String> findFilesWithSha1(Collection<String> sha1s) throws IOException {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
         // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters
         Set<String> sha1base36 = sha1s.stream()
-                .map(sha1 -> String.format("%31s", new BigInteger(sha1, 16).toString(36)).replace(' ', '0'))
+                .map(sha1 -> sha1.length() == 31 ? sha1
+                        : String.format("%31s", new BigInteger(sha1, 16).toString(36)).replace(' ', '0'))
                 .collect(toSet());
         Set<String> files = imageRepository.findBySha1InOrderByTimestamp(sha1base36).stream().map(CommonsImage::getName)
                 .collect(toSet());
