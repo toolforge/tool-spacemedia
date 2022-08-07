@@ -831,6 +831,7 @@ public class CommonsService {
         final String endingTimestamp = ZonedDateTime.now(ZoneId.of("UTC")).format(timestampFormatter);
         final LocalDateTime start = LocalDateTime.now();
         Page<CommonsImageProjection> page = null;
+        String lastTimestamp = null;
         int hashCount = 0;
         int pageIndex = 0;
         do {
@@ -838,18 +839,16 @@ public class CommonsService {
                     startingTimestamp, endingTimestamp, PageRequest.of(pageIndex++, 1000, order, "timestamp"));
             for (CommonsImageProjection image : page.getContent()) {
                 hashCount += computeAndSaveHash(image);
+                lastTimestamp = image.getTimestamp();
                 if (Sort.Direction.ASC == order) {
-                    runtime.setLastTimestamp(image.getTimestamp());
+                    runtime.setLastTimestamp(lastTimestamp);
                     runtimeDataRepository.save(runtime);
                 }
             }
             LOGGER.info(
                     "{} perceptual hashes of files in Commons ({} order) computed in {} ({} pages). Current timestamp: {}",
-                    hashCount, order, Duration.between(start, LocalDateTime.now()), pageIndex,
-                    runtime.getLastTimestamp());
+                    hashCount, order, Duration.between(start, LocalDateTime.now()), pageIndex, lastTimestamp);
         } while (page.hasNext());
-        LOGGER.info("{} perceptual hashes of files in Commons ({} order) computed in {}", hashCount, order,
-                Duration.between(start, LocalDateTime.now()));
     }
 
     private int computeAndSaveHash(CommonsImageProjection image) {
