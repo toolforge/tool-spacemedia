@@ -36,7 +36,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "image")
-public class CommonsImage {
+public class CommonsImage implements CommonsImageProjection {
     @Id
     @Column(name = "img_name", nullable = false, length = 255, columnDefinition = "VARBINARY")
     private String name;

@@ -57,6 +57,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkR
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImage;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImageRepository;
@@ -793,7 +794,7 @@ public class CommonsService {
     @Scheduled(fixedRateString = "${commons.hashes.update.rate}", initialDelayString = "${commons.hashes.initial.delay}")
     public void computeHashesOfAllFiles() {
         int pageIndex = 0;
-        Page<CommonsImage> page = null;
+        Page<CommonsImageProjection> page = null;
         LOGGER.info("Computing perceptual hashes of files in Commons...");
         RuntimeData runtime = runtimeDataRepository.findById(COMMONS).orElseGet(() -> new RuntimeData(COMMONS));
         LocalDateTime start = LocalDateTime.now();
@@ -803,7 +804,7 @@ public class CommonsService {
                     Set.of("gif", "jpeg", "png", "tiff", "webp"),
                     Optional.ofNullable(runtime.getLastTimestamp()).orElse("20010101000000"),
                     PageRequest.of(pageIndex++, 1000, Sort.Direction.ASC, "timestamp"));
-            for (CommonsImage image : page.getContent()) {
+            for (CommonsImageProjection image : page.getContent()) {
                 if (!hashRepository.existsById(image.getSha1())) {
                     BufferedImage bi = null;
                     try {
