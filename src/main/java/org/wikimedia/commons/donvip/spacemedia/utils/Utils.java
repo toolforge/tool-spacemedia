@@ -2,11 +2,14 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -124,16 +127,55 @@ public final class Utils {
                 }
             }
             if (ok) {
-                try {
-                    return readImage(ImageIO.createImageInputStream(in), readMetadata);
-                } catch (IOException | RuntimeException e) {
-                    throw new ImageDecodingException(e);
-                }
+                return readImage(in, readMetadata);
+            } else if ("webp".equals(extension)) {
+                return readWebp(url, uri, readMetadata);
             } else {
                 throw new ImageDecodingException(
                         "Unsupported format: " + extension + " / headers:" + response.getAllHeaders());
             }
         }
+    }
+
+    private static BufferedImage readWebp(URL url, URI uri, boolean readMetadata)
+            throws IOException, ImageDecodingException {
+        Path file = downloadFile(url, uri.getPath().replace('/', '_'));
+        try {
+            Path pngFile = Path.of(file.toString().replace(".webp", ".png"));
+            Utils.execOutput(List.of("dwebp", file.toString(), "-o", pngFile.toString()), 1, TimeUnit.MINUTES);
+            try (InputStream inPng = Files.newInputStream(pngFile)) {
+                return readImage(inPng, readMetadata);
+            } finally {
+                Files.delete(pngFile);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
+        } catch (ExecutionException e) {
+            throw new IOException(e);
+        } finally {
+            Files.delete(file);
+        }
+    }
+
+    private static BufferedImage readImage(InputStream in, boolean readMetadata) throws ImageDecodingException {
+        try {
+            return readImage(ImageIO.createImageInputStream(in), readMetadata);
+        } catch (IOException | RuntimeException e) {
+            throw new ImageDecodingException(e);
+        }
+    }
+
+    public static Path downloadFile(URL url, String fileName) throws IOException {
+        Path output = Files.createDirectories(Path.of("files")).resolve(fileName);
+        LOGGER.info("Downloading file {}", url);
+        try (ReadableByteChannel rbc = Channels.newChannel(url.openStream());
+                FileOutputStream fos = new FileOutputStream(output.toString())) {
+            if (fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE) == 0) {
+                throw new IOException("No data transferred from " + url);
+            }
+        }
+        return output;
     }
 
     public static Element newElement(String tag, String text, Map<String, String> attrs) {
