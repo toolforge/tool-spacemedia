@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,6 +78,8 @@ import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates
 @Service
 public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID, OD extends Temporal>
         extends AbstractAgencyService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime, OT, OID, OD> {
+
+    private static final String OLD_DVIDS_CDN = "https://cdn.dvidshub.net/";
 
     private static final Pattern US_MEDIA_BY = Pattern
             .compile(".*\\((U\\.S\\. .+ (?:photo|graphic|video) by )[^\\)]+\\)", Pattern.DOTALL);
@@ -230,8 +233,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted()
                 .collect(toList())) {
             try {
-                count += processDvidsMedia(mediaRepository.findById(new DvidsMediaTypedId(id))
-                        .orElseGet(() -> getMediaFromApi(rest, id, unit)));
+                count += processDvidsMedia(mediaRepository.findById(new DvidsMediaTypedId(id)),
+                        () -> getMediaFromApi(rest, id, unit));
             } catch (HttpClientErrorException e) {
                 LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
             } catch (IOException e) {
@@ -300,8 +303,17 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         return response;
     }
 
-    private int processDvidsMedia(DvidsMedia media) throws IOException, UploadException {
-        boolean save = !mediaRepository.existsById(media.getId());
+    private int processDvidsMedia(Optional<DvidsMedia> mediaInDb, Supplier<DvidsMedia> apiFetcher)
+            throws IOException, UploadException {
+        DvidsMedia media = null;
+        boolean save = false;
+        if (mediaInDb.isPresent()) {
+            media = mediaInDb.get();
+            save = updateCdnUrls(media, apiFetcher);
+        } else {
+            media = apiFetcher.get();
+            save = true;
+        }
         if (mediaService.updateMedia(media, getOriginalRepository(), false)) {
             save = true;
         }
@@ -316,6 +328,24 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             save(media);
         }
         return 1;
+    }
+
+    protected boolean updateCdnUrls(DvidsMedia media, Supplier<DvidsMedia> apiFetcher) {
+        // DVIDS changed its CDN around 2021/2022. Example:
+        // old: https://cdn.dvidshub.net/media/photos/2104/6622429.jpg
+        // new: https://d34w7g4gy10iej.cloudfront.net/photos/2104/6622429.jpg
+        if (media.getMetadata().getAssetUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
+                || media.getThumbnailUrl().toExternalForm().startsWith(OLD_DVIDS_CDN) || (media instanceof DvidsVideo
+                        && ((DvidsVideo) media).getImage().toExternalForm().startsWith(OLD_DVIDS_CDN))) {
+            DvidsMedia mediaFromApi = apiFetcher.get();
+            media.getMetadata().setAssetUrl(mediaFromApi.getMetadata().getAssetUrl());
+            media.setThumbnailUrl(mediaFromApi.getThumbnailUrl());
+            if (media instanceof DvidsVideo && mediaFromApi instanceof DvidsVideo) {
+                ((DvidsVideo) media).setImage(((DvidsVideo) mediaFromApi).getImage());
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
