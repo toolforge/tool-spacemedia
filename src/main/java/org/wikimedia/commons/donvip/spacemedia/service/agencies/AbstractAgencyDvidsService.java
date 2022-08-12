@@ -91,6 +91,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     protected static final Map<String, String> KEYWORDS_CATS = loadCsvMapping(
             AbstractAgencyDvidsService.class, "dvids.keywords.csv");
 
+    private static final Set<Class<? extends DvidsMedia>> MEDIA_WITH_CATEGORIES = Set.of(DvidsVideo.class,
+            DvidsNews.class, DvidsAudio.class);
+
     @Autowired
     private DvidsAudioRepository audioRepository;
 
@@ -132,6 +135,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     @Value("${dvids.media.url}")
     private UriTemplate mediaUrl;
+
+    @Value("${dvids.ignored.categories}")
+    private Set<String> ignoredCategories;
 
     private final int minYear;
 
@@ -309,12 +315,16 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         boolean save = false;
         if (mediaInDb.isPresent()) {
             media = mediaInDb.get();
-            save = updateCdnUrls(media, apiFetcher);
+            save = updateCategoryAndCdnUrls(media, apiFetcher);
         } else {
             media = apiFetcher.get();
             save = true;
         }
         if (mediaService.updateMedia(media, getOriginalRepository(), false)) {
+            save = true;
+        }
+        if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredCategories.contains(media.getCategory())) {
+            ignoreFile(media, "Ignored category: " + media.getCategory());
             save = true;
         }
         if (shouldUploadAuto(media, media.getCommonsFileNames())) {
@@ -330,14 +340,16 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         return 1;
     }
 
-    protected boolean updateCdnUrls(DvidsMedia media, Supplier<DvidsMedia> apiFetcher) {
+    protected boolean updateCategoryAndCdnUrls(DvidsMedia media, Supplier<DvidsMedia> apiFetcher) {
         // DVIDS changed its CDN around 2021/2022. Example:
         // old: https://cdn.dvidshub.net/media/photos/2104/6622429.jpg
         // new: https://d34w7g4gy10iej.cloudfront.net/photos/2104/6622429.jpg
-        if (media.getMetadata().getAssetUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
+        if ((MEDIA_WITH_CATEGORIES.contains(media.getClass()) && media.getCategory() == null)
+                || media.getMetadata().getAssetUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
                 || media.getThumbnailUrl().toExternalForm().startsWith(OLD_DVIDS_CDN) || (media instanceof DvidsVideo
                         && ((DvidsVideo) media).getImage().toExternalForm().startsWith(OLD_DVIDS_CDN))) {
             DvidsMedia mediaFromApi = apiFetcher.get();
+            media.setCategory(mediaFromApi.getCategory());
             media.getMetadata().setAssetUrl(mediaFromApi.getMetadata().getAssetUrl());
             media.setThumbnailUrl(mediaFromApi.getThumbnailUrl());
             if (media instanceof DvidsVideo && mediaFromApi instanceof DvidsVideo) {

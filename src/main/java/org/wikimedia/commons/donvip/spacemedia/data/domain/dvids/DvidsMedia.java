@@ -91,6 +91,20 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     private List<DvidsCredit> credit;
 
     /**
+     * Category of the asset:
+     * <ul>
+     * <li>One of Combat Operations, Miscellaneous, Afghanistan, Guantanamo, Horn of
+     * Africa, Iraq, Kuwait, US, Press Release for news.</li>
+     * <li>one of B-Roll, Briefings, Commercials, Greetings, In The Fight,
+     * Interviews, Newscasts, Package, PSA, Series for video.</li>
+     * <li>one of B-Roll, Briefings, Greetings, Interviews, Newscasts for
+     * audio.</li>
+     * </ul>
+     */
+    @Column(nullable = true)
+    private String category;
+
+    /**
      * Rating of the asset. Will not be returned if the asset has not been rated.
      */
     @Column(nullable = true)
@@ -186,6 +200,14 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
         this.credit = credit;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public Float getRating() {
         return rating;
     }
@@ -233,7 +255,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(date, datePublished, description, keywords, id, title);
+                + Objects.hash(date, datePublished, description, category, keywords, id, title);
     }
 
     @Override
@@ -246,6 +268,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
         return Objects.equals(date, other.date) && Objects.equals(description, other.description)
                 && Objects.equals(branch, other.branch)
                 && Objects.equals(datePublished, other.datePublished)
+                && Objects.equals(category, other.category)
                 && Objects.equals(keywords, other.keywords)
                 && Objects.equals(id, other.id) && Objects.equals(title, other.title);
     }
@@ -255,6 +278,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
         return "DvidsMedia [" + (id != null ? "id=" + id + ", " : "")
                 + (title != null ? "title=" + title + ", " : "") + (datePublished != null ? "datePublished=" + datePublished + ", " : "")
                 + (date != null ? "date=" + date + ", " : "")
+                + (category != null ? "category=" + category + ", " : "")
                 + (metadata != null ? "metadata=" + metadata : "") + "]";
     }
 
@@ -283,6 +307,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
         this.date = mediaFromApi.date;
         this.datePublished = mediaFromApi.datePublished;
         this.description = mediaFromApi.description;
+        this.category = mediaFromApi.category;
         this.keywords = mediaFromApi.keywords;
         this.rating = mediaFromApi.rating;
         this.thumbnailUrl = mediaFromApi.thumbnailUrl;
