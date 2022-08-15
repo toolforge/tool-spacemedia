@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
 
 @Service
@@ -25,9 +22,6 @@ public class InitializationService implements ApplicationRunner {
 
     @Autowired
     private StatsService statsService;
-
-    @Autowired
-    private HashAssociationRepository hashAssociationRepository;
 
     @Autowired
     private List<AbstractAgencyService<?, ?, ?, ?, ?, ?>> agencies;
@@ -43,9 +37,6 @@ public class InitializationService implements ApplicationRunner {
 
     @Value("${reset.sha1.hashes}")
     private boolean resetSha1Hashes;
-
-    @Value("${migrate.obsolete.hashes}")
-    private boolean migrateObosoleteHashes;
 
     @Value("${reset.problems}")
     private boolean resetProblems;
@@ -66,9 +57,6 @@ public class InitializationService implements ApplicationRunner {
         }
         if (resetSha1Hashes) {
             LOGGER.info("Reset a total number of {} SHA-1 hashes", self.resetSha1Hashes());
-        }
-        if (migrateObosoleteHashes) {
-            LOGGER.info("Reset a total number of {} SHA-1 hashes", self.migrateObsoleteHashes());
         }
         // Perform the most exhaustive data-fetching operation to populate all caches at startup
         statsService.getStats(true);
@@ -97,22 +85,5 @@ public class InitializationService implements ApplicationRunner {
     @Transactional
     public int resetProblems() {
         return agencies.stream().mapToInt(AbstractAgencyService::resetProblems).sum();
-    }
-
-    @Transactional
-    public int migrateObsoleteHashes() {
-        List<String> obsoleteHashes = hashAssociationRepository.findObsoleteSha1();
-        obsoleteHashes.forEach(self::migrateObsoleteHash);
-        return obsoleteHashes.size();
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void migrateObsoleteHash(String sha1) {
-        String sha1base36 = CommonsService.base36Sha1(sha1);
-        if (!hashAssociationRepository.existsById(sha1base36)) {
-            hashAssociationRepository.save(new HashAssociation(sha1base36, hashAssociationRepository.findById(sha1)
-                    .orElseThrow(() -> new IllegalStateException(sha1)).getPhash()));
-        }
-        hashAssociationRepository.deleteById(sha1);
     }
 }
