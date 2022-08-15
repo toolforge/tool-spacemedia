@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -247,6 +248,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 LOGGER.error("I/O error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
             } catch (UploadException e) {
                 LOGGER.error("Upload error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
+            } catch (DataAccessException e) {
+                LOGGER.error("DAO error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
             }
         }
         ApiPageInfo pi = response.getPageInfo();
