@@ -142,12 +142,12 @@ public class DvidsVideo extends DvidsMedia {
         super.copyDataFrom(mediaFromApi);
         if (mediaFromApi instanceof DvidsVideo) {
             DvidsVideo vidFromApi = (DvidsVideo) mediaFromApi;
-            this.aspectRatio = vidFromApi.aspectRatio;
-            this.duration = vidFromApi.duration;
-            this.files = vidFromApi.files;
-            this.hlsUrl = vidFromApi.hlsUrl;
-            this.timeStart = vidFromApi.timeStart;
-            this.image = vidFromApi.image;
+            setAspectRatio(vidFromApi.getAspectRatio());
+            setDuration(vidFromApi.getDuration());
+            setFiles(vidFromApi.getFiles());
+            setHlsUrl(vidFromApi.getHlsUrl());
+            setTimeStart(vidFromApi.getTimeStart());
+            setImage(vidFromApi.getImage());
         }
         return this;
     }

@@ -35,7 +35,7 @@ public class DvidsAudio extends DvidsMedia {
     public DvidsAudio copyDataFrom(DvidsMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         if (mediaFromApi instanceof DvidsAudio) {
-            this.duration = ((DvidsAudio) mediaFromApi).duration;
+            setDuration(((DvidsAudio) mediaFromApi).getDuration());
         }
         return this;
     }

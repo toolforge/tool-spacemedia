@@ -303,19 +303,19 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     }
 
     public DvidsMedia copyDataFrom(DvidsMedia mediaFromApi) {
-        this.branch = mediaFromApi.branch;
-        this.date = mediaFromApi.date;
-        this.datePublished = mediaFromApi.datePublished;
-        this.description = mediaFromApi.description;
-        this.category = mediaFromApi.category;
-        this.keywords = mediaFromApi.keywords;
-        this.rating = mediaFromApi.rating;
-        this.thumbnailUrl = mediaFromApi.thumbnailUrl;
-        this.timestamp = mediaFromApi.timestamp;
-        this.title = mediaFromApi.title;
-        this.unit = mediaFromApi.unit;
-        this.unitName = mediaFromApi.unitName;
-        this.virin = mediaFromApi.virin;
+        setBranch(mediaFromApi.getBranch());
+        setDate(mediaFromApi.getDate());
+        setDatePublished(mediaFromApi.getDatePublished());
+        setDescription(mediaFromApi.getDescription());
+        setCategory(mediaFromApi.getCategory());
+        setKeywords(mediaFromApi.getKeywords());
+        setRating(mediaFromApi.getRating());
+        setThumbnailUrl(mediaFromApi.getThumbnailUrl());
+        setTimestamp(mediaFromApi.getTimestamp());
+        setTitle(mediaFromApi.getTitle());
+        setUnit(mediaFromApi.getUnit());
+        setUnitName(mediaFromApi.getUnitName());
+        setVirin(mediaFromApi.getVirin());
         return this;
     }
 }

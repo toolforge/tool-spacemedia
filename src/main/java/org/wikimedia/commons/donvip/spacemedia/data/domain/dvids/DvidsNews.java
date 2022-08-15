@@ -8,19 +8,6 @@ import org.hibernate.search.annotations.Indexed;
 @Indexed
 public class DvidsNews extends DvidsMedia {
 
-    /**
-     * Category of the asset.
-     */
-    private String category;
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
     @Override
     public String toString() {
         return "DvidsNews ["
@@ -29,14 +16,5 @@ public class DvidsNews extends DvidsMedia {
                 + (getDatePublished() != null ? "datePublished=" + getDatePublished() + ", " : "")
                 + (getDate() != null ? "date=" + getDate() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() : "") + "]";
-    }
-
-    @Override
-    public DvidsNews copyDataFrom(DvidsMedia mediaFromApi) {
-        super.copyDataFrom(mediaFromApi);
-        if (mediaFromApi instanceof DvidsNews) {
-            this.category = ((DvidsNews) mediaFromApi).category;
-        }
-        return this;
     }
 }

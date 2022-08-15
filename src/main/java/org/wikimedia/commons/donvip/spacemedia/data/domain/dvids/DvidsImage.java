@@ -68,8 +68,9 @@ public class DvidsImage extends DvidsMedia {
         super.copyDataFrom(mediaFromApi);
         if (mediaFromApi instanceof DvidsImage) {
             DvidsImage imgFromApi = (DvidsImage) mediaFromApi;
-            this.aspectRatio = imgFromApi.aspectRatio;
-            this.dimensions = imgFromApi.dimensions;
+            setAspectRatio(imgFromApi.getAspectRatio());
+            setDimensions(imgFromApi.getDimensions());
+            setImage(imgFromApi.getImage());
         }
         return this;
     }
