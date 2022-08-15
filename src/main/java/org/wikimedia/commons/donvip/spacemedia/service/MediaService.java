@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -95,6 +96,9 @@ public class MediaService {
     @Value("${update.fullres.images}")
     private boolean updateFullResImages;
 
+    @Value("#{'${media.blocklist.ignored.terms}'.split(';')}")
+    private List<String> blockListIgnoredTerms;
+
     public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
             boolean forceUpdate) throws IOException {
         return updateMedia(media, originalRepo, forceUpdate, null);
@@ -115,7 +119,30 @@ public class MediaService {
         if (originalRepo != null && findDuplicatesInRepository(media, originalRepo)) {
             result = true;
         }
+        if (!Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
+            result = true;
+        }
         return result;
+    }
+
+    private boolean belongsToBlocklist(Media<?, ?> media) {
+        String titleAndDescription = "";
+        if (media.getTitle() != null) {
+            titleAndDescription += media.getTitle().toLowerCase(Locale.ENGLISH);
+        }
+        if (media.getDescription() != null) {
+            titleAndDescription += media.getDescription().toLowerCase(Locale.ENGLISH);
+        }
+        if (!titleAndDescription.isEmpty()) {
+            for (String ignoredTerm : blockListIgnoredTerms) {
+                if (titleAndDescription.contains(ignoredTerm)) {
+                    media.setIgnoredReason("Title or description contains term in block list: " + ignoredTerm);
+                    media.setIgnored(Boolean.TRUE);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean findDuplicatesInRepository(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> repo) {
