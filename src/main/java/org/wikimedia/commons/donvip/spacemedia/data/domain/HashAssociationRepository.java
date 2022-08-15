@@ -9,4 +9,7 @@ public interface HashAssociationRepository extends CrudRepository<HashAssociatio
 
     @Query("select distinct sha1 from HashAssociation where phash = ?1")
     List<String> findSha1ByPhash(String phash);
+
+    @Query("select distinct sha1 from HashAssociation where length(sha1) = 40")
+    List<String> findObsoleteSha1();
 }

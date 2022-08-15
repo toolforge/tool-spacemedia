@@ -258,8 +258,7 @@ public class CommonsService {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
         // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters
         Set<String> sha1base36 = sha1s.stream()
-                .map(sha1 -> sha1.length() == 31 ? sha1
-                        : String.format("%31s", new BigInteger(sha1, 16).toString(36)).replace(' ', '0'))
+                .map(sha1 -> sha1.length() == 31 ? sha1 : base36Sha1(sha1))
                 .collect(toSet());
         Set<String> files = imageRepository.findBySha1InOrderByTimestamp(sha1base36).stream().map(CommonsImage::getName)
                 .collect(toSet());
@@ -274,6 +273,16 @@ public class CommonsService {
             }
         }
         return files;
+    }
+
+    /**
+     * Converts a SHA-1 into base 36 SHA-1 used by Commons.
+     *
+     * @param sha1 SHA-1 hash
+     * @return base 36 SHA-1 used by Commons
+     */
+    public static String base36Sha1(String sha1) {
+        return String.format("%31s", new BigInteger(sha1, 16).toString(36)).replace(' ', '0');
     }
 
     public synchronized Tokens queryTokens() throws IOException {

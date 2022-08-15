@@ -13,10 +13,10 @@ import javax.persistence.Table;
 public class HashAssociation {
 
     /**
-     * SHA-1 hash.
+     * SHA-1 hash, encoded in base 36 (31 characters).
      */
     @Id
-    @Column(nullable = false, length = 42)
+    @Column(nullable = false, length = 32)
     private String sha1;
 
     /**
@@ -29,15 +29,31 @@ public class HashAssociation {
         // Default constructor
     }
 
+    /**
+     * Constructs a new {@code HashAssociation}
+     *
+     * @param sha1  base 36 SHA-1
+     * @param phash perceptual hash
+     */
     public HashAssociation(String sha1, String phash) {
         this.sha1 = sha1;
         this.phash = phash;
     }
 
+    /**
+     * Returns the base36 SHA-1.
+     *
+     * @return the base36 SHA-1
+     */
     public String getSha1() {
         return sha1;
     }
 
+    /**
+     * Sets the base36 SHA-1.
+     *
+     * @param sha1 the base36 SHA-1
+     */
     public void setSha1(String sha1) {
         this.sha1 = sha1;
     }

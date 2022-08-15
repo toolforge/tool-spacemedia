@@ -380,8 +380,11 @@ public class MediaService {
     }
 
     private void updateHashes(String sha1, String phash) {
-        if (sha1 != null && !hashRepository.existsById(sha1)) {
-            hashRepository.save(new HashAssociation(sha1, phash));
+        if (sha1 != null) {
+            String sha1base36 = CommonsService.base36Sha1(sha1);
+            if (!hashRepository.existsById(sha1base36)) {
+                hashRepository.save(new HashAssociation(sha1base36, phash));
+            }
         }
     }
 
