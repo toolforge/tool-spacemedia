@@ -40,12 +40,12 @@
 	        <a class="nav-link" href="https://commons.wikimedia.org/wiki/Commons:Spacemedia">Documentation</a>
 	      </li>
 	      <li class="nav-item dropdown">
-	        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 	          Sources
 	        </a>
-	        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-	          <a class="dropdown-item" th:each="agency : ${agencies}" th:text="${agency.name}" th:href="@{/{id}(id=${agency.id})}"></a>
-	        </div>
+	        <ul class="dropdown-menu">
+	          <li th:each="agency : ${agencies}"><a class="dropdown-item" th:text="${agency.name}" th:href="@{/{id}(id=${agency.id})}"></a></li>
+	        </ul>
 	      </li>
 	      <li class="nav-item">
 	        <a class="nav-link" href="https://phabricator.wikimedia.org/project/view/4235/">Issues</a>
@@ -70,7 +70,7 @@
 		<script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
 		<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
 		<script th:src="@{/webjars/datatables/js/jquery.dataTables.min.js}"></script>
-		<script th:src="@{/webjars/datatables/js/dataTables.bootstrap4.min.js}"></script>
+		<script th:src="@{/webjars/datatables/js/dataTables.bootstrap5.min.js}"></script>
 	</div>
   </body>
 </html>
