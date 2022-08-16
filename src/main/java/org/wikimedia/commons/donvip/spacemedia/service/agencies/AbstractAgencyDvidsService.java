@@ -15,6 +15,7 @@ import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +34,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpClientErrorException.BadRequest;
+import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -180,29 +183,71 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     protected void updateDvidsMedia() {
         LocalDateTime start = startUpdateMedia();
+        Set<String> idsKnownToDvidsApi = new HashSet<>();
         int count = 0;
         for (String unit : units) {
             for (DvidsMediaType type : new DvidsMediaType[] {
                     DvidsMediaType.video, DvidsMediaType.image }) {
-                count += updateDvidsMedia(unit, type);
+                count += updateDvidsMedia(unit, type, idsKnownToDvidsApi);
             }
         }
+        deleteOldDvidsMedia(idsKnownToDvidsApi);
         endUpdateMedia(count, start);
     }
 
-    private int updateDvidsMedia(String unit, DvidsMediaType type) {
+    private void deleteOldDvidsMedia(Set<String> idsKnownToDvidsApi) {
+        // DVIDS API Terms of Service force us to check for deleted content
+        // https://api.dvidshub.net/docs/tos
+        RestTemplate rest = new RestTemplate();
+        for (DvidsMedia media : listMissingMedia()) {
+            String id = media.getId().toString();
+            if (!idsKnownToDvidsApi.contains(id)) {
+                try {
+                    getMediaFromApi(rest, id, media.getUnit());
+                } catch (IllegalArgumentException e) {
+                    String message = e.getMessage();
+                    if (message != null && message.startsWith("No result from DVIDS API for ")) {
+                        mediaRepository.delete(media);
+                    } else {
+                        LOGGER.error(message, e);
+                    }
+                } catch (BadRequest e) {
+                    String message = e.getMessage();
+                    if (message != null && message.contains(" was not found")) {
+                        mediaRepository.delete(media);
+                    } else {
+                        LOGGER.error(message, e);
+                    }
+                } catch (Forbidden e) {
+                    String message = e.getMessage();
+                    if (message != null && message.contains(" was found, but is not published.")) {
+                        mediaRepository.delete(media);
+                    } else {
+                        LOGGER.error(message, e);
+                    }
+                }
+            }
+        }
+    }
+
+    private int updateDvidsMedia(String unit, DvidsMediaType type, Set<String> idsKnownToDvidsApi) {
         LocalDateTime start = LocalDateTime.now();
         RestTemplate rest = new RestTemplate();
         int count = 0;
-        LOGGER.info("Fetching DVIDS {}s from unit '{}'...", type, unit);
         try {
             boolean loop = true;
             int page = 1;
+            LOGGER.info("Fetching DVIDS {}s from unit '{}' (page {}/?)...", type, unit, page);
             while (loop) {
                 UpdateResult ur = doUpdateDvidsMedia(rest,
                         searchDvidsMediaIds(rest, false, type, unit, 0, page++), unit);
+                idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                 count += ur.count;
-                loop = ur.loop;
+                loop = count < ur.totalResults;
+                if (loop) {
+                    LOGGER.info("Fetching DVIDS {}s from unit '{}' (page {}/{})...", type, unit, page,
+                            ur.numberOfPages());
+                }
             }
             LOGGER.info("{} {}s completed: {} {}s in {}", unit, type, count, type,
                     Duration.between(LocalDateTime.now(), start));
@@ -215,12 +260,17 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                     int page = 1;
                     start = LocalDateTime.now();
                     count = 0;
-                    LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {}...", type, unit, year);
+                    LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/?)...", type, unit, year, page);
                     while (loop) {
                         UpdateResult ur = doUpdateDvidsMedia(rest,
                                 searchDvidsMediaIds(rest, true, type, unit, year, page++), unit);
+                        idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                         count += ur.count;
-                        loop = ur.loop;
+                        loop = count < ur.totalResults;
+                        if (loop) {
+                            LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/{})...", type, unit,
+                                    year, page, ur.numberOfPages());
+                        }
                     }
                     LOGGER.info("{} {}s for year {} completed: {} {}s in {}", unit, type, year,
                             count, type, Duration.between(LocalDateTime.now(), start));
@@ -237,9 +287,11 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     private UpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
         int count = 0;
+        Set<String> idsKnownToDvidsApi = new HashSet<>();
         for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted()
                 .collect(toList())) {
             try {
+                idsKnownToDvidsApi.add(id);
                 count += processDvidsMedia(mediaRepository.findById(new DvidsMediaTypedId(id)),
                         () -> getMediaFromApi(rest, id, unit));
             } catch (HttpClientErrorException e) {
@@ -253,7 +305,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             }
         }
         ApiPageInfo pi = response.getPageInfo();
-        return new UpdateResult(pi.getResultsPerPage() > 0 && response.getResults().size() == pi.getResultsPerPage(), count);
+        return new UpdateResult(pi.getResultsPerPage(), pi.getTotalResults(), count, idsKnownToDvidsApi);
     }
 
     private static Object smartExceptionLog(Throwable e) {
@@ -261,20 +313,29 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     private DvidsMedia getMediaFromApi(RestTemplate rest, String id, String unit) {
-        DvidsMedia media = rest
-                .getForObject(assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)), ApiAssetResponse.class)
+        DvidsMedia media = Optional.ofNullable(
+                rest.getForObject(assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)), ApiAssetResponse.class))
+                .orElseThrow(() -> new IllegalArgumentException("No result from DVIDS API for " + id))
                 .getResults();
         media.setUnit(unit);
         return media;
     }
 
     private static class UpdateResult {
-        private boolean loop;
-        private int count;
+        private final Set<String> idsKnownToDvidsApi;
+        private final int count;
+        private final int resultsPerPage;
+        private final int totalResults;
 
-        public UpdateResult(boolean loop, int count) {
-            this.loop = loop;
+        public UpdateResult(int resultsPerPage, int totalResults, int count, Set<String> processedIds) {
             this.count = count;
+            this.resultsPerPage = resultsPerPage;
+            this.totalResults = totalResults;
+            this.idsKnownToDvidsApi = processedIds;
+        }
+
+        public int numberOfPages() {
+            return (int) Math.ceil((double) totalResults / (double) resultsPerPage);
         }
     }
 
