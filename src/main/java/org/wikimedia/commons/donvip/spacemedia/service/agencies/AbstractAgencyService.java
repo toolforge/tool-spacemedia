@@ -130,7 +130,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @PostConstruct
     void init() throws IOException {
-        ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/ignored.terms.csv"));
+        ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/search.ignored.terms.csv"));
         uploadMode = UploadMode.valueOf(
                 env.getProperty(id + ".upload", String.class, UploadMode.DISABLED.name())
                     .toUpperCase(Locale.ENGLISH));

@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -23,6 +24,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -51,6 +54,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.MetadataProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
+import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -96,8 +100,12 @@ public class MediaService {
     @Value("${update.fullres.images}")
     private boolean updateFullResImages;
 
-    @Value("#{'${media.blocklist.ignored.terms}'.split(';')}")
-    private List<String> blockListIgnoredTerms;
+    private Set<String> blockListIgnoredTerms;
+
+    @PostConstruct
+    public void init() throws IOException {
+        blockListIgnoredTerms = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.terms.csv"));
+    }
 
     public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
             boolean forceUpdate) throws IOException {
@@ -134,12 +142,12 @@ public class MediaService {
             titleAndDescription += media.getDescription().toLowerCase(Locale.ENGLISH);
         }
         if (!titleAndDescription.isEmpty()) {
-            for (String ignoredTerm : blockListIgnoredTerms) {
-                if (titleAndDescription.contains(ignoredTerm)) {
-                    media.setIgnoredReason("Title or description contains term in block list: " + ignoredTerm);
-                    media.setIgnored(Boolean.TRUE);
-                    return true;
-                }
+            String ignoredTerms = blockListIgnoredTerms.parallelStream().filter(titleAndDescription::contains).sorted()
+                    .collect(joining(","));
+            if (!ignoredTerms.isEmpty()) {
+                media.setIgnoredReason("Title or description contains term(s) in block list: " + ignoredTerms);
+                media.setIgnored(Boolean.TRUE);
+                return true;
             }
         }
         return false;
