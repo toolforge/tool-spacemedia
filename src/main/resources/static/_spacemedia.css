@@ -1,0 +1,3 @@
+/* https://stackoverflow.com/questions/48474/how-do-i-position-one-image-on-top-of-another-in-html */
+.imagelink { float: left; position: relative; } 
+.cornerimage { position: absolute; top: 0; right: 0; } 

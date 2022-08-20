@@ -26,8 +26,10 @@
 	      <tbody>
 		      <tr th:each="media : ${medias}">
 		        <td>
-		          <a th:href="${agency.getSourceUrl(media)}">
-		            <img th:src="${media.PreviewUrl}" width="210px" />
+		          <a th:href="${agency.getSourceUrl(media)}" class="imagelink">
+		            <img th:src="${media.PreviewUrl}" width="210px" th:alt="${media.PreviewUrl}" />
+		            <img th:if="${media.video}" class="cornerimage" width="80px" src="/Antu_videoclip-amarok.svg" alt="" />
+		            <img th:if="${media.audio}" class="cornerimage" width="80px" src="/Antu_audio-volume-high.svg" alt="" />
 		          </a>
                   <a th:href="@{/{id}/rest/refreshmedia/{mid}(id=${agency.id},mid=${media.id})}" target="_blank">
                     <img width="24" height="24" th:alt="'refresh ' + ${media.id}" th:src="@{/Gtk-refresh.svg}">
@@ -72,7 +74,7 @@
 		          <div th:each="original : ${agency.getOriginalMedia(media)}">
 		            <a th:text="${original.media.id} + ' (' + ${#numbers.formatDecimal(original.duplicate.similarityScore, 1, 2)} + ')'"></a>
 		            <a th:href="${original.media.metadata.assetUrl}">
-		              <img th:src="${original.media.previewUrl}" width="210px" />
+		              <img th:src="${original.media.previewUrl}" width="210px" alt="${original.media.previewUrl}"/>
 		            </a>
 		            <div th:each="file : ${original.media.allCommonsFileNames}">
 		              <a th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a><br>
