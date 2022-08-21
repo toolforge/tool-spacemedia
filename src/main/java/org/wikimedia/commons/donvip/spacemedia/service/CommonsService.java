@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.time.temporal.TemporalQueries.localDate;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
 
@@ -9,14 +10,17 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.SocketTimeoutException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,10 +56,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
@@ -182,6 +188,18 @@ public class CommonsService {
     @Value("${commons.permitted.file.types}")
     private Set<String> permittedFileTypes;
 
+    @Value("${commons.hashes.computation.mode}")
+    private HashComputationMode hashMode;
+
+    @Value("${commons.hashes.remote.application.uri}")
+    private URI remoteApplication;
+
+    @Value("${threads.number:8}")
+    private int threadsNumber;
+
+    @Autowired
+    private ExecutorService taskExecutor;
+
     private final String account;
     private final String userAgent;
     private final OAuth10aService oAuthService;
@@ -191,7 +209,13 @@ public class CommonsService {
     private String token;
     private LocalDateTime lastUpload;
 
-    private final DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd000000");
+
+    private enum HashComputationMode {
+        LOCAL, REMOTE;
+    }
 
     public CommonsService(
             @Value("${application.version}") String appVersion,
@@ -825,31 +849,52 @@ public class CommonsService {
 
     @Scheduled(fixedRateString = "${commons.hashes.update.rate}", initialDelayString = "${commons.hashes.initial.delay}")
     public void computeHashesOfAllFilesAsc() {
-        computeHashesOfAllFiles(Sort.Direction.ASC);
+        computeHashesOfAllFiles(Direction.ASC);
     }
 
     @Scheduled(fixedRateString = "${commons.hashes.update.rate}", initialDelayString = "${commons.hashes.initial.delay}")
     public void computeHashesOfAllFilesDesc() {
-        computeHashesOfAllFiles(Sort.Direction.DESC);
+        computeHashesOfAllFiles(Direction.DESC);
     }
 
-    private void computeHashesOfAllFiles(Sort.Direction order) {
+    private void computeHashesOfAllFiles(Direction order) {
         LOGGER.info("Computing perceptual hashes of files in Commons ({} order)...", order);
         final RuntimeData runtime = runtimeDataRepository.findById(COMMONS).orElseGet(() -> new RuntimeData(COMMONS));
-        final String startingTimestamp = Optional.ofNullable(runtime.getLastTimestamp()).orElse("20010101000000");
-        final String endingTimestamp = ZonedDateTime.now(ZoneId.of("UTC")).format(timestampFormatter);
+        final RestTemplate restTemplate = new RestTemplate();
+        final long startingTimestamp = Long.parseLong(hashMode == HashComputationMode.LOCAL
+                ? Optional.ofNullable(runtime.getLastTimestamp()).orElse("20010101000000")
+                : restTemplate.getForObject(remoteApplication + "/hashLastTimestamp", String.class));
+        final long endingTimestamp = Long.parseLong(ZonedDateTime.now(ZoneId.of("UTC")).format(timestampFormatter));
+        final int nThreads = hashMode == HashComputationMode.LOCAL || order == Direction.DESC ? 1 : threadsNumber - 4;
+        final LocalDate startingDate = timestampFormatter.parse(Long.toString(startingTimestamp), localDate());
+        final long days = ChronoUnit.DAYS.between(startingDate,
+                timestampFormatter.parse(Long.toString(endingTimestamp), localDate()));
+        final long sliceInDays = days / nThreads;
+
+        for (int i = 0; i < nThreads; i++) {
+            final long startOffsetDays = i * sliceInDays;
+            taskExecutor.submit(() -> computeHashesOfFiles(order, runtime, restTemplate,
+                            startingDate.plusDays(startOffsetDays).format(dateFormatter),
+                            startingDate.plusDays(startOffsetDays + sliceInDays).format(dateFormatter)));
+        }
+    }
+
+    private void computeHashesOfFiles(Direction order, final RuntimeData runtime, final RestTemplate restTemplate,
+            final String startingTimestamp, final String endingTimestamp) {
         final LocalDateTime start = LocalDateTime.now();
         Page<CommonsImageProjection> page = null;
         String lastTimestamp = null;
         int hashCount = 0;
         int pageIndex = 0;
+        LOGGER.info("Computing perceptual hashes of files in Commons ({} order) between {} and {}", order,
+                startingTimestamp, endingTimestamp);
         do {
             page = imageRepository.findByMinorMimeInAndTimestampBetween(Set.of("gif", "jpeg", "png", "tiff", "webp"),
                     startingTimestamp, endingTimestamp, PageRequest.of(pageIndex++, 1000, order, "timestamp"));
             for (CommonsImageProjection image : page.getContent()) {
-                hashCount += computeAndSaveHash(image);
+                hashCount += computeAndSaveHash(image, restTemplate);
                 lastTimestamp = image.getTimestamp();
-                if (Sort.Direction.ASC == order) {
+                if (Direction.ASC == order && hashMode == HashComputationMode.LOCAL) {
                     runtime.setLastTimestamp(lastTimestamp);
                     runtimeDataRepository.save(runtime);
                 }
@@ -860,15 +905,18 @@ public class CommonsService {
         } while (page.hasNext());
     }
 
-    private int computeAndSaveHash(CommonsImageProjection image) {
+    private int computeAndSaveHash(CommonsImageProjection image, RestTemplate restTemplate) {
         if (!hashRepository.existsById(image.getSha1())) {
             BufferedImage bi = null;
             try {
                 String md5 = DigestUtils.md5Hex(image.getName());
                 bi = Utils.readImage(new URL(String.format("https://upload.wikimedia.org/wikipedia/commons/%c/%s/%s",
                         md5.charAt(0), md5.substring(0, 2), image.getName())), false);
-                hashRepository.save(
+                HashAssociation hash = hashRepository.save(
                         new HashAssociation(image.getSha1(), HashHelper.encode(HashHelper.computePerceptualHash(bi))));
+                if (hashMode == HashComputationMode.REMOTE) {
+                    restTemplate.put(remoteApplication + "/hashAssociation", hash);
+                }
                 return 1;
             } catch (IOException | URISyntaxException | ImageDecodingException | RuntimeException e) {
                 LOGGER.error("Failed to compute/save hash of {}: {}", image, e.toString());
