@@ -65,7 +65,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkI
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImage;
@@ -284,7 +283,8 @@ public class CommonsService {
         Set<String> sha1base36 = sha1s.stream()
                 .map(sha1 -> sha1.length() == 31 ? sha1 : base36Sha1(sha1))
                 .collect(toSet());
-        Set<String> files = imageRepository.findBySha1InOrderByTimestamp(sha1base36).stream().map(CommonsImage::getName)
+        Set<String> files = imageRepository.findBySha1InOrderByTimestamp(sha1base36).stream()
+                .map(CommonsImageProjection::getName)
                 .collect(toSet());
         if (files.isEmpty()) {
             files.addAll(
@@ -775,15 +775,16 @@ public class CommonsService {
                     .getElementsByClass("special").first().getElementsByTag("li")) {
                 String title = li.getElementsByTag("a").first().ownText().replace(' ', '_');
                 if (!title.contains("-_DPLA_-")) {
-                    CommonsImage image = findImage(title);
+                    CommonsImageProjection image = findImage(title);
                     if (image != null && image.getWidth() > 1 && image.getHeight() > 1
                             && !ignoredDuplicatesSha1.contains(image.getSha1())) {
-                        List<CommonsImage> duplicates = imageRepository.findBySha1OrderByTimestamp(image.getSha1());
+                        List<CommonsImageProjection> duplicates = imageRepository
+                                .findBySha1OrderByTimestamp(image.getSha1());
                         if (duplicates.size() > 1
                                 && duplicates.stream().noneMatch(
                                         d -> ignoredDuplicatesName.contains(d.getName())
                                                 || self.isInIgnoredCategory(d))) {
-                            CommonsImage olderImage = duplicates.get(0);
+                            CommonsImageProjection olderImage = duplicates.get(0);
                             for (int i = 1; i < duplicates.size(); i++) {
                                 count += handleDuplicateFile(olderImage, duplicates.get(i), count);
                             }
@@ -796,7 +797,7 @@ public class CommonsService {
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")
-    public boolean isInIgnoredCategory(CommonsImage d) {
+    public boolean isInIgnoredCategory(CommonsImageProjection d) {
         return categoryLinkRepository
                 .findByIdFrom(pageRepository.findByFileTitle(d.getName())
                         .orElseThrow(() -> new IllegalStateException("No page named " + d.getName())))
@@ -804,7 +805,8 @@ public class CommonsService {
                 .anyMatch(c -> ignoredDuplicatesCategories.stream().anyMatch(x -> c.getId().getTo().startsWith(x)));
     }
 
-    private int handleDuplicateFile(CommonsImage olderImage, CommonsImage dupe, int count) throws IOException {
+    private int handleDuplicateFile(CommonsImageProjection olderImage, CommonsImageProjection dupe, int count)
+            throws IOException {
         int result = 0;
         CommonsPage dupePage = pageRepository.findByFileTitle(dupe.getName())
                 .orElseThrow(() -> new IllegalStateException("No page named " + dupe.getName()));
@@ -830,8 +832,8 @@ public class CommonsService {
         return result;
     }
 
-    private CommonsImage findImage(String title) {
-        Optional<CommonsImage> imageOpt = imageRepository.findById(title);
+    private CommonsImageProjection findImage(String title) {
+        Optional<CommonsImageProjection> imageOpt = imageRepository.findByName(title);
         if (imageOpt.isEmpty()) {
             // Check if it's a redirect
             CommonsPage page = pageRepository.findByFileTitle(title).orElse(null);
@@ -840,7 +842,7 @@ public class CommonsService {
                 return null;
             } else if (Boolean.TRUE.equals(page.getIsRedirect())) {
                 title = page.getRedirect().getTitle();
-                imageOpt = imageRepository.findById(title);
+                imageOpt = imageRepository.findByName(title);
             }
         }
         String errorMessage = "No image named " + title;
