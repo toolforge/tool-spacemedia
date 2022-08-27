@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -126,6 +127,8 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
      * VIRIN of asset.
      */
     private String virin;
+
+    private static final Pattern ONLY_DIGITS = Pattern.compile("\\d+");
 
     @Override
     public DvidsMediaTypedId getId() {
@@ -299,7 +302,15 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
 
     @Override
     public final String getUploadTitle() {
-        return title + " (" + getId().getId() + ")";
+        if (ONLY_DIGITS.matcher(title.replace(" ", "").replace("/", "")).matches()) {
+            // Avoid https://commons.wikimedia.org/wiki/MediaWiki:Titleblacklist
+            // # File names with no letters, except for some meaningless prefix:
+            // File:\P{L}*\.[^.]+
+            // File:\P{L}*(small|medium|large)\)?\.[^.]+
+            return title + " (" + unit + " " + getId().getId() + ")";
+        } else {
+            return title + " (" + getId().getId() + ")";
+        }
     }
 
     public DvidsMedia copyDataFrom(DvidsMedia mediaFromApi) {
