@@ -60,4 +60,12 @@ public class CommonsImageProjection {
         return Objects.equals(name, other.name) && Objects.equals(sha1, other.sha1)
                 && Objects.equals(timestamp, other.timestamp) && width == other.width && height == other.height;
     }
+
+    @Override
+    public String toString() {
+        return "CommonsImageProjection [" + (name != null ? "name=" + name + ", " : "")
+                + (sha1 != null ? "sha1=" + sha1 + ", " : "")
+                + (timestamp != null ? "timestamp=" + timestamp + ", " : "") + "width=" + width + ", height=" + height
+                + "]";
+    }
 }
