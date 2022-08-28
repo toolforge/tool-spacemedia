@@ -110,10 +110,12 @@ public final class Utils {
         return path.substring(path.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH);
     }
 
-    public static BufferedImage readImage(URL url, boolean readMetadata)
+    public static BufferedImage readImage(URL url, boolean readMetadata, boolean log)
             throws IOException, URISyntaxException, ImageDecodingException {
         URI uri = urlToUri(url);
-        LOGGER.info("Reading image {}", uri);
+        if (log) {
+            LOGGER.info("Reading image {}", uri);
+        }
         String extension = findExtension(uri.toString());
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
