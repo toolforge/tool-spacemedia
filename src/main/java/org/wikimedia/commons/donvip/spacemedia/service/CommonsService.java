@@ -912,8 +912,12 @@ public class CommonsService {
             BufferedImage bi = null;
             try {
                 String md5 = DigestUtils.md5Hex(image.getName());
-                bi = Utils.readImage(new URL(String.format("https://upload.wikimedia.org/wikipedia/commons/%c/%s/%s",
-                        md5.charAt(0), md5.substring(0, 2), image.getName())), false, false);
+                URL url = new URL(String.format("https://upload.wikimedia.org/wikipedia/commons/%c/%s/%s",
+                        md5.charAt(0), md5.substring(0, 2), image.getName()));
+                bi = Utils.readImage(url, false, false);
+                if (bi == null) {
+                    throw new IOException("Failed to read image from " + url);
+                }
                 HashAssociation hash = hashRepository.save(
                         new HashAssociation(image.getSha1(), HashHelper.encode(HashHelper.computePerceptualHash(bi))));
                 if (hashMode == HashComputationMode.REMOTE) {

@@ -90,6 +90,7 @@ public final class Utils {
     public static BufferedImage readImage(ImageInputStream stream, boolean readMetadata) throws IOException {
         Iterator<ImageReader> iter = ImageIO.getImageReaders(stream);
         if (!iter.hasNext()) {
+            LOGGER.warn("No image reader found");
             return null;
         }
 
