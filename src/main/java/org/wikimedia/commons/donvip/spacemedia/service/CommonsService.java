@@ -9,6 +9,7 @@ import static java.util.stream.Collectors.toSet;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -95,6 +96,8 @@ import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundExcepti
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.commons.VeApiResponse;
+import org.wikimedia.commons.donvip.spacemedia.service.commons.VisualEditorResponse;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -448,96 +451,6 @@ public class CommonsService {
             link.remove();
         }
         return doc.toString();
-    }
-
-    static class VeApiError {
-        private String code;
-        private String info;
-        private String docref;
-
-        public String getCode() {
-            return code;
-        }
-
-        public void setCode(String code) {
-            this.code = code;
-        }
-
-        public String getInfo() {
-            return info;
-        }
-
-        public void setInfo(String info) {
-            this.info = info;
-        }
-
-        public String getDocref() {
-            return docref;
-        }
-
-        public void setDocref(String docref) {
-            this.docref = docref;
-        }
-
-        @Override
-        public String toString() {
-            return "VeApiError [" + (code != null ? "code=" + code + ", " : "")
-                    + (info != null ? "info=" + info + ", " : "") + (docref != null ? "docref=" + docref : "") + "]";
-        }
-    }
-
-    static class VeApiResponse {
-        private VisualEditorResponse visualeditor;
-        private VeApiError error;
-
-        public VisualEditorResponse getVisualeditor() {
-            return visualeditor;
-        }
-
-        public void setVisualeditor(VisualEditorResponse visualeditor) {
-            this.visualeditor = visualeditor;
-        }
-
-        public VeApiError getError() {
-            return error;
-        }
-
-        public void setError(VeApiError error) {
-            this.error = error;
-        }
-
-        @Override
-        public String toString() {
-            return "VeApiResponse [" + (visualeditor != null ? "visualeditor=" + visualeditor + ", " : "")
-                    + (error != null ? "error=" + error : "") + "]";
-        }
-    }
-
-    static class VisualEditorResponse {
-        private String result;
-        private String content;
-
-        public String getResult() {
-            return result;
-        }
-
-        public void setResult(String result) {
-            this.result = result;
-        }
-
-        public String getContent() {
-            return content;
-        }
-
-        public void setContent(String content) {
-            this.content = content;
-        }
-
-        @Override
-        public String toString() {
-            return "VisualEditorResponse [" + (result != null ? "result=" + result + ", " : "")
-                    + (content != null ? "content=" + content : "") + "]";
-        }
     }
 
     /**
@@ -911,9 +824,7 @@ public class CommonsService {
         if (!hashRepository.existsById(image.getSha1())) {
             BufferedImage bi = null;
             try {
-                String md5 = DigestUtils.md5Hex(image.getName());
-                URL url = new URL(String.format("https://upload.wikimedia.org/wikipedia/commons/%c/%s/%s",
-                        md5.charAt(0), md5.substring(0, 2), image.getName()));
+                URL url = getImageUrl(image.getName());
                 bi = Utils.readImage(url, false, false);
                 if (bi == null) {
                     throw new IOException("Failed to read image from " + url);
@@ -933,5 +844,19 @@ public class CommonsService {
             }
         }
         return 0;
+    }
+
+    protected static URL getImageUrl(String imageName) throws MalformedURLException {
+        // https://www.mediawiki.org/wiki/Manual:$wgHashedUploadDirectory
+        String md5 = DigestUtils.md5Hex(imageName);
+        // https://www.mediawiki.org/wiki/Manual:PAGENAMEE_encoding#Encodings_compared
+        // algo used: urlencode(WIKI) Incompatible with Java UrlEncoder.encode
+        String encodedFilename = imageName.replace(' ', '_').replace("%", "%25").replace("\"", "%22")
+                .replace("#", "%23").replace("&", "%26").replace("'", "%27").replace("+", "%2B").replace("<", "%3C")
+                .replace("=", "%3D").replace(">", "%3E").replace("?", "%3F").replace("[", "%5B").replace("\\", "%5C")
+                .replace("]", "%5D").replace("^", "%5E").replace("`", "%60").replace("{", "%7B").replace("|", "%7C")
+                .replace("}", "%7D").replace(" ", "%C2%A0").replace("¡", "%C2%A1");
+        return new URL(String.format("https://upload.wikimedia.org/wikipedia/commons/%c/%s/%s", md5.charAt(0),
+                md5.substring(0, 2), encodedFilename));
     }
 }
