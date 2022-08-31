@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -79,6 +80,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQuery;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Limit;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQuery;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Revision;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsPage;
@@ -199,6 +201,9 @@ public class CommonsService {
     @Value("${threads.number:8}")
     private int threadsNumber;
 
+    @Value("${commons.ignore.query.user.info.error:false}")
+    private boolean ignoreQueryUserInfoError;
+
     @Autowired
     private ExecutorService taskExecutor;
 
@@ -313,12 +318,28 @@ public class CommonsService {
     }
 
     public synchronized Tokens queryTokens() throws IOException {
-        return apiHttpGet("?action=query&meta=tokens", MetaQueryResponse.class).getQuery().getTokens();
+        return metaQuery("?action=query&meta=tokens", Tokens.class, MetaQuery::getTokens);
     }
 
     public UserInfo queryUserInfo() throws IOException {
-        return apiHttpGet("?action=query&meta=userinfo&uiprop=blockinfo|groups|rights|ratelimits",
-                MetaQueryResponse.class).getQuery().getUserInfo();
+        return metaQuery("?action=query&meta=userinfo&uiprop=blockinfo|groups|rights|ratelimits", UserInfo.class,
+                MetaQuery::getUserInfo);
+    }
+
+    private <T> T metaQuery(String path, Class<T> resultClass, Function<MetaQuery, T> extractor) throws IOException {
+        MetaQueryResponse response = apiHttpGet(path, MetaQueryResponse.class);
+        if (response.getError() != null) {
+            if (ignoreQueryUserInfoError) {
+                try {
+                    return resultClass.getConstructor().newInstance();
+                } catch (ReflectiveOperationException e) {
+                    throw new IOException(e);
+                }
+            } else {
+                throw new IOException(response.getError().toString());
+            }
+        }
+        return extractor.apply(response.getQuery());
     }
 
     public List<FileArchive> queryFileArchive(String sha1base36) throws IOException {
@@ -518,7 +539,7 @@ public class CommonsService {
     public Set<String> getSubCategories(String category) {
         return categoryLinkRepository
                 .findIdByTypeAndIdTo(CommonsCategoryLinkType.subcat, sanitizeCategory(category)).stream()
-                .map(c -> c.getFrom().getTitle()).collect(toSet());
+                .map(c -> c.getFrom().getTitle().replace('_', ' ')).collect(toSet());
     }
 
     @Cacheable("subCategoriesByDepth")
@@ -526,8 +547,7 @@ public class CommonsService {
         LocalDateTime start = now();
         LOGGER.debug("Fetching '{}' subcategories with depth {}...", category, depth);
         Set<String> subcats = self.getSubCategories(category);
-        Set<String> result = subcats.stream().map(CommonsService::sanitizeCategory)
-                .collect(toCollection(ConcurrentHashMap::newKeySet));
+        Set<String> result = subcats.stream().collect(toCollection(ConcurrentHashMap::newKeySet));
         if (depth > 0) {
             subcats.parallelStream().forEach(s -> result.addAll(self.getSubCategories(s, depth - 1)));
         }

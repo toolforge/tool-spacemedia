@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons.api;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,9 +11,9 @@ public class UserInfo {
 
     private String name;
 
-    private List<String> groups;
+    private List<String> groups = new ArrayList<>();
 
-    private List<String> rights;
+    private List<String> rights = new ArrayList<>();
 
     @JsonProperty("ratelimits")
     private RateLimits rateLimits;
