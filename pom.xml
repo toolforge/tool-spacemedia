@@ -22,9 +22,9 @@
 	</properties>
 
 	<scm>
-		<connection>scm:git:https://phabricator.wikimedia.org/source/tool-spacemedia.git</connection>
+		<connection>scm:git:https://gitlab.wikimedia.org/toolforge-repos/spacemedia.git</connection>
 		<tag>HEAD</tag>
-		<url>https://phabricator.wikimedia.org/source/tool-spacemedia/</url>
+		<url>https://gitlab.wikimedia.org/toolforge-repos/spacemedia</url>
 	</scm>
 
 	<dependencyManagement>
