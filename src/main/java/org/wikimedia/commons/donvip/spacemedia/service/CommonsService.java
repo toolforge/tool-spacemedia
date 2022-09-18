@@ -735,7 +735,8 @@ public class CommonsService {
                 .findByIdFrom(pageRepository.findByFileTitle(d.getName())
                         .orElseThrow(() -> new IllegalStateException("No page named " + d.getName())))
                 .stream()
-                .anyMatch(c -> ignoredDuplicatesCategories.stream().anyMatch(x -> c.getId().getTo().startsWith(x)));
+                .anyMatch(c -> ignoredDuplicatesCategories.stream()
+                        .anyMatch(x -> c.getId().getTo().startsWith(x.replace(' ', '_'))));
     }
 
     private int handleDuplicateFile(CommonsImageProjection olderImage, CommonsImageProjection dupe, int count)
