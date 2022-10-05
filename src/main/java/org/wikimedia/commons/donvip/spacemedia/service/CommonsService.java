@@ -703,24 +703,23 @@ public class CommonsService {
             return;
         }
         int count = 0;
-        for (int offset = 0; offset < 5000; offset += 500) {
-            for (Element li : Jsoup.connect(duplicateUrl.toExternalForm() + "&limit=500&offset=" + offset).get()
-                    .getElementsByClass("special").first().getElementsByTag("li")) {
-                String title = li.getElementsByTag("a").first().ownText().replace(' ', '_');
-                if (!title.contains("-_DPLA_-")) {
-                    CommonsImageProjection image = findImage(title);
-                    if (image != null && image.getWidth() > 1 && image.getHeight() > 1
-                            && !ignoredDuplicatesSha1.contains(image.getSha1())) {
-                        List<CommonsImageProjection> duplicates = imageRepository
-                                .findBySha1OrderByTimestamp(image.getSha1());
-                        if (duplicates.size() > 1
-                                && duplicates.stream().noneMatch(
-                                        d -> ignoredDuplicatesName.contains(d.getName())
-                                                || self.isInIgnoredCategory(d))) {
-                            CommonsImageProjection olderImage = duplicates.get(0);
-                            for (int i = 1; i < duplicates.size(); i++) {
-                                count += handleDuplicateFile(olderImage, duplicates.get(i), count);
-                            }
+        for (Element li : Jsoup.connect(duplicateUrl.toExternalForm() + "&limit=5000").get()
+                .getElementsByClass("special").first().getElementsByTag("li")) {
+            String title = li.getElementsByTag("a").first().ownText().replace(' ', '_');
+            if (!title.contains("-_DPLA_-")) {
+                CommonsImageProjection image = findImage(title);
+                if (image != null && image.getWidth() > 1 && image.getHeight() > 1
+                        && !ignoredDuplicatesSha1.contains(image.getSha1())) {
+                    List<CommonsImageProjection> duplicates = imageRepository
+                            .findBySha1OrderByTimestamp(image.getSha1());
+                    if (duplicates.size() > 1 && duplicates.stream().noneMatch(
+                            d -> ignoredDuplicatesName.contains(d.getName()) || self.isInIgnoredCategory(d))) {
+                        CommonsImageProjection olderImage = duplicates.get(0);
+                        for (int i = 1; i < duplicates.size(); i++) {
+                            count += handleDuplicateFile(olderImage, duplicates.get(i), count);
+                        }
+                        if (currentDupes + count >= duplicateMaxFiles) {
+                            break;
                         }
                     }
                 }
