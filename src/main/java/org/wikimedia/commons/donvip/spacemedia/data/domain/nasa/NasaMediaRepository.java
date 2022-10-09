@@ -18,7 +18,9 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "nasaCount", "nasaCountByCenter", "nasaCountIgnored", "nasaCountIgnoredByCenter", "nasaCountMissing",
-            "nasaCountMissingByCenter", "nasaCountUploaded", "nasaCountUploadedByCenter", "nasaCountPhashNotNull",
+            "nasaCountMissingByCenter", "nasaCountMissingImages", "nasaCountMissingImagesByCenter",
+            "nasaCountMissingVideos", "nasaCountMissingVideosByCenter",
+            "nasaCountUploaded", "nasaCountUploadedByCenter", "nasaCountPhashNotNull",
             "nasaCountPhashNotNullByCenter", "nasaCenters", "nasaFindByPhashNotNull" })
     @interface CacheEvictNasaAll {
 
@@ -57,6 +59,34 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames) and m.center = ?1")
     long countMissingInCommonsByCenter(String center);
 
+    @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames) and m.mediaType = ?1 and m.center = ?2")
+    long countMissingInCommonsByTypeAndCenter(NasaMediaType type, String center);
+
+    @Query("select count(*) from #{#entityName} m where m.mediaType = ?1 and not exists elements (m.commonsFileNames)")
+    long countMissingInCommons(NasaMediaType type);
+
+    @Override
+    @Cacheable("nasaCountMissingImages")
+    default long countMissingImagesInCommons() {
+        return countMissingInCommons(NasaMediaType.image);
+    }
+
+    @Cacheable("nasaCountMissingImagesByCenter")
+    default long countMissingImagesInCommons(String center) {
+        return countMissingInCommonsByTypeAndCenter(NasaMediaType.image, center);
+    }
+
+    @Override
+    @Cacheable("nasaCountMissingVideos")
+    default long countMissingVideosInCommons() {
+        return countMissingInCommons(NasaMediaType.video);
+    }
+
+    @Cacheable("nasaCountMissingVideosByCenter")
+    default long countMissingVideosInCommons(String center) {
+        return countMissingInCommonsByTypeAndCenter(NasaMediaType.video, center);
+    }
+
     @Override
     @Cacheable("nasaCountUploaded")
     @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
@@ -93,6 +123,19 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.center = ?1")
     List<T> findMissingInCommonsByCenter(String center);
+
+    @Query("select m from #{#entityName} m where m.mediaType = ?1 and not exists elements (m.commonsFileNames)")
+    Page<T> findMissingInCommonsByType(NasaMediaType type, Pageable page);
+
+    @Override
+    default Page<T> findMissingImagesInCommons(Pageable page) {
+        return findMissingInCommonsByType(NasaMediaType.image, page);
+    }
+
+    @Override
+    default Page<T> findMissingVideosInCommons(Pageable page) {
+        return findMissingInCommonsByType(NasaMediaType.video, page);
+    }
 
     @Override
     @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")

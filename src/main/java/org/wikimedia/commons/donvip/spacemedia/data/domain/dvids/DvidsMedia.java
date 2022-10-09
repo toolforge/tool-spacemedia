@@ -292,12 +292,12 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
 
     @Override
     public final boolean isImage() {
-        return id.getType() == DvidsMediaType.image || id.getType() == DvidsMediaType.graphic;
+        return DvidsMediaType.images().contains(id.getType());
     }
 
     @Override
     public final boolean isVideo() {
-        return id.getType() == DvidsMediaType.video;
+        return DvidsMediaType.videos().contains(id.getType());
     }
 
     @Override

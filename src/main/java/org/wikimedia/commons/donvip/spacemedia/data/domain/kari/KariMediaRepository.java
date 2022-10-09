@@ -17,7 +17,8 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "kariCount", "kariCountIgnored", "kariCountMissing", "kariCountUploaded", "kariFindByPhashNotNull" })
+            "kariCount", "kariCountIgnored", "kariCountMissing", "kariCountMissingImages", "kariCountUploaded",
+            "kariFindByPhashNotNull" })
     @interface CacheEvictKariAll {
 
     }
@@ -38,6 +39,17 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
     long countMissingInCommons();
 
     @Override
+    @Cacheable("kariCountMissingImages")
+    default long countMissingImagesInCommons() {
+        return countMissingInCommons();
+    }
+
+    @Override
+    default long countMissingVideosInCommons() {
+        return 0;
+    }
+
+    @Override
     @Cacheable("kariCountUploaded")
     @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
     long countUploadedToCommons();
@@ -51,6 +63,16 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
     @Override
     @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
     Page<KariMedia> findMissingInCommons(Pageable page);
+
+    @Override
+    default Page<KariMedia> findMissingImagesInCommons(Pageable page) {
+        return findMissingInCommons(page);
+    }
+
+    @Override
+    default Page<KariMedia> findMissingVideosInCommons(Pageable page) {
+        return Page.empty();
+    }
 
     @Override
     @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")

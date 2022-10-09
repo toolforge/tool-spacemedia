@@ -9,6 +9,8 @@ import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 
@@ -16,7 +18,8 @@ public interface EsaMediaRepository extends FullResMediaRepository<EsaMedia, Int
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "esaCount", "esaCountIgnored", "esaCountMissing", "esaCountUploaded", "esaFindByPhashNotNull"})
+            "esaCount", "esaCountIgnored", "esaCountMissing", "esaCountMissingImages", "esaCountMissingVideos",
+            "esaCountUploaded", "esaFindByPhashNotNull" })
     @interface CacheEvictEsaAll {
 
     }
@@ -36,6 +39,18 @@ public interface EsaMediaRepository extends FullResMediaRepository<EsaMedia, Int
     long countMissingInCommons();
 
     @Override
+    @Cacheable("esaCountMissingImages")
+    default long countMissingImagesInCommons() {
+        return countMissingInCommons();
+    }
+
+    @Override
+    @Cacheable("esaCountMissingVideos")
+    default long countMissingVideosInCommons() {
+        return 0;
+    }
+
+    @Override
     @Cacheable("esaCountUploaded")
     long countUploadedToCommons();
 
@@ -46,6 +61,16 @@ public interface EsaMediaRepository extends FullResMediaRepository<EsaMedia, Int
     @Override
     @Cacheable("esaFindByPhashNotNull")
     List<MediaProjection<Integer>> findByMetadata_PhashNotNull();
+
+    @Override
+    default Page<EsaMedia> findMissingImagesInCommons(Pageable page) {
+        return findMissingInCommons(page);
+    }
+
+    @Override
+    default Page<EsaMedia> findMissingVideosInCommons(Pageable page) {
+        return Page.empty();
+    }
 
     // SAVE
 

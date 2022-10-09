@@ -21,7 +21,9 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "flickrCount", "flickrCountByAccount", "flickrCountIgnoredByAccount", "flickrCountMissing",
-            "flickrCountMissingByAccount", "flickrCountUploaded", "flickrCountUploadedByAccount",
+            "flickrCountMissingByAccount", "flickrCountMissingByType", "flickrCountMissingByTypeAndAccount",
+            "flickrCountMissingImages", "flickrCountMissingVideos", "flickrCountMissingImagesByAccount",
+            "flickrCountMissingVideosByAccount", "flickrCountUploaded", "flickrCountUploadedByAccount",
             "flickrCountPhashNotNull", "flickrCountPhashNotNullByAccount", "flickrFindByPhashNotNull" })
     @interface CacheEvictFlickrAll {
 
@@ -49,6 +51,36 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Cacheable("flickrCountMissingByAccount")
     @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
     long countMissingInCommons(Set<String> flickrAccounts);
+
+    @Cacheable("flickrCountMissingByType")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.media = ?1")
+    long countMissingInCommons(FlickrMediaType type);
+
+    @Cacheable("flickrCountMissingByTypeAndAccount")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.media = ?1 and m.pathAlias in ?2")
+    long countMissingInCommons(FlickrMediaType type, Set<String> flickrAccounts);
+
+    @Override
+    @Cacheable("flickrCountMissingImages")
+    default long countMissingImagesInCommons() {
+        return countMissingInCommons(FlickrMediaType.photo);
+    }
+
+    @Cacheable("flickrCountMissingImagesByAccount")
+    default long countMissingImagesInCommons(Set<String> flickrAccounts) {
+        return countMissingInCommons(FlickrMediaType.photo, flickrAccounts);
+    }
+
+    @Override
+    @Cacheable("flickrCountMissingVideos")
+    default long countMissingVideosInCommons() {
+        return countMissingInCommons(FlickrMediaType.video);
+    }
+
+    @Cacheable("flickrCountMissingVideosByAccount")
+    default long countMissingVideosInCommons(Set<String> flickrAccounts) {
+        return countMissingInCommons(FlickrMediaType.video, flickrAccounts);
+    }
 
     @Override
     @Cacheable("flickrCountUploaded")
@@ -94,6 +126,30 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
 
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.pathAlias in ?1")
     Page<FlickrMedia> findMissingInCommons(Set<String> flickrAccounts, Pageable page);
+
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.media = ?1")
+    Page<FlickrMedia> findMissingInCommons(FlickrMediaType type, Pageable page);
+
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.media = ?1 and m.pathAlias in ?2")
+    Page<FlickrMedia> findMissingInCommons(FlickrMediaType type, Set<String> flickrAccounts, Pageable page);
+
+    @Override
+    default Page<FlickrMedia> findMissingImagesInCommons(Pageable page) {
+        return findMissingInCommons(FlickrMediaType.photo, page);
+    }
+
+    default Page<FlickrMedia> findMissingImagesInCommons(Set<String> flickrAccounts, Pageable page) {
+        return findMissingInCommons(FlickrMediaType.photo, flickrAccounts, page);
+    }
+
+    @Override
+    default Page<FlickrMedia> findMissingVideosInCommons(Pageable page) {
+        return findMissingInCommons(FlickrMediaType.video, page);
+    }
+
+    default Page<FlickrMedia> findMissingVideosInCommons(Set<String> flickrAccounts, Pageable page) {
+        return findMissingInCommons(FlickrMediaType.video, flickrAccounts, page);
+    }
 
     @Override
     @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")

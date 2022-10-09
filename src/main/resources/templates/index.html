@@ -14,7 +14,8 @@
 	        <th>Free Media</th>
 	        <th>Uploaded</th>
 	        <th>Hashes</th>
-	        <th>To upload</th>
+	        <th>Images to upload</th>
+	        <th>Videos to upload</th>
 	        <th>Ignored</th>
 	        <th>Problems</th>
 	      </tr>
@@ -49,8 +50,11 @@
             {"data": "hashed_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
             	ahref(td, s, alink(o, "/hashes"));
             }},
-            {"data": "missing_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-            	ahref(td, s, alink(o, "/missing"));
+            {"data": "missing_images", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+            	ahref(td, s, alink(o, "/missing/images"));
+            }},
+            {"data": "missing_videos", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+            	ahref(td, s, alink(o, "/missing/videos"));
             }},
             {"data": "ignored_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
             	ahref(td, s, alink(o, "/ignored"));

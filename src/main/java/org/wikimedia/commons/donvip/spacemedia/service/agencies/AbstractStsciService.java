@@ -162,6 +162,16 @@ public abstract class AbstractStsciService
     }
 
     @Override
+    public final long countMissingImages() {
+        return stsciRepository.countMissingImagesInCommons(mission);
+    }
+
+    @Override
+    public final long countMissingVideos() {
+        return stsciRepository.countMissingVideosInCommons(mission);
+    }
+
+    @Override
     public final long countPerceptualHashes() {
         return stsciRepository.countByMetadata_PhashNotNullAndMission(mission);
     }
@@ -202,6 +212,16 @@ public abstract class AbstractStsciService
     }
 
     @Override
+    public final Page<StsciMedia> listMissingImages(Pageable page) {
+        return stsciRepository.findMissingImagesInCommons(mission, page);
+    }
+
+    @Override
+    public final Page<StsciMedia> listMissingVideos(Pageable page) {
+        return stsciRepository.findMissingVideosInCommons(mission, page);
+    }
+
+    @Override
     public final Page<StsciMedia> listHashedMedia(Pageable page) {
         return stsciRepository.findByMetadata_PhashNotNullAndMission(mission, page);
     }
@@ -229,7 +249,8 @@ public abstract class AbstractStsciService
                     stsciRepository.countByMission(mission),
                     stsciRepository.countUploadedToCommons(mission),
                     stsciRepository.countByIgnoredTrueAndMission(mission),
-                    stsciRepository.countMissingInCommons(mission),
+                    stsciRepository.countMissingImagesInCommons(mission),
+                    stsciRepository.countMissingVideosInCommons(mission),
                     stsciRepository.countByMetadata_PhashNotNullAndMission(mission), null)));
         }
         return stats;

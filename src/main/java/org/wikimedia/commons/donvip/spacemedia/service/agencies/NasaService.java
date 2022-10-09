@@ -428,7 +428,8 @@ public class NasaService
                                 mediaRepository.countByCenter(c),
                                 mediaRepository.countUploadedToCommonsByCenter(c),
                                 mediaRepository.countIgnoredByCenter(c),
-                                mediaRepository.countMissingInCommonsByCenter(c),
+                                mediaRepository.countMissingImagesInCommons(c),
+                                mediaRepository.countMissingVideosInCommons(c),
                                 mediaRepository.countByMetadata_PhashNotNullAndCenter(c), null))
                         .sorted().collect(toList()));
             }

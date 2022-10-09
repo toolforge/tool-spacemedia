@@ -17,7 +17,8 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "nasaSirsCount", "nasaSirsCountIgnored", "nasaSirsCountMissing", "nasaSirsCountUploaded", "nasaSirsFindByPhashNotNull"})
+            "nasaSirsCount", "nasaSirsCountIgnored", "nasaSirsCountMissing", "nasaSirsCountMissingImages",
+            "nasaSirsCountUploaded", "nasaSirsFindByPhashNotNull" })
     @interface CacheEvictNasaSirsAll {
 
     }
@@ -38,6 +39,17 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
     long countMissingInCommons();
 
     @Override
+    @Cacheable("nasaSirsCountMissingImages")
+    default long countMissingImagesInCommons() {
+        return countMissingInCommons();
+    }
+
+    @Override
+    default long countMissingVideosInCommons() {
+        return 0;
+    }
+
+    @Override
     @Cacheable("nasaSirsCountUploaded")
     @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
     long countUploadedToCommons();
@@ -51,6 +63,16 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
     @Override
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
     Page<NasaSirsImage> findMissingInCommons(Pageable page);
+
+    @Override
+    default Page<NasaSirsImage> findMissingImagesInCommons(Pageable page) {
+        return findMissingInCommons(page);
+    }
+
+    @Override
+    default Page<NasaSirsImage> findMissingVideosInCommons(Pageable page) {
+        return Page.empty();
+    }
 
     @Override
     @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")

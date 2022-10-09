@@ -18,7 +18,9 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "stsciCount", "stsciCountIgnored", "stsciCountMissing", "stsciCountUploaded", "stsciFindByPhashNotNull" })
+            "stsciCount", "stsciCountIgnored", "stsciCountMissing", "stsciCountMissingImages",
+            "stsciCountMissingImagesByMission", "stsciCountMissingVideos", "stsciCountMissingVideosByMission",
+            "stsciCountUploaded", "stsciFindByPhashNotNull" })
     @interface CacheEvictHubNasaAll {
 
     }
@@ -38,6 +40,28 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
     @Cacheable("stsciCountMissing")
     @Query("select count(*) from #{#entityName} m where m.mission = ?1 and (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
     long countMissingInCommons(String mission);
+
+    @Override
+    @Cacheable("stsciCountMissingImages")
+    default long countMissingImagesInCommons() {
+        return countMissingInCommons();
+    }
+
+    @Cacheable("stsciCountMissingImagesByMission")
+    default long countMissingImagesInCommons(String mission) {
+        return countMissingInCommons(mission);
+    }
+
+    @Override
+    @Cacheable("stsciCountMissingVideos")
+    default long countMissingVideosInCommons() {
+        return 0;
+    }
+
+    @Cacheable("stsciCountMissingVideosByMission")
+    default long countMissingVideosInCommons(String mission) {
+        return 0;
+    }
 
     @Cacheable("stsciCountUploaded")
     @Query("select count(*) from #{#entityName} m where m.mission = ?1 and (exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames))")
@@ -69,6 +93,24 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
 
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.mission = ?1")
     Page<StsciMedia> findMissingInCommons(String mission, Pageable page);
+
+    @Override
+    default Page<StsciMedia> findMissingImagesInCommons(Pageable page) {
+        return findMissingInCommons(page);
+    }
+
+    default Page<StsciMedia> findMissingImagesInCommons(String mission, Pageable page) {
+        return findMissingInCommons(mission, page);
+    }
+
+    @Override
+    default Page<StsciMedia> findMissingVideosInCommons(Pageable page) {
+        return Page.empty();
+    }
+
+    default Page<StsciMedia> findMissingVideosInCommons(String mission, Pageable page) {
+        return Page.empty();
+    }
 
     @Override
     @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")

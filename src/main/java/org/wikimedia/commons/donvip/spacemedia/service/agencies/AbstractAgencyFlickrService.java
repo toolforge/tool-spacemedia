@@ -109,6 +109,16 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
+    public final long countMissingImages() {
+        return flickrRepository.countMissingImagesInCommons(flickrAccounts);
+    }
+
+    @Override
+    public final long countMissingVideos() {
+        return flickrRepository.countMissingVideosInCommons(flickrAccounts);
+    }
+
+    @Override
     public final long countPerceptualHashes() {
         return flickrRepository.countByMetadata_PhashNotNull(flickrAccounts);
     }
@@ -149,6 +159,16 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
+    public final Page<FlickrMedia> listMissingImages(Pageable page) {
+        return flickrRepository.findMissingImagesInCommons(flickrAccounts, page);
+    }
+
+    @Override
+    public final Page<FlickrMedia> listMissingVideos(Pageable page) {
+        return flickrRepository.findMissingVideosInCommons(flickrAccounts, page);
+    }
+
+    @Override
     public final Page<FlickrMedia> listHashedMedia(Pageable page) {
         return flickrRepository.findByMetadata_PhashNotNull(flickrAccounts, page);
     }
@@ -185,7 +205,8 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                 flickrRepository.count(singleton),
                 flickrRepository.countUploadedToCommons(singleton),
                 flickrRepository.countByIgnoredTrue(singleton),
-                flickrRepository.countMissingInCommons(singleton),
+                flickrRepository.countMissingImagesInCommons(singleton),
+                flickrRepository.countMissingVideosInCommons(singleton),
                 flickrRepository.countByMetadata_PhashNotNull(singleton), null);
     }
 

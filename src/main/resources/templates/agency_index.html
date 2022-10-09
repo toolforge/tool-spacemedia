@@ -17,7 +17,7 @@
 		        <th>Title</th>
 		        <th>Date</th>
 		        <th>Description</th>
-		        <th th:if="'missing' != ${tab}">Commons</th>
+		        <th th:if="'missing' != ${tab} and 'missing/images' != ${tab} and 'missing/videos' != ${tab}">Commons</th>
 		        <th th:if="'ignored' != ${tab}">Templates</th>
 		        <th th:if="'uploaded' != ${tab}">Categories</th>
 		        <th th:if="'ignored' == ${tab}">Reason</th>
@@ -37,7 +37,7 @@
                   <a th:href="@{/{id}/rest/uploadmedia/{mid}(id=${agency.id},mid=${media.id})}" target="_blank" th:if="${agency.uploadEnabled}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.id}" th:src="@{/Wlm-icon-upload-black.svg}">
                   </a>
-		          <div th:if="'missing' == ${tab}" th:each="asset : ${media.assetsToUpload}">
+		          <div th:if="'missing' == ${tab} or 'missing/images' == ${tab} or 'missing/videos' == ${tab}" th:each="asset : ${media.assetsToUpload}">
 		          	<a th:href="@{/{id}/rest/wiki/{sha1}(id=${agency.id},sha1=${asset})}" target="_blank">
 		          		<img width="24" height="24" th:alt="'wikihtml ' + ${asset}" th:src="@{/Emblem-search.svg}">
 		          	</a>
@@ -52,7 +52,7 @@
 		        <td th:text="${media.title}"></td>
 		        <td th:text="${media.date}"></td>
 		        <td th:utext="${media.description}"></td>
-		        <td th:if="'missing' != ${tab}">
+		        <td th:if="'missing' != ${tab} and 'missing/images' != ${tab} and 'missing/videos' != ${tab}">
 		          <div th:each="file : ${media.allCommonsFileNames}">
 		            <a th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a><br>
 		          </div>

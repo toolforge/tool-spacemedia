@@ -15,8 +15,12 @@
 	       th:href="@{/{id}/hashes(id=${agency.id})}" th:text="'Hashes (' + ${agency.countPerceptualHashes()} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
-	    <a th:class="'nav-link' + ('missing' == ${tab} ? ' active' : '') + (${agency.countMissingMedia()} == 0 ? ' disabled': '')"
-	       th:href="@{/{id}/missing(id=${agency.id})}" th:text="'To upload (' + ${agency.countMissingMedia()} + ')'"></a>
+	    <a th:class="'nav-link' + ('missing/images' == ${tab} ? ' active' : '') + (${agency.countMissingImages()} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/missing/images(id=${agency.id})}" th:text="'Images to upload (' + ${agency.countMissingImages()} + ')'"></a>
+	  </li>
+	  <li class="nav-item">
+	    <a th:class="'nav-link' + ('missing/videos' == ${tab} ? ' active' : '') + (${agency.countMissingVideos()} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/missing/videos(id=${agency.id})}" th:text="'Videos to upload (' + ${agency.countMissingVideos()} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
 	    <a th:class="'nav-link' + ('ignored' == ${tab} ? ' active' : '') + (${agency.countIgnored()} == 0 ? ' disabled': '')"

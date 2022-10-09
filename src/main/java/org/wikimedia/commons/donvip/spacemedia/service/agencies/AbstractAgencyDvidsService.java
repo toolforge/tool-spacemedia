@@ -532,7 +532,17 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     @Override
     public final long countMissingMedia() {
-        return mediaRepository.countMissingInCommons(units);
+        return mediaRepository.countMissingInCommonsByUnit(units);
+    }
+
+    @Override
+    public final long countMissingImages() {
+        return mediaRepository.countMissingImagesInCommons(units);
+    }
+
+    @Override
+    public final long countMissingVideos() {
+        return mediaRepository.countMissingVideosInCommons(units);
     }
 
     @Override
@@ -567,12 +577,22 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     @Override
     public final List<DvidsMedia> listMissingMedia() {
-        return mediaRepository.findMissingInCommons(units);
+        return mediaRepository.findMissingInCommonsByUnit(units);
     }
 
     @Override
     public final Page<DvidsMedia> listMissingMedia(Pageable page) {
-        return mediaRepository.findMissingInCommons(units, page);
+        return mediaRepository.findMissingInCommonsByUnit(units, page);
+    }
+
+    @Override
+    public final Page<DvidsMedia> listMissingImages(Pageable page) {
+        return mediaRepository.findMissingImagesInCommons(units, page);
+    }
+
+    @Override
+    public final Page<DvidsMedia> listMissingVideos(Pageable page) {
+        return mediaRepository.findMissingVideosInCommons(units, page);
     }
 
     @Override
@@ -612,7 +632,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 mediaRepository.count(singleton),
                 mediaRepository.countUploadedToCommons(singleton),
                 mediaRepository.countByIgnoredTrue(singleton),
-                mediaRepository.countMissingInCommons(singleton),
+                mediaRepository.countMissingImagesInCommons(singleton),
+                mediaRepository.countMissingVideosInCommons(singleton),
                 mediaRepository.countByMetadata_PhashNotNull(singleton), null);
     }
 

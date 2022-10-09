@@ -12,7 +12,8 @@ public interface EsoMediaRepository extends CommonEsoMediaRepository<EsoMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "esoCount", "esoCountIgnored", "esoCountMissing", "esoCountUploaded", "esoFindByPhashNotNull"})
+            "esoCount", "esoCountIgnored", "esoCountMissing", "esoCountMissingImages", "esoCountMissingVideos",
+            "esoCountUploaded", "esoFindByPhashNotNull" })
     @interface CacheEvictEsoAll {
 
     }
@@ -30,6 +31,14 @@ public interface EsoMediaRepository extends CommonEsoMediaRepository<EsoMedia> {
     @Override
     @Cacheable("esoCountMissing")
     long countMissingInCommons();
+
+    @Override
+    @Cacheable("esoCountMissingImages")
+    long countMissingImagesInCommons();
+
+    @Override
+    @Cacheable("esoCountMissingVideos")
+    long countMissingVideosInCommons();
 
     @Override
     @Cacheable("esoCountUploaded")

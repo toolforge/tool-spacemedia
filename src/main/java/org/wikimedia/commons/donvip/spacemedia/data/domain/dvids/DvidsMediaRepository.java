@@ -20,7 +20,9 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "dvidsCount", "dvidsCountByUnit", "dvidsCountIgnored", "dvidsCountIgnoredByUnit",
-            "dvidsCountMissing", "dvidsCountMissingByUnit", "dvidsCountUploaded", "dvidsCountUploadedByUnit",
+            "dvidsCountMissing", "dvidsCountMissingImages", "dvidsCountMissingVideos", "dvidsCountMissingImagesByUnit",
+            "dvidsCountMissingVideosByUnit", "dvidsCountMissingByUnit", "dvidsCountMissingByType",
+            "dvidsCountUploaded", "dvidsCountUploadedByUnit",
             "dvidsCountPhashNotNull", "dvidsCountPhashNotNullByAccount", "dvidsFindByPhashNotNull" })
     @interface CacheEvictDvidsAll {
 
@@ -51,7 +53,36 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
 
     @Cacheable("dvidsCountMissingByUnit")
     @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.unit in ?1")
-    long countMissingInCommons(Set<String> units);
+    long countMissingInCommonsByUnit(Set<String> units);
+
+    @Cacheable("dvidsCountMissingByType")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.id.type in ?1")
+    long countMissingInCommonsByType(Set<DvidsMediaType> types);
+
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
+    long countMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units);
+
+    @Override
+    @Cacheable("dvidsCountMissingImages")
+    default long countMissingImagesInCommons() {
+        return countMissingInCommonsByType(DvidsMediaType.images());
+    }
+
+    @Override
+    @Cacheable("dvidsCountMissingVideos")
+    default long countMissingVideosInCommons() {
+        return countMissingInCommonsByType(DvidsMediaType.videos());
+    }
+
+    @Cacheable("dvidsCountMissingImagesByUnit")
+    default long countMissingImagesInCommons(Set<String> units) {
+        return countMissingInCommonsByTypeAndUnit(DvidsMediaType.images(), units);
+    }
+
+    @Cacheable("dvidsCountMissingVideosByUnit")
+    default long countMissingVideosInCommons(Set<String> units) {
+        return countMissingInCommonsByTypeAndUnit(DvidsMediaType.videos(), units);
+    }
 
     @Override
     @Cacheable("dvidsCountUploaded")
@@ -99,11 +130,35 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
     Page<T> findMissingInCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.unit in ?1")
-    List<T> findMissingInCommons(Set<String> units);
+    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.id.type in ?1")
+    Page<T> findMissingInCommonsByType(Set<DvidsMediaType> types, Pageable page);
+
+    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
+    Page<T> findMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units, Pageable page);
+
+    @Override
+    default Page<T> findMissingImagesInCommons(Pageable page) {
+        return findMissingInCommonsByType(DvidsMediaType.images(), page);
+    }
+
+    default Page<T> findMissingImagesInCommons(Set<String> units, Pageable page) {
+        return findMissingInCommonsByTypeAndUnit(DvidsMediaType.images(), units, page);
+    }
+
+    @Override
+    default Page<T> findMissingVideosInCommons(Pageable page) {
+        return findMissingInCommonsByType(DvidsMediaType.videos(), page);
+    }
+
+    default Page<T> findMissingVideosInCommons(Set<String> units, Pageable page) {
+        return findMissingInCommonsByTypeAndUnit(DvidsMediaType.videos(), units, page);
+    }
 
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.unit in ?1")
-    Page<T> findMissingInCommons(Set<String> units, Pageable page);
+    List<T> findMissingInCommonsByUnit(Set<String> units);
+
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.unit in ?1")
+    Page<T> findMissingInCommonsByUnit(Set<String> units, Pageable page);
 
     @Override
     @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")

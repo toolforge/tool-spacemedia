@@ -13,7 +13,8 @@ public interface IauMediaRepository extends CommonEsoMediaRepository<IauMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "iauCount", "iauCountIgnored", "iauCountMissing", "iauCountUploaded", "iauFindByPhashNotNull"})
+            "iauCount", "iauCountIgnored", "iauCountMissing", "iauCountMissingImages", "iauCountMissingVideos",
+            "iauCountUploaded", "iauFindByPhashNotNull" })
     @interface CacheEvictIauAll {
 
     }
@@ -31,6 +32,14 @@ public interface IauMediaRepository extends CommonEsoMediaRepository<IauMedia> {
     @Override
     @Cacheable("iauCountMissing")
     long countMissingInCommons();
+
+    @Override
+    @Cacheable("iauCountMissingImages")
+    long countMissingImagesInCommons();
+
+    @Override
+    @Cacheable("iauCountMissingVideos")
+    long countMissingVideosInCommons();
 
     @Override
     @Cacheable("iauCountUploaded")

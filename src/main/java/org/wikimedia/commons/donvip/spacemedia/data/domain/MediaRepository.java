@@ -62,6 +62,20 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
     long countMissingInCommons();
 
     /**
+     * Count images not yet uploaded to Wikimedia Commons.
+     *
+     * @return number of images not yet uploaded to Wikimedia Commons
+     */
+    long countMissingImagesInCommons();
+
+    /**
+     * Count videos not yet uploaded to Wikimedia Commons.
+     *
+     * @return number of videos not yet uploaded to Wikimedia Commons
+     */
+    long countMissingVideosInCommons();
+
+    /**
      * Find files not yet uploaded to Wikimedia Commons.
      *
      * @return files not yet uploaded to Wikimedia Commons
@@ -76,6 +90,24 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      * @return files not yet uploaded to Wikimedia Commons
      */
     Page<T> findMissingInCommons(Pageable page);
+
+    /**
+     * Find images not yet uploaded to Wikimedia Commons.
+     *
+     * @param page pagination information
+     *
+     * @return images not yet uploaded to Wikimedia Commons
+     */
+    Page<T> findMissingImagesInCommons(Pageable page);
+
+    /**
+     * Find videos not yet uploaded to Wikimedia Commons.
+     *
+     * @param page pagination information
+     *
+     * @return videos not yet uploaded to Wikimedia Commons
+     */
+    Page<T> findMissingVideosInCommons(Pageable page);
 
     /**
      * Count files already uploaded to Wikimedia Commons.

@@ -13,7 +13,8 @@ public interface HubbleEsaMediaRepository extends CommonEsoMediaRepository<Hubbl
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "hubEsaCount", "hubEsaCountIgnored", "hubEsaCountMissing", "hubEsaCountUploaded", "hubEsaFindByPhashNotNull" })
+            "hubEsaCount", "hubEsaCountIgnored", "hubEsaCountMissing", "hubEsaCountMissingImages",
+            "hubEsaCountMissingVideos", "hubEsaCountUploaded", "hubEsaFindByPhashNotNull" })
     @interface CacheEvictHubEsaAll {
 
     }
@@ -31,6 +32,14 @@ public interface HubbleEsaMediaRepository extends CommonEsoMediaRepository<Hubbl
     @Override
     @Cacheable("hubEsaCountMissing")
     long countMissingInCommons();
+
+    @Override
+    @Cacheable("hubEsaCountMissingImages")
+    long countMissingImagesInCommons();
+
+    @Override
+    @Cacheable("hubEsaCountMissingVideos")
+    long countMissingVideosInCommons();
 
     @Override
     @Cacheable("hubEsaCountUploaded")

@@ -48,6 +48,17 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
     long countMissingInCommons(Set<String> youtubeChannels);
 
     @Override
+    default long countMissingImagesInCommons() {
+        return 0;
+    }
+
+    @Override
+    @Cacheable("youtubeCountMissingVideos")
+    default long countMissingVideosInCommons() {
+        return countMissingInCommons();
+    }
+
+    @Override
     @Cacheable("youtubeCountUploaded")
     @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
     long countUploadedToCommons();
@@ -83,6 +94,16 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
 
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.channelId in ?1")
     Page<YouTubeVideo> findMissingInCommons(Set<String> youtubeChannels, Pageable page);
+
+    @Override
+    default Page<YouTubeVideo> findMissingImagesInCommons(Pageable page) {
+        return Page.empty();
+    }
+
+    @Override
+    default Page<YouTubeVideo> findMissingVideosInCommons(Pageable page) {
+        return findMissingInCommons(page);
+    }
 
     @Override
     @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")

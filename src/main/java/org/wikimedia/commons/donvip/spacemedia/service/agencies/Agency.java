@@ -25,6 +25,10 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     long countMissingMedia();
 
+    long countMissingImages();
+
+    long countMissingVideos();
+
     long countPerceptualHashes();
 
     long countUploadedMedia();
@@ -36,6 +40,10 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
     List<T> listMissingMedia();
 
     Page<T> listMissingMedia(Pageable page);
+
+    Page<T> listMissingImages(Pageable page);
+
+    Page<T> listMissingVideos(Pageable page);
 
     Page<T> listHashedMedia(Pageable page);
 

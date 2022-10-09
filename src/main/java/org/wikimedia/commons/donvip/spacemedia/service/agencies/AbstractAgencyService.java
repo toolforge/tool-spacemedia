@@ -164,6 +164,16 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
+    public long countMissingImages() {
+        return repository.countMissingImagesInCommons();
+    }
+
+    @Override
+    public long countMissingVideos() {
+        return repository.countMissingVideosInCommons();
+    }
+
+    @Override
     public long countPerceptualHashes() {
         return repository.countByMetadata_PhashNotNull();
     }
@@ -191,6 +201,16 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Override
     public Page<T> listMissingMedia(Pageable page) {
         return repository.findMissingInCommons(page);
+    }
+
+    @Override
+    public Page<T> listMissingImages(Pageable page) {
+        return repository.findMissingImagesInCommons(page);
+    }
+
+    @Override
+    public Page<T> listMissingVideos(Pageable page) {
+        return repository.findMissingVideosInCommons(page);
     }
 
     @Override
@@ -322,8 +342,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Override
     public Statistics getStatistics(boolean details) {
         long problems = getProblemsCount();
-        return new Statistics(getName(), getId(), countAllMedia(), countUploadedMedia(), countIgnored(), countMissingMedia(),
-                countPerceptualHashes(), problems > 0 ? problems : null);
+        return new Statistics(getName(), getId(), countAllMedia(), countUploadedMedia(), countIgnored(),
+                countMissingImages(), countMissingVideos(), countPerceptualHashes(), problems > 0 ? problems : null);
     }
 
     @Override

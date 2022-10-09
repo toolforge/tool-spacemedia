@@ -59,6 +59,16 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
         return service.listMissingMedia(page);
     }
 
+    @GetMapping("/missing/images")
+    public final Page<T> listMissingImages(@PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return service.listMissingImages(page);
+    }
+
+    @GetMapping("/missing/videos")
+    public final Page<T> listMissingVideos(@PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return service.listMissingVideos(page);
+    }
+
     @GetMapping("/uploaded")
     public final Page<T> listUploaded(@PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
         return service.listUploadedMedia(page);
