@@ -123,17 +123,17 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     List<T> findDuplicateInCommons(Set<String> units);
 
     @Override
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
     List<T> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
     Page<T> findMissingInCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.id.type in ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.id.type in ?1")
     Page<T> findMissingInCommonsByType(Set<DvidsMediaType> types, Pageable page);
 
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
     Page<T> findMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units, Pageable page);
 
     @Override
