@@ -65,6 +65,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiPageInfo
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResult;
 import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
+import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
@@ -197,12 +198,11 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     private void deleteOldDvidsMedia(Set<String> idsKnownToDvidsApi) {
         // DVIDS API Terms of Service force us to check for deleted content
         // https://api.dvidshub.net/docs/tos
-        RestTemplate rest = new RestTemplate();
         for (DvidsMedia media : listMissingMedia()) {
             String id = media.getId().toString();
             if (!idsKnownToDvidsApi.contains(id)) {
                 try {
-                    getMediaFromApi(rest, id, media.getUnit());
+                    refreshAndSaveById(id);
                 } catch (IllegalArgumentException e) {
                     String message = e.getMessage();
                     if (message != null && message.startsWith("No result from DVIDS API for ")) {
@@ -224,6 +224,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                     } else {
                         LOGGER.error(message, e);
                     }
+                } catch (IOException | ImageNotFoundException e) {
+                    LOGGER.error(e.getMessage(), e);
                 }
             }
         }
