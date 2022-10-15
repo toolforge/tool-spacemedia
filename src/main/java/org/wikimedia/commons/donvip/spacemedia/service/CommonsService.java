@@ -263,6 +263,7 @@ public class CommonsService {
         }
         // Fetch CSRF token, mandatory for upload using the Mediawiki API
         token = queryTokens().getCsrftoken();
+        LOGGER.info("CSRF token: {}", token);
     }
 
     private boolean hasUploadByUrlRight() {
@@ -759,6 +760,9 @@ public class CommonsService {
             result = 1;
             if (response.getEdit() == null || response.getError() != null
                     || !"Success".equalsIgnoreCase(response.getEdit().getResult())) {
+                if ("badtoken".equals(response.getError().getCode())) {
+                    LOGGER.error("API rejected our CSRF token {}", token);
+                }
                 throw new IllegalStateException(response.toString());
             }
         }
