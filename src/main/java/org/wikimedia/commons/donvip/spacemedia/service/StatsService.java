@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ public class StatsService {
     private List<AbstractAgencyService<?, ?, ?, ?, ?, ?>> agencies;
 
     public List<Statistics> getStats(boolean details) {
-        return agencies.parallelStream().map(a -> a.getStatistics(details)).sorted()
-                .collect(Collectors.toList());
+        return agencies.parallelStream().map(a -> a.getStatistics(details)).sorted().toList();
     }
 }

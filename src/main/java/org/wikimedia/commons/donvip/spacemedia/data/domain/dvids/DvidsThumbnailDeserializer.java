@@ -26,13 +26,13 @@ public class DvidsThumbnailDeserializer extends StdDeserializer<URL> {
     @Override
     public URL deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
-        if (node instanceof ObjectNode) {
-            JsonNode urlNode = ((ObjectNode) node).get("url");
+        if (node instanceof ObjectNode object) {
+            JsonNode urlNode = object.get("url");
             if (urlNode != null) {
                 return new URL(urlNode.asText());
             }
-        } else if (node instanceof TextNode) {
-            return new URL(((TextNode) node).asText());
+        } else if (node instanceof TextNode text) {
+            return new URL(text.asText());
         }
         throw new IllegalArgumentException(Objects.toString(node));
     }

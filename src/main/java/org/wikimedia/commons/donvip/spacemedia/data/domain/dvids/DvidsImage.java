@@ -66,8 +66,7 @@ public class DvidsImage extends DvidsMedia {
     @Override
     public DvidsImage copyDataFrom(DvidsMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
-        if (mediaFromApi instanceof DvidsImage) {
-            DvidsImage imgFromApi = (DvidsImage) mediaFromApi;
+        if (mediaFromApi instanceof DvidsImage imgFromApi) {
             setAspectRatio(imgFromApi.getAspectRatio());
             setDimensions(imgFromApi.getDimensions());
             setImage(imgFromApi.getImage());

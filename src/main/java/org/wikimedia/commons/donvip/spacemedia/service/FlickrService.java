@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,7 +84,7 @@ public class FlickrService {
         params.setExtras(EXTRAS);
         // Multi-license search does not work
         // https://www.flickr.com/groups/51035612836@N01/discuss/72157665503298714/72157667263924940
-        for (int license : Arrays.stream(FlickrFreeLicense.values()).map(FlickrFreeLicense::getCode).collect(Collectors.toList())) {
+        for (int license : Arrays.stream(FlickrFreeLicense.values()).map(FlickrFreeLicense::getCode).toList()) {
             PhotoList<Photo> photos;
             params.setLicense(Integer.toString(license));
             int page = 1;

@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;;
+import org.springframework.web.server.ResponseStatusException;
 
 public class CategoryNotFoundException extends ResponseStatusException {
 
@@ -9,7 +9,7 @@ public class CategoryNotFoundException extends ResponseStatusException {
 
     /**
      * Constructs a new {@code CategoryNotFoundException}.
-     * 
+     *
      * @param message category title that can't be found
      */
     public CategoryNotFoundException(String message) {

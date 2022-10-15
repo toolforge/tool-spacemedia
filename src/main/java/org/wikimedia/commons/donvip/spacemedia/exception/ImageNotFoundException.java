@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;;
+import org.springframework.web.server.ResponseStatusException;
 
 public class ImageNotFoundException extends ResponseStatusException {
 

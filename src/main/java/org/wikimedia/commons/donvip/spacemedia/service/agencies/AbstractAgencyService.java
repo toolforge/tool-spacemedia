@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -306,7 +305,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                             String s = ts.termtext.utf8ToString();
                             return s.length() > 1 && !ignoredCommonTerms.contains(s) && !s.matches("\\d+");
                         })
-                        .collect(toList()).subList(0, 500);
+                        .toList().subList(0, 500);
             } finally {
                 searchFactory.getIndexReaderAccessor().close(indexReader);
             }
@@ -528,15 +527,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final String toIso8601(Temporal t) {
         Temporal d = t;
-        if (d instanceof Instant) {
-            d = ((Instant) d).atZone(ZoneOffset.UTC);
+        if (d instanceof Instant instant) {
+            d = instant.atZone(ZoneOffset.UTC);
         }
         if ((d instanceof LocalDateTime || d instanceof ZonedDateTime)
                 && d.get(ChronoField.SECOND_OF_MINUTE) == 0 && d.get(ChronoField.MINUTE_OF_HOUR) == 0) {
             d = LocalDate.of(d.get(ChronoField.YEAR), d.get(ChronoField.MONTH_OF_YEAR), d.get(ChronoField.DAY_OF_MONTH));
         }
-        if (d instanceof ZonedDateTime) {
-            return ((ZonedDateTime) d).toInstant().toString();
+        if (d instanceof ZonedDateTime zoned) {
+            return zoned.toInstant().toString();
         }
         return d.toString();
     }
@@ -622,7 +621,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return "[" + Objects.requireNonNull(url, "url") + " " + Objects.requireNonNull(text, "text") + "]";
     }
 
-    protected void checkUploadPreconditions(T media, boolean checkUnicity) throws IOException {
+    protected void checkUploadPreconditions(T media, boolean checkUnicity) throws MalformedURLException {
         if (Boolean.TRUE.equals(media.isIgnored())) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored.");
         }
@@ -664,7 +663,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     public final List<DuplicateMedia<OID, OD, OT>> getOriginalMedia(T media) {
         Set<Duplicate> dupes = media.getDuplicates();
         return isEmpty(dupes) ? Collections.emptyList()
-                : dupes.stream().sorted().map(this::mapDuplicateMedia).filter(Objects::nonNull).collect(toList());
+                : dupes.stream().sorted().map(this::mapDuplicateMedia).filter(Objects::nonNull).toList();
     }
 
     private DuplicateMedia<OID, OD, OT> mapDuplicateMedia(Duplicate duplicate) {
@@ -728,7 +727,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                     m.setIgnoredReason(null);
                     m.setIgnored(null);
                     return m;
-                }).collect(toList())).spliterator(), false).count();
+                }).toList()).spliterator(), false).count();
     }
 
     protected int doResetPerceptualHashes() {

@@ -140,8 +140,7 @@ public class DvidsVideo extends DvidsMedia {
     @Override
     public DvidsVideo copyDataFrom(DvidsMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
-        if (mediaFromApi instanceof DvidsVideo) {
-            DvidsVideo vidFromApi = (DvidsVideo) mediaFromApi;
+        if (mediaFromApi instanceof DvidsVideo vidFromApi) {
             setAspectRatio(vidFromApi.getAspectRatio());
             setDuration(vidFromApi.getDuration());
             setFiles(vidFromApi.getFiles());

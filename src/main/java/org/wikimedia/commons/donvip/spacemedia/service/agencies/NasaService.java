@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
@@ -431,7 +430,7 @@ public class NasaService
                                 mediaRepository.countMissingImagesInCommons(c),
                                 mediaRepository.countMissingVideosInCommons(c),
                                 mediaRepository.countByMetadata_PhashNotNullAndCenter(c), null))
-                        .sorted().collect(toList()));
+                        .sorted().toList());
             }
         }
         return stats;

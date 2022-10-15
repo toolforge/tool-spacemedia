@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class Geo {
@@ -94,8 +93,8 @@ public final class Geo {
     public static final Set<String> STATE_CODES = STATE_MAP.keySet();
     public static final Collection<String> STATES = STATE_MAP.values();
     public static final List<String> NORTH_SOUTH_STATES = STATES.stream()
-            .flatMap(state -> Stream.of("Southern " + state, "Northern " + state)).collect(Collectors.toList());
+            .flatMap(state -> Stream.of("Southern " + state, "Northern " + state)).toList();
 
     public static final List<String> COUNTRIES = Arrays.stream(Locale.getISOCountries())
-            .map(code -> new Locale("en", code).getDisplayCountry()).collect(Collectors.toList());
+            .map(code -> new Locale("en", code).getDisplayCountry()).toList();
 }

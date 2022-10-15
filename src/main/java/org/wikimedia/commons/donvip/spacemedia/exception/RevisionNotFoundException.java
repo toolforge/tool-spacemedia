@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;;
+import org.springframework.web.server.ResponseStatusException;
 
 public class RevisionNotFoundException extends ResponseStatusException {
 
@@ -9,7 +9,7 @@ public class RevisionNotFoundException extends ResponseStatusException {
 
     /**
      * Constructs a new {@code RevisionNotFoundException}.
-     * 
+     *
      * @param revisionId revision id that can't be found
      */
     public RevisionNotFoundException(int revisionId) {

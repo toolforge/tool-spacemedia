@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
 import static com.google.api.client.googleapis.javanet.GoogleNetHttpTransport.newTrustedTransport;
-import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -56,8 +55,7 @@ public class YouTubeApiService {
     }
 
     public VideoListResponse listVideos(SearchListResponse searchList) throws IOException {
-        return listVideos(searchList.getItems().stream().map(SearchResult::getId).map(ResourceId::getVideoId)
-                .collect(toList()));
+        return listVideos(searchList.getItems().stream().map(SearchResult::getId).map(ResourceId::getVideoId).toList());
     }
 
     public VideoListResponse listVideos(List<String> videoIds) throws IOException {

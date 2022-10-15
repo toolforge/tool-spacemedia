@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
@@ -32,7 +31,7 @@ class NasaServiceTest {
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
-        }).collect(Collectors.toList())) {
+        }).toList()) {
             assertNotNull(NasaService.findOriginalMedia(rest, href));
         }
     }

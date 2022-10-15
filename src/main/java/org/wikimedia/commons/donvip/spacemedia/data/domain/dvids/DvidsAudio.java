@@ -34,8 +34,8 @@ public class DvidsAudio extends DvidsMedia {
     @Override
     public DvidsAudio copyDataFrom(DvidsMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
-        if (mediaFromApi instanceof DvidsAudio) {
-            setDuration(((DvidsAudio) mediaFromApi).getDuration());
+        if (mediaFromApi instanceof DvidsAudio audio) {
+            setDuration(audio.getDuration());
         }
         return this;
     }

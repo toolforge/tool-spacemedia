@@ -55,18 +55,18 @@ public class EsaService
     private static final String SHA1_ERROR = "860f6466c5f3da5d62b2065c33aa5548697d817c";
 
     static final Pattern COPERNICUS_CREDIT = Pattern.compile(
-                    ".*Copernicus[ -](?:Sentinel[ -])?dat(?:a|en)(?:/ESA)? [\\(\\[](2[0-9]{3}(?:[-–/][0-9]{2,4})?)[\\)\\]].*",
+                    ".*Copernicus[ -](?:Sentinel[ -])?dat(?:a|en)(?:/ESA)? [\\(\\[](2\\d{3}(?:[-–/]\\d{2,4})?)[\\)\\]].*",
                     Pattern.CASE_INSENSITIVE);
 
     static final List<Pattern> COPERNICUS_PROCESSED_BY = Arrays.asList(
             Pattern.compile(
-                    ".*Copernicus.*data [\\(\\[]2[0-9]{3}(?:[-–/][0-9]{2,4})?[\\)\\]][ ]?(?:/|,)[ ]?(?:Processed by )?(.*)",
+                    ".*Copernicus.*data [\\(\\[]2\\d{3}(?:[-–/]\\d{2,4})?[\\)\\]] ?(?:/|,) ?(?:Processed by )?(.*)",
                     Pattern.CASE_INSENSITIVE),
             Pattern.compile(
-                    "(?:Basierend auf|Modifizierte und) von der (.*) (?:modifizierten|bearbeitete) Copernicus[ -]Sentinel[ -]Daten [\\(\\[]2[0-9]{3}(?:[-–/][0-9]{2,4})?[\\)\\]]",
+                    "(?:Basierend auf|Modifizierte und) von der (.*) (?:modifizierten|bearbeitete) Copernicus[ -]Sentinel[ -]Daten [\\(\\[]2\\d{3}(?:[-–/]\\d{2,4})?[\\)\\]]",
                     Pattern.CASE_INSENSITIVE),
             Pattern.compile(
-                    "Erstellt mit modifizierten Copernicus[ -]Sentinel[ -]Daten [\\(\\[]2[0-9]{3}(?:[-–/][0-9]{2,4})?[\\)\\]][,]? bearbeitet von (.*)",
+                    "Erstellt mit modifizierten Copernicus[ -]Sentinel[ -]Daten [\\(\\[]2\\d{3}(?:[-–/]\\d{2,4})?[\\)\\]],? bearbeitet von (.*)",
                     Pattern.CASE_INSENSITIVE));
 
     static final List<String> CC_BY_SA_SPELLINGS = Arrays.asList(

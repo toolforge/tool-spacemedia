@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
@@ -118,7 +117,7 @@ public class StsciService {
             }
         });
         Elements paragraphs = html.getElementsByTag("p");
-        List<Element> elems = paragraphs.stream().filter(p -> p.text().startsWith("Release Date:")).collect(toList());
+        List<Element> elems = paragraphs.stream().filter(p -> p.text().startsWith("Release Date:")).toList();
         if (elems.size() == 1) {
             String date = elems.get(0).text().replace("Release Date:", "").trim();
             try {
@@ -127,7 +126,7 @@ public class StsciService {
                 LOGGER.debug(date, e);
             }
         }
-        elems = paragraphs.stream().filter(p -> p.text().startsWith("Read the Release:")).collect(toList());
+        elems = paragraphs.stream().filter(p -> p.text().startsWith("Read the Release:")).toList();
         if (elems.size() == 1) {
             result.setNewsId(elems.get(0).getElementsByTag("a").first().text());
         }
@@ -159,7 +158,7 @@ public class StsciService {
     }
 
     private static Optional<String> findTd(Elements tds, String label) {
-        List<Element> matches = tds.stream().filter(x -> label.equalsIgnoreCase(x.text())).collect(toList());
+        List<Element> matches = tds.stream().filter(x -> label.equalsIgnoreCase(x.text())).toList();
         if (matches.size() == 2) {
             return Optional.ofNullable(matches.get(0).nextElementSibling()).map(Element::text);
         }

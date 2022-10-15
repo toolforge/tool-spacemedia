@@ -208,7 +208,7 @@ public class NasaSirsService
         URL url = new URL(link);
         return Jsoup.connect(link).timeout(15_000).get().getElementsByTag("tr").stream()
                 .map(e -> url.getProtocol() + "://" + url.getHost() + e.getElementsByTag("a").get(1).attr("href"))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Set<String> loadCategories() throws IOException {

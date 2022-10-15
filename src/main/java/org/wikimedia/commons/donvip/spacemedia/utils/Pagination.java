@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.data.domain.Page;
@@ -15,7 +14,7 @@ public final class Pagination {
         int totalPages = page.getTotalPages();
         if (totalPages > 0) {
             model.addAttribute("pageNumbers",
-                    IntStream.rangeClosed(1, totalPages).boxed().collect(Collectors.toList()));
+                    IntStream.rangeClosed(1, totalPages).boxed().toList());
         }
     }
 }

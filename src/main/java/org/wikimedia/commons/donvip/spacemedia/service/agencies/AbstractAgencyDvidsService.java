@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -288,8 +287,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     private UpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
         int count = 0;
         Set<String> idsKnownToDvidsApi = new HashSet<>();
-        for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted()
-                .collect(toList())) {
+        for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted().toList()) {
             try {
                 idsKnownToDvidsApi.add(id);
                 count += processDvidsMedia(mediaRepository.findById(new DvidsMediaTypedId(id)),
@@ -410,14 +408,15 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         // new: https://d34w7g4gy10iej.cloudfront.net/photos/2104/6622429.jpg
         if ((MEDIA_WITH_CATEGORIES.contains(media.getClass()) && media.getCategory() == null)
                 || media.getMetadata().getAssetUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
-                || media.getThumbnailUrl().toExternalForm().startsWith(OLD_DVIDS_CDN) || (media instanceof DvidsVideo
-                        && ((DvidsVideo) media).getImage().toExternalForm().startsWith(OLD_DVIDS_CDN))) {
+                || media.getThumbnailUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
+                || (media instanceof DvidsVideo videoMedia
+                        && videoMedia.getImage().toExternalForm().startsWith(OLD_DVIDS_CDN))) {
             DvidsMedia mediaFromApi = apiFetcher.get();
             media.setCategory(mediaFromApi.getCategory());
             media.getMetadata().setAssetUrl(mediaFromApi.getMetadata().getAssetUrl());
             media.setThumbnailUrl(mediaFromApi.getThumbnailUrl());
-            if (media instanceof DvidsVideo && mediaFromApi instanceof DvidsVideo) {
-                ((DvidsVideo) media).setImage(((DvidsVideo) mediaFromApi).getImage());
+            if (media instanceof DvidsVideo videoMedia && mediaFromApi instanceof DvidsVideo videoMediaFromApi) {
+                videoMedia.setImage(videoMediaFromApi.getImage());
             }
             return true;
         }
@@ -621,7 +620,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         if (details && units.size() > 1) {
             stats.setDetails(units.stream()
                     .map(this::getStatistics)
-                    .sorted().collect(toList()));
+                    .sorted().toList());
         }
         return stats;
     }

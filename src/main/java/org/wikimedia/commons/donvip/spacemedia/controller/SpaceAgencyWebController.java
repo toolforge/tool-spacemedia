@@ -7,7 +7,6 @@ import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDe
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -112,7 +111,7 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
 
     private String template(Model model, String template, Search search) {
         model.addAttribute("search", search);
-        model.addAttribute("agencies", agencies.stream().sorted().collect(Collectors.toList()));
+        model.addAttribute("agencies", agencies.stream().sorted().toList());
         model.addAttribute("agency", service);
         return template;
     }

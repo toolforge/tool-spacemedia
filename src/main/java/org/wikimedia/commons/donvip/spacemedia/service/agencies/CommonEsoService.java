@@ -50,7 +50,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonEsoService.class);
 
-    private static final Pattern SIZE_PATTERN = Pattern.compile("([0-9]+) x ([0-9]+) px");
+    private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+) x (\\d+) px");
 
     private final Class<T> mediaClass;
     private final String searchLink;

@@ -49,7 +49,7 @@ public class SpaceAgencyControllerConfiguration {
         Object controller = new ByteBuddy().subclass(parentClass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
                 .annotateType(ofType(annotationClass).build(),
                         ofType(RequestMapping.class)
-                                .define("path", of(new String[] {agency.getId() + pathSuffix})).build())
+                                .define("path", of(new String[] { agency.getId() + pathSuffix })).build())
                 .defineConstructor(Visibility.PUBLIC).withParameters(agency.getClass())
                 .intercept(MethodCall.invoke(parentClass.getDeclaredConstructor(AbstractAgencyService.class))
                         .withAllArguments())

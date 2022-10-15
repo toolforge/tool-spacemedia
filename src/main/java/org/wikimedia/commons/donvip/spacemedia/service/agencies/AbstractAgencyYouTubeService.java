@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -124,7 +123,7 @@ public abstract class AbstractAgencyYouTubeService
         return searchList.getItems().stream()
                 .map(sr -> toYouTubeVideo(
                         videoList.getItems().stream().filter(v -> sr.getId().getVideoId().equals(v.getId())).findFirst().get()))
-                .collect(toList());
+                .toList();
     }
 
     private static YouTubeVideo toYouTubeVideo(Video ytVideo) {

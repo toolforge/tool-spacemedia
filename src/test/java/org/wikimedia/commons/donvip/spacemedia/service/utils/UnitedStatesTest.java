@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
-public class UnitedStatesTest {
+class UnitedStatesTest {
 
     @Test
     void testIsVirin() {

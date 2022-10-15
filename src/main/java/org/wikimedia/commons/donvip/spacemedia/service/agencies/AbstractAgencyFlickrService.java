@@ -1,7 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
-import static java.util.stream.Collectors.toList;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -54,7 +52,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         extends AbstractAgencyService<FlickrMedia, Long, LocalDateTime, OT, OID, OD> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyFlickrService.class);
-    private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"([0-9]+)\" not found \\(invalid ID\\)");
+    private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"(\\d+)\" not found \\(invalid ID\\)");
 
     @Autowired
     protected FlickrMediaRepository flickrRepository;
@@ -194,7 +192,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         if (details && flickrAccounts.size() > 1) {
             stats.setDetails(flickrAccounts.stream()
                     .map(this::getStatistics)
-                    .sorted().collect(toList()));
+                    .sorted().toList());
         }
         return stats;
     }
@@ -298,7 +296,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
-    protected void checkUploadPreconditions(FlickrMedia media, boolean checkUnicity) throws IOException {
+    protected void checkUploadPreconditions(FlickrMedia media, boolean checkUnicity) throws MalformedURLException {
         super.checkUploadPreconditions(media, checkUnicity);
         if (processor.isBadVideoEntry(media)) {
             throw new ImageUploadForbiddenException("Bad video download link: " + media);
@@ -375,7 +373,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     private List<FlickrMedia> buildFlickrMediaList(List<Photo> photos) {
-        return photos.stream().map(this::photoToFlickrMedia).collect(toList());
+        return photos.stream().map(this::photoToFlickrMedia).toList();
     }
 
     private FlickrMedia photoToFlickrMedia(Photo p) {

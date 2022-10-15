@@ -32,13 +32,11 @@ public class DvidsCreditDeserializer extends StdDeserializer<List<DvidsCredit>> 
     public List<DvidsCredit> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         List<DvidsCredit> credits = new ArrayList<>();
         JsonNode node = p.getCodec().readTree(p);
-        if (node instanceof ArrayNode) {
-            ArrayNode array = ((ArrayNode) node);
+        if (node instanceof ArrayNode array) {
             for (int i = 0; i < array.size(); i++) {
                 DvidsCredit credit = new DvidsCredit();
                 JsonNode elem = array.get(i);
-                if (elem instanceof ObjectNode) {
-                    ObjectNode object = (ObjectNode) elem;
+                if (elem instanceof ObjectNode object) {
                     ofNullable(object.get("id")).ifPresent(x -> credit.setId(x.asInt()));
                     ofNullable(object.get("name")).ifPresent(x -> credit.setName(x.asText()));
                     ofNullable(object.get("rank")).ifPresent(x -> credit.setRank(x.asText()));
@@ -52,10 +50,10 @@ public class DvidsCreditDeserializer extends StdDeserializer<List<DvidsCredit>> 
                 }
                 credits.add(credit);
             }
-        } else if (node instanceof TextNode) {
+        } else if (node instanceof TextNode text) {
             DvidsCredit credit = new DvidsCredit();
             credit.setId(0);
-            credit.setName(((TextNode) node).asText());
+            credit.setName(text.asText());
             credits.add(credit);
         }
         return credits;
