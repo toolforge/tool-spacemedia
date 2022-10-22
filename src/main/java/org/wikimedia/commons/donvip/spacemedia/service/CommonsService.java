@@ -704,7 +704,7 @@ public class CommonsService {
             return;
         }
         int count = 0;
-        for (Element li : Jsoup.connect(duplicateUrl.toExternalForm() + "&limit=5000").get()
+        for (Element li : Jsoup.connect(duplicateUrl.toExternalForm() + "&limit=5000").maxBodySize(0).get()
                 .getElementsByClass("special").first().getElementsByTag("li")) {
             String title = li.getElementsByTag("a").first().ownText().replace(' ', '_');
             if (!title.contains("-_DPLA_-")) {
