@@ -85,6 +85,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQuery;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Revision;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsPage;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsQuery;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Slot;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Tokens;
@@ -397,21 +398,24 @@ public class CommonsService {
     }
 
     public String queryRevisionContent(int pageId) throws IOException {
-        RevisionsPage rp = apiHttpGet("?action=query&prop=revisions&rvprop=content&rvslots=main&rvlimit=1&pageids=" + pageId,
-                RevisionsQueryResponse.class).getQuery().getPages().get(pageId);
-        if (rp != null) {
-            List<Revision> revisions = rp.getRevisions();
-            if (CollectionUtils.isNotEmpty(revisions)) {
-                Map<String, Slot> slots = revisions.get(0).getSlots();
-                if (MapUtils.isNotEmpty(slots)) {
-                    Slot main = slots.get("main");
-                    if (main != null) {
-                        return main.getContent();
+        RevisionsQuery query = apiHttpGet("?action=query&prop=revisions&rvprop=content&rvslots=main&rvlimit=1&pageids=" + pageId,
+                RevisionsQueryResponse.class).getQuery();
+        if (query != null) {
+            RevisionsPage rp = query.getPages().get(pageId);
+            if (rp != null) {
+                List<Revision> revisions = rp.getRevisions();
+                if (CollectionUtils.isNotEmpty(revisions)) {
+                    Map<String, Slot> slots = revisions.get(0).getSlots();
+                    if (MapUtils.isNotEmpty(slots)) {
+                        Slot main = slots.get("main");
+                        if (main != null) {
+                            return main.getContent();
+                        }
                     }
                 }
             }
         }
-        LOGGER.error("Couldn't find page content for {}: {}", pageId, rp);
+        LOGGER.error("Couldn't find page content for {}", pageId);
         return null;
     }
 
