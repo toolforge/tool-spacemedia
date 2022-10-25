@@ -747,7 +747,6 @@ public class CommonsService {
 
     private int handleDuplicateFile(CommonsImageProjection olderImage, CommonsImageProjection dupe, int count)
             throws IOException {
-        int result = 0;
         CommonsPage dupePage = pageRepository.findByFileTitle(dupe.getName())
                 .orElseThrow(() -> new IllegalStateException("No page named " + dupe.getName()));
         if (!categoryLinkRepository
@@ -756,23 +755,29 @@ public class CommonsService {
                 && count < duplicateMaxFiles
                 && categoryLinkRepository.countByTypeAndIdTo(CommonsCategoryLinkType.file,
                         DUPLICATE) < duplicateMaxFiles) {
-            EditApiResponse response = apiHttpPost(
-                    Map.of("action", "edit", "title", "File:" + dupe.getName(), "format",
-                            "json", "summary",
-                            "Duplicate of [[:File:" + olderImage.getName() + "]]",
-                            "prependtext", "{{duplicate|" + olderImage.getName() + "}}\n",
-                            "token", token),
-                    EditApiResponse.class);
-            result = 1;
-            if (response.getEdit() == null || response.getError() != null
-                    || !"Success".equalsIgnoreCase(response.getEdit().getResult())) {
-                if ("badtoken".equals(response.getError().getCode())) {
-                    LOGGER.error("API rejected our CSRF token {}", token);
-                }
-                throw new IllegalStateException(response.toString());
-            }
+            return edit(Map.of("action", "edit", "title", "File:" + dupe.getName(), "format", "json",
+                    "summary", "Duplicate of [[:File:" + olderImage.getName() + "]]", "prependtext",
+                    "{{duplicate|" + olderImage.getName() + "}}\n", "token", token), false);
         }
-        return result;
+        return 0;
+    }
+
+    private int edit(Map<String, String> params, boolean retryAttempt) throws IOException {
+        EditApiResponse response = apiHttpPost(params, EditApiResponse.class);
+        if (response.getEdit() == null || response.getError() != null
+                || !"Success".equalsIgnoreCase(response.getEdit().getResult())) {
+            if ("badtoken".equals(response.getError().getCode())) {
+                LOGGER.error("API rejected our CSRF token {}", token);
+                // Renew it and try again once
+                if (!retryAttempt) {
+                    LOGGER.info("Renewing token and retrying...");
+                    token = queryTokens().getCsrftoken();
+                    return edit(params, true);
+                }
+            }
+            throw new IllegalStateException(response.toString());
+        }
+        return 1;
     }
 
     private CommonsImageProjection findImage(String title) {
