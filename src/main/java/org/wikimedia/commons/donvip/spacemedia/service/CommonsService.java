@@ -808,6 +808,7 @@ public class CommonsService {
     }
 
     private void computeHashesOfAllFiles(Direction order) {
+        Thread.currentThread().setName("scheduled-commons-computeHashesOfAllFiles-" + order);
         LOGGER.info("Computing perceptual hashes of files in Commons ({} order)...", order);
         final RuntimeData runtime = runtimeDataRepository.findById(COMMONS).orElseGet(() -> new RuntimeData(COMMONS));
         final RestTemplate restTemplate = new RestTemplate();
