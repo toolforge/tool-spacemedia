@@ -793,8 +793,7 @@ public class CommonsService {
                 imageOpt = imageRepository.findByName(title);
             }
         }
-        String errorMessage = "No image named " + title;
-        return imageOpt.orElseThrow(() -> new IllegalStateException(errorMessage));
+        return imageOpt.orElse(null);
     }
 
     @Scheduled(fixedRateString = "${commons.hashes.update.rate}", initialDelayString = "${commons.hashes.initial.delay}")
