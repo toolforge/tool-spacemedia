@@ -70,6 +70,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkT
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
@@ -715,7 +716,9 @@ public class CommonsService {
         for (Element li : items) {
             String title = li.getElementsByTag("a").first().ownText().replace(' ', '_');
             CommonsImageProjection image = findImage(title);
-            if (image != null && image.getWidth() > 1 && image.getHeight() > 1
+            if (image != null
+                    && (CommonsMediaType.AUDIO == image.getMediaType()
+                            || (image.getWidth() > 1 && image.getHeight() > 1))
                     && !ignoredDuplicatesSha1.contains(image.getSha1())) {
                 boolean dpla = title.contains("-_DPLA_-");
                 List<CommonsImageProjection> duplicates = imageRepository.findBySha1OrderByTimestamp(image.getSha1());
