@@ -23,6 +23,10 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
     private String id;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = true, length = 16)
+    private EsoLicence licence;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private EsoMediaType imageType;
 
@@ -85,6 +89,14 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
     @Override
     public void setId(String id) {
         this.id = id;
+    }
+
+    public EsoLicence getLicence() {
+        return licence;
+    }
+
+    public void setLicence(EsoLicence licence) {
+        this.licence = licence;
     }
 
     public EsoMediaType getImageType() {
@@ -228,6 +240,7 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
     @Override
     public String toString() {
         return "AbstractEsoMedia [" + (id != null ? "id=" + id + ", " : "")
+                + (licence != null ? "licence=" + licence + ", " : "")
                 + (imageType != null ? "imageType=" + imageType + ", " : "")
                 + (date != null ? "date=" + date + ", " : "") + "width=" + width + ", height="
                 + height + ", " + (name != null ? "objectName=" + name + ", " : "")

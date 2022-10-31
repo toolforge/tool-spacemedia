@@ -39,6 +39,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoLicence;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -304,6 +305,9 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             if (!id.equals(text)) {
                 problem(new URL(imgUrlLink), "Different ids: " + id + " <> " + text);
             }
+            break;
+        case "Licence:":
+            media.setLicence(EsoLicence.from(text));
             break;
         case "Type:":
             media.setImageType(EsoMediaType.valueOf(text));
