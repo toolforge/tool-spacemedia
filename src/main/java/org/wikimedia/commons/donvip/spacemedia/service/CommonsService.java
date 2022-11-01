@@ -710,8 +710,10 @@ public class CommonsService {
             return;
         }
         int count = 0;
+        LOGGER.info("Querying complete list of Special:ListDuplicatedFiles...");
         Elements items = Jsoup.connect(duplicateUrl.toExternalForm() + "&limit=5000").maxBodySize(0).get()
                 .getElementsByClass("special").first().getElementsByTag("li");
+        LOGGER.info("Special:ListDuplicatedFiles returned {} entries", items.size());
         Collections.reverse(items);
         for (Element li : items) {
             String title = li.getElementsByTag("a").first().ownText().replace(' ', '_');
@@ -757,7 +759,8 @@ public class CommonsService {
                 && !restrictionsRepository.existsByPageAndType(dupePage, "edit")
                 && count < duplicateMaxFiles
                 && categoryLinkRepository.countByTypeAndIdTo(CommonsCategoryLinkType.file,
-                        DUPLICATE) < duplicateMaxFiles) {
+                        DUPLICATE) < duplicateMaxFiles
+                && !oldImageRepository.existsByName(dupe.getName())) {
             return edit(Map.of("action", "edit", "title", "File:" + dupe.getName(), "format", "json",
                     "summary", "Duplicate of [[:File:" + olderImage.getName() + "]]", "prependtext",
                     "{{duplicate|" + olderImage.getName() + "}}\n", "token", token), false);

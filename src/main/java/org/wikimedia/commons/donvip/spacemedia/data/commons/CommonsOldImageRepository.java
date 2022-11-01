@@ -8,4 +8,6 @@ import org.springframework.data.repository.CrudRepository;
 public interface CommonsOldImageRepository extends CrudRepository<CommonsOldImage, String> {
 
     List<CommonsOldImage> findBySha1In(Collection<String> sha1);
+
+    boolean existsByName(String name);
 }
