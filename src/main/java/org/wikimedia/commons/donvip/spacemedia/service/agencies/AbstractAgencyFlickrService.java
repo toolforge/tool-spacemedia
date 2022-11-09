@@ -21,9 +21,6 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.QueryBuilder;
-import org.hibernate.search.query.dsl.SimpleQueryStringMatchingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +35,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.FlickrMediaProcessorService;
-import org.wikimedia.commons.donvip.spacemedia.service.FlickrService;
+import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
+import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 
@@ -416,14 +413,6 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     protected boolean customProcessing(FlickrMedia media) {
         // TO be overriden for custom processing
         return false;
-    }
-
-    @Override
-    protected Query getSearchQuery(QueryBuilder queryBuilder, SimpleQueryStringMatchingContext context, String q) {
-        return queryBuilder.bool()
-                .must(super.getSearchQuery(queryBuilder, context, q))
-                .must(queryBuilder.simpleQueryString().onField("pathAlias").matching(String.join(" ", flickrAccounts)).createQuery())
-                .createQuery();
     }
 
     @Override

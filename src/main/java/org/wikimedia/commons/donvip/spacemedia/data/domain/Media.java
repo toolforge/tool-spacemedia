@@ -25,10 +25,7 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.PostLoad;
 import javax.persistence.Transient;
 
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Store;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -50,12 +47,12 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+    @FullTextField
     protected String title;
 
     @Lob
     @Column(nullable = true, columnDefinition = "MEDIUMTEXT")
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+    @FullTextField
     protected String description;
 
     @ElementCollection(fetch = FetchType.EAGER)

@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service;
+package org.wikimedia.commons.donvip.spacemedia.service.flickr;
 
 import java.net.MalformedURLException;
 import java.net.URL;

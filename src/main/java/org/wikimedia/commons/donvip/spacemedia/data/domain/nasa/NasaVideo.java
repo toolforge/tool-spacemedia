@@ -2,7 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa;
 
 import javax.persistence.Entity;
 
-import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
 @Entity
 @Indexed

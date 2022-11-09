@@ -117,9 +117,14 @@
 			<artifactId>jaxb-runtime</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-search-orm</artifactId>
-			<version>5.11.10.Final</version>
+			<groupId>org.hibernate.search</groupId>
+			<artifactId>hibernate-search-mapper-orm</artifactId>
+			<version>6.1.7.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.search</groupId>
+			<artifactId>hibernate-search-backend-lucene</artifactId>
+			<version>6.1.7.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -249,9 +254,44 @@
 				<version>${springboot-version}</version>
 				<executions>
 					<execution>
+						<id>web</id>
 						<goals>
 							<goal>repackage</goal>
 						</goals>
+						<configuration>
+							<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaWebApplication</mainClass>
+							<outputDirectory>${project.build.directory}/web</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>job</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyUpdateJobApplication</mainClass>
+							<outputDirectory>${project.build.directory}/job</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>job-flickr</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyFlickrUpdateJobApplication</mainClass>
+							<outputDirectory>${project.build.directory}/job-flickr</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>job-youtube</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyYoutubeUpdateJobApplication</mainClass>
+							<outputDirectory>${project.build.directory}/job-youtube</outputDirectory>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

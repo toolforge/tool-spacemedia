@@ -1,0 +1,12 @@
+# https://wikitech.wikimedia.org/wiki/Help:Toolforge/Jobs_framework
+---
+- name: esa
+  image: tf-jdk17
+  command: ./job-update.sh esa
+  wait: true
+  emails: onfailure
+- name: esa-flickr
+  image: tf-jdk17
+  command: ./job-update.sh esa-flickr
+  wait: true
+  emails: onfailure

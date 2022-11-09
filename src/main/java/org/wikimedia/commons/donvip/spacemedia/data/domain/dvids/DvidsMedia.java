@@ -21,7 +21,8 @@ import javax.persistence.InheritanceType;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
-import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -43,7 +44,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
      */
     @Id
     @Embedded
-    @FieldBridge(impl = DvidsMediaTypedIdFieldBridge.class)
+    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = DvidsMediaTypedIdBridge.class))
     private DvidsMediaTypedId id;
 
     /**

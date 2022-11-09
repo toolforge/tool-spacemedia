@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service;
+package org.wikimedia.commons.donvip.spacemedia.service.commons;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.wikimedia.commons.donvip.spacemedia.SpacemediaConfiguration;
+import org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaCommonConfiguration;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
@@ -27,7 +27,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepositor
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRestrictionsRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.CommonsServiceTest.TestConfig;
+import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsServiceTest.TestConfig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -100,7 +100,7 @@ class CommonsServiceTest {
     }
 
     @Configuration
-    @Import(SpacemediaConfiguration.class)
+    @Import(SpacemediaCommonConfiguration.class)
     public static class TestConfig {
         @Bean
         public CommonsService service(@Value("${application.version}") String appVersion,

@@ -94,11 +94,6 @@ public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temp
         return pageIndex(model, "problems", service.getProblems(page), "problems", newSearch());
     }
 
-    @GetMapping("/topterms")
-    public final String topterms(Model model) throws Exception {
-        return index(model, "topterms", service.getTopTerms(), "topterms", newSearch());
-    }
-
     @GetMapping("/search")
     public final String search(Model model, @ModelAttribute Search search,
             @PageableDefault(size = SIZE) Pageable page) {

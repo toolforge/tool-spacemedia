@@ -37,23 +37,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.misc.HighFreqTerms;
-import org.apache.lucene.misc.HighFreqTerms.DocFreqComparator;
-import org.apache.lucene.misc.TermStats;
-import org.apache.lucene.search.Query;
-import org.hibernate.search.SearchFactory;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
-import org.hibernate.search.query.dsl.QueryBuilder;
-import org.hibernate.search.query.dsl.SimpleQueryStringMatchingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.DuplicateMedia;
@@ -70,10 +58,10 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
+import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 
 /**
@@ -118,6 +106,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @PersistenceContext(unitName = "domain")
     private EntityManager entityManager;
 
+    @SuppressWarnings("unused")
     private Set<String> ignoredCommonTerms;
 
     private UploadMode uploadMode;
@@ -242,74 +231,16 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return repository.findByIgnoredTrue(page);
     }
 
-    /**
-     * Builds the Lucene search query to provide to Hibernate Search.
-     *
-     * @param queryBuilder the query builder
-     * @param context a simple query search context, initialized to search on
-     *            "title" and "description"
-     * @param q the search string
-     * @return the lucene query obtained from the simple query search context and
-     *         potentially more field
-     */
-    protected Query getSearchQuery(QueryBuilder queryBuilder, SimpleQueryStringMatchingContext context, String q) {
-        return context.withAndAsDefaultOperator().matching(q).createQuery();
-    }
-
-    /**
-     * Builds the Hibernate Search query.
-     *
-     * @param q the search string
-     * @param searchEntityManager the entity manager
-     * @return the Hibernate Search query
-     */
-    private FullTextQuery getFullTextQuery(String q, EntityManager searchEntityManager) {
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(searchEntityManager);
-        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(getMediaClass()).get();
-        return fullTextEntityManager.createFullTextQuery(getSearchQuery(queryBuilder,
-                queryBuilder.simpleQueryString().onField("title").boostedTo(5f).andField("description").boostedTo(2f),
-                q),
-                getMediaClass());
-    }
-
     @Override
-    @SuppressWarnings("unchecked")
     public final List<T> searchMedia(String q) {
         searchService.checkSearchEnabled();
-        return transactionService.doInTransaction(() -> getFullTextQuery(q, entityManager).getResultList());
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public final Page<T> searchMedia(String q, Pageable page) {
         searchService.checkSearchEnabled();
-        return transactionService.doInTransaction(() -> {
-            FullTextQuery fullTextQuery = getFullTextQuery(q, entityManager);
-            fullTextQuery.setFirstResult(page.getPageNumber() * page.getPageSize());
-            fullTextQuery.setMaxResults(page.getPageSize());
-            return new PageImpl<>(fullTextQuery.getResultList(), page, fullTextQuery.getResultSize());
-        });
-    }
-
-    @Override
-    public final List<TermStats> getTopTerms() throws Exception {
-        searchService.checkSearchEnabled();
-        return transactionService.doInTransaction(() -> {
-            SearchFactory searchFactory = Search.getFullTextEntityManager(entityManager).getSearchFactory();
-            IndexReader indexReader = searchFactory.getIndexReaderAccessor().open(getTopTermsMediaClass());
-            try {
-                return Arrays
-                        .stream(HighFreqTerms.getHighFreqTerms(indexReader, 1000, "description", new DocFreqComparator()))
-                        .filter(ts -> {
-                            String s = ts.termtext.utf8ToString();
-                            return s.length() > 1 && !ignoredCommonTerms.contains(s) && !s.matches("\\d+");
-                        })
-                        .toList().subList(0, 500);
-            } finally {
-                searchFactory.getIndexReaderAccessor().close(indexReader);
-            }
-        });
+        throw new UnsupportedOperationException();
     }
 
     /**
