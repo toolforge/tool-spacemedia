@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRepository;
@@ -89,7 +88,6 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         esoTypes = loadCsvMapping("eso.types.csv");
     }
 
-    @Scheduled(fixedRateString = "${commons.categories.check.rate}", initialDelayString = "${commons.categories.check.initial.delay}")
     public void checkEsoCategories() {
         checkCommonsCategories(esoCategories);
         checkCommonsCategories(esoTypes);

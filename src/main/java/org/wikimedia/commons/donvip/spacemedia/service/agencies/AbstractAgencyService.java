@@ -254,7 +254,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final LocalDateTime startUpdateMedia() {
-        Thread.currentThread().setName("scheduled-media-update-" + getId());
+        Thread.currentThread().setName("media-update-" + getId());
         LOGGER.info("Starting {} medias update...", getName());
         RuntimeData runtimeData = getRuntimeData();
         runtimeData.setLastUpdateStart(LocalDateTime.now());

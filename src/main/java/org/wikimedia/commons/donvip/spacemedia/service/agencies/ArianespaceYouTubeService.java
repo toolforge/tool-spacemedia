@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
@@ -31,7 +30,6 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
     }
 
     @Override
-    @Scheduled(fixedRateString = "${arianespace.update.rate}", initialDelayString = "${arianespace.initial.delay}")
     public void updateMedia() {
         updateYouTubeVideos();
     }

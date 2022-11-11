@@ -12,7 +12,6 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
@@ -44,7 +43,6 @@ public class EsaFlickrService extends AbstractAgencyFlickrService<EsaMedia, Inte
     }
 
     @Override
-    @Scheduled(fixedRateString = "${esa.flickr.update.rate}", initialDelayString = "${esa.flickr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

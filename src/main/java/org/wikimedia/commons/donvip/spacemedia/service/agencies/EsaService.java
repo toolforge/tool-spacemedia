@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -110,7 +109,6 @@ public class EsaService
         esaSystems = loadCsvMapping("esa.systems.csv");
     }
 
-    @Scheduled(fixedRateString = "${commons.categories.check.rate}", initialDelayString = "${commons.categories.check.initial.delay}")
     public void checkEsaCategories() {
         checkCommonsCategories(esaLocations);
         checkCommonsCategories(esaMissions);
@@ -363,7 +361,6 @@ public class EsaService
     }
 
     @Override
-    @Scheduled(fixedRateString = "${esa.update.rate}", initialDelayString = "${esa.initial.delay}")
     public void updateMedia() throws IOException {
         LocalDateTime start = startUpdateMedia();
         updateMissingImages();

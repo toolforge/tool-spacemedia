@@ -11,7 +11,6 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
@@ -44,12 +43,10 @@ public class HubbleNasaService extends AbstractStsciService {
     }
 
     @Override
-    @Scheduled(fixedRateString = "${hubble.nasa.update.rate}", initialDelayString = "${hubble.nasa.initial.delay}")
     public void updateMedia() throws IOException {
         super.updateMedia();
     }
 
-    @Scheduled(fixedRateString = "${commons.categories.check.rate}", initialDelayString = "${commons.categories.check.initial.delay}")
     public void checkHubbleCategories() {
         checkCommonsCategories(hubbleCategories);
     }

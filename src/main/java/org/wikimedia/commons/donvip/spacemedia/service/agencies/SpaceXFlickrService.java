@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
@@ -25,7 +24,6 @@ public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia
     }
 
     @Override
-    @Scheduled(fixedRateString = "${spacex.flickr.update.rate}", initialDelayString = "${spacex.flickr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

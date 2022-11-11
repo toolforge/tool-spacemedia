@@ -5,21 +5,19 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
-public class DlrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
+public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
 
     @Autowired
-    public DlrService(FlickrMediaRepository repository, @Value("${dlr.flickr.accounts}") Set<String> flickrAccounts) {
+    public DlrFlickrService(FlickrMediaRepository repository, @Value("${dlr.flickr.accounts}") Set<String> flickrAccounts) {
         super(repository, "dlr", flickrAccounts);
     }
 
     @Override
-    @Scheduled(fixedRateString = "${dlr.update.rate}", initialDelayString = "${dlr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

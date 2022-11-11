@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
@@ -20,7 +19,6 @@ public class PotentialFlickrService extends AbstractAgencyFlickrService<FlickrMe
     }
 
     @Override
-    @Scheduled(fixedRateString = "${potential.flickr.update.rate}", initialDelayString = "${potential.flickr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

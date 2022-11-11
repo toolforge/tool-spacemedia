@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMedia;
@@ -49,7 +48,6 @@ public class IauService extends CommonEsoService<IauMedia> {
     }
 
     @Override
-    @Scheduled(fixedRateString = "${iau.update.rate}", initialDelayString = "${iau.initial.delay}")
     public void updateMedia() throws IOException {
         doUpdateMedia();
     }

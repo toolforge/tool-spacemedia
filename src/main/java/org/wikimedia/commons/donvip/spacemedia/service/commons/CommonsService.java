@@ -60,7 +60,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -697,7 +696,6 @@ public class CommonsService {
         lastUpload = now();
     }
 
-    @Scheduled(fixedRateString = "${commons.duplicates.update.rate}", initialDelayString = "${commons.duplicates.initial.delay}")
     public void checkExactDuplicateFiles() throws IOException {
         LOGGER.info("Looking for duplicate files in Commons...");
         LocalDateTime start = LocalDateTime.now();
@@ -800,18 +798,16 @@ public class CommonsService {
         return imageOpt.orElse(null);
     }
 
-    @Scheduled(fixedRateString = "${commons.hashes.update.rate}", initialDelayString = "${commons.hashes.initial.delay}")
     public void computeHashesOfAllFilesAsc() {
         computeHashesOfAllFiles(Direction.ASC);
     }
 
-    @Scheduled(fixedRateString = "${commons.hashes.update.rate}", initialDelayString = "${commons.hashes.initial.delay}")
     public void computeHashesOfAllFilesDesc() {
         computeHashesOfAllFiles(Direction.DESC);
     }
 
     private void computeHashesOfAllFiles(Direction order) {
-        Thread.currentThread().setName("scheduled-commons-computeHashesOfAllFiles-" + order);
+        Thread.currentThread().setName("commons-computeHashesOfAllFiles-" + order);
         LOGGER.info("Computing perceptual hashes of files in Commons ({} order)...", order);
         final RuntimeData runtime = runtimeDataRepository.findById(COMMONS).orElseGet(() -> new RuntimeData(COMMONS));
         final RestTemplate restTemplate = new RestTemplate();

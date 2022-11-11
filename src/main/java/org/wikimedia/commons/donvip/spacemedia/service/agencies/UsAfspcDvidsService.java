@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
@@ -21,7 +20,6 @@ public class UsAfspcDvidsService extends AbstractAgencyDvidsService<DvidsMedia, 
     }
 
     @Override
-    @Scheduled(fixedRateString = "${usafspc.dvids.update.rate}", initialDelayString = "${usafspc.dvids.initial.delay}")
     public void updateMedia() {
         updateDvidsMedia();
     }

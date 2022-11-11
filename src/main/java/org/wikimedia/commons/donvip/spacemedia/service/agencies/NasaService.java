@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException.Forbidden;
@@ -377,7 +376,6 @@ public class NasaService
     }
 
     @Override
-    @Scheduled(fixedRateString = "${nasa.update.rate}", initialDelayString = "${nasa.initial.delay}")
     public void updateMedia() {
         LocalDateTime start = startUpdateMedia();
         int count = 0;

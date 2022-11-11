@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMediaRepository;
@@ -36,7 +35,6 @@ public class HubbleEsaService extends CommonEsoService<HubbleEsaMedia> {
     }
 
     @Override
-    @Scheduled(fixedRateString = "${hubble.esa.update.rate}", initialDelayString = "${hubble.esa.initial.delay}")
     public void updateMedia() throws IOException {
         doUpdateMedia();
     }

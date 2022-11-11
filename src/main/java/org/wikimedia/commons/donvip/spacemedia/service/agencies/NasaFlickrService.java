@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
@@ -37,7 +36,6 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
     }
 
     @Override
-    @Scheduled(fixedRateString = "${nasa.flickr.update.rate}", initialDelayString = "${nasa.flickr.initial.delay}")
     public void updateMedia() {
         updateFlickrMedia();
     }

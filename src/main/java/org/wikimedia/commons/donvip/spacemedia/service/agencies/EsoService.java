@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaRepository;
@@ -30,7 +29,6 @@ public class EsoService extends CommonEsoService<EsoMedia> {
     }
 
     @Override
-    @Scheduled(fixedRateString = "${eso.update.rate}", initialDelayString = "${eso.initial.delay}")
     public void updateMedia() throws IOException {
         doUpdateMedia();
     }
