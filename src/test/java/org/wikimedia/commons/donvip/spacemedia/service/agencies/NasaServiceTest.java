@@ -13,7 +13,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
 
-class NasaServiceTest {
+class NasaServiceTest extends AbstractAgencyServiceTest {
 
     @Test
     void testFindOriginalMedia() throws Exception {

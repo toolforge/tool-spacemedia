@@ -152,16 +152,21 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     }
 
     private T fetchMedia(URL url, String id, String imgUrlLink) throws ReflectiveOperationException, IOException {
-        T media = mediaClass.getConstructor().newInstance();
-        media.setId(id);
         LOGGER.info(imgUrlLink);
         Document html = Jsoup.connect(imgUrlLink).timeout(60_000).get();
+        return newMediaFromHtml(html, url, id, imgUrlLink);
+    }
+
+    protected T newMediaFromHtml(Document html, URL url, String id, String imgUrlLink)
+            throws ReflectiveOperationException, MalformedURLException {
         Element div = html.getElementsByClass("col-md-9").last();
         // Find title
         Elements h1s = div.getElementsByTag("h1");
         if (h1s.isEmpty() || h1s.get(0).text().isEmpty()) {
             scrapingError(imgUrlLink, h1s.toString());
         }
+        T media = mediaClass.getConstructor().newInstance();
+        media.setId(id);
         media.setTitle(h1s.get(0).html());
         // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
         media.setDescription(findDescription(div).toString());
@@ -272,6 +277,9 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             for (Element h3 : info.getElementsByTag("h3")) {
                 for (Element title : h3.nextElementSibling().getElementsByClass(getObjectInfoTitleClass())) {
                     Element sibling = title.nextElementSibling();
+                    if (sibling == null) {
+                        continue;
+                    }
                     if (!Objects.equals(sibling.tagName(), title.tagName())) {
                         sibling = sibling.nextElementSibling();
                     }
@@ -292,7 +300,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
                     }
                 }
                 if ("Colours & filters".equals(h3.text())) {
-                    processColooursAndFilters(imgUrlLink, media, h3);
+                    processColoursAndFilters(imgUrlLink, media, h3);
                 }
             }
         }
@@ -392,7 +400,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         }
     }
 
-    protected void processColooursAndFilters(String imgUrlLink, T media, Element h3) {
+    protected void processColoursAndFilters(String imgUrlLink, T media, Element h3) {
         Element table = h3.nextElementSibling();
         int telescopeIndex = -1;
         int index = 0;

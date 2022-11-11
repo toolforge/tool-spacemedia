@@ -129,6 +129,9 @@ public class Metadata implements MetadataProjection {
 
     @Override
     public String toString() {
-        return "Metadata [sha1=" + sha1 + ", assetUrl=" + assetUrl + (phash != null ? ", phash=" + phash : "") + "]";
+        return "Metadata [" + (sha1 != null ? "sha1=" + sha1 + ", " : "")
+                + (phash != null ? "phash=" + phash + ", " : "")
+                + (readableImage != null ? "readableImage=" + readableImage + ", " : "")
+                + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "") + (size != null ? "size=" + size : "") + "]";
     }
 }

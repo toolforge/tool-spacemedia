@@ -239,7 +239,7 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
 
     @Override
     public String toString() {
-        return "AbstractEsoMedia [" + (id != null ? "id=" + id + ", " : "")
+        return getClass().getSimpleName() + " [" + (id != null ? "id=" + id + ", " : "")
                 + (licence != null ? "licence=" + licence + ", " : "")
                 + (imageType != null ? "imageType=" + imageType + ", " : "")
                 + (date != null ? "date=" + date + ", " : "") + "width=" + width + ", height="
