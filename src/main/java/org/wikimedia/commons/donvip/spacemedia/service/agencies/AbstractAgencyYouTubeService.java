@@ -183,7 +183,7 @@ public abstract class AbstractAgencyYouTubeService
             save = true;
         }
         Path path = video.getMetadata().getSha1() == null ? downloadVideo(video) : null;
-        if (mediaService.updateMedia(video, getOriginalRepository(), false, path)) {
+        if (mediaService.updateMedia(video, getOriginalRepository(), false, path).getResult()) {
             save = true;
         }
         if (path != null) {

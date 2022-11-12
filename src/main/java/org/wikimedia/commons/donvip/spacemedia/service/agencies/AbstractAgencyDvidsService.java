@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpClientErrorException.BadRequest;
 import org.springframework.web.client.HttpClientErrorException.Forbidden;
+import org.springframework.web.client.HttpClientErrorException.NotFound;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -203,27 +204,6 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             if (!idsKnownToDvidsApi.contains(id)) {
                 try {
                     refreshAndSaveById(id);
-                } catch (IllegalArgumentException e) {
-                    String message = e.getMessage();
-                    if (message != null && message.startsWith("No result from DVIDS API for ")) {
-                        mediaRepository.delete(media);
-                    } else {
-                        LOGGER.error(message, e);
-                    }
-                } catch (BadRequest e) {
-                    String message = e.getMessage();
-                    if (message != null && message.contains(" was not found")) {
-                        mediaRepository.delete(media);
-                    } else {
-                        LOGGER.error(message, e);
-                    }
-                } catch (Forbidden e) {
-                    String message = e.getMessage();
-                    if (message != null && message.contains(" was found, but is not published.")) {
-                        mediaRepository.delete(media);
-                    } else {
-                        LOGGER.error(message, e);
-                    }
                 } catch (IOException | ImageNotFoundException e) {
                     LOGGER.error(e.getMessage(), e);
                 }
@@ -240,7 +220,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             int page = 1;
             LOGGER.info("Fetching DVIDS {}s from unit '{}' (page {}/?)...", type, unit, page);
             while (loop) {
-                UpdateResult ur = doUpdateDvidsMedia(rest,
+                DvidsUpdateResult ur = doUpdateDvidsMedia(rest,
                         searchDvidsMediaIds(rest, false, type, unit, 0, page++), unit);
                 idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                 count += ur.count;
@@ -263,7 +243,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                     count = 0;
                     LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/?)...", type, unit, year, page);
                     while (loop) {
-                        UpdateResult ur = doUpdateDvidsMedia(rest,
+                        DvidsUpdateResult ur = doUpdateDvidsMedia(rest,
                                 searchDvidsMediaIds(rest, true, type, unit, year, page++), unit);
                         idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                         count += ur.count;
@@ -286,7 +266,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         return count;
     }
 
-    private UpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
+    private DvidsUpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
         int count = 0;
         Set<String> idsKnownToDvidsApi = new HashSet<>();
         for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted().toList()) {
@@ -305,7 +285,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             }
         }
         ApiPageInfo pi = response.getPageInfo();
-        return new UpdateResult(pi.getResultsPerPage(), pi.getTotalResults(), count, idsKnownToDvidsApi);
+        return new DvidsUpdateResult(pi.getResultsPerPage(), pi.getTotalResults(), count, idsKnownToDvidsApi);
     }
 
     private static Object smartExceptionLog(Throwable e) {
@@ -321,13 +301,13 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         return media;
     }
 
-    private static class UpdateResult {
+    private static class DvidsUpdateResult {
         private final Set<String> idsKnownToDvidsApi;
         private final int count;
         private final int resultsPerPage;
         private final int totalResults;
 
-        public UpdateResult(int resultsPerPage, int totalResults, int count, Set<String> processedIds) {
+        public DvidsUpdateResult(int resultsPerPage, int totalResults, int count, Set<String> processedIds) {
             this.count = count;
             this.resultsPerPage = resultsPerPage;
             this.totalResults = totalResults;
@@ -384,7 +364,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             media = apiFetcher.get();
             save = true;
         }
-        if (mediaService.updateMedia(media, getOriginalRepository(), false)) {
+        if (mediaService.updateMedia(media, getOriginalRepository(), false).getResult()) {
             save = true;
         }
         if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredCategories.contains(media.getCategory())) {
@@ -425,9 +405,52 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         return false;
     }
 
+    private final DvidsMedia deleteMedia(DvidsMedia media, Exception e) {
+        LOGGER.warn("Deleting {} ({})", media, e.getMessage());
+        mediaRepository.delete(media);
+        return media;
+    }
+
+    @Override
+    public final DvidsMedia refreshAndSave(DvidsMedia media) throws IOException {
+        media = refresh(media);
+        Exception e = doCommonUpdate(media, true).getException();
+        if (e instanceof NotFound) {
+            return deleteMedia(media, e);
+        } else {
+            return repository.save(media);
+        }
+    }
+
     @Override
     protected final DvidsMedia refresh(DvidsMedia media) throws IOException {
-        return media.copyDataFrom(getMediaFromApi(new RestTemplate(), media.getId().toString(), media.getUnit()));
+        // DVIDS API Terms of Service force us to check for deleted content
+        // https://api.dvidshub.net/docs/tos
+        try {
+            return media.copyDataFrom(getMediaFromApi(new RestTemplate(), media.getId().toString(), media.getUnit()));
+        } catch (IllegalArgumentException e) {
+            String message = e.getMessage();
+            if (message != null && message.startsWith("No result from DVIDS API for ")) {
+                return deleteMedia(media, e);
+            } else {
+                LOGGER.error(message, e);
+            }
+        } catch (BadRequest e) {
+            String message = e.getMessage();
+            if (message != null && message.contains(" was not found")) {
+                return deleteMedia(media, e);
+            } else {
+                LOGGER.error(message, e);
+            }
+        } catch (Forbidden e) {
+            String message = e.getMessage();
+            if (message != null && message.contains(" was found, but is not published.")) {
+                return deleteMedia(media, e);
+            } else {
+                LOGGER.error(message, e);
+            }
+        }
+        return media;
     }
 
     @Override

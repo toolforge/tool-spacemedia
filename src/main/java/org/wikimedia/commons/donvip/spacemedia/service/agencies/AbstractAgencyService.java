@@ -59,6 +59,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenExc
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsService;
@@ -345,7 +346,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public final T refreshAndSave(T media) throws IOException {
+    public T refreshAndSave(T media) throws IOException {
         media = refresh(media);
         doCommonUpdate(media, true);
         return repository.save(media);
@@ -640,12 +641,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return true;
     }
 
-    protected final boolean doCommonUpdate(T media, boolean forceUpdate) throws IOException {
+    protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
         return mediaService.updateMedia(media, getOriginalRepository(), forceUpdate);
     }
 
     protected final boolean doCommonUpdate(T media) throws IOException {
-        return doCommonUpdate(media, false);
+        return doCommonUpdate(media, false).getResult();
     }
 
     @Override

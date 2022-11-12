@@ -108,18 +108,19 @@ public class MediaService {
         blockListIgnoredTerms = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.terms.csv"));
     }
 
-    public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
+    public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
             boolean forceUpdate) throws IOException {
         return updateMedia(media, originalRepo, forceUpdate, null);
     }
 
-    public boolean updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
+    public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
             boolean forceUpdate, Path localPath) throws IOException {
         boolean result = false;
         if (cleanupDescription(media)) {
             result = true;
         }
-        if (updateReadableStateAndHashes(media, localPath, forceUpdate)) {
+        MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, forceUpdate);
+        if (ur.getResult()) {
             result = true;
         }
         if (findCommonsFilesWithSha1(media) || findCommonsFilesWithPhash(media)) {
@@ -131,7 +132,7 @@ public class MediaService {
         if (!Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
             result = true;
         }
-        return result;
+        return new MediaUpdateResult(result, ur.getException());
     }
 
     private boolean belongsToBlocklist(Media<?, ?> media) {
@@ -301,19 +302,39 @@ public class MediaService {
                         d -> d.getOriginalId().equals(media.getId())));
     }
 
-    public boolean updateReadableStateAndHashes(Media<?, ?> media, Path localPath, boolean forceUpdateOfHashes) {
-        boolean result = updateReadableStateAndHashes(media, media.getMetadata(), localPath, forceUpdateOfHashes);
+    public MediaUpdateResult updateReadableStateAndHashes(Media<?, ?> media, Path localPath, boolean forceUpdateOfHashes) {
+        MediaUpdateResult ur = updateReadableStateAndHashes(media, media.getMetadata(), localPath, forceUpdateOfHashes);
+        boolean result = ur.getResult();
         // T230284 - Processing full-res images can lead to OOM errors
         if (updateFullResImages && media instanceof FullResMedia<?, ?>) {
             FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
-            if (updateReadableStateAndHashes(frMedia, frMedia.getFullResMetadata(), localPath, forceUpdateOfHashes)) {
+            if (updateReadableStateAndHashes(frMedia, frMedia.getFullResMetadata(), localPath, forceUpdateOfHashes)
+                    .getResult()) {
                 result = true;
             }
         }
-        return result;
+        return new MediaUpdateResult(result, ur.getException());
     }
 
-    private boolean updateReadableStateAndHashes(Media<?, ?> media, Metadata metadata, Path localPath,
+    public static class MediaUpdateResult {
+        private final boolean result;
+        private final Exception exception;
+
+        public MediaUpdateResult(boolean result, Exception exception) {
+            this.result = result;
+            this.exception = exception;
+        }
+
+        public boolean getResult() {
+            return result;
+        }
+
+        public Exception getException() {
+            return exception;
+        }
+    }
+
+    private MediaUpdateResult updateReadableStateAndHashes(Media<?, ?> media, Metadata metadata, Path localPath,
             boolean forceUpdateOfHashes) {
         boolean isImage = media.isImage();
         boolean result = false;
@@ -345,14 +366,16 @@ public class MediaService {
             }
         } catch (RestClientException e) {
             LOGGER.error("Error while computing hashes for {}: {}", media, e.getMessage());
+            return new MediaUpdateResult(result, e);
         } catch (IOException | URISyntaxException e) {
             LOGGER.error("Error while computing hashes for " + media, e);
+            return new MediaUpdateResult(result, e);
         } finally {
             if (bi != null) {
                 bi.flush();
             }
         }
-        return result;
+        return new MediaUpdateResult(result, null);
     }
 
     private static boolean shouldReadImage(URL assetUrl, Metadata metadata, boolean forceUpdateOfHashes) {
