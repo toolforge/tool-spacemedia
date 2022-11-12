@@ -6,6 +6,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +33,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLice
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
@@ -53,8 +53,6 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
 
     @Autowired
     protected FlickrMediaRepository flickrRepository;
-    @Autowired
-    protected FlickrPhotoSetRepository photosetRepository;
     @Autowired
     protected FlickrService flickrService;
     @Autowired
@@ -346,15 +344,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                     if (m.matches()) {
                         String id = m.group(1);
                         LOGGER.warn("Flickr image {} has been deleted for account '{}'", id, flickrAccount);
-                        flickrRepository.findById(Long.valueOf(id)).ifPresent(media -> {
-                            media.getPhotosets().forEach(ps -> {
-                                if (ps.getMembers().remove(media)) {
-                                    photosetRepository.save(ps);
-                                }
-                            });
-                            media.getPhotosets().clear();
-                            flickrRepository.delete(flickrRepository.save(media));
-                        });
+                        processor.deleteFlickrMedia(id);
                         count++;
                     } else {
                         LOGGER.error("Error while processing non-free Flickr image " + picture.getId()
@@ -382,7 +372,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         int count = 0;
         for (FlickrMedia media : medias) {
             try {
-                processor.processFlickrMedia(media, flickrAccount, getOriginalRepository(),
+                processor.processFlickrMedia(media, flickrAccount, getOriginalRepository(), getStringsToRemove(),
                         this::customProcessing, this::shouldUploadAuto, this::uploadWrapped);
                 count++;
             } catch (IOException e) {
@@ -408,6 +398,11 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         } catch (FlickrException e) {
             throw new IOException(e);
         }
+    }
+
+    protected Collection<String> getStringsToRemove() {
+        // TO be overriden if special strings have to be removed frm description
+        return Collections.emptyList();
     }
 
     protected boolean customProcessing(FlickrMedia media) {

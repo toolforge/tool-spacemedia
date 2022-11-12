@@ -6,6 +6,8 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
@@ -64,7 +66,7 @@ public class FlickrMediaProcessorService {
 
     @Transactional
     public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
-            MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
+            MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Collection<String> stringsToRemove,
             Predicate<FlickrMedia> customProcessor, BiPredicate<FlickrMedia, Set<String>> shouldUploadAuto,
             UnaryOperator<FlickrMedia> uploader)
             throws IOException {
@@ -119,6 +121,17 @@ public class FlickrMediaProcessorService {
             LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());
         }
         if (mediaService.updateMedia(media, originalRepo, false).getResult()) {
+            save = true;
+        }
+        final String originalDescription = media.getDescription();
+        if (StringUtils.isNotBlank(originalDescription)) {
+            for (String toRemove : stringsToRemove) {
+                if (media.getDescription().contains(toRemove)) {
+                    media.setDescription(media.getDescription().replace(toRemove, "").trim());
+                }
+            }
+        }
+        if (!Objects.equals(originalDescription, media.getDescription())) {
             save = true;
         }
         if (customProcessor.test(media)) {
@@ -177,5 +190,18 @@ public class FlickrMediaProcessorService {
         }
         mediaInRepo.setLicense(media.getLicense());
         return true;
+    }
+
+    @Transactional
+    public void deleteFlickrMedia(String id) {
+        flickrRepository.findById(Long.valueOf(id)).ifPresent(media -> {
+            media.getPhotosets().forEach(ps -> {
+                if (ps.getMembers().remove(media)) {
+                    flickrPhotoSetRepository.save(ps);
+                }
+            });
+            media.getPhotosets().clear();
+            flickrRepository.delete(flickrRepository.save(media));
+        });
     }
 }

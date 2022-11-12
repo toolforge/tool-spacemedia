@@ -1,6 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,9 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 
 @Service
 public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
+
+    private static final List<String> STRINGS_TO_REMOVE = List.of("Über die Mission Mars Express:",
+            "<a href=\"https://www.dlr.de/content/de/missionen/marsexpress\">www.dlr.de/content/de/missionen/marsexpress</a>");
 
     @Autowired
     public DlrFlickrService(FlickrMediaRepository repository, @Value("${dlr.flickr.accounts}") Set<String> flickrAccounts) {
@@ -33,8 +38,23 @@ public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, L
     }
 
     @Override
+    public Set<String> findTemplates(FlickrMedia media) {
+        Set<String> result = super.findTemplates(media);
+        result.add("DLR-License");
+        if (media.getDescription().contains("ESA/DLR/FU Berlin")) {
+            result.add("ESA|ESA/DLR/FU Berlin");
+        }
+        return result;
+    }
+
+    @Override
     public String getName() {
-        return "DLR";
+        return "DLR (Flickr)";
+    }
+
+    @Override
+    protected Collection<String> getStringsToRemove() {
+        return STRINGS_TO_REMOVE;
     }
 
     @Override

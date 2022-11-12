@@ -2,8 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.net.MalformedURLException;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +13,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
-
-import io.micrometer.core.instrument.util.StringUtils;
 
 @Service
 public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, String, ZonedDateTime> {
@@ -56,16 +54,8 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
     }
 
     @Override
-    protected boolean customProcessing(FlickrMedia media) {
-        final String originalDescription = media.getDescription();
-        if (StringUtils.isNotBlank(originalDescription)) {
-            for (String toRemove : STRINGS_TO_REMOVE) {
-                if (media.getDescription().contains(toRemove)) {
-                    media.setDescription(media.getDescription().replace(toRemove, "").trim());
-                }
-            }
-        }
-        return !Objects.equals(originalDescription, media.getDescription());
+    protected Collection<String> getStringsToRemove() {
+        return STRINGS_TO_REMOVE;
     }
 
     @Override
