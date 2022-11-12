@@ -304,6 +304,16 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>job-stsci</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyStsciUpdateJobApplication</mainClass>
+							<outputDirectory>${project.build.directory}/job-stsci</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
 						<id>job-youtube</id>
 						<goals>
 							<goal>repackage</goal>

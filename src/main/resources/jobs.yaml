@@ -34,7 +34,7 @@
   emails: onfailure
 - name: eso
   image: tf-jdk17
-  command: ./run.sh custom eso
+  command: ./run.sh eso eso
   cpu: 1
   mem: 4Gi
   no-filelog: true
@@ -42,7 +42,7 @@
   emails: onfailure
 - name: iau
   image: tf-jdk17
-  command: ./run.sh custom iau
+  command: ./run.sh eso iau
   cpu: 1
   mem: 4Gi
   no-filelog: true
@@ -58,7 +58,7 @@
   emails: onfailure
 - name: hubble-esa
   image: tf-jdk17
-  command: ./run.sh custom hubble-esa
+  command: ./run.sh eso hubble-esa
   cpu: 1
   mem: 4Gi
   no-filelog: true
@@ -66,7 +66,7 @@
   emails: onfailure
 - name: hubble-nasa
   image: tf-jdk17
-  command: ./run.sh custom hubble-nasa
+  command: ./run.sh stsci hubble-nasa
   cpu: 1
   mem: 4Gi
   no-filelog: true
@@ -74,7 +74,7 @@
   emails: onfailure
 - name: webb-esa
   image: tf-jdk17
-  command: ./run.sh custom webb-esa
+  command: ./run.sh eso webb-esa
   cpu: 1
   mem: 4Gi
   no-filelog: true
@@ -82,7 +82,7 @@
   emails: onfailure
 - name: webb-nasa
   image: tf-jdk17
-  command: ./run.sh custom webb-nasa
+  command: ./run.sh stsci webb-nasa
   cpu: 1
   mem: 4Gi
   no-filelog: true
