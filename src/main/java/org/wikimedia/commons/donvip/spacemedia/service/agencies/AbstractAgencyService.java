@@ -341,7 +341,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public final T refreshAndSaveById(String id) throws ImageNotFoundException, IOException {
-        T media = refresh(repository.findById(getMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id)));
+        return refreshAndSave(repository.findById(getMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id)));
+    }
+
+    @Override
+    public final T refreshAndSave(T media) throws IOException {
+        media = refresh(media);
         doCommonUpdate(media, true);
         return repository.save(media);
     }

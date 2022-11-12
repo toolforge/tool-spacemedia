@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -112,6 +113,29 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
     @GetMapping("/refreshmedia/{id}")
     public final T refreshMedia(@PathVariable String id) throws ImageNotFoundException, IOException {
         return service.refreshAndSaveById(id);
+    }
+
+    @GetMapping("/refreshmissing")
+    public final void refreshMissingMedia() throws IOException {
+        refreshMissingMedia(m -> true);
+    }
+
+    @GetMapping("/refreshmissing/images")
+    public final void refreshMissingImages() throws IOException {
+        refreshMissingMedia(T::isImage);
+    }
+
+    @GetMapping("/refreshmissing/videos")
+    public final void refreshMissingVideos() throws IOException {
+        refreshMissingMedia(T::isVideo);
+    }
+
+    private final void refreshMissingMedia(Predicate<T> mustRefresh) throws IOException {
+        for (T media : service.listMissingMedia()) {
+            if (mustRefresh.test(media)) {
+                service.refreshAndSave(media);
+            }
+        }
     }
 
     @GetMapping("/wiki/{sha1}")

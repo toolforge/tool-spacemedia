@@ -88,6 +88,8 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     T refreshAndSaveById(String id) throws ImageNotFoundException, IOException;
 
+    T refreshAndSave(T media) throws IOException;
+
     String getWikiHtmlPreview(String sha1) throws TooManyResultsException;
 
     String getWikiCode(String sha1) throws TooManyResultsException;
