@@ -386,6 +386,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         try {
             return upload(media, true);
         } catch (UploadException e) {
+            LOGGER.error("Failed to upload {}", media, e);
             throw new RuntimeException(e);
         }
     }
@@ -401,12 +402,12 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     protected Collection<String> getStringsToRemove() {
-        // TO be overriden if special strings have to be removed frm description
+        // To be overriden if special strings have to be removed frm description
         return Collections.emptyList();
     }
 
     protected boolean customProcessing(FlickrMedia media) {
-        // TO be overriden for custom processing
+        // To be overriden for custom processing
         return false;
     }
 
