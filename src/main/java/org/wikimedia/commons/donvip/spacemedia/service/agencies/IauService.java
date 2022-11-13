@@ -12,8 +12,6 @@ import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,8 +21,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMediaRepositor
 
 @Service
 public class IauService extends CommonEsoService<IauMedia> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(IauService.class);
 
     private static final String IAU_BASE_URL = "https://www.iau.org";
 
@@ -58,14 +54,10 @@ public class IauService extends CommonEsoService<IauMedia> {
                 .flatMap(e -> e.getElementsByTag("a").stream()).map(a -> {
                     Element img = a.getElementsByTag("img").get(0);
                     EsoFrontPageItem item = new EsoFrontPageItem();
-                    try {
-                        item.setId(a.attr("href").replace(IAU_PUBLIC_PATH + IAU_IMAGES_PATH, "").replace("/", ""));
-                        item.setUrl(a.attr("href"));
-                        item.setTitle(img.attr("alt"));
-                        item.setSrc(new URL(IAU_BASE_URL + img.attr("src")));
-                    } catch (MalformedURLException ex) {
-                        LOGGER.error("Cannot build thumbnail URL", ex);
-                    }
+                    item.setId(a.attr("href").replace(IAU_PUBLIC_PATH + IAU_IMAGES_PATH, "").replace("/", ""));
+                    item.setUrl(a.attr("href"));
+                    item.setTitle(img.attr("alt"));
+                    item.setSrc(IAU_BASE_URL + img.attr("src"));
                     return item;
                 }).iterator();
     }

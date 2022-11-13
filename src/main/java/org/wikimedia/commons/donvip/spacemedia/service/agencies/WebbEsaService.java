@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMedia
 @Service
 public class WebbEsaService extends CommonEsoService<WebbEsaMedia> {
 
-    private static final String BASE_PUBLIC_URL = "https://esawebb.org/public/";
+    private static final String BASE_PUBLIC_URL = "https://esawebb.org/";
 
     private static final String IMAGES_PATH = "images/";
 
@@ -67,5 +69,20 @@ public class WebbEsaService extends CommonEsoService<WebbEsaMedia> {
     @Override
     protected String getCopyrightLink() {
         return "/copyright/";
+    }
+
+    @Override
+    protected String mainDivClass() {
+        return "order-lg-1";
+    }
+
+    @Override
+    protected String getObjectInfoH3Tag() {
+        return "h4";
+    }
+
+    @Override
+    protected Elements getObjectInfoTitles(Element div) {
+        return div.getElementsByTag("th");
     }
 }

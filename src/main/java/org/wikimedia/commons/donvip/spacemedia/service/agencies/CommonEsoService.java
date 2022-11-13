@@ -155,9 +155,16 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         return newMediaFromHtml(html, url, id, imgUrlLink);
     }
 
+    protected String mainDivClass() {
+        return "col-md-9";
+    }
+
     protected T newMediaFromHtml(Document html, URL url, String id, String imgUrlLink)
             throws ReflectiveOperationException, MalformedURLException {
-        Element div = html.getElementsByClass("col-md-9").last();
+        Element div = html.getElementsByClass(mainDivClass()).last();
+        if (div == null) {
+            scrapingError(imgUrlLink, html.toString());
+        }
         // Find title
         Elements h1s = div.getElementsByTag("h1");
         if (h1s.isEmpty() || h1s.get(0).text().isEmpty()) {
@@ -269,16 +276,24 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         return "title";
     }
 
+    protected String getObjectInfoH3Tag() {
+        return "h3";
+    }
+
+    protected Elements getObjectInfoTitles(Element div) {
+        return div.getElementsByClass(getObjectInfoTitleClass());
+    }
+
     protected void processObjectInfos(URL url, String imgUrlLink, String id, T media, Document doc)
             throws MalformedURLException {
         for (Element info : doc.getElementsByClass(getObjectInfoClass())) {
-            for (Element h3 : info.getElementsByTag("h3")) {
-                for (Element title : h3.nextElementSibling().getElementsByClass(getObjectInfoTitleClass())) {
+            for (Element h3 : info.getElementsByTag(getObjectInfoH3Tag())) {
+                for (Element title : getObjectInfoTitles(h3.nextElementSibling())) {
                     Element sibling = title.nextElementSibling();
                     if (sibling == null) {
                         continue;
                     }
-                    if (!Objects.equals(sibling.tagName(), title.tagName())) {
+                    if (!Objects.equals(sibling.tagName(), title.tagName()) && sibling.nextElementSibling() != null) {
                         sibling = sibling.nextElementSibling();
                     }
                     String html = sibling.html();
