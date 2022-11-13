@@ -296,7 +296,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         if (processor.isBadVideoEntry(media)) {
             throw new ImageUploadForbiddenException("Bad video download link: " + media);
         }
-        if (!"ready".equals(media.getMediaStatus())) {
+        if (!"ready".equals(media.getMediaStatus()) && StringUtils.isNotBlank(media.getMediaStatus())) {
             throw new ImageUploadForbiddenException("Media is not ready: " + media);
         }
     }

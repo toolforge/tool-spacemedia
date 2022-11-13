@@ -315,7 +315,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
         this.originalUrl = mediaFromApi.originalUrl;
         this.originalHeight = mediaFromApi.originalHeight;
         this.originalWidth = mediaFromApi.originalWidth;
-        this.pathAlias = mediaFromApi.pathAlias;
+        // Do not override pathAlias !
         this.metadata.setAssetUrl(originalUrl);
         return this;
     }
