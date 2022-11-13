@@ -52,7 +52,7 @@ public class WebbEsaService extends CommonEsoService<WebbEsaMedia> {
     @Override
     public Set<String> findTemplates(WebbEsaMedia media) {
         Set<String> result = super.findTemplates(media);
-        result.add("ESA-Webb");
+        result.add("ESA-Webb|" + media.getCredit());
         return result;
     }
 

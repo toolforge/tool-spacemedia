@@ -523,13 +523,14 @@ public class MediaService {
                 }
             }
         }
-        if (media instanceof FullResMedia) {
-            FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
+        if (media instanceof FullResMedia<?, ?> frMedia) {
             String fullResPhash = frMedia.getFullResMetadata().getPhash();
             if (fullResPhash != null && isEmpty(frMedia.getFullResCommonsFileNames())) {
                 List<String> fullResSha1s = hashRepository.findSha1ByPhash(fullResPhash);
                 if (!fullResSha1s.isEmpty()) {
-                    Set<String> files = commonsService.findFilesWithSha1(fullResSha1s);
+                    Set<String> frExtensions = frMedia.getFullResMetadata().getFileExtensions();
+                    Set<String> files = commonsService.findFilesWithSha1(fullResSha1s).stream()
+                            .filter(f -> frExtensions.stream().anyMatch(f::endsWith)).collect(toSet());
                     if (!files.isEmpty()) {
                         frMedia.setFullResCommonsFileNames(files);
                         result = true;

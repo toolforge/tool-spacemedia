@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -108,6 +109,20 @@ public class Metadata implements MetadataProjection {
             case "jpg": return "jpeg";
             case "tif": return "tiff";
             default: return ext;
+        }
+    }
+
+    @Transient
+    @JsonIgnore
+    public Set<String> getFileExtensions() {
+        String ext = getFileExtension();
+        switch (ext) {
+        case "jpeg":
+            return Set.of("jpg", "jpeg");
+        case "tiff":
+            return Set.of("tif", "tiff");
+        default:
+            return Set.of(ext);
         }
     }
 
