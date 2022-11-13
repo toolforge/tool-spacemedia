@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.stsci.StsciService;
 
 /**
  * Service harvesting images from NASA Hubble / Jame Webb websites.

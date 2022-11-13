@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service.agencies;
+package org.wikimedia.commons.donvip.spacemedia.service.stsci;
 
 import static java.util.stream.Collectors.toSet;
 

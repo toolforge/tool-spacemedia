@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service.agencies;
+package org.wikimedia.commons.donvip.spacemedia.service.stsci;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

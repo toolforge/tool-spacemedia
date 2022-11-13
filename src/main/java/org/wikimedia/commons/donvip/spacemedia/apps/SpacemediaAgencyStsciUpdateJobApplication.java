@@ -6,9 +6,11 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
 
+@ComponentScan(basePackages = "org.wikimedia.commons.donvip.spacemedia.service.stsci")
 public class SpacemediaAgencyStsciUpdateJobApplication extends AbstractSpacemediaAgencyUpdateJobApplication {
 
     public static void main(String[] args) {
