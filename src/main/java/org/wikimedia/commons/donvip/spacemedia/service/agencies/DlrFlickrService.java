@@ -41,7 +41,7 @@ public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, L
     public Set<String> findTemplates(FlickrMedia media) {
         Set<String> result = super.findTemplates(media);
         result.add("DLR-License");
-        if (media.getDescription().contains("ESA/DLR/FU Berlin")) {
+        if (media.getDescription() != null && media.getDescription().contains("ESA/DLR/FU Berlin")) {
             result.add("ESA|ESA/DLR/FU Berlin");
         }
         return result;
@@ -59,6 +59,6 @@ public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, L
 
     @Override
     protected String getLanguage(FlickrMedia media) {
-        return media.getDescription().contains("Photo Credit:") ? "en" : "de";
+        return media.getDescription() != null && media.getDescription().contains("Photo Credit:") ? "en" : "de";
     }
 }
