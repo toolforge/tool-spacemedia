@@ -12,6 +12,8 @@ import javax.persistence.Table;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, phash") })
@@ -21,6 +23,7 @@ public class KariMedia extends Media<Integer, LocalDate> {
     @Column(nullable = false)
     private Integer id;
 
+    @JsonProperty("kari_id")
     private String kariId;
 
     private LocalDate date;

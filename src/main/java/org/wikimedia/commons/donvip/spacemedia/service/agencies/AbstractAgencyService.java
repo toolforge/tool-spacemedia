@@ -40,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -58,8 +59,10 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
+import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsService;
@@ -99,6 +102,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     protected CommonsService commonsService;
     @Autowired
     private SearchService searchService;
+    @Autowired
+    private RemoteService remoteService;
 
     @Autowired
     private Environment env;
@@ -109,6 +114,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @SuppressWarnings("unused")
     private Set<String> ignoredCommonTerms;
+
+    @Value("${execution.mode}")
+    private ExecutionMode executionMode;
 
     private UploadMode uploadMode;
 
@@ -361,7 +369,25 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public final T saveMedia(T media) {
-        return repository.save(media);
+        T result = repository.save(media);
+        checkRemoteMedia(result);
+        return result;
+    }
+
+    protected final void checkRemoteMedia(T media) {
+        if (executionMode == ExecutionMode.REMOTE
+                && remoteService.getMedia(getId(), media.getId().toString(), media.getClass()) == null) {
+            remoteService.saveMedia(getId(), media);
+        }
+    }
+
+    protected final T saveMediaOrCheckRemote(boolean save, T media) {
+        if (save) {
+            return saveMedia(media);
+        } else {
+            checkRemoteMedia(media);
+            return media;
+        }
     }
 
     protected final T deleteMedia(T media, Exception e) {

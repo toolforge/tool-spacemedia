@@ -174,9 +174,7 @@ public class NasaSirsService
                             if (doCommonUpdate(media)) {
                                 save = true;
                             }
-                            if (save) {
-                                saveMedia(media);
-                            }
+                            saveMediaOrCheckRemote(save, media);
                             count++;
                         }
                     } catch (HttpStatusException e) {

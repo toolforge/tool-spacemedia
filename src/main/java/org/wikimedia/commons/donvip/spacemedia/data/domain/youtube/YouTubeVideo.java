@@ -10,6 +10,8 @@ import javax.persistence.Id;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity(name = "YoutubeVideo")
 public class YouTubeVideo extends Media<String, Instant> {
 
@@ -21,9 +23,11 @@ public class YouTubeVideo extends Media<String, Instant> {
     private Instant date;
 
     @Column(nullable = false, length = 24)
+    @JsonProperty("channel_id")
     private String channelId;
 
     @Column(nullable = true)
+    @JsonProperty("channel_title")
     private String channelTitle;
 
     @Column(nullable = false)

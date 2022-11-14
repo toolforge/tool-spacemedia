@@ -20,6 +20,8 @@ import javax.persistence.FetchType;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PostLoad;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Media that can have an optional full-res variant of the main media (ex: big TIFF file).
  *
@@ -36,9 +38,11 @@ public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> 
             @AttributeOverride(column = @Column(name = "full_res_size"), name = "size"),
             @AttributeOverride(column = @Column(name = "full_res_sha1", length = 42), name = "sha1"),
             @AttributeOverride(column = @Column(name = "full_res_phash", columnDefinition = "VARCHAR(52)", length = 52), name = "phash") })
+    @JsonProperty("full_res_metadata")
     protected Metadata fullResMetadata = new Metadata();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @JsonProperty("full_res_commons_file_names")
     protected Set<String> fullResCommonsFileNames = new HashSet<>();
 
     @Override

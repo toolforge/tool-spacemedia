@@ -143,10 +143,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         if (doCommonUpdate(media)) {
             save = true;
         }
-        if (save) {
-            media = saveMedia(media);
-        }
-        return Optional.of(media);
+        return Optional.of(saveMediaOrCheckRemote(save, media));
     }
 
     private T fetchMedia(URL url, String id, String imgUrlLink) throws ReflectiveOperationException, IOException {

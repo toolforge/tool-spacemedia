@@ -168,7 +168,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         if (doCommonUpdate(media)) {
             save = true;
         }
-        return save ? saveMedia(media) : media;
+        return saveMediaOrCheckRemote(save, media);
     }
 
     private static KariMedia buildMedia(int id, URL view, Element div, String title, Element infos, Elements lis)

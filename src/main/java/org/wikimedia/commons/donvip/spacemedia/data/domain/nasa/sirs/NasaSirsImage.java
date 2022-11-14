@@ -75,7 +75,6 @@ public class NasaSirsImage extends Media<String, LocalDate> {
         return year;
     }
 
-    @Override
     public void setYear(Year photoYear) {
         this.year = photoYear;
     }

@@ -107,8 +107,8 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
         return service.getById(id);
     }
 
-    @PutMapping("/media")
-    public final T putMedia(@RequestBody T media) {
+    @PutMapping("/media/{id}")
+    public final T putMedia(@PathVariable String id, @RequestBody T media) {
         return service.saveMedia(media);
     }
 

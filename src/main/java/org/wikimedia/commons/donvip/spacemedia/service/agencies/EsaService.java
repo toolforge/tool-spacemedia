@@ -241,10 +241,7 @@ public class EsaService
                 }
             }
         }
-        if (save) {
-            media = saveMedia(media);
-        }
-        return Optional.of(media);
+        return Optional.of(saveMediaOrCheckRemote(save, media));
     }
 
     private EsaMedia fetchMedia(URL url) {

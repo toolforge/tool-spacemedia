@@ -15,6 +15,8 @@ import javax.persistence.MappedSuperclass;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @MappedSuperclass
 public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime> {
 
@@ -28,6 +30,7 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
+    @JsonProperty("image_type")
     private EsoMediaType imageType;
 
     @Column(name = "release_date", nullable = false)
@@ -35,16 +38,19 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
 
     @Column(nullable = true, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
+    @JsonProperty("related_announcements")
     private Set<String> relatedAnnouncements = new HashSet<>();
 
     @Column(nullable = true, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
+    @JsonProperty("related_releases")
     private Set<String> relatedReleases = new HashSet<>();
 
     private int width;
     private int height;
 
     @Column(nullable = true, length = 63)
+    @JsonProperty("field_of_view")
     private String fieldOfView;
 
     @Column(nullable = true, length = 400)
@@ -57,9 +63,11 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
     private String constellation;
 
     @Column(nullable = true, length = 63)
+    @JsonProperty("position_ra")
     private String positionRa;
 
     @Column(nullable = true, length = 63)
+    @JsonProperty("position_dec")
     private String positionDec;
 
     @Column(nullable = true, length = 63)

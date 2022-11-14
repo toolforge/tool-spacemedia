@@ -13,6 +13,7 @@ import javax.persistence.Transient;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Embeddable
 public class Metadata implements MetadataProjection {
@@ -38,9 +39,11 @@ public class Metadata implements MetadataProjection {
      * </ul>
      */
     @Column(nullable = true)
+    @JsonProperty("readable_image")
     private Boolean readableImage;
 
     @Column(nullable = false, length = 380)
+    @JsonProperty("asset_url")
     private URL assetUrl;
 
     /**

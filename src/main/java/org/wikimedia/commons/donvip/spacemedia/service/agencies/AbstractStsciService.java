@@ -100,9 +100,7 @@ public abstract class AbstractStsciService
         if (doCommonUpdate(media)) {
             save = true;
         }
-        if (save) {
-            saveMedia(media);
-        }
+        saveMediaOrCheckRemote(save, media);
         return save ? 1 : 0;
     }
 

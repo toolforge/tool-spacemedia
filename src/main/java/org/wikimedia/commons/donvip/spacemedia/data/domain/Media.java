@@ -28,6 +28,10 @@ import javax.persistence.Transient;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 /**
  * Base class of all media.
@@ -37,12 +41,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @MappedSuperclass
 @EntityListeners(MediaListener.class)
+@JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY, property = "class")
 public abstract class Media<ID, D extends Temporal> implements MediaProjection<ID> {
 
     @Embedded
     protected Metadata metadata = new Metadata();
 
     @Column(nullable = true, length = 380)
+    @JsonProperty("thumbnail_url")
     protected URL thumbnailUrl;
 
     @Lob
@@ -56,6 +62,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     protected String description;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @JsonProperty("commons_file_names")
     protected Set<String> commonsFileNames = new HashSet<>();
 
     @Column(nullable = true)
@@ -63,6 +70,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     @Lob
     @Column(nullable = true, columnDefinition = "TEXT")
+    @JsonProperty("ignored_reason")
     protected String ignoredReason;
 
     /**
@@ -80,6 +88,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     protected Set<Duplicate> variants = new HashSet<>();
 
     @Column(nullable = true)
+    @JsonProperty("last_update")
     protected LocalDateTime lastUpdate;
 
     @PostLoad
@@ -164,10 +173,6 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     public Year getYear() {
         return Year.of(getDate().get(ChronoField.YEAR));
-    }
-
-    public void setYear(Year photoYear) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

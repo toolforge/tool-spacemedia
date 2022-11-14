@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -100,6 +99,8 @@ import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundExcepti
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
+import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -162,6 +163,9 @@ public class CommonsService {
     @Resource
     private CommonsService self;
 
+    @Autowired
+    private RemoteService remote;
+
     @Value("${commons.api.url}")
     private URL apiUrl;
 
@@ -192,11 +196,8 @@ public class CommonsService {
     @Value("${commons.permitted.file.types}")
     private Set<String> permittedFileTypes;
 
-    @Value("${commons.hashes.computation.mode}")
-    private HashComputationMode hashMode;
-
-    @Value("${remote.application.uri}")
-    private URI remoteApplication;
+    @Value("${execution.mode}")
+    private ExecutionMode hashMode;
 
     @Value("${threads.number:8}")
     private int threadsNumber;
@@ -219,10 +220,6 @@ public class CommonsService {
     private static final DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd000000");
-
-    private enum HashComputationMode {
-        LOCAL, REMOTE;
-    }
 
     public CommonsService(
             @Value("${application.version}") String appVersion,
@@ -811,11 +808,11 @@ public class CommonsService {
         LOGGER.info("Computing perceptual hashes of files in Commons ({} order)...", order);
         final RuntimeData runtime = runtimeDataRepository.findById(COMMONS).orElseGet(() -> new RuntimeData(COMMONS));
         final RestTemplate restTemplate = new RestTemplate();
-        final long startingTimestamp = Long.parseLong(hashMode == HashComputationMode.LOCAL
+        final long startingTimestamp = Long.parseLong(hashMode == ExecutionMode.LOCAL
                 ? Optional.ofNullable(runtime.getLastTimestamp()).orElse("20010101000000")
-                : restTemplate.getForObject(remoteApplication + "/hashLastTimestamp", String.class));
+                : remote.getHashLastTimestamp());
         final long endingTimestamp = Long.parseLong(ZonedDateTime.now(ZoneId.of("UTC")).format(timestampFormatter));
-        final int nThreads = hashMode == HashComputationMode.LOCAL || order == Direction.DESC ? 1 : threadsNumber - 4;
+        final int nThreads = hashMode == ExecutionMode.LOCAL || order == Direction.DESC ? 1 : threadsNumber - 4;
         final LocalDate startingDate = timestampFormatter.parse(Long.toString(startingTimestamp), localDate());
         final long days = ChronoUnit.DAYS.between(startingDate,
                 timestampFormatter.parse(Long.toString(endingTimestamp), localDate()));
@@ -844,7 +841,7 @@ public class CommonsService {
             for (CommonsImageProjection image : page.getContent()) {
                 hashCount += computeAndSaveHash(image, restTemplate);
                 lastTimestamp = image.getTimestamp();
-                if (Direction.ASC == order && hashMode == HashComputationMode.LOCAL) {
+                if (Direction.ASC == order && hashMode == ExecutionMode.LOCAL) {
                     runtime.setLastTimestamp(lastTimestamp);
                     runtimeDataRepository.save(runtime);
                 }
@@ -866,8 +863,8 @@ public class CommonsService {
                 }
                 HashAssociation hash = hashRepository.save(
                         new HashAssociation(image.getSha1(), HashHelper.encode(HashHelper.computePerceptualHash(bi))));
-                if (hashMode == HashComputationMode.REMOTE) {
-                    restTemplate.put(remoteApplication + "/hashAssociation", hash);
+                if (hashMode == ExecutionMode.REMOTE) {
+                    remote.putHashAssociation(hash);
                 }
                 return 1;
             } catch (IOException | URISyntaxException | ImageDecodingException | RuntimeException e) {
