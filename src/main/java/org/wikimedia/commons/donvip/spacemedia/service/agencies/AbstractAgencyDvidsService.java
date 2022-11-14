@@ -405,12 +405,6 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         return false;
     }
 
-    private final DvidsMedia deleteMedia(DvidsMedia media, Exception e) {
-        LOGGER.warn("Deleting {} ({})", media, e.getMessage());
-        mediaRepository.delete(media);
-        return media;
-    }
-
     @Override
     public final DvidsMedia refreshAndSave(DvidsMedia media) throws IOException {
         media = refresh(media);
@@ -418,7 +412,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         if (e instanceof NotFound) {
             return deleteMedia(media, e);
         } else {
-            return repository.save(media);
+            return saveMedia(media);
         }
     }
 

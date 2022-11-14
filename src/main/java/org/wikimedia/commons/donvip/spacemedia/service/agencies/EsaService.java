@@ -226,7 +226,7 @@ public class EsaService
                 }
                 if (shouldUploadAuto(media, media.getCommonsFileNames())
                         || shouldUploadAuto(media, media.getFullResCommonsFileNames())) {
-                    repository.save(upload(save ? repository.save(media) : media, true));
+                    saveMedia(upload(save ? saveMedia(media) : media, true));
                     save = false;
                 }
                 break;
@@ -242,7 +242,7 @@ public class EsaService
             }
         }
         if (save) {
-            repository.save(media);
+            media = saveMedia(media);
         }
         return Optional.of(media);
     }
@@ -334,7 +334,7 @@ public class EsaService
         }
         file.setIgnored(Boolean.TRUE);
         file.setIgnoredReason(reason);
-        return repository.save(file);
+        return saveMedia(file);
     }
 
     private void updateMissingImages() {

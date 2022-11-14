@@ -354,14 +354,24 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     public T refreshAndSave(T media) throws IOException {
         media = refresh(media);
         doCommonUpdate(media, true);
-        return repository.save(media);
+        return saveMedia(media);
     }
 
     protected abstract T refresh(T media) throws IOException;
 
     @Override
-    public T saveMedia(T media) {
+    public final T saveMedia(T media) {
         return repository.save(media);
+    }
+
+    protected final T deleteMedia(T media, Exception e) {
+        return deleteMedia(media, e.getMessage());
+    }
+
+    protected final T deleteMedia(T media, String message) {
+        LOGGER.warn("Deleting {} ({})", media, message);
+        repository.delete(media);
+        return media;
     }
 
     public final boolean isUploadEnabled() {
@@ -370,12 +380,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public final T uploadAndSaveById(String id) throws UploadException, TooManyResultsException {
-        return repository.save(upload(getById(id), false));
+        return saveMedia(upload(getById(id), false));
     }
 
     @Override
     public T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException {
-        return repository.save(upload(findBySha1OrThrow(sha1, true), true));
+        return saveMedia(upload(findBySha1OrThrow(sha1, true), true));
     }
 
     @Override
@@ -589,7 +599,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
         }
         if (mediaService.findCommonsFilesWithSha1(media) || mediaService.findCommonsFilesWithPhash(media)) {
-            media = repository.save(media);
+            media = saveMedia(media);
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
         }
     }

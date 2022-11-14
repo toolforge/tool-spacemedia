@@ -101,7 +101,7 @@ public abstract class AbstractStsciService
             save = true;
         }
         if (save) {
-            repository.save(media);
+            saveMedia(media);
         }
         return save ? 1 : 0;
     }

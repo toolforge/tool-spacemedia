@@ -162,13 +162,13 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
             problem(view, "No download link");
             save = false;
             if (mediaInRepo) {
-                repository.delete(media);
+                deleteMedia(media, "No download link");
             }
         }
         if (doCommonUpdate(media)) {
             save = true;
         }
-        return save ? repository.save(media) : media;
+        return save ? saveMedia(media) : media;
     }
 
     private static KariMedia buildMedia(int id, URL view, Element div, String title, Element infos, Elements lis)

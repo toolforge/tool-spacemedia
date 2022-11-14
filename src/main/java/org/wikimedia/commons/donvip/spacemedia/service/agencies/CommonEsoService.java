@@ -144,7 +144,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             save = true;
         }
         if (save) {
-            media = repository.save(media);
+            media = saveMedia(media);
         }
         return Optional.of(media);
     }

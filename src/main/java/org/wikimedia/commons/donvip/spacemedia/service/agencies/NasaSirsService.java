@@ -115,14 +115,14 @@ public class NasaSirsService
                     if (!dupe.getId().equals(image.getId())) {
                         processedImages.add(dupe.getId());
                         LOGGER.warn("Deleting {} SIRS image (duplicate of {})", dupe.getId(), image.getId());
-                        repository.delete(dupe);
+                        deleteMedia(dupe, "SIRS duplicate of " + image.getId());
                         count++;
                     }
                     if (doCommonUpdate(image)) {
-                        image = repository.save(image);
+                        image = saveMedia(image);
                     }
                     if (shouldUploadAuto(image, image.getCommonsFileNames())) {
-                        repository.save(upload(image, true));
+                        saveMedia(upload(image, true));
                     }
                 }
             }
@@ -175,7 +175,7 @@ public class NasaSirsService
                                 save = true;
                             }
                             if (save) {
-                                repository.save(media);
+                                saveMedia(media);
                             }
                             count++;
                         }

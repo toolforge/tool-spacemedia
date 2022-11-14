@@ -47,7 +47,7 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
         if (media == null) {
             media = findByFullResSha1OrThrow(sha1, true);
         }
-        return repository.save(upload(media, true));
+        return saveMedia(upload(media, true));
     }
 
     @Override
