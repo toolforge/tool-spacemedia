@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
@@ -37,6 +38,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +90,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     protected static final String EN = "en";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyService.class);
+
+    private static final Pattern PATTERN_BITLY = Pattern.compile("(?:https?://)?bit.ly/[0-9a-zA-Z]{7}");
 
     protected final MediaRepository<T, ID, D> repository;
 
@@ -536,7 +544,28 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected String getDescription(T media) {
         String description = media.getDescription();
-        return StringUtils.isBlank(description) ? media.getTitle() : description;
+        if (StringUtils.isBlank(description)) {
+            return media.getTitle();
+        } else {
+            // Resolve url shortener/redirect blocked in spam disallow list
+            return PATTERN_BITLY.matcher(description).replaceAll(match -> {
+                String group = match.group();
+                try {
+                    String url = group.startsWith("http") ? group : "https://" + group;
+                    try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableAutomaticRetries()
+                            .disableRedirectHandling().build();
+                            CloseableHttpResponse response = httpclient.execute(new HttpGet(url))) {
+                        Header location = response.getFirstHeader("Location");
+                        if (location != null) {
+                            return location.getValue();
+                        }
+                    }
+                } catch (IOException e) {
+                    LOGGER.error(group + " -> " + e.getMessage(), e);
+                }
+                return group;
+            });
+        }
     }
 
     protected String getSource(T media) throws MalformedURLException {

@@ -12,9 +12,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsService;
+
+import com.github.dozermapper.core.Mapper;
 
 @TestPropertySource("/application-test.properties")
 abstract class AbstractAgencyServiceTest {
@@ -35,10 +38,16 @@ abstract class AbstractAgencyServiceTest {
     protected MediaService mediaService;
 
     @MockBean
+    protected RemoteService remoteService;
+
+    @MockBean
     protected SearchService searchService;
 
     @MockBean
     protected TransactionService transactionService;
+
+    @MockBean
+    protected Mapper mapper;
 
     protected final Document html(String path) throws IOException {
         return Jsoup.parse(new File("src/test/resources", path));
