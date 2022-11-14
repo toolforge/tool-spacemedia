@@ -821,8 +821,8 @@ public class CommonsService {
         for (int i = 0; i < nThreads; i++) {
             final long startOffsetDays = i * sliceInDays;
             taskExecutor.submit(() -> computeHashesOfFiles(order, runtime, restTemplate,
-                            startingDate.plusDays(startOffsetDays).format(dateFormatter),
-                            startingDate.plusDays(startOffsetDays + sliceInDays).format(dateFormatter)));
+                    startingDate.plusDays(startOffsetDays).format(dateFormatter),
+                    startingDate.plusDays(startOffsetDays + sliceInDays + 1).format(dateFormatter)));
         }
     }
 
