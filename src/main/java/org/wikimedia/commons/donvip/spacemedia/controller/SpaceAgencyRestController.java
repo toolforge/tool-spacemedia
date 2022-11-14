@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
@@ -98,6 +100,16 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
     @GetMapping("/update")
     public final void update() throws IOException, UploadException {
         async.updateMedia(service);
+    }
+
+    @GetMapping("/media/{id}")
+    public final T getMedia(@PathVariable String id) throws ImageNotFoundException {
+        return service.getById(id);
+    }
+
+    @PutMapping("/media")
+    public final T putMedia(@RequestBody T media) {
+        return service.saveMedia(media);
     }
 
     @GetMapping("/upload/{sha1}")

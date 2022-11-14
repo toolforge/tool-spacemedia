@@ -341,8 +341,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
+    public T getById(String id) throws ImageNotFoundException {
+        return repository.findById(getMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id));
+    }
+
+    @Override
     public final T refreshAndSaveById(String id) throws ImageNotFoundException, IOException {
-        return refreshAndSave(repository.findById(getMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id)));
+        return refreshAndSave(getById(id));
     }
 
     @Override
@@ -354,13 +359,18 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected abstract T refresh(T media) throws IOException;
 
+    @Override
+    public T saveMedia(T media) {
+        return repository.save(media);
+    }
+
     public final boolean isUploadEnabled() {
         return uploadMode == UploadMode.MANUAL || uploadMode == UploadMode.AUTO;
     }
 
     @Override
     public final T uploadAndSaveById(String id) throws UploadException, TooManyResultsException {
-        return repository.save(upload(repository.findById(getMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id)), false));
+        return repository.save(upload(getById(id), false));
     }
 
     @Override

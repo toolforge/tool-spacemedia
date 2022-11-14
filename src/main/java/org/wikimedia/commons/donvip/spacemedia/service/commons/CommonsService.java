@@ -195,7 +195,7 @@ public class CommonsService {
     @Value("${commons.hashes.computation.mode}")
     private HashComputationMode hashMode;
 
-    @Value("${commons.hashes.remote.application.uri}")
+    @Value("${remote.application.uri}")
     private URI remoteApplication;
 
     @Value("${threads.number:8}")

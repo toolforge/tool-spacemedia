@@ -80,6 +80,8 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     long getProblemsCount();
 
+    T getById(String id) throws ImageNotFoundException;
+
     T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException;
 
     T uploadAndSaveById(String id) throws UploadException, TooManyResultsException;
@@ -101,4 +103,6 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
     List<T> searchMedia(String q);
 
     Page<T> searchMedia(String q, Pageable page);
+
+    T saveMedia(T media);
 }
