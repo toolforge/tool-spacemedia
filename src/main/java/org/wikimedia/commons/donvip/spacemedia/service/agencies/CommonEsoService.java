@@ -218,7 +218,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
 
     @Override
     protected T refresh(T media) throws IOException {
-        throw new UnsupportedOperationException(); // TODO
+        return media;
     }
 
     protected Collection<String> getForbiddenCategories() {
