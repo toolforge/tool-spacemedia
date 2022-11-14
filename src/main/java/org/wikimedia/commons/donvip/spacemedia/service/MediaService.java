@@ -160,16 +160,16 @@ public class MediaService {
         // Find exact duplicates by SHA-1
         String sha1 = media.getMetadata().getSha1();
         if (sha1 != null && handleExactDuplicates(media,
-                repo instanceof FullResMediaRepository<?, ?, ?>
-                        ? ((FullResMediaRepository<?, ?, ?>) repo).findByMetadata_Sha1OrFullResMetadata_Sha1(sha1)
+                repo instanceof FullResMediaRepository<?, ?, ?> frRepo
+                        ? frRepo.findByMetadata_Sha1OrFullResMetadata_Sha1(sha1)
                         : repo.findByMetadata_Sha1(sha1))) {
             result = true;
         }
         // Find exact duplicates by perceptual hash
         String phash = media.getMetadata().getPhash();
         if (phash != null && handleExactDuplicates(media,
-                repo instanceof FullResMediaRepository<?, ?, ?>
-                        ? ((FullResMediaRepository<?, ?, ?>) repo).findByMetadata_PhashOrFullResMetadata_Phash(phash)
+                repo instanceof FullResMediaRepository<?, ?, ?> frRepo
+                        ? frRepo.findByMetadata_PhashOrFullResMetadata_Phash(phash)
                         : repo.findByMetadata_Phash(phash))) {
             result = true;
         }
@@ -306,12 +306,10 @@ public class MediaService {
         MediaUpdateResult ur = updateReadableStateAndHashes(media, media.getMetadata(), localPath, forceUpdateOfHashes);
         boolean result = ur.getResult();
         // T230284 - Processing full-res images can lead to OOM errors
-        if (updateFullResImages && media instanceof FullResMedia<?, ?>) {
-            FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
-            if (updateReadableStateAndHashes(frMedia, frMedia.getFullResMetadata(), localPath, forceUpdateOfHashes)
-                    .getResult()) {
-                result = true;
-            }
+        if (updateFullResImages && media instanceof FullResMedia<?, ?> frMedia
+                && updateReadableStateAndHashes(frMedia, frMedia.getFullResMetadata(), localPath, forceUpdateOfHashes)
+                        .getResult()) {
+            result = true;
         }
         return new MediaUpdateResult(result, ur.getException());
     }
@@ -487,8 +485,7 @@ public class MediaService {
                 result = true;
             }
         }
-        if (media instanceof FullResMedia) {
-            FullResMedia<?, ?> frMedia = (FullResMedia<?, ?>) media;
+        if (media instanceof FullResMedia<?, ?> frMedia) {
             String fullResSha1 = frMedia.getFullResMetadata().getSha1();
             if (fullResSha1 != null && isEmpty(frMedia.getFullResCommonsFileNames())) {
                 Set<String> files = commonsService.findFilesWithSha1(fullResSha1);

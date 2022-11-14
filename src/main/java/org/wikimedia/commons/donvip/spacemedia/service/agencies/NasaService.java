@@ -405,11 +405,8 @@ public class NasaService
         String center = media.getCenter().toLowerCase(Locale.ENGLISH);
         URL homePage = env.getProperty("nasa." + center + ".home.page", URL.class);
         String name = env.getProperty("nasa." + center + ".name", String.class);
-        if (media instanceof NasaImage) {
-            NasaImage image = (NasaImage) media;
-            if (StringUtils.isNotBlank(image.getPhotographer())) {
-                name += " / " + image.getPhotographer();
-            }
+        if (media instanceof NasaImage image && StringUtils.isNotBlank(image.getPhotographer())) {
+            name += " / " + image.getPhotographer();
         }
         return wikiLink(homePage, name);
     }
