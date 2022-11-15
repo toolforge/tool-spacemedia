@@ -5,6 +5,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 
@@ -17,6 +18,11 @@ public class SpacemediaUpdateJobConfiguration {
     @Bean
     public MediaService mediaService() {
         return new MediaService();
+    }
+
+    @Bean
+    public RemoteService remoteService() {
+        return new RemoteService();
     }
 
     @Bean
