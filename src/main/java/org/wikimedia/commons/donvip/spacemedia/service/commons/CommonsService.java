@@ -812,36 +812,33 @@ public class CommonsService {
                 ? Optional.ofNullable(runtime.getLastTimestamp()).orElse("20010101000000")
                 : remote.getHashLastTimestamp());
         final long endingTimestamp = Long.parseLong(ZonedDateTime.now(ZoneId.of("UTC")).format(timestampFormatter));
-        final int nThreads = hashMode == ExecutionMode.LOCAL || order == Direction.DESC ? 1 : threadsNumber - 4;
         final LocalDate startingDate = timestampFormatter.parse(Long.toString(startingTimestamp), localDate());
         final long days = ChronoUnit.DAYS.between(startingDate,
                 timestampFormatter.parse(Long.toString(endingTimestamp), localDate()));
-        final long sliceInDays = days / nThreads;
-
-        for (int i = 0; i < nThreads; i++) {
-            final long startOffsetDays = i * sliceInDays;
-            taskExecutor.submit(() -> computeHashesOfFiles(order, runtime, restTemplate,
-                    startingDate.plusDays(startOffsetDays).format(dateFormatter),
-                    startingDate.plusDays(startOffsetDays + sliceInDays + 1).format(dateFormatter)));
+        final String startingTimestampString = startingDate.format(dateFormatter);
+        final String endingTimestampString = startingDate.plusDays(days + 1).format(dateFormatter);
+        if (hashMode == ExecutionMode.LOCAL) {
+            computeHashesOfFilesLocal(order, runtime, restTemplate, startingTimestampString, endingTimestampString);
+        } else {
+            computeHashesOfFilesRemote(order, restTemplate, startingTimestampString, endingTimestampString);
         }
     }
 
-    private void computeHashesOfFiles(Direction order, final RuntimeData runtime, final RestTemplate restTemplate,
-            final String startingTimestamp, final String endingTimestamp) {
+    private void computeHashesOfFilesLocal(Direction order, RuntimeData runtime, RestTemplate restTemplate,
+            String startingTimestamp, String endingTimestamp) {
         final LocalDateTime start = LocalDateTime.now();
         Page<CommonsImageProjection> page = null;
         String lastTimestamp = null;
         int hashCount = 0;
         int pageIndex = 0;
-        LOGGER.info("Computing perceptual hashes of files in Commons ({} order) between {} and {}", order,
+        LOGGER.info("Locally computing perceptual hashes of files in Commons ({} order) between {} and {}", order,
                 startingTimestamp, endingTimestamp);
         do {
-            page = imageRepository.findByMinorMimeInAndTimestampBetween(Set.of("gif", "jpeg", "png", "tiff", "webp"),
-                    startingTimestamp, endingTimestamp, PageRequest.of(pageIndex++, 1000, order, "timestamp"));
+            page = fetchPage(order, startingTimestamp, endingTimestamp, pageIndex++);
             for (CommonsImageProjection image : page.getContent()) {
                 hashCount += computeAndSaveHash(image, restTemplate);
                 lastTimestamp = image.getTimestamp();
-                if (Direction.ASC == order && hashMode == ExecutionMode.LOCAL) {
+                if (Direction.ASC == order) {
                     runtime.setLastTimestamp(lastTimestamp);
                     runtimeDataRepository.save(runtime);
                 }
@@ -850,6 +847,37 @@ public class CommonsService {
                     "{} perceptual hashes of files in Commons ({} order) computed in {} ({} pages). Current timestamp: {}",
                     hashCount, order, Duration.between(start, LocalDateTime.now()), pageIndex, lastTimestamp);
         } while (page.hasNext());
+    }
+
+    private void computeHashesOfFilesRemote(Direction order, RestTemplate restTemplate, String startingTimestamp,
+            String endingTimestamp) {
+        Page<CommonsImageProjection> page = null;
+        int pageIndex = 0;
+        LOGGER.info("Remotely computing perceptual hashes of files in Commons ({} order) between {} and {}", order,
+                startingTimestamp, endingTimestamp);
+        do {
+            page = fetchPage(order, startingTimestamp, endingTimestamp, pageIndex++);
+            List<CommonsImageProjection> content = page.getContent();
+            if (!content.isEmpty()) {
+                LOGGER.info("Scheduling remote computation of page {}", pageIndex);
+                taskExecutor.submit(() -> {
+                    LOGGER.info("Starting remote computation of new page. First item date is {}",
+                            content.get(0).getTimestamp());
+                    int hashCount = 0;
+                    for (CommonsImageProjection image : content) {
+                        hashCount += computeAndSaveHash(image, restTemplate);
+                    }
+                    LOGGER.info("Finished remote computation of page (+{} hashes). Last item date is {}", hashCount,
+                            content.get(content.size() - 1).getTimestamp());
+                });
+            }
+        } while (page.hasNext());
+    }
+
+    private Page<CommonsImageProjection> fetchPage(Direction order, String startingTimestamp, String endingTimestamp,
+            int pageIndex) {
+        return imageRepository.findByMinorMimeInAndTimestampBetween(Set.of("gif", "jpeg", "png", "tiff", "webp"),
+                startingTimestamp, endingTimestamp, PageRequest.of(pageIndex, 1000, order, "timestamp"));
     }
 
     private int computeAndSaveHash(CommonsImageProjection image, RestTemplate restTemplate) {
