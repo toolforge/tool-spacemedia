@@ -116,7 +116,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     public String getUploadTitle() {
-        return title + " (" + getId() + ")";
+        return new StringBuilder(title).append(" (").append(getId()).append(')').toString().replace("&amp;", "&");
     }
 
     public String getTitle() {
