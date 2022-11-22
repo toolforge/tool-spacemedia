@@ -19,7 +19,7 @@
 		<flickr4java-version>3.0.6</flickr4java-version>
 		<springboot-version>2.7.5</springboot-version>
 		<scribejava-version>8.3.2</scribejava-version>
-		<twelvemonkeys-version>3.9.3</twelvemonkeys-version>
+		<twelvemonkeys-version>3.9.4</twelvemonkeys-version>
 	</properties>
 
 	<scm>
