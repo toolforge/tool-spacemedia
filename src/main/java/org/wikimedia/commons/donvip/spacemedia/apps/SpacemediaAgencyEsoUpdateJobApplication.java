@@ -15,7 +15,7 @@ public class SpacemediaAgencyEsoUpdateJobApplication extends AbstractSpacemediaA
 
     @Bean
     public Agency<?, ?, ?> agency(@Value("${agency}") String agency, @Value("${search.link}") String searchLink,
-            @Value("${repository}") String repository, ApplicationContext context) throws ReflectiveOperationException {
+            @Value("${repositoryClass}") String repository, ApplicationContext context) throws ReflectiveOperationException {
         Class<?> repoClass = Class.forName(repository);
         return (Agency<?, ?, ?>) Class.forName(agency).getConstructor(repoClass, String.class)
                 .newInstance(context.getBean(repoClass), searchLink);

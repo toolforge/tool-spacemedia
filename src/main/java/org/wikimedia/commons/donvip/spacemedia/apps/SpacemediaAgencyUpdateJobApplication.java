@@ -15,10 +15,12 @@ public class SpacemediaAgencyUpdateJobApplication extends AbstractSpacemediaAgen
     }
 
     @Bean
-    public Agency<?, ?, ?> agency(@Value("${agency}") String agency, @Value("${repository}") String repository,
+    public Agency<?, ?, ?> agency(@Value("${agency}") String agency,
+            @Value("${repositoryClass}") String repositoryClass, @Value("${repositoryName:}") String repositoryName,
             ApplicationContext context) throws ReflectiveOperationException {
-        Class<?> repoClass = Class.forName(repository);
+        Class<?> repoClass = Class.forName(repositoryClass);
         return (Agency<?, ?, ?>) Class.forName(agency).getConstructor(repoClass)
-                .newInstance((MediaRepository<?, ?, ?>) context.getBean(repoClass));
+                .newInstance((MediaRepository<?, ?, ?>) (repositoryName.isBlank() ? context.getBean(repoClass)
+                        : context.getBean(repositoryName, repoClass)));
     }
 }
