@@ -721,15 +721,20 @@ public class CommonsService {
                 boolean dpla = title.contains("-_DPLA_-");
                 List<CommonsImageProjection> duplicates = imageRepository.findBySha1OrderByTimestamp(image.getSha1());
                 int numberOfFiles = duplicates.size();
-                if (numberOfFiles > 1 && (!dpla || numberOfFiles < dplaMaxDuplicates) && duplicates.stream()
-                        .noneMatch(d -> ignoredDuplicatesName.contains(d.getName()) || self.isInIgnoredCategory(d))) {
-                    CommonsImageProjection olderImage = duplicates.get(0);
-                    for (int i = 1; i < duplicates.size(); i++) {
-                        count += handleDuplicateFile(olderImage, duplicates.get(i), count);
+                try {
+                    if (numberOfFiles > 1 && (!dpla || numberOfFiles < dplaMaxDuplicates)
+                            && duplicates.stream().noneMatch(
+                                    d -> ignoredDuplicatesName.contains(d.getName()) || self.isInIgnoredCategory(d))) {
+                        CommonsImageProjection olderImage = duplicates.get(0);
+                        for (int i = 1; i < duplicates.size(); i++) {
+                            count += handleDuplicateFile(olderImage, duplicates.get(i), count);
+                        }
+                        if (currentDupes + count >= duplicateMaxFiles) {
+                            break;
+                        }
                     }
-                    if (currentDupes + count >= duplicateMaxFiles) {
-                        break;
-                    }
+                } catch (RuntimeException e) {
+                    LOGGER.error("Failed to handle {}", title, e);
                 }
             }
         }
