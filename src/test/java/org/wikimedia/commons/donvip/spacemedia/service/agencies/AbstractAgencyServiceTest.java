@@ -20,7 +20,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsService;
 import com.github.dozermapper.core.Mapper;
 
 @TestPropertySource("/application-test.properties")
-abstract class AbstractAgencyServiceTest {
+public abstract class AbstractAgencyServiceTest {
 
     @MockBean
     protected ProblemRepository problemRepository;
@@ -49,7 +49,7 @@ abstract class AbstractAgencyServiceTest {
     @MockBean
     protected Mapper mapper;
 
-    protected final Document html(String path) throws IOException {
+    public static final Document html(String path) throws IOException {
         return Jsoup.parse(new File("src/test/resources", path));
     }
 }

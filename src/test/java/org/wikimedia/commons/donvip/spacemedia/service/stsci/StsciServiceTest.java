@@ -2,13 +2,33 @@ package org.wikimedia.commons.donvip.spacemedia.service.stsci;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyServiceTest.html;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciImageFiles;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@SpringJUnitConfig(StsciServiceTest.TestConfig.class)
 class StsciServiceTest {
+
+    @MockBean
+    private StsciMediaRepository repository;
+
+    @Autowired
+    private StsciService service;
 
     @Test
     void testFileDownloadTextPattern() throws IOException {
@@ -38,5 +58,70 @@ class StsciServiceTest {
         assertEquals(width, file.getWidth());
         assertEquals(height, file.getHeight());
         assertEquals(sizeInBytes, file.getFileSize());
+    }
+
+    @Test
+    void testReadHtmlHubble() throws Exception {
+        String urlLink = "https://hubblesite.org/contents/media/images/2022/054/01GGT9JB74B5FXX95WGM0285E5";
+        StsciMedia media = service.getImageDetailsByScrapping("2022/054/01GGT9JB74B5FXX95WGM0285E5", urlLink,
+                new URL(urlLink), html("nasahubble/2022_054_01GGT9JB74B5FXX95WGM0285E5.html"));
+        assertNotNull(media);
+        assertEquals("2022/054/01GGT9JB74B5FXX95WGM0285E5", media.getId());
+        assertEquals("Lensed Supernova in Abell 370", media.getTitle());
+        assertEquals(
+                "Through a phenomenon called gravitational lensing, three different moments in a far-off supernova explosion were captured in a single snapshot by NASA's Hubble Space Telescope. The light from the supernova, which was located behind the galaxy cluster Abell 370, was multiply lensed by the cluster's immense gravity. This light took three different paths through the cosmic lens of the massive cluster. The three paths were three different lengths and affected to different degrees by the slowing of time and curvature of space due to the cluster, so when the light arrived at Hubble (on the same day in December 2010), the supernova appeared at three different stages of evolution.\n"
+                        + "The left panel shows the portion of Abell 370 where the multiple images of the supernova appeared. Panel A, a composite of Hubble observations from 2011 to 2016, shows the locations of the multiply imaged host galaxy after the supernova faded. Panel B, a Hubble picture from December 2010, shows the three images of the host galaxy and the supernova at different phases in its evolution. Panel C, which subtracts the image in Panel B from that in Panel A, shows three different faces of the evolving supernova. Using a similar image subtraction process for multiple filters of data, Panel D shows the different colors of the cooling supernova at three different stages in its evolution.",
+                media.getDescription());
+        assertEquals("2022-11-09T11:00-05:00[America/New_York]", media.getDate().toString());
+        assertEquals("https://stsci-opo.org/STScI-01GGT9R6NXMYV39JGQF1TCH3V8.png",
+                media.getMetadata().getAssetUrl().toExternalForm());
+        assertEquals("https://stsci-opo.org/STScI-01GGT9TZJC2031623AM72RSVY8.png",
+                media.getThumbnailUrl().toExternalForm());
+        assertEquals("2022-054", media.getNewsId());
+        assertNull(media.getExposureDate());
+        assertEquals("Abell 370", media.getObjectName());
+        assertEquals("hubble", media.getMission());
+        assertEquals(Set.of("Gravitational Lensing", "Supernovae", "Galaxy Clusters"), media.getKeywords());
+    }
+
+    @Test
+    void testReadHtmlWebb() throws Exception {
+        String urlLink = "https://webbtelescope.org/contents/media/images/2022/060/01GJ3HZRT43P8JATFQ90Z8EZ0W";
+        StsciMedia media = service.getImageDetailsByScrapping("2022/060/01GJ3HZRT43P8JATFQ90Z8EZ0W", urlLink,
+                new URL(urlLink), html("nasawebb/2022_060_01GJ3HZRT43P8JATFQ90Z8EZ0W.html"));
+        assertNotNull(media);
+        assertEquals("2022/060/01GJ3HZRT43P8JATFQ90Z8EZ0W", media.getId());
+        assertEquals("Exoplanet WASP-39 b and its Star (Illustration)", media.getTitle());
+        assertEquals(
+                "This illustration shows what exoplanet WASP-39 b could look like, based on current understanding of the planet.\n"
+                        + "WASP-39 b is a hot, puffy gas giant with a mass 0.28 times Jupiter (0.94 times Saturn) and a diameter 1.3 times greater than Jupiter, orbiting just 0.0486 astronomical units (4,500,000 miles) from its star. The star, WASP-39, is fractionally smaller and less massive than the Sun. Because it is so close to its star, WASP-39 b is very hot and is likely to be tidally locked, with one side facing the star at all times.\n"
+                        + "NASA’s James Webb Space Telescope’s exquisitely sensitive instruments have provided a profile of WASP-39 b’s atmospheric constituents and identified a plethora of contents, including water, sulfur dioxide, carbon monoxide, sodium and potassium.\n"
+                        + "This illustration is based on indirect transit observations from Webb as well as other space- and ground-based telescopes. Webb has not captured a direct image of this planet.",
+                media.getDescription());
+        assertEquals("2022-11-22T11:00-05:00[America/New_York]", media.getDate().toString());
+        assertEquals("https://stsci-opo.org/STScI-01GJ3Q3PRF2VG9DNG7J5YX1N44.jpg",
+                media.getMetadata().getAssetUrl().toExternalForm());
+        assertEquals("https://stsci-opo.org/STScI-01GJ3Q46VFXMCFM4WZANYCC4MR.jpg",
+                media.getThumbnailUrl().toExternalForm());
+        assertEquals("2022-060", media.getNewsId());
+        assertNull(media.getExposureDate());
+        assertEquals("WASP-39 b", media.getObjectName());
+        assertEquals("webb", media.getMission());
+        assertEquals(Set.of("Exoplanets"), media.getKeywords());
+    }
+
+    @Configuration
+    static class TestConfig {
+
+        @Bean
+        @Autowired
+        public StsciService service() {
+            return new StsciService();
+        }
+
+        @Bean
+        public ObjectMapper jackson() {
+            return new ObjectMapper();
+        }
     }
 }

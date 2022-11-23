@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.stsci;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
@@ -59,14 +60,20 @@ public class StsciService {
 
     public StsciMedia getImageDetailsByScrapping(String id, String urlLink) throws IOException {
         URL url = new URL(urlLink);
-        Document html = fetchHtml(url);
+        return getImageDetailsByScrapping(id, urlLink, url, fetchHtml(url));
+    }
+
+    public StsciMedia getImageDetailsByScrapping(String id, String urlLink, URL url, Document html) throws IOException {
         Element main = html.getElementById("main-content");
+        Element md8 = main.getElementsByClass("col-md-8").first();
         StsciMedia result = new StsciMedia();
         result.setId(id);
         result.setMission(getMission(url.getHost()));
-        result.setTitle(main.getElementsByTag("h2").first().text());
-        result.setCredits(main.getElementsByTag("footer").first().getElementsByTag("p").first().ownText().trim());
-        result.setDescription(main.getElementsByClass("col-md-8").first().getElementsByTag("p").first().text());
+        result.setTitle(main.getElementsByTag("h1").first().text());
+        result.setCredits(
+                md8.getElementsByTag("h3").select(":contains(Credits)").first().nextElementSibling().ownText().trim());
+        result.setDescription(md8.getElementsByTag("p").eachText().stream().filter(s -> !s.equals(result.getCredits()))
+                .collect(joining("\n")));
         List<StsciImageFiles> files = new ArrayList<>();
         for (Element a : main.getElementsByClass("media-library-links-list").first().getElementsByTag("a")) {
             files.add(extractFile(urlLink, a.attr("href"), a.ownText()));
@@ -116,19 +123,19 @@ public class StsciService {
                 LOGGER.debug(dates, e);
             }
         });
-        Elements paragraphs = html.getElementsByTag("p");
-        List<Element> elems = paragraphs.stream().filter(p -> p.text().startsWith("Release Date:")).toList();
+        Elements h3s = html.getElementsByTag("h3");
+        List<Element> elems = h3s.stream().filter(h -> "Release Date".equals(h.text())).toList();
         if (elems.size() == 1) {
-            String date = elems.get(0).text().replace("Release Date:", "").trim();
+            String date = elems.get(0).parent().ownText().trim();
             try {
                 result.setDate(ZonedDateTime.parse(date, StsciService.releaseDateformatter));
             } catch (DateTimeParseException e) {
                 LOGGER.debug(date, e);
             }
         }
-        elems = paragraphs.stream().filter(p -> p.text().startsWith("Read the Release:")).toList();
+        elems = h3s.stream().filter(p -> p.text().equals("Read the Release")).toList();
         if (elems.size() == 1) {
-            result.setNewsId(elems.get(0).getElementsByTag("a").first().text());
+            result.setNewsId(elems.get(0).nextElementSibling().text());
         }
 
         return result;
