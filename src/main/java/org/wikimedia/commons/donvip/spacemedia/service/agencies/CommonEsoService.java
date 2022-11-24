@@ -40,6 +40,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRep
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoLicence;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -105,7 +106,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     protected abstract Matcher getLocalizedUrlMatcher(String imgUrlLink);
 
     private Optional<T> updateMediaForUrl(URL url, EsoFrontPageItem item)
-            throws IOException, ReflectiveOperationException {
+            throws IOException, ReflectiveOperationException, UploadException {
         String imgUrlLink = url.getProtocol() + "://" + url.getHost() + item.getUrl();
         Matcher m = getLocalizedUrlMatcher(imgUrlLink);
         if (m.matches()) {
@@ -142,6 +143,10 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         }
         if (doCommonUpdate(media)) {
             save = true;
+        }
+        if (shouldUploadAuto(media)) {
+            saveMedia(upload(save ? saveMedia(media) : media, true));
+            save = false;
         }
         return Optional.of(saveMediaOrCheckRemote(save, media));
     }
@@ -475,7 +480,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             } catch (HttpStatusException e) {
                 // End of search when we receive an HTTP 404
                 loop = false;
-            } catch (IOException | ReflectiveOperationException | RuntimeException e) {
+            } catch (IOException | UploadException | ReflectiveOperationException | RuntimeException e) {
                 LOGGER.error("Error when fetching " + url, e);
             }
         }
