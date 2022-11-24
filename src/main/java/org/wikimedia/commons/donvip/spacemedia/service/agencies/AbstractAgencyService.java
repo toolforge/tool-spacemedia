@@ -819,6 +819,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 && isEmpty(media.getDuplicates()) && isPermittedFileType(media);
     }
 
+    protected boolean shouldUploadAuto(T media) {
+        return shouldUploadAuto(media, media.getCommonsFileNames());
+    }
+
     protected static void addOtherField(StringBuilder sb, String name, Collection<?> values, Map<String, String> catMapping) {
         if (isNotEmpty(values)) {
             addOtherField(sb, name + (values.size() > 1 ? "s" : ""),

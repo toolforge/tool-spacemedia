@@ -371,7 +371,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             ignoreFile(media, "Ignored category: " + media.getCategory());
             save = true;
         }
-        if (shouldUploadAuto(media, media.getCommonsFileNames())) {
+        if (shouldUploadAuto(media)) {
             media = upload(media, true);
             save = true;
         }

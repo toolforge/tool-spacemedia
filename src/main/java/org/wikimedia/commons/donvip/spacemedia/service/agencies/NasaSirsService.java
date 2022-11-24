@@ -121,7 +121,7 @@ public class NasaSirsService
                     if (doCommonUpdate(image)) {
                         image = saveMedia(image);
                     }
-                    if (shouldUploadAuto(image, image.getCommonsFileNames())) {
+                    if (shouldUploadAuto(image)) {
                         saveMedia(upload(image, true));
                     }
                 }

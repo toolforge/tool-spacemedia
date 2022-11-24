@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -67,7 +66,7 @@ public class FlickrMediaProcessorService {
     @Transactional
     public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
             MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Collection<String> stringsToRemove,
-            Predicate<FlickrMedia> customProcessor, BiPredicate<FlickrMedia, Set<String>> shouldUploadAuto,
+            Predicate<FlickrMedia> customProcessor, Predicate<FlickrMedia> shouldUploadAuto,
             UnaryOperator<FlickrMedia> uploader)
             throws IOException {
         boolean save = false;
@@ -137,7 +136,7 @@ public class FlickrMediaProcessorService {
         if (customProcessor.test(media)) {
             save = true;
         }
-        if (shouldUploadAuto.test(media, media.getCommonsFileNames())) {
+        if (shouldUploadAuto.test(media)) {
             media = uploader.apply(media);
             save = true;
         }

@@ -32,6 +32,12 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     }
 
     @Override
+    protected final boolean shouldUploadAuto(T media) {
+        return shouldUploadAuto(media, media.getCommonsFileNames())
+                || shouldUploadAuto(media, media.getFullResCommonsFileNames());
+    }
+
+    @Override
     protected void checkUploadPreconditions(T media, boolean checkUnicity) throws MalformedURLException {
         super.checkUploadPreconditions(media, checkUnicity);
         // Forbid upload of duplicate medias for a single repo, they may have different descriptions

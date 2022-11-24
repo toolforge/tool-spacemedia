@@ -224,8 +224,7 @@ public class EsaService
                 if (doCommonUpdate(media)) {
                     save = true;
                 }
-                if (shouldUploadAuto(media, media.getCommonsFileNames())
-                        || shouldUploadAuto(media, media.getFullResCommonsFileNames())) {
+                if (shouldUploadAuto(media)) {
                     saveMedia(upload(save ? saveMedia(media) : media, true));
                     save = false;
                 }
