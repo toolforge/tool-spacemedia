@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -102,13 +104,13 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
         async.updateMedia(service);
     }
 
-    @GetMapping("/media/{id}")
-    public final T getMedia(@PathVariable String id) throws ImageNotFoundException {
-        return service.getById(id);
+    @GetMapping("/media/**")
+    public final T getMedia(HttpServletRequest request) throws ImageNotFoundException {
+        return service.getById(extractId(request, "media"));
     }
 
-    @PutMapping("/media/{id}")
-    public final T putMedia(@PathVariable String id, @RequestBody T media) {
+    @PutMapping("/media/**")
+    public final T putMedia(HttpServletRequest request, @RequestBody T media) {
         return service.saveMedia(media);
     }
 
@@ -117,14 +119,14 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
         return service.uploadAndSaveBySha1(sha1);
     }
 
-    @GetMapping("/uploadmedia/{id}")
-    public final T uploadMedia(@PathVariable String id) throws UploadException, TooManyResultsException {
-        return service.uploadAndSaveById(id);
+    @GetMapping("/uploadmedia/**")
+    public final T uploadMedia(HttpServletRequest request) throws UploadException, TooManyResultsException {
+        return service.uploadAndSaveById(extractId(request, "uploadmedia"));
     }
 
-    @GetMapping("/refreshmedia/{id}")
-    public final T refreshMedia(@PathVariable String id) throws ImageNotFoundException, IOException {
-        return service.refreshAndSaveById(id);
+    @GetMapping("/refreshmedia/**")
+    public final T refreshMedia(HttpServletRequest request) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveById(extractId(request, "refreshmedia"));
     }
 
     @GetMapping("/refreshmissing")
@@ -158,5 +160,17 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
     @GetMapping("/wikicode/{sha1}")
     public final String wikiCode(@PathVariable String sha1) throws TooManyResultsException {
         return service.getWikiCode(sha1);
+    }
+
+    /**
+     * STScI ids contain slashes so we cannot use {@link RequestParam} for ids.
+     *
+     * @param request HTTP request
+     * @param name    name
+     * @return id request param
+     */
+    String extractId(HttpServletRequest request, String name) {
+        String requestURI = request.getRequestURI();
+        return requestURI.substring(requestURI.indexOf('/', ("/" + service.getId() + "/rest/" + name).length()) + 1);
     }
 }

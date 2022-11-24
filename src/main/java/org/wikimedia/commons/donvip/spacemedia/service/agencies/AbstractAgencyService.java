@@ -139,6 +139,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         uploadMode = UploadMode.valueOf(
                 env.getProperty(id + ".upload", String.class, UploadMode.DISABLED.name())
                     .toUpperCase(Locale.ENGLISH));
+        LOGGER.info("{} upload mode: {}", id, uploadMode);
     }
 
     /**
@@ -358,6 +359,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public T getById(String id) throws ImageNotFoundException {
+        LOGGER.info("Looking for media by id: {}", id);
         return repository.findById(getMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id));
     }
 
