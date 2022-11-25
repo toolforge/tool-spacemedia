@@ -110,6 +110,29 @@ class StsciServiceTest {
         assertEquals(Set.of("Exoplanets"), media.getKeywords());
     }
 
+    @Test
+    void testReadHtmlWebbFullResJpg() throws Exception {
+        String urlLink = "https://webbtelescope.org/contents/media/images/2018/14/4119-Image";
+        StsciMedia media = service.getImageDetailsByScrapping("2018/14/4119-Image", urlLink, new URL(urlLink),
+                html("nasawebb/2018_14_4119-Image.html"));
+        assertNotNull(media);
+        assertEquals("2018/14/4119-Image", media.getId());
+        assertEquals("Reflection Nebula IC 2631 (ESO)", media.getTitle());
+        assertEquals(
+                "An image from the European Southern Observatory shows blue light from a newborn star lights up the reflection nebula IC 2631. This nebula is part of the Chamaeleon star-forming region, which Webb will study to learn more about the formation of water and other cosmic ices.",
+                media.getDescription());
+        assertEquals("2018-03-09T10:00-05:00[America/New_York]", media.getDate().toString());
+        assertEquals("https://stsci-opo.org/STScI-01EVT0Y2KZAV2YF3ARK6X2PT7S.jpg",
+                media.getMetadata().getAssetUrl().toExternalForm());
+        assertEquals("https://stsci-opo.org/STScI-01EVT0Y2KZAV2YF3ARK6X2PT7S.jpg",
+                media.getThumbnailUrl().toExternalForm());
+        assertEquals("2018-14", media.getNewsId());
+        assertNull(media.getExposureDate());
+        assertEquals("IC 2631", media.getObjectName());
+        assertEquals("webb", media.getMission());
+        assertEquals(Set.of("Nebulas", "Reflection Nebulas", "Star Forming Regions"), media.getKeywords());
+    }
+
     @Configuration
     static class TestConfig {
 

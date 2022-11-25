@@ -81,37 +81,7 @@ public class StsciService {
         if (files.isEmpty()) {
             throw new IOException("No file found at " + urlLink);
         }
-        Metadata metadata = result.getMetadata();
-        Metadata frMetadata = result.getFullResMetadata();
-        for (StsciImageFiles imageFile : files) {
-            String fileUrl = imageFile.getFileUrl();
-            URL assetUrl = toUrl(fileUrl);
-            if (fileUrl.endsWith(".tif") || fileUrl.endsWith(".tiff")) {
-                frMetadata.setAssetUrl(assetUrl);
-                frMetadata.setSize((long) imageFile.getFileSize());
-            } else if ((fileUrl.endsWith(".png") || fileUrl.endsWith(".jpg") || fileUrl.endsWith(".pdf"))) {
-                if (metadata.getAssetUrl() == null || metadata.getSize().intValue() < imageFile.getFileSize()) {
-                    metadata.setAssetUrl(assetUrl);
-                    metadata.setSize((long) imageFile.getFileSize());
-                } else if (metadata.getSize().intValue() > imageFile.getFileSize() && !fileUrl.endsWith(".pdf")) {
-                    result.setThumbnailUrl(assetUrl);
-                }
-            }
-        }
-        if (frMetadata.getAssetUrl() == null && files.size() > 1) {
-            files.stream().max(Comparator.comparingInt(StsciImageFiles::getFileSize))
-                    .map(StsciImageFiles::getFileUrl).ifPresent(max -> {
-                        try {
-                            frMetadata.setAssetUrl(toUrl(max));
-                        } catch (MalformedURLException e) {
-                            LOGGER.error(max, e);
-                        }
-                    });
-        }
-        if (endsWith(frMetadata.getAssetUrl(), ".png", ".jpg") && endsWith(metadata.getAssetUrl(), ".png", ".jpg")) {
-            metadata.setAssetUrl(frMetadata.getAssetUrl());
-            frMetadata.setAssetUrl(null);
-        }
+        fillMetadata(result, files);
 
         result.setKeywords(html.getElementsByClass("keyword-tag").stream().map(Element::text).collect(toSet()));
         Elements tds = html.getElementsByTag("td");
@@ -139,6 +109,51 @@ public class StsciService {
         }
 
         return result;
+    }
+
+    private static void fillMetadata(StsciMedia result, List<StsciImageFiles> files) throws MalformedURLException {
+        int width = -1;
+        Metadata metadata = result.getMetadata();
+        Metadata frMetadata = result.getFullResMetadata();
+        for (StsciImageFiles imageFile : files) {
+            String fileUrl = imageFile.getFileUrl();
+            URL assetUrl = toUrl(fileUrl);
+            if (fileUrl.endsWith(".tif") || fileUrl.endsWith(".tiff")) {
+                frMetadata.setAssetUrl(assetUrl);
+                frMetadata.setSize((long) imageFile.getFileSize());
+            } else if ((fileUrl.endsWith(".png") || fileUrl.endsWith(".jpg") || fileUrl.endsWith(".pdf"))
+                    && (metadata.getAssetUrl() == null || (metadata.getSize().intValue() < imageFile.getFileSize()
+                            && width <= imageFile.getWidth()))) {
+                metadata.setAssetUrl(assetUrl);
+                metadata.setSize((long) imageFile.getFileSize());
+                width = imageFile.getWidth();
+            }
+        }
+        int finalWidth = width;
+        if (frMetadata.getAssetUrl() == null && files.size() > 1) {
+            files.stream().filter(f -> f.getWidth() >= finalWidth)
+                    .max(Comparator.comparingInt(StsciImageFiles::getFileSize))
+                    .map(StsciImageFiles::getFileUrl).ifPresent(max -> {
+                        try {
+                            frMetadata.setAssetUrl(toUrl(max));
+                        } catch (MalformedURLException e) {
+                            LOGGER.error(max, e);
+                        }
+                    });
+        }
+        if (endsWith(frMetadata.getAssetUrl(), ".png", ".jpg") && endsWith(metadata.getAssetUrl(), ".png", ".jpg")) {
+            metadata.setAssetUrl(frMetadata.getAssetUrl());
+            frMetadata.setAssetUrl(null);
+        }
+        files.stream().filter(f -> !f.getFileUrl().endsWith(".pdf"))
+                .min(Comparator.comparingInt(StsciImageFiles::getFileSize)).map(StsciImageFiles::getFileUrl)
+                .ifPresent(min -> {
+                    try {
+                        result.setThumbnailUrl(toUrl(min));
+                    } catch (MalformedURLException e) {
+                        LOGGER.error(min, e);
+                    }
+                });
     }
 
     private static URL toUrl(String fileUrl) throws MalformedURLException {
