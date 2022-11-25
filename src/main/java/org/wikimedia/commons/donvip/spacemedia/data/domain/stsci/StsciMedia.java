@@ -147,7 +147,7 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
     @Override
     public String toString() {
         return "HubbleNasaMedia [id=" + id + ", newsId=" + newsId + ", date=" + date + ", objectName=" + objectName
-                + ", mission=" + mission + "]";
+                + ", mission=" + mission + ']';
     }
 
     @Override
@@ -164,5 +164,17 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
     @Override
     public boolean isVideo() {
         return false;
+    }
+
+    public StsciMedia copyDataFrom(StsciMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        this.credits = mediaFromApi.credits;
+        this.date = mediaFromApi.date;
+        this.exposureDate = mediaFromApi.exposureDate;
+        this.keywords = mediaFromApi.keywords;
+        this.mission = mediaFromApi.mission;
+        this.newsId = mediaFromApi.newsId;
+        this.objectName = mediaFromApi.objectName;
+        return this;
     }
 }

@@ -278,4 +278,27 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
     public boolean isVideo() {
         return false;
     }
+
+    public CommonEsoMedia copyDataFrom(CommonEsoMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        this.categories = mediaFromApi.categories;
+        this.constellation = mediaFromApi.constellation;
+        this.credit = mediaFromApi.credit;
+        this.date = mediaFromApi.date;
+        this.distance = mediaFromApi.distance;
+        this.fieldOfView = mediaFromApi.fieldOfView;
+        this.height = mediaFromApi.height;
+        this.imageType = mediaFromApi.imageType;
+        this.licence = mediaFromApi.licence;
+        this.name = mediaFromApi.name;
+        this.orientation = mediaFromApi.orientation;
+        this.positionDec = mediaFromApi.positionDec;
+        this.positionRa = mediaFromApi.positionRa;
+        this.relatedAnnouncements = mediaFromApi.relatedAnnouncements;
+        this.relatedReleases = mediaFromApi.relatedReleases;
+        this.telescopes = mediaFromApi.telescopes;
+        this.types = mediaFromApi.types;
+        this.width = mediaFromApi.width;
+        return this;
+    }
 }

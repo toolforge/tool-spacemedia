@@ -300,6 +300,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> {
     }
 
     public FlickrMedia copyDataFrom(FlickrMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
         this.license = mediaFromApi.license;
         this.date = mediaFromApi.date;
         this.lastUpdate = mediaFromApi.lastUpdate;

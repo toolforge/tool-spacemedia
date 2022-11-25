@@ -309,4 +309,14 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     public final String getFirstCommonsFileNameOrUploadTitle(Set<String> commonsFileNames, String ext) {
         return isEmpty(commonsFileNames) ? getUploadTitle() + '.' + ext : commonsFileNames.iterator().next();
     }
+
+    /**
+     * Copies data that could have been updated after the initial API call.
+     *
+     * @param mediaFromApi updated media from agency API
+     */
+    public final void copyDataFrom(Media<ID, D> mediaFromApi) {
+        setDescription(mediaFromApi.getDescription());
+        setTitle(mediaFromApi.getTitle());
+    }
 }

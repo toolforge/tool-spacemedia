@@ -94,7 +94,7 @@ public abstract class AbstractStsciService
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
         } else {
-            media = stsci.getImageDetailsByScrapping(id, getImageDetailsLink(id));
+            media = getMediaFromWebsite(id);
             save = true;
         }
         if (doCommonUpdate(media)) {
@@ -104,9 +104,13 @@ public abstract class AbstractStsciService
         return save ? 1 : 0;
     }
 
+    private StsciMedia getMediaFromWebsite(String id) throws IOException {
+        return stsci.getImageDetailsByScrapping(id, getImageDetailsLink(id));
+    }
+
     @Override
     protected StsciMedia refresh(StsciMedia media) throws IOException {
-        throw new UnsupportedOperationException(); // TODO
+        return media.copyDataFrom(getMediaFromWebsite(media.getId()));
     }
 
     @Override

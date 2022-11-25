@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,7 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -222,8 +223,14 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected T refresh(T media) throws IOException {
-        return media;
+        URL url = getSourceUrl(media);
+        try {
+            return (T) media.copyDataFrom(fetchMedia(url, media.getId(), url.toExternalForm()));
+        } catch (ReflectiveOperationException e) {
+            throw new IOException(e);
+        }
     }
 
     protected Collection<String> getForbiddenCategories() {
@@ -376,14 +383,14 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             media.setName(text);
             break;
         case "Type:":
-            media.setTypes(Arrays.stream(html.split("<br>")).map(String::trim).collect(Collectors.toSet()));
+            media.setTypes(Arrays.stream(html.split("<br>")).map(String::trim).collect(toSet()));
             break;
         case "Category:":
             Elements categories = sibling.getElementsByTag("a");
             if (categories.isEmpty()) {
                 scrapingError(imgUrlLink, sibling.html());
             }
-            media.setCategories(categories.stream().map(Element::text).collect(Collectors.toSet()));
+            media.setCategories(categories.stream().map(Element::text).collect(toSet()));
             break;
         case "Distance:":
             media.setDistance(text);
@@ -444,7 +451,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     protected Set<String> parseExternalLinks(Element sibling, URL url) {
         return sibling.getElementsByTag("a").stream().map(
                 e -> e.outerHtml().replace("href=\"/", "href=\"" + url.getProtocol() + "://" + url.getHost() + "/"))
-                .collect(Collectors.toSet());
+                .collect(toSet());
     }
 
     protected Iterator<EsoFrontPageItem> findFrontPageItems(Document document) throws IOException {
@@ -481,7 +488,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
                 // End of search when we receive an HTTP 404
                 loop = false;
             } catch (IOException | UploadException | ReflectiveOperationException | RuntimeException e) {
-                LOGGER.error("Error when fetching " + url, e);
+                LOGGER.error("Error when fetching {}", url, e);
             }
         }
         endUpdateMedia(count, start);
@@ -502,11 +509,11 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         Set<String> result = super.findCategories(media, includeHidden);
         if (media.getCategories() != null) {
             result.addAll(media.getCategories().stream().map(esoCategories::get).filter(StringUtils::isNotBlank)
-                    .collect(Collectors.toSet()));
+                    .collect(toSet()));
         }
         if (media.getCategories() != null) {
-            result.addAll(media.getTypes().stream().map(esoTypes::get).filter(StringUtils::isNotBlank)
-                    .collect(Collectors.toSet()));
+            result.addAll(
+                    media.getTypes().stream().map(esoTypes::get).filter(StringUtils::isNotBlank).collect(toSet()));
         }
         if (media.getName() != null) {
             String catName = esoNames.get(media.getName());

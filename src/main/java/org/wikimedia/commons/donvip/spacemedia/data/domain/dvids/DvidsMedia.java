@@ -315,16 +315,15 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     }
 
     public DvidsMedia copyDataFrom(DvidsMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
         setBranch(mediaFromApi.getBranch());
         setDate(mediaFromApi.getDate());
         setDatePublished(mediaFromApi.getDatePublished());
-        setDescription(mediaFromApi.getDescription());
         setCategory(mediaFromApi.getCategory());
         setKeywords(mediaFromApi.getKeywords());
         setRating(mediaFromApi.getRating());
         setThumbnailUrl(mediaFromApi.getThumbnailUrl());
         setTimestamp(mediaFromApi.getTimestamp());
-        setTitle(mediaFromApi.getTitle());
         setUnit(mediaFromApi.getUnit());
         setUnitName(mediaFromApi.getUnitName());
         setVirin(mediaFromApi.getVirin());
