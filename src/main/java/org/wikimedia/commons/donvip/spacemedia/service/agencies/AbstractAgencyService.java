@@ -91,7 +91,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyService.class);
 
-    private static final Pattern PATTERN_BITLY = Pattern.compile("(?:https?://)?bit.ly/[0-9a-zA-Z]{7}");
+    private static final Pattern PATTERN_SHORT = Pattern
+            .compile("(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{7}|youtu.be/[0-9a-zA-Z]{11})");
 
     protected final MediaRepository<T, ID, D> repository;
 
@@ -550,16 +551,17 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             return media.getTitle();
         } else {
             // Resolve url shortener/redirect blocked in spam disallow list
-            return PATTERN_BITLY.matcher(description).replaceAll(match -> {
+            return PATTERN_SHORT.matcher(description).replaceAll(match -> {
                 String group = match.group();
                 try {
                     String url = group.startsWith("http") ? group : "https://" + group;
                     try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableAutomaticRetries()
                             .disableRedirectHandling().build();
-                            CloseableHttpResponse response = httpclient.execute(new HttpGet(url))) {
+                            CloseableHttpResponse response = httpclient
+                                    .execute(new HttpGet(url.replace("http://", "https://")))) {
                         Header location = response.getFirstHeader("Location");
                         if (location != null) {
-                            return location.getValue();
+                            return location.getValue().replace("&feature=youtu.be", "");
                         }
                     }
                 } catch (IOException e) {
