@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -112,6 +113,11 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
     @PutMapping("/media/**")
     public final T putMedia(HttpServletRequest request, @RequestBody T media) {
         return service.saveMedia(media);
+    }
+
+    @DeleteMapping("/media/**")
+    public final void deleteMedia(HttpServletRequest request) throws ImageNotFoundException {
+        service.deleteById(extractId(request, "media"));
     }
 
     @GetMapping("/upload/{sha1}")

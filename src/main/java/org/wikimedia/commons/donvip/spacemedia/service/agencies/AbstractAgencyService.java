@@ -365,6 +365,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
+    public void deleteById(String id) throws ImageNotFoundException {
+        repository.deleteById(getMediaId(id));
+    }
+
+    @Override
     public final T refreshAndSaveById(String id) throws ImageNotFoundException, IOException {
         return refreshAndSave(getById(id));
     }

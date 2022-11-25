@@ -82,6 +82,8 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     T getById(String id) throws ImageNotFoundException;
 
+    void deleteById(String id) throws ImageNotFoundException;
+
     T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException;
 
     T uploadAndSaveById(String id) throws UploadException, TooManyResultsException;
