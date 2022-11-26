@@ -208,6 +208,12 @@ public class CommonsService {
     @Value("${commons.dpla.max.duplicates}")
     private int dplaMaxDuplicates;
 
+    @Value("${commons.automatic.hashes.computation.asc:false}")
+    private boolean automaticHashComputationAsc;
+
+    @Value("${commons.automatic.hashes.computation.desc:false}")
+    private boolean automaticHashComputationDesc;
+
     @Autowired
     private ExecutorService taskExecutor;
 
@@ -264,6 +270,12 @@ public class CommonsService {
         // Fetch CSRF token, mandatory for upload using the Mediawiki API
         token = queryTokens().getCsrftoken();
         LOGGER.info("CSRF token: {}", token);
+        if (automaticHashComputationAsc) {
+            taskExecutor.submit(this::computeHashesOfAllFilesAsc);
+        }
+        if (automaticHashComputationDesc) {
+            taskExecutor.submit(this::computeHashesOfAllFilesDesc);
+        }
     }
 
     private boolean hasUploadByUrlRight() {
