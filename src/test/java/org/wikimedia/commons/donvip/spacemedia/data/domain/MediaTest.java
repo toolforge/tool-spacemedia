@@ -10,13 +10,16 @@ class MediaTest {
 
     private final Media<String, LocalDate> media = new Media<>() {
 
+        private String id;
+
         @Override
         public String getId() {
-            return "11290168785";
+            return id;
         }
 
         @Override
         public void setId(String id) {
+            this.id = id;
         }
 
         @Override
@@ -46,8 +49,17 @@ class MediaTest {
 
     @Test
     void testGetUploadTitle() {
+        media.setId("11290168785");
         media.setTitle("DLR Annual General Assembly / Jahreshauptversammlung &amp; Science Slam 2013");
         assertEquals("DLR Annual General Assembly / Jahreshauptversammlung & Science Slam 2013 (11290168785)",
                 media.getUploadTitle());
+
+        media.setId("25254739045");
+        media.setTitle(
+                "Ein Kolbenkernprobenehmer (piston corer) hängt am Seil neben der Bordwand. Gleich wird er in 1300 mm Tiefe hinabgelassen, um viele Meter in das weiche Sediment auf dem Meeresboden einzudringen und einen entsprechend langen Sedimentkern zu entnehmen.");
+        assertEquals(
+                "Ein Kolbenkernprobenehmer (piston corer) hängt am Seil neben der Bordwand. Gleich wird er in 1300 mm Tiefe hinabgelassen, um viele Meter in das weiche Sediment auf dem Meeresboden einzudringen und einen entsprechend langen Se (25254739045)",
+                media.getUploadTitle());
+        assertEquals(239, media.getUploadTitle().length());
     }
 }

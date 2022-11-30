@@ -116,7 +116,11 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     public String getUploadTitle() {
-        return new StringBuilder(title).append(" (").append(getId()).append(')').toString().replace("&amp;", "&");
+        // Upload title must not exceed mediawiki limit (240 characters, filename-toolong API error)
+        String id = getId().toString();
+        String s = title.replace("&amp;", "&");
+        return new StringBuilder(s.substring(0, Math.min(239 - id.length() - 3, s.length())))
+                .append(" (").append(id).append(')').toString();
     }
 
     public String getTitle() {
