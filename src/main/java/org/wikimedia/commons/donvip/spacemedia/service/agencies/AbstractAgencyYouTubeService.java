@@ -27,6 +27,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
@@ -54,6 +55,8 @@ public abstract class AbstractAgencyYouTubeService
     protected YouTubeVideoRepository youtubeRepository;
     @Autowired
     private YouTubeApiService youtubeService;
+    @Value("${videos.enabled}")
+    private boolean videosEnabled;
 
     protected final Set<String> youtubeChannels;
 
@@ -78,6 +81,10 @@ public abstract class AbstractAgencyYouTubeService
     }
 
     protected void updateYouTubeVideos() {
+        if (!videosEnabled) {
+            LOGGER.info("Videos support disabled. Exiting...");
+            return;
+        }
         LocalDateTime start = startUpdateMedia();
         int count = 0;
         for (String channelId : youtubeChannels) {

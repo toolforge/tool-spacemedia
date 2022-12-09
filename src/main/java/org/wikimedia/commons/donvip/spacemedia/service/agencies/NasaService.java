@@ -80,6 +80,9 @@ public class NasaService
     @Value("${nasa.centers}")
     private Set<String> nasaCenters;
 
+    @Value("${videos.enabled}")
+    private boolean videosEnabled;
+
     @Autowired
     private NasaAudioRepository audioRepository;
 
@@ -381,7 +384,9 @@ public class NasaService
         int count = 0;
         count += updateImages();
         count += updateAudios();
-        count += updateVideos();
+        if (videosEnabled) {
+            count += updateVideos();
+        }
         endUpdateMedia(count, start);
     }
 

@@ -144,6 +144,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     @Value("${dvids.ignored.categories}")
     private Set<String> ignoredCategories;
 
+    @Value("${videos.enabled}")
+    private boolean videosEnabled;
+
     private final int minYear;
 
     private final Set<String> units;
@@ -187,9 +190,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         Set<String> idsKnownToDvidsApi = new HashSet<>();
         int count = 0;
         for (String unit : units) {
-            for (DvidsMediaType type : new DvidsMediaType[] {
-                    DvidsMediaType.video, DvidsMediaType.image }) {
-                count += updateDvidsMedia(unit, type, idsKnownToDvidsApi);
+            count += updateDvidsMedia(unit, DvidsMediaType.image, idsKnownToDvidsApi);
+            if (videosEnabled) {
+                count += updateDvidsMedia(unit, DvidsMediaType.video, idsKnownToDvidsApi);
             }
         }
         deleteOldDvidsMedia(idsKnownToDvidsApi);
