@@ -26,6 +26,7 @@ import javax.persistence.PostLoad;
 import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -117,8 +118,8 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     public String getUploadTitle() {
         // Upload title must not exceed mediawiki limit (240 characters, filename-toolong API error)
-        String id = getId().toString();
-        String s = title.replace("&amp;", "&").trim();
+        String id = CommonsService.normalizeFilename(getId().toString());
+        String s = CommonsService.normalizeFilename(title);
         return new StringBuilder(s.substring(0, Math.min(239 - id.length() - 3, s.length())))
                 .append(" (").append(id).append(')').toString();
     }

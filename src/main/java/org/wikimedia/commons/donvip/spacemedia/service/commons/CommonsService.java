@@ -630,9 +630,10 @@ public class CommonsService {
         return doUpload(wikiCode, normalizeFilename(filename), url, sha1, true, true);
     }
 
-    public String normalizeFilename(String filename) {
+    public static String normalizeFilename(String filename) {
         // replace forbidden chars, see https://www.mediawiki.org/wiki/Manual:$wgIllegalFileChars
-        return filename.replace('/', '-').replace(':', '-').replace('\\', '-').replace('.', '_');
+        return filename.replace('/', '-').replace(':', '-').replace('\\', '-').replace('.', '_').replace("&amp;", "&")
+                .trim();
     }
 
     public boolean isPermittedFileType(String url) {
