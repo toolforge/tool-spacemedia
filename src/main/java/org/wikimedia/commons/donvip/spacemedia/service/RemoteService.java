@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 
 import java.net.URI;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException.NotFound;
@@ -14,23 +15,26 @@ public class RemoteService {
     @Value("${remote.application.uri}")
     private URI remoteApplication;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     public String getHashLastTimestamp() {
-        return new RestTemplate().getForObject(remoteApplication + "/hashLastTimestamp", String.class);
+        return restTemplate.getForObject(remoteApplication + "/hashLastTimestamp", String.class);
     }
 
     public void putHashAssociation(HashAssociation hash) {
-        new RestTemplate().put(remoteApplication + "/hashAssociation", hash);
+        restTemplate.put(remoteApplication + "/hashAssociation", hash);
     }
 
     public void saveMedia(String agencyId, Media<?, ?> media) {
-        new RestTemplate().put(
+        restTemplate.put(
                 String.join("/", remoteApplication.toString(), agencyId, "rest/media", media.getId().toString()),
                 media);
     }
 
     public <T extends Media<?, ?>> T getMedia(String agencyId, String mediaId, Class<T> mediaClass) {
         try {
-            return new RestTemplate().getForObject(
+            return restTemplate.getForObject(
                     String.join("/", remoteApplication.toString(), agencyId, "rest/media", mediaId), mediaClass);
         } catch (NotFound e) {
             return null;
