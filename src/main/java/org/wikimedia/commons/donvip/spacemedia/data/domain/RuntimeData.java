@@ -95,7 +95,10 @@ public class RuntimeData {
 
     @Override
     public String toString() {
-        return "RuntimeData [agencyId=" + agencyId + ", lastUpdateStart=" + lastUpdateStart + ", lastUpdateEnd="
-                + lastUpdateEnd + ", lastUpdateDuration=" + lastUpdateDuration + "]";
+        return "RuntimeData [agencyId=" + agencyId + ", "
+                + (lastUpdateStart != null ? "lastUpdateStart=" + lastUpdateStart + ", " : "")
+                + (lastUpdateEnd != null ? "lastUpdateEnd=" + lastUpdateEnd + ", " : "")
+                + (lastUpdateDuration != null ? "lastUpdateDuration=" + lastUpdateDuration + ", " : "")
+                + (lastTimestamp != null ? "lastTimestamp=" + lastTimestamp : "") + "]";
     }
 }

@@ -46,6 +46,7 @@ import javax.annotation.Resource;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.io.FileUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -61,7 +62,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
@@ -288,6 +288,16 @@ public class CommonsService {
 
     public Set<String> findFilesWithSha1(String sha1) throws IOException {
         return findFilesWithSha1(List.of(sha1));
+    }
+
+    private static void displayUsedMemory() {
+        Runtime runtime = Runtime.getRuntime();
+        long total = runtime.totalMemory();
+        long free = runtime.freeMemory();
+        LOGGER.info("Memory used: {}. Free: {}. Total: {}.",
+                FileUtils.byteCountToDisplaySize(total - free),
+                FileUtils.byteCountToDisplaySize(free),
+                FileUtils.byteCountToDisplaySize(total));
     }
 
     /**
@@ -568,7 +578,7 @@ public class CommonsService {
             subcats.parallelStream().forEach(s -> result.addAll(self.getSubCategories(s, depth - 1)));
         }
         LOGGER.debug("Fetching '{}' subcategories with depth {} completed in {}", category, depth,
-                Duration.between(now(), start));
+                Duration.between(now(), start).truncatedTo(ChronoUnit.SECONDS));
         return result;
     }
 
@@ -613,7 +623,7 @@ public class CommonsService {
             }
         }
         LOGGER.info("Cleaning {} categories with depth {} completed in {}", categories.size(), catSearchDepth,
-                Duration.between(now(), start));
+                Duration.between(now(), start).truncatedTo(ChronoUnit.SECONDS));
         if (!categories.isEmpty() && result.isEmpty()) {
             throw new IllegalStateException("Cleaning " + categories + " removed all categories!");
         }
@@ -751,7 +761,8 @@ public class CommonsService {
                 }
             }
         }
-        LOGGER.info("{} duplicate files handled in {}", count, Duration.between(start, LocalDateTime.now()));
+        LOGGER.info("{} duplicate files handled in {}", count,
+                Duration.between(start, LocalDateTime.now()).truncatedTo(ChronoUnit.SECONDS));
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")
@@ -827,8 +838,9 @@ public class CommonsService {
     private void computeHashesOfAllFiles(Direction order) {
         Thread.currentThread().setName("commons-computeHashesOfAllFiles-" + order);
         LOGGER.info("Computing perceptual hashes of files in Commons ({} order)...", order);
+        displayUsedMemory();
         final RuntimeData runtime = runtimeDataRepository.findById(COMMONS).orElseGet(() -> new RuntimeData(COMMONS));
-        final RestTemplate restTemplate = new RestTemplate();
+        LOGGER.info("Runtime data: {}", runtime);
         final long startingTimestamp = Long.parseLong(hashMode == ExecutionMode.LOCAL
                 ? Optional.ofNullable(runtime.getLastTimestamp()).orElse("20010101000000")
                 : remote.getHashLastTimestamp());
@@ -839,14 +851,14 @@ public class CommonsService {
         final String startingTimestampString = startingDate.format(dateFormatter);
         final String endingTimestampString = startingDate.plusDays(days + 1).format(dateFormatter);
         if (hashMode == ExecutionMode.LOCAL) {
-            computeHashesOfFilesLocal(order, runtime, restTemplate, startingTimestampString, endingTimestampString);
+            computeHashesOfFilesLocal(order, runtime, startingTimestampString, endingTimestampString);
         } else {
-            computeHashesOfFilesRemote(order, restTemplate, startingTimestampString, endingTimestampString);
+            computeHashesOfFilesRemote(order, startingTimestampString, endingTimestampString);
         }
     }
 
-    private void computeHashesOfFilesLocal(Direction order, RuntimeData runtime, RestTemplate restTemplate,
-            String startingTimestamp, String endingTimestamp) {
+    private void computeHashesOfFilesLocal(Direction order, RuntimeData runtime, String startingTimestamp,
+            String endingTimestamp) {
         final LocalDateTime start = LocalDateTime.now();
         Page<CommonsImageProjection> page = null;
         String lastTimestamp = null;
@@ -857,7 +869,7 @@ public class CommonsService {
         do {
             page = fetchPage(order, startingTimestamp, endingTimestamp, pageIndex++);
             for (CommonsImageProjection image : page.getContent()) {
-                hashCount += computeAndSaveHash(image, restTemplate);
+                hashCount += computeAndSaveHash(image);
                 lastTimestamp = image.getTimestamp();
                 if (Direction.ASC == order) {
                     runtime.setLastTimestamp(lastTimestamp);
@@ -865,16 +877,16 @@ public class CommonsService {
                 }
             }
             LOGGER.info(
-                    "{} perceptual hashes of files in Commons ({} order) computed in {} ({} pages). Current timestamp: {}",
-                    hashCount, order, Duration.between(start, LocalDateTime.now()), pageIndex, lastTimestamp);
+                    "{} perceptual hashes ({} order) computed in {} ({} pages). Current timestamp: {}",
+                    hashCount, order, Duration.between(start, LocalDateTime.now()).truncatedTo(ChronoUnit.SECONDS),
+                    pageIndex, lastTimestamp);
         } while (page.hasNext());
     }
 
-    private void computeHashesOfFilesRemote(Direction order, RestTemplate restTemplate, String startingTimestamp,
-            String endingTimestamp) {
+    private void computeHashesOfFilesRemote(Direction order, String startingTimestamp, String endingTimestamp) {
         Page<CommonsImageProjection> page = null;
         int pageIndex = 0;
-        LOGGER.info("Remotely computing perceptual hashes of files in Commons ({} order) between {} and {}", order,
+        LOGGER.info("Remotely computing perceptual hashes ({} order) between {} and {}", order,
                 startingTimestamp, endingTimestamp);
         do {
             page = fetchPage(order, startingTimestamp, endingTimestamp, pageIndex++);
@@ -886,7 +898,7 @@ public class CommonsService {
                             content.get(0).getTimestamp());
                     int hashCount = 0;
                     for (CommonsImageProjection image : content) {
-                        hashCount += computeAndSaveHash(image, restTemplate);
+                        hashCount += computeAndSaveHash(image);
                     }
                     LOGGER.info("Finished remote computation of page (+{} hashes). Last item date is {}", hashCount,
                             content.get(content.size() - 1).getTimestamp());
@@ -897,11 +909,15 @@ public class CommonsService {
 
     private Page<CommonsImageProjection> fetchPage(Direction order, String startingTimestamp, String endingTimestamp,
             int pageIndex) {
-        return imageRepository.findByMinorMimeInAndTimestampBetween(Set.of("gif", "jpeg", "png", "tiff", "webp"),
+        displayUsedMemory();
+        Page<CommonsImageProjection> result = imageRepository.findByMinorMimeInAndTimestampBetween(
+                Set.of("gif", "jpeg", "png", "tiff", "webp"),
                 startingTimestamp, endingTimestamp, PageRequest.of(pageIndex, 1000, order, "timestamp"));
+        displayUsedMemory();
+        return result;
     }
 
-    private int computeAndSaveHash(CommonsImageProjection image, RestTemplate restTemplate) {
+    private int computeAndSaveHash(CommonsImageProjection image) {
         if (!hashRepository.existsById(image.getSha1())) {
             BufferedImage bi = null;
             try {
