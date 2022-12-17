@@ -637,7 +637,7 @@ public class CommonsService {
     }
 
     public String upload(String wikiCode, String filename, URL url, String sha1) throws IOException, UploadException {
-        return doUpload(wikiCode, normalizeFilename(filename), url, sha1, true, true);
+        return doUpload(wikiCode, normalizeFilename(filename), url, sha1, true, true, true);
     }
 
     public static String normalizeFilename(String filename) {
@@ -651,7 +651,7 @@ public class CommonsService {
     }
 
     private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1,
-            boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl)
+            boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error)
             throws IOException, UploadException {
         if (!isPermittedFileType(url.toExternalForm())) {
             throw new UploadException(url + " does not match any supported file type: " + permittedFileTypes);
@@ -681,11 +681,12 @@ public class CommonsService {
         if (error != null) {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
                 token = queryTokens().getCsrftoken();
-                return doUpload(wikiCode, filename, url, sha1, false, retryWithSanitizedUrl);
+                return doUpload(wikiCode, filename, url, sha1, false, retryWithSanitizedUrl, true);
             }
             if (retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
                 try {
-                    return doUpload(wikiCode, filename, Utils.urlToUri(url).toURL(), sha1, renewTokenIfBadToken, false);
+                    return doUpload(wikiCode, filename, Utils.urlToUri(url).toURL(), sha1, renewTokenIfBadToken, false,
+                            true);
                 } catch (URISyntaxException e) {
                     throw new UploadException(error.getCode(), e);
                 }
@@ -695,6 +696,10 @@ public class CommonsService {
                 if (m.matches()) {
                     return m.group(1);
                 }
+            }
+            if (retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
+                    && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT".equals(error.getInfo())) {
+                return doUpload(wikiCode, filename, url, sha1, renewTokenIfBadToken, true, false);
             }
             throw new UploadException(error.toString());
         } else if (!"Success".equals(upload.getResult())) {
