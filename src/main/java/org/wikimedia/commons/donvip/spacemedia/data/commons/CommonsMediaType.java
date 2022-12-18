@@ -26,4 +26,13 @@ public enum CommonsMediaType {
     public String getValue() {
         return value != null ? value : name();
     }
+
+    public static CommonsMediaType of(String value) {
+        for (CommonsMediaType v : values()) {
+            if (v.getValue().equals(value)) {
+                return v;
+            }
+        }
+        return null;
+    }
 }

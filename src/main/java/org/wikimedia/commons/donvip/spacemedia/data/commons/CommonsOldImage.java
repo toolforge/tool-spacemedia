@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -10,7 +11,7 @@ import javax.persistence.Table;
 /**
  * <a href="https://www.mediawiki.org/wiki/Manual:Oldimage_table">Mediawiki
  * Oldimage table</a>
- * 
+ *
  * <pre>
  * +-------------------+-------------------------------------------------------------------------------------------------------------+------+-----+----------------+-------+
  * | Field             | Type                                                                                                        | Null | Key | Default        | Extra |
@@ -54,11 +55,11 @@ public class CommonsOldImage {
     @Column(name = "oi_bits", nullable = false, length = 3)
     private int bits;
     @Column(name = "oi_media_type", nullable = true)
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = CommonsMediaTypeConverter.class)
     private CommonsMediaType mediaType;
     @Column(name = "oi_major_mime", nullable = false)
     @Enumerated(EnumType.STRING)
-    private CommonsMajorMime majorMime; 
+    private CommonsMajorMime majorMime;
     @Column(name = "oi_minor_mime", nullable = false, length = 100)
     private byte[] minorMime;
     @Column(name = "oi_description_id", nullable = false, precision = 20, scale = 0)

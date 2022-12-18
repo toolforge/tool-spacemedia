@@ -3,7 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.commons;
 import java.util.Objects;
 
 /**
- * Projectionof {@link CommonsImage} with only needed information, especially
+ * Projection of {@link CommonsImage} with only needed information, especially
  * NOT the serialized metadata which causes problems to the MariaDB JDBC driver.
  *
  * Must be a DTO class: the interface-style projection requests all fields from

@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.commons;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -14,7 +15,7 @@ import javax.persistence.Table;
 /**
  * <a href="https://www.mediawiki.org/wiki/Manual:Filearchive_table">Mediawiki
  * File Archive table</a>
- * 
+ *
  * <pre>
  * +----------------------+-------------------------------------------------------------------------------------------------------------+------+-----+----------------+----------------+
  * | Field                | Type                                                                                                        | Null | Key | Default        | Extra          |
@@ -89,8 +90,8 @@ public class CommonsFileArchive {
     @Column(name = "fa_bits", nullable = true, length = 11)
     private int bits;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "fa_media_type", nullable = true)
+    @Convert(converter = CommonsMediaTypeConverter.class)
     private CommonsMediaType mediaType;
 
     @Enumerated(EnumType.STRING)

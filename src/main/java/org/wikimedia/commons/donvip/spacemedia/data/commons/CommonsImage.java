@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -52,7 +53,7 @@ public class CommonsImage {
     @Column(name = "img_bits", nullable = false, length = 3)
     private int bits;
     @Column(name = "img_media_type", nullable = true)
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = CommonsMediaTypeConverter.class)
     private CommonsMediaType mediaType;
     @Column(name = "img_major_mime", nullable = false)
     @Enumerated(EnumType.STRING)
