@@ -52,17 +52,17 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     @Override
     @Cacheable("nasaCountMissing")
-    @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
     long countMissingInCommons();
 
     @Cacheable("nasaCountMissingByCenter")
-    @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames) and m.center = ?1")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.center = ?1")
     long countMissingInCommonsByCenter(String center);
 
-    @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames) and m.mediaType = ?1 and m.center = ?2")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.mediaType = ?1 and m.center = ?2")
     long countMissingInCommonsByTypeAndCenter(NasaMediaType type, String center);
 
-    @Query("select count(*) from #{#entityName} m where m.mediaType = ?1 and not exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.commonsFileNames)")
     long countMissingInCommons(NasaMediaType type);
 
     @Override
@@ -118,13 +118,13 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     List<T> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
     Page<T> findMissingInCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames) and m.center = ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.center = ?1")
     List<T> findMissingInCommonsByCenter(String center);
 
-    @Query("select m from #{#entityName} m where m.mediaType = ?1 and not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.commonsFileNames)")
     Page<T> findMissingInCommonsByType(NasaMediaType type, Pageable page);
 
     @Override
