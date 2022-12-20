@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -59,6 +60,8 @@ public class NasaService
         extends AbstractAgencyService<NasaMedia, String, ZonedDateTime, NasaMedia, String, ZonedDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaService.class);
+
+    static final Pattern ISS_PATTERN = Pattern.compile("iss0{1,2}(\\d{1,2})e\\d{6}");
 
     /**
      * Minimal delay between successive API requests, in seconds.
@@ -443,6 +446,16 @@ public class NasaService
     @Override
     protected String getSource(NasaMedia media) throws MalformedURLException {
         return "{{NASA-image|id=" + media.getId() + "|center=" + media.getCenter() + "}}";
+    }
+
+    @Override
+    public Set<String> findCategories(NasaMedia media, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, includeHidden);
+        Matcher issMatcher = ISS_PATTERN.matcher(media.getId());
+        if (issMatcher.matches()) {
+            result.add("ISS Expedition " + issMatcher.group(1));
+        }
+        return result;
     }
 
     @Override

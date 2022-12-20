@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
@@ -98,6 +100,13 @@ class NasaServiceTest extends AbstractAgencyServiceTest {
     void testKeywordsNoSplitNumbers() throws Exception {
         doTestKeywords("Hubble views a spectacular supernova with interstellar material over 160,000 light-years away",
                 Arrays.asList("Hubble views a spectacular supernova with interstellar material over 160,000 light-years away"));
+    }
+
+    @Test
+    void testIssPattern() {
+        Matcher m = NasaService.ISS_PATTERN.matcher("iss068e029662");
+        assertTrue(m.matches());
+        assertEquals("68", m.group(1));
     }
 
     private static void doTestKeywords(String string, List<String> asList) {
