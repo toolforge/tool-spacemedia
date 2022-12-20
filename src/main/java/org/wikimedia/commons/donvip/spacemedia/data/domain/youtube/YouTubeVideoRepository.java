@@ -24,6 +24,12 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
 
     }
 
+    @Override
+    @CacheEvictYouTubeAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

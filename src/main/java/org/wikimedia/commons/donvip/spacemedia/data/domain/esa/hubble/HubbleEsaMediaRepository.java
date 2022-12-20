@@ -19,6 +19,12 @@ public interface HubbleEsaMediaRepository extends CommonEsoMediaRepository<Hubbl
 
     }
 
+    @Override
+    @CacheEvictHubEsaAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

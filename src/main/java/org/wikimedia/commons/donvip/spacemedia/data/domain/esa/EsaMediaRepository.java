@@ -24,6 +24,12 @@ public interface EsaMediaRepository extends FullResMediaRepository<EsaMedia, Int
 
     }
 
+    @Override
+    @CacheEvictEsaAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

@@ -18,6 +18,8 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
+    void evictCaches();
+
     long countAllMedia();
 
     long countIgnored();

@@ -22,6 +22,12 @@ public interface NasaPhotojournalMediaRepository
 
     }
 
+    @Override
+    @CacheEvictNasaPhotojournalAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

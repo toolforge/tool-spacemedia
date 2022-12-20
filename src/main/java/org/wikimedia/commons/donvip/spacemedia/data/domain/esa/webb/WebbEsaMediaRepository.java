@@ -15,7 +15,13 @@ public interface WebbEsaMediaRepository extends CommonEsoMediaRepository<WebbEsa
     @CacheEvict(allEntries = true, cacheNames = {
             "webbEsaCount", "webbEsaCountIgnored", "webbEsaCountMissing", "webbEsaCountMissingImages",
             "webbEsaCountMissingVideos", "webbEsaCountUploaded", "webbEsaFindByPhashNotNull" })
-    @interface CacheEvictHubEsaAll {
+    @interface CacheEvictWebbEsaAll {
+
+    }
+
+    @Override
+    @CacheEvictWebbEsaAll
+    default void evictCaches() {
 
     }
 
@@ -54,28 +60,28 @@ public interface WebbEsaMediaRepository extends CommonEsoMediaRepository<WebbEsa
     // SAVE
 
     @Override
-    @CacheEvictHubEsaAll
+    @CacheEvictWebbEsaAll
     <S extends WebbEsaMedia> S save(S entity);
 
     @Override
-    @CacheEvictHubEsaAll
+    @CacheEvictWebbEsaAll
     <S extends WebbEsaMedia> Iterable<S> saveAll(Iterable<S> entities);
 
     // DELETE
 
     @Override
-    @CacheEvictHubEsaAll
+    @CacheEvictWebbEsaAll
     void deleteById(String id);
 
     @Override
-    @CacheEvictHubEsaAll
+    @CacheEvictWebbEsaAll
     void delete(WebbEsaMedia entity);
 
     @Override
-    @CacheEvictHubEsaAll
+    @CacheEvictWebbEsaAll
     void deleteAll(Iterable<? extends WebbEsaMedia> entities);
 
     @Override
-    @CacheEvictHubEsaAll
+    @CacheEvictWebbEsaAll
     void deleteAll();
 }

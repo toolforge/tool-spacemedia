@@ -22,6 +22,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
         extends PagingAndSortingRepository<T, ID> {
 
+    void evictCaches();
+
     /**
      * Count files matching the given perceptual hash.
      *

@@ -29,6 +29,12 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
 
     }
 
+    @Override
+    @CacheEvictFlickrAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

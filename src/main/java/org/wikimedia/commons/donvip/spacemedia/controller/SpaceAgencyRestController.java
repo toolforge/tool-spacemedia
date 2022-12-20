@@ -168,6 +168,11 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
         return service.getWikiCode(sha1);
     }
 
+    @GetMapping("/evictcaches")
+    public final void evictCaches() {
+        service.evictCaches();
+    }
+
     /**
      * STScI ids contain slashes so we cannot use {@link RequestParam} for ids.
      *

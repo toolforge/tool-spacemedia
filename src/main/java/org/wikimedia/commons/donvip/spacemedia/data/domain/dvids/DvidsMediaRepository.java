@@ -28,6 +28,12 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
 
     }
 
+    @Override
+    @CacheEvictDvidsAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

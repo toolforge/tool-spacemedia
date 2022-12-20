@@ -23,6 +23,12 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
 
     }
 
+    @Override
+    @CacheEvictNasaSirsAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

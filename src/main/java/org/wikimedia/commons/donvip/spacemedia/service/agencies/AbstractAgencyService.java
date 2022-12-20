@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.client.RestClientException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.DuplicateMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -153,6 +154,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         if (!problematicCategories.isEmpty()) {
             LOGGER.warn("problematicCategories : {}", problematicCategories);
         }
+    }
+
+    @Override
+    public void evictCaches() {
+        repository.evictCaches();
     }
 
     @Override
@@ -394,6 +400,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         if (executionMode == ExecutionMode.REMOTE
                 && remoteService.getMedia(getId(), media.getId().toString(), media.getClass()) == null) {
             remoteService.saveMedia(getId(), media);
+        } else if (executionMode == ExecutionMode.LOCAL) {
+            try {
+                remoteService.evictCaches(getId());
+            } catch (RestClientException e) {
+                LOGGER.warn("{}", e.getMessage(), e);
+            }
         }
     }
 

@@ -26,6 +26,12 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     }
 
+    @Override
+    @CacheEvictNasaAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

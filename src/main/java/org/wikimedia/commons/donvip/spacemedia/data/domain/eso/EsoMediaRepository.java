@@ -18,6 +18,12 @@ public interface EsoMediaRepository extends CommonEsoMediaRepository<EsoMedia> {
 
     }
 
+    @Override
+    @CacheEvictEsoAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

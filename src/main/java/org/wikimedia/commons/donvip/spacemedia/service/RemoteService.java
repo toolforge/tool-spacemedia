@@ -26,7 +26,6 @@ public class RemoteService {
     @Autowired
     private RestTemplate restTemplate;
 
-
     public String getHashLastTimestamp() {
         return restTemplate.getForObject(remoteApplication + "/hashLastTimestamp", String.class);
     }
@@ -52,16 +51,23 @@ public class RemoteService {
 
     public void saveMedia(String agencyId, Media<?, ?> media) {
         restTemplate.put(
-                String.join("/", remoteApplication.toString(), agencyId, "rest/media", media.getId().toString()),
-                media);
+                String.join("/", restAgencyEndpoint(agencyId), "media", media.getId().toString()), media);
     }
 
     public <T extends Media<?, ?>> T getMedia(String agencyId, String mediaId, Class<T> mediaClass) {
         try {
             return restTemplate.getForObject(
-                    String.join("/", remoteApplication.toString(), agencyId, "rest/media", mediaId), mediaClass);
+                    String.join("/", restAgencyEndpoint(agencyId), "media", mediaId), mediaClass);
         } catch (NotFound e) {
             return null;
         }
+    }
+
+    public void evictCaches(String agencyId) {
+        restTemplate.getForObject(restAgencyEndpoint(agencyId) + "/evictcaches", String.class);
+    }
+
+    private String restAgencyEndpoint(String agencyId) {
+        return String.join("/", remoteApplication.toString(), agencyId, "rest");
     }
 }

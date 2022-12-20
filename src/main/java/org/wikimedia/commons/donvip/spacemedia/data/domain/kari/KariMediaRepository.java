@@ -23,6 +23,12 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
 
     }
 
+    @Override
+    @CacheEvictKariAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

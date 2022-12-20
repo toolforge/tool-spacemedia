@@ -19,6 +19,12 @@ public interface IauMediaRepository extends CommonEsoMediaRepository<IauMedia> {
 
     }
 
+    @Override
+    @CacheEvictIauAll
+    default void evictCaches() {
+
+    }
+
     // COUNT
 
     @Override

@@ -21,7 +21,13 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
             "stsciCount", "stsciCountIgnored", "stsciCountMissing", "stsciCountMissingImages",
             "stsciCountMissingImagesByMission", "stsciCountMissingVideos", "stsciCountMissingVideosByMission",
             "stsciCountUploaded", "stsciFindByPhashNotNull" })
-    @interface CacheEvictHubNasaAll {
+    @interface CacheEvictStsciAll {
+
+    }
+
+    @Override
+    @CacheEvictStsciAll
+    default void evictCaches() {
 
     }
 
@@ -144,28 +150,28 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
     // SAVE
 
     @Override
-    @CacheEvictHubNasaAll
+    @CacheEvictStsciAll
     <S extends StsciMedia> S save(S entity);
 
     @Override
-    @CacheEvictHubNasaAll
+    @CacheEvictStsciAll
     <S extends StsciMedia> Iterable<S> saveAll(Iterable<S> entities);
 
     // DELETE
 
     @Override
-    @CacheEvictHubNasaAll
+    @CacheEvictStsciAll
     void deleteById(String id);
 
     @Override
-    @CacheEvictHubNasaAll
+    @CacheEvictStsciAll
     void delete(StsciMedia entity);
 
     @Override
-    @CacheEvictHubNasaAll
+    @CacheEvictStsciAll
     void deleteAll(Iterable<? extends StsciMedia> entities);
 
     @Override
-    @CacheEvictHubNasaAll
+    @CacheEvictStsciAll
     void deleteAll();
 }
