@@ -42,7 +42,7 @@
   cpu: 1
   mem: 4Gi
   no-filelog: true
-  schedule: "45 3,23 * * *"
+  schedule: "45 3 * * *"
   emails: onfailure
 
 - name: hubble-esa
@@ -97,6 +97,15 @@
   mem: 4Gi
   no-filelog: true
   schedule: "45 9,19 * * *"
+  emails: onfailure
+
+- name: nasa-photojournal
+  image: tf-jdk17
+  command: ./run.sh custom nasa-photojournal
+  cpu: 1
+  mem: 4Gi
+  no-filelog: true
+  schedule: "45 23 * * *"
   emails: onfailure
 
 - name: nasa-sirs
