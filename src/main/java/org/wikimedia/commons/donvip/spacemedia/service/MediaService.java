@@ -110,11 +110,11 @@ public class MediaService {
 
     public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
             boolean forceUpdate) throws IOException {
-        return updateMedia(media, originalRepo, forceUpdate, null);
+        return updateMedia(media, originalRepo, forceUpdate, true, null);
     }
 
     public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
-            boolean forceUpdate, Path localPath) throws IOException {
+            boolean forceUpdate, boolean checkBlocklist, Path localPath) throws IOException {
         boolean result = false;
         if (cleanupDescription(media)) {
             result = true;
@@ -129,7 +129,7 @@ public class MediaService {
         if (originalRepo != null && findDuplicatesInRepository(media, originalRepo)) {
             result = true;
         }
-        if (!Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
+        if (checkBlocklist && !Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
             result = true;
         }
         return new MediaUpdateResult(result, ur.getException());

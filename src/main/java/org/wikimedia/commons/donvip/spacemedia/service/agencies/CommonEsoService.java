@@ -96,6 +96,11 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     }
 
     @Override
+    protected boolean checkBlocklist() {
+        return false;
+    }
+
+    @Override
     protected final String getMediaId(String id) {
         return id;
     }

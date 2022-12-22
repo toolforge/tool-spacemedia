@@ -738,7 +738,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
-        return mediaService.updateMedia(media, getOriginalRepository(), forceUpdate);
+        return mediaService.updateMedia(media, getOriginalRepository(), forceUpdate, checkBlocklist(), null);
+    }
+
+    protected boolean checkBlocklist() {
+        return true;
     }
 
     protected final boolean doCommonUpdate(T media) throws IOException {

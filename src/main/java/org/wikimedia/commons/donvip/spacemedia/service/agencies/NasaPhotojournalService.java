@@ -128,6 +128,11 @@ public class NasaPhotojournalService
     }
 
     @Override
+    protected boolean checkBlocklist() {
+        return false;
+    }
+
+    @Override
     public void updateMedia() throws IOException, UploadException {
         QueryResponse response = queryWithRetries(buildSolrQuery(0));
         if (response != null) {

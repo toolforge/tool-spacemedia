@@ -83,6 +83,11 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
     }
 
     @Override
+    protected boolean checkBlocklist() {
+        return false;
+    }
+
+    @Override
     public Set<String> findTemplates(KariMedia media) {
         Set<String> result = super.findTemplates(media);
         result.add("KOGL");

@@ -62,6 +62,11 @@ public abstract class AbstractStsciService
     }
 
     @Override
+    protected boolean checkBlocklist() {
+        return false;
+    }
+
+    @Override
     public void updateMedia() throws IOException {
         LocalDateTime start = startUpdateMedia();
         int count = 0;

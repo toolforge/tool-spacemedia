@@ -126,6 +126,11 @@ public class EsaService
         return Integer.parseUnsignedInt(id);
     }
 
+    @Override
+    protected boolean checkBlocklist() {
+        return false;
+    }
+
     private static Optional<URL> getImageUrl(String src, URL imageUrl) throws MalformedURLException {
         if (src.startsWith("http://") || src.startsWith("https://")) {
             return Optional.of(new URL(src.replace("esamultimeda.esa.int", "esamultimedia.esa.int")));
