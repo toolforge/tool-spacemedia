@@ -72,7 +72,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateR
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
-import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 
 /**
@@ -506,7 +506,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                     .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
             return sb.toString();
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 

@@ -12,7 +12,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 @Configuration
 @Import(SpacemediaCommonConfiguration.class)
 @ComponentScan(basePackages = { "org.wikimedia.commons.donvip.spacemedia.data",
-        "org.wikimedia.commons.donvip.spacemedia.service.commons" })
+        "org.wikimedia.commons.donvip.spacemedia.service.wikimedia" })
 public class SpacemediaUpdateJobConfiguration {
 
     @Bean

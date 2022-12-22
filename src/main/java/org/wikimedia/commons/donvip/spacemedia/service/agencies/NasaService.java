@@ -37,6 +37,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAssets;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAudio;
@@ -52,6 +53,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -99,6 +101,9 @@ public class NasaService
     private NasaMediaRepository<NasaMedia> mediaRepository;
 
     @Autowired
+    private WikidataService wikidata;
+
+    @Autowired
     private Environment env;
 
     private LocalDateTime lastRequest;
@@ -133,8 +138,9 @@ public class NasaService
     }
 
     private static Optional<URL> findSpecificMedia(RestTemplate rest, URL href, String text) throws URISyntaxException {
-        return rest.getForObject(Utils.urlToUri(href), NasaAssets.class).stream()
-                .filter(u -> u.toExternalForm().contains(text)).findFirst();
+        NasaAssets assets = rest.getForObject(Utils.urlToUri(href), NasaAssets.class);
+        return assets != null ? assets.stream().filter(u -> u.toExternalForm().contains(text)).findFirst()
+                : Optional.empty();
     }
 
     static Optional<URL> findOriginalMedia(RestTemplate rest, URL href) throws URISyntaxException {
@@ -295,22 +301,22 @@ public class NasaService
                         return next.get().getHref().toExternalForm().replace("http://", "https://");
                     }
                 }
-            } catch (RestClientException | IOException e) {
+            } catch (RestClientException e) {
                 LOGGER.error("Unable to process search results for " + searchUrl, e);
             }
         }
         return null;
     }
 
-    private <T extends NasaMedia> int doUpdateMedia(NasaMediaType mediaType) {
+    private int doUpdateMedia(NasaMediaType mediaType) {
         return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear(), null);
     }
 
-    private <T extends NasaMedia> int doUpdateMedia(NasaMediaType mediaType, int year, Set<String> centers) {
+    private int doUpdateMedia(NasaMediaType mediaType, int year, Set<String> centers) {
         return doUpdateMedia(mediaType, year, year, centers);
     }
 
-    private <T extends NasaMedia> int doUpdateMedia(NasaMediaType mediaType, int startYear, int endYear,
+    private int doUpdateMedia(NasaMediaType mediaType, int startYear, int endYear,
             Set<String> centers) {
         LocalDateTime start = LocalDateTime.now();
         logStartUpdate(mediaType, startYear, endYear, centers);
@@ -453,9 +459,29 @@ public class NasaService
         Set<String> result = super.findCategories(media, includeHidden);
         Matcher issMatcher = ISS_PATTERN.matcher(media.getId());
         if (issMatcher.matches()) {
-            result.add("ISS Expedition " + issMatcher.group(1));
+            String expedition = "Expedition " + issMatcher.group(1);
+            result.add("ISS " + expedition);
+            findIssExpeditionCrew(expedition).ifPresent(crew ->
+                wikidata.mapCommonsCategoriesByName(crew).forEach((name, cat) -> {
+                    if (media.getDescription().contains(name)) {
+                        result.add(cat);
+                    }
+            }));
         }
         return result;
+    }
+
+    private Optional<StatementGroup> findIssExpeditionCrew(String expedition) {
+        Optional<StatementGroup> opt = Optional.empty();
+        try {
+            opt = wikidata.findCommonsStatementGroup("Category:ISS " + expedition, "P1029");
+            if (opt.isEmpty()) {
+                opt = wikidata.findWikipediaStatementGroup(expedition, "P1029");
+            }
+        } catch (IOException e) {
+            LOGGER.error("Wikidata error", e);
+        }
+        return opt;
     }
 
     @Override
@@ -469,13 +495,14 @@ public class NasaService
         int count = 0;
     }
 
-    private void ensureApiLimit() throws IOException {
+    private void ensureApiLimit() {
         LocalDateTime fourSecondsAgo = now().minusSeconds(DELAY);
         if (lastRequest != null && lastRequest.isAfter(fourSecondsAgo)) {
             try {
                 Thread.sleep(DELAY - SECONDS.between(now(), lastRequest.plusSeconds(DELAY)));
             } catch (InterruptedException e) {
-                throw new IOException(e);
+                LOGGER.error(e.getMessage(), e);
+                Thread.currentThread().interrupt();
             }
         }
         lastRequest = now();

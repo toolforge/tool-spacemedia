@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service.commons;
+package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 public class VeApiError {
     private String code;

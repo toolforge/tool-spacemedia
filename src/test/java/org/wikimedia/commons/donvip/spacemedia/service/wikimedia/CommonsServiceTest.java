@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service.commons;
+package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -27,7 +27,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepositor
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRestrictionsRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsServiceTest.TestConfig;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsServiceTest.TestConfig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

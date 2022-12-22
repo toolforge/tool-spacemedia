@@ -131,6 +131,11 @@
 			<artifactId>solr-solrj</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.wikidata.wdtk</groupId>
+			<artifactId>wdtk-wikibaseapi</artifactId>
+			<version>0.14.4</version>
+		</dependency>
+		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-csv</artifactId>
 		</dependency>

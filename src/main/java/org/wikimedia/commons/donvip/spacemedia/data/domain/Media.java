@@ -26,7 +26,7 @@ import javax.persistence.PostLoad;
 import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

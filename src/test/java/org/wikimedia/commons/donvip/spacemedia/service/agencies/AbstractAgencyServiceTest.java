@@ -15,7 +15,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
-import org.wikimedia.commons.donvip.spacemedia.service.commons.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.github.dozermapper.core.Mapper;
 

@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service.commons;
+package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
