@@ -1,17 +1,27 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.lang.Double.parseDouble;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -27,10 +37,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Service
 public class NasaPhotojournalService
@@ -39,8 +52,19 @@ public class NasaPhotojournalService
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaPhotojournalService.class);
 
-    private static final Pattern ANIMATION_PATTERN = Pattern.compile(
+    static final Pattern ANIMATION_PATTERN = Pattern.compile(
             ".*<a href=\"(http[^\"]+)\" target=\"new\"><b>Click here for animation</b></a>.*");
+
+    static final Pattern QTVR_PATTERN = Pattern.compile(
+            ".*<a href=\"(https?://.*\\.mov)\">QuickTime Virtual Reality product</a>.*");
+
+    static final Pattern ACQ_PATTERN = Pattern.compile(
+            ".*acquired ((?:January|February|March|April|May|June|July|August|September|October|November|December) (?:\\d{1,2}), (?:[1-2]\\d{3})).*");
+
+    static final Pattern LOCATION_PATTERN = Pattern.compile(
+            ".*located at (\\d+\\.?\\d*) degrees (north|south), (\\d+\\.?\\d*) degrees (west|east).*");
+
+    private static final DateTimeFormatter ACQ_DATE_FORMAT = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.US);
 
     @Value("${nasa.photojournal.solr.retries}")
     private int solrRetries;
@@ -51,51 +75,25 @@ public class NasaPhotojournalService
     @Value("${nasa.photojournal.solr.host}")
     private String host;
 
+    @Value("${nasa.photojournal.geohack.globes}")
+    private Set<String> globes;
+
+    private Map<String, String> nasaMissions;
+
     @Autowired
     public NasaPhotojournalService(NasaPhotojournalMediaRepository repository) {
         super(repository, "nasa.photojournal");
     }
 
+    @Override
+    @PostConstruct
+    void init() throws IOException {
+        super.init();
+        nasaMissions = loadCsvMapping("nasa.missions.csv");
+    }
+
     private SolrQuery buildSolrQuery(int start) {
         SolrQuery query = new SolrQuery("*:*");
-        // Fields
-        query.addField("alt-tag"); // Ex: NASA's Perseverance Mars rover used [...] on June 6, 2022.
-        query.addField("big-flag"); // Ex: YES
-        query.addField("browse-url"); // Ex: https://photojournal.jpl.nasa.gov/browse/PIA25672.jpg
-        query.addField("catalog-url"); // Ex: https://photojournal.jpl.nasa.gov/catalog/PIA25672
-        query.addField("category"); // Ex: Mars
-        query.addField("credit"); // Ex: NASA/JPL-Caltech/ASU/MSSS
-        query.addField("data-type"); // Ex: IMAGE
-        query.addField("full-res-jpeg"); // Ex: https://photojournal.jpl.nasa.gov/jpeg/PIA25672.jpg
-        query.addField("full-res-tiff"); // Ex: https://photojournal.jpl.nasa.gov/tiff/PIA25672.tif
-        query.addField("id"); // Ex: PIA25672
-        query.addField("image-title"); // Ex: Perseverance's Mastcam-Z Views Hogwallow Flats
-        query.addField("image-type"); // Ex: image
-        query.addField("instrument"); // Ex: Mastcam-Z
-        query.addField("instrument-host"); // Ex: Perseverance
-        query.addField("investigation"); // Ex: Mars 2020 Rover
-        query.addField("keywords"); // Ex: animation
-        query.addField("mission"); // Ex: Mars 2020 Rover
-        //query.addField("mobile-browse"); // Ex: https://photojournal.jpl.nasa.gov/ipbrowse/PIA25672_ip.jpg
-        //query.addField("mobile-thumbnail"); // Ex: https://photojournal.jpl.nasa.gov/ipthumbs/PIA25672_ipthumb.jpg
-        query.addField("modification-time"); // Ex: 2022-12-16T00:40:37.000000Z
-        query.addField("nasa-id"); // Ex: JPL-20221215-PIA25672-M2020
-        query.addField("original-caption"); // Ex: <p><center>...</p>
-        // query.addField("pinumber"); // Ex: PIA25672
-        query.addField("producer"); // Ex: Malin Space Science Systems
-        query.addField("proprietary"); // Ex: NO
-        query.addField("publication-date"); // Ex: 2022-12-15T22:43:37Z
-        query.addField("ready-flag"); // Ex: YES
-        // query.addField("record-creation-time"); // Ex: 2022-12-16T00:47:52.000000Z
-        // query.addField("record-modification-time"); // Ex: 2022-12-16T02:00:21Z
-        query.addField("release-flag"); // Ex: YES
-        query.addField("spacecraft"); // Ex: Perseverance
-        query.addField("target"); // Ex: Mars
-        query.addField("x-dim"); // Ex: 40562
-        query.addField("y-dim"); // Ex: 5548
-        query.addField("z-dim"); // Ex: 3
-
-        // Sorting, paging
         query.setSort("publication-date", ORDER.desc);
         query.setRows(solrPage);
         query.setStart(start);
@@ -195,8 +193,10 @@ public class NasaPhotojournalService
         Collection<Object> keywords = doc.getFieldValues("keywords");
         if (keywords != null) {
             media.setKeywords(keywords.stream().map(String.class::cast).collect(toSet()));
-            if (media.getKeywords().contains("animation")) {
-                Matcher m = ANIMATION_PATTERN.matcher(caption);
+            boolean isAnimation = media.getKeywords().contains("animation");
+            boolean isQtvr = media.getKeywords().contains("qtvr");
+            if (isAnimation || isQtvr) {
+                Matcher m = (isAnimation ? ANIMATION_PATTERN : QTVR_PATTERN).matcher(caption);
                 if (m.matches()) {
                     media.getExtraMetadata().setAssetUrl(new URL(m.group(1)));
                 }
@@ -224,6 +224,83 @@ public class NasaPhotojournalService
     @Override
     public URL getSourceUrl(NasaPhotojournalMedia media) throws MalformedURLException {
         return new URL("https://photojournal.jpl.nasa.gov/catalog/" + media.getId());
+    }
+
+    @Override
+    protected final String getWikiFileDesc(NasaPhotojournalMedia media, Metadata metadata)
+            throws MalformedURLException {
+        StringBuilder sb = new StringBuilder("{{NASA Photojournal\n| catalog = ").append(media.getId())
+                .append("\n| image= ").append(media.isImage()).append("\n| video= ").append(media.isVideo())
+                .append("\n| animation= ").append("gif".equals(metadata.getFileExtension()))
+                .append("\n| mission= ").append(media.getMission())
+                .append("\n| instrument= ").append(media.getInstrument()).append("\n| caption = ").append("{{")
+                .append(getLanguage(media)).append("|1=").append(CommonsService.formatWikiCode(getDescription(media)))
+                .append("}}\n| credit= ").append(media.getCredit());
+        getUploadDate(media).ifPresent(s -> sb.append("\n| addition_date = ").append(s));
+        getCreationDate(media).ifPresent(s -> sb.append("\n| creation_date = ").append(s));
+        if (globes.contains(media.getTarget())) {
+            sb.append("\n| globe= ").append(media.getTarget());
+        }
+        getLocation(media)
+                .ifPresent(p -> sb.append("\n| lat= ").append(p.getX()).append("\n| long= ").append(p.getY()));
+        getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| gallery = ").append(s));
+        if (List.of("gif", "mp4").contains(metadata.getFileExtension())) {
+            sb.append("\n| link= ").append(metadata.getAssetUrl());
+        }
+        sb.append("\n}}");
+        return sb.toString();
+    }
+
+    protected final Optional<Point> getLocation(NasaPhotojournalMedia media) {
+        Matcher m = LOCATION_PATTERN.matcher(media.getDescription());
+        return m.matches()
+                ? Optional.of(new Point(
+                        parseDouble(m.group(1)) * ("north".equalsIgnoreCase(m.group(2)) ? 1 : -1),
+                        parseDouble(m.group(3)) * ("east".equalsIgnoreCase(m.group(4)) ? 1 : -1)))
+                : Optional.empty();
+    }
+
+    @Override
+    protected final Optional<Temporal> getCreationDate(NasaPhotojournalMedia media) {
+        Matcher m = ACQ_PATTERN.matcher(media.getDescription());
+        return m.matches() ? Optional.of(ACQ_DATE_FORMAT.parse(m.group(1), LocalDate::from)) : Optional.empty();
+    }
+
+    @Override
+    protected final Optional<Temporal> getUploadDate(NasaPhotojournalMedia media) {
+        return Optional.of(media.getDate());
+    }
+
+    @Override
+    public Set<String> findCategories(NasaPhotojournalMedia media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        if (media.getKeywords().contains("anaglyph")) {
+            result.add("Moon".equalsIgnoreCase(media.getTarget()) ? "Anaglyphs of the Moon" : "Anaglyphs");
+        }
+        if (media.getKeywords().contains("animation") && "gif".equals(metadata.getFileExtension())) {
+            result.add("Mars".equalsIgnoreCase(media.getTarget()) ? "Animated GIF of Mars" : "Animated GIF files");
+        }
+        if (media.getKeywords().contains("qtvr") && "mov".equals(metadata.getFileExtension())) {
+            // Not sure what to do about these files
+        }
+        if (media.getKeywords().contains("artist")) {
+            result.add("Art from NASA");
+        }
+        if (media.getMission() != null) {
+            String cat = nasaMissions.get(media.getMission().trim());
+            if (cat != null) {
+                result.add(cat);
+            } else {
+                LOGGER.error("No category found for NASA mission {}", media.getMission());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Set<String> findTemplates(NasaPhotojournalMedia media) {
+        // TODO Auto-generated method stub
+        return super.findTemplates(media);
     }
 
     @Override

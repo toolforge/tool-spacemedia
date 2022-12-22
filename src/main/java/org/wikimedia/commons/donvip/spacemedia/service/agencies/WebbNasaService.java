@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
 
@@ -47,8 +48,8 @@ public class WebbNasaService extends AbstractStsciService {
     }
 
     @Override
-    public Set<String> findCategories(StsciMedia media, boolean includeHidden) {
-        Set<String> result = super.findCategories(media, includeHidden);
+    public Set<String> findCategories(StsciMedia media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (media.getKeywords() != null) {
             result.addAll(media.getKeywords().stream().map(webbCategories::get).filter(StringUtils::isNotBlank)
                     .collect(toSet()));

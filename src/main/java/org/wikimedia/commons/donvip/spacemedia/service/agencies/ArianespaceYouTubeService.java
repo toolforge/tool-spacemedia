@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 
@@ -67,8 +68,8 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
     }
 
     @Override
-    public Set<String> findCategories(YouTubeVideo video, boolean includeHidden) {
-        Set<String> result = super.findCategories(video, includeHidden);
+    public Set<String> findCategories(YouTubeVideo video, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(video, metadata, includeHidden);
         if (includeHidden) {
             if (video.getTitle().contains("VA")) {
                 result.add("Videos of Ariane 5 launches by Arianespace");

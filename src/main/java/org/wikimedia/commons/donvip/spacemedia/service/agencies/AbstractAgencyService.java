@@ -502,7 +502,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                     .append(getWikiFileDesc(media, metadata))
                     .append("\n=={{int:license-header}}==\n");
             findTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
-            commonsService.cleanupCategories(findCategories(media, true))
+            commonsService.cleanupCategories(findCategories(media, metadata, true))
                     .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
             return sb.toString();
         } catch (MalformedURLException e) {
@@ -526,15 +526,18 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final Optional<String> getWikiDate(T media) {
-        Optional<Temporal> creationDate = getCreationDate(media);
-        if (creationDate.isPresent()) {
-            Temporal d = creationDate.get();
-            return Optional.of(String.format("{{Taken %s|%s}}",
-                    d instanceof LocalDate || d instanceof LocalDateTime || d instanceof ZonedDateTime || d instanceof Instant ? "on" : "in",
-                            toIso8601(d)));
-        } else {
-            return getUploadDate(media).map(d -> String.format("{{Upload date|%s}}", toIso8601(d)));
-        }
+        return getCreationWikiDate(media).or(() -> getUploadWikiDate(media));
+    }
+
+    protected final Optional<String> getCreationWikiDate(T media) {
+        return getCreationDate(media).map(d -> String.format(
+                "{{Taken %s|%s}}", d instanceof LocalDate || d instanceof LocalDateTime || d instanceof ZonedDateTime
+                        || d instanceof Instant ? "on" : "in",
+                toIso8601(d)));
+    }
+
+    protected final Optional<String> getUploadWikiDate(T media) {
+        return getUploadDate(media).map(d -> String.format("{{Upload date|%s}}", toIso8601(d)));
     }
 
     protected final String toIso8601(Temporal t) {
@@ -630,10 +633,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
      * Returns the list of Wikimedia Commons categories to apply to the given media.
      *
      * @param media the media for which category names are wanted
+     * @param metadata metadata of media being uploaded
      * @param includeHidden {@code true} if hidden categories are wanted
      * @return the list of Wikimedia Commons categories to apply to {@code media}
      */
-    public Set<String> findCategories(T media, boolean includeHidden) {
+    public Set<String> findCategories(T media, Metadata metadata, boolean includeHidden) {
         Set<String> result = new HashSet<>();
         if (includeHidden) {
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());

@@ -515,8 +515,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
-    public Set<String> findCategories(DvidsMedia media, boolean includeHidden) {
-        Set<String> result = super.findCategories(media, includeHidden);
+    public Set<String> findCategories(DvidsMedia media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (isNotEmpty(media.getKeywords())) {
             result.addAll(media.getKeywords().stream().map(KEYWORDS_CATS::get).filter(StringUtils::isNotBlank)
                     .flatMap(s -> Arrays.stream(s.split(";"))).collect(toSet()));

@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
@@ -215,8 +216,8 @@ public class NasaSirsService
     }
 
     @Override
-    public Set<String> findCategories(NasaSirsImage media, boolean includeHidden) {
-        Set<String> result = super.findCategories(media, includeHidden);
+    public Set<String> findCategories(NasaSirsImage media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
             result.add("Stennis Space Center in " + media.getYear());
         }

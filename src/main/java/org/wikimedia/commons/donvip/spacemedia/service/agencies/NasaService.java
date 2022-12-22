@@ -38,6 +38,7 @@ import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAssets;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAudio;
@@ -455,14 +456,14 @@ public class NasaService
     }
 
     @Override
-    public Set<String> findCategories(NasaMedia media, boolean includeHidden) {
-        Set<String> result = super.findCategories(media, includeHidden);
+    public Set<String> findCategories(NasaMedia media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
         Matcher issMatcher = ISS_PATTERN.matcher(media.getId());
         if (issMatcher.matches()) {
             String expedition = "Expedition " + issMatcher.group(1);
             result.add("ISS " + expedition);
             findIssExpeditionCrew(expedition).ifPresent(crew ->
-                wikidata.mapCommonsCategoriesByName(crew).forEach((name, cat) -> {
+                wikidata.mapCommonsCategoriesByFamilyName(crew).forEach((name, cat) -> {
                     if (media.getDescription().contains(name)) {
                         result.add(cat);
                     }

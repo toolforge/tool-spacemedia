@@ -3,6 +3,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
@@ -42,5 +44,20 @@ class WikidataServiceTest {
     @Test
     void testFindCommonsCategory() throws Exception {
         assertEquals("Anna Kikina", service.findCommonsCategory((ItemDocument) fetcher.getEntityDocument("Q18352451")));
+    }
+
+    @Test
+    void testMapCommonsCategoriesByFamilyName() throws IOException {
+        assertEquals(
+                Map.ofEntries(e("Mann", "Nicole Mann"), e("Cassada", "Josh A. Cassada"), e("Hines", "Robert Hines"),
+                        e("Wakata", "Koichi Wakata"), e("Watkins", "Jessica Watkins"), e("Petelin", "Dmitri Petelin"),
+                        e("Prokopyev", "Sergey Prokopyev (cosmonaut)"), e("Cristoforetti", "Samantha Cristoforetti"),
+                        e("Lindgren", "Kjell Lindgren"), e("Kikina", "Anna Kikina"), e("Rubio", "Francisco Rubio")),
+                service.mapCommonsCategoriesByFamilyName(
+                        service.findCommonsStatementGroup("Category:ISS Expedition 68", "P1029").get()));
+    }
+
+    private static final SimpleEntry<String, String> e(String k, String v) {
+        return new SimpleEntry<>(k, v);
     }
 }

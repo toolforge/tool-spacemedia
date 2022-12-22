@@ -461,8 +461,8 @@ public class EsaService
     }
 
     @Override
-    public Set<String> findCategories(EsaMedia media, boolean includeHidden) {
-        Set<String> result = super.findCategories(media, includeHidden);
+    public Set<String> findCategories(EsaMedia media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
             result.add("ESA images (review needed)");
         }

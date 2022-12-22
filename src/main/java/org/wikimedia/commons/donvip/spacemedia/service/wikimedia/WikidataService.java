@@ -64,10 +64,11 @@ public class WikidataService {
         }
     }
 
-    public Map<String, String> mapCommonsCategoriesByName(Collection<Statement> statements) {
-        return statements.stream().map(s -> {
+    public Map<String, String> mapCommonsCategoriesByFamilyName(Collection<Statement> statements) {
+        return statements.parallelStream().map(s -> {
             try {
-                if (fetcher.getEntityDocument(s.getSubject().getId()) instanceof ItemDocument doc) {
+                if (s.getValue() instanceof EntityIdValue val
+                        && fetcher.getEntityDocument(val.getId()) instanceof ItemDocument doc) {
                     return doc;
                 }
             } catch (MediaWikiApiErrorException | IOException e) {

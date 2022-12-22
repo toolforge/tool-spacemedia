@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeApiService;
@@ -258,8 +259,8 @@ public abstract class AbstractAgencyYouTubeService
     protected abstract List<String> getAgencyCategories();
 
     @Override
-    public Set<String> findCategories(YouTubeVideo media, boolean includeHidden) {
-        Set<String> result = super.findCategories(media, includeHidden);
+    public Set<String> findCategories(YouTubeVideo media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
             // To import by hand from personal account
             result.remove("Spacemedia files uploaded by " + commonsService.getAccount());

@@ -510,8 +510,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     }
 
     @Override
-    public Set<String> findCategories(T media, boolean includeHidden) {
-        Set<String> result = super.findCategories(media, includeHidden);
+    public Set<String> findCategories(T media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (media.getCategories() != null) {
             result.addAll(media.getCategories().stream().map(esoCategories::get).filter(StringUtils::isNotBlank)
                     .collect(toSet()));
