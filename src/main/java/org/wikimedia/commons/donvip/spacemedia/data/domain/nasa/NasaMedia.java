@@ -152,4 +152,13 @@ public abstract class NasaMedia extends Media<String, ZonedDateTime> {
     public final boolean isVideo() {
         return mediaType == NasaMediaType.video;
     }
+
+    public NasaMedia copyDataFrom(NasaMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        setCenter(mediaFromApi.getCenter());
+        setDate(mediaFromApi.getDate());
+        setMediaType(mediaFromApi.getMediaType());
+        setKeywords(mediaFromApi.getKeywords());
+        return this;
+    }
 }

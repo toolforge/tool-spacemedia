@@ -12,10 +12,6 @@ public class NasaImage extends NasaMedia {
     @Column(length = 300)
     private String photographer;
 
-    public NasaImage() {
-        super();
-    }
-
     public String getPhotographer() {
         return photographer;
     }
@@ -32,6 +28,12 @@ public class NasaImage extends NasaMedia {
                 + (getCenter() != null ? "center=" + getCenter() + ", " : "")
                 + (getDate() != null ? "date=" + getDate() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() + ", " : "")
-                + (photographer != null ? "photographer=" + photographer : "") + "]";
+                + (photographer != null ? "photographer=" + photographer : "") + ']';
+    }
+
+    NasaImage copyDataFrom(NasaImage mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        setPhotographer(mediaFromApi.getPhotographer());
+        return this;
     }
 }

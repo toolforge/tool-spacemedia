@@ -42,6 +42,8 @@ import org.springframework.web.client.RestClientException;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResExtraMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResExtraMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
@@ -160,7 +162,9 @@ public class MediaService {
         // Find exact duplicates by SHA-1
         String sha1 = media.getMetadata().getSha1();
         if (sha1 != null && handleExactDuplicates(media,
-                repo instanceof FullResMediaRepository<?, ?, ?> frRepo
+                repo instanceof FullResExtraMediaRepository<?, ?, ?> exRepo
+                        ? exRepo.findByMetadata_Sha1OrFullResMetadata_Sha1OrExtraMetadata_Sha1(sha1)
+                        : repo instanceof FullResMediaRepository<?, ?, ?> frRepo
                         ? frRepo.findByMetadata_Sha1OrFullResMetadata_Sha1(sha1)
                         : repo.findByMetadata_Sha1(sha1))) {
             result = true;
@@ -168,7 +172,9 @@ public class MediaService {
         // Find exact duplicates by perceptual hash
         String phash = media.getMetadata().getPhash();
         if (phash != null && handleExactDuplicates(media,
-                repo instanceof FullResMediaRepository<?, ?, ?> frRepo
+                repo instanceof FullResExtraMediaRepository<?, ?, ?> exRepo
+                        ? exRepo.findByMetadata_PhashOrFullResMetadata_PhashOrExtraMetadata_Phash(phash)
+                        : repo instanceof FullResMediaRepository<?, ?, ?> frRepo
                         ? frRepo.findByMetadata_PhashOrFullResMetadata_Phash(phash)
                         : repo.findByMetadata_Phash(phash))) {
             result = true;
@@ -308,6 +314,11 @@ public class MediaService {
         // T230284 - Processing full-res images can lead to OOM errors
         if (updateFullResImages && media instanceof FullResMedia<?, ?> frMedia
                 && updateReadableStateAndHashes(frMedia, frMedia.getFullResMetadata(), localPath, forceUpdateOfHashes)
+                        .getResult()) {
+            result = true;
+        }
+        if (updateFullResImages && media instanceof FullResExtraMedia<?, ?> exMedia
+                && updateReadableStateAndHashes(exMedia, exMedia.getExtraMetadata(), localPath, forceUpdateOfHashes)
                         .getResult()) {
             result = true;
         }
@@ -495,6 +506,16 @@ public class MediaService {
                 }
             }
         }
+        if (media instanceof FullResExtraMedia<?, ?> exMedia) {
+            String extraSha1 = exMedia.getExtraMetadata().getSha1();
+            if (extraSha1 != null && isEmpty(exMedia.getExtraCommonsFileNames())) {
+                Set<String> files = commonsService.findFilesWithSha1(extraSha1);
+                if (!files.isEmpty()) {
+                    exMedia.setExtraCommonsFileNames(files);
+                    result = true;
+                }
+            }
+        }
         return result;
     }
 
@@ -530,6 +551,21 @@ public class MediaService {
                             .filter(f -> frExtensions.stream().anyMatch(f::endsWith)).collect(toSet());
                     if (!files.isEmpty()) {
                         frMedia.setFullResCommonsFileNames(files);
+                        result = true;
+                    }
+                }
+            }
+        }
+        if (media instanceof FullResExtraMedia<?, ?> exMedia) {
+            String extraPhash = exMedia.getExtraMetadata().getPhash();
+            if (extraPhash != null && isEmpty(exMedia.getExtraCommonsFileNames())) {
+                List<String> extraSha1s = hashRepository.findSha1ByPhash(extraPhash);
+                if (!extraSha1s.isEmpty()) {
+                    Set<String> exExtensions = exMedia.getExtraMetadata().getFileExtensions();
+                    Set<String> files = commonsService.findFilesWithSha1(extraSha1s).stream()
+                            .filter(f -> exExtensions.stream().anyMatch(f::endsWith)).collect(toSet());
+                    if (!files.isEmpty()) {
+                        exMedia.setExtraCommonsFileNames(files);
                         result = true;
                     }
                 }

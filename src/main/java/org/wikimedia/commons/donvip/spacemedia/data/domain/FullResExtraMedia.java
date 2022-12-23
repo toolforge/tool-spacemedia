@@ -101,4 +101,15 @@ public abstract class FullResExtraMedia<ID, D extends Temporal> extends FullResM
         Optional.ofNullable(getExtraCommonsFileNames()).ifPresent(result::addAll);
         return result;
     }
+
+    public FullResExtraMedia<ID, D> copyDataFrom(FullResExtraMedia<ID, D> mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        if (extraMetadata.getAssetUrl() == null) {
+            setExtraMetadata(mediaFromApi.getExtraMetadata());
+        }
+        if (extraCommonsFileNames.isEmpty()) {
+            setExtraCommonsFileNames(mediaFromApi.getExtraCommonsFileNames());
+        }
+        return this;
+    }
 }

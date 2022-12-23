@@ -462,10 +462,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final void doUpload(T media, Metadata metadata, Supplier<Set<String>> getter, Consumer<Set<String>> setter, boolean checkUnicity)
             throws IOException, UploadException {
-        if (metadata != null && metadata.getAssetUrl() != null && shouldUpload(media, getter.get())) {
+        if (metadata != null && metadata.getAssetUrl() != null && shouldUpload(media, metadata, getter.get())) {
             checkUploadPreconditions(media, metadata, getter.get(), checkUnicity);
             setter.accept(new HashSet<>(Set.of(
                     commonsService.upload(getWikiCode(media, metadata), media.getUploadTitle(), metadata.getAssetUrl(), metadata.getSha1()))));
+        } else {
+            LOGGER.info(
+                    "Upload not done for {} / {}. Upload mode: {}. Ignored: {}. Commons filenames: {}. Permitted file type: {}",
+                    media.getId(), metadata, getUploadMode(), media.isIgnored(), getter.get(),
+                    isPermittedFileType(metadata));
         }
     }
 
@@ -831,23 +836,20 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 || commonsService.isPermittedFileType(metadata.getAssetUrl().toExternalForm());
     }
 
-    protected boolean isPermittedFileType(T media) {
-        return isPermittedFileType(media.getMetadata());
-    }
-
-    protected final boolean shouldUpload(T media, Set<String> commonsFilenames) {
+    protected final boolean shouldUpload(T media, Metadata metadata, Set<String> commonsFilenames) {
         return (getUploadMode() == UploadMode.AUTO || getUploadMode() == UploadMode.MANUAL)
-                && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames) && isPermittedFileType(media);
+                && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames)
+                && isPermittedFileType(metadata);
     }
 
-    protected final boolean shouldUploadAuto(T media, Set<String> commonsFilenames) {
+    protected final boolean shouldUploadAuto(T media, Metadata metadata, Set<String> commonsFilenames) {
         return getUploadMode() == UploadMode.AUTO
                 && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames)
-                && isEmpty(media.getDuplicates()) && isPermittedFileType(media);
+                && isEmpty(media.getDuplicates()) && isPermittedFileType(metadata);
     }
 
     protected boolean shouldUploadAuto(T media) {
-        return shouldUploadAuto(media, media.getCommonsFileNames());
+        return shouldUploadAuto(media, media.getMetadata(), media.getCommonsFileNames());
     }
 
     protected static void addOtherField(StringBuilder sb, String name, Collection<?> values, Map<String, String> catMapping) {

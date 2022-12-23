@@ -647,7 +647,8 @@ public class CommonsService {
     }
 
     public boolean isPermittedFileType(String url) {
-        return permittedFileTypes.stream().anyMatch(type -> url.endsWith("." + type));
+        String lowerCaseUrl = url.toLowerCase(Locale.ENGLISH);
+        return permittedFileTypes.stream().anyMatch(type -> lowerCaseUrl.endsWith("." + type));
     }
 
     private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1,

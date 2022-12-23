@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -48,18 +49,18 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 @Service
 public class NasaPhotojournalService
         extends
-        AbstractFullResAgencyService<NasaPhotojournalMedia, String, ZonedDateTime, NasaPhotojournalMedia, String, ZonedDateTime> {
+        AbstractFullResExtraAgencyService<NasaPhotojournalMedia, String, ZonedDateTime, NasaPhotojournalMedia, String, ZonedDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaPhotojournalService.class);
 
     static final Pattern ANIMATION_PATTERN = Pattern.compile(
-            ".*<a href=\"(http[^\"]+)\" target=\"new\"><b>Click here for animation</b></a>.*");
+            ".*<a href=\"(https?://.+\\.(?:gif|mp4))\".*");
 
     static final Pattern QTVR_PATTERN = Pattern.compile(
-            ".*<a href=\"(https?://.*\\.mov)\">QuickTime Virtual Reality product</a>.*");
+            ".*<a href=\"(https?://.+\\.mov)\".*");
 
     static final Pattern ACQ_PATTERN = Pattern.compile(
-            ".*acquired ((?:January|February|March|April|May|June|July|August|September|October|November|December) (?:\\d{1,2}), (?:[1-2]\\d{3})).*");
+            ".*acquired ((?:January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, [1-2]\\d{3}).*");
 
     static final Pattern LOCATION_PATTERN = Pattern.compile(
             ".*located at (\\d+\\.?\\d*) degrees (north|south), (\\d+\\.?\\d*) degrees (west|east).*");
@@ -78,6 +79,7 @@ public class NasaPhotojournalService
     @Value("${nasa.photojournal.geohack.globes}")
     private Set<String> globes;
 
+    private Map<String, String> nasaKeywords;
     private Map<String, String> nasaMissions;
 
     @Autowired
@@ -89,6 +91,7 @@ public class NasaPhotojournalService
     @PostConstruct
     void init() throws IOException {
         super.init();
+        nasaKeywords = loadCsvMapping("nasa.keywords.csv");
         nasaMissions = loadCsvMapping("nasa.missions.csv");
     }
 
@@ -286,6 +289,7 @@ public class NasaPhotojournalService
         if (media.getKeywords().contains("artist")) {
             result.add("Art from NASA");
         }
+        result.addAll(media.getKeywords().stream().map(nasaKeywords::get).filter(Objects::nonNull).toList());
         if (media.getMission() != null) {
             String cat = nasaMissions.get(media.getMission().trim());
             if (cat != null) {
@@ -299,14 +303,17 @@ public class NasaPhotojournalService
 
     @Override
     public Set<String> findTemplates(NasaPhotojournalMedia media) {
-        // TODO Auto-generated method stub
-        return super.findTemplates(media);
+        Set<String> result = super.findTemplates(media);
+        result.add("PD-USGov-NASA");
+        return result;
     }
 
     @Override
     protected NasaPhotojournalMedia refresh(NasaPhotojournalMedia media) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
+        QueryResponse response = queryWithRetries(new SolrQuery(media.getId()));
+        return response != null && response.getResults().getNumFound() == 1
+                ? media.copyDataFrom(solrDocumentToMedia(response.getResults().get(0)))
+                : media;
     }
 
     @Override

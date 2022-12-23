@@ -19,11 +19,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -65,6 +68,8 @@ public class NasaService
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaService.class);
 
     static final Pattern ISS_PATTERN = Pattern.compile("iss0{1,2}(\\d{1,2})e\\d{6}");
+
+    static final Pattern ARTEMIS_PATTERN = Pattern.compile("art0{1,2}(\\d{1,2})e\\d{6}");
 
     /**
      * Minimal delay between successive API requests, in seconds.
@@ -109,9 +114,18 @@ public class NasaService
 
     private LocalDateTime lastRequest;
 
+    private Map<String, String> nasaKeywords;
+
     @Autowired
     public NasaService(NasaMediaRepository<NasaMedia> repository) {
         super(repository, "nasa");
+    }
+
+    @Override
+    @PostConstruct
+    void init() throws IOException {
+        super.init();
+        nasaKeywords = loadCsvMapping("nasa.keywords.csv");
     }
 
     @Override
@@ -187,9 +201,15 @@ public class NasaService
                 save = true;
             }
         }
-        if (media.isIgnored() != Boolean.TRUE && media.getDescription().contains("/photojournal")) {
-            ignoreFile(media, "Photojournal");
-            save = true;
+        if (media.isIgnored() != Boolean.TRUE) {
+            if (media.getDescription().contains("/photojournal")) {
+                ignoreFile(media, "Photojournal");
+                save = true;
+            }
+            if (media.getDescription().contains("Image courtesy of CNES.")) {
+                ignoreFile(media, "Non-free image (courtesy)");
+                save = true;
+            }
         }
         if (doCommonUpdate(media)) {
             save = true;
@@ -458,16 +478,40 @@ public class NasaService
     @Override
     public Set<String> findCategories(NasaMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        Matcher issMatcher = ISS_PATTERN.matcher(media.getId());
-        if (issMatcher.matches()) {
-            String expedition = "Expedition " + issMatcher.group(1);
+        result.addAll(media.getKeywords().stream().map(nasaKeywords::get).filter(Objects::nonNull).toList());
+        String description = media.getDescription();
+        Matcher idMatcher = ISS_PATTERN.matcher(media.getId());
+        if (idMatcher.matches()) {
+            String expedition = "Expedition " + idMatcher.group(1);
             result.add("ISS " + expedition);
             findIssExpeditionCrew(expedition).ifPresent(crew ->
                 wikidata.mapCommonsCategoriesByFamilyName(crew).forEach((name, cat) -> {
-                    if (media.getDescription().contains(name)) {
+                    if (description.contains(name)) {
                         result.add(cat);
                     }
             }));
+        } else {
+            idMatcher = ARTEMIS_PATTERN.matcher(media.getId());
+            if (idMatcher.matches()) {
+                String artemis = "Artemis " + idMatcher.group(1);
+                if (List.of("image of the planet", "photo of the Earth", "photo of Earth", "captures Earth",
+                        "captured Earth", "captured the Earth", "image of our Earth", "image of the Earth",
+                        "looking back at the Earth from a camera", "Earth, which appears").stream()
+                        .anyMatch(description::contains)) {
+                    result.add("Photos of Earth by " + artemis);
+                } else if (List.of("photo of the Moon", "camera looked back at the Moon", "captured the Moon",
+                        "Moon is captured", "Moon is seen", "the Moon looms", "these views of the Moon",
+                        "image of the Moon", "image of the full Moon", "image of our Moon", "lunar image",
+                        "imagery of the Moon", "Moon is in view", "captures the far side of the Moon",
+                        "captured the far side of the Moon", "images of craters on the Moon",
+                        "photo of the lunar surface", "Moon grows", "Moon appears", "imagery looking back at the Moon")
+                        .stream().anyMatch(description::contains)) {
+                    result.add("Photos of the Moon by " + artemis);
+                } else {
+                    result.add("Photos by " + artemis);
+                }
+                result.remove(artemis);
+            }
         }
         return result;
     }
@@ -511,6 +555,17 @@ public class NasaService
 
     @Override
     protected NasaMedia refresh(NasaMedia media) throws IOException {
-        throw new UnsupportedOperationException(); // TODO
+        NasaResponse response = new RestTemplate().getForObject(searchEndpoint + "nasa_id=" + media.getId(),
+                NasaResponse.class);
+        if (response != null) {
+            List<NasaItem> items = response.getCollection().getItems();
+            if (items.size() == 1) {
+                List<NasaMedia> data = items.get(0).getData();
+                if (data.size() == 1) {
+                    return media.copyDataFrom(data.get(0));
+                }
+            }
+        }
+        return media;
     }
 }

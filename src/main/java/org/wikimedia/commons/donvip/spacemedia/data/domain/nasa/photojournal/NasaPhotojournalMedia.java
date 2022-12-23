@@ -188,4 +188,19 @@ public class NasaPhotojournalMedia extends FullResExtraMedia<String, ZonedDateTi
                 + (instrument != null ? "instrument=" + instrument + ", " : "")
                 + (producer != null ? "producer=" + producer : "") + ']';
     }
+
+    public NasaPhotojournalMedia copyDataFrom(NasaPhotojournalMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        setNasaId(mediaFromApi.getNasaId());
+        setDate(mediaFromApi.getDate());
+        setTarget(mediaFromApi.getTarget());
+        setMission(mediaFromApi.getMission());
+        setSpacecraft(mediaFromApi.getSpacecraft());
+        setInstrument(mediaFromApi.getInstrument());
+        setProducer(mediaFromApi.getProducer());
+        setKeywords(mediaFromApi.getKeywords());
+        setBig(mediaFromApi.isBig());
+        setCredit(mediaFromApi.getCredit());
+        return this;
+    }
 }

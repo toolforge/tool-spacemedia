@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.temporal.Temporal;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -27,14 +28,9 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     }
 
     @Override
-    protected final boolean isPermittedFileType(T media) {
-        return isPermittedFileType(media.getMetadata()) && isPermittedFileType(media.getFullResMetadata());
-    }
-
-    @Override
-    protected final boolean shouldUploadAuto(T media) {
-        return shouldUploadAuto(media, media.getCommonsFileNames())
-                || shouldUploadAuto(media, media.getFullResCommonsFileNames());
+    protected boolean shouldUploadAuto(T media) {
+        return super.shouldUploadAuto(media)
+                || shouldUploadAuto(media, media.getFullResMetadata(), media.getFullResCommonsFileNames());
     }
 
     @Override
@@ -48,7 +44,7 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     }
 
     @Override
-    public final T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException {
+    public T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException {
         T media = findBySha1OrThrow(sha1, false);
         if (media == null) {
             media = findByFullResSha1OrThrow(sha1, true);
@@ -57,8 +53,8 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     }
 
     @Override
-    protected final void doUpload(T media, boolean checkUnicity) throws IOException, UploadException {
-        doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames, checkUnicity);
+    protected void doUpload(T media, boolean checkUnicity) throws IOException, UploadException {
+        super.doUpload(media, checkUnicity);
         doUpload(media, media.getFullResMetadata(), media::getFullResCommonsFileNames, media::setFullResCommonsFileNames, checkUnicity);
     }
 
@@ -66,7 +62,7 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
         return findBySomeSha1OrThrow(sha1, fullResRepository::findByFullResMetadata_Sha1, throwIfNotFound);
     }
 
-    private <S> S doForSha1OrFullResSha1(String sha1, BiFunction<T, Metadata, S> function) throws TooManyResultsException {
+    protected <S> S doForAnySha1(String sha1, BiFunction<T, Metadata, S> function) throws TooManyResultsException {
         T media = findBySha1OrThrow(sha1, false);
         if (media != null) {
             return function.apply(media, media.getMetadata());
@@ -78,32 +74,46 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
 
     @Override
     public final String getWikiCode(String sha1) throws TooManyResultsException {
-        return doForSha1OrFullResSha1(sha1, this::getWikiCode);
+        return doForAnySha1(sha1, this::getWikiCode);
     }
 
     @Override
     public final String getWikiHtmlPreview(String sha1) throws TooManyResultsException {
-        return doForSha1OrFullResSha1(sha1, this::getWikiHtmlPreview);
+        return doForAnySha1(sha1, this::getWikiHtmlPreview);
     }
 
     @Override
     protected Optional<String> getOtherVersions(T media, Metadata metadata) {
         Optional<String> variants = super.getOtherVersions(media, metadata);
-        if (metadata.equals(media.getMetadata()) && media.getFullResMetadata() != null && media.getFullResMetadata().getAssetUrl() != null) {
+        if (metadata.equals(media.getMetadata())) {
             return getOtherVersion(media, variants, media.getFullResMetadata(), media.getFullResCommonsFileNames());
-        } else if (metadata.equals(media.getFullResMetadata()) && media.getMetadata() != null && media.getMetadata().getAssetUrl() != null) {
+        } else if (metadata.equals(media.getFullResMetadata())) {
             return getOtherVersion(media, variants, media.getMetadata(), media.getCommonsFileNames());
         }
         return variants;
     }
 
-    private final Optional<String> getOtherVersion(T media, Optional<String> variants, Metadata metadata, Set<String> commonsFileNames) {
-        String ext = metadata.getFileExtension();
-        String filename = media.getFirstCommonsFileNameOrUploadTitle(commonsFileNames, ext);
-        String result = filename + '|' + ext.toUpperCase(Locale.ENGLISH) + " version";
-        if (variants.isPresent()) {
-            result += "\n" + variants;
+    private Optional<String> getOtherVersion(T media, Optional<String> variants, Metadata metadata, Set<String> commonsFileNames) {
+        return getOtherVersions(media, variants, List.of(metadata), List.of(commonsFileNames));
+    }
+
+    protected final Optional<String> getOtherVersions(T media, Optional<String> variants, List<Metadata> metadatas,
+            List<Set<String>> commonsFileNames) {
+        if (metadatas.size() != commonsFileNames.size()) {
+            throw new IllegalStateException("Size mismatch");
         }
-        return Optional.of(result);
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < metadatas.size(); i++) {
+            Metadata metadata = metadatas.get(i);
+            if (metadata != null && metadata.getAssetUrl() != null) {
+                String ext = metadata.getFileExtension();
+                String filename = media.getFirstCommonsFileNameOrUploadTitle(commonsFileNames.get(i), ext);
+                result.append(filename).append('|').append(ext.toUpperCase(Locale.ENGLISH)).append(" version");
+            }
+        }
+        if (variants.isPresent()) {
+            result.append('\n').append(variants);
+        }
+        return Optional.of(result.toString());
     }
 }

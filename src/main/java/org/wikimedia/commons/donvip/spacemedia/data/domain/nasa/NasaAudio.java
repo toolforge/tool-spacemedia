@@ -15,7 +15,6 @@ public class NasaAudio extends NasaMedia {
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")
                 + (getCenter() != null ? "center=" + getCenter() + ", " : "")
                 + (getDate() != null ? "date=" + getDate() + ", " : "")
-                + (getDescription() != null ? "description=" + getDescription() : "") + "]";
+                + (getDescription() != null ? "description=" + getDescription() : "") + ']';
     }
-
 }
