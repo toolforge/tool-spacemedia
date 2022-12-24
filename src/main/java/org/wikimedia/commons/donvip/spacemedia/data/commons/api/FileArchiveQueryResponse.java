@@ -1,6 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons.api;
 
-public class FileArchiveQueryResponse {
+public class FileArchiveQueryResponse extends ApiResponse {
 
     private String batchcomplete;
 

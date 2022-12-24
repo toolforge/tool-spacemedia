@@ -8,6 +8,8 @@ public class ApiError {
 
     private String info;
 
+    private String docref;
+
     private AbuseFilter abusefilter;
 
     @JsonProperty("*")
@@ -45,10 +47,19 @@ public class ApiError {
         this.star = star;
     }
 
+    public String getDocref() {
+        return docref;
+    }
+
+    public void setDocref(String docref) {
+        this.docref = docref;
+    }
+
     @Override
     public String toString() {
         return "ApiError [" + (code != null ? "code=" + code + ", " : "") + (info != null ? "info=" + info + ", " : "")
                 + (abusefilter != null ? "abusefilter=" + abusefilter + ", " : "")
+                + (docref != null ? "docref=" + docref + ", " : "")
                 + (star != null ? "star=" + star : "") + "]";
     }
 }

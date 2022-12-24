@@ -1,6 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons.api;
 
-public class RevisionsQueryResponse {
+public class RevisionsQueryResponse extends ApiResponse {
 
     private RevisionsQuery query;
 

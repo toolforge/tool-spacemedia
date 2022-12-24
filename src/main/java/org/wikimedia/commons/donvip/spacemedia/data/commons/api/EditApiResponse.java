@@ -1,12 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons.api;
 
-public class EditApiResponse {
+public class EditApiResponse extends ApiResponse {
 
     private EditResponse edit;
-
-    private ApiError error;
-
-    private String servedby;
 
     public EditResponse getEdit() {
         return edit;
@@ -16,26 +12,11 @@ public class EditApiResponse {
         this.edit = edit;
     }
 
-    public ApiError getError() {
-        return error;
-    }
-
-    public void setError(ApiError error) {
-        this.error = error;
-    }
-
-    public String getServedby() {
-        return servedby;
-    }
-
-    public void setServedby(String servedby) {
-        this.servedby = servedby;
-    }
-
     @Override
     public String toString() {
         return "EditApiResponse [" + (edit != null ? "edit=" + edit + ", " : "")
-                + (error != null ? "error=" + error + ", " : "") + (servedby != null ? "servedby=" + servedby : "")
+                + (getError() != null ? "error=" + getError() + ", " : "")
+                + (getServedBy() != null ? "servedby=" + getServedBy() : "")
                 + "]";
     }
 }

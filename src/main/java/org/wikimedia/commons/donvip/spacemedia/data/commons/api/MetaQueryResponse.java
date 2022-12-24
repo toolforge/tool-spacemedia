@@ -1,14 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons.api;
 
-public class MetaQueryResponse {
+public class MetaQueryResponse extends ApiResponse {
 
     private String batchcomplete;
 
     private MetaQuery query;
-
-    private ApiError error;
-
-    private String servedby;
 
     public String getBatchcomplete() {
         return batchcomplete;
@@ -26,19 +22,11 @@ public class MetaQueryResponse {
         this.query = query;
     }
 
-    public ApiError getError() {
-        return error;
-    }
-
-    public void setError(ApiError error) {
-        this.error = error;
-    }
-
-    public String getServedby() {
-        return servedby;
-    }
-
-    public void setServedby(String servedby) {
-        this.servedby = servedby;
+    @Override
+    public String toString() {
+        return "MetaQueryResponse [" + (batchcomplete != null ? "batchcomplete=" + batchcomplete + ", " : "")
+                + (query != null ? "query=" + query + ", " : "")
+                + (getError() != null ? "error=" + getError() + ", " : "")
+                + (getServedBy() != null ? "servedBy=" + getServedBy() : "") + "]";
     }
 }

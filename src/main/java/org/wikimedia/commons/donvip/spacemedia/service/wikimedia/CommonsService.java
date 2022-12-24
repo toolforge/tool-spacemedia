@@ -82,6 +82,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchiveQuery
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Limit;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQuery;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.MetaQueryResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.ParseApiResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.ParseResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Revision;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsQuery;
@@ -440,24 +442,26 @@ public class CommonsService {
     }
 
     public String getWikiHtmlPreview(String wikiCode, String pageTitle) throws IOException {
-        VeApiResponse apiResponse = apiHttpPost(Map.of(
-                "action", "visualeditor",
+        ParseApiResponse apiResponse = apiHttpPost(Map.of(
+                "action", "parse",
                 "format", "json",
                 "formatversion", "2",
-                "paction", "parsedoc",
-                "page", pageTitle,
-                "wikitext", wikiCode,
+                "title", pageTitle,
+                "text", wikiCode,
+                "prop", "headhtml|text|categorieshtml|displaytitle|subtitle",
+                "disableeditsection", "true",
                 "pst", "true"
-        ), VeApiResponse.class);
+        ), ParseApiResponse.class);
         if (apiResponse.getError() != null) {
             throw new IllegalArgumentException(apiResponse.getError().toString());
         }
 
-        VisualEditorResponse veResponse = apiResponse.getVisualeditor();
-        if (!"success".equals(veResponse.getResult())) {
-            throw new IllegalArgumentException(veResponse.toString());
+        ParseResponse response = apiResponse.getParse();
+        if (response == null) {
+            throw new IllegalArgumentException(apiResponse.toString());
         }
-        return veResponse.getContent();
+        return String.join("\n", response.getHeadHtml(), response.getDisplayTitle(), response.getSubtitle(),
+                response.getText(), response.getCategoriesHtml());
     }
 
     public String getWikiHtmlPreview(String wikiCode, String pageTitle, String imgUrl) throws IOException {
@@ -467,37 +471,19 @@ public class CommonsService {
         Element imgLink = Utils.prependChildElement(body, "a", null, Map.of("href", imgUrl));
         Utils.appendChildElement(imgLink, "img", null,
                 Map.of("src", imgUrl, "width", Integer.toString(imgPreviewWidth)));
-        // Display categories
-        Element lastSection = body.getElementsByTag("section").last();
-        Element catLinksDiv = Utils.appendChildElement(lastSection, "div", null,
-                Map.of("id", "catlinks", "class", "catlinks", "data-mw", "interface"));
-        Element normalCatLinksDiv = Utils.appendChildElement(catLinksDiv, "div", null,
-                Map.of("id", "mw-normal-catlinks", "class", "mw-normal-catlinks"));
-        Utils.appendChildElement(normalCatLinksDiv, "a", "Categories",
-                Map.of("href", "https://commons.wikimedia.org/wiki/Special:Categories", "title", "Special:Categories"));
-        normalCatLinksDiv.appendText(": ");
-        Element normalCatLinksList = new Element("ul");
-        normalCatLinksDiv.appendChild(normalCatLinksList);
-        Element hiddenCatLinksList = new Element("ul");
-        Utils.appendChildElement(catLinksDiv, "div", "Hidden categories: ",
-                Map.of("id", "mw-hidden-catlinks", "class", "mw-hidden-catlinks mw-hidden-cats-user-shown"))
-                .appendChild(hiddenCatLinksList);
-        for (Element link : lastSection.getElementsByTag("link")) {
-            String category = link.attr("href").replace("#" + pageTitle.replace(" ", "%20"), "").replace("./Category:", "");
-            String href = "https://commons.wikimedia.org/wiki/Category:" + category;
-            Element list = normalCatLinksList;
-            try {
-                list = self.isHiddenCategory(category) ? hiddenCatLinksList : normalCatLinksList;
-            } catch (CategoryNotFoundException | CategoryPageNotFoundException e) {
-                LOGGER.warn("Category/page not found: {}", e.getMessage());
-            }
-            Element item = new Element("li");
-            list.appendChild(item);
-            Utils.appendChildElement(item, "a", sanitizeCategory(category),
-                    Map.of("href", href, "title", "Category:" + category));
-            link.remove();
-        }
+        // Fix links
+        fixLinks(doc, "link", "href");
+        fixLinks(doc, "script", "src");
         return doc.toString();
+    }
+
+    private static void fixLinks(Element root, String tag, String attr) {
+        for (Element link : root.getElementsByTag(tag)) {
+            String val = link.attr(attr);
+            if (val != null && val.startsWith("/w/")) {
+                link.attr(attr, "//commons.wikimedia.org" + val);
+            }
+        }
     }
 
     /**

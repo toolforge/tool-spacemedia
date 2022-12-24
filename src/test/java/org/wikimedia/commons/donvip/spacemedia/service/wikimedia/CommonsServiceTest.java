@@ -1,8 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -27,6 +30,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepositor
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRestrictionsRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsServiceTest.TestConfig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,6 +58,8 @@ class CommonsServiceTest {
     private HashAssociationRepository hashAssociationRepository;
     @MockBean
     private RuntimeDataRepository runtimeDataRepository;
+    @MockBean
+    private RemoteService remote;
 
     @Test
     void testFormatWikiCode() {
@@ -91,6 +97,34 @@ class CommonsServiceTest {
                         Set.of("Combined Force Space Component Command", "Combined Space Operations Center")));
     }
 
+    @Test
+    void testgetWikiHtmlPreview() throws IOException {
+        assertNotNull(service.getWikiHtmlPreview(
+                """
+                        == {{int:filedesc}} ==
+                        {{NASA Photojournal
+                        | catalog = PIA25257
+                        | image= true
+                        | video= false
+                        | animation= false
+                        | mission= Lunar Flashlight
+                        | instrument= null
+                        | caption = {{en|1=<p><center><a href="https://photojournal.jpl.nasa.gov/archive/PIA25257.gif" target="new"><img src="https://photojournal.jpl.nasa.gov/figures/PIA25257_figA_thumb.jpg" alt="Click here for Figure A for PIA25257"></a><br><b>Figure A - click on image for animation</b></center></p><p>These images show two observations of NASA's Lunar Flashlight and the private ispace HAKUTO-R Mission 1 as the two spacecraft, seen as a pair of dots, journey to the Moon. In Figure A, the images have been joined sequentially to create an animated GIF. The larger HAKUTO-R lunar lander appears as a large black dot, whereas the smaller Lunar Flashlight, which is about the size of a briefcase, appears as a fuzzy grouping of gray pixels. Stars appear as long trails.</p><p>[https://www.jpl.nasa.gov/news/nasas-lunar-flashlight-has-launched-follow-the-mission-in-real-time Both missions launched] on Dec. 11, 2022, aboard a SpaceX Falcon 9 rocket, with Lunar Flashlight and HAKUTO-R spacecraft subsequently deploying from it. Astronomer Vishnu Reddy and graduate student Adam Battle, both from University of Arizona's [https://www.lpl.arizona.edu/ Lunar and Planetary Laboratory] and [https://s4.arizona.edu/ Space4 Center], used a remote 0.5-meter (1.6-foot) telescope in Australia to track the small spacecraft. They used data from [https://ssd.jpl.nasa.gov/horizons/ the Horizons System] at NASA's Jet Propulsion Laboratory in Southern California to find their position in the sky.</p><p>These images were acquired about 39 hours after launch, when the two spacecraft were 145,000 miles (235,000 kilometers) from Earth. Black and white in the images have been inverted so that the brighter the object, the darker it is. To detect the faint reflected light from both spacecraft, they stacked 80 images, each from a 10-second exposure (for a total exposure time of 800 seconds), based on the rate of motion and direction of the spacecraft. This method resulted in stars appearing as long trails and the two spacecraft appearing as dots.</p><p>Lunar Flashlight is a small satellite mission planning to use lasers to seek out surface water ice inside permanently shadowed craters at the Moon's South Pole. The small satellite is expected to reach its science orbit around the Moon in April 2023.</p><p>For more information about the Lunar Flashlight launch, and how to follow along with the mission, go to: [https://www.jpl.nasa.gov/news/nasas-lunar-flashlight-has-launched-follow-the-mission-in-real-time https://www.jpl.nasa.gov/news/nasas-lunar-flashlight-has-launched-follow-the-mission-in-real-time]</p>}}
+                        | credit= University of Arizona
+                        | addition_date = 2022-12-23T17:27:49Z[Etc/UTC]
+                        | globe= Moon
+                        | gallery = NASA's Lunar Flashlight Spotted From Earth on Its Way to the Moon (PIA25257).tiff|TIFF versionNASA's Lunar Flashlight Spotted From Earth on Its Way to the Moon (PIA25257).gif|GIF version
+                        Optional[NASA's Lunar Flashlight Spotted From Earth on Its Way to the Moon (PIA25257).tiff|TIFF version]
+                        }}
+                        =={{int:license-header}}==
+                        {{PD-USGov-NASA}}
+                        [[Category:Spacemedia files uploaded by OptimusPrimeBot]]
+                        [[Category:Spacemedia files (review needed)]]
+                        [[Category:Lunar Flashlight]]
+                                        """,
+                "PIA25257", "https://photojournal.jpl.nasa.gov/archive/PIA25257.gif"));
+    }
+
     private void mockCategoryLinks() {
         CommonsPage page = new CommonsPage();
         page.setTitle("Combined_Space_Operations_Center");
@@ -115,6 +149,11 @@ class CommonsServiceTest {
                 @Value("${commons.api.oauth1.access-secret}") String accessSecret) {
             return new CommonsService(appVersion, appContact, flickr4javaVersion, bootVersion, scribeVersion,
                     apiAccount, consumerToken, consumerSecret, accessToken, accessSecret);
+        }
+
+        @Bean
+        public RestTemplateBuilder rest() {
+            return new RestTemplateBuilder();
         }
 
         @Bean
