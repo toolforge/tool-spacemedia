@@ -345,7 +345,7 @@ public class MediaService {
 
     private MediaUpdateResult updateReadableStateAndHashes(Media<?, ?> media, Metadata metadata, Path localPath,
             boolean forceUpdateOfHashes) {
-        boolean isImage = media.isImage();
+        boolean isImage = metadata.isImage();
         boolean result = false;
         BufferedImage bi = null;
         try {
@@ -377,7 +377,7 @@ public class MediaService {
             LOGGER.error("Error while computing hashes for {}: {}", media, e.getMessage());
             return new MediaUpdateResult(result, e);
         } catch (IOException | URISyntaxException e) {
-            LOGGER.error("Error while computing hashes for " + media, e);
+            LOGGER.error("Error while computing hashes for {}", media, e);
             return new MediaUpdateResult(result, e);
         } finally {
             if (bi != null) {
@@ -394,7 +394,7 @@ public class MediaService {
     }
 
     private static boolean ignoreMedia(Media<?, ?> media, String reason, Exception e) {
-        LOGGER.warn(media.toString(), e);
+        LOGGER.warn("Ignored {} for reason {}", media, reason, e);
         media.setIgnored(Boolean.TRUE);
         media.setIgnoredReason(reason + ": " + e.getMessage());
         return true;

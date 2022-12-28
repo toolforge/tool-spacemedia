@@ -18,6 +18,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Embeddable
 public class Metadata implements MetadataProjection {
 
+    private static final Set<String> AUDIO_EXTENSIONS = Set.of("wav", "mp3", "flac", "midi");
+    private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpeg", "tiff", "png", "webp", "xcf", "gif", "svg");
+    private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg");
+
     /**
      * SHA-1 hash.
      */
@@ -106,6 +110,9 @@ public class Metadata implements MetadataProjection {
     @Transient
     @JsonIgnore
     public String getFileExtension() {
+        if (getAssetUrl() == null) {
+            return null;
+        }
         String url = getAssetUrl().toExternalForm();
         String ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH);
         switch (ext) {
@@ -127,6 +134,42 @@ public class Metadata implements MetadataProjection {
         default:
             return Set.of(ext);
         }
+    }
+
+    /**
+     * Determines if this media is an audio.
+     *
+     * @return {@code true} if this media is an audio
+     */
+    @Transient
+    @JsonIgnore
+    public boolean isAudio() {
+        String ext = getFileExtension();
+        return ext != null && AUDIO_EXTENSIONS.contains(ext);
+    }
+
+    /**
+     * Determines if this media is an image.
+     *
+     * @return {@code true} if this media is an image
+     */
+    @Transient
+    @JsonIgnore
+    public boolean isImage() {
+        String ext = getFileExtension();
+        return ext != null && IMAGE_EXTENSIONS.contains(ext);
+    }
+
+    /**
+     * Determines if this media is a video.
+     *
+     * @return {@code true} if this media is a video
+     */
+    @Transient
+    @JsonIgnore
+    public boolean isVideo() {
+        String ext = getFileExtension();
+        return ext != null && VIDEO_EXTENSIONS.contains(ext);
     }
 
     @Override

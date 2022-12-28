@@ -150,21 +150,6 @@ public class NasaPhotojournalMedia extends FullResExtraMedia<String, ZonedDateTi
     }
 
     @Override
-    public boolean isAudio() {
-        return false;
-    }
-
-    @Override
-    public boolean isImage() {
-        return true;
-    }
-
-    @Override
-    public boolean isVideo() {
-        return false;
-    }
-
-    @Override
     public int hashCode() {
         return 31 * super.hashCode() + Objects.hash(piaId);
     }

@@ -102,6 +102,21 @@ public abstract class FullResExtraMedia<ID, D extends Temporal> extends FullResM
         return result;
     }
 
+    @Override
+    public boolean isAudio() {
+        return super.isAudio() || getExtraMetadata().isAudio();
+    }
+
+    @Override
+    public boolean isImage() {
+        return super.isImage() || getExtraMetadata().isImage();
+    }
+
+    @Override
+    public boolean isVideo() {
+        return super.isVideo() || getExtraMetadata().isVideo();
+    }
+
     public FullResExtraMedia<ID, D> copyDataFrom(FullResExtraMedia<ID, D> mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         if (extraMetadata.getAssetUrl() == null) {

@@ -102,4 +102,19 @@ public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> 
         Optional.ofNullable(getFullResCommonsFileNames()).ifPresent(result::addAll);
         return result;
     }
+
+    @Override
+    public boolean isAudio() {
+        return super.isAudio() || getFullResMetadata().isAudio();
+    }
+
+    @Override
+    public boolean isImage() {
+        return super.isImage() || getFullResMetadata().isImage();
+    }
+
+    @Override
+    public boolean isVideo() {
+        return super.isVideo() || getFullResMetadata().isVideo();
+    }
 }

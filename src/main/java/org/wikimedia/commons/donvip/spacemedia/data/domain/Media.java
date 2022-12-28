@@ -274,21 +274,27 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      *
      * @return {@code true} if this media is an audio
      */
-    public abstract boolean isAudio();
+    public boolean isAudio() {
+        return getMetadata().isAudio();
+    }
 
     /**
      * Determines if this media is an image.
      *
      * @return {@code true} if this media is an image
      */
-    public abstract boolean isImage();
+    public boolean isImage() {
+        return getMetadata().isImage();
+    }
 
     /**
      * Determines if this media is a video.
      *
      * @return {@code true} if this media is a video
      */
-    public abstract boolean isVideo();
+    public boolean isVideo() {
+        return getMetadata().isVideo();
+    }
 
     /**
      * Returns the preview URL to display in UI. Thumbnail if available, otherwise asset.
