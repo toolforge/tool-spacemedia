@@ -288,6 +288,12 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         if (result.contains("Flickr-public domain mark") && UnitedStates.isClearPublicDomain(media.getDescription())) {
             result.remove("Flickr-public domain mark");
         }
+        if (media.getDescription().contains("hoto by SpaceX") || media.getDescription().contains("hoto/SpaceX")) {
+            result.add("PD-SpaceX");
+        }
+        if (media.getDescription().contains("hoto by NASA") || media.getDescription().contains("hoto/NASA")) {
+            result.add("PD-NASA");
+        }
         return result;
     }
 

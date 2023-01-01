@@ -538,6 +538,12 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             result.add("PD-USGov-Military-Space Force");
             result.remove("PD-USGov-Military-Air Force");
         }
+        if (media.getDescription().contains("hoto by SpaceX") || media.getDescription().contains("hoto/SpaceX")) {
+            result.add("PD-SpaceX");
+        }
+        if (media.getDescription().contains("hoto by NASA") || media.getDescription().contains("hoto/NASA")) {
+            result.add("PD-NASA");
+        }
         return result;
     }
 
