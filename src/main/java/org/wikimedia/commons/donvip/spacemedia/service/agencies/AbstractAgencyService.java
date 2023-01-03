@@ -687,6 +687,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             media = saveMedia(media);
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
         }
+        if (findTemplates(media).isEmpty()) {
+            throw new ImageUploadForbiddenException(media + " has no template, so may be not free");
+        }
     }
 
     protected MediaRepository<OT, OID, OD> getOriginalRepository() {
