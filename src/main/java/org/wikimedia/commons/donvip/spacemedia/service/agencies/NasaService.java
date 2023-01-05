@@ -486,7 +486,8 @@ public class NasaService
             result.add("ISS " + expedition);
             findIssExpeditionCrew(expedition).ifPresent(crew ->
                 wikidata.mapCommonsCategoriesByFamilyName(crew).forEach((name, cat) -> {
-                    if (description.contains(name)) {
+                    if (description.contains(name) && !description.contains("Credit: " + cat)
+                            && !description.contains("Credit: NASA/" + cat)) {
                         result.add(cat);
                     }
             }));
