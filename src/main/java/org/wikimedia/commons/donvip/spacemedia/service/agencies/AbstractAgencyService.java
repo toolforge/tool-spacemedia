@@ -750,7 +750,14 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
-        return mediaService.updateMedia(media, getOriginalRepository(), forceUpdate, checkBlocklist(), null);
+        MediaUpdateResult ur = mediaService.updateMedia(media, getOriginalRepository(), forceUpdate,
+                checkBlocklist(), null);
+        boolean result = false;
+        if (media.getDescription().toLowerCase(Locale.ENGLISH).contains("courtesy ")
+                && findTemplates(media).isEmpty()) {
+            result = ignoreFile(media, "Courtesy photo without clear licensing");
+        }
+        return new MediaUpdateResult(result, ur.getException());
     }
 
     protected boolean checkBlocklist() {
