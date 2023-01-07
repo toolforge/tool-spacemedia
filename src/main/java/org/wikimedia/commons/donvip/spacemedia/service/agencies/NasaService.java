@@ -491,6 +491,12 @@ public class NasaService
                         result.add(cat);
                     }
             }));
+                if (List.of("in the cupola", "in the Cupola", "inside the cupola", "inside the Cupola",
+                        "inside the newly-installed cupola", "inside the seven window cupola",
+                        "in the seven-windowed Cupola", "from the Cupola", "through the cupola").stream()
+                        .anyMatch(description::contains)) {
+                    result.add("Interior of Cupola (ISS module)");
+                }
         } else {
             idMatcher = ARTEMIS_PATTERN.matcher(media.getId());
             if (idMatcher.matches()) {
