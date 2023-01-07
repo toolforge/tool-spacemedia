@@ -415,6 +415,10 @@ public class MediaService {
                     result = true;
                 }
             }
+            if (media.getDescription().contains("â€™")) {
+                media.setDescription(media.getDescription().replace("â€™", "’"));
+                result = true;
+            }
         }
         return result;
     }
