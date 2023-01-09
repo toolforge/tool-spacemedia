@@ -21,7 +21,9 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -125,7 +127,7 @@ public class MediaService {
         if (ur.getResult()) {
             result = true;
         }
-        if (findCommonsFilesWithSha1(media) || findCommonsFilesWithPhash(media)) {
+        if (findCommonsFiles(media)) {
             result = true;
         }
         if (originalRepo != null && findDuplicatesInRepository(media, originalRepo)) {
@@ -482,6 +484,10 @@ public class MediaService {
         return false;
     }
 
+    public boolean findCommonsFiles(Media<?, ?> media) throws IOException {
+        return findCommonsFilesWithSha1(media) || findCommonsFilesWithPhash(media);
+    }
+
     /**
      * Looks for Wikimedia Commons files matching the media SHA-1, if required.
      *
@@ -491,36 +497,34 @@ public class MediaService {
      * @throws IOException in case of I/O error
      */
     public boolean findCommonsFilesWithSha1(Media<?, ?> media) throws IOException {
-        boolean result = false;
-        String sha1 = media.getMetadata().getSha1();
-        if (sha1 != null && isEmpty(media.getCommonsFileNames())) {
-            Set<String> files = commonsService.findFilesWithSha1(sha1);
-            if (!files.isEmpty()) {
-                media.setCommonsFileNames(files);
+        boolean result = findCommonsFilesWithSha1(media.getMetadata(), media::getCommonsFileNames,
+                media::setCommonsFileNames);
+        if (media instanceof FullResMedia<?, ?> frMedia) {
+            if (findCommonsFilesWithSha1(frMedia.getFullResMetadata(), frMedia::getFullResCommonsFileNames,
+                    frMedia::setFullResCommonsFileNames)) {
                 result = true;
             }
         }
-        if (media instanceof FullResMedia<?, ?> frMedia) {
-            String fullResSha1 = frMedia.getFullResMetadata().getSha1();
-            if (fullResSha1 != null && isEmpty(frMedia.getFullResCommonsFileNames())) {
-                Set<String> files = commonsService.findFilesWithSha1(fullResSha1);
-                if (!files.isEmpty()) {
-                    frMedia.setFullResCommonsFileNames(files);
-                    result = true;
-                }
-            }
-        }
         if (media instanceof FullResExtraMedia<?, ?> exMedia) {
-            String extraSha1 = exMedia.getExtraMetadata().getSha1();
-            if (extraSha1 != null && isEmpty(exMedia.getExtraCommonsFileNames())) {
-                Set<String> files = commonsService.findFilesWithSha1(extraSha1);
-                if (!files.isEmpty()) {
-                    exMedia.setExtraCommonsFileNames(files);
-                    result = true;
-                }
+            if (findCommonsFilesWithSha1(exMedia.getExtraMetadata(), exMedia::getExtraCommonsFileNames,
+                    exMedia::setExtraCommonsFileNames)) {
+                result = true;
             }
         }
         return result;
+    }
+
+    private boolean findCommonsFilesWithSha1(Metadata metadata, Supplier<Set<String>> getter,
+            Consumer<Set<String>> setter) throws IOException {
+        String sha1 = metadata.getSha1();
+        if (sha1 != null && isEmpty(getter.get())) {
+            Set<String> files = commonsService.findFilesWithSha1(sha1);
+            if (!files.isEmpty()) {
+                setter.accept(files);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -533,49 +537,37 @@ public class MediaService {
      * @throws IOException in case of I/O error
      */
     public boolean findCommonsFilesWithPhash(Media<?, ?> media) throws IOException {
-        boolean result = false;
-        String phash = media.getMetadata().getPhash();
-        if (phash != null && isEmpty(media.getCommonsFileNames())) {
+        boolean result = findCommonsFilesWithPhash(media.getMetadata(), media::getCommonsFileNames,
+                media::setCommonsFileNames);
+        if (media instanceof FullResMedia<?, ?> frMedia) {
+            if (findCommonsFilesWithPhash(frMedia.getFullResMetadata(), frMedia::getFullResCommonsFileNames,
+                    frMedia::setFullResCommonsFileNames)) {
+                result = true;
+            }
+        }
+        if (media instanceof FullResExtraMedia<?, ?> exMedia) {
+            if (findCommonsFilesWithPhash(exMedia.getExtraMetadata(), exMedia::getExtraCommonsFileNames,
+                    exMedia::setExtraCommonsFileNames)) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    private boolean findCommonsFilesWithPhash(Metadata metadata, Supplier<Set<String>> getter,
+            Consumer<Set<String>> setter) throws IOException {
+        String phash = metadata.getPhash();
+        if (phash != null && isEmpty(getter.get())) {
             List<String> sha1s = hashRepository.findSha1ByPhash(phash);
             if (!sha1s.isEmpty()) {
                 Set<String> files = commonsService.findFilesWithSha1(sha1s);
                 if (!files.isEmpty()) {
-                    media.setCommonsFileNames(files);
-                    result = true;
+                    setter.accept(files);
+                    return true;
                 }
             }
         }
-        if (media instanceof FullResMedia<?, ?> frMedia) {
-            String fullResPhash = frMedia.getFullResMetadata().getPhash();
-            if (fullResPhash != null && isEmpty(frMedia.getFullResCommonsFileNames())) {
-                List<String> fullResSha1s = hashRepository.findSha1ByPhash(fullResPhash);
-                if (!fullResSha1s.isEmpty()) {
-                    Set<String> frExtensions = frMedia.getFullResMetadata().getFileExtensions();
-                    Set<String> files = commonsService.findFilesWithSha1(fullResSha1s).stream()
-                            .filter(f -> frExtensions.stream().anyMatch(f::endsWith)).collect(toSet());
-                    if (!files.isEmpty()) {
-                        frMedia.setFullResCommonsFileNames(files);
-                        result = true;
-                    }
-                }
-            }
-        }
-        if (media instanceof FullResExtraMedia<?, ?> exMedia) {
-            String extraPhash = exMedia.getExtraMetadata().getPhash();
-            if (extraPhash != null && isEmpty(exMedia.getExtraCommonsFileNames())) {
-                List<String> extraSha1s = hashRepository.findSha1ByPhash(extraPhash);
-                if (!extraSha1s.isEmpty()) {
-                    Set<String> exExtensions = exMedia.getExtraMetadata().getFileExtensions();
-                    Set<String> files = commonsService.findFilesWithSha1(extraSha1s).stream()
-                            .filter(f -> exExtensions.stream().anyMatch(f::endsWith)).collect(toSet());
-                    if (!files.isEmpty()) {
-                        exMedia.setExtraCommonsFileNames(files);
-                        result = true;
-                    }
-                }
-            }
-        }
-        return result;
+        return false;
     }
 
     private static String findYouTubeId(String text) {
