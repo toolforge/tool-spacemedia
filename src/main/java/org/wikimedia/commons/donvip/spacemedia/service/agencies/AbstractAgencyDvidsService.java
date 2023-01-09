@@ -204,7 +204,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         // https://api.dvidshub.net/docs/tos
         for (DvidsMedia media : listMissingMedia()) {
             String id = media.getId().toString();
-            if (!idsKnownToDvidsApi.contains(id)) {
+            if ((videosEnabled || !media.isVideo()) && !idsKnownToDvidsApi.contains(id)) {
                 try {
                     refreshAndSaveById(id);
                 } catch (IOException | ImageNotFoundException e) {
