@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -44,6 +45,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 @EntityListeners(MediaListener.class)
 @JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY, property = "class")
 public abstract class Media<ID, D extends Temporal> implements MediaProjection<ID> {
+
+    private static final Pattern ONLY_DIGITS = Pattern.compile("\\d+");
 
     @Embedded
     protected Metadata metadata = new Metadata();
@@ -121,11 +124,25 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         String id = CommonsService.normalizeFilename(getId().toString());
         String s = CommonsService.normalizeFilename(title);
         if (id.equals(s)) {
-            return s.substring(0, Math.min(239, s.length()));
+            return isTitleBlacklisted()
+                    ? getUploadTitle(CommonsService.normalizeFilename(getFirstSentence(description)), id)
+                    : s.substring(0, Math.min(239, s.length()));
         } else {
-            return new StringBuilder(s.substring(0, Math.min(239 - id.length() - 3, s.length())))
-                    .append(" (").append(id).append(')').toString();
+            return getUploadTitle(s, id);
         }
+    }
+
+    protected static String getFirstSentence(String desc) {
+        if (desc == null) {
+            return "";
+        }
+        int idxDotInDesc = desc.indexOf('.');
+        return idxDotInDesc > 0 ? desc.substring(0, idxDotInDesc) : desc;
+    }
+
+    private static String getUploadTitle(String s, String id) {
+        return new StringBuilder(s.substring(0, Math.min(239 - id.length() - 3, s.length()))).append(" (").append(id)
+                .append(')').toString();
     }
 
     public String getTitle() {
@@ -333,5 +350,17 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     public final void copyDataFrom(Media<ID, D> mediaFromApi) {
         setDescription(mediaFromApi.getDescription());
         setTitle(mediaFromApi.getTitle());
+    }
+
+    /**
+     * Determines if title is blacklisted according to
+     * https://commons.wikimedia.org/wiki/MediaWiki:Titleblacklist
+     *
+     * @return {@code true} if title is blacklisted by mediawiki
+     */
+    @Transient
+    @JsonIgnore
+    public boolean isTitleBlacklisted() {
+        return ONLY_DIGITS.matcher(title.replace(" ", "").replace("/", "").replace("_", "")).matches();
     }
 }
