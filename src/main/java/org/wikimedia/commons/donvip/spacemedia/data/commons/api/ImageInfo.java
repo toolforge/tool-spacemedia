@@ -35,6 +35,9 @@ public class ImageInfo {
     @JsonProperty("descriptionurl")
     private URL descriptionUrl;
 
+    @JsonProperty("descriptionshorturl")
+    private URL descriptionShortUrl;
+
     private String sha1;
 
     private String mime;
@@ -140,6 +143,14 @@ public class ImageInfo {
         this.descriptionUrl = descriptionUrl;
     }
 
+    public URL getDescriptionShortUrl() {
+        return descriptionShortUrl;
+    }
+
+    public void setDescriptionShortUrl(URL descriptionShortUrl) {
+        this.descriptionShortUrl = descriptionShortUrl;
+    }
+
     public String getSha1() {
         return sha1;
     }
@@ -177,7 +188,7 @@ public class ImageInfo {
         return "ImageInfo [timestamp=" + timestamp + ", user=" + user + ", userId=" + userId + ", size=" + size
                 + ", width=" + width + ", height=" + height + ", comment=" + comment + ", parsedComment="
                 + parsedComment + ", canonicalTitle=" + canonicalTitle + ", url=" + url
-                + ", descriptionUrl=" + descriptionUrl + ", sha1=" + sha1 + ", mime=" + mime + ", mediatype="
-                + mediatype + ", bitDepth=" + bitDepth + "]";
+                + ", descriptionUrl=" + descriptionUrl + ", descriptionShortUrl=" + descriptionShortUrl + ", sha1="
+                + sha1 + ", mime=" + mime + ", mediatype=" + mediatype + ", bitDepth=" + bitDepth + "]";
     }
 }

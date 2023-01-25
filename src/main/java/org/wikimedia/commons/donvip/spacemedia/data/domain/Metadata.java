@@ -116,9 +116,20 @@ public class Metadata implements MetadataProjection {
         String url = getAssetUrl().toExternalForm();
         String ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH);
         switch (ext) {
-            case "jpg": return "jpeg";
-            case "tif": return "tiff";
-            default: return ext;
+        case "apng":
+            return "png";
+        case "djv":
+            return "djvu";
+        case "jpe", "jpg", "jps":
+            return "jpeg";
+        case "tif":
+            return "tiff";
+        case "mid", "kar":
+            return "midi";
+        case "mpe", "mpg":
+            return "mpeg";
+        default:
+            return ext;
         }
     }
 
@@ -133,6 +144,32 @@ public class Metadata implements MetadataProjection {
             return Set.of("tif", "tiff");
         default:
             return Set.of(ext);
+        }
+    }
+
+    @Transient
+    @JsonIgnore
+    public String getMime() {
+        String ext = getFileExtension();
+        switch (ext) {
+        case "djvu":
+            return "image/vnd.djvu";
+        case "gif", "jpeg", "png", "tiff", "webp":
+            return "image/" + ext;
+        case "svg":
+            return "image/svg+xml";
+        case "xcf":
+            return "image/x-xcf";
+        case "midi", "flac", "wav":
+            return "audio/" + ext;
+        case "webm":
+            return "video/" + ext;
+        case "pdf":
+            return "application/pdf";
+        case "stl":
+            return "application/sla";
+        default:
+            throw new IllegalStateException(ext);
         }
     }
 

@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.time.temporal.TemporalQueries.localDate;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
 
@@ -88,11 +89,14 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Revision;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsQuery;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.RevisionsQueryResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.SearchQuery;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.SearchQueryResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Slot;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.Tokens;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadApiResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UserInfo;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.WikiPage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeData;
@@ -373,6 +377,15 @@ public class CommonsService {
         return query != null ? query.getFilearchive() : Collections.emptyList();
     }
 
+    public Collection<WikiPage> searchImages(String text) throws IOException {
+        SearchQuery query = apiHttpGet(
+                List.of("?action=query", "generator=search", "gsrlimit=10", "gsroffset=0", "gsrinfo=totalhits",
+                        "gsrsearch=filetype%3Abitmap|drawing-fileres%3A0%20" + text, "prop=info|imageinfo|entityterms",
+                        "inprop=url", "gsrnamespace=6", "iiprop=url|size|mime|sha1").stream().collect(joining("&")),
+                SearchQueryResponse.class).getQuery();
+        return query != null && query.getPages() != null ? query.getPages().values() : Collections.emptyList();
+    }
+
     private <T> T apiHttpGet(String path, Class<T> responseClass) throws IOException {
         return httpGet(apiUrl.toExternalForm() + path + "&format=json", responseClass);
     }
@@ -392,6 +405,7 @@ public class CommonsService {
 
     private <T> T httpCall(Verb verb, String url, Class<T> responseClass, Map<String, String> headers,
             Map<String, String> params, boolean retryOnTimeout) throws IOException {
+        LOGGER.info("{} {}", verb, url);
         OAuthRequest request = new OAuthRequest(verb, url);
         request.setCharset(StandardCharsets.UTF_8.name());
         params.forEach(request::addParameter);
@@ -910,29 +924,33 @@ public class CommonsService {
     }
 
     private int computeAndSaveHash(CommonsImageProjection image) {
-        if (!hashRepository.existsById(image.getSha1())) {
+        return computeAndSaveHash(image.getSha1(), image.getName()) != null ? 1 : 0;
+    }
+
+    public HashAssociation computeAndSaveHash(String sha1, String name) {
+        if (!hashRepository.existsById(sha1)) {
             BufferedImage bi = null;
             try {
-                URL url = getImageUrl(image.getName());
-                bi = Utils.readImage(url, false, false);
+                URL url = getImageUrl(name);
+                bi = Utils.readImage(url, false, false).getLeft();
                 if (bi == null) {
                     throw new IOException("Failed to read image from " + url);
                 }
                 HashAssociation hash = hashRepository.save(
-                        new HashAssociation(image.getSha1(), HashHelper.encode(HashHelper.computePerceptualHash(bi))));
+                        new HashAssociation(sha1, HashHelper.encode(HashHelper.computePerceptualHash(bi))));
                 if (hashMode == ExecutionMode.REMOTE) {
                     remote.putHashAssociation(hash);
                 }
-                return 1;
+                return hash;
             } catch (IOException | URISyntaxException | ImageDecodingException | RuntimeException e) {
-                LOGGER.error("Failed to compute/save hash of {}: {}", image, e.toString());
+                LOGGER.error("Failed to compute/save hash of {}: {}", name, e.toString());
             } finally {
                 if (bi != null) {
                     bi.flush();
                 }
             }
         }
-        return 0;
+        return null;
     }
 
     protected static URL getImageUrl(String imageName) throws MalformedURLException {

@@ -18,7 +18,8 @@ class UtilsTest {
     void testReadWebpImage() throws Exception {
         BufferedImage bi = Utils
                 .readImage(new URL("https://upload.wikimedia.org/wikipedia/commons/3/33/2-michel-okujava.webp"), true,
-                        true);
+                        true)
+                .getLeft();
         assertNotNull(bi);
         try {
             assertEquals(112, bi.getWidth());
@@ -34,7 +35,8 @@ class UtilsTest {
     @Test
     void testReadJpgImage() throws Exception {
         BufferedImage bi = Utils.readImage(
-                new URL("https://upload.wikimedia.org/wikipedia/commons/7/74/Pile_Load_Testing.jpg"), true, true);
+                new URL("https://upload.wikimedia.org/wikipedia/commons/7/74/Pile_Load_Testing.jpg"), true, true)
+                .getLeft();
         assertNotNull(bi);
         try {
             assertEquals(1, bi.getWidth());

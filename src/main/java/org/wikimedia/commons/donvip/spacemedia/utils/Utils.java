@@ -32,6 +32,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -111,7 +112,7 @@ public final class Utils {
         return path.substring(path.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH);
     }
 
-    public static BufferedImage readImage(URL url, boolean readMetadata, boolean log)
+    public static Pair<BufferedImage, Long> readImage(URL url, boolean readMetadata, boolean log)
             throws IOException, URISyntaxException, ImageDecodingException {
         URI uri = urlToUri(url);
         if (log) {
@@ -129,10 +130,11 @@ public final class Utils {
                     ok = IMAGE_EXTENSIONS.contains(extension);
                 }
             }
+            long contentLength = response.getEntity().getContentLength();
             if (ok) {
-                return readImage(in, readMetadata);
+                return Pair.of(readImage(in, readMetadata), contentLength);
             } else if ("webp".equals(extension)) {
-                return readWebp(url, uri, readMetadata);
+                return Pair.of(readWebp(url, uri, readMetadata), contentLength);
             } else {
                 throw new ImageDecodingException(
                         "Unsupported format: " + extension + " / headers:" + response.getAllHeaders());

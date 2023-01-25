@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.ImageInfo;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.api.WikiPage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResExtraMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResExtraMediaRepository;
@@ -101,6 +105,9 @@ public class MediaService {
 
     @Value("${perceptual.threshold.variant}")
     private double perceptualThresholdVariant;
+
+    @Value("${perceptual.threshold.identicalid}")
+    private double perceptualThresholdIdenticalId;
 
     @Value("${update.fullres.images}")
     private boolean updateFullResImages;
@@ -354,9 +361,15 @@ public class MediaService {
             URL assetUrl = metadata.getAssetUrl();
             if (isImage && shouldReadImage(assetUrl, metadata, forceUpdateOfHashes)) {
                 try {
-                    bi = Utils.readImage(assetUrl, false, true);
+                    Pair<BufferedImage, Long> pair = Utils.readImage(assetUrl, false, true);
+                    bi = pair.getLeft();
                     if (bi != null && !Boolean.TRUE.equals(metadata.isReadableImage())) {
                         metadata.setReadableImage(Boolean.TRUE);
+                        result = true;
+                    }
+                    Long contentLength = pair.getRight();
+                    if (contentLength > 0 && metadata.getSize() == null) {
+                        metadata.setSize(contentLength);
                         result = true;
                     }
                 } catch (IOException | URISyntaxException | ImageDecodingException e) {
@@ -485,7 +498,8 @@ public class MediaService {
     }
 
     public boolean findCommonsFiles(Media<?, ?> media) throws IOException {
-        return findCommonsFilesWithSha1(media) || findCommonsFilesWithPhash(media);
+        return findCommonsFilesWithSha1(media) || findCommonsFilesWithPhash(media)
+                || findCommonsFilesWithIdAndPhash(media);
     }
 
     /**
@@ -568,6 +582,61 @@ public class MediaService {
             }
         }
         return false;
+    }
+
+    public boolean findCommonsFilesWithIdAndPhash(Media<?, ?> media) throws IOException {
+        boolean result = false;
+        Collection<WikiPage> images = commonsService.searchImages(media.getId().toString());
+        if (!images.isEmpty()) {
+            if (findCommonsFilesWithIdAndPhash(images, media.getMetadata(), media::getCommonsFileNames,
+                    media::setCommonsFileNames)) {
+                result = true;
+            }
+            if (media instanceof FullResMedia<?, ?> frMedia) {
+                if (findCommonsFilesWithIdAndPhash(images, frMedia.getFullResMetadata(),
+                        frMedia::getFullResCommonsFileNames, frMedia::setFullResCommonsFileNames)) {
+                    result = true;
+                }
+            }
+            if (media instanceof FullResExtraMedia<?, ?> exMedia) {
+                if (findCommonsFilesWithIdAndPhash(images, exMedia.getExtraMetadata(),
+                        exMedia::getExtraCommonsFileNames, exMedia::setExtraCommonsFileNames)) {
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean findCommonsFilesWithIdAndPhash(Collection<WikiPage> images, Metadata metadata,
+            Supplier<Set<String>> getter, Consumer<Set<String>> setter) {
+        if (metadata.getPhash() != null && isEmpty(getter.get())) {
+            for (WikiPage image : images.stream().filter(i -> filterByMimeAndSize(metadata, i.getImageInfo()[0]))
+                    .toList()) {
+                String filename = image.getTitle().replace("File:", "").replace(' ', '_');
+                String sha1base36 = CommonsService.base36Sha1(image.getImageInfo()[0].getSha1());
+                Optional<HashAssociation> hash = hashRepository.findById(sha1base36);
+                if (hash.isEmpty()) {
+                    hash = Optional.ofNullable(commonsService.computeAndSaveHash(sha1base36, filename));
+                }
+                double score = HashHelper.similarityScore(metadata.getPhash(),
+                        hash.orElseThrow(() -> new IllegalStateException("No hash for " + sha1base36)).getPhash());
+                if (score <= perceptualThresholdIdenticalId) {
+                    LOGGER.info("Found match ({}) between {} and {}", score, metadata, image);
+                    setter.accept(Set.of(filename));
+                    return true;
+                } else if (hash.isPresent()) {
+                    LOGGER.info("No match between {} and {} / {} -> {}", metadata, image, hash,
+                            HashHelper.similarityScore(metadata.getPhash(), hash.get().getPhash()));
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean filterByMimeAndSize(Metadata metadata, ImageInfo imageInfo) {
+        return metadata.getMime().equals(imageInfo.getMime()) && metadata.getSize() != null
+                && metadata.getSize() <= imageInfo.getSize();
     }
 
     private static String findYouTubeId(String text) {
