@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
@@ -28,6 +29,11 @@ public class SpacemediaUpdateJobConfiguration {
     @Bean
     public SearchService searchService() {
         return new SearchService();
+    }
+
+    @Bean
+    public GoogleTranslateService translateService() {
+        return new GoogleTranslateService();
     }
 
     @Bean

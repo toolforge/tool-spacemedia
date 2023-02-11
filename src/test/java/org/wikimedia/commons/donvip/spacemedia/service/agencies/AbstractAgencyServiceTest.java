@@ -11,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
@@ -45,6 +46,9 @@ public abstract class AbstractAgencyServiceTest {
 
     @MockBean
     protected TransactionService transactionService;
+
+    @MockBean
+    protected GoogleTranslateService translate;
 
     @MockBean
     protected Mapper mapper;

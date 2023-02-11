@@ -67,6 +67,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenExc
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
+import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
@@ -114,6 +115,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     private SearchService searchService;
     @Autowired
     private RemoteService remoteService;
+    @Autowired
+    private GoogleTranslateService translateService;
 
     @Autowired
     private Environment env;
@@ -510,15 +513,19 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             commonsService.cleanupCategories(findCategories(media, metadata, true))
                     .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
             return sb.toString();
-        } catch (MalformedURLException e) {
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    protected String getWikiFileDesc(T media, Metadata metadata) throws MalformedURLException {
-        StringBuilder sb = new StringBuilder("{{Information\n| description = ")
-                .append("{{").append(getLanguage(media)).append("|1=")
-                .append(CommonsService.formatWikiCode(getDescription(media))).append("}}");
+    protected String getWikiFileDesc(T media, Metadata metadata) throws IOException {
+        String language = getLanguage(media);
+        String description = getDescription(media);
+        StringBuilder sb = new StringBuilder("{{Information\n| description = ");
+        appendWikiDescriptionInLanguage(sb, language, description);
+        if (!"en".equals(language)) {
+            appendWikiDescriptionInLanguage(sb, "en", translateService.translate(description, language, "en"));
+        }
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
         sb.append("\n| source = ").append(getSource(media))
           .append("\n| author = ").append(getAuthor(media));
@@ -528,6 +535,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
         return sb.toString();
+    }
+
+    protected final void appendWikiDescriptionInLanguage(StringBuilder sb, String language, String description) {
+        sb.append("{{").append(language).append("|1=").append(CommonsService.formatWikiCode(description)).append("}}");
     }
 
     protected final Optional<String> getWikiDate(T media) {

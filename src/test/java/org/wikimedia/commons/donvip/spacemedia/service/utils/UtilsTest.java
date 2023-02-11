@@ -35,11 +35,11 @@ class UtilsTest {
     @Test
     void testReadJpgImage() throws Exception {
         BufferedImage bi = Utils.readImage(
-                new URL("https://upload.wikimedia.org/wikipedia/commons/7/74/Pile_Load_Testing.jpg"), true, true)
+                new URL("https://upload.wikimedia.org/wikipedia/commons/7/78/Empty_200x1.jpg"), true, true)
                 .getLeft();
         assertNotNull(bi);
         try {
-            assertEquals(1, bi.getWidth());
+            assertEquals(200, bi.getWidth());
             assertEquals(1, bi.getHeight());
         } finally {
             bi.flush();
