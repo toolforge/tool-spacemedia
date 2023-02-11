@@ -375,6 +375,7 @@
 				<version>3.0.0-M7</version>
 				<configuration>
 					<forkCount>0</forkCount>
+					<redirectTestOutputToFile>true</redirectTestOutputToFile>
 				</configuration>
 			</plugin>
 			<plugin>

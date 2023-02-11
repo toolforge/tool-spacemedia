@@ -130,6 +130,8 @@ public class CommonsService {
     private static final Pattern EXACT_DUPE_ERROR = Pattern.compile(
             "The upload is an exact duplicate of the current version of \\[\\[:File:(.+)\\]\\]\\.");
 
+    private static final Pattern REMOTE_FILE_URL = Pattern.compile("https?://.+\\.[a-zA-Z]{3,4}");
+
     /**
      * Minimal delay between successive uploads, in seconds.
      */
@@ -648,7 +650,8 @@ public class CommonsService {
 
     public boolean isPermittedFileType(String url) {
         String lowerCaseUrl = url.toLowerCase(Locale.ENGLISH);
-        return permittedFileTypes.stream().anyMatch(type -> lowerCaseUrl.endsWith("." + type));
+        return !REMOTE_FILE_URL.matcher(url).matches()
+                || permittedFileTypes.stream().anyMatch(type -> lowerCaseUrl.endsWith("." + type));
     }
 
     private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1,

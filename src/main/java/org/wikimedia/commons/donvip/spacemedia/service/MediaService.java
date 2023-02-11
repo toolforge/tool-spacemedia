@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,8 +67,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
-
-import io.micrometer.core.instrument.util.StringUtils;
 
 @Service
 public class MediaService {
@@ -635,7 +634,7 @@ public class MediaService {
     }
 
     private static boolean filterByMimeAndSize(Metadata metadata, ImageInfo imageInfo) {
-        return metadata.getMime().equals(imageInfo.getMime()) && metadata.getSize() != null
+        return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.getSize() != null
                 && metadata.getSize() <= imageInfo.getSize();
     }
 

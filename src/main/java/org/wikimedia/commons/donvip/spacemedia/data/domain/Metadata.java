@@ -169,7 +169,7 @@ public class Metadata implements MetadataProjection {
         case "stl":
             return "application/sla";
         default:
-            throw new IllegalStateException(ext);
+            return null;
         }
     }
 

@@ -193,6 +193,12 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
     }
 
     @Override
+    protected boolean isPermittedFileType(Metadata metadata) {
+        return metadata.getAssetUrl() != null && metadata.getAssetUrl().toExternalForm()
+                .startsWith("https://www.kari.re.kr/image/kari_image_down.do?");
+    }
+
+    @Override
     protected KariMedia refresh(KariMedia media) throws IOException {
         throw new UnsupportedOperationException(); // TODO
     }

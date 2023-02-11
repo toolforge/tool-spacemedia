@@ -2,20 +2,24 @@ package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaCommonConfiguration;
@@ -98,6 +102,13 @@ class CommonsServiceTest {
     }
 
     @Test
+    void testIsPermittedFileType() {
+        assertTrue(service.isPermittedFileType("https://www.kari.re.kr/image/kari_image_down.do?idx=79"));
+        assertTrue(service.isPermittedFileType("https://photojournal.jpl.nasa.gov/archive/PIA25257.gif"));
+    }
+
+    @Test
+    @Disabled("requires credentials on command line")
     void testgetWikiHtmlPreview() throws IOException {
         assertNotNull(service.getWikiHtmlPreview(
                 """
@@ -136,6 +147,11 @@ class CommonsServiceTest {
     @Configuration
     @Import(SpacemediaCommonConfiguration.class)
     public static class TestConfig {
+        @Bean
+        public ConversionService conversionService() {
+            return ApplicationConversionService.getSharedInstance();
+        }
+
         @Bean
         public CommonsService service(@Value("${application.version}") String appVersion,
                 @Value("${application.contact}") String appContact,
