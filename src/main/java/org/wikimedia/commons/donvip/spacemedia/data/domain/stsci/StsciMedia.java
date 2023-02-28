@@ -146,7 +146,7 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
 
     @Override
     public String toString() {
-        return "HubbleNasaMedia [id=" + id + ", newsId=" + newsId + ", date=" + date + ", objectName=" + objectName
+        return "StsciMedia [id=" + id + ", newsId=" + newsId + ", date=" + date + ", objectName=" + objectName
                 + ", mission=" + mission + ']';
     }
 
