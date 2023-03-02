@@ -299,13 +299,15 @@ public class CommonsService {
     }
 
     private static void displayUsedMemory() {
-        Runtime runtime = Runtime.getRuntime();
-        long total = runtime.totalMemory();
-        long free = runtime.freeMemory();
-        LOGGER.info("Memory used: {}. Free: {}. Total: {}.",
-                FileUtils.byteCountToDisplaySize(total - free),
-                FileUtils.byteCountToDisplaySize(free),
-                FileUtils.byteCountToDisplaySize(total));
+        if (LOGGER.isDebugEnabled()) {
+            Runtime runtime = Runtime.getRuntime();
+            long total = runtime.totalMemory();
+            long free = runtime.freeMemory();
+            LOGGER.debug("Memory used: {}. Free: {}. Total: {}.",
+                    FileUtils.byteCountToDisplaySize(total - free),
+                    FileUtils.byteCountToDisplaySize(free),
+                    FileUtils.byteCountToDisplaySize(total));
+        }
     }
 
     /**
