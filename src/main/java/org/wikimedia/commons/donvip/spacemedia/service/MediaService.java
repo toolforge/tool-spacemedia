@@ -497,7 +497,7 @@ public class MediaService {
     }
 
     public boolean findCommonsFiles(Media<?, ?> media) throws IOException {
-        return findCommonsFilesWithSha1(media) || findCommonsFilesWithPhash(media)
+        return findCommonsFilesWithSha1(media) || findCommonsFilesWithPhash(media, true)
                 || findCommonsFilesWithIdAndPhash(media);
     }
 
@@ -545,22 +545,23 @@ public class MediaService {
      * if required.
      *
      * @param media media object
+     * @param excludeSelfSha1 whether to exclude media's own sha1 from search
      * @return {@code true} if media has been updated with list of Wikimedia Commons
      *         files and must be persisted
      * @throws IOException in case of I/O error
      */
-    public boolean findCommonsFilesWithPhash(Media<?, ?> media) throws IOException {
+    public boolean findCommonsFilesWithPhash(Media<?, ?> media, boolean excludeSelfSha1) throws IOException {
         boolean result = findCommonsFilesWithPhash(media.getMetadata(), media::getCommonsFileNames,
-                media::setCommonsFileNames);
+                media::setCommonsFileNames, excludeSelfSha1);
         if (media instanceof FullResMedia<?, ?> frMedia) {
             if (findCommonsFilesWithPhash(frMedia.getFullResMetadata(), frMedia::getFullResCommonsFileNames,
-                    frMedia::setFullResCommonsFileNames)) {
+                    frMedia::setFullResCommonsFileNames, excludeSelfSha1)) {
                 result = true;
             }
         }
         if (media instanceof FullResExtraMedia<?, ?> exMedia) {
             if (findCommonsFilesWithPhash(exMedia.getExtraMetadata(), exMedia::getExtraCommonsFileNames,
-                    exMedia::setExtraCommonsFileNames)) {
+                    exMedia::setExtraCommonsFileNames, excludeSelfSha1)) {
                 result = true;
             }
         }
@@ -568,10 +569,13 @@ public class MediaService {
     }
 
     private boolean findCommonsFilesWithPhash(Metadata metadata, Supplier<Set<String>> getter,
-            Consumer<Set<String>> setter) throws IOException {
+            Consumer<Set<String>> setter, boolean excludeSelfSha1) throws IOException {
         String phash = metadata.getPhash();
         if (phash != null && isEmpty(getter.get())) {
             List<String> sha1s = hashRepository.findSha1ByPhash(phash);
+            if (excludeSelfSha1) {
+                sha1s.remove(metadata.getSha1());
+            }
             if (!sha1s.isEmpty()) {
                 Set<String> files = commonsService.findFilesWithSha1(sha1s);
                 if (!files.isEmpty()) {
