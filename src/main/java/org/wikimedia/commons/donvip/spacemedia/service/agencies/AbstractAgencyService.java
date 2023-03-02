@@ -128,6 +128,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @SuppressWarnings("unused")
     private Set<String> ignoredCommonTerms;
 
+    @Value("${courtesy.ok}")
+    private Set<String> courtesyOk;
+
     @Value("${execution.mode}")
     private ExecutionMode executionMode;
 
@@ -764,9 +767,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         MediaUpdateResult ur = mediaService.updateMedia(media, getOriginalRepository(), forceUpdate,
                 checkBlocklist(), null);
         boolean result = false;
-        if (media.getDescription().toLowerCase(Locale.ENGLISH).contains("courtesy ")
-                && findTemplates(media).isEmpty()) {
-            result = ignoreFile(media, "Courtesy photo without clear licensing");
+        String description = media.getDescription().toLowerCase(Locale.ENGLISH);
+        if (description.contains("courtesy")
+                && (findTemplates(media).isEmpty() || courtesyOk.stream().noneMatch(description::contains))) {
+            result = ignoreFile(media, "Probably non-free image (courtesy)");
         }
         return new MediaUpdateResult(result, ur.getException());
     }

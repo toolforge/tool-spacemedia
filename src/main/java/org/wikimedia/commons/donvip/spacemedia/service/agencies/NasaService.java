@@ -206,10 +206,6 @@ public class NasaService
                 ignoreFile(media, "Photojournal");
                 save = true;
             }
-            if (media.getDescription().contains("Image courtesy of CNES.")) {
-                ignoreFile(media, "Non-free image (courtesy)");
-                save = true;
-            }
         }
         if (doCommonUpdate(media)) {
             save = true;
