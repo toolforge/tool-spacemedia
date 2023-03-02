@@ -407,7 +407,7 @@ public class CommonsService {
 
     private <T> T httpCall(Verb verb, String url, Class<T> responseClass, Map<String, String> headers,
             Map<String, String> params, boolean retryOnTimeout) throws IOException {
-        LOGGER.info("{} {}", verb, url);
+        LOGGER.debug("{} {}", verb, url);
         OAuthRequest request = new OAuthRequest(verb, url);
         request.setCharset(StandardCharsets.UTF_8.name());
         params.forEach(request::addParameter);
