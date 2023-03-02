@@ -1,1 +1,2 @@
-45 8,18 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa
+0 0 * * * /bin/sh killall -q java;/data/project/spacemedia/run.sh custom nasa
+0 2 * * * /bin/sh killall -q java;/data/project/spacemedia/run.sh web
