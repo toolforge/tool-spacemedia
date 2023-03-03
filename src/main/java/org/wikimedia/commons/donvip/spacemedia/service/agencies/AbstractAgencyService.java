@@ -767,10 +767,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         MediaUpdateResult ur = mediaService.updateMedia(media, getOriginalRepository(), forceUpdate,
                 checkBlocklist(), null);
         boolean result = false;
-        String description = media.getDescription().toLowerCase(Locale.ENGLISH);
-        if (description.contains("courtesy")
-                && (findTemplates(media).isEmpty() || courtesyOk.stream().noneMatch(description::contains))) {
-            result = ignoreFile(media, "Probably non-free image (courtesy)");
+        if (media.getDescription() != null) {
+            String description = media.getDescription().toLowerCase(Locale.ENGLISH);
+            if (description.contains("courtesy")
+                    && (findTemplates(media).isEmpty() || courtesyOk.stream().noneMatch(description::contains))) {
+                result = ignoreFile(media, "Probably non-free image (courtesy)");
+            }
         }
         return new MediaUpdateResult(result, ur.getException());
     }

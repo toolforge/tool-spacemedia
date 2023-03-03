@@ -201,11 +201,10 @@ public class NasaService
                 save = true;
             }
         }
-        if (media.isIgnored() != Boolean.TRUE) {
-            if (media.getDescription().contains("/photojournal")) {
-                ignoreFile(media, "Photojournal");
-                save = true;
-            }
+        if (media.isIgnored() != Boolean.TRUE && media.getDescription() != null
+                && media.getDescription().contains("/photojournal")) {
+            ignoreFile(media, "Photojournal");
+            save = true;
         }
         if (doCommonUpdate(media)) {
             save = true;
