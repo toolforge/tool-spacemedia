@@ -110,6 +110,11 @@ public class IauService extends CommonEsoService<IauMedia> {
     }
 
     @Override
+    public final String getSource(IauMedia media) throws MalformedURLException {
+        return "{{IAU-source|" + media.getId() + "|" + media.getId() + "}}";
+    }
+
+    @Override
     protected Matcher getLocalizedUrlMatcher(String imgUrlLink) {
         return PATTERN_LOCALIZED_URL.matcher(imgUrlLink);
     }

@@ -56,6 +56,11 @@ public class EsoService extends CommonEsoService<EsoMedia> {
     }
 
     @Override
+    public final String getSource(EsoMedia media) throws MalformedURLException {
+        return "{{ESO-source|" + media.getId() + "|" + media.getId() + "}}";
+    }
+
+    @Override
     protected Matcher getLocalizedUrlMatcher(String imgUrlLink) {
         return PATTERN_LOCALIZED_URL.matcher(imgUrlLink);
     }
