@@ -23,6 +23,7 @@ import org.springframework.transaction.TransactionException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 
 @Service
 public class KariService extends AbstractAgencyService<KariMedia, Integer, LocalDate, KariMedia, Integer, LocalDate> {
@@ -65,6 +66,11 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
 
     @Override
     protected Optional<Temporal> getCreationDate(KariMedia media) {
+        return Optional.ofNullable(media.getCreationDate());
+    }
+
+    @Override
+    protected Optional<Temporal> getUploadDate(KariMedia media) {
         return Optional.ofNullable(media.getDate());
     }
 
@@ -74,8 +80,13 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
     }
 
     @Override
+    public final String getSource(KariMedia media) throws MalformedURLException {
+        return "{{KARI-source|" + media.getId() + "|" + media.getKariId() + "}}";
+    }
+
+    @Override
     protected final String getAuthor(KariMedia media) {
-        return "Korea Aerospace Research Institute";
+        return "{{Creator:KARI}}";
     }
 
     private String getViewUrl(int id) {
@@ -102,40 +113,17 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         int id = 1;
         while (consecutiveFailures < maxFailures) {
             boolean save = false;
-            KariMedia media = null;
             String viewUrl = getViewUrl(id);
             URL view = new URL(viewUrl);
             Optional<KariMedia> mediaInRepo = repository.findById(id);
-            if (mediaInRepo.isPresent()) {
-                media = mediaInRepo.get();
-            }
-            if (media == null || media.getThumbnailUrl() == null) {
-                try {
-                    Element div = Jsoup.connect(viewUrl).timeout(60_000).get().getElementsByClass("board_view").get(0);
-                    String title = div.getElementsByTag("h4").get(0).text();
-                    if (!title.isEmpty()) {
-                        consecutiveFailures = 0;
-                        Element infos = div.getElementsByClass("photo_infor").get(0);
-                        Elements lis = infos.getElementsByTag("li");
-                        if (media == null && lis.get(lis.size() - 1).getElementsByTag("img").attr("src").endsWith(koglType1Icon)) {
-                            media = buildMedia(id, view, div, title, infos, lis);
-                            save = true;
-                        }
-                        if (media != null && media.getThumbnailUrl() == null) {
-                            String src = div.getElementsByClass("board_txt").get(0).getElementsByTag("img").attr("src")
-                                    .replace("/view/", "/lst/");
-                            if (StringUtils.isNotBlank(src)) {
-                                media.setThumbnailUrl(new URL(view.getProtocol(), view.getHost(), src));
-                                save = true;
-                            }
-                        }
-                    } else {
-                        consecutiveFailures++;
-                    }
-                } catch (DateTimeParseException e) {
-                    LOGGER.error("Cannot parse HTML", e);
-                } catch (IOException e) {
-                    problem(view, e);
+            KariMedia media = mediaInRepo.orElse(null);
+            if (media == null) {
+                KariUpdateResult result = fetchMedia(id);
+                media = result.getMedia();
+                save = result.getResult();
+                if (result.isResetConsecutiveFailures()) {
+                    consecutiveFailures = 0;
+                } else if (result.isIncrementConsecutiveFailures()) {
                     consecutiveFailures++;
                 }
             }
@@ -144,12 +132,72 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
                     processMedia(save, media, view, mediaInRepo.isPresent());
                     count++;
                 } catch (TransactionException e) {
-                    LOGGER.error("Transaction error when saving " + media, e);
+                    LOGGER.error("Transaction error when saving {}", media, e);
                 }
             }
             id++;
         }
         endUpdateMedia(count, start);
+    }
+
+    static class KariUpdateResult extends MediaUpdateResult {
+
+        private final KariMedia media;
+        private final boolean resetConsecutiveFailures;
+        private final boolean incrementConsecutiveFailures;
+
+        public KariUpdateResult(KariMedia media, boolean result, boolean resetConsecutiveFailures,
+                boolean incrementConsecutiveFailures, Exception exception) {
+            super(result, exception);
+            this.media = media;
+            this.resetConsecutiveFailures = resetConsecutiveFailures;
+            this.incrementConsecutiveFailures = incrementConsecutiveFailures;
+        }
+
+        public KariMedia getMedia() {
+            return media;
+        }
+
+        public boolean isResetConsecutiveFailures() {
+            return resetConsecutiveFailures;
+        }
+
+        public boolean isIncrementConsecutiveFailures() {
+            return incrementConsecutiveFailures;
+        }
+    }
+
+    private KariUpdateResult fetchMedia(int id) throws MalformedURLException {
+        String viewUrl = getViewUrl(id);
+        URL view = new URL(viewUrl);
+        KariMedia media = null;
+        boolean resetConsecutiveFailures = false;
+        boolean incrementConsecutiveFailures = false;
+        Exception ex = null;
+        try {
+            Element div = Jsoup.connect(viewUrl).timeout(60_000).get().getElementsByClass("board_view").get(0);
+            String title = div.getElementsByTag("h4").get(0).text();
+            if (!title.isEmpty()) {
+                resetConsecutiveFailures = true;
+                Element infos = div.getElementsByClass("photo_infor").get(0);
+                Elements lis = infos.getElementsByTag("li");
+                if (lis.get(lis.size() - 1).getElementsByTag("img").attr("src").endsWith(koglType1Icon)) {
+                    media = buildMedia(id, view, div, title, infos, lis);
+                } else {
+                    LOGGER.info("Media {} exists but appears to be non-free (Not KOGL type 1)", id);
+                }
+            } else {
+                incrementConsecutiveFailures = true;
+            }
+        } catch (DateTimeParseException e) {
+            LOGGER.error("Cannot parse HTML", e);
+            ex = e;
+        } catch (IOException e) {
+            problem(view, e);
+            incrementConsecutiveFailures = true;
+            ex = e;
+        }
+        return new KariUpdateResult(media, media != null, resetConsecutiveFailures, incrementConsecutiveFailures, ex);
     }
 
     protected KariMedia processMedia(boolean save, KariMedia media, URL view, boolean mediaInRepo) throws IOException {
@@ -189,6 +237,11 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         if (StringUtils.isNotBlank(href)) {
             media.getMetadata().setAssetUrl(new URL(view.getProtocol(), view.getHost(), href));
         }
+        String src = div.getElementsByClass("board_txt").get(0).getElementsByTag("img").attr("src").replace("/view/",
+                "/lst/");
+        if (StringUtils.isNotBlank(src)) {
+            media.setThumbnailUrl(new URL(view.getProtocol(), view.getHost(), src));
+        }
         return media;
     }
 
@@ -200,6 +253,6 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
 
     @Override
     protected KariMedia refresh(KariMedia media) throws IOException {
-        throw new UnsupportedOperationException(); // TODO
+        return media.copyDataFrom(fetchMedia(media.getId()).getMedia());
     }
 }

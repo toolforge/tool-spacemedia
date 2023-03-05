@@ -1,13 +1,17 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.kari;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -18,6 +22,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, phash") })
 public class KariMedia extends Media<Integer, LocalDate> {
+
+    private static final Pattern ID_REGEX = Pattern.compile("P_[^_]*_([^_]*)_(\\d{2})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})",
+            Pattern.CASE_INSENSITIVE);
 
     @Id
     @Column(nullable = false)
@@ -54,6 +61,25 @@ public class KariMedia extends Media<Integer, LocalDate> {
     @Override
     public void setDate(LocalDate date) {
         this.date = date;
+    }
+
+    @Transient
+    public LocalDate getCreationDate() {
+        Matcher m = ID_REGEX.matcher(kariId);
+        if (m.matches()) {
+            int year = 2000 + Integer.parseInt(m.group(2));
+            if (year > LocalDateTime.now().getYear()) {
+                year -= 100;
+            }
+            return LocalDate.of(year, Integer.parseInt(m.group(3)), Integer.parseInt(m.group(4)));
+        }
+        return null;
+    }
+
+    @Transient
+    public String getMission() {
+        Matcher m = ID_REGEX.matcher(kariId);
+        return m.matches() ? m.group(1) : "";
     }
 
     @Override
@@ -93,5 +119,12 @@ public class KariMedia extends Media<Integer, LocalDate> {
     @Override
     public boolean isVideo() {
         return false;
+    }
+
+    public KariMedia copyDataFrom(KariMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        this.kariId = mediaFromApi.kariId;
+        this.date = mediaFromApi.date;
+        return this;
     }
 }
