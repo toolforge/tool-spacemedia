@@ -69,6 +69,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
@@ -367,11 +368,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             media = apiFetcher.get();
             save = true;
         }
-        if (mediaService.updateMedia(media, getOriginalRepository(), false).getResult()) {
-            save = true;
-        }
-        if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredCategories.contains(media.getCategory())) {
-            ignoreFile(media, "Ignored category: " + media.getCategory());
+        MediaUpdateResult update = processDvidsMediaUpdate(media, false);
+        if (update.getResult()) {
             save = true;
         }
         if (shouldUploadAuto(media)) {
@@ -385,6 +383,20 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             save(media);
         }
         return 1;
+    }
+
+    private MediaUpdateResult processDvidsMediaUpdate(DvidsMedia media, boolean forceUpdate) throws IOException {
+        MediaUpdateResult commonUpdate = doCommonUpdate(media, forceUpdate);
+        boolean save = commonUpdate.getResult();
+        if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredCategories.contains(media.getCategory())) {
+            save = ignoreFile(media, "Ignored category: " + media.getCategory());
+        }
+        if (findTemplates(media).isEmpty()) {
+            // DVIDS media with VIRIN "O". we can assume it implies a courtesy photo
+            // https://www.dvidshub.net/image/3322521/45th-sw-supports-successful-atlas-v-oa-7-launch
+            save = ignoreFile(media, "No template found (VIRIN O): " + media.getVirin());
+        }
+        return new MediaUpdateResult(save, commonUpdate.getException());
     }
 
     protected boolean updateCategoryAndCdnUrls(DvidsMedia media, Supplier<DvidsMedia> apiFetcher) {
@@ -411,7 +423,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     @Override
     public final DvidsMedia refreshAndSave(DvidsMedia media) throws IOException {
         media = refresh(media);
-        Exception e = doCommonUpdate(media, true).getException();
+        Exception e = processDvidsMediaUpdate(media, true).getException();
         if (e instanceof NotFound) {
             return deleteMedia(media, e);
         } else {
@@ -534,15 +546,17 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         if (t != null && StringUtils.isNotBlank(t.getPdTemplate())) {
             result.add(t.getPdTemplate());
         }
-        if (media.getDescription().contains("Space Force photo")) {
-            result.add("PD-USGov-Military-Space Force");
-            result.remove("PD-USGov-Military-Air Force");
-        }
-        if (media.getDescription().contains("hoto by SpaceX") || media.getDescription().contains("hoto/SpaceX")) {
-            result.add("PD-SpaceX");
-        }
-        if (media.getDescription().contains("hoto by NASA") || media.getDescription().contains("hoto/NASA")) {
-            result.add("PD-NASA");
+        if (media.getDescription() != null) {
+            if (media.getDescription().contains("Space Force photo")) {
+                result.add("PD-USGov-Military-Space Force");
+                result.remove("PD-USGov-Military-Air Force");
+            }
+            if (media.getDescription().contains("hoto by SpaceX") || media.getDescription().contains("hoto/SpaceX")) {
+                result.add("PD-SpaceX");
+            }
+            if (media.getDescription().contains("hoto by NASA") || media.getDescription().contains("hoto/NASA")) {
+                result.add("PD-NASA");
+            }
         }
         return result;
     }
