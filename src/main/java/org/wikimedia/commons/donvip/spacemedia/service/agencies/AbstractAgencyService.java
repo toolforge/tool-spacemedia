@@ -774,6 +774,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 result = ignoreFile(media, "Probably non-free image (courtesy)");
             }
         }
+        if (StringUtils.length(media.getTitle()) + StringUtils.length(media.getDescription()) <= 2) {
+            // To ignore https://www.dvidshub.net/image/6592675 (title and desc are '.')
+            result = ignoreFile(media, "Very short or missing title and description");
+        }
         return new MediaUpdateResult(result, ur.getException());
     }
 
