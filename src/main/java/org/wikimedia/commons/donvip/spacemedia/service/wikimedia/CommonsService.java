@@ -650,7 +650,7 @@ public class CommonsService {
     public static String normalizeFilename(String filename) {
         // replace forbidden chars, see https://www.mediawiki.org/wiki/Manual:$wgIllegalFileChars
         return filename.replace('/', '-').replace(':', '-').replace('\\', '-').replace('.', '_').replace("&amp;", "&")
-                .replace("â€™", "’").trim();
+                .replace("â€™", "’").replace("http---", "").replace("https---", "").trim();
     }
 
     public boolean isPermittedFileType(String url) {

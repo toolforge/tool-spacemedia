@@ -23,6 +23,7 @@ import javax.persistence.Table;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -300,14 +301,15 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
 
     @Override
     public final String getUploadTitle() {
-        if (isTitleBlacklisted()) {
+        String normalizedTitle = CommonsService.normalizeFilename(title);
+        if (isTitleBlacklisted(normalizedTitle)) {
             // Avoid https://commons.wikimedia.org/wiki/MediaWiki:Titleblacklist
             // # File names with no letters, except for some meaningless prefix:
             // File:\P{L}*\.[^.]+
             // File:\P{L}*(small|medium|large)\)?\.[^.]+
-            return title + " (" + unit + " " + getId().getId() + ")";
+            return normalizedTitle + " (" + unit + " " + getId().getId() + ")";
         } else {
-            return title + " (" + getId().getId() + ")";
+            return normalizedTitle + " (" + getId().getId() + ")";
         }
     }
 

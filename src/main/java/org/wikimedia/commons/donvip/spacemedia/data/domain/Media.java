@@ -47,6 +47,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 public abstract class Media<ID, D extends Temporal> implements MediaProjection<ID> {
 
     private static final Pattern ONLY_DIGITS = Pattern.compile("\\d+");
+    private static final Pattern URI_LIKE = Pattern.compile("Https?\\-\\-.*", Pattern.CASE_INSENSITIVE);
 
     @Embedded
     protected Metadata metadata = new Metadata();
@@ -124,7 +125,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         String id = CommonsService.normalizeFilename(getId().toString());
         String s = CommonsService.normalizeFilename(title);
         if (id.equals(s)) {
-            return isTitleBlacklisted()
+            return isTitleBlacklisted(s)
                     ? getUploadTitle(CommonsService.normalizeFilename(getFirstSentence(description)), id)
                     : s.substring(0, Math.min(239, s.length()));
         } else {
@@ -354,13 +355,13 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     /**
      * Determines if title is blacklisted according to
-     * https://commons.wikimedia.org/wiki/MediaWiki:Titleblacklist
+     * https://commons.wikimedia.org/wiki/MediaWiki:Titleblacklist or
+     * https://meta.wikimedia.org/wiki/Title_blacklist
      *
      * @return {@code true} if title is blacklisted by mediawiki
      */
-    @Transient
-    @JsonIgnore
-    public boolean isTitleBlacklisted() {
-        return ONLY_DIGITS.matcher(title.replace(" ", "").replace("/", "").replace("_", "")).matches();
+    public boolean isTitleBlacklisted(String title) {
+        return ONLY_DIGITS.matcher(title.replace(" ", "").replace("/", "").replace("_", "").replace("-", "")).matches()
+                || URI_LIKE.matcher(title).matches();
     }
 }
