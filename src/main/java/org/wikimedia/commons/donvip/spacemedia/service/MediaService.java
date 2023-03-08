@@ -145,7 +145,7 @@ public class MediaService {
         return new MediaUpdateResult(result, ur.getException());
     }
 
-    private boolean belongsToBlocklist(Media<?, ?> media) {
+    protected boolean belongsToBlocklist(Media<?, ?> media) {
         String titleAndDescription = "";
         if (media.getTitle() != null) {
             titleAndDescription += media.getTitle().toLowerCase(Locale.ENGLISH);
@@ -154,6 +154,8 @@ public class MediaService {
             titleAndDescription += media.getDescription().toLowerCase(Locale.ENGLISH);
         }
         if (!titleAndDescription.isEmpty()) {
+            titleAndDescription = titleAndDescription.replace("\r\n", " ").replace('\t', ' ').replace('\r', ' ')
+                    .replace('\n', ' ');
             String ignoredTerms = blockListIgnoredTerms.parallelStream().filter(titleAndDescription::contains).sorted()
                     .collect(joining(","));
             if (!ignoredTerms.isEmpty()) {
