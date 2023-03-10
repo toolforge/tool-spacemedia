@@ -14,6 +14,7 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Table(indexes = { @Index(columnList = "sha1, full_res_sha1, phash, full_res_phash") })
@@ -163,7 +164,7 @@ public class EsaMedia extends FullResMedia<Integer, LocalDateTime> {
 
     @Override
     public String getUploadTitle() {
-        return title + " ESA" + getId();
+        return CommonsService.normalizeFilename(title) + " ESA" + getId();
     }
 
     @Override
