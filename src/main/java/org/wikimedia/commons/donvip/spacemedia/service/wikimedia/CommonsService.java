@@ -643,8 +643,9 @@ public class CommonsService {
         return badWikiCode.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", "[$1 $2]");
     }
 
-    public String upload(String wikiCode, String filename, URL url, String sha1) throws IOException, UploadException {
-        return doUpload(wikiCode, normalizeFilename(filename), url, sha1, true, true, true);
+    public String upload(String wikiCode, String filename, String ext, URL url, String sha1)
+            throws IOException, UploadException {
+        return doUpload(wikiCode, normalizeFilename(filename), ext, url, sha1, true, true, true);
     }
 
     public static String normalizeFilename(String filename) {
@@ -659,7 +660,7 @@ public class CommonsService {
                 || permittedFileTypes.stream().anyMatch(type -> lowerCaseUrl.endsWith("." + type));
     }
 
-    private synchronized String doUpload(String wikiCode, String filename, URL url, String sha1,
+    private synchronized String doUpload(String wikiCode, String filename, String ext, URL url, String sha1,
             boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error)
             throws IOException, UploadException {
         if (!isPermittedFileType(url.toExternalForm())) {
@@ -669,7 +670,7 @@ public class CommonsService {
                 "action", "upload",
                 "comment", "#Spacemedia - Upload of " + url + " via [[:Commons:Spacemedia]]",
                 "format", "json",
-                "filename", Objects.requireNonNull(filename, "filename"),
+                "filename", Objects.requireNonNull(filename, "filename") + '.' + ext,
                 "ignorewarnings", "1",
                 "text", Objects.requireNonNull(wikiCode, "wikiCode"),
                 "token", token
@@ -690,11 +691,12 @@ public class CommonsService {
         if (error != null) {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
                 token = queryTokens().getCsrftoken();
-                return doUpload(wikiCode, filename, url, sha1, false, retryWithSanitizedUrl, true);
+                return doUpload(wikiCode, filename, ext, url, sha1, false, retryWithSanitizedUrl, true);
             }
             if (retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
                 try {
-                    return doUpload(wikiCode, filename, Utils.urlToUri(url).toURL(), sha1, renewTokenIfBadToken, false,
+                    return doUpload(wikiCode, filename, ext, Utils.urlToUri(url).toURL(), sha1, renewTokenIfBadToken,
+                            false,
                             true);
                 } catch (URISyntaxException e) {
                     throw new UploadException(error.getCode(), e);
@@ -708,7 +710,7 @@ public class CommonsService {
             }
             if (retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
                     && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT".equals(error.getInfo())) {
-                return doUpload(wikiCode, filename, url, sha1, renewTokenIfBadToken, true, false);
+                return doUpload(wikiCode, filename, ext, url, sha1, renewTokenIfBadToken, true, false);
             }
             throw new UploadException(error.toString());
         } else if (!"Success".equals(upload.getResult())) {

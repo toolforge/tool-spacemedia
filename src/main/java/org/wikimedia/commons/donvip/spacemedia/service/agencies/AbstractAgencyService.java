@@ -471,7 +471,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         if (metadata != null && metadata.getAssetUrl() != null && shouldUpload(media, metadata, getter.get())) {
             checkUploadPreconditions(media, metadata, getter.get(), checkUnicity);
             setter.accept(new HashSet<>(Set.of(
-                    commonsService.upload(getWikiCode(media, metadata), media.getUploadTitle(), metadata.getAssetUrl(), metadata.getSha1()))));
+                    commonsService.upload(getWikiCode(media, metadata), media.getUploadTitle(),
+                            metadata.getFileExtension(), metadata.getAssetUrl(), metadata.getSha1()))));
         } else {
             LOGGER.info(
                     "Upload not done for {} / {}. Upload mode: {}. Ignored: {}. Commons filenames: {}. Permitted file type: {}",
