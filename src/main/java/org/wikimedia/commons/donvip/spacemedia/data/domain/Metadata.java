@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Metadata implements MetadataProjection {
 
     private static final Set<String> AUDIO_EXTENSIONS = Set.of("wav", "mp3", "flac", "midi");
-    private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpeg", "tiff", "png", "webp", "xcf", "gif", "svg");
+    private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "tiff", "png", "webp", "xcf", "gif", "svg");
     private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg");
 
     /**
@@ -120,8 +120,8 @@ public class Metadata implements MetadataProjection {
             return "png";
         case "djv":
             return "djvu";
-        case "jpe", "jpg", "jps":
-            return "jpeg";
+        case "jpe", "jpeg", "jps":
+            return "jpg"; // Use the same extension as flickr2commons as it solely relies on filenames
         case "tif":
             return "tiff";
         case "mid", "kar":
@@ -138,7 +138,7 @@ public class Metadata implements MetadataProjection {
     public Set<String> getFileExtensions() {
         String ext = getFileExtension();
         switch (ext) {
-        case "jpeg":
+        case "jpg":
             return Set.of("jpg", "jpeg");
         case "tiff":
             return Set.of("tif", "tiff");
@@ -154,7 +154,9 @@ public class Metadata implements MetadataProjection {
         switch (ext) {
         case "djvu":
             return "image/vnd.djvu";
-        case "gif", "jpeg", "png", "tiff", "webp":
+        case "jpg":
+            return "image/jpeg";
+        case "gif", "png", "tiff", "webp":
             return "image/" + ext;
         case "svg":
             return "image/svg+xml";
