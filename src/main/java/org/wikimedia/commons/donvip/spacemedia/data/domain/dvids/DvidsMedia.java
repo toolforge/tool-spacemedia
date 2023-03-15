@@ -140,6 +140,11 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     }
 
     @Override
+    public String getIdUsedInCommons() {
+        return getVirin();
+    }
+
+    @Override
     public ZonedDateTime getDate() {
         return date;
     }

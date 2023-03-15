@@ -591,7 +591,7 @@ public class MediaService {
 
     public boolean findCommonsFilesWithIdAndPhash(Media<?, ?> media) throws IOException {
         boolean result = false;
-        Collection<WikiPage> images = commonsService.searchImages(media.getId().toString());
+        Collection<WikiPage> images = commonsService.searchImages(media.getIdUsedInCommons());
         if (!images.isEmpty()) {
             if (findCommonsFilesWithIdAndPhash(images, media.getMetadata(), media::getCommonsFileNames,
                     media::setCommonsFileNames)) {

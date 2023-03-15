@@ -194,6 +194,15 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     public abstract void setId(ID id);
 
+    /**
+     * Returns the identifier usually used in Commons.
+     *
+     * @return the identifier usually used in Commons
+     */
+    public String getIdUsedInCommons() {
+        return getId().toString();
+    }
+
     public abstract D getDate();
 
     public abstract void setDate(D date);
