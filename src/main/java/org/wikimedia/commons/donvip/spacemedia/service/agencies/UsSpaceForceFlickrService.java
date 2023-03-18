@@ -15,15 +15,15 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
 @Service
-public class UsSscFlickrService extends AbstractAgencyFlickrService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
+public class UsSpaceForceFlickrService extends AbstractAgencyFlickrService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
 
     @Autowired
     private DvidsMediaRepository<DvidsMedia> dvidsRepository;
 
     @Autowired
-    public UsSscFlickrService(FlickrMediaRepository repository,
-            @Value("${usssc.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, "usssc.flickr", flickrAccounts);
+    public UsSpaceForceFlickrService(FlickrMediaRepository repository,
+            @Value("${usspaceforce.flickr.accounts}") Set<String> flickrAccounts) {
+        super(repository, "usspaceforce.flickr", flickrAccounts);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class UsSscFlickrService extends AbstractAgencyFlickrService<DvidsMedia, 
 
     @Override
     public String getName() {
-        return "U.S. Space Systems Command (Flickr)";
+        return "U.S. Space Force/Command (Flickr)";
     }
 
     @Override
@@ -61,7 +61,16 @@ public class UsSscFlickrService extends AbstractAgencyFlickrService<DvidsMedia, 
     public Set<String> findCategories(FlickrMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
-            result.add("Photographs by the Space Systems Command");
+            switch (media.getPathAlias()) {
+            case "airforcespacecommand":
+                result.add("Photographs by the United States Air Force Space Command");
+                break;
+            case "129133022@N07":
+                result.add("Photographs by the Space Systems Command");
+                break;
+            default:
+                // Do nothing
+            }
         }
         return result;
     }

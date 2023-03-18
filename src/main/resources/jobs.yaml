@@ -126,18 +126,9 @@
   schedule: "40 10 * * *"
   emails: onfailure
 
-- name: usafspc-dvids
+- name: ussf-flickr
   image: tf-jdk17
-  command: ./run.sh dvids usafspc-dvids
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 10 * * *"
-  emails: onfailure
-
-- name: usafspc-flickr
-  image: tf-jdk17
-  command: ./run.sh flickr usafspc-flickr
+  command: ./run.sh flickr ussf-flickr
   cpu: 1
   mem: 4Gi
   no-filelog: true
@@ -151,33 +142,6 @@
   mem: 4Gi
   no-filelog: true
   schedule: "45 11,20 * * *"
-  emails: onfailure
-
-- name: usspacecommand-dvids
-  image: tf-jdk17
-  command: ./run.sh dvids usspacecommand-dvids
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 12 * * *"
-  emails: onfailure
-
-- name: usssc-dvids
-  image: tf-jdk17
-  command: ./run.sh dvids usssc-dvids
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 13 * * *"
-  emails: onfailure
-
-- name: usssc-flickr
-  image: tf-jdk17
-  command: ./run.sh flickr usssc-flickr
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 14 * * *"
   emails: onfailure
 
 - name: webb-esa

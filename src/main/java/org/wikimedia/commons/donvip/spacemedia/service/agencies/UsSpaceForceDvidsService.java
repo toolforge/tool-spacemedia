@@ -6,6 +6,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaTypedId;
@@ -31,6 +32,27 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService<DvidsMe
 
     @Override
     public String getName() {
-        return "U.S. Space Force (DVIDS)";
+        return "U.S. Space Force/Command (DVIDS)";
+    }
+
+    @Override
+    public Set<String> findCategories(DvidsMedia media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        if (includeHidden) {
+            switch (media.getUnit()) {
+            case "AFSC":
+                result.add("Photographs by the United States Air Force Space Command");
+                break;
+            case "SSC":
+                result.add("Photographs by the Space Systems Command");
+                break;
+            case "USSPACECOM":
+                result.add("Photographs by the United States Space Command");
+                break;
+            default:
+                // Do nothing
+            }
+        }
+        return result;
     }
 }
