@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Disabled;
@@ -23,6 +25,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaCommonConfiguration;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategory;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
@@ -98,7 +101,21 @@ class CommonsServiceTest {
         mockCategoryLinks();
         assertEquals(Set.of("Spacemedia files (review needed)", "Combined Space Operations Center"),
                 service.cleanupCategories(
-                        Set.of("Combined Force Space Component Command", "Combined Space Operations Center")));
+                        Set.of("Combined Force Space Component Command", "Combined Space Operations Center"),
+                        LocalDateTime.now()));
+    }
+
+    @Test
+    void testMapCategoriesByDate() {
+        CommonsCategory cat = new CommonsCategory();
+        cat.setTitle("Bill_Nelson_in_2023");
+        CommonsPage page = new CommonsPage();
+        page.setTitle("Bill Nelson in 2023");
+        when(commonsCategoryRepository.findByTitle("Bill_Nelson_in_2023")).thenReturn(Optional.of(cat));
+        when(commonsPageRepository.findByCategoryTitle("Bill_Nelson_in_2023")).thenReturn(Optional.of(page));
+
+        assertEquals(Set.of("Bill Nelson in 2023"),
+                service.mapCategoriesByDate(Set.of("Bill Nelson"), LocalDateTime.of(2023, 1, 1, 1, 1)));
     }
 
     @Test

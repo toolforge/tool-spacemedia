@@ -514,7 +514,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                     .append(getWikiFileDesc(media, metadata))
                     .append("\n=={{int:license-header}}==\n");
             findTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
-            commonsService.cleanupCategories(findCategories(media, metadata, true))
+            commonsService.cleanupCategories(findCategories(media, metadata, true), media.getDate())
                     .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
             return sb.toString();
         } catch (IOException e) {

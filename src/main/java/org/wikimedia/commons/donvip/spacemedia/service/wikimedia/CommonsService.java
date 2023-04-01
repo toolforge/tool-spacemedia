@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.time.temporal.TemporalQueries.localDate;
+import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
@@ -23,6 +24,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,7 +32,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -235,9 +236,11 @@ public class CommonsService {
     private String token;
     private LocalDateTime lastUpload;
 
-    private static final DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", ENGLISH);
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd000000", ENGLISH);
 
-    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd000000");
+    private static final DateTimeFormatter CAT_MONTH_YEAR = DateTimeFormatter.ofPattern("MMMM yyyy", ENGLISH);
+    private static final DateTimeFormatter CAT_YEAR = DateTimeFormatter.ofPattern("yyyy", ENGLISH);
 
     public CommonsService(
             @Value("${application.version}") String appVersion,
@@ -253,7 +256,7 @@ public class CommonsService {
     ) {
         account = apiAccount;
         // Comply to Wikimedia User-Agent Policy: https://meta.wikimedia.org/wiki/User-Agent_policy
-        if (!account.toLowerCase(Locale.ENGLISH).contains("bot")) {
+        if (!account.toLowerCase(ENGLISH).contains("bot")) {
             throw new IllegalArgumentException("Bot account must include 'bot' in its name!");
         }
         userAgent = String.format("%s/%s (%s - %s) %s/%s %s/%s %s/%s",
@@ -607,13 +610,13 @@ public class CommonsService {
         return queryRevisionContent(page.getId());
     }
 
-    public Set<String> cleanupCategories(Set<String> categories) {
+    public Set<String> cleanupCategories(Set<String> categories, Temporal date) {
         LocalDateTime start = now();
         LOGGER.info("Cleaning {} categories with depth {}...", categories.size(), catSearchDepth);
         Set<String> result = new HashSet<>();
-        Set<String> lowerCategories = categories.stream().map(c -> c.toLowerCase(Locale.ENGLISH)).collect(toSet());
+        Set<String> lowerCategories = categories.stream().map(c -> c.toLowerCase(ENGLISH)).collect(toSet());
         for (Iterator<String> it = categories.iterator(); it.hasNext();) {
-            String c = it.next().toLowerCase(Locale.ENGLISH);
+            String c = it.next().toLowerCase(ENGLISH);
             if (c.endsWith("s")) {
                 c = c.substring(0, c.length() - 1);
             }
@@ -634,9 +637,29 @@ public class CommonsService {
         if (!categories.isEmpty() && result.isEmpty()) {
             throw new IllegalStateException("Cleaning " + categories + " removed all categories!");
         }
+        // Find category by year/by month
+        result = mapCategoriesByDate(result, date);
         // Make sure all imported files get reviewed
         result.add("Spacemedia files (review needed)");
         return result;
+    }
+
+    protected Set<String> mapCategoriesByDate(Set<String> cats, Temporal date) {
+        String inMonthYear = " in " + CAT_MONTH_YEAR.format(date);
+        String inYear = " in " + CAT_YEAR.format(date);
+        return cats.parallelStream().map(c -> {
+            try {
+                return self.getCategoryPage(c + inMonthYear).getTitle();
+            } catch (CategoryNotFoundException | CategoryPageNotFoundException e) {
+                LOGGER.trace(e.getMessage(), e);
+                try {
+                    return self.getCategoryPage(c + inYear).getTitle();
+                } catch (CategoryNotFoundException | CategoryPageNotFoundException ex) {
+                    LOGGER.trace(ex.getMessage(), ex);
+                }
+                return c;
+            }
+        }).collect(toSet());
     }
 
     public static String formatWikiCode(String badWikiCode) {
@@ -655,7 +678,7 @@ public class CommonsService {
     }
 
     public boolean isPermittedFileType(String url) {
-        String lowerCaseUrl = url.toLowerCase(Locale.ENGLISH);
+        String lowerCaseUrl = url.toLowerCase(ENGLISH);
         return !REMOTE_FILE_URL.matcher(url).matches()
                 || permittedFileTypes.stream().anyMatch(type -> lowerCaseUrl.endsWith("." + type));
     }
