@@ -7,8 +7,19 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 
+@SpringJUnitConfig(EsaServiceTest.TestConfig.class)
 class EsaServiceTest extends AbstractAgencyServiceTest {
+
+    @MockBean
+    private EsaMediaRepository repository;
 
     @Test
     void testCopernicusCredit() {
@@ -133,5 +144,16 @@ class EsaServiceTest extends AbstractAgencyServiceTest {
                 EsaService.getCopernicusProcessedBy("Modifizierte und von der ESA bearbeitete Copernicus-Sentinel-Daten (2017)"));
         assertEquals(Optional.of("EUMETSAT"),
                 EsaService.getCopernicusProcessedBy("Erstellt mit modifizierten Copernicus Sentinel-Daten (2018), bearbeitet von EUMETSAT"));
+    }
+
+    @Configuration
+    @Import(DefaultAgencyTestConfig.class)
+    static class TestConfig {
+
+        @Bean
+        @Autowired
+        public EsaService service(EsaMediaRepository repository) {
+            return new EsaService(repository);
+        }
     }
 }

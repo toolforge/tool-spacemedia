@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.web.client.RestTemplate;
 import org.wikidata.wdtk.datamodel.implementation.ItemIdValueImpl;
@@ -191,6 +192,7 @@ class NasaServiceTest extends AbstractAgencyServiceTest {
     }
 
     @Configuration
+    @Import(DefaultAgencyTestConfig.class)
     static class TestConfig {
 
         @Bean

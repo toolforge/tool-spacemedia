@@ -10,10 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMediaRepository;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringJUnitConfig(IauServiceTest.TestConfig.class)
 class IauServiceTest extends AbstractAgencyServiceTest {
@@ -35,17 +34,13 @@ class IauServiceTest extends AbstractAgencyServiceTest {
     }
 
     @Configuration
+    @Import(DefaultAgencyTestConfig.class)
     static class TestConfig {
 
         @Bean
         @Autowired
         public IauService service(IauMediaRepository repository, @Value("${iau.search.link}") String searchLink) {
             return new IauService(repository, searchLink);
-        }
-
-        @Bean
-        public ObjectMapper jackson() {
-            return new ObjectMapper();
         }
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.geo.Point;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
@@ -40,6 +41,7 @@ class NasaPhotojournalServiceTest extends AbstractAgencyServiceTest {
     }
 
     @Configuration
+    @Import(DefaultAgencyTestConfig.class)
     static class TestConfig {
 
         @Bean

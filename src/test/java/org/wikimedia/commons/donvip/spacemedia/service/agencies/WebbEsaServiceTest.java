@@ -12,12 +12,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringJUnitConfig(WebbEsaServiceTest.TestConfig.class)
 class WebbEsaServiceTest extends AbstractAgencyServiceTest {
@@ -54,6 +53,7 @@ class WebbEsaServiceTest extends AbstractAgencyServiceTest {
     }
 
     @Configuration
+    @Import(DefaultAgencyTestConfig.class)
     static class TestConfig {
 
         @Bean
@@ -61,11 +61,6 @@ class WebbEsaServiceTest extends AbstractAgencyServiceTest {
         public WebbEsaService service(WebbEsaMediaRepository repository,
                 @Value("${webb.esa.search.link}") String searchLink) {
             return new WebbEsaService(repository, searchLink);
-        }
-
-        @Bean
-        public ObjectMapper jackson() {
-            return new ObjectMapper();
         }
     }
 }

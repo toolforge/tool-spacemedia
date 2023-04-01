@@ -10,13 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrService;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringJUnitConfig(DlrFlickrServiceTest.TestConfig.class)
 class DlrFlickrServiceTest extends AbstractAgencyServiceTest {
@@ -70,6 +69,7 @@ class DlrFlickrServiceTest extends AbstractAgencyServiceTest {
     }
 
     @Configuration
+    @Import(DefaultAgencyTestConfig.class)
     static class TestConfig {
 
         @Bean
@@ -77,11 +77,6 @@ class DlrFlickrServiceTest extends AbstractAgencyServiceTest {
         public DlrFlickrService service(FlickrMediaRepository repository,
                 @Value("${dlr.flickr.accounts}") Set<String> flickrAccounts) {
             return new DlrFlickrService(repository, flickrAccounts);
-        }
-
-        @Bean
-        public ObjectMapper jackson() {
-            return new ObjectMapper();
         }
     }
 }

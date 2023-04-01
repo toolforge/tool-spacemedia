@@ -7,7 +7,11 @@ import javax.persistence.EntityManagerFactory;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.TestPropertySource;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
@@ -18,6 +22,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dozermapper.core.Mapper;
 
 @TestPropertySource("/application-test.properties")
@@ -55,5 +60,18 @@ public abstract class AbstractAgencyServiceTest {
 
     public static final Document html(String path) throws IOException {
         return Jsoup.parse(new File("src/test/resources", path));
+    }
+
+    @Configuration
+    protected static class DefaultAgencyTestConfig {
+        @Bean
+        public ConversionService conversionService() {
+            return ApplicationConversionService.getSharedInstance();
+        }
+
+        @Bean
+        public ObjectMapper jackson() {
+            return new ObjectMapper();
+        }
     }
 }

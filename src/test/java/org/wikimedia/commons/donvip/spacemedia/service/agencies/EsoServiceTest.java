@@ -10,10 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaRepository;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringJUnitConfig(EsoServiceTest.TestConfig.class)
 class EsoServiceTest extends AbstractAgencyServiceTest {
@@ -33,17 +32,13 @@ class EsoServiceTest extends AbstractAgencyServiceTest {
     }
 
     @Configuration
+    @Import(DefaultAgencyTestConfig.class)
     static class TestConfig {
 
         @Bean
         @Autowired
         public EsoService service(EsoMediaRepository repository, @Value("${eso.search.link}") String searchLink) {
             return new EsoService(repository, searchLink);
-        }
-
-        @Bean
-        public ObjectMapper jackson() {
-            return new ObjectMapper();
         }
     }
 }
