@@ -190,10 +190,12 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         LocalDateTime start = startUpdateMedia();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
         int count = 0;
-        for (String unit : units) {
-            count += updateDvidsMedia(unit, DvidsMediaType.image, idsKnownToDvidsApi);
-            if (videosEnabled) {
-                count += updateDvidsMedia(unit, DvidsMediaType.video, idsKnownToDvidsApi);
+        for (int year = LocalDateTime.now().getYear(); year >= minYear; year--) {
+            for (String unit : units) {
+                count += updateDvidsMedia(unit, year, DvidsMediaType.image, idsKnownToDvidsApi);
+                if (videosEnabled) {
+                    count += updateDvidsMedia(unit, year, DvidsMediaType.video, idsKnownToDvidsApi);
+                }
             }
         }
         deleteOldDvidsMedia(idsKnownToDvidsApi);
@@ -215,57 +217,30 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         }
     }
 
-    private int updateDvidsMedia(String unit, DvidsMediaType type, Set<String> idsKnownToDvidsApi) {
-        LocalDateTime start = LocalDateTime.now();
+    private int updateDvidsMedia(String unit, int year, DvidsMediaType type, Set<String> idsKnownToDvidsApi) {
         RestTemplate rest = new RestTemplate();
         int count = 0;
         try {
             boolean loop = true;
             int page = 1;
-            LOGGER.info("Fetching DVIDS {}s from unit '{}' (page {}/?)...", type, unit, page);
+            LocalDateTime start = LocalDateTime.now();
+            count = 0;
+            LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/?)...", type, unit, year, page);
             while (loop) {
                 DvidsUpdateResult ur = doUpdateDvidsMedia(rest,
-                        searchDvidsMediaIds(rest, false, type, unit, 0, page++), unit);
+                        searchDvidsMediaIds(rest, true, type, unit, year, page++), unit);
                 idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                 count += ur.count;
                 loop = count < ur.totalResults;
                 if (loop) {
-                    LOGGER.info("Fetching DVIDS {}s from unit '{}' (page {}/{})...", type, unit, page,
+                    LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/{})...", type, unit, year, page,
                             ur.numberOfPages());
                 }
             }
-            LOGGER.info("{} {}s completed: {} {}s in {}", unit, type, count, type,
+            LOGGER.info("{} {}s for year {} completed: {} {}s in {}", unit, type, year, count, type,
                     Duration.between(LocalDateTime.now(), start));
-        } catch (TooManyResultsException ex) {
-            LOGGER.trace("TooManyResults", ex);
-            int year = LocalDateTime.now().getYear();
-            while (year >= minYear) {
-                try {
-                    boolean loop = true;
-                    int page = 1;
-                    start = LocalDateTime.now();
-                    count = 0;
-                    LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/?)...", type, unit, year, page);
-                    while (loop) {
-                        DvidsUpdateResult ur = doUpdateDvidsMedia(rest,
-                                searchDvidsMediaIds(rest, true, type, unit, year, page++), unit);
-                        idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
-                        count += ur.count;
-                        loop = count < ur.totalResults;
-                        if (loop) {
-                            LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/{})...", type, unit,
-                                    year, page, ur.numberOfPages());
-                        }
-                    }
-                    LOGGER.info("{} {}s for year {} completed: {} {}s in {}", unit, type, year,
-                            count, type, Duration.between(LocalDateTime.now(), start));
-                    year--;
-                } catch (ApiException | TooManyResultsException exx) {
-                    LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
-                }
-            }
-        } catch (RuntimeException | ApiException e) {
-            LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, e);
+        } catch (ApiException | TooManyResultsException exx) {
+            LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
         }
         return count;
     }
