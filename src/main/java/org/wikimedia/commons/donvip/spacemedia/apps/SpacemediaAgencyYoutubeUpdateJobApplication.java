@@ -9,10 +9,11 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
 
-@ComponentScan(basePackages = "org.wikimedia.commons.donvip.spacemedia.service.youtube")
+@ComponentScan(basePackages = "org.wikimedia.commons.donvip.spacemedia.service.youtube", excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".+Test.*"))
 public class SpacemediaAgencyYoutubeUpdateJobApplication extends AbstractSpacemediaAgencyUpdateJobApplication {
 
     public static void main(String[] args) {

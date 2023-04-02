@@ -55,4 +55,26 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService<DvidsMe
         }
         return result;
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(DvidsMedia uploadedMedia) {
+        switch (uploadedMedia.getUnit()) {
+        case "SBD1":
+            return Set.of("SpaceBaseDelta1");
+        case "SLD30":
+            return Set.of("SLDelta30");
+        case "45SW":
+            return Set.of("SLDelta45");
+        case "SSC":
+            return Set.of("USSF_SSC");
+        case "SpOC":
+            return Set.of("ussfspoc");
+        case "STARCOM":
+            return Set.of("USSF_STARCOM");
+        case "USSPACECOM":
+            return Set.of("US_SpaceCom");
+        default:
+            return Set.of("SpaceForceDoD");
+        }
+    }
 }

@@ -69,4 +69,9 @@ public class HubbleEsaService extends CommonEsoService<HubbleEsaMedia> {
     protected String getCopyrightLink() {
         return "/copyright/";
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(HubbleEsaMedia uploadedMedia) {
+        return Set.of("HUBBLE_space");
+    }
 }

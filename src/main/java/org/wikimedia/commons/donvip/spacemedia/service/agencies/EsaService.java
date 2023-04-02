@@ -10,9 +10,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -207,7 +211,7 @@ public class EsaService
                                 && image.getMission().toUpperCase(Locale.ENGLISH).contains("SENTINEL"))));
     }
 
-    private Optional<EsaMedia> checkEsaImage(URL url) {
+    private Pair<Optional<EsaMedia>, Integer> checkEsaImage(URL url) {
         EsaMedia media;
         boolean save = false;
         Optional<EsaMedia> mediaInRepo = mediaRepository.findByUrl(url);
@@ -216,21 +220,24 @@ public class EsaService
         } else {
             media = fetchMedia(url);
             if (media.getMetadata().getAssetUrl() == null) {
-                return Optional.empty();
+                return Pair.of(Optional.empty(), 0);
             }
             save = true;
         }
         if (!isCopyrightOk(media)) {
             problem(media.getUrl(), "Invalid copyright: " + media.getCopyright());
-            return Optional.empty();
+            return Pair.of(Optional.empty(), 0);
         }
+        int uploadCount = 0;
         for (int i = 0; i < maxTries; i++) {
             try {
                 if (doCommonUpdate(media)) {
                     save = true;
                 }
                 if (shouldUploadAuto(media)) {
-                    saveMedia(upload(save ? saveMedia(media) : media, true));
+                    Pair<EsaMedia, Integer> upload = upload(save ? saveMedia(media) : media, true);
+                    uploadCount += upload.getValue();
+                    saveMedia(upload.getKey());
                     save = false;
                 }
                 break;
@@ -245,7 +252,7 @@ public class EsaService
                 }
             }
         }
-        return Optional.of(saveMediaOrCheckRemote(save, media));
+        return Pair.of(Optional.of(saveMediaOrCheckRemote(save, media)), uploadCount);
     }
 
     private EsaMedia fetchMedia(URL url) {
@@ -371,6 +378,7 @@ public class EsaService
         boolean moreImages = true;
         int count = 0;
         int index = 0;
+        Collection<EsaMedia> uploadedMedia = new ArrayList<>();
         do {
             String searchUrl = searchLink.replace("<idx>", Integer.toString(index));
             try {
@@ -384,8 +392,13 @@ public class EsaService
                             URL imageUrl = new URL(proto, host, div.select("a").get(0).attr("href"));
                             index++;
                             LOGGER.debug("Checking ESA image {}: {}", index, imageUrl);
-                            if (checkEsaImage(imageUrl).isPresent()) {
+                            Pair<Optional<EsaMedia>, Integer> check = checkEsaImage(imageUrl);
+                            Optional<EsaMedia> optionalMedia = check.getKey();
+                            if (optionalMedia.isPresent()) {
                                 count++;
+                                if (check.getValue() > 0) {
+                                    uploadedMedia.add(optionalMedia.get());
+                                }
                             }
                         }
                         moreImages = !html.getElementsByClass("paging").get(0)
@@ -401,7 +414,7 @@ public class EsaService
             }
         } while (moreImages);
 
-        endUpdateMedia(count, start);
+        endUpdateMedia(count, uploadedMedia, start);
     }
 
     @Override
@@ -605,5 +618,26 @@ public class EsaService
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected Set<String> getTwitterAccounts(EsaMedia uploadedMedia) {
+        Set<String> result = new HashSet<>();
+        String activity = uploadedMedia.getActivity();
+        if (activity != null) {
+            for (Entry<String, String> e : Map
+                    .of("Human Spaceflight", "esaspaceflight", "Observing the Earth", "ESA_EO",
+                            "Operations", "esaoperations", "Photo Archive (ESA Publications)", "ESA_History",
+                            "Space Science", "esascience", "Technology", "esa_tech")
+                    .entrySet()) {
+                if (activity.contains(e.getKey())) {
+                    result.add(e.getValue());
+                }
+            }
+        }
+        if (result.isEmpty()) {
+            result.add("esa");
+        }
+        return result;
     }
 }

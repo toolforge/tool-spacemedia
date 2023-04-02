@@ -18,12 +18,12 @@ class WikidataServiceTest {
 
     @Test
     void testFindCommonsStatementGroup() throws IOException {
-        assertEquals(11, service.findCommonsStatementGroup("Category:ISS Expedition 68", "P1029").get().size());
+        assertEquals(15, service.findCommonsStatementGroup("Category:ISS Expedition 68", "P1029").get().size());
     }
 
     @Test
     void testFindWikipediaStatementGroup() throws IOException {
-        assertEquals(11, service.findWikipediaStatementGroup("Expedition 68", "P1029").get().size());
+        assertEquals(15, service.findWikipediaStatementGroup("Expedition 68", "P1029").get().size());
     }
 
     @Test
@@ -52,7 +52,9 @@ class WikidataServiceTest {
                 Map.ofEntries(e("Mann", "Nicole Mann"), e("Cassada", "Josh A. Cassada"), e("Hines", "Robert Hines"),
                         e("Wakata", "Koichi Wakata"), e("Watkins", "Jessica Watkins"), e("Petelin", "Dmitri Petelin"),
                         e("Prokopyev", "Sergey Prokopyev (cosmonaut)"), e("Cristoforetti", "Samantha Cristoforetti"),
-                        e("Lindgren", "Kjell Lindgren"), e("Kikina", "Anna Kikina"), e("Rubio", "Francisco Rubio")),
+                        e("Lindgren", "Kjell Lindgren"), e("Kikina", "Anna Kikina"), e("Rubio", "Francisco Rubio"),
+                        e("Bowen", "Stephen G. Bowen"), e("Hoburg", "Warren Hoburg"), e("Niadi", "Sultan Al Neyadi"),
+                        e("Fedyayev", "Andrey Fedyaev")),
                 service.mapCommonsCategoriesByFamilyName(
                         service.findCommonsStatementGroup("Category:ISS Expedition 68", "P1029").get()));
     }

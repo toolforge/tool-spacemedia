@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -318,22 +320,25 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
 
     protected void updateFlickrMedia() {
         LocalDateTime start = startUpdateMedia();
+        Collection<FlickrMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         for (String flickrAccount : flickrAccounts) {
             try {
                 LOGGER.info("Fetching Flickr media from account '{}'...", flickrAccount);
                 List<FlickrMedia> freePictures = buildFlickrMediaList(flickrService.findFreePhotos(flickrAccount));
-                count += processFlickrMedia(freePictures, flickrAccount);
+                Pair<Integer, Collection<FlickrMedia>> result = processFlickrMedia(freePictures, flickrAccount);
+                uploadedMedia.addAll(result.getRight());
+                count += result.getLeft();
                 Set<FlickrMedia> noLongerFreePictures = flickrRepository.findAll(Set.of(flickrAccount));
                 noLongerFreePictures.removeAll(freePictures);
                 if (!noLongerFreePictures.isEmpty()) {
                     count += updateNoLongerFreeFlickrMedia(flickrAccount, noLongerFreePictures);
                 }
             } catch (FlickrException | MalformedURLException | RuntimeException e) {
-                LOGGER.error("Error while fetching Flickr media from account " + flickrAccount, e);
+                LOGGER.error("Error while fetching Flickr media from account {}", flickrAccount, e);
             }
         }
-        endUpdateMedia(count, start);
+        endUpdateMedia(count, uploadedMedia, start);
     }
 
     private int updateNoLongerFreeFlickrMedia(String flickrAccount, Set<FlickrMedia> pictures)
@@ -344,7 +349,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
             try {
                 count += processFlickrMedia(
                         buildFlickrMediaList(List.of(flickrService.findPhoto(picture.getId().toString()))),
-                        flickrAccount);
+                        flickrAccount).getLeft();
             } catch (FlickrException e) {
                 if (e.getErrorMessage() != null) {
                     Matcher m = DELETED_PHOTO.matcher(e.getErrorMessage());
@@ -375,21 +380,27 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                 .orElseGet(() -> dozerMapper.map(p, FlickrMedia.class));
     }
 
-    private int processFlickrMedia(Iterable<FlickrMedia> medias, String flickrAccount) throws MalformedURLException {
+    private Pair<Integer, Collection<FlickrMedia>> processFlickrMedia(Iterable<FlickrMedia> medias,
+            String flickrAccount) throws MalformedURLException {
         int count = 0;
+        Collection<FlickrMedia> uploadedMedia = new ArrayList<>();
         for (FlickrMedia media : medias) {
             try {
-                processor.processFlickrMedia(media, flickrAccount, getOriginalRepository(), getStringsToRemove(),
-                        this::customProcessing, this::shouldUploadAuto, this::uploadWrapped);
+                Pair<FlickrMedia, Integer> result = processor.processFlickrMedia(media, flickrAccount,
+                        getOriginalRepository(), getStringsToRemove(), this::customProcessing, this::shouldUploadAuto,
+                        this::uploadWrapped);
+                if (result.getValue() > 0) {
+                    uploadedMedia.add(result.getKey());
+                }
                 count++;
             } catch (IOException e) {
                 problem(getPhotoUrl(media), e);
             }
         }
-        return count;
+        return Pair.of(count, uploadedMedia);
     }
 
-    protected final FlickrMedia uploadWrapped(FlickrMedia media) {
+    protected final Pair<FlickrMedia, Integer> uploadWrapped(FlickrMedia media) {
         try {
             return upload(media, true);
         } catch (UploadException e) {

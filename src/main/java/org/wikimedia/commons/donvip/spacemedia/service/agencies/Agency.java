@@ -6,6 +6,7 @@ import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -90,7 +91,7 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     T uploadAndSaveById(String id) throws UploadException, TooManyResultsException;
 
-    T upload(T media, boolean checkUnicity) throws UploadException;
+    Pair<T, Integer> upload(T media, boolean checkUnicity) throws UploadException;
 
     T refreshAndSaveById(String id) throws ImageNotFoundException, IOException;
 

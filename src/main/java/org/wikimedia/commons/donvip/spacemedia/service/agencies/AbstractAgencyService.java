@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -38,6 +39,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -74,6 +76,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateR
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
+import org.wikimedia.commons.donvip.spacemedia.service.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 
@@ -118,6 +121,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     private RemoteService remoteService;
     @Autowired
     private GoogleTranslateService translateService;
+    @Autowired
+    private TwitterService twitterService;
 
     @Autowired
     private Environment env;
@@ -297,14 +302,29 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return runtimeDataRepository.save(runtimeData).getLastUpdateStart();
     }
 
-    protected final void endUpdateMedia(int count, LocalDateTime start) {
+    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, LocalDateTime start) {
         RuntimeData runtimeData = getRuntimeData();
         LocalDateTime end = LocalDateTime.now();
         runtimeData.setLastUpdateEnd(end);
         runtimeData.setLastUpdateDuration(Duration.between(start, end));
         LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 runtimeDataRepository.save(runtimeData).getLastUpdateDuration());
+        if (!uploadedMedia.isEmpty()) {
+            LOGGER.info("Uploaded media: {} ({})", uploadedMedia.size(),
+                    uploadedMedia.stream().map(Media::getId).toList());
+            try {
+                twitterService.tweet(uploadedMedia, getTwitterAccounts(uploadedMedia));
+            } catch (IOException e) {
+                LOGGER.error("Failed to post tweet", e);
+            }
+        }
     }
+
+    protected final Set<String> getTwitterAccounts(Collection<T> uploadedMedia) {
+        return uploadedMedia.stream().flatMap(media -> getTwitterAccounts(media).stream()).collect(toSet());
+    }
+
+    protected abstract Set<String> getTwitterAccounts(T uploadedMedia);
 
     @Override
     public Statistics getStatistics(boolean details) {
@@ -401,7 +421,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     protected abstract T refresh(T media) throws IOException;
 
     @Override
-    public final T saveMedia(T media) {
+    public T saveMedia(T media) {
         T result = repository.save(media);
         checkRemoteMedia(result);
         return result;
@@ -445,44 +465,46 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public final T uploadAndSaveById(String id) throws UploadException, TooManyResultsException {
-        return saveMedia(upload(getById(id), false));
+        return saveMedia(upload(getById(id), false).getKey());
     }
 
     @Override
     public T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException {
-        return saveMedia(upload(findBySha1OrThrow(sha1, true), true));
+        return saveMedia(upload(findBySha1OrThrow(sha1, true), true).getKey());
     }
 
     @Override
-    public final T upload(T media, boolean checkUnicity) throws UploadException {
+    public final Pair<T, Integer> upload(T media, boolean checkUnicity) throws UploadException {
         if (!isUploadEnabled()) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
         try {
             checkUploadPreconditions(media, checkUnicity);
-            doUpload(media, checkUnicity);
+            return Pair.of(media, doUpload(media, checkUnicity));
         } catch (IOException | RuntimeException e) {
             throw new UploadException(e);
         }
-        return media;
     }
 
-    protected void doUpload(T media, boolean checkUnicity) throws IOException, UploadException {
-        doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames, checkUnicity);
+    protected int doUpload(T media, boolean checkUnicity) throws IOException, UploadException {
+        return doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames,
+                checkUnicity);
     }
 
-    protected final void doUpload(T media, Metadata metadata, Supplier<Set<String>> getter, Consumer<Set<String>> setter, boolean checkUnicity)
-            throws IOException, UploadException {
+    protected final int doUpload(T media, Metadata metadata, Supplier<Set<String>> getter,
+            Consumer<Set<String>> setter, boolean checkUnicity) throws IOException, UploadException {
         if (metadata != null && metadata.getAssetUrl() != null && shouldUpload(media, metadata, getter.get())) {
             checkUploadPreconditions(media, metadata, getter.get(), checkUnicity);
             setter.accept(new HashSet<>(Set.of(
                     commonsService.upload(getWikiCode(media, metadata), media.getUploadTitle(),
                             metadata.getFileExtension(), metadata.getAssetUrl(), metadata.getSha1()))));
+            return 1;
         } else {
             LOGGER.info(
                     "Upload not done for {} / {}. Upload mode: {}. Ignored: {}. Commons filenames: {}. Permitted file type: {}",
                     media.getId(), metadata, getUploadMode(), media.isIgnored(), getter.get(),
                     isPermittedFileType(metadata));
+            return 0;
         }
     }
 

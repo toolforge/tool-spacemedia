@@ -85,4 +85,9 @@ public class WebbEsaService extends CommonEsoService<WebbEsaMedia> {
     protected Elements getObjectInfoTitles(Element div) {
         return div.getElementsByTag("th");
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(WebbEsaMedia uploadedMedia) {
+        return Set.of("ESA_Webb");
+    }
 }

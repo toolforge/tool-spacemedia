@@ -342,4 +342,9 @@ public class NasaPhotojournalService
             return null;
         }
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(NasaPhotojournalMedia uploadedMedia) {
+        return Set.of("NASAJPL");
+    }
 }

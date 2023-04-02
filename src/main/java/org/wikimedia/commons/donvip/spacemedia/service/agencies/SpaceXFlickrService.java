@@ -46,4 +46,9 @@ public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia
         }
         return result;
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
+        return Set.of("SpaceX");
+    }
 }

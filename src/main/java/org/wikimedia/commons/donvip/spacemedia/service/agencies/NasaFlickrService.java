@@ -69,4 +69,9 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
         result.add("PD-USGov-NASA");
         return result;
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
+        return Set.of("NASA");
+    }
 }

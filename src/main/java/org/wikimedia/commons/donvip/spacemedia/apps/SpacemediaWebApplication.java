@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.solr.SolrAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -18,7 +19,8 @@ import com.twelvemonkeys.servlet.image.IIOProviderContextListener;
 @EnableAutoConfiguration(exclude = SolrAutoConfiguration.class)
 @Import(SpacemediaCommonConfiguration.class)
 @ComponentScan(basePackages = { "org.wikimedia.commons.donvip.spacemedia.controller",
-        "org.wikimedia.commons.donvip.spacemedia.data", "org.wikimedia.commons.donvip.spacemedia.service" })
+        "org.wikimedia.commons.donvip.spacemedia.data",
+        "org.wikimedia.commons.donvip.spacemedia.service" }, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".+Test.*"))
 public class SpacemediaWebApplication {
 
     public static void main(String[] args) {

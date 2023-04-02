@@ -61,4 +61,9 @@ public class HubbleNasaService extends AbstractStsciService {
         }
         return result;
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(StsciMedia uploadedMedia) {
+        return Set.of("NASAHubble", "HubbleTelescope");
+    }
 }

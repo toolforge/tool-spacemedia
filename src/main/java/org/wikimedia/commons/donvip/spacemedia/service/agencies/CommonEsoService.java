@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +26,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
@@ -111,7 +113,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
 
     protected abstract Matcher getLocalizedUrlMatcher(String imgUrlLink);
 
-    private Optional<T> updateMediaForUrl(URL url, EsoFrontPageItem item)
+    private Pair<Optional<T>, Integer> updateMediaForUrl(URL url, EsoFrontPageItem item)
             throws IOException, ReflectiveOperationException, UploadException {
         String imgUrlLink = url.getProtocol() + "://" + url.getHost() + item.getUrl();
         Matcher m = getLocalizedUrlMatcher(imgUrlLink);
@@ -131,7 +133,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         } else {
             media = fetchMedia(url, id, imgUrlLink);
             if (media == null) {
-                return Optional.empty();
+                return Pair.of(Optional.empty(), 0);
             }
             save = true;
         }
@@ -150,11 +152,14 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         if (doCommonUpdate(media)) {
             save = true;
         }
+        int uploadCount = 0;
         if (shouldUploadAuto(media)) {
-            saveMedia(upload(save ? saveMedia(media) : media, true));
+            Pair<T, Integer> upload = upload(save ? saveMedia(media) : media, true);
+            saveMedia(upload.getKey());
+            uploadCount = upload.getValue();
             save = false;
         }
-        return Optional.of(saveMediaOrCheckRemote(save, media));
+        return Pair.of(Optional.of(saveMediaOrCheckRemote(save, media)), uploadCount);
     }
 
     private T fetchMedia(URL url, String id, String imgUrlLink) throws ReflectiveOperationException, IOException {
@@ -479,14 +484,20 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         int count = 0;
         boolean loop = true;
         int idx = 1;
+        Collection<T> uploadedMedia = new ArrayList<>();
         while (loop) {
             String urlLink = searchLink.replace("<idx>", Integer.toString(idx++));
             URL url = new URL(urlLink);
             try {
                 for (Iterator<EsoFrontPageItem> it = findFrontPageItems(
                         Jsoup.connect(urlLink).timeout(60_000).get()); it.hasNext();) {
-                    if (updateMediaForUrl(url, it.next()).isPresent()) {
+                    Pair<Optional<T>, Integer> update = updateMediaForUrl(url, it.next());
+                    Optional<T> optionalMedia = update.getKey();
+                    if (optionalMedia.isPresent()) {
                         count++;
+                        if (update.getValue() > 0) {
+                            uploadedMedia.add(optionalMedia.get());
+                        }
                     }
                 }
             } catch (HttpStatusException e) {
@@ -496,7 +507,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
                 LOGGER.error("Error when fetching {}", url, e);
             }
         }
-        endUpdateMedia(count, start);
+        endUpdateMedia(count, uploadedMedia, start);
     }
 
     @Override

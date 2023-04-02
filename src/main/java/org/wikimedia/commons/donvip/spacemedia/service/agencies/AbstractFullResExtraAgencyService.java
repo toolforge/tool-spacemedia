@@ -50,13 +50,13 @@ public abstract class AbstractFullResExtraAgencyService<T extends FullResExtraMe
         if (media == null) {
             media = findByExtraSha1OrThrow(sha1, true);
         }
-        return saveMedia(upload(media, true));
+        return saveMedia(upload(media, true).getKey());
     }
 
     @Override
-    protected final void doUpload(T media, boolean checkUnicity) throws IOException, UploadException {
-        super.doUpload(media, checkUnicity);
-        doUpload(media, media.getExtraMetadata(), media::getExtraCommonsFileNames, media::setExtraCommonsFileNames, checkUnicity);
+    protected final int doUpload(T media, boolean checkUnicity) throws IOException, UploadException {
+        return super.doUpload(media, checkUnicity) + doUpload(media, media.getExtraMetadata(),
+                media::getExtraCommonsFileNames, media::setExtraCommonsFileNames, checkUnicity);
     }
 
     protected final T findByExtraSha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {

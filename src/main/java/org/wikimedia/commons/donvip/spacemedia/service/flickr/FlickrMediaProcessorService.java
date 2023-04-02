@@ -10,11 +10,12 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,10 +65,10 @@ public class FlickrMediaProcessorService {
     }
 
     @Transactional
-    public FlickrMedia processFlickrMedia(FlickrMedia media, String flickrAccount,
+    public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
             MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Collection<String> stringsToRemove,
             Predicate<FlickrMedia> customProcessor, Predicate<FlickrMedia> shouldUploadAuto,
-            UnaryOperator<FlickrMedia> uploader)
+            Function<FlickrMedia, Pair<FlickrMedia, Integer>> uploader)
             throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
@@ -136,8 +137,11 @@ public class FlickrMediaProcessorService {
         if (customProcessor.test(media)) {
             save = true;
         }
+        int uploadCount = 0;
         if (shouldUploadAuto.test(media)) {
-            media = uploader.apply(media);
+            Pair<FlickrMedia, Integer> upload = uploader.apply(media);
+            media = upload.getKey();
+            uploadCount = upload.getValue();
             save = true;
         }
         if (save) {
@@ -146,7 +150,7 @@ public class FlickrMediaProcessorService {
         if (savePhotoSets) {
             media.getPhotosets().forEach(flickrPhotoSetRepository::save);
         }
-        return media;
+        return Pair.of(media, uploadCount);
     }
 
     private boolean handleBadVideo(FlickrMedia media) throws MalformedURLException {

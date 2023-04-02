@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Collections.singleton;
+import static java.util.Map.entry;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
@@ -12,9 +14,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +31,7 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +60,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -70,6 +74,12 @@ public class NasaService
     static final Pattern ISS_PATTERN = Pattern.compile("iss0{1,2}(\\d{1,2})e\\d{6}");
 
     static final Pattern ARTEMIS_PATTERN = Pattern.compile("art0{1,2}(\\d{1,2})e\\d{6}");
+
+    static final Map<String, String> TWITTER_CENTER_ACCOUNTS = Map.ofEntries(entry("AFRC", "nasaarmstrong"),
+            entry("ARC", "nasaames"), entry("GRC", "nasaglenn"), entry("GSFC", "NASAGoddard"),
+            entry("HQ", "nasahqphoto"), entry("JPL", "NASAJPL"), entry("JSC", "NASA_Johnson"),
+            entry("KSC", "NASAKennedy"), entry("LARC", "NASA_Langley"), entry("LRC", "NASA_Langley"),
+            entry("MSFC", "NASA_Marshall"), entry("SSC", "NASAStennis"));
 
     /**
      * Minimal delay between successive API requests, in seconds.
@@ -143,13 +153,24 @@ public class NasaService
         return id;
     }
 
-    private NasaMedia save(NasaMedia media) {
+    @Override
+    public NasaMedia saveMedia(NasaMedia media) {
+        NasaMedia result;
         switch (media.getMediaType()) {
-        case image: return imageRepository.save((NasaImage) media);
-        case video: return videoRepository.save((NasaVideo) media);
-        case audio: return audioRepository.save((NasaAudio) media);
+        case image:
+            result = imageRepository.save((NasaImage) media);
+            break;
+        case video:
+            result = videoRepository.save((NasaVideo) media);
+            break;
+        case audio:
+            result = audioRepository.save((NasaAudio) media);
+            break;
+        default:
+            throw new IllegalArgumentException(media.toString());
         }
-        throw new IllegalArgumentException(media.toString());
+        checkRemoteMedia(result);
+        return result;
     }
 
     private static Optional<URL> findSpecificMedia(RestTemplate rest, URL href, String text) throws URISyntaxException {
@@ -166,7 +187,8 @@ public class NasaService
         return findSpecificMedia(rest, href, "~thumb.");
     }
 
-    private NasaMedia processMedia(RestTemplate rest, NasaMedia media, URL href) throws IOException, URISyntaxException {
+    private Pair<NasaMedia, Integer> processMedia(RestTemplate rest, NasaMedia media, URL href)
+            throws IOException, URISyntaxException, UploadException {
         Optional<NasaMedia> mediaInRepo = repository.findById(media.getId());
         boolean save = false;
         if (mediaInRepo.isPresent()) {
@@ -209,8 +231,12 @@ public class NasaService
         if (doCommonUpdate(media)) {
             save = true;
         }
-        if (save) {
-            media = save(media);
+        int uploadCount = 0;
+        if (shouldUploadAuto(media)) {
+            Pair<NasaMedia, Integer> upload = upload(save ? saveMedia(media) : media, true);
+            uploadCount += upload.getValue();
+            media = saveMedia(upload.getKey());
+            save = false;
         }
         if (!nasaCenters.contains(media.getCenter())) {
             problem(media.getAssetUrl(), "Unknown center for id '" + media.getId() + "': " + media.getCenter());
@@ -218,7 +244,7 @@ public class NasaService
         if (media.getId().length() < 3) {
             problem(media.getAssetUrl(), "Strange id: '" + media.getId() + "'");
         }
-        return media;
+        return Pair.of(saveMediaOrCheckRemote(save, media), uploadCount);
     }
 
     private static Set<String> doNormalizeKeywords(Set<String> keywords) {
@@ -243,7 +269,7 @@ public class NasaService
             for (Iterator<String> it = keywords.iterator(); it.hasNext();) {
                 String kw = it.next();
                 if (kw.length() > 300 && StringUtils.countMatches(kw, ",") > 10) {
-                    normalized.addAll(doNormalizeKeywords(Collections.singleton(kw)));
+                    normalized.addAll(doNormalizeKeywords(singleton(kw)));
                     it.remove();
                 }
             }
@@ -285,7 +311,9 @@ public class NasaService
         return true;
     }
 
-    private <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl, Counter count) {
+    @SuppressWarnings("unchecked")
+    private <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl,
+            Collection<T> uploadedMedia, Counter count) {
         LOGGER.debug("Fetching {}", searchUrl);
         boolean ok = false;
         for (int i = 0; i < maxTries && !ok; i++) {
@@ -295,7 +323,10 @@ public class NasaService
                 ok = true;
                 for (NasaItem item : collection.getItems()) {
                     try {
-                        processMedia(rest, item.getData().get(0), item.getHref());
+                        Pair<NasaMedia, Integer> update = processMedia(rest, item.getData().get(0), item.getHref());
+                        if (update.getValue() > 0) {
+                            uploadedMedia.add((T) update.getKey());
+                        }
                         count.count++;
                     } catch (Forbidden e) {
                         problem(item.getHref(), e);
@@ -305,7 +336,7 @@ public class NasaService
                         } else {
                             LOGGER.error("Cannot process item " + item, e);
                         }
-                    } catch (IOException | URISyntaxException | RuntimeException e) {
+                    } catch (IOException | URISyntaxException | UploadException | RuntimeException e) {
                         LOGGER.error("Cannot process item " + item, e);
                     }
                 }
@@ -324,16 +355,17 @@ public class NasaService
         return null;
     }
 
-    private int doUpdateMedia(NasaMediaType mediaType) {
+    private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType) {
         return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear(), null);
     }
 
-    private int doUpdateMedia(NasaMediaType mediaType, int year, Set<String> centers) {
+    private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType, int year,
+            Set<String> centers) {
         return doUpdateMedia(mediaType, year, year, centers);
     }
 
-    private int doUpdateMedia(NasaMediaType mediaType, int startYear, int endYear,
-            Set<String> centers) {
+    private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType, int startYear,
+            int endYear, Set<String> centers) {
         LocalDateTime start = LocalDateTime.now();
         logStartUpdate(mediaType, startYear, endYear, centers);
         Counter count = new Counter();
@@ -343,11 +375,12 @@ public class NasaService
         if (centers != null) {
             nextUrl += "&center=" + String.join(",", centers);
         }
+        Collection<T> uploadedMedia = new ArrayList<>();
         while (nextUrl != null) {
-            nextUrl = processSearchResults(rest, nextUrl, count);
+            nextUrl = processSearchResults(rest, nextUrl, uploadedMedia, count);
         }
         logEndUpdate(mediaType, startYear, endYear, centers, start, count.count);
-        return count.count;
+        return Pair.of(count.count, uploadedMedia);
     }
 
     private static void logStartUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers) {
@@ -384,39 +417,55 @@ public class NasaService
         }
     }
 
-    public int updateImages() {
+    public Pair<Integer, Collection<NasaImage>> updateImages() {
         int count = 0;
+        Collection<NasaImage> uploadedImages = new ArrayList<>();
         // Recent years have a lot of photos: search by center to avoid more than 10k results
         for (int year = LocalDateTime.now().getYear(); year >= 2000; year--) {
             for (String center : nasaCenters) {
-                count += doUpdateMedia(NasaMediaType.image, year, Collections.singleton(center));
+                Pair<Integer, Collection<NasaImage>> update = doUpdateMedia(NasaMediaType.image, year,
+                        singleton(center));
+                uploadedImages.addAll(update.getRight());
+                count += update.getLeft();
             }
         }
         // Ancient years have a lot less photos: simple search for all centers
         for (int year = 1999; year >= minYear; year--) {
-            count += doUpdateMedia(NasaMediaType.image, year, null);
+            Pair<Integer, Collection<NasaImage>> update = doUpdateMedia(NasaMediaType.image, year, null);
+            uploadedImages.addAll(update.getRight());
+            count += update.getLeft();
         }
-        return count;
+        return Pair.of(count, uploadedImages);
     }
 
-    public int updateAudios() {
+    public Pair<Integer, Collection<NasaAudio>> updateAudios() {
         return doUpdateMedia(NasaMediaType.audio);
     }
 
-    public int updateVideos() {
+    public Pair<Integer, Collection<NasaVideo>> updateVideos() {
         return doUpdateMedia(NasaMediaType.video);
     }
 
     @Override
     public void updateMedia() {
         LocalDateTime start = startUpdateMedia();
+        Collection<NasaMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
-        count += updateImages();
-        count += updateAudios();
+
+        Pair<Integer, Collection<NasaImage>> images = updateImages();
+        count += images.getLeft();
+        uploadedMedia.addAll(images.getRight());
+
+        Pair<Integer, Collection<NasaAudio>> audios = updateAudios();
+        count += audios.getLeft();
+        uploadedMedia.addAll(audios.getRight());
+
         if (videosEnabled) {
-            count += updateVideos();
+            Pair<Integer, Collection<NasaVideo>> videos = updateVideos();
+            count += videos.getLeft();
+            uploadedMedia.addAll(videos.getRight());
         }
-        endUpdateMedia(count, start);
+        endUpdateMedia(count, uploadedMedia, start);
     }
 
     @Override
@@ -570,5 +619,20 @@ public class NasaService
             }
         }
         return media;
+    }
+
+    @Override
+    protected Set<String> getTwitterAccounts(NasaMedia uploadedMedia) {
+        Set<String> result = new HashSet<>();
+        if (uploadedMedia.getCenter() != null) {
+            String account = TWITTER_CENTER_ACCOUNTS.get(uploadedMedia.getCenter());
+            if (account != null) {
+                result.add(account);
+            }
+        }
+        if (result.isEmpty()) {
+            result.add("NASA");
+        }
+        return result;
     }
 }

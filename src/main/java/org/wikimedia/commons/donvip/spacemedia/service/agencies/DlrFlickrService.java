@@ -62,4 +62,9 @@ public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, L
     protected String getLanguage(FlickrMedia media) {
         return media.getDescription() != null && media.getDescription().contains("Photo Credit:") ? "en" : "de";
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
+        return Set.of("DLR_en");
+    }
 }

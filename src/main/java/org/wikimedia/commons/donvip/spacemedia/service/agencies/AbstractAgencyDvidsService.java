@@ -11,7 +11,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,17 +192,23 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     protected void updateDvidsMedia() {
         LocalDateTime start = startUpdateMedia();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
+        Collection<DvidsMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         for (int year = LocalDateTime.now().getYear(); year >= minYear; year--) {
             for (String unit : units) {
-                count += updateDvidsMedia(unit, year, DvidsMediaType.image, idsKnownToDvidsApi);
+                Pair<Integer, Collection<DvidsMedia>> update = updateDvidsMedia(unit, year, DvidsMediaType.image,
+                        idsKnownToDvidsApi);
+                uploadedMedia.addAll(update.getRight());
+                count += update.getLeft();
                 if (videosEnabled) {
-                    count += updateDvidsMedia(unit, year, DvidsMediaType.video, idsKnownToDvidsApi);
+                    update = updateDvidsMedia(unit, year, DvidsMediaType.video, idsKnownToDvidsApi);
+                    uploadedMedia.addAll(update.getRight());
+                    count += update.getLeft();
                 }
             }
         }
         deleteOldDvidsMedia(idsKnownToDvidsApi);
-        endUpdateMedia(count, start);
+        endUpdateMedia(count, uploadedMedia, start);
     }
 
     private void deleteOldDvidsMedia(Set<String> idsKnownToDvidsApi) {
@@ -217,8 +226,10 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         }
     }
 
-    private int updateDvidsMedia(String unit, int year, DvidsMediaType type, Set<String> idsKnownToDvidsApi) {
+    private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, int year, DvidsMediaType type,
+            Set<String> idsKnownToDvidsApi) {
         RestTemplate rest = new RestTemplate();
+        Collection<DvidsMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         try {
             boolean loop = true;
@@ -230,6 +241,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 DvidsUpdateResult ur = doUpdateDvidsMedia(rest,
                         searchDvidsMediaIds(rest, true, type, unit, year, page++), unit);
                 idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
+                uploadedMedia.addAll(ur.uploadedMedia);
                 count += ur.count;
                 loop = count < ur.totalResults;
                 if (loop) {
@@ -242,17 +254,22 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         } catch (ApiException | TooManyResultsException exx) {
             LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
         }
-        return count;
+        return Pair.of(count, uploadedMedia);
     }
 
     private DvidsUpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
         int count = 0;
+        Collection<DvidsMedia> uploadedMedia = new ArrayList<>();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
         for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted().toList()) {
             try {
                 idsKnownToDvidsApi.add(id);
-                count += processDvidsMedia(mediaRepository.findById(new DvidsMediaTypedId(id)),
-                        () -> getMediaFromApi(rest, id, unit));
+                Pair<DvidsMedia, Integer> result = processDvidsMedia(
+                        mediaRepository.findById(new DvidsMediaTypedId(id)), () -> getMediaFromApi(rest, id, unit));
+                if (result.getValue() > 0) {
+                    uploadedMedia.add(result.getKey());
+                }
+                count++;
             } catch (HttpClientErrorException e) {
                 LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
             } catch (IOException e) {
@@ -264,7 +281,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             }
         }
         ApiPageInfo pi = response.getPageInfo();
-        return new DvidsUpdateResult(pi.getResultsPerPage(), pi.getTotalResults(), count, idsKnownToDvidsApi);
+        return new DvidsUpdateResult(pi.getResultsPerPage(), pi.getTotalResults(), count, uploadedMedia,
+                idsKnownToDvidsApi);
     }
 
     private static Object smartExceptionLog(Throwable e) {
@@ -282,14 +300,17 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     private static class DvidsUpdateResult {
         private final Set<String> idsKnownToDvidsApi;
+        Collection<DvidsMedia> uploadedMedia = new ArrayList<>();
         private final int count;
         private final int resultsPerPage;
         private final int totalResults;
 
-        public DvidsUpdateResult(int resultsPerPage, int totalResults, int count, Set<String> processedIds) {
+        public DvidsUpdateResult(int resultsPerPage, int totalResults, int count, Collection<DvidsMedia> uploadedMedia,
+                Set<String> processedIds) {
             this.count = count;
             this.resultsPerPage = resultsPerPage;
             this.totalResults = totalResults;
+            this.uploadedMedia = uploadedMedia;
             this.idsKnownToDvidsApi = processedIds;
         }
 
@@ -332,7 +353,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         return response;
     }
 
-    private int processDvidsMedia(Optional<DvidsMedia> mediaInDb, Supplier<DvidsMedia> apiFetcher)
+    private Pair<DvidsMedia, Integer> processDvidsMedia(Optional<DvidsMedia> mediaInDb, Supplier<DvidsMedia> apiFetcher)
             throws IOException, UploadException {
         DvidsMedia media = null;
         boolean save = false;
@@ -347,8 +368,11 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         if (update.getResult()) {
             save = true;
         }
+        int uploadCount = 0;
         if (shouldUploadAuto(media)) {
-            media = upload(media, true);
+            Pair<DvidsMedia, Integer> upload = upload(media, true);
+            uploadCount = upload.getValue();
+            media = upload.getKey();
             save = true;
         }
         if (save) {
@@ -357,7 +381,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             }
             save(media);
         }
-        return 1;
+        return Pair.of(media, uploadCount);
     }
 
     private MediaUpdateResult processDvidsMediaUpdate(DvidsMedia media, boolean forceUpdate) throws IOException {

@@ -123,12 +123,12 @@ public class NasaSirsService
                         image = saveMedia(image);
                     }
                     if (shouldUploadAuto(image)) {
-                        saveMedia(upload(image, true));
+                        saveMedia(upload(image, true).getKey());
                     }
                 }
             }
         }
-        endUpdateMedia(count, start);
+        endUpdateMedia(count, Collections.emptyList(), start);
     }
 
     private int updateFromSirs() throws IOException {
@@ -241,5 +241,10 @@ public class NasaSirsService
     @Override
     protected NasaSirsImage refresh(NasaSirsImage media) throws IOException {
         throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    protected Set<String> getTwitterAccounts(NasaSirsImage uploadedMedia) {
+        return Set.of("NASAStennis");
     }
 }

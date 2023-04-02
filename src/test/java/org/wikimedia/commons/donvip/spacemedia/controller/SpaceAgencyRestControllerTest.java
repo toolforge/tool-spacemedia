@@ -57,18 +57,18 @@ class SpaceAgencyRestControllerTest {
     }
 
     @Test
-    void shouldUploadMediaWithoutSlashReturn403() throws Exception {
-        mockMvc.perform(get("/snoopy/rest/uploadmedia/foo")).andDo(print()).andExpect(status().is(403));
+    void shouldUploadMediaWithoutSlashReturnOk() throws Exception {
+        mockMvc.perform(get("/snoopy/rest/uploadmedia/foo")).andDo(print()).andExpect(status().isOk());
     }
 
     @Test
-    void shouldUploadMediaWithSlashReturn403() throws Exception {
-        mockMvc.perform(get("/snoopy/rest/uploadmedia/foo/bar")).andDo(print()).andExpect(status().is(403));
+    void shouldUploadMediaWithSlashReturnOk() throws Exception {
+        mockMvc.perform(get("/snoopy/rest/uploadmedia/foo/bar")).andDo(print()).andExpect(status().isOk());
     }
 
     @Test
-    void shouldUploadMediaWithSlashesReturn403() throws Exception {
-        mockMvc.perform(get("/snoopy/rest/uploadmedia/foo/bar/baz")).andDo(print()).andExpect(status().is(403));
+    void shouldUploadMediaWithSlashesReturnOk() throws Exception {
+        mockMvc.perform(get("/snoopy/rest/uploadmedia/foo/bar/baz")).andDo(print()).andExpect(status().isOk());
     }
 
     private static MockHttpServletRequest mockHttp(String uri) {

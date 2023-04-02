@@ -92,4 +92,9 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
                 "Videos of Soyouz launches by Arianespace",
                 "Videos of Vega launches by Arianespace");
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(YouTubeVideo uploadedMedia) {
+        return Set.of("Arianespace");
+    }
 }

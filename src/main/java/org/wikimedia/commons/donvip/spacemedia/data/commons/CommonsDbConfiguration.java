@@ -31,8 +31,8 @@ public class CommonsDbConfiguration {
 
     @Bean(name = "commonsDataSource")
     @ConfigurationProperties("commons.datasource.hikari")
-    public DataSource dataSource() {
-        return dataSourceProperties().initializeDataSourceBuilder().build();
+    public DataSource dataSource(@Qualifier("commonsDataSourceProperties") DataSourceProperties dataSourceProperties) {
+        return dataSourceProperties.initializeDataSourceBuilder().build();
     }
 
     @Bean(name = "commonsEntityManagerFactory")

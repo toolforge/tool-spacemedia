@@ -69,4 +69,9 @@ public class EsoService extends CommonEsoService<EsoMedia> {
     protected String getCopyrightLink() {
         return "/public/outreach/copyright/";
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(EsoMedia uploadedMedia) {
+        return Set.of("ESO");
+    }
 }

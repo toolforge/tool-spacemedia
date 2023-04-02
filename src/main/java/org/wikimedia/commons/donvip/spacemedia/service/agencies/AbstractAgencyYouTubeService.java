@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,6 +34,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeApiService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -124,7 +126,7 @@ public abstract class AbstractAgencyYouTubeService
             }
         }
         syncYouTubeVideos();
-        endUpdateMedia(count, start);
+        endUpdateMedia(count, Collections.emptyList(), start);
     }
 
     private static List<YouTubeVideo> buildYouTubeVideoList(SearchListResponse searchList, VideoListResponse videoList) {
@@ -223,13 +225,13 @@ public abstract class AbstractAgencyYouTubeService
     }
 
     @Override
-    protected final void doUpload(YouTubeVideo video, boolean checkUnicity) throws IOException {
+    protected final int doUpload(YouTubeVideo video, boolean checkUnicity) throws IOException {
         throw new UnsupportedOperationException("<h2>Spacemedia is not able to upload YouTube videos by itself.</h2>\n"
                 + "<p>Please go to <a href=\"https://tools.wmflabs.org/video2commons\">video2commons</a> and upload the <b>"
                 + video.getId()
                 + ".mkv/mp4/webm</b> file, using following information:</p>\n"
                 + "<h4>Title:</h4>\n"
-                + commonsService.normalizeFilename(video.getUploadTitle())
+                + CommonsService.normalizeFilename(video.getUploadTitle())
                 + "\n<h4>Wikicode:</h4>\n<pre>" + getWikiCode(video, video.getMetadata()) + "</pre>");
     }
 

@@ -27,4 +27,9 @@ public class PotentialFlickrService extends AbstractAgencyFlickrService<FlickrMe
     public String getName() {
         return "Potential Flickr accounts";
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
+        return Set.of();
+    }
 }

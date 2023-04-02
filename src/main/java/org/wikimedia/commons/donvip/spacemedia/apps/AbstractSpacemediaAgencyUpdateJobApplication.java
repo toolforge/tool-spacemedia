@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.apps;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,9 @@ abstract class AbstractSpacemediaAgencyUpdateJobApplication implements Applicati
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         try {
-            agency.updateMedia();
+            if (!Arrays.asList(event.getApplicationContext().getEnvironment().getActiveProfiles()).contains("test")) {
+                agency.updateMedia();
+            }
         } catch (IOException | UploadException e) {
             LOGGER.error(e.getMessage(), e);
         }

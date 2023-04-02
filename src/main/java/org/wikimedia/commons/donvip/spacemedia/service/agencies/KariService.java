@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -137,7 +138,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
             }
             id++;
         }
-        endUpdateMedia(count, start);
+        endUpdateMedia(count, Collections.emptyList(), start);
     }
 
     static class KariUpdateResult extends MediaUpdateResult {
@@ -254,5 +255,10 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
     @Override
     protected KariMedia refresh(KariMedia media) throws IOException {
         return media.copyDataFrom(fetchMedia(media.getId()).getMedia());
+    }
+
+    @Override
+    protected Set<String> getTwitterAccounts(KariMedia uploadedMedia) {
+        return Set.of("kari2030");
     }
 }

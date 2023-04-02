@@ -6,10 +6,13 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.HttpStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.stsci.StsciService;
 
 /**
@@ -72,27 +76,32 @@ public abstract class AbstractStsciService
         int count = 0;
         boolean loop = true;
         int idx = 1;
+        Collection<StsciMedia> uploadedMedia = new ArrayList<>();
         while (loop) {
             String[] response = stsci.fetchImagesByScrapping(searchEndpoint.replace("<idx>", Integer.toString(idx++)));
             loop = response != null && response.length > 0;
             if (loop) {
                 for (String imageId : response) {
                     try {
-                        count += doUpdateMedia(imageId);
+                        Pair<StsciMedia, Integer> update = doUpdateMedia(imageId);
+                        if (update.getValue() > 0) {
+                            uploadedMedia.add(update.getKey());
+                        }
+                        count++;
                     } catch (HttpStatusException e) {
                         LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
                         problem(e.getUrl(), e);
-                    } catch (IOException | RuntimeException e) {
+                    } catch (IOException | UploadException | RuntimeException e) {
                         LOGGER.error("Error while fetching image " + imageId, e);
                         problem(getImageDetailsLink(imageId), e);
                     }
                 }
             }
         }
-        endUpdateMedia(count, start);
+        endUpdateMedia(count, uploadedMedia, start);
     }
 
-    private int doUpdateMedia(String id) throws IOException {
+    private Pair<StsciMedia, Integer> doUpdateMedia(String id) throws IOException, UploadException {
         boolean save = false;
         StsciMedia media;
         Optional<StsciMedia> mediaInRepo = repository.findById(id);
@@ -105,8 +114,14 @@ public abstract class AbstractStsciService
         if (doCommonUpdate(media)) {
             save = true;
         }
-        saveMediaOrCheckRemote(save, media);
-        return save ? 1 : 0;
+        int uploadCount = 0;
+        if (shouldUploadAuto(media)) {
+            Pair<StsciMedia, Integer> upload = upload(save ? saveMedia(media) : media, true);
+            uploadCount += upload.getValue();
+            media = saveMedia(upload.getKey());
+            save = false;
+        }
+        return Pair.of(saveMediaOrCheckRemote(save, media), uploadCount);
     }
 
     private StsciMedia getMediaFromWebsite(String id) throws IOException {

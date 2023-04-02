@@ -123,4 +123,9 @@ public class IauService extends CommonEsoService<IauMedia> {
     protected String getCopyrightLink() {
         return "/copyright/";
     }
+
+    @Override
+    protected Set<String> getTwitterAccounts(IauMedia uploadedMedia) {
+        return Set.of("IAU_org");
+    }
 }
