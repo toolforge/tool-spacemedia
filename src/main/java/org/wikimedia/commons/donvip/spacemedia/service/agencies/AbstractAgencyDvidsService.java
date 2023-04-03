@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,7 +193,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     protected void updateDvidsMedia() {
         LocalDateTime start = startUpdateMedia();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
-        Collection<DvidsMedia> uploadedMedia = new ArrayList<>();
+        List<DvidsMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         for (int year = LocalDateTime.now().getYear(); year >= minYear; year--) {
             for (String unit : units) {
@@ -208,7 +209,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             }
         }
         deleteOldDvidsMedia(idsKnownToDvidsApi);
-        endUpdateMedia(count, uploadedMedia, start);
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start);
     }
 
     private void deleteOldDvidsMedia(Set<String> idsKnownToDvidsApi) {
@@ -229,7 +230,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, int year, DvidsMediaType type,
             Set<String> idsKnownToDvidsApi) {
         RestTemplate rest = new RestTemplate();
-        Collection<DvidsMedia> uploadedMedia = new ArrayList<>();
+        List<DvidsMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         try {
             boolean loop = true;
@@ -259,7 +260,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     private DvidsUpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
         int count = 0;
-        Collection<DvidsMedia> uploadedMedia = new ArrayList<>();
+        List<DvidsMedia> uploadedMedia = new ArrayList<>();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
         for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted().toList()) {
             try {
@@ -370,9 +371,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         }
         int uploadCount = 0;
         if (shouldUploadAuto(media)) {
-            Pair<DvidsMedia, Integer> upload = upload(media, true);
-            uploadCount = upload.getValue();
-            media = upload.getKey();
+            Triple<DvidsMedia, Collection<Metadata>, Integer> upload = upload(media, true);
+            uploadCount = upload.getRight();
+            media = upload.getLeft();
             save = true;
         }
         if (save) {

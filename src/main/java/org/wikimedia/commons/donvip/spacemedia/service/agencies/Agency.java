@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.temporal.Temporal;
+import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
@@ -91,7 +92,7 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     T uploadAndSaveById(String id) throws UploadException, TooManyResultsException;
 
-    Pair<T, Integer> upload(T media, boolean checkUnicity) throws UploadException;
+    Triple<T, Collection<Metadata>, Integer> upload(T media, boolean checkUnicity) throws UploadException;
 
     T refreshAndSaveById(String id) throws ImageNotFoundException, IOException;
 

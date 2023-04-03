@@ -1,5 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -11,7 +14,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -123,12 +125,12 @@ public class NasaSirsService
                         image = saveMedia(image);
                     }
                     if (shouldUploadAuto(image)) {
-                        saveMedia(upload(image, true).getKey());
+                        saveMedia(upload(image, true).getLeft());
                     }
                 }
             }
         }
-        endUpdateMedia(count, Collections.emptyList(), start);
+        endUpdateMedia(count, emptyList(), emptyList(), start);
     }
 
     private int updateFromSirs() throws IOException {
@@ -165,7 +167,7 @@ public class NasaSirsService
                             } catch (DateTimeParseException e) {
                                 media.setYear(Year.parse(values.get(3)));
                             }
-                            media.setKeywords(NasaService.normalizeKeywords(Collections.singleton(values.get(4))));
+                            media.setKeywords(NasaService.normalizeKeywords(singleton(values.get(4))));
                             media.setThumbnailUrl(new URL(url.getProtocol(), url.getHost(), values.get(5)));
                             media.getMetadata().setAssetUrl(new URL(url.getProtocol(), url.getHost(), values.get(6)));
                             media.setDescription(values.get(7));

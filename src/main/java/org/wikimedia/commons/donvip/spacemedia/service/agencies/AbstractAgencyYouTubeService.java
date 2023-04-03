@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -126,7 +127,7 @@ public abstract class AbstractAgencyYouTubeService
             }
         }
         syncYouTubeVideos();
-        endUpdateMedia(count, Collections.emptyList(), start);
+        endUpdateMedia(count, emptyList(), emptyList(), start);
     }
 
     private static List<YouTubeVideo> buildYouTubeVideoList(SearchListResponse searchList, VideoListResponse videoList) {
@@ -225,7 +226,8 @@ public abstract class AbstractAgencyYouTubeService
     }
 
     @Override
-    protected final int doUpload(YouTubeVideo video, boolean checkUnicity) throws IOException {
+    protected final int doUpload(YouTubeVideo video, boolean checkUnicity, Collection<Metadata> uploaded)
+            throws IOException {
         throw new UnsupportedOperationException("<h2>Spacemedia is not able to upload YouTube videos by itself.</h2>\n"
                 + "<p>Please go to <a href=\"https://video2commons.toolforge.org/\">video2commons</a> and upload the <b>"
                 + video.getId()

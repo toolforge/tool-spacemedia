@@ -16,6 +16,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +40,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -72,10 +73,10 @@ import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
+import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
-import org.wikimedia.commons.donvip.spacemedia.service.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 
@@ -300,7 +301,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return runtimeDataRepository.save(runtimeData).getLastUpdateStart();
     }
 
-    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, LocalDateTime start) {
+    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<Metadata> uploadedMetadata,
+            LocalDateTime start) {
         RuntimeData runtimeData = getRuntimeData();
         LocalDateTime end = LocalDateTime.now();
         runtimeData.setLastUpdateEnd(end);
@@ -311,7 +313,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             LOGGER.info("Uploaded media: {} ({})", uploadedMedia.size(),
                     uploadedMedia.stream().map(Media::getId).toList());
             try {
-                twitterService.tweet(uploadedMedia, getTwitterAccounts(uploadedMedia));
+                twitterService.tweet(uploadedMedia, uploadedMetadata, getTwitterAccounts(uploadedMedia));
             } catch (IOException e) {
                 LOGGER.error("Failed to post tweet", e);
             }
@@ -463,39 +465,43 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public final T uploadAndSaveById(String id) throws UploadException, TooManyResultsException {
-        return saveMedia(upload(getById(id), false).getKey());
+        return saveMedia(upload(getById(id), false).getLeft());
     }
 
     @Override
     public T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException {
-        return saveMedia(upload(findBySha1OrThrow(sha1, true), true).getKey());
+        return saveMedia(upload(findBySha1OrThrow(sha1, true), true).getLeft());
     }
 
     @Override
-    public final Pair<T, Integer> upload(T media, boolean checkUnicity) throws UploadException {
+    public final Triple<T, Collection<Metadata>, Integer> upload(T media, boolean checkUnicity) throws UploadException {
         if (!isUploadEnabled()) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
         try {
             checkUploadPreconditions(media, checkUnicity);
-            return Pair.of(media, doUpload(media, checkUnicity));
+            List<Metadata> uploaded = new ArrayList<>();
+            return Triple.of(media, uploaded, doUpload(media, checkUnicity, uploaded));
         } catch (IOException | RuntimeException e) {
             throw new UploadException(e);
         }
     }
 
-    protected int doUpload(T media, boolean checkUnicity) throws IOException, UploadException {
+    protected int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded)
+            throws IOException, UploadException {
         return doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames,
-                checkUnicity);
+                checkUnicity, uploaded);
     }
 
     protected final int doUpload(T media, Metadata metadata, Supplier<Set<String>> getter,
-            Consumer<Set<String>> setter, boolean checkUnicity) throws IOException, UploadException {
+            Consumer<Set<String>> setter, boolean checkUnicity, Collection<Metadata> uploaded)
+            throws IOException, UploadException {
         if (metadata != null && metadata.getAssetUrl() != null && shouldUpload(media, metadata, getter.get())) {
             checkUploadPreconditions(media, metadata, getter.get(), checkUnicity);
             setter.accept(new HashSet<>(Set.of(
                     commonsService.upload(getWikiCode(media, metadata), media.getUploadTitle(),
                             metadata.getFileExtension(), metadata.getAssetUrl(), metadata.getSha1()))));
+            uploaded.add(metadata);
             return 1;
         } else {
             LOGGER.info(

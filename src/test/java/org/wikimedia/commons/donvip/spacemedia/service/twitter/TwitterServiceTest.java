@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service;
+package org.wikimedia.commons.donvip.spacemedia.service.twitter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -10,12 +10,13 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImage;
-import org.wikimedia.commons.donvip.spacemedia.service.TwitterService.TweetRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,21 +31,24 @@ class TwitterServiceTest {
     @Autowired
     private ObjectMapper jackson;
 
+    @MockBean
+    private CommonsImageRepository repo;
+
     @Test
     @Disabled("This test will post a real tweet")
     void testTweet() throws Exception {
-        assertNotNull(twitter.tweet(List.of(), Set.of()));
+        assertNotNull(twitter.tweet(List.of(), List.of(), Set.of()));
     }
 
     @Test
     void testTweetContents() throws JsonProcessingException {
         TweetRequest request = jackson.readValue(
-                twitter.buildTweetRequest(List.of(new NasaImage()), Set.of()).getStringPayload(),
+                twitter.buildTweetRequest(List.of(new NasaImage()), List.of(), Set.of()).getStringPayload(),
                 TweetRequest.class);
         assertEquals("1 new picture", request.getText());
 
         request = jackson.readValue(
-                twitter.buildTweetRequest(List.of(new NasaImage(), new NasaImage()), Set.of("ESA", "NASA"))
+                twitter.buildTweetRequest(List.of(new NasaImage(), new NasaImage()), List.of(), Set.of("ESA", "NASA"))
                         .getStringPayload(),
                 TweetRequest.class);
         assertEquals("2 new pictures from @ESA @NASA", request.getText());

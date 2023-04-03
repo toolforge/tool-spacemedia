@@ -24,6 +24,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -320,7 +321,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
 
     protected void updateFlickrMedia() {
         LocalDateTime start = startUpdateMedia();
-        Collection<FlickrMedia> uploadedMedia = new ArrayList<>();
+        List<FlickrMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         for (String flickrAccount : flickrAccounts) {
             try {
@@ -338,7 +339,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                 LOGGER.error("Error while fetching Flickr media from account {}", flickrAccount, e);
             }
         }
-        endUpdateMedia(count, uploadedMedia, start);
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start);
     }
 
     private int updateNoLongerFreeFlickrMedia(String flickrAccount, Set<FlickrMedia> pictures)
@@ -400,7 +401,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         return Pair.of(count, uploadedMedia);
     }
 
-    protected final Pair<FlickrMedia, Integer> uploadWrapped(FlickrMedia media) {
+    protected final Triple<FlickrMedia, Collection<Metadata>, Integer> uploadWrapped(FlickrMedia media) {
         try {
             return upload(media, true);
         } catch (UploadException e) {

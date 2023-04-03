@@ -986,7 +986,7 @@ public class CommonsService {
         return null;
     }
 
-    protected static URL getImageUrl(String imageName) throws MalformedURLException {
+    public static URL getImageUrl(String imageName) throws MalformedURLException {
         // https://www.mediawiki.org/wiki/Manual:$wgHashedUploadDirectory
         String md5 = DigestUtils.md5Hex(imageName);
         // https://www.mediawiki.org/wiki/Manual:PAGENAMEE_encoding#Encodings_compared

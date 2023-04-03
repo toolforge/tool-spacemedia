@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
@@ -68,7 +70,7 @@ public class FlickrMediaProcessorService {
     public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
             MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Collection<String> stringsToRemove,
             Predicate<FlickrMedia> customProcessor, Predicate<FlickrMedia> shouldUploadAuto,
-            Function<FlickrMedia, Pair<FlickrMedia, Integer>> uploader)
+            Function<FlickrMedia, Triple<FlickrMedia, Collection<Metadata>, Integer>> uploader)
             throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
@@ -139,9 +141,9 @@ public class FlickrMediaProcessorService {
         }
         int uploadCount = 0;
         if (shouldUploadAuto.test(media)) {
-            Pair<FlickrMedia, Integer> upload = uploader.apply(media);
-            media = upload.getKey();
-            uploadCount = upload.getValue();
+            Triple<FlickrMedia, Collection<Metadata>, Integer> upload = uploader.apply(media);
+            media = upload.getLeft();
+            uploadCount = upload.getRight();
             save = true;
         }
         if (save) {

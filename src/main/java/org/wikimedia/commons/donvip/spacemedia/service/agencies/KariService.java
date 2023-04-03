@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.Collections.emptyList;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -138,7 +139,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
             }
             id++;
         }
-        endUpdateMedia(count, Collections.emptyList(), start);
+        endUpdateMedia(count, emptyList(), emptyList(), start);
     }
 
     static class KariUpdateResult extends MediaUpdateResult {

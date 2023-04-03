@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.Collections.emptyList;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -26,7 +28,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -211,7 +213,7 @@ public class EsaService
                                 && image.getMission().toUpperCase(Locale.ENGLISH).contains("SENTINEL"))));
     }
 
-    private Pair<Optional<EsaMedia>, Integer> checkEsaImage(URL url) {
+    private Triple<Optional<EsaMedia>, Collection<Metadata>, Integer> checkEsaImage(URL url) {
         EsaMedia media;
         boolean save = false;
         Optional<EsaMedia> mediaInRepo = mediaRepository.findByUrl(url);
@@ -220,24 +222,27 @@ public class EsaService
         } else {
             media = fetchMedia(url);
             if (media.getMetadata().getAssetUrl() == null) {
-                return Pair.of(Optional.empty(), 0);
+                return Triple.of(Optional.empty(), emptyList(), 0);
             }
             save = true;
         }
         if (!isCopyrightOk(media)) {
             problem(media.getUrl(), "Invalid copyright: " + media.getCopyright());
-            return Pair.of(Optional.empty(), 0);
+            return Triple.of(Optional.empty(), emptyList(), 0);
         }
         int uploadCount = 0;
+        List<Metadata> uploadedMetadata = new ArrayList<>();
         for (int i = 0; i < maxTries; i++) {
             try {
                 if (doCommonUpdate(media)) {
                     save = true;
                 }
                 if (shouldUploadAuto(media)) {
-                    Pair<EsaMedia, Integer> upload = upload(save ? saveMedia(media) : media, true);
-                    uploadCount += upload.getValue();
-                    saveMedia(upload.getKey());
+                    Triple<EsaMedia, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media,
+                            true);
+                    uploadCount += upload.getRight();
+                    uploadedMetadata.addAll(upload.getMiddle());
+                    saveMedia(upload.getLeft());
                     save = false;
                 }
                 break;
@@ -252,7 +257,7 @@ public class EsaService
                 }
             }
         }
-        return Pair.of(Optional.of(saveMediaOrCheckRemote(save, media)), uploadCount);
+        return Triple.of(Optional.of(saveMediaOrCheckRemote(save, media)), uploadedMetadata, uploadCount);
     }
 
     private EsaMedia fetchMedia(URL url) {
@@ -378,7 +383,8 @@ public class EsaService
         boolean moreImages = true;
         int count = 0;
         int index = 0;
-        Collection<EsaMedia> uploadedMedia = new ArrayList<>();
+        List<Metadata> uploadedMetadata = new ArrayList<>();
+        List<EsaMedia> uploadedMedia = new ArrayList<>();
         do {
             String searchUrl = searchLink.replace("<idx>", Integer.toString(index));
             try {
@@ -392,11 +398,12 @@ public class EsaService
                             URL imageUrl = new URL(proto, host, div.select("a").get(0).attr("href"));
                             index++;
                             LOGGER.debug("Checking ESA image {}: {}", index, imageUrl);
-                            Pair<Optional<EsaMedia>, Integer> check = checkEsaImage(imageUrl);
-                            Optional<EsaMedia> optionalMedia = check.getKey();
+                            Triple<Optional<EsaMedia>, Collection<Metadata>, Integer> check = checkEsaImage(imageUrl);
+                            Optional<EsaMedia> optionalMedia = check.getLeft();
                             if (optionalMedia.isPresent()) {
                                 count++;
-                                if (check.getValue() > 0) {
+                                if (check.getRight() > 0) {
+                                    uploadedMetadata.addAll(check.getMiddle());
                                     uploadedMedia.add(optionalMedia.get());
                                 }
                             }
@@ -414,7 +421,7 @@ public class EsaService
             }
         } while (moreImages);
 
-        endUpdateMedia(count, uploadedMedia, start);
+        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start);
     }
 
     @Override

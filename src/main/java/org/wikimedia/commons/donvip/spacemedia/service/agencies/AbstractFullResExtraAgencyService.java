@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.temporal.Temporal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -50,13 +51,14 @@ public abstract class AbstractFullResExtraAgencyService<T extends FullResExtraMe
         if (media == null) {
             media = findByExtraSha1OrThrow(sha1, true);
         }
-        return saveMedia(upload(media, true).getKey());
+        return saveMedia(upload(media, true).getLeft());
     }
 
     @Override
-    protected final int doUpload(T media, boolean checkUnicity) throws IOException, UploadException {
-        return super.doUpload(media, checkUnicity) + doUpload(media, media.getExtraMetadata(),
-                media::getExtraCommonsFileNames, media::setExtraCommonsFileNames, checkUnicity);
+    protected final int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded)
+            throws IOException, UploadException {
+        return super.doUpload(media, checkUnicity, uploaded) + doUpload(media, media.getExtraMetadata(),
+                media::getExtraCommonsFileNames, media::setExtraCommonsFileNames, checkUnicity, uploaded);
     }
 
     protected final T findByExtraSha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {

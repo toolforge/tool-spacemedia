@@ -12,13 +12,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.jsoup.HttpStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
@@ -76,16 +77,18 @@ public abstract class AbstractStsciService
         int count = 0;
         boolean loop = true;
         int idx = 1;
-        Collection<StsciMedia> uploadedMedia = new ArrayList<>();
+        List<Metadata> uploadedMetadata = new ArrayList<>();
+        List<StsciMedia> uploadedMedia = new ArrayList<>();
         while (loop) {
             String[] response = stsci.fetchImagesByScrapping(searchEndpoint.replace("<idx>", Integer.toString(idx++)));
             loop = response != null && response.length > 0;
             if (loop) {
                 for (String imageId : response) {
                     try {
-                        Pair<StsciMedia, Integer> update = doUpdateMedia(imageId);
-                        if (update.getValue() > 0) {
-                            uploadedMedia.add(update.getKey());
+                        Triple<StsciMedia, Collection<Metadata>, Integer> update = doUpdateMedia(imageId);
+                        if (update.getRight() > 0) {
+                            uploadedMetadata.addAll(update.getMiddle());
+                            uploadedMedia.add(update.getLeft());
                         }
                         count++;
                     } catch (HttpStatusException e) {
@@ -98,10 +101,11 @@ public abstract class AbstractStsciService
                 }
             }
         }
-        endUpdateMedia(count, uploadedMedia, start);
+        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start);
     }
 
-    private Pair<StsciMedia, Integer> doUpdateMedia(String id) throws IOException, UploadException {
+    private Triple<StsciMedia, Collection<Metadata>, Integer> doUpdateMedia(String id)
+            throws IOException, UploadException {
         boolean save = false;
         StsciMedia media;
         Optional<StsciMedia> mediaInRepo = repository.findById(id);
@@ -115,13 +119,15 @@ public abstract class AbstractStsciService
             save = true;
         }
         int uploadCount = 0;
+        List<Metadata> uploadedMetadata = new ArrayList<>();
         if (shouldUploadAuto(media)) {
-            Pair<StsciMedia, Integer> upload = upload(save ? saveMedia(media) : media, true);
-            uploadCount += upload.getValue();
-            media = saveMedia(upload.getKey());
+            Triple<StsciMedia, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media, true);
+            uploadCount += upload.getRight();
+            uploadedMetadata.addAll(upload.getMiddle());
+            media = saveMedia(upload.getLeft());
             save = false;
         }
-        return Pair.of(saveMediaOrCheckRemote(save, media), uploadCount);
+        return Triple.of(saveMediaOrCheckRemote(save, media), uploadedMetadata, uploadCount);
     }
 
     private StsciMedia getMediaFromWebsite(String id) throws IOException {

@@ -32,6 +32,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAssets;
@@ -233,9 +235,9 @@ public class NasaService
         }
         int uploadCount = 0;
         if (shouldUploadAuto(media)) {
-            Pair<NasaMedia, Integer> upload = upload(save ? saveMedia(media) : media, true);
-            uploadCount += upload.getValue();
-            media = saveMedia(upload.getKey());
+            Triple<NasaMedia, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media, true);
+            uploadCount += upload.getRight();
+            media = saveMedia(upload.getLeft());
             save = false;
         }
         if (!nasaCenters.contains(media.getCenter())) {
@@ -419,7 +421,7 @@ public class NasaService
 
     public Pair<Integer, Collection<NasaImage>> updateImages() {
         int count = 0;
-        Collection<NasaImage> uploadedImages = new ArrayList<>();
+        List<NasaImage> uploadedImages = new ArrayList<>();
         // Recent years have a lot of photos: search by center to avoid more than 10k results
         for (int year = LocalDateTime.now().getYear(); year >= 2000; year--) {
             for (String center : nasaCenters) {
@@ -465,7 +467,7 @@ public class NasaService
             count += videos.getLeft();
             uploadedMedia.addAll(videos.getRight());
         }
-        endUpdateMedia(count, uploadedMedia, start);
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start);
     }
 
     @Override
