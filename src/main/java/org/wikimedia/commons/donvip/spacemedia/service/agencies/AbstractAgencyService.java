@@ -52,7 +52,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.client.RestClientException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.DuplicateMedia;
@@ -140,9 +139,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Value("${execution.mode}")
     private ExecutionMode executionMode;
 
-    @Value("${upload.auto.min.date}")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate minDateUploadAuto;
+    @Value("${upload.auto.min.year}")
+    private int minYearUploadAuto;
 
     private UploadMode uploadMode;
 
@@ -897,7 +895,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final boolean shouldUpload(T media, Metadata metadata, Set<String> commonsFilenames) {
         return (getUploadMode() == UploadMode.AUTO
-                || (getUploadMode() == UploadMode.AUTO_FROM_DATE && LocalDate.now().isAfter(minDateUploadAuto))
+                || (getUploadMode() == UploadMode.AUTO_FROM_DATE && media.getYear().getValue() >= minYearUploadAuto)
                 || getUploadMode() == UploadMode.MANUAL)
                 && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames)
                 && isPermittedFileType(metadata);
@@ -905,7 +903,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final boolean shouldUploadAuto(T media, Metadata metadata, Set<String> commonsFilenames) {
         return (getUploadMode() == UploadMode.AUTO
-                || (getUploadMode() == UploadMode.AUTO_FROM_DATE && LocalDate.now().isAfter(minDateUploadAuto)))
+                || (getUploadMode() == UploadMode.AUTO_FROM_DATE && media.getYear().getValue() >= minYearUploadAuto))
                 && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames)
                 && isEmpty(media.getDuplicates()) && isPermittedFileType(metadata);
     }
