@@ -73,10 +73,10 @@ import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
-import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
+import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 
@@ -303,12 +303,23 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<Metadata> uploadedMetadata,
             LocalDateTime start) {
+        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, true);
+    }
+
+    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<Metadata> uploadedMetadata,
+            LocalDateTime start, boolean postTweet) {
         RuntimeData runtimeData = getRuntimeData();
         LocalDateTime end = LocalDateTime.now();
         runtimeData.setLastUpdateEnd(end);
         runtimeData.setLastUpdateDuration(Duration.between(start, end));
         LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 runtimeDataRepository.save(runtimeData).getLastUpdateDuration());
+        if (postTweet) {
+            postTweet(uploadedMedia, uploadedMetadata);
+        }
+    }
+
+    protected final void postTweet(Collection<? extends T> uploadedMedia, Collection<Metadata> uploadedMetadata) {
         if (!uploadedMedia.isEmpty()) {
             LOGGER.info("Uploaded media: {} ({})", uploadedMedia.size(),
                     uploadedMedia.stream().map(Media::getId).toList());
@@ -320,7 +331,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected final Set<String> getTwitterAccounts(Collection<T> uploadedMedia) {
+    protected final Set<String> getTwitterAccounts(Collection<? extends T> uploadedMedia) {
         return uploadedMedia.stream().flatMap(media -> getTwitterAccounts(media).stream()).collect(toSet());
     }
 

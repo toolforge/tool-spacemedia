@@ -430,6 +430,7 @@ public class NasaService
                 uploadedImages.addAll(update.getRight());
                 count += update.getLeft();
             }
+            postTweet(uploadedImages, uploadedImages.stream().map(Media::getMetadata).toList());
         }
         // Ancient years have a lot less photos: simple search for all centers
         for (int year = 1999; year >= minYear; year--) {
@@ -467,7 +468,7 @@ public class NasaService
             count += videos.getLeft();
             uploadedMedia.addAll(videos.getRight());
         }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start);
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start, false);
     }
 
     @Override
