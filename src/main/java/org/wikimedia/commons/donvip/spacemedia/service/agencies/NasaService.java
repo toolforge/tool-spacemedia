@@ -230,6 +230,10 @@ public class NasaService
             ignoreFile(media, "Photojournal");
             save = true;
         }
+        if (media.getTitle() != null && media.getTitle().startsWith("Title: ")) {
+            media.setTitle(media.getTitle().replace("Title: ", ""));
+            save = true;
+        }
         if (doCommonUpdate(media)) {
             save = true;
         }
