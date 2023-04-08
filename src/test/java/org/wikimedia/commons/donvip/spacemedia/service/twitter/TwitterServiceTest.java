@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.twitter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Set;
@@ -16,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,16 +45,26 @@ class TwitterServiceTest {
 
     @Test
     void testTweetContents() throws JsonProcessingException {
-        TweetRequest request = jackson.readValue(
-                twitter.buildTweetRequest(List.of(new NasaImage()), List.of(), Set.of()).getStringPayload(),
-                TweetRequest.class);
-        assertEquals("1 new picture", request.getText());
+        when(repo.findMaxTimestampBySha1In(any())).thenReturn("20230407000353");
 
-        request = jackson.readValue(
-                twitter.buildTweetRequest(List.of(new NasaImage(), new NasaImage()), List.of(), Set.of("ESA", "NASA"))
+        TweetRequest request = jackson.readValue(
+                twitter.buildTweetRequest(List.of(new NasaImage()), List.of(newMetadata()), Set.of())
                         .getStringPayload(),
                 TweetRequest.class);
-        assertEquals("2 new pictures from @ESA @NASA", request.getText());
+        assertEquals("1 new picture https://commons.wikimedia.org/wiki/Special:ListFiles?limit=1&user=OptimusPrimeBot&ilshowall=1&offset=20230407000353", request.getText());
+
+        request = jackson.readValue(
+                twitter.buildTweetRequest(List.of(new NasaImage(), new NasaImage()),
+                        List.of(newMetadata(), newMetadata()), Set.of("ESA", "NASA"))
+                        .getStringPayload(),
+                TweetRequest.class);
+        assertEquals("2 new pictures from @ESA @NASA https://commons.wikimedia.org/wiki/Special:ListFiles?limit=2&user=OptimusPrimeBot&ilshowall=1&offset=20230407000353", request.getText());
+    }
+
+    private static final Metadata newMetadata() {
+        Metadata m = new Metadata();
+        m.setSha1("1");
+        return m;
     }
 
     @Configuration

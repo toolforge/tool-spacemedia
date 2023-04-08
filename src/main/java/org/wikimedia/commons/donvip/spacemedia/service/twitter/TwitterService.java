@@ -63,6 +63,9 @@ public class TwitterService {
     @Value("${perceptual.threshold}")
     private double perceptualThreshold;
 
+    @Value("${commons.api.account}")
+    private String commonsAccount;
+
     private OAuth10aService oAuthService;
     private OAuth1AccessToken oAuthAccessToken;
 
@@ -133,14 +136,19 @@ public class TwitterService {
             Collection<Metadata> uploadedMetadata, Set<String> twitterAccounts) throws JsonProcessingException {
         return postRequest(V2_TWEET, "application/json",
                 new TweetRequest(createTweetMedia(uploadedMetadata),
-                createTweetText(twitterAccounts, uploadedMedia.size())));
+                        createTweetText(twitterAccounts, uploadedMedia.size(), uploadedMetadata)));
     }
 
-    private String createTweetText(Set<String> twitterAccounts, int size) {
+    private String createTweetText(Set<String> twitterAccounts, int size, Collection<Metadata> uploadedMetadata) {
         String text = String.format("%d new picture%s", size, size >= 2 ? "s" : "");
         if (!twitterAccounts.isEmpty()) {
             text += " from " + twitterAccounts.stream().sorted().map(account -> "@" + account).collect(joining(" "));
         }
+        text += " "
+                + "https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
+                + "&user=" + commonsAccount + "&ilshowall=1&offset="
+                + imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream().map(Metadata::getSha1)
+                        .map(CommonsService::base36Sha1).toList());
         return text;
     }
 
