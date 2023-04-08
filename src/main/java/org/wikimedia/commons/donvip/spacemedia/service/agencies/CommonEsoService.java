@@ -45,6 +45,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRep
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoLicence;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
+import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -496,20 +497,24 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             try {
                 for (Iterator<EsoFrontPageItem> it = findFrontPageItems(
                         Jsoup.connect(urlLink).timeout(60_000).get()); it.hasNext();) {
-                    Triple<Optional<T>, Collection<Metadata>, Integer> update = updateMediaForUrl(url, it.next());
-                    Optional<T> optionalMedia = update.getLeft();
-                    if (optionalMedia.isPresent()) {
-                        count++;
-                        if (update.getRight() > 0) {
-                            uploadedMetadata.addAll(update.getMiddle());
-                            uploadedMedia.add(optionalMedia.get());
+                    try {
+                        Triple<Optional<T>, Collection<Metadata>, Integer> update = updateMediaForUrl(url, it.next());
+                        Optional<T> optionalMedia = update.getLeft();
+                        if (optionalMedia.isPresent()) {
+                            count++;
+                            if (update.getRight() > 0) {
+                                uploadedMetadata.addAll(update.getMiddle());
+                                uploadedMedia.add(optionalMedia.get());
+                            }
                         }
+                    } catch (UploadException | ImageUploadForbiddenException e) {
+                        LOGGER.error("Upload error when processing {}", url, e);
                     }
                 }
             } catch (HttpStatusException e) {
                 // End of search when we receive an HTTP 404
                 loop = false;
-            } catch (IOException | UploadException | ReflectiveOperationException | RuntimeException e) {
+            } catch (IOException | ReflectiveOperationException | RuntimeException e) {
                 LOGGER.error("Error when fetching {}", url, e);
             }
         }
