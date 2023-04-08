@@ -145,7 +145,7 @@ public class TwitterService {
     }
 
     private TweetMedia createTweetMedia(Collection<Metadata> uploadedMetadata) {
-        TweetMedia media = new TweetMedia();
+        List<Long> mediaIds = new ArrayList<>();
         for (Metadata metadata : determineMediaToUploadToTwitter(uploadedMetadata)) {
             try {
                 LOGGER.info("Start uploading of media to Twitter: {}", metadata);
@@ -174,7 +174,7 @@ public class TwitterService {
                         ProcessingInfo processingInfo = finalizeUpload(mediaId);
 
                         while (processingInfo != null) {
-                            processingInfo = awaitUploadCompletion(media, mediaId, processingInfo);
+                            processingInfo = awaitUploadCompletion(mediaIds, mediaId, processingInfo);
                         }
                     }
                 } else {
@@ -186,7 +186,8 @@ public class TwitterService {
                 Thread.currentThread().interrupt();
             }
         }
-        return media;
+        // Don't return empty media object as it causes bad request in v2/tweet endpoint
+        return mediaIds.isEmpty() ? null : new TweetMedia(mediaIds);
     }
 
     private long initializeUpload(String mime, String cat, final long contentLength) throws IOException {
@@ -211,7 +212,7 @@ public class TwitterService {
                 Map.of("command", "FINALIZE", "media_id", mediaId)), UploadResponse.class).getProcessingInfo();
     }
 
-    private ProcessingInfo awaitUploadCompletion(TweetMedia media, final long mediaId, ProcessingInfo processingInfo)
+    private ProcessingInfo awaitUploadCompletion(List<Long> mediaIds, final long mediaId, ProcessingInfo processingInfo)
             throws InterruptedException, IOException {
         int checkAfterSecs = processingInfo.getCheckAfterSecs();
         LOGGER.info("Waiting {} seconds for the upload to be complete...", checkAfterSecs);
@@ -223,7 +224,7 @@ public class TwitterService {
         switch (processingInfo.getState()) {
         case "succeeded":
             LOGGER.info("Upload of media id {} succeeded", mediaId);
-            media.getMediaIds().add(mediaId);
+            mediaIds.add(mediaId);
             processingInfo = null;
             break;
         case "failed":
