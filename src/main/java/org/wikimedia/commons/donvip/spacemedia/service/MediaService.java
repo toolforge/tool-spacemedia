@@ -628,7 +628,7 @@ public class MediaService {
                         hash.orElseThrow(() -> new IllegalStateException("No hash for " + sha1base36)).getPhash());
                 if (score <= perceptualThresholdIdenticalId) {
                     LOGGER.info("Found match ({}) between {} and {}", score, metadata, image);
-                    setter.accept(Set.of(filename));
+                    setter.accept(new HashSet<>(Set.of(filename)));
                     return true;
                 } else if (hash.isPresent()) {
                     LOGGER.info("No match between {} and {} / {} -> {}", metadata, image, hash,
