@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -24,6 +25,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, full_res_sha1, phash, full_res_phash") })
 public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
+
+    private static final Pattern HORRIBLE_ID_FORMAT = Pattern.compile("\\d{4}-\\d{3}-[A-Z0-9]{26}");
 
     @Id
     @Column(length = 35)
@@ -164,6 +167,12 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
     @Override
     public boolean isVideo() {
         return false;
+    }
+
+    @Override
+    protected String getUploadId() {
+        String id = super.getUploadId().replace("-Image", "");
+        return HORRIBLE_ID_FORMAT.matcher(id).matches() ? id.substring(0, id.lastIndexOf('-')) : id;
     }
 
     public StsciMedia copyDataFrom(StsciMedia mediaFromApi) {
