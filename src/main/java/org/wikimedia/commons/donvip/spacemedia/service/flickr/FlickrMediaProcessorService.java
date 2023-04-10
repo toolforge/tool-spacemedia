@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.flickr;
 
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -13,7 +14,6 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -123,6 +123,9 @@ public class FlickrMediaProcessorService {
         } catch (IllegalArgumentException e) {
             LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());
         }
+        media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets);
+        savePhotoSets = false;
+        save = false;
         if (mediaService.updateMedia(media, originalRepo, false).getResult()) {
             save = true;
         }
@@ -147,13 +150,17 @@ public class FlickrMediaProcessorService {
             uploadCount = upload.getRight();
             save = true;
         }
+        return Pair.of(saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets), uploadCount);
+    }
+
+    private FlickrMedia saveMediaAndPhotosetsIfNeeded(FlickrMedia media, boolean save, boolean savePhotoSets) {
         if (save) {
             media = flickrRepository.save(media);
         }
         if (savePhotoSets) {
             media.getPhotosets().forEach(flickrPhotoSetRepository::save);
         }
-        return Pair.of(media, uploadCount);
+        return media;
     }
 
     private boolean handleBadVideo(FlickrMedia media) throws MalformedURLException {
@@ -173,7 +180,7 @@ public class FlickrMediaProcessorService {
                             set.setPathAlias(flickrAccount);
                             return flickrPhotoSetRepository.save(set);
                         }))
-                .collect(Collectors.toSet());
+                .collect(toSet());
     }
 
     private boolean handleLicenseChange(FlickrMedia media, String flickrAccount, FlickrMedia mediaInRepo) {

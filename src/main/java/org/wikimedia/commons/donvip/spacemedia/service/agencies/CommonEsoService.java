@@ -358,11 +358,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             media.setImageType(EsoMediaType.valueOf(text));
             break;
         case "Release date:":
-            try {
-                media.setDate(LocalDateTime.parse(text, dateTimeFormatter));
-            } catch (DateTimeParseException e) {
-                media.setDate(LocalDate.parse(text, dateFormatter).atStartOfDay());
-            }
+            media.setDate(parseDateTime(text));
             break;
         case "Size:":
             Matcher m = SIZE_PATTERN.matcher(text);
@@ -387,6 +383,14 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             break;
         default:
             scrapingError(imgUrlLink, title.text());
+        }
+    }
+
+    protected LocalDateTime parseDateTime(String text) {
+        try {
+            return LocalDateTime.parse(text, dateTimeFormatter);
+        } catch (DateTimeParseException e) {
+            return LocalDate.parse(text, dateFormatter).atStartOfDay();
         }
     }
 

@@ -144,6 +144,24 @@
   schedule: "45 11,20 * * *"
   emails: onfailure
 
+- name: individuals-flickr
+  image: tf-jdk17
+  command: ./run.sh flickr individuals-flickr
+  cpu: 1
+  mem: 4Gi
+  no-filelog: true
+  schedule: "45 12 * * *"
+  emails: onfailure
+
+- name: noirlab
+  image: tf-jdk17
+  command: ./run.sh eso noirlab
+  cpu: 1
+  mem: 4Gi
+  no-filelog: true
+  schedule: "45 13 * * *"
+  emails: onfailure
+
 - name: webb-esa
   image: tf-jdk17
   command: ./run.sh eso webb-esa
