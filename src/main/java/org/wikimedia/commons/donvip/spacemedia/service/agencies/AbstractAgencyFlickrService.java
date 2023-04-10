@@ -288,14 +288,17 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException(e);
         }
-        if (result.contains("Flickr-public domain mark") && UnitedStates.isClearPublicDomain(media.getDescription())) {
-            result.remove("Flickr-public domain mark");
-        }
-        if (media.getDescription().contains("hoto by SpaceX") || media.getDescription().contains("hoto/SpaceX")) {
-            result.add("PD-SpaceX");
-        }
-        if (media.getDescription().contains("hoto by NASA") || media.getDescription().contains("hoto/NASA")) {
-            result.add("PD-NASA");
+        String description = media.getDescription();
+        if (description != null) {
+            if (result.contains("Flickr-public domain mark") && UnitedStates.isClearPublicDomain(description)) {
+                result.remove("Flickr-public domain mark");
+            }
+            if (description.contains("hoto by SpaceX") || description.contains("hoto/SpaceX")) {
+                result.add("PD-SpaceX");
+            }
+            if (description.contains("hoto by NASA") || description.contains("hoto/NASA")) {
+                result.add("PD-NASA");
+            }
         }
         return result;
     }
