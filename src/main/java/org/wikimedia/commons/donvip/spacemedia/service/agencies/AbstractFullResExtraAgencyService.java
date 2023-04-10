@@ -27,9 +27,10 @@ public abstract class AbstractFullResExtraAgencyService<T extends FullResExtraMe
     }
 
     @Override
-    protected final boolean shouldUploadAuto(T media) {
-        return super.shouldUploadAuto(media)
-                || shouldUploadAuto(media, media.getExtraMetadata(), media.getExtraCommonsFileNames());
+    protected final boolean shouldUploadAuto(T media, boolean isManual) {
+        return super.shouldUploadAuto(media, isManual)
+                || shouldUploadAuto(new UploadContext<>(media, media.getExtraMetadata(),
+                        media.getExtraCommonsFileNames(), isManual));
     }
 
     @Override
@@ -43,7 +44,7 @@ public abstract class AbstractFullResExtraAgencyService<T extends FullResExtraMe
     }
 
     @Override
-    public final T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException {
+    public final T uploadAndSaveBySha1(String sha1, boolean isManual) throws UploadException, TooManyResultsException {
         T media = findBySha1OrThrow(sha1, false);
         if (media == null) {
             media = findByFullResSha1OrThrow(sha1, true);
@@ -51,14 +52,14 @@ public abstract class AbstractFullResExtraAgencyService<T extends FullResExtraMe
         if (media == null) {
             media = findByExtraSha1OrThrow(sha1, true);
         }
-        return saveMedia(upload(media, true).getLeft());
+        return saveMedia(upload(media, true, isManual).getLeft());
     }
 
     @Override
-    protected final int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded)
+    protected final int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded, boolean isManual)
             throws IOException, UploadException {
-        return super.doUpload(media, checkUnicity, uploaded) + doUpload(media, media.getExtraMetadata(),
-                media::getExtraCommonsFileNames, media::setExtraCommonsFileNames, checkUnicity, uploaded);
+        return super.doUpload(media, checkUnicity, uploaded, isManual) + doUpload(media, media.getExtraMetadata(),
+                media::getExtraCommonsFileNames, media::setExtraCommonsFileNames, checkUnicity, uploaded, isManual);
     }
 
     protected final T findByExtraSha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {

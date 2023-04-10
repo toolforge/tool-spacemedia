@@ -29,9 +29,10 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     }
 
     @Override
-    protected boolean shouldUploadAuto(T media) {
-        return super.shouldUploadAuto(media)
-                || shouldUploadAuto(media, media.getFullResMetadata(), media.getFullResCommonsFileNames());
+    protected boolean shouldUploadAuto(T media, boolean isManual) {
+        return super.shouldUploadAuto(media, isManual)
+                || shouldUploadAuto(new UploadContext<>(media, media.getFullResMetadata(),
+                        media.getFullResCommonsFileNames(), isManual));
     }
 
     @Override
@@ -45,19 +46,19 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
     }
 
     @Override
-    public T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException {
+    public T uploadAndSaveBySha1(String sha1, boolean isManual) throws UploadException, TooManyResultsException {
         T media = findBySha1OrThrow(sha1, false);
         if (media == null) {
             media = findByFullResSha1OrThrow(sha1, true);
         }
-        return saveMedia(upload(media, true).getLeft());
+        return saveMedia(upload(media, true, isManual).getLeft());
     }
 
     @Override
-    protected int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded)
+    protected int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded, boolean isManual)
             throws IOException, UploadException {
-        return super.doUpload(media, checkUnicity, uploaded) + doUpload(media, media.getFullResMetadata(),
-                media::getFullResCommonsFileNames, media::setFullResCommonsFileNames, checkUnicity, uploaded);
+        return super.doUpload(media, checkUnicity, uploaded, isManual) + doUpload(media, media.getFullResMetadata(),
+                media::getFullResCommonsFileNames, media::setFullResCommonsFileNames, checkUnicity, uploaded, isManual);
     }
 
     protected final T findByFullResSha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {

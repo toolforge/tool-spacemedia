@@ -403,7 +403,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
 
     protected final Triple<FlickrMedia, Collection<Metadata>, Integer> uploadWrapped(FlickrMedia media) {
         try {
-            return upload(media, true);
+            return upload(media, true, false);
         } catch (UploadException e) {
             LOGGER.error("Failed to upload {}", media, e);
             throw new RuntimeException(e);

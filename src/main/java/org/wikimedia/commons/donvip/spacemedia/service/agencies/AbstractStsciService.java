@@ -120,8 +120,9 @@ public abstract class AbstractStsciService
         }
         int uploadCount = 0;
         List<Metadata> uploadedMetadata = new ArrayList<>();
-        if (shouldUploadAuto(media)) {
-            Triple<StsciMedia, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media, true);
+        if (shouldUploadAuto(media, false)) {
+            Triple<StsciMedia, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media, true,
+                    false);
             uploadCount += upload.getRight();
             uploadedMetadata.addAll(upload.getMiddle());
             media = saveMedia(upload.getLeft());

@@ -226,8 +226,8 @@ public abstract class AbstractAgencyYouTubeService
     }
 
     @Override
-    protected final int doUpload(YouTubeVideo video, boolean checkUnicity, Collection<Metadata> uploaded)
-            throws IOException {
+    protected final int doUpload(YouTubeVideo video, boolean checkUnicity, Collection<Metadata> uploaded,
+            boolean isManual) throws IOException {
         throw new UnsupportedOperationException("<h2>Spacemedia is not able to upload YouTube videos by itself.</h2>\n"
                 + "<p>Please go to <a href=\"https://video2commons.toolforge.org/\">video2commons</a> and upload the <b>"
                 + video.getId()

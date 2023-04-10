@@ -370,8 +370,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
             save = true;
         }
         int uploadCount = 0;
-        if (shouldUploadAuto(media)) {
-            Triple<DvidsMedia, Collection<Metadata>, Integer> upload = upload(media, true);
+        if (shouldUploadAuto(media, false)) {
+            Triple<DvidsMedia, Collection<Metadata>, Integer> upload = upload(media, true, false);
             uploadCount = upload.getRight();
             media = upload.getLeft();
             save = true;

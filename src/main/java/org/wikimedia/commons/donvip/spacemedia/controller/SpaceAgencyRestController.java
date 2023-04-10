@@ -122,12 +122,12 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
 
     @GetMapping("/upload/{sha1}")
     public final T upload(@PathVariable String sha1) throws UploadException, TooManyResultsException {
-        return service.uploadAndSaveBySha1(sha1);
+        return service.uploadAndSaveBySha1(sha1, true);
     }
 
     @GetMapping("/uploadmedia/**")
     public final T uploadMedia(HttpServletRequest request) throws UploadException, TooManyResultsException {
-        return service.uploadAndSaveById(extractId(request, "uploadmedia"));
+        return service.uploadAndSaveById(extractId(request, "uploadmedia"), true);
     }
 
     @GetMapping("/refreshmedia/**")

@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -69,7 +70,7 @@ public class FlickrMediaProcessorService {
     @Transactional
     public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
             MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Collection<String> stringsToRemove,
-            Predicate<FlickrMedia> customProcessor, Predicate<FlickrMedia> shouldUploadAuto,
+            Predicate<FlickrMedia> customProcessor, BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<Metadata>, Integer>> uploader)
             throws IOException {
         boolean save = false;
@@ -140,7 +141,7 @@ public class FlickrMediaProcessorService {
             save = true;
         }
         int uploadCount = 0;
-        if (shouldUploadAuto.test(media)) {
+        if (shouldUploadAuto.test(media, false)) {
             Triple<FlickrMedia, Collection<Metadata>, Integer> upload = uploader.apply(media);
             media = upload.getLeft();
             uploadCount = upload.getRight();

@@ -88,11 +88,12 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     void deleteById(String id) throws ImageNotFoundException;
 
-    T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException;
+    T uploadAndSaveBySha1(String sha1, boolean isManual) throws UploadException, TooManyResultsException;
 
-    T uploadAndSaveById(String id) throws UploadException, TooManyResultsException;
+    T uploadAndSaveById(String id, boolean isManual) throws UploadException, TooManyResultsException;
 
-    Triple<T, Collection<Metadata>, Integer> upload(T media, boolean checkUnicity) throws UploadException;
+    Triple<T, Collection<Metadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
+            throws UploadException;
 
     T refreshAndSaveById(String id) throws ImageNotFoundException, IOException;
 

@@ -124,8 +124,8 @@ public class NasaSirsService
                     if (doCommonUpdate(image)) {
                         image = saveMedia(image);
                     }
-                    if (shouldUploadAuto(image)) {
-                        saveMedia(upload(image, true).getLeft());
+                    if (shouldUploadAuto(image, false)) {
+                        saveMedia(upload(image, true, false).getLeft());
                     }
                 }
             }

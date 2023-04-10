@@ -475,39 +475,41 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public final T uploadAndSaveById(String id) throws UploadException, TooManyResultsException {
-        return saveMedia(upload(getById(id), false).getLeft());
+    public final T uploadAndSaveById(String id, boolean isManual) throws UploadException, TooManyResultsException {
+        return saveMedia(upload(getById(id), false, isManual).getLeft());
     }
 
     @Override
-    public T uploadAndSaveBySha1(String sha1) throws UploadException, TooManyResultsException {
-        return saveMedia(upload(findBySha1OrThrow(sha1, true), true).getLeft());
+    public T uploadAndSaveBySha1(String sha1, boolean isManual) throws UploadException, TooManyResultsException {
+        return saveMedia(upload(findBySha1OrThrow(sha1, true), true, isManual).getLeft());
     }
 
     @Override
-    public final Triple<T, Collection<Metadata>, Integer> upload(T media, boolean checkUnicity) throws UploadException {
+    public final Triple<T, Collection<Metadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
+            throws UploadException {
         if (!isUploadEnabled()) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
         try {
             checkUploadPreconditions(media, checkUnicity);
             List<Metadata> uploaded = new ArrayList<>();
-            return Triple.of(media, uploaded, doUpload(media, checkUnicity, uploaded));
+            return Triple.of(media, uploaded, doUpload(media, checkUnicity, uploaded, isManual));
         } catch (IOException | RuntimeException e) {
             throw new UploadException(e);
         }
     }
 
-    protected int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded)
+    protected int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded, boolean isManual)
             throws IOException, UploadException {
         return doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames,
-                checkUnicity, uploaded);
+                checkUnicity, uploaded, isManual);
     }
 
     protected final int doUpload(T media, Metadata metadata, Supplier<Set<String>> getter,
-            Consumer<Set<String>> setter, boolean checkUnicity, Collection<Metadata> uploaded)
+            Consumer<Set<String>> setter, boolean checkUnicity, Collection<Metadata> uploaded, boolean isManual)
             throws IOException, UploadException {
-        if (metadata != null && metadata.getAssetUrl() != null && shouldUpload(media, metadata, getter.get())) {
+        if (metadata != null && metadata.getAssetUrl() != null
+                && shouldUpload(new UploadContext<>(media, metadata, getter.get(), isManual))) {
             checkUploadPreconditions(media, metadata, getter.get(), checkUnicity);
             setter.accept(new HashSet<>(Set.of(
                     commonsService.upload(getWikiCode(media, metadata), media.getUploadTitle(),
@@ -910,23 +912,25 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 && commonsService.isPermittedFileType(metadata.getAssetUrl().toExternalForm());
     }
 
-    protected final boolean shouldUpload(T media, Metadata metadata, Set<String> commonsFilenames) {
+    protected final boolean shouldUpload(UploadContext<T> ctx) {
         return (getUploadMode() == UploadMode.AUTO
-                || (getUploadMode() == UploadMode.AUTO_FROM_DATE && media.getYear().getValue() >= minYearUploadAuto)
+                || (getUploadMode() == UploadMode.AUTO_FROM_DATE
+                        && (ctx.isManual() || ctx.getMedia().getYear().getValue() >= minYearUploadAuto))
                 || getUploadMode() == UploadMode.MANUAL)
-                && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames)
-                && isPermittedFileType(metadata);
+                && !Boolean.TRUE.equals(ctx.getMedia().isIgnored()) && isEmpty(ctx.getCommonsFilenames())
+                && isPermittedFileType(ctx.getMetadata());
     }
 
-    protected final boolean shouldUploadAuto(T media, Metadata metadata, Set<String> commonsFilenames) {
+    protected final boolean shouldUploadAuto(UploadContext<T> ctx) {
         return (getUploadMode() == UploadMode.AUTO
-                || (getUploadMode() == UploadMode.AUTO_FROM_DATE && media.getYear().getValue() >= minYearUploadAuto))
-                && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(commonsFilenames)
-                && isEmpty(media.getDuplicates()) && isPermittedFileType(metadata);
+                || (getUploadMode() == UploadMode.AUTO_FROM_DATE
+                        && (ctx.isManual() || ctx.getMedia().getYear().getValue() >= minYearUploadAuto)))
+                && !Boolean.TRUE.equals(ctx.getMedia().isIgnored()) && isEmpty(ctx.getCommonsFilenames())
+                && isEmpty(ctx.getMedia().getDuplicates()) && isPermittedFileType(ctx.getMetadata());
     }
 
-    protected boolean shouldUploadAuto(T media) {
-        return shouldUploadAuto(media, media.getMetadata(), media.getCommonsFileNames());
+    protected boolean shouldUploadAuto(T media, boolean isManual) {
+        return shouldUploadAuto(new UploadContext<>(media, media.getMetadata(), media.getCommonsFileNames(), isManual));
     }
 
     protected static void addOtherField(StringBuilder sb, String name, Collection<?> values, Map<String, String> catMapping) {

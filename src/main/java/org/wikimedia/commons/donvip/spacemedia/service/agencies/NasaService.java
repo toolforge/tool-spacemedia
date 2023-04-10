@@ -238,8 +238,9 @@ public class NasaService
             save = true;
         }
         int uploadCount = 0;
-        if (shouldUploadAuto(media)) {
-            Triple<NasaMedia, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media, true);
+        if (shouldUploadAuto(media, false)) {
+            Triple<NasaMedia, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media, true,
+                    false);
             uploadCount += upload.getRight();
             media = saveMedia(upload.getLeft());
             save = false;

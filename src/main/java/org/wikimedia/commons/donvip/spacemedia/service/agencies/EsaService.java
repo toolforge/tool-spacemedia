@@ -237,9 +237,9 @@ public class EsaService
                 if (doCommonUpdate(media)) {
                     save = true;
                 }
-                if (shouldUploadAuto(media)) {
+                if (shouldUploadAuto(media, false)) {
                     Triple<EsaMedia, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media,
-                            true);
+                            true, false);
                     uploadCount += upload.getRight();
                     uploadedMetadata.addAll(upload.getMiddle());
                     saveMedia(upload.getLeft());

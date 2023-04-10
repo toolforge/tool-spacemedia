@@ -157,8 +157,8 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         }
         int uploadCount = 0;
         List<Metadata> uploadedMetadata = new ArrayList<>();
-        if (shouldUploadAuto(media)) {
-            Triple<T, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media, true);
+        if (shouldUploadAuto(media, false)) {
+            Triple<T, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media, true, false);
             saveMedia(upload.getLeft());
             uploadedMetadata.addAll(upload.getMiddle());
             uploadCount = upload.getRight();
