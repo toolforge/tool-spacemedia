@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
+import static javax.persistence.GenerationType.SEQUENCE;
+
 import java.net.URL;
 import java.time.LocalDateTime;
 
@@ -14,7 +16,7 @@ public class Problem {
 
     @Id
     @Column(nullable = false)
-    @GeneratedValue
+    @GeneratedValue(strategy = SEQUENCE, generator = "problem_sequence")
     private Integer id;
 
     /**
