@@ -1,8 +1,13 @@
-image: docker-registry.wikimedia.org/releng/maven-java11:latest
+#image: docker-registry.wikimedia.org/releng/maven-java11:latest
+#image: maven:latest
+#image: docker-registry.tools.wmflabs.org/toolforge-jdk17-sssd-base
 
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  #  ZUUL_URL: "gitlab.wikimedia.org"
+  #  ZUUL_PROJECT: "toolforge-repos/spacemedia"
+  #  ZUUL_REF: "develop-0.4.x"
 
 cache:
   paths:
@@ -12,6 +17,7 @@ cache:
 build:
   stage: build
   script:
+    - apt install maven
     - mvn $MAVEN_CLI_OPTS compile
 
 test:
