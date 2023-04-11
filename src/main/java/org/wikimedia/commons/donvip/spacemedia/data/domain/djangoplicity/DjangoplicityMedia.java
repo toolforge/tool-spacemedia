@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain.eso;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -18,7 +18,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @MappedSuperclass
-public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime> {
+public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateTime> {
 
     @Id
     @Column(length = 127)
@@ -26,12 +26,12 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true, length = 16)
-    private EsoLicence licence;
+    private DjangoplicityLicence licence;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     @JsonProperty("image_type")
-    private EsoMediaType imageType;
+    private DjangoplicityMediaType imageType;
 
     @Column(name = "release_date", nullable = false)
     private LocalDateTime date;
@@ -99,19 +99,19 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
         this.id = id;
     }
 
-    public EsoLicence getLicence() {
+    public DjangoplicityLicence getLicence() {
         return licence;
     }
 
-    public void setLicence(EsoLicence licence) {
+    public void setLicence(DjangoplicityLicence licence) {
         this.licence = licence;
     }
 
-    public EsoMediaType getImageType() {
+    public DjangoplicityMediaType getImageType() {
         return imageType;
     }
 
-    public void setImageType(EsoMediaType imageType) {
+    public void setImageType(DjangoplicityMediaType imageType) {
         this.imageType = imageType;
     }
 
@@ -279,7 +279,7 @@ public abstract class CommonEsoMedia extends FullResMedia<String, LocalDateTime>
         return false;
     }
 
-    public CommonEsoMedia copyDataFrom(CommonEsoMedia mediaFromApi) {
+    public DjangoplicityMedia copyDataFrom(DjangoplicityMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         this.categories = mediaFromApi.categories;
         this.constellation = mediaFromApi.constellation;

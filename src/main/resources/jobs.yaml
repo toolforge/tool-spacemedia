@@ -38,7 +38,7 @@
 
 - name: eso
   image: tf-jdk17
-  command: ./run.sh eso eso
+  command: ./run.sh djangoplicity eso
   cpu: 1
   mem: 4Gi
   no-filelog: true
@@ -47,7 +47,7 @@
 
 - name: hubble-esa
   image: tf-jdk17
-  command: ./run.sh eso hubble-esa
+  command: ./run.sh djangoplicity hubble-esa
   cpu: 1
   mem: 4Gi
   no-filelog: true
@@ -65,7 +65,7 @@
 
 - name: iau
   image: tf-jdk17
-  command: ./run.sh eso iau
+  command: ./run.sh djangoplicity iau
   cpu: 1
   mem: 4Gi
   no-filelog: true
@@ -155,7 +155,7 @@
 
 - name: noirlab
   image: tf-jdk17
-  command: ./run.sh eso noirlab
+  command: ./run.sh djangoplicity noirlab
   cpu: 1
   mem: 4Gi
   no-filelog: true
@@ -164,7 +164,7 @@
 
 - name: webb-esa
   image: tf-jdk17
-  command: ./run.sh eso webb-esa
+  command: ./run.sh djangoplicity webb-esa
   cpu: 1
   mem: 4Gi
   no-filelog: true

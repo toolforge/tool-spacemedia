@@ -7,10 +7,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
 
-public class SpacemediaAgencyEsoUpdateJobApplication extends AbstractSpacemediaAgencyUpdateJobApplication {
+public class SpacemediaAgencyDjangoplicityUpdateJobApplication extends AbstractSpacemediaAgencyUpdateJobApplication {
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(SpacemediaAgencyEsoUpdateJobApplication.class).web(WebApplicationType.NONE).run(args);
+        new SpringApplicationBuilder(SpacemediaAgencyDjangoplicityUpdateJobApplication.class).web(WebApplicationType.NONE).run(args);
     }
 
     @Bean

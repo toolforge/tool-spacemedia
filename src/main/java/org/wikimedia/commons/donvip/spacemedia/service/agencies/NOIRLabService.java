@@ -22,7 +22,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.noirlab.NOIRLabMediaR
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 @Service
-public class NOIRLabService extends CommonEsoService<NOIRLabMedia> {
+public class NOIRLabService extends AbstractDjangoplicityService<NOIRLabMedia> {
 
     private static final String BASE_URL = "https://noirlab.edu";
 
@@ -30,7 +30,7 @@ public class NOIRLabService extends CommonEsoService<NOIRLabMedia> {
 
     private static final String BASE_PUBLIC_URL = BASE_URL + PUBLIC_PATH;
 
-    private static final String IMAGES_PATH = "images/detail/";
+    private static final String IMAGES_PATH = "images/";
 
     private static final Pattern PATTERN_LOCALIZED_URL = Pattern
             .compile(BASE_PUBLIC_URL + "([a-z]+/)" + IMAGES_PATH + ".*");

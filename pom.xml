@@ -325,13 +325,13 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>job-eso</id>
+						<id>job-djangoplicity</id>
 						<goals>
 							<goal>repackage</goal>
 						</goals>
 						<configuration>
-							<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyEsoUpdateJobApplication</mainClass>
-							<outputDirectory>${project.build.directory}/job-eso</outputDirectory>
+							<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyDjangoplicityUpdateJobApplication</mainClass>
+							<outputDirectory>${project.build.directory}/job-djangoplicity</outputDirectory>
 						</configuration>
 					</execution>
 					<execution>

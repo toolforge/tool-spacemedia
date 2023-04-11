@@ -7,9 +7,9 @@ import java.util.List;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 
-public interface HubbleEsaMediaRepository extends CommonEsoMediaRepository<HubbleEsaMedia> {
+public interface HubbleEsaMediaRepository extends DjangoplicityMediaRepository<HubbleEsaMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {

@@ -40,11 +40,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.CommonEsoMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoLicence;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityFrontPageItem;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityLicence;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
@@ -52,10 +52,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.micrometer.core.instrument.util.StringUtils;
 
-public abstract class CommonEsoService<T extends CommonEsoMedia>
+/**
+ * Service fetching images from djangoplicity-powered website
+ *
+ * @param <T> Type of media
+ */
+public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
         extends AbstractFullResAgencyService<T, String, LocalDateTime, T, String, LocalDateTime> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CommonEsoService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDjangoplicityService.class);
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+) x (\\d+) px");
 
@@ -65,20 +70,20 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     private DateTimeFormatter dateFormatter;
     private DateTimeFormatter dateTimeFormatter;
 
-    @Value("${eso.date.pattern}")
+    @Value("${djangoplicity.date.pattern}")
     private String datePattern;
 
-    @Value("${eso.datetime.pattern}")
+    @Value("${djangoplicity.datetime.pattern}")
     private String dateTimePattern;
 
-    private Map<String, String> esoCategories;
-    private Map<String, String> esoNames;
-    private Map<String, String> esoTypes;
+    private Map<String, String> dpCategories;
+    private Map<String, String> dpNames;
+    private Map<String, String> dpTypes;
 
     @Autowired
     private ObjectMapper jackson;
 
-    protected CommonEsoService(CommonEsoMediaRepository<T> repository, String id, String searchLink, Class<T> mediaClass) {
+    protected AbstractDjangoplicityService(DjangoplicityMediaRepository<T> repository, String id, String searchLink, Class<T> mediaClass) {
         super(repository, id);
         this.searchLink = Objects.requireNonNull(searchLink);
         this.mediaClass = Objects.requireNonNull(mediaClass);
@@ -90,14 +95,14 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
         super.init();
         dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
         dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern, Locale.ENGLISH);
-        esoCategories = loadCsvMapping("eso.categories.csv");
-        esoNames = loadCsvMapping("eso.names.csv");
-        esoTypes = loadCsvMapping("eso.types.csv");
+        dpCategories = loadCsvMapping("djangoplicity.categories.csv");
+        dpNames = loadCsvMapping("djangoplicity.names.csv");
+        dpTypes = loadCsvMapping("djangoplicity.types.csv");
     }
 
     public void checkEsoCategories() {
-        checkCommonsCategories(esoCategories);
-        checkCommonsCategories(esoTypes);
+        checkCommonsCategories(dpCategories);
+        checkCommonsCategories(dpTypes);
     }
 
     @Override
@@ -116,7 +121,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
 
     protected abstract Matcher getLocalizedUrlMatcher(String imgUrlLink);
 
-    private Triple<Optional<T>, Collection<Metadata>, Integer> updateMediaForUrl(URL url, EsoFrontPageItem item)
+    private Triple<Optional<T>, Collection<Metadata>, Integer> updateMediaForUrl(URL url, DjangoplicityFrontPageItem item)
             throws IOException, ReflectiveOperationException, UploadException {
         String imgUrlLink = url.getProtocol() + "://" + url.getHost() + item.getUrl();
         Matcher m = getLocalizedUrlMatcher(imgUrlLink);
@@ -352,10 +357,10 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             }
             break;
         case "Licence:":
-            media.setLicence(EsoLicence.from(text));
+            media.setLicence(DjangoplicityLicence.from(text));
             break;
         case "Type:":
-            media.setImageType(EsoMediaType.valueOf(text));
+            media.setImageType(DjangoplicityMediaType.valueOf(text));
             break;
         case "Release date:":
             media.setDate(parseDateTime(text));
@@ -473,7 +478,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
                 .collect(toSet());
     }
 
-    protected Iterator<EsoFrontPageItem> findFrontPageItems(Document document) throws IOException {
+    protected Iterator<DjangoplicityFrontPageItem> findFrontPageItems(Document document) throws IOException {
         for (Element script : document.getElementsByTag("script")) {
             String html = script.html();
             if (html.startsWith("var images = [")) {
@@ -482,7 +487,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
                         .replace("width:", "\"width\":").replace("height:", "\"height\":")
                         .replace("src: '", "\"src\": \"").replace("url: '", "\"url\": \"")
                         .replace("potw: '", "\"potw\": \"").replace("',\n", "\",\n").replace("'\n", "\"\n");
-                return jackson.readerFor(EsoFrontPageItem.class).readValues(json);
+                return jackson.readerFor(DjangoplicityFrontPageItem.class).readValues(json);
             }
         }
         return Collections.emptyIterator();
@@ -499,7 +504,7 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
             String urlLink = searchLink.replace("<idx>", Integer.toString(idx++));
             URL url = new URL(urlLink);
             try {
-                for (Iterator<EsoFrontPageItem> it = findFrontPageItems(
+                for (Iterator<DjangoplicityFrontPageItem> it = findFrontPageItems(
                         Jsoup.connect(urlLink).timeout(60_000).get()); it.hasNext();) {
                     try {
                         Triple<Optional<T>, Collection<Metadata>, Integer> update = updateMediaForUrl(url, it.next());
@@ -539,15 +544,15 @@ public abstract class CommonEsoService<T extends CommonEsoMedia>
     public Set<String> findCategories(T media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (media.getCategories() != null) {
-            result.addAll(media.getCategories().stream().map(esoCategories::get).filter(StringUtils::isNotBlank)
+            result.addAll(media.getCategories().stream().map(dpCategories::get).filter(StringUtils::isNotBlank)
                     .collect(toSet()));
         }
         if (media.getCategories() != null) {
             result.addAll(
-                    media.getTypes().stream().map(esoTypes::get).filter(StringUtils::isNotBlank).collect(toSet()));
+                    media.getTypes().stream().map(dpTypes::get).filter(StringUtils::isNotBlank).collect(toSet()));
         }
         if (media.getName() != null) {
-            String catName = esoNames.get(media.getName());
+            String catName = dpNames.get(media.getName());
             if (StringUtils.isNotBlank(catName)) {
                 result.add(catName);
             }

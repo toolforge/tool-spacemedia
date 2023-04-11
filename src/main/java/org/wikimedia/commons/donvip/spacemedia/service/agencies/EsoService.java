@@ -14,7 +14,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaRepository;
 
 @Service
-public class EsoService extends CommonEsoService<EsoMedia> {
+public class EsoService extends AbstractDjangoplicityService<EsoMedia> {
 
     private static final String ESO_BASE_PUBLIC_URL = "https://www.eso.org/public/";
 

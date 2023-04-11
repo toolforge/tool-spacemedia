@@ -15,12 +15,12 @@ import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoFrontPageItem;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMediaRepository;
 
 @Service
-public class IauService extends CommonEsoService<IauMedia> {
+public class IauService extends AbstractDjangoplicityService<IauMedia> {
 
     private static final String IAU_BASE_URL = "https://www.iau.org";
 
@@ -49,11 +49,11 @@ public class IauService extends CommonEsoService<IauMedia> {
     }
 
     @Override
-    protected Iterator<EsoFrontPageItem> findFrontPageItems(Document document) throws IOException {
+    protected Iterator<DjangoplicityFrontPageItem> findFrontPageItems(Document document) throws IOException {
         return document.getElementById("main-page-grey").getElementsByClass("thumbnail").stream()
                 .flatMap(e -> e.getElementsByTag("a").stream()).map(a -> {
                     Element img = a.getElementsByTag("img").get(0);
-                    EsoFrontPageItem item = new EsoFrontPageItem();
+                    DjangoplicityFrontPageItem item = new DjangoplicityFrontPageItem();
                     item.setId(a.attr("href").replace(IAU_PUBLIC_PATH + IAU_IMAGES_PATH, "").replace("/", ""));
                     item.setUrl(a.attr("href"));
                     item.setTitle(img.attr("alt"));

@@ -14,9 +14,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaType;
 
 @SpringJUnitConfig(WebbEsaServiceTest.TestConfig.class)
 class WebbEsaServiceTest extends AbstractAgencyServiceTest {
@@ -45,7 +45,7 @@ class WebbEsaServiceTest extends AbstractAgencyServiceTest {
         assertEquals(4134, media.getWidth());
         assertEquals("Cetus", media.getConstellation());
         assertEquals("[PGU2007] cep35", media.getName());
-        assertEquals(EsoMediaType.Observation, media.getImageType());
+        assertEquals(DjangoplicityMediaType.Observation, media.getImageType());
         assertEquals("https://cdn.esawebb.org/archives/images/large/WLMb.jpg",
                 media.getMetadata().getAssetUrl().toExternalForm());
         assertEquals("https://cdn.esawebb.org/archives/images/screen/WLMb.jpg",

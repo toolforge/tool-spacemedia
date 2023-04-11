@@ -19,7 +19,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMedia
  * Service harvesting images from ESA JWST website.
  */
 @Service
-public class WebbEsaService extends CommonEsoService<WebbEsaMedia> {
+public class WebbEsaService extends AbstractDjangoplicityService<WebbEsaMedia> {
 
     private static final String BASE_PUBLIC_URL = "https://esawebb.org/";
 

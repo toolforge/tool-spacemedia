@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles({ "test", "job-eso" })
-@SpringBootTest(classes = SpacemediaAgencyEsoUpdateJobApplication.class)
+@SpringBootTest(classes = SpacemediaAgencyDjangoplicityUpdateJobApplication.class)
 class SpacemediaAgencyEsoUpdateJobApplicationTest {
 
     @Test

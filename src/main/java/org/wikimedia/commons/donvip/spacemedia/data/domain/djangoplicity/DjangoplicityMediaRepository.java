@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain.eso;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity;
 
 import java.time.LocalDateTime;
 
@@ -9,7 +9,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 
 @NoRepositoryBean
-public interface CommonEsoMediaRepository<T extends CommonEsoMedia>
+public interface DjangoplicityMediaRepository<T extends DjangoplicityMedia>
         extends FullResMediaRepository<T, String, LocalDateTime> {
 
     // COUNT

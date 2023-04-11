@@ -14,7 +14,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaM
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMediaRepository;
 
 @Service
-public class HubbleEsaService extends CommonEsoService<HubbleEsaMedia> {
+public class HubbleEsaService extends AbstractDjangoplicityService<HubbleEsaMedia> {
 
     private static final String HUB_BASE_PUBLIC_URL = "https://www.spacetelescope.org/public/";
 

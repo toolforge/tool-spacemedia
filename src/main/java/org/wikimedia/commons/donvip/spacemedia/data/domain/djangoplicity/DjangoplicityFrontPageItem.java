@@ -1,7 +1,7 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain.eso;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity;
 
-public class EsoFrontPageItem {
-    /** ESO identifier. Example: 'eso1907a' */
+public class DjangoplicityFrontPageItem {
+    /** Institution identifier. Example: 'eso1907a' */
     private String id;
     /** Image title. Example: 'First Image of a Black Hole' */
     private String title;
