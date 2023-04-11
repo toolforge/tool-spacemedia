@@ -127,7 +127,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         if (id.equals(s)) {
             return isTitleBlacklisted(s)
                     ? getUploadTitle(CommonsService.normalizeFilename(getFirstSentence(description)), id)
-                    : s.substring(0, Math.min(239, s.length()));
+                    : s.substring(0, Math.min(234, s.length()));
         } else {
             return getUploadTitle(s, id);
         }
@@ -146,7 +146,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     private static String getUploadTitle(String s, String id) {
-        return new StringBuilder(s.substring(0, Math.min(239 - id.length() - 3, s.length()))).append(" (").append(id)
+        return new StringBuilder(s.substring(0, Math.min(234 - id.length() - 3, s.length()))).append(" (").append(id)
                 .append(')').toString();
     }
 

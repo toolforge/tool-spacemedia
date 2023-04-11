@@ -174,6 +174,20 @@ class NasaServiceTest extends AbstractAgencyServiceTest {
                 service.findCategories(media, media.getMetadata(), false));
     }
 
+    @Test
+    void testUploadFileName() {
+        NasaMedia media = new NasaImage();
+        media.setId("GSFC_20220415_PACE_036720");
+        media.setTitle(
+                "OCI Installed to Ground Support Equipment Application for Tilt or RotationThe Ocean Color Instrument (OCI) is installed onto the Ground Support Equipment Application for Tilt or Rotation (GAToR) made by Newton Engineering in a black out tent cleanroom. GAToR will allow engineers to tilt and rotate OCI in different orientations for further testing prior to integration onto the PACE (Plankton, Aerosol, Cloud, ocean Ecosystem) spacecraft.");
+
+        String uploadTitle = media.getUploadTitle() + ".jpeg";
+        assertTrue(uploadTitle.length() < 240);
+        assertEquals(
+                "OCI Installed to Ground Support Equipment Application for Tilt or RotationThe Ocean Color Instrument (OCI) is installed onto the Ground Support Equipment Application for Tilt or Rotation (GAToR) made by New (GSFC_20220415_PACE_036720).jpeg",
+                uploadTitle);
+    }
+
     private static Statement s(ItemIdValue subject, PropertyIdValue property, String targetQid) {
         return new StatementImpl(null, new ValueSnakImpl(property, new ItemIdValueImpl(targetQid, "wikidata")),
                 subject);
