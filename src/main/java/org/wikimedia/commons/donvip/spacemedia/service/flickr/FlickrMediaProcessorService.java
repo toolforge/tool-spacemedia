@@ -15,6 +15,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -34,6 +36,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaTyp
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
 import com.flickr4java.flickr.FlickrException;
@@ -57,6 +60,14 @@ public class FlickrMediaProcessorService {
 
     @Value("${flickr.video.download.url}")
     private String flickrVideoDownloadUrl;
+
+    private Set<Long> ignoredPhotoAlbums;
+
+    @PostConstruct
+    public void init() throws IOException {
+        ignoredPhotoAlbums = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.flickr.albums.csv")).stream()
+                .mapToLong(Long::parseLong).boxed().collect(toSet());
+    }
 
     public URL getVideoUrl(FlickrMedia media) throws MalformedURLException {
         return new URL(flickrVideoDownloadUrl.replace("<id>", media.getId().toString()));
@@ -109,6 +120,11 @@ public class FlickrMediaProcessorService {
                 if (StringUtils.isBlank(photoSet.getPathAlias())) {
                     photoSet.setPathAlias(flickrAccount);
                     savePhotoSets = true;
+                }
+                if (ignoredPhotoAlbums.contains(photoSet.getId())) {
+                    media.setIgnored(true);
+                    media.setIgnoredReason("Photoset ignored: " + photoSet.getTitle());
+                    save = true;
                 }
             }
         }
