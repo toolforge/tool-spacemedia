@@ -22,6 +22,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dozermapper.core.Mapper;
@@ -58,6 +59,9 @@ public abstract class AbstractAgencyServiceTest {
 
     @MockBean
     protected TwitterService twitter;
+
+    @MockBean
+    protected WikidataService wikidata;
 
     @MockBean
     protected Mapper mapper;

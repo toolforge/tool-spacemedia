@@ -47,6 +47,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.Djangop
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -82,6 +83,9 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
 
     @Autowired
     private ObjectMapper jackson;
+
+    @Autowired
+    private WikidataService wikidata;
 
     protected AbstractDjangoplicityService(DjangoplicityMediaRepository<T> repository, String id, String searchLink, Class<T> mediaClass) {
         super(repository, id);
@@ -555,6 +559,10 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
             String catName = dpNames.get(media.getName());
             if (StringUtils.isNotBlank(catName)) {
                 result.add(catName);
+            } else {
+                for (String name : media.getName().split(", ")) {
+                    wikidata.searchAstronomicalObjectCommonsCategory(name).ifPresent(result::add);
+                }
             }
         }
         return result;

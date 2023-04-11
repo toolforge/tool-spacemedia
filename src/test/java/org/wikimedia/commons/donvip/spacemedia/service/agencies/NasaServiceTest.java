@@ -41,7 +41,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImageReposit
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideoRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 
 @SpringJUnitConfig(NasaServiceTest.TestConfig.class)
 class NasaServiceTest extends AbstractAgencyServiceTest {
@@ -60,9 +59,6 @@ class NasaServiceTest extends AbstractAgencyServiceTest {
 
     @Autowired
     private NasaService service;
-
-    @MockBean
-    private WikidataService wikidata;
 
     @Test
     void testFindOriginalMedia() throws Exception {
