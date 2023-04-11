@@ -185,10 +185,19 @@ public class ImageInfo {
 
     @Override
     public String toString() {
-        return "ImageInfo [timestamp=" + timestamp + ", user=" + user + ", userId=" + userId + ", size=" + size
-                + ", width=" + width + ", height=" + height + ", comment=" + comment + ", parsedComment="
-                + parsedComment + ", canonicalTitle=" + canonicalTitle + ", url=" + url
-                + ", descriptionUrl=" + descriptionUrl + ", descriptionShortUrl=" + descriptionShortUrl + ", sha1="
-                + sha1 + ", mime=" + mime + ", mediatype=" + mediatype + ", bitDepth=" + bitDepth + "]";
+        return "ImageInfo [" + (timestamp != null ? "timestamp=" + timestamp + ", " : "")
+                + (user != null ? "user=" + user + ", " : "") + (userId != null ? "userId=" + userId + ", " : "")
+                + (size != null ? "size=" + size + ", " : "") + (width != null ? "width=" + width + ", " : "")
+                + (height != null ? "height=" + height + ", " : "")
+                + (comment != null ? "comment=" + comment + ", " : "")
+                + (parsedComment != null ? "parsedComment=" + parsedComment + ", " : "")
+                + (html != null ? "html=" + html + ", " : "")
+                + (canonicalTitle != null ? "canonicalTitle=" + canonicalTitle + ", " : "")
+                + (url != null ? "url=" + url + ", " : "")
+                + (descriptionUrl != null ? "descriptionUrl=" + descriptionUrl + ", " : "")
+                + (descriptionShortUrl != null ? "descriptionShortUrl=" + descriptionShortUrl + ", " : "")
+                + (sha1 != null ? "sha1=" + sha1 + ", " : "") + (mime != null ? "mime=" + mime + ", " : "")
+                + (mediatype != null ? "mediatype=" + mediatype + ", " : "")
+                + (bitDepth != null ? "bitDepth=" + bitDepth : "") + "]";
     }
 }

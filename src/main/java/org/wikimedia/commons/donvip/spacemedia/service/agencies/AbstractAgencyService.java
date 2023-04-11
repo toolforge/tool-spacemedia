@@ -576,7 +576,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
         sb.append("\n| source = ").append(getSource(media))
-          .append("\n| author = ").append(getAuthor(media));
+          .append("\n| author = ").append(CommonsService.formatWikiCode(getAuthor(media)));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
         getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| other versions = <gallery>\n").append(s).append("\n</gallery>"));
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
