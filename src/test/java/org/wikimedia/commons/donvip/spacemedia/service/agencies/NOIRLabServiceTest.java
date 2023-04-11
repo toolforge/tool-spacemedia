@@ -73,6 +73,16 @@ class NOIRLabServiceTest extends AbstractAgencyServiceTest {
     }
 
     @Test
+    void testReadHtmlTime6() throws Exception {
+        // Feb. 1, 2023, 9 a.m.
+        assertEquals(
+                "NOIRLabMedia [id=noirlab2303b, imageType=Artwork, date=2023-02-01T09:00, width=3840, height=3840, objectType=[], objectCategories=[Illustrations], credit=CTIO/NOIRLab/NSF/AURA/P. Marenfeld, fullResMetadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/original/noirlab2303b.tif, ], sha1=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/large/noirlab2303b.jpg, ], title=Infographic: The Evolution of CPD-29 2176, a Kilonova Progenitor, description=This infographic illustrates the evolution of the star system CPD-29 2176, the first confirmed kilonova progenitor. Stage 1, two massive blue stars form in a binary star system. Stage 2, the larger of the two stars nears the end of its life. Stage 3, the smaller of the two stars siphons off material from its larger, more mature companion, stripping it of much of its outer atmosphere. Stage 4, the larger star forms an ultra-stripped supernova, the end-of-life explosion of a star with less of a “kick” than a more normal supernova. Stage 5, as currently observed by astronomers, the resulting neutron star from the earlier supernova begins to siphon off material from its companion, turning the tables on the binary pair. Stage 6, with the loss of much of its outer atmosphere, the companion star also undergoes an ultra-stripped supernova. This stage will happen in about one million years. Stage 7, a pair of neutron stars in close mutual orbit now remain where once there were two massive stars. Stage 8, the two neutron stars spiral into toward each other, giving up their orbital energy as faint gravitational radiation. Stage 9, the final stage of this system as both neutron stars collide, producing a powerful kilonova, the cosmic factory of heavy elements in our Universe.&nbsp;&nbsp;, commonsFileNames=[], ]",
+                service.newMediaFromHtml(html("noirlab/noirlab2303b.htm"),
+                        new URL("https://noirlab.edu/public/images/noirlab2303b/"), "noirlab2303b", null)
+                        .toString());
+    }
+
+    @Test
     void testReadHtmlDate() throws Exception {
         // July 21, 2017
         assertEquals(

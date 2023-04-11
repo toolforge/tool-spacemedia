@@ -53,12 +53,16 @@ public class NOIRLabService extends AbstractDjangoplicityService<NOIRLabMedia> {
     @Value("${noirlab.datetime.pattern5}")
     private String dateTimePattern5;
 
+    @Value("${noirlab.datetime.pattern6}")
+    private String dateTimePattern6;
+
     private DateTimeFormatter dateFormatter;
     private DateTimeFormatter dateTimeFormatter1;
     private DateTimeFormatter dateTimeFormatter2;
     private DateTimeFormatter dateTimeFormatter3;
     private DateTimeFormatter dateTimeFormatter4;
     private DateTimeFormatter dateTimeFormatter5;
+    private DateTimeFormatter dateTimeFormatter6;
 
     @Autowired
     public NOIRLabService(NOIRLabMediaRepository repository, @Value("${noirlab.search.link}") String searchLink) {
@@ -77,6 +81,7 @@ public class NOIRLabService extends AbstractDjangoplicityService<NOIRLabMedia> {
         dateTimeFormatter3 = DateTimeFormatter.ofPattern(dateTimePattern3, new Locale("en", "CA"));
         dateTimeFormatter4 = DateTimeFormatter.ofPattern(dateTimePattern4, new Locale("en", "CA"));
         dateTimeFormatter5 = DateTimeFormatter.ofPattern(dateTimePattern5, new Locale("en", "CA"));
+        dateTimeFormatter6 = DateTimeFormatter.ofPattern(dateTimePattern6, new Locale("en", "CA"));
     }
 
     @Override
@@ -99,7 +104,11 @@ public class NOIRLabService extends AbstractDjangoplicityService<NOIRLabMedia> {
                             try {
                                 return LocalDateTime.parse(text, dateTimeFormatter5);
                             } catch (DateTimeParseException e5) {
-                                return LocalDate.parse(text, dateFormatter).atStartOfDay();
+                                try {
+                                    return LocalDateTime.parse(text, dateTimeFormatter6);
+                                } catch (DateTimeParseException e6) {
+                                    return LocalDate.parse(text, dateFormatter).atStartOfDay();
+                                }
                             }
                         }
                     }
