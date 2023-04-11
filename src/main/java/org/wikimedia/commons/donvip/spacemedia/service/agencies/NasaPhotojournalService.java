@@ -277,6 +277,7 @@ public class NasaPhotojournalService
     @Override
     public Set<String> findCategories(NasaPhotojournalMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
+        result.add("NASA Photojournal entries from " + media.getYear());
         if (media.getKeywords().contains("anaglyph")) {
             result.add("Moon".equalsIgnoreCase(media.getTarget()) ? "Anaglyphs of the Moon" : "Anaglyphs");
         }
@@ -304,7 +305,7 @@ public class NasaPhotojournalService
     @Override
     public Set<String> findTemplates(NasaPhotojournalMedia media) {
         Set<String> result = super.findTemplates(media);
-        result.add("PD-USGov-NASA");
+        result.add("JPL Image Copyright");
         return result;
     }
 
