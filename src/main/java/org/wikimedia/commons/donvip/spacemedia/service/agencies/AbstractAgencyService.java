@@ -98,7 +98,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyService.class);
 
     private static final Pattern PATTERN_SHORT = Pattern
-            .compile("(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{7}|youtu.be/[0-9a-zA-Z]{11})");
+            .compile("(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{7}|youtu.be/[0-9a-zA-Z]{11}|flic.kr/p/[0-9a-zA-Z]{6})");
 
     protected final MediaRepository<T, ID, D> repository;
 
