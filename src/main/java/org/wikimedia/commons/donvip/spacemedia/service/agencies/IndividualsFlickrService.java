@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -13,7 +15,8 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 @Service
 public class IndividualsFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
 
-    protected IndividualsFlickrService(FlickrMediaRepository repository,
+    @Autowired
+    public IndividualsFlickrService(FlickrMediaRepository repository,
             @Value("${individuals.flickr.accounts}") Set<String> flickrAccounts) {
         super(repository, "individuals", flickrAccounts);
     }
@@ -26,6 +29,28 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
     @Override
     public void updateMedia() throws IOException, UploadException {
         updateFlickrMedia();
+    }
+
+    @Override
+    public Set<String> findCategories(FlickrMedia media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        if (includeHidden) {
+            switch (media.getPathAlias()) {
+            case "geckzilla":
+                result.add("Files from Judy Schmidt Flickr stream");
+                break;
+            case "kevinmgill":
+                result.add("Files from Kevin Gill Flickr stream");
+                break;
+            case "markmccaughrean":
+                result.add("Files from Mark McCaughrean Flickr stream");
+                break;
+            case "pierre_markuse":
+                result.add("Files from Pierre Markuse Flickr stream");
+                break;
+            }
+        }
+        return result;
     }
 
     @Override
