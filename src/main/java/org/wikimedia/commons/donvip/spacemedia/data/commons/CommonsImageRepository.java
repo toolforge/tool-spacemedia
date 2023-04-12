@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 public interface CommonsImageRepository extends PagingAndSortingRepository<CommonsImage, String> {
@@ -14,6 +15,7 @@ public interface CommonsImageRepository extends PagingAndSortingRepository<Commo
 
     List<CommonsImageProjection> findBySha1InOrderByTimestamp(Collection<String> sha1);
 
+    @Query("select max(timestamp) from CommonsImage where sha1 in ?1")
     String findMaxTimestampBySha1In(Collection<String> sha1);
 
     Page<CommonsImageProjection> findByMinorMimeInAndTimestampBetween(Collection<String> minorMimes,
