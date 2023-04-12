@@ -112,7 +112,9 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
 
     @PutMapping("/media/**")
     public final T putMedia(HttpServletRequest request, @RequestBody T media) {
-        return service.saveMedia(media);
+        T result = service.saveMedia(media);
+        service.evictCaches();
+        return result;
     }
 
     @DeleteMapping("/media/**")
