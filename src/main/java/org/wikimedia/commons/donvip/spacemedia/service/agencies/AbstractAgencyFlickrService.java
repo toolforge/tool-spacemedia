@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -334,8 +336,8 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                 Pair<Integer, Collection<FlickrMedia>> result = processFlickrMedia(freePictures, flickrAccount);
                 uploadedMedia.addAll(result.getRight());
                 count += result.getLeft();
-                Set<FlickrMedia> noLongerFreePictures = flickrRepository.findAll(Set.of(flickrAccount));
-                noLongerFreePictures.removeAll(freePictures);
+                Set<FlickrMedia> noLongerFreePictures = flickrRepository.findNotIn(Set.of(flickrAccount),
+                        freePictures.stream().map(FlickrMedia::getId).collect(toSet()));
                 if (!noLongerFreePictures.isEmpty()) {
                     count += updateNoLongerFreeFlickrMedia(flickrAccount, noLongerFreePictures);
                 }
