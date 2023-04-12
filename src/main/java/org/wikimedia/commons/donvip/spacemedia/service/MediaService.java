@@ -630,8 +630,8 @@ public class MediaService {
                     LOGGER.info("Found match ({}) between {} and {}", score, metadata, image);
                     setter.accept(new HashSet<>(Set.of(filename)));
                     return true;
-                } else if (hash.isPresent()) {
-                    LOGGER.info("No match between {} and {} / {} -> {}", metadata, image, hash,
+                } else if (hash.isPresent() && LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("No match between {} and {} / {} -> {}", metadata, image, hash,
                             HashHelper.similarityScore(metadata.getPhash(), hash.get().getPhash()));
                 }
             }
