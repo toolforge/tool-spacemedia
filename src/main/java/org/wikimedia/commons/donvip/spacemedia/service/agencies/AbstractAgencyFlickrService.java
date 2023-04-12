@@ -330,6 +330,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
             try {
                 LOGGER.info("Fetching Flickr media from account '{}'...", flickrAccount);
                 List<FlickrMedia> freePictures = buildFlickrMediaList(flickrService.findFreePhotos(flickrAccount));
+                LOGGER.info("Found {} free Flickr media for account '{}'", freePictures.size(), flickrAccount);
                 Pair<Integer, Collection<FlickrMedia>> result = processFlickrMedia(freePictures, flickrAccount);
                 uploadedMedia.addAll(result.getRight());
                 count += result.getLeft();
