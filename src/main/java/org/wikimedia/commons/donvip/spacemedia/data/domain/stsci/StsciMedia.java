@@ -44,6 +44,9 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
     @Column(length = 255)
     private String objectName;
 
+    @Column(length = 255)
+    private String constellation;
+
     /**
      * Image's credits and acknowledgments.
      */
@@ -129,9 +132,18 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
         this.objectName = objectName;
     }
 
+    public String getConstellation() {
+        return constellation;
+    }
+
+    public void setConstellation(String constellation) {
+        this.constellation = constellation;
+    }
+
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(credits, date, id, mission, newsId, keywords, objectName);
+        return 31 * super.hashCode()
+                + Objects.hash(credits, date, id, mission, newsId, keywords, objectName, constellation);
     }
 
     @Override
@@ -144,13 +156,13 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
         return Objects.equals(credits, other.credits) && Objects.equals(date, other.date)
                 && Objects.equals(id, other.id) && Objects.equals(mission, other.mission)
                 && Objects.equals(newsId, other.newsId) && Objects.equals(keywords, other.keywords)
-                && Objects.equals(objectName, other.objectName);
+                && Objects.equals(objectName, other.objectName) && Objects.equals(constellation, other.constellation);
     }
 
     @Override
     public String toString() {
         return "StsciMedia [id=" + id + ", newsId=" + newsId + ", date=" + date + ", objectName=" + objectName
-                + ", mission=" + mission + ']';
+                + ", constellation=" + constellation + ", mission=" + mission + ']';
     }
 
     @Override
@@ -184,6 +196,7 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
         this.mission = mediaFromApi.mission;
         this.newsId = mediaFromApi.newsId;
         this.objectName = mediaFromApi.objectName;
+        this.constellation = mediaFromApi.constellation;
         return this;
     }
 }

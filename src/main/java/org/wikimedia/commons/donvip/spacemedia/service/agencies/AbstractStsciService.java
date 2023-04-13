@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jsoup.HttpStatusException;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.stsci.StsciService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 
 /**
  * Service harvesting images from NASA Hubble / Jame Webb websites.
@@ -42,6 +44,9 @@ public abstract class AbstractStsciService
 
     @Autowired
     private StsciService stsci;
+
+    @Autowired
+    private WikidataService wikidata;
 
     protected AbstractStsciService(StsciMediaRepository repository, String mission, String searchEndpoint,
             String detailEndpoint) {
@@ -138,6 +143,21 @@ public abstract class AbstractStsciService
     @Override
     protected StsciMedia refresh(StsciMedia media) throws IOException {
         return media.copyDataFrom(getMediaFromWebsite(media.getId()));
+    }
+
+    @Override
+    public Set<String> findCategories(StsciMedia media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        if (StringUtils.isNotBlank(media.getObjectName())) {
+            wikidata.searchAstronomicalObjectCommonsCategory(media.getObjectName()).ifPresentOrElse(result::add,
+                    () -> {
+                        if (StringUtils.isNotBlank(media.getConstellation())) {
+                            wikidata.searchConstellationCommonsCategory(media.getConstellation())
+                                    .ifPresent(result::add);
+                        }
+                    });
+        }
+        return result;
     }
 
     @Override

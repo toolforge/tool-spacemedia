@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.UnaryOperator;
 
 import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -149,13 +150,21 @@ public class WikidataService {
 
     @Cacheable("wikidataAstronomicalObjects")
     public Optional<String> searchAstronomicalObjectCommonsCategory(String catalogName) {
+        return searchCommonsCategory(WikidataService::getAstronomicalObjectQuery, catalogName);
+    }
+
+    @Cacheable("wikidataConstellations")
+    public Optional<String> searchConstellationCommonsCategory(String officialName) {
+        return searchCommonsCategory(WikidataService::getConstellationQuery, officialName);
+    }
+
+    private static Optional<String> searchCommonsCategory(UnaryOperator<String> query, String name) {
         try (RepositoryConnection sparqlConnection = sparqlRepository.getConnection();
                 TupleQueryResult result = sparqlConnection
-                        .prepareTupleQuery(QueryLanguage.SPARQL, getAstronomicalObjectQuery(catalogName)).evaluate()) {
+                        .prepareTupleQuery(QueryLanguage.SPARQL, query.apply(name)).evaluate()) {
             List<BindingSet> results = result.stream().toList();
             if (results.size() != 1) {
-                LOGGER.info("Not exactly 1 astronomical object when looking for {} in Wikidata: {}", catalogName,
-                        results);
+                LOGGER.info("Not exactly 1 item when looking for {} in Wikidata: {}", name, results);
             } else {
                 Binding commonsCat = results.get(0).getBinding("commonsCat");
                 if (commonsCat != null) {
@@ -168,6 +177,10 @@ public class WikidataService {
 
     private static String getAstronomicalObjectQuery(String catalogName) {
         return getNamedObjectQuery("Q17444909", "P528", catalogName);
+    }
+
+    private static String getConstellationQuery(String officialName) {
+        return getNamedObjectQuery("Q8928", "P1448", officialName);
     }
 
     private static String getNamedObjectQuery(String natureQid, String namingProperty, String name) {

@@ -86,6 +86,7 @@ public class StsciService {
         result.setKeywords(html.getElementsByClass("keyword-tag").stream().map(Element::text).collect(toSet()));
         Elements tds = html.getElementsByTag("td");
         findTd(tds, "Object Name").ifPresent(result::setObjectName);
+        findTd(tds, "Constellation").ifPresent(result::setConstellation);
         findTd(tds, "Exposure Dates").ifPresent(dates -> {
             try {
                 result.setExposureDate(LocalDate.parse(dates, exposureDateformatter));
