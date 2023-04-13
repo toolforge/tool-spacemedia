@@ -103,6 +103,9 @@ public class NasaService
     @Value("${nasa.centers}")
     private Set<String> nasaCenters;
 
+    @Value("${nasa.jsc.photographers.blocklist}")
+    private Set<String> photographersBlocklist;
+
     @Value("${videos.enabled}")
     private boolean videosEnabled;
 
@@ -232,7 +235,8 @@ public class NasaService
             } else if (media.getId().toLowerCase(Locale.ENGLISH).startsWith("jsc")) {
                 String desc = media.getDescription().toLowerCase(Locale.ENGLISH);
                 if (desc.contains("courtesy") || desc.contains("©")
-                        || (media instanceof NasaImage img && "SpaceX".equals(img.getPhotographer()))) {
+                        || (media instanceof NasaImage img && img.getPhotographer() != null && photographersBlocklist
+                                .contains(img.getPhotographer().toLowerCase(Locale.ENGLISH).replace(' ', '_')))) {
                     ignoreFile(media, "Probably non-free image (courtesy)");
                     save = true;
                 }
