@@ -632,7 +632,9 @@ public class NasaService
     @Override
     protected Set<String> getTwitterAccounts(NasaMedia uploadedMedia) {
         Set<String> result = new HashSet<>();
-        if (uploadedMedia.getCenter() != null) {
+        if (ISS_PATTERN.matcher(uploadedMedia.getId()).matches()) {
+            result.add("Space_Station");
+        } else if (uploadedMedia.getCenter() != null) {
             String account = TWITTER_CENTER_ACCOUNTS.get(uploadedMedia.getCenter());
             if (account != null) {
                 result.add(account);
