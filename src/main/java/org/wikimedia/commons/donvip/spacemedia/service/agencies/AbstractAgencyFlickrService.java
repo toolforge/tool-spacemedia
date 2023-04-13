@@ -306,8 +306,9 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
-    protected void checkUploadPreconditions(FlickrMedia media, boolean checkUnicity) throws MalformedURLException {
-        super.checkUploadPreconditions(media, checkUnicity);
+    protected void checkUploadPreconditions(FlickrMedia media, boolean checkUnicity, boolean isManual)
+            throws MalformedURLException {
+        super.checkUploadPreconditions(media, checkUnicity, isManual);
         if (processor.isBadVideoEntry(media)) {
             throw new ImageUploadForbiddenException("Bad video download link: " + media);
         }

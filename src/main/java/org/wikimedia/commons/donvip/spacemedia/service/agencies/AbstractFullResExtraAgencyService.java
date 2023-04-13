@@ -34,8 +34,9 @@ public abstract class AbstractFullResExtraAgencyService<T extends FullResExtraMe
     }
 
     @Override
-    protected void checkUploadPreconditions(T media, boolean checkUnicity) throws MalformedURLException {
-        super.checkUploadPreconditions(media, checkUnicity);
+    protected void checkUploadPreconditions(T media, boolean checkUnicity, boolean isManual)
+            throws MalformedURLException {
+        super.checkUploadPreconditions(media, checkUnicity, isManual);
         // Forbid upload of duplicate medias for a single repo, they may have different descriptions
         String extraSha1 = media.getExtraMetadata().getSha1();
         if (checkUnicity && extraSha1 != null && extraRepository.countByExtraMetadata_Sha1(extraSha1) > 1) {

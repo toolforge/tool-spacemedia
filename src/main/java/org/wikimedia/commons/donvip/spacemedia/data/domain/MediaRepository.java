@@ -50,7 +50,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
     long countByMetadata_Sha1(String sha1);
 
     /**
-     * Count files marked as ignored, that won't be uploaded.
+     * Count files marked as ignored, that won't be automatically uploaded.
      *
      * @return number of ignored files
      */

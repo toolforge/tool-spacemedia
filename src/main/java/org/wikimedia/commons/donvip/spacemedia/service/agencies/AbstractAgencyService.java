@@ -491,7 +491,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
         try {
-            checkUploadPreconditions(media, checkUnicity);
+            checkUploadPreconditions(media, checkUnicity, isManual);
             List<Metadata> uploaded = new ArrayList<>();
             return Triple.of(media, uploaded, doUpload(media, checkUnicity, uploaded, isManual));
         } catch (IOException | RuntimeException e) {
@@ -723,8 +723,14 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return "[" + Objects.requireNonNull(url, "url") + " " + Objects.requireNonNull(text, "text") + "]";
     }
 
-    protected void checkUploadPreconditions(T media, boolean checkUnicity) throws MalformedURLException {
-        if (Boolean.TRUE.equals(media.isIgnored())) {
+    private boolean isForbiddenUpload(T media, boolean isManual) {
+        return Boolean.TRUE.equals(media.isIgnored()) && (!isManual || StringUtils.isBlank(media.getIgnoredReason())
+                || !media.getIgnoredReason().contains("block list"));
+    }
+
+    protected void checkUploadPreconditions(T media, boolean checkUnicity, boolean isManual)
+            throws MalformedURLException {
+        if (isForbiddenUpload(media, isManual)) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored.");
         }
     }
@@ -917,7 +923,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 || (getUploadMode() == UploadMode.AUTO_FROM_DATE
                         && (ctx.isManual() || ctx.getMedia().getYear().getValue() >= minYearUploadAuto))
                 || getUploadMode() == UploadMode.MANUAL)
-                && !Boolean.TRUE.equals(ctx.getMedia().isIgnored()) && isEmpty(ctx.getCommonsFilenames())
+                && !isForbiddenUpload(ctx.getMedia(), ctx.isManual()) && isEmpty(ctx.getCommonsFilenames())
                 && isPermittedFileType(ctx.getMetadata());
     }
 
