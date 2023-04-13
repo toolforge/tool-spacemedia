@@ -225,10 +225,18 @@ public class NasaService
                 save = true;
             }
         }
-        if (media.isIgnored() != Boolean.TRUE && media.getDescription() != null
-                && media.getDescription().contains("/photojournal")) {
-            ignoreFile(media, "Photojournal");
-            save = true;
+        if (media.isIgnored() != Boolean.TRUE && media.getDescription() != null) {
+            if (media.getDescription().contains("/photojournal")) {
+                ignoreFile(media, "Photojournal");
+                save = true;
+            } else if (media.getId().toLowerCase(Locale.ENGLISH).startsWith("jsc")) {
+                String desc = media.getDescription().toLowerCase(Locale.ENGLISH);
+                if (desc.contains("courtesy") || desc.contains("©")
+                        || (media instanceof NasaImage img && "SpaceX".equals(img.getPhotographer()))) {
+                    ignoreFile(media, "Probably non-free image (courtesy)");
+                    save = true;
+                }
+            }
         }
         if (media.getTitle() != null && media.getTitle().startsWith("Title: ")) {
             media.setTitle(media.getTitle().replace("Title: ", ""));
