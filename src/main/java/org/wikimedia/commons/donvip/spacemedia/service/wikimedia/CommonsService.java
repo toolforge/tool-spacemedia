@@ -236,8 +236,8 @@ public class CommonsService {
     private String token;
     private LocalDateTime lastUpload;
 
-    private static final DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", ENGLISH);
-    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd000000", ENGLISH);
+    public static final DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", ENGLISH);
+    public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd000000", ENGLISH);
 
     private static final DateTimeFormatter CAT_MONTH_YEAR = DateTimeFormatter.ofPattern("MMMM yyyy", ENGLISH);
     private static final DateTimeFormatter CAT_YEAR = DateTimeFormatter.ofPattern("yyyy", ENGLISH);

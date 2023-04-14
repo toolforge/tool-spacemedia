@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.twitter;
 
 import static java.util.stream.Collectors.joining;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.timestampFormatter;
 import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.similarityScore;
 
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -144,11 +146,12 @@ public class TwitterService {
         if (!twitterAccounts.isEmpty()) {
             text += " from " + twitterAccounts.stream().sorted().map(account -> "@" + account).collect(joining(" "));
         }
-        text += " "
-                + "https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
+        text += " https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
                 + "&user=" + commonsAccount + "&ilshowall=1&offset="
-                + imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream().map(Metadata::getSha1)
-                        .map(CommonsService::base36Sha1).toList());
+                + timestampFormatter.format(timestampFormatter
+                        .parse(imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
+                                .map(Metadata::getSha1).map(CommonsService::base36Sha1).toList()), LocalDateTime::from)
+                        .plusSeconds(1));
         return text;
     }
 
