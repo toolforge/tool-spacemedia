@@ -11,6 +11,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
+import org.wikimedia.commons.donvip.spacemedia.service.mastodon.MastodonService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 
 @Configuration
@@ -37,6 +38,15 @@ public class SpacemediaUpdateJobConfiguration {
     @Bean
     public GoogleTranslateService translateService() {
         return new GoogleTranslateService();
+    }
+
+    @Bean
+    public MastodonService mastodonService(
+            @Value("${mastodon.instance}") String instance,
+            @Value("${mastodon.api.oauth2.client-id}") String clientId,
+            @Value("${mastodon.api.oauth2.client-secret}") String clientSecret,
+            @Value("${mastodon.api.oauth2.access-token}") String accessToken) {
+        return new MastodonService(instance, clientId, clientSecret, accessToken);
     }
 
     @Bean

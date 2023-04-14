@@ -54,6 +54,22 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
     }
 
     @Override
+    protected Set<String> getMastodonAccounts(FlickrMedia uploadedMedia) {
+        switch (uploadedMedia.getPathAlias()) {
+        case "geckzilla":
+            return Set.of("@spacegeck@astrodon.social");
+        case "kevinmgill":
+            return Set.of("@kevinmgill@deepspace.social");
+        case "markmccaughrean":
+            return Set.of("@markmccaughrean@mastodon.social");
+        case "pierre_markuse":
+            return Set.of("@pierre_markuse@mastodon.world");
+        default:
+            return Set.of();
+        }
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
         switch (uploadedMedia.getPathAlias()) {
         case "geckzilla":

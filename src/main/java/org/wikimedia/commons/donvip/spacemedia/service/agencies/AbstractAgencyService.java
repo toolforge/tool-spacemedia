@@ -69,6 +69,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
@@ -76,7 +77,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateR
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
-import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 
@@ -122,7 +122,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Autowired
     private GoogleTranslateService translateService;
     @Autowired
-    private TwitterService twitterService;
+    private List<AbstractSocialMediaService> socialMediaServices;
 
     @Autowired
     private Environment env;
@@ -315,27 +315,39 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 runtimeDataRepository.save(runtimeData).getLastUpdateDuration());
         if (postTweet) {
-            postTweet(uploadedMedia, uploadedMetadata);
+            postSocialMedia(uploadedMedia, uploadedMetadata);
         }
     }
 
-    protected final void postTweet(Collection<? extends T> uploadedMedia, Collection<Metadata> uploadedMetadata) {
+    protected final void postSocialMedia(Collection<? extends T> uploadedMedia, Collection<Metadata> uploadedMetadata) {
         if (!uploadedMedia.isEmpty()) {
             LOGGER.info("Uploaded media: {} ({})", uploadedMedia.size(),
                     uploadedMedia.stream().map(Media::getId).toList());
-            try {
-                twitterService.tweet(uploadedMedia, uploadedMetadata, getTwitterAccounts(uploadedMedia));
-            } catch (IOException e) {
-                LOGGER.error("Failed to post tweet", e);
-            }
+            socialMediaServices.forEach(socialMedia -> {
+                try {
+                    socialMedia.postStatus(uploadedMedia, uploadedMetadata, getMastodonAccounts(uploadedMedia));
+                } catch (IOException e) {
+                    LOGGER.error("Failed to post status", e);
+                }
+            });
         }
+    }
+
+    protected final Set<String> getMastodonAccounts(Collection<? extends T> uploadedMedia) {
+        return uploadedMedia.stream().flatMap(media -> getMastodonAccounts(media).stream()).collect(toSet());
     }
 
     protected final Set<String> getTwitterAccounts(Collection<? extends T> uploadedMedia) {
         return uploadedMedia.stream().flatMap(media -> getTwitterAccounts(media).stream()).collect(toSet());
     }
 
-    protected abstract Set<String> getTwitterAccounts(T uploadedMedia);
+    protected Set<String> getMastodonAccounts(T uploadedMedia) {
+        return Set.of();
+    }
+
+    protected Set<String> getTwitterAccounts(T uploadedMedia) {
+        return Set.of();
+    }
 
     @Override
     public Statistics getStatistics(boolean details) {
