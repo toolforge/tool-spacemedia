@@ -77,6 +77,8 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateR
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
+import org.wikimedia.commons.donvip.spacemedia.service.mastodon.MastodonService;
+import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 
@@ -319,13 +321,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected final void postSocialMedia(Collection<? extends T> uploadedMedia, Collection<Metadata> uploadedMetadata) {
         if (!uploadedMedia.isEmpty()) {
             LOGGER.info("Uploaded media: {} ({})", uploadedMedia.size(),
                     uploadedMedia.stream().map(Media::getId).toList());
             socialMediaServices.forEach(socialMedia -> {
                 try {
-                    socialMedia.postStatus(uploadedMedia, uploadedMetadata, getMastodonAccounts(uploadedMedia));
+                    socialMedia.postStatus(uploadedMedia, uploadedMetadata,
+                            getSocialMediaAccounts(socialMedia, uploadedMedia));
                 } catch (IOException e) {
                     LOGGER.error("Failed to post status", e);
                 }
@@ -333,12 +337,14 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected final Set<String> getMastodonAccounts(Collection<? extends T> uploadedMedia) {
-        return uploadedMedia.stream().flatMap(media -> getMastodonAccounts(media).stream()).collect(toSet());
-    }
-
-    protected final Set<String> getTwitterAccounts(Collection<? extends T> uploadedMedia) {
-        return uploadedMedia.stream().flatMap(media -> getTwitterAccounts(media).stream()).collect(toSet());
+    protected final Set<String> getSocialMediaAccounts(AbstractSocialMediaService<?, ?> socialMedia,
+            Collection<? extends T> uploadedMedia) {
+        if (socialMedia instanceof MastodonService) {
+            return uploadedMedia.stream().flatMap(media -> getMastodonAccounts(media).stream()).collect(toSet());
+        } else if (socialMedia instanceof TwitterService) {
+            return uploadedMedia.stream().flatMap(media -> getTwitterAccounts(media).stream()).collect(toSet());
+        }
+        return Set.of();
     }
 
     protected Set<String> getMastodonAccounts(T uploadedMedia) {
