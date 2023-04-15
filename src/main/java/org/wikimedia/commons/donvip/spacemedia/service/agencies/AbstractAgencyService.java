@@ -737,7 +737,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     private boolean isForbiddenUpload(T media, boolean isManual) {
         return Boolean.TRUE.equals(media.isIgnored()) && (!isManual || StringUtils.isBlank(media.getIgnoredReason())
-                || !media.getIgnoredReason().contains("block list"));
+                || !(media.getIgnoredReason().contains("block list")
+                        || media.getIgnoredReason().contains("Integer.MAX_VALUE")));
     }
 
     protected void checkUploadPreconditions(T media, boolean checkUnicity, boolean isManual)
