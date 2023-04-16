@@ -630,6 +630,27 @@ public class EsaService
     @Override
     protected Set<String> getTwitterAccounts(EsaMedia uploadedMedia) {
         Set<String> result = new HashSet<>();
+        String mission = uploadedMedia.getMission();
+        if (mission != null) {
+            for (Entry<String, String> e : Map.of("Ariel", "ESAArielMission", "BepiColombo", "BepiColombo", "CHEOPS",
+                    "ESA_CHEOPS", "Euclid", "ESA_Euclid", "ExoMars", "ExoMars_CaSSIS", "Gaia", "ESAGaia", "Juice",
+                    "ESA_JUICE", "XMM-Newton", "ESA_XMM")
+                    .entrySet()) {
+                if (mission.contains(e.getKey())) {
+                    result.add(e.getValue());
+                }
+            }
+        }
+        Set<String> systems = uploadedMedia.getSystems();
+        if (systems != null) {
+            for (String system : systems) {
+                for (Entry<String, String> e : Map.of("Copernicus", "CopernicusEU").entrySet()) {
+                    if (system.contains(e.getKey())) {
+                        result.add(e.getValue());
+                    }
+                }
+            }
+        }
         String activity = uploadedMedia.getActivity();
         if (activity != null) {
             for (Entry<String, String> e : Map
