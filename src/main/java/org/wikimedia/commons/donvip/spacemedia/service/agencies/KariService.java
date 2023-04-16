@@ -255,7 +255,8 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
 
     @Override
     protected KariMedia refresh(KariMedia media) throws IOException {
-        return media.copyDataFrom(fetchMedia(media.getId()).getMedia());
+        KariMedia mediaFromApi = fetchMedia(media.getId()).getMedia();
+        return mediaFromApi != null ? media.copyDataFrom(mediaFromApi) : null;
     }
 
     @Override

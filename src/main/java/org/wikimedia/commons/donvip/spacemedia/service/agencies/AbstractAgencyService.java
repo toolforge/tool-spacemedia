@@ -441,9 +441,14 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public T refreshAndSave(T media) throws IOException {
-        media = refresh(media);
-        doCommonUpdate(media, true);
-        return saveMedia(media);
+        T refreshedMedia = refresh(media);
+        if (refreshedMedia != null) {
+            doCommonUpdate(refreshedMedia, true);
+            return saveMedia(refreshedMedia);
+        } else {
+            deleteMedia(media, "refresh did not find media anymore");
+            return null;
+        }
     }
 
     protected abstract T refresh(T media) throws IOException;
