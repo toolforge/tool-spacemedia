@@ -364,6 +364,12 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     public final void copyDataFrom(Media<ID, D> mediaFromApi) {
         setDescription(mediaFromApi.getDescription());
         setTitle(mediaFromApi.getTitle());
+        if (mediaFromApi.getMetadata() != null) {
+            Metadata apiMetadata = mediaFromApi.getMetadata();
+            if (!Objects.equals(metadata.getAssetUrl(), apiMetadata.getAssetUrl())) {
+                setMetadata(apiMetadata);
+            }
+        }
     }
 
     /**

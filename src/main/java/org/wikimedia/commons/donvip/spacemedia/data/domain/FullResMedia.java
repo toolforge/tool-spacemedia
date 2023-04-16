@@ -117,4 +117,19 @@ public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> 
     public boolean isVideo() {
         return super.isVideo() || getFullResMetadata().isVideo();
     }
+
+    /**
+     * Copies data that could have been updated after the initial API call.
+     *
+     * @param mediaFromApi updated media from agency API
+     */
+    public final void copyDataFrom(FullResMedia<ID, D> mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        if (mediaFromApi.getFullResMetadata() != null) {
+            Metadata apiMetadata = mediaFromApi.getFullResMetadata();
+            if (!Objects.equals(fullResMetadata.getAssetUrl(), apiMetadata.getAssetUrl())) {
+                setFullResMetadata(apiMetadata);
+            }
+        }
+    }
 }

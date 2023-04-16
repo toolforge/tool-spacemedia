@@ -183,8 +183,8 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
 
     @Override
     protected String getUploadId() {
-        String id = super.getUploadId().replace("-Image", "");
-        return HORRIBLE_ID_FORMAT.matcher(id).matches() ? id.substring(0, id.lastIndexOf('-')) : id;
+        String uid = super.getUploadId().replace("-Image", "");
+        return HORRIBLE_ID_FORMAT.matcher(uid).matches() ? uid.substring(0, uid.lastIndexOf('-')) : uid;
     }
 
     public StsciMedia copyDataFrom(StsciMedia mediaFromApi) {
