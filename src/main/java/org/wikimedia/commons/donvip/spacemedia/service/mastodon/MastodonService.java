@@ -100,14 +100,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
                         mime = "image/jpeg";
                     }
                     LOGGER.info("File and URL resolved to: {} - {}", file, url);
-                    try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                            CloseableHttpResponse response = httpclient.execute(new HttpGet(url.toURI()));
-                            InputStream in = response.getEntity().getContent()) {
-                        mediaIds.add(callApi(request(Verb.POST, api.getMediaUrl(), "multipart/form-data",
-                                new FileByteArrayBodyPartPayload(in.readAllBytes(), "file"),
-                                Map.of("media_type", mime, "description", file.getName())), MediaAttachment.class)
-                                .getId());
-                    }
+                    mediaIds.add(postMedia(url, mime, file.getName()).getId());
                 } else {
                     LOGGER.error("Couldn't find by its SHA1 a file we've just uploaded: {}", metadata.getSha1());
                 }
@@ -116,5 +109,16 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
             }
         }
         return mediaIds.isEmpty() ? null : mediaIds;
+    }
+
+    MediaAttachment postMedia(URL url, String mime, String fileName)
+            throws IOException, URISyntaxException {
+        try (CloseableHttpClient httpclient = HttpClients.createDefault();
+                CloseableHttpResponse response = httpclient.execute(new HttpGet(url.toURI()));
+                InputStream in = response.getEntity().getContent()) {
+            return callApi(request(Verb.POST, api.getMediaUrl(), "multipart/form-data",
+                    new FileByteArrayBodyPartPayload(mime, in.readAllBytes(), "file", fileName),
+                    Map.of("media_type", mime, "description", fileName)), MediaAttachment.class);
+        }
     }
 }

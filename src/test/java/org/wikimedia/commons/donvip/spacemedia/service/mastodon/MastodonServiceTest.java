@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +38,22 @@ class MastodonServiceTest {
     void testToot() throws Exception {
         when(repo.findMaxTimestampBySha1In(any())).thenReturn("20230414235900");
         assertDoesNotThrow(() -> mastodon.postStatus(List.of(), List.of(), Set.of()));
+    }
+
+    @Test
+    @Disabled("This test will post a real media. Not sure why it returns HTTP 422, Mastodon should accept this animated gif")
+    void testPostMediaGif() {
+        assertDoesNotThrow(() -> mastodon.postMedia(
+                new URL("https://upload.wikimedia.org/wikipedia/commons/e/e0/Juice_gets_wings_ESA24834744.gif"),
+                "image/gif", "Juice_gets_wings_ESA24834744.gif"));
+    }
+
+    @Test
+    @Disabled("This test will post a real media")
+    void testPostMediaJpeg() {
+        assertDoesNotThrow(() -> mastodon.postMedia(
+                new URL("https://upload.wikimedia.org/wikipedia/commons/2/2c/Juice_leaves_Earth_ESA24834654.jpg"),
+                "image/jpeg", "Juice_leaves_Earth_ESA24834654.jpg"));
     }
 
     @Configuration
