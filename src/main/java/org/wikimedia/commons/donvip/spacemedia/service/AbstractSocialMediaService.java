@@ -99,9 +99,9 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             Response response = getOAuthService().execute(request);
             if (response.getCode() >= 400) {
                 LOGGER.error("Error: {}", response);
-            } else {
-                LOGGER.info("Response: {}", response);
+                throw new IOException(response.toString());
             }
+            LOGGER.info("Response: {}", response);
             return jackson.readValue(response.getBody(), responseClass);
         } catch (ExecutionException e) {
             throw new IOException(e);
