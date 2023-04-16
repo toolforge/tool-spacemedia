@@ -134,6 +134,9 @@ public class CommonsService {
 
     private static final Pattern REMOTE_FILE_URL = Pattern.compile("https?://.+\\.[a-zA-Z]{3,4}");
 
+    private static final Pattern FILE_EXT_MISMATCH = Pattern.compile(
+            "File extension \"\\.([a-z]+)\" does not match the detected MIME type of the file \\(image/([a-z]+)\\)\\.");
+
     /**
      * Minimal delay between successive uploads, in seconds.
      */
@@ -736,6 +739,13 @@ public class CommonsService {
             if (retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
                     && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT".equals(error.getInfo())) {
                 return doUpload(wikiCode, filename, ext, url, sha1, renewTokenIfBadToken, true, false);
+            }
+            if ("verification-error".equals(error.getCode())) {
+                Matcher m = FILE_EXT_MISMATCH.matcher(error.getInfo());
+                if (m.matches()) {
+                    return doUpload(wikiCode, filename, m.group(2), url, sha1, renewTokenIfBadToken,
+                            retryWithSanitizedUrl, retryAfterRandomProxy403error);
+                }
             }
             throw new UploadException(error.toString());
         } else if (!"Success".equals(upload.getResult())) {
