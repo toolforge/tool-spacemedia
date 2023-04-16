@@ -124,7 +124,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Autowired
     private GoogleTranslateService translateService;
     @Autowired
-    private List<AbstractSocialMediaService> socialMediaServices;
+    private List<AbstractSocialMediaService<?, ?>> socialMediaServices;
 
     @Autowired
     private Environment env;
@@ -321,7 +321,6 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected final void postSocialMedia(Collection<? extends T> uploadedMedia, Collection<Metadata> uploadedMetadata) {
         if (!uploadedMedia.isEmpty()) {
             LOGGER.info("Uploaded media: {} ({})", uploadedMedia.size(),
