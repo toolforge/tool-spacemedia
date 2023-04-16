@@ -34,6 +34,14 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
     @Override
     public Set<String> findCategories(FlickrMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
+        if (result.contains("Photos by Martian rover Mastcams") && result.contains("Photos by the Curiosity rover")) {
+            result.remove("Photos by Martian rover Mastcams");
+            result.remove("Photos by the Curiosity rover");
+            result.add("Photos by the Curiosity rover Mastcam");
+        } else if (result.contains("Photos by the Perseverance rover") && media.getTitle().contains("Mastcam-Z")) {
+            result.remove("Photos by the Perseverance rover");
+            result.add("Photos by the Perseverance rover Mastcams");
+        }
         if (includeHidden) {
             switch (media.getPathAlias()) {
             case "geckzilla":
