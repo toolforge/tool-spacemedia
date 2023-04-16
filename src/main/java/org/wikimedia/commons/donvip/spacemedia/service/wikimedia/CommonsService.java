@@ -430,6 +430,8 @@ public class CommonsService {
                 } else {
                     throw new IOException(body);
                 }
+            } else if (body.startsWith("<!DOCTYPE html>")) {
+                throw new IOException(body);
             }
             return jackson.readValue(body, responseClass);
         } catch (SocketTimeoutException e) {
