@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +35,13 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
     @Override
     public Set<String> findCategories(FlickrMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (result.contains("Photos by Martian rover Mastcams") && result.contains("Photos by the Curiosity rover")) {
+        if (result.contains("Photos by the Curiosity rover") && (result.contains("Photos by Martian rover Mastcams")
+                || media.getTitle().toLowerCase(Locale.ENGLISH).contains("mastcam"))) {
             result.remove("Photos by Martian rover Mastcams");
             result.remove("Photos by the Curiosity rover");
             result.add("Photos by the Curiosity rover Mastcam");
-        } else if (result.contains("Photos by the Perseverance rover") && media.getTitle().contains("Mastcam-Z")) {
+        } else if (result.contains("Photos by the Perseverance rover")
+                && media.getTitle().toLowerCase(Locale.ENGLISH).contains("mastcam-z")) {
             result.remove("Photos by the Perseverance rover");
             result.add("Photos by the Perseverance rover Mastcams");
         }
