@@ -4,12 +4,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UploadResponse {
 
+    private long offset;
+
     private String result;
 
     private String filename;
 
+    private String filekey;
+
     @JsonProperty("imageinfo")
     private ImageInfo imageInfo;
+
+    public long getOffset() {
+        return offset;
+    }
+
+    public void setOffset(long offset) {
+        this.offset = offset;
+    }
 
     public String getResult() {
         return result;
@@ -35,8 +47,19 @@ public class UploadResponse {
         this.imageInfo = imageInfo;
     }
 
+    public String getFilekey() {
+        return filekey;
+    }
+
+    public void setFilekey(String filekey) {
+        this.filekey = filekey;
+    }
+
     @Override
     public String toString() {
-        return "UploadResponse [result=" + result + ", filename=" + filename + ", imageInfo=" + imageInfo + "]";
+        return "UploadResponse [offset=" + offset + ", " + (result != null ? "result=" + result + ", " : "")
+                + (filename != null ? "filename=" + filename + ", " : "")
+                + (filekey != null ? "filekey=" + filekey + ", " : "")
+                + (imageInfo != null ? "imageInfo=" + imageInfo : "") + ']';
     }
 }

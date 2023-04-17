@@ -144,10 +144,10 @@ public final class Utils {
 
     private static BufferedImage readWebp(URL url, URI uri, boolean readMetadata)
             throws IOException, ImageDecodingException {
-        Path file = downloadFile(url, uri.getPath().replace('/', '_'));
+        Path file = downloadFile(url, uri.getPath().replace('/', '_')).getKey();
         try {
             Path pngFile = Path.of(file.toString().replace(".webp", ".png"));
-            Utils.execOutput(List.of("dwebp", file.toString(), "-o", pngFile.toString()), 1, TimeUnit.MINUTES);
+            execOutput(List.of("dwebp", file.toString(), "-o", pngFile.toString()), 1, TimeUnit.MINUTES);
             try (InputStream inPng = Files.newInputStream(pngFile)) {
                 return readImage(inPng, readMetadata);
             } finally {
@@ -171,16 +171,18 @@ public final class Utils {
         }
     }
 
-    public static Path downloadFile(URL url, String fileName) throws IOException {
+    public static Pair<Path, Long> downloadFile(URL url, String fileName) throws IOException {
         Path output = Files.createDirectories(Path.of("files")).resolve(fileName);
+        Long size = 0L;
         LOGGER.info("Downloading file {}", url);
         try (ReadableByteChannel rbc = Channels.newChannel(url.openStream());
                 FileOutputStream fos = new FileOutputStream(output.toString())) {
-            if (fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE) == 0) {
+            size = fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            if (size == 0) {
                 throw new IOException("No data transferred from " + url);
             }
         }
-        return output;
+        return Pair.of(output, size);
     }
 
     public static Element newElement(String tag, String text, Map<String, String> attrs) {

@@ -10,6 +10,7 @@ import static java.util.stream.Collectors.toSet;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -17,6 +18,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,7 +31,6 @@ import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +38,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -50,6 +53,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -115,6 +119,8 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.apis.MediaWikiApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.httpclient.multipart.BodyPartPayload;
+import com.github.scribejava.core.httpclient.multipart.FileByteArrayBodyPartPayload;
 import com.github.scribejava.core.model.OAuth1AccessToken;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Verb;
@@ -231,7 +237,6 @@ public class CommonsService {
     private ExecutorService taskExecutor;
 
     private final String account;
-    private final String userAgent;
     private final OAuth10aService oAuthService;
     private final OAuth1AccessToken oAuthAccessToken;
 
@@ -262,10 +267,11 @@ public class CommonsService {
         if (!account.toLowerCase(ENGLISH).contains("bot")) {
             throw new IllegalArgumentException("Bot account must include 'bot' in its name!");
         }
-        userAgent = String.format("%s/%s (%s - %s) %s/%s %s/%s %s/%s",
+        String userAgent = String.format("%s/%s (%s - %s) %s/%s %s/%s %s/%s",
                 "Spacemedia", appVersion, appContact, apiAccount, "SpringBoot", bootVersion, "ScribeJava",
                 scribeVersion, "Flickr4Java", flickr4javaVersion);
-        oAuthService = new ServiceBuilder(consumerToken).apiSecret(consumerSecret).build(MediaWikiApi.instance());
+        oAuthService = new ServiceBuilder(consumerToken).apiSecret(consumerSecret).userAgent(userAgent)
+                .build(MediaWikiApi.instance());
         oAuthAccessToken = new OAuth1AccessToken(accessToken, accessSecret);
     }
 
@@ -404,32 +410,45 @@ public class CommonsService {
     }
 
     private <T> T apiHttpPost(Map<String, String> params, Class<T> responseClass) throws IOException {
-        return httpPost(apiUrl.toExternalForm(), responseClass, params);
+        return httpPost(apiUrl.toExternalForm(), responseClass, params,
+                "application/x-www-form-urlencoded; charset=UTF-8", null);
+    }
+
+    private <T> T apiHttpPost(Map<String, String> params, Class<T> responseClass, BodyPartPayload bodyPartPayload)
+            throws IOException {
+        return httpPost(apiUrl.toExternalForm(), responseClass, params, "multipart/form-data", bodyPartPayload);
     }
 
     private <T> T httpGet(String url, Class<T> responseClass) throws IOException {
-        return httpCall(Verb.GET, url, responseClass, Collections.emptyMap(), Collections.emptyMap(), true);
+        return httpCall(Verb.GET, url, responseClass, Collections.emptyMap(), Collections.emptyMap(), null, true);
     }
 
-    private <T> T httpPost(String url, Class<T> responseClass, Map<String, String> params) throws IOException {
+    private <T> T httpPost(String url, Class<T> responseClass, Map<String, String> params, String contentType,
+            BodyPartPayload bodyPartPayload) throws IOException {
         return httpCall(Verb.POST, url, responseClass,
-                Map.of("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"), params, true);
+                contentType != null ? Map.of("Content-Type", contentType) : Map.of(), params, bodyPartPayload, true);
     }
 
     private <T> T httpCall(Verb verb, String url, Class<T> responseClass, Map<String, String> headers,
-            Map<String, String> params, boolean retryOnTimeout) throws IOException {
-        LOGGER.debug("{} {}", verb, url);
+            Map<String, String> params, BodyPartPayload bodyPartPayload, boolean retryOnTimeout) throws IOException {
+        LOGGER.debug("{} {} {}", verb, url, params);
         OAuthRequest request = new OAuthRequest(verb, url);
         request.setCharset(StandardCharsets.UTF_8.name());
-        params.forEach(request::addParameter);
         headers.forEach(request::addHeader);
-        request.addHeader("User-Agent", userAgent);
+        if (bodyPartPayload != null) {
+            request.initMultipartPayload();
+            params.forEach((k, v) -> request
+                    .addBodyPartPayloadInMultipartPayload(new FileByteArrayBodyPartPayload(v.getBytes(), k)));
+            request.addBodyPartPayloadInMultipartPayload(bodyPartPayload);
+        } else {
+            params.forEach(request::addParameter);
+        }
         oAuthService.signRequest(oAuthAccessToken, request);
         try {
             String body = oAuthService.execute(request).getBody();
             if ("upstream request timeout".equalsIgnoreCase(body)) {
                 if (retryOnTimeout) {
-                    return httpCall(verb, url, responseClass, headers, params, false);
+                    return httpCall(verb, url, responseClass, headers, params, bodyPartPayload, false);
                 } else {
                     throw new IOException(body);
                 }
@@ -439,7 +458,7 @@ public class CommonsService {
             return jackson.readValue(body, responseClass);
         } catch (SocketTimeoutException e) {
             if (retryOnTimeout) {
-                return httpCall(verb, url, responseClass, headers, params, false);
+                return httpCall(verb, url, responseClass, headers, params, bodyPartPayload, false);
             } else {
                 throw e;
             }
@@ -673,7 +692,7 @@ public class CommonsService {
 
     public String upload(String wikiCode, String filename, String ext, URL url, String sha1)
             throws IOException, UploadException {
-        return doUpload(wikiCode, normalizeFilename(filename), ext, url, sha1, true, true, true);
+        return doUpload(wikiCode, normalizeFilename(filename), ext, url, sha1, true, true, true, true);
     }
 
     public static String normalizeFilename(String filename) {
@@ -689,43 +708,62 @@ public class CommonsService {
     }
 
     private synchronized String doUpload(String wikiCode, String filename, String ext, URL url, String sha1,
-            boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error)
-            throws IOException, UploadException {
+            boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error,
+            boolean uploadByUrl) throws IOException, UploadException {
         if (!isPermittedFileType(url.toExternalForm())) {
             throw new UploadException(url + " does not match any supported file type: " + permittedFileTypes);
         }
-        Map<String, String> params = new HashMap<>(Map.of(
+        Map<String, String> params = new TreeMap<>(Map.of(
                 "action", "upload",
                 "comment", "#Spacemedia - Upload of " + url + " via [[:Commons:Spacemedia]]",
-                "format", "json",
                 "filename", Objects.requireNonNull(filename, "filename") + '.' + ext,
+                "format", "json",
                 "ignorewarnings", "1",
                 "text", Objects.requireNonNull(wikiCode, "wikiCode"),
-                "token", token
+                "token", Objects.requireNonNull(token, "token")
         ));
-        if (hasUploadByUrlRight()) {
+        Pair<Path, Long> localFile = null;
+        if (uploadByUrl && hasUploadByUrlRight()) {
             params.put("url", url.toExternalForm());
         } else {
-            throw new UnsupportedOperationException("Application is not yet able to upload by file, only by URL");
+            localFile = Utils.downloadFile(url, filename + '.' + ext);
         }
 
         ensureUploadRate();
 
-        LOGGER.info("Uploading {} as {}..", url, filename);
-        UploadApiResponse apiResponse = apiHttpPost(params, UploadApiResponse.class);
+        UploadApiResponse apiResponse = null;
+        if (uploadByUrl && hasUploadByUrlRight()) {
+            try {
+                LOGGER.info("Uploading {} by URL as {}..", url, filename);
+                apiResponse = apiHttpPost(params, UploadApiResponse.class);
+            } catch (IOException e) {
+                if (e.getMessage() != null && e.getMessage().contains("bytes exhausted (tried to allocate")) {
+                    LOGGER.warn("Unable to upload {} by URL (memory exhaustion), fallback to upload in chunks...", url);
+                    // T334814 - upload by chunk in case of memory exhaustion during upload by url
+                    return doUpload(wikiCode, filename, ext, url, sha1, renewTokenIfBadToken, retryWithSanitizedUrl,
+                            retryAfterRandomProxy403error, false);
+                }
+                throw e;
+            }
+        } else if (localFile != null) {
+            LOGGER.info("Uploading {} in chunks as {}..", url, filename);
+            apiResponse = doUploadInChunks(ext, params, localFile, 5_242_880);
+        }
         LOGGER.info("Upload of {} as {}: {}", url, filename, apiResponse);
+        if (apiResponse == null) {
+            throw new UploadException("No upload response");
+        }
         UploadResponse upload = apiResponse.getUpload();
         ApiError error = apiResponse.getError();
         if (error != null) {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
                 token = queryTokens().getCsrftoken();
-                return doUpload(wikiCode, filename, ext, url, sha1, false, retryWithSanitizedUrl, true);
+                return doUpload(wikiCode, filename, ext, url, sha1, false, retryWithSanitizedUrl, true, uploadByUrl);
             }
             if (retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
                 try {
                     return doUpload(wikiCode, filename, ext, Utils.urlToUri(url).toURL(), sha1, renewTokenIfBadToken,
-                            false,
-                            true);
+                            false, true, uploadByUrl);
                 } catch (URISyntaxException e) {
                     throw new UploadException(error.getCode(), e);
                 }
@@ -738,13 +776,13 @@ public class CommonsService {
             }
             if (retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
                     && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT".equals(error.getInfo())) {
-                return doUpload(wikiCode, filename, ext, url, sha1, renewTokenIfBadToken, true, false);
+                return doUpload(wikiCode, filename, ext, url, sha1, renewTokenIfBadToken, true, false, uploadByUrl);
             }
             if ("verification-error".equals(error.getCode())) {
                 Matcher m = FILE_EXT_MISMATCH.matcher(error.getInfo());
                 if (m.matches()) {
                     return doUpload(wikiCode, filename, m.group(2), url, sha1, renewTokenIfBadToken,
-                            retryWithSanitizedUrl, retryAfterRandomProxy403error);
+                            retryWithSanitizedUrl, retryAfterRandomProxy403error, uploadByUrl);
                 }
             }
             throw new UploadException(error.toString());
@@ -756,6 +794,56 @@ public class CommonsService {
                     "SHA1 mismatch for %s ! Expected %s, got %s", url, sha1, upload.getImageInfo().getSha1()));
         }
         return upload.getFilename();
+    }
+
+    private UploadApiResponse doUploadInChunks(String ext, Map<String, String> params,
+            Pair<Path, Long> localFile, int chunkSize) throws IOException {
+        try (InputStream in = Files.newInputStream(localFile.getKey())) {
+            String comment = params.remove("comment");
+            String text = params.remove("text");
+
+            // Upload by chunk
+            params.put("filesize", localFile.getValue().toString());
+            params.put("offset", "0");
+            params.put("stash", "1");
+
+            // #1: Pass content for the first chunk
+            int index = 0;
+            byte[] bytes = in.readNBytes(16_384);
+            UploadApiResponse apiResponse = apiHttpPost(params, UploadApiResponse.class,
+                    newChunkPayload(bytes, index++, ext));
+            if (apiResponse.getError() != null || !"Continue".equals(apiResponse.getUpload().getResult())) {
+                throw new IOException(apiResponse.toString());
+            }
+
+            // #2: Pass filekey parameter for second and further chunks
+            params.put("filekey", apiResponse.getUpload().getFilekey());
+            while (bytes.length > 0) {
+                params.put("offset", Long.toString(apiResponse.getUpload().getOffset()));
+                bytes = in.readNBytes(chunkSize);
+                if (bytes.length > 0) {
+                    apiResponse = apiHttpPost(params, UploadApiResponse.class, newChunkPayload(bytes, index++, ext));
+                    if (apiResponse.getError() != null || !"Continue".equals(apiResponse.getUpload().getResult())) {
+                        throw new IOException(apiResponse.toString());
+                    }
+                }
+            }
+
+            // #3: Final upload using the filekey to commit the upload out of the stash area
+            params.remove("offset");
+            params.remove("stash");
+            params.put("comment", comment);
+            params.put("text", text);
+            return apiHttpPost(params, UploadApiResponse.class);
+
+        } finally {
+            Files.delete(localFile.getKey());
+        }
+    }
+
+    private static FileByteArrayBodyPartPayload newChunkPayload(byte[] bytes, int index, String ext) {
+        return new FileByteArrayBodyPartPayload("application/octet-stream", bytes, "chunk",
+                Integer.toString(index) + '.' + ext);
     }
 
     private void ensureUploadRate() throws UploadException {

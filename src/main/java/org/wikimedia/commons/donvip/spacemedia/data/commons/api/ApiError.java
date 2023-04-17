@@ -8,6 +8,8 @@ public class ApiError {
 
     private String info;
 
+    private String errorclass;
+
     private String docref;
 
     private AbuseFilter abusefilter;
@@ -47,6 +49,14 @@ public class ApiError {
         this.star = star;
     }
 
+    public String getErrorclass() {
+        return errorclass;
+    }
+
+    public void setErrorclass(String errorclass) {
+        this.errorclass = errorclass;
+    }
+
     public String getDocref() {
         return docref;
     }
@@ -58,8 +68,9 @@ public class ApiError {
     @Override
     public String toString() {
         return "ApiError [" + (code != null ? "code=" + code + ", " : "") + (info != null ? "info=" + info + ", " : "")
-                + (abusefilter != null ? "abusefilter=" + abusefilter + ", " : "")
+                + (errorclass != null ? "errorclass=" + errorclass + ", " : "")
                 + (docref != null ? "docref=" + docref + ", " : "")
+                + (abusefilter != null ? "abusefilter=" + abusefilter + ", " : "")
                 + (star != null ? "star=" + star : "") + "]";
     }
 }

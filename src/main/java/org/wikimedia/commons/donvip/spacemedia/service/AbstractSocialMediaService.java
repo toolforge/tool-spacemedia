@@ -27,6 +27,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.core.httpclient.multipart.BodyPartPayload;
+import com.github.scribejava.core.httpclient.multipart.FileByteArrayBodyPartPayload;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Token;
@@ -76,19 +77,20 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             Map<String, Object> params) throws IOException {
         checkInitialization();
         OAuthRequest request = new OAuthRequest(verb, endpoint);
-        if (verb == Verb.POST || verb == Verb.PUT) {
+        if (verb.isPermitBody()) {
             request.addHeader("Content-Type", contentType);
         }
         request.setCharset(StandardCharsets.UTF_8.name());
-        params.forEach((k, v) -> request.addParameter(k, v.toString()));
-        getSignMethod().accept(getOAuthService(), getAccessToken(), request);
         if ("application/json".equals(contentType)) {
+            params.forEach((k, v) -> request.addParameter(k, v.toString()));
             request.setPayload(jackson.writeValueAsString(payload));
         } else if (payload instanceof BodyPartPayload bodyPartPayload) {
-            request.setBodyPartPayloadInMultipartPayload(bodyPartPayload);
-        } else if (payload instanceof byte[] bytes) {
-            request.setPayload(bytes);
+            request.initMultipartPayload();
+            params.forEach((k, v) -> request.addBodyPartPayloadInMultipartPayload(
+                    new FileByteArrayBodyPartPayload(v.toString().getBytes(), k)));
+            request.addBodyPartPayloadInMultipartPayload(bodyPartPayload);
         }
+        getSignMethod().accept(getOAuthService(), getAccessToken(), request);
         return request;
     }
 
