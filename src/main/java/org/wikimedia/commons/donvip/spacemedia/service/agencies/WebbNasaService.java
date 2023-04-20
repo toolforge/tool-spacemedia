@@ -58,7 +58,14 @@ public class WebbNasaService extends AbstractStsciService {
     }
 
     @Override
+    protected Set<String> getEmojis(StsciMedia uploadedMedia) {
+        Set<String> result = super.getEmojis(uploadedMedia);
+        result.add("✨");
+        return result;
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(StsciMedia uploadedMedia) {
-        return Set.of("NASAWebb");
+        return Set.of("@NASAWebb");
     }
 }

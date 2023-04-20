@@ -63,6 +63,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -642,10 +643,20 @@ public class NasaService
     }
 
     @Override
+    protected Set<String> getEmojis(NasaMedia uploadedMedia) {
+        Set<String> result = new HashSet<>();
+        if (ISS_PATTERN.matcher(uploadedMedia.getId()).matches()) {
+            result.add("🧑");
+        }
+        result.addAll(AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords()));
+        return result;
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(NasaMedia uploadedMedia) {
         Set<String> result = new HashSet<>();
         if (ISS_PATTERN.matcher(uploadedMedia.getId()).matches()) {
-            result.add("Space_Station");
+            result.add("@Space_Station");
         } else if (uploadedMedia.getCenter() != null) {
             String account = TWITTER_CENTER_ACCOUNTS.get(uploadedMedia.getCenter());
             if (account != null) {
@@ -653,7 +664,7 @@ public class NasaService
             }
         }
         if (result.isEmpty()) {
-            result.add("NASA");
+            result.add("@NASA");
         }
         return result;
     }

@@ -9,7 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -51,7 +53,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     private String commonsAccount;
 
     public abstract void postStatus(Collection<? extends Media<?, ?>> uploadedMedia,
-            Collection<Metadata> uploadedMetadata, Set<String> accounts) throws IOException;
+            Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException;
 
     protected abstract S getOAuthService();
 
@@ -66,7 +68,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     }
 
     protected abstract OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
-            Collection<Metadata> uploadedMetadata, Set<String> accounts) throws IOException;
+            Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException;
 
     protected OAuthRequest postRequest(String endpoint, String contentType, Object payload)
             throws IOException {
@@ -113,18 +115,20 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         }
     }
 
-    protected String createStatusText(Set<String> twitterAccounts, int size, Collection<Metadata> uploadedMetadata) {
-        String text = String.format("%d new picture%s", size, size >= 2 ? "s" : "");
-        if (!twitterAccounts.isEmpty()) {
-            text += " from " + twitterAccounts.stream().sorted().map(account -> "@" + account).collect(joining(" "));
+    protected String createStatusText(Set<String> emojis, Set<String> accounts, int size,
+            Collection<Metadata> uploadedMetadata) {
+        String text = String.format("%s %d new picture%s", emojis.stream().sorted().collect(joining()), size,
+                size >= 2 ? "s" : "");
+        if (!accounts.isEmpty()) {
+            text += " from " + accounts.stream().sorted().collect(joining(" "));
         }
-        text += " https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size() + "&user="
-                + commonsAccount + "&ilshowall=1&offset="
+        text += "\n\nList → https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
+                + "&user=" + commonsAccount + "&ilshowall=1&offset="
                 + timestampFormatter.format(timestampFormatter
                         .parse(imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
                                 .map(Metadata::getSha1).map(CommonsService::base36Sha1).toList()), LocalDateTime::from)
                         .plusSeconds(1));
-        return text;
+        return text.strip();
     }
 
     protected Collection<Metadata> determineMediaToUploadToSocialMedia(Collection<Metadata> uploadedMedia) {
@@ -155,6 +159,53 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
                 if (result.size() == max) {
                     break;
                 }
+            }
+        }
+        return result;
+    }
+
+    public static Set<String> getEmojis(Set<String> keywords) {
+        Set<String> result = new HashSet<>();
+        for (String keyword : keywords) {
+            switch (keyword.toLowerCase(Locale.ENGLISH)) {
+            case "astronaut":
+                result.add("🧑");
+                break;
+            case "astronaut snoopy", "snoopy":
+                result.add("🐶");
+                break;
+            case "artemis":
+                result.add("🧑");
+                result.add("🌑");
+                break;
+            case "moon":
+                result.add("🌑");
+                break;
+            case "launch vehicle", "rocket", "rocket science", "sls", "space launch system", "falcon", "starship",
+                    "ariane":
+                result.add("🚀");
+                break;
+            case "satellite", "spacecraft", "crew dragon", "starliner", "progress", "soyuz":
+                result.add("🛰️");
+                break;
+            case "planet", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune":
+                result.add("🪐");
+                break;
+            case "plants", "plant production area":
+                result.add("🌱");
+                break;
+            case "earth":
+                result.add("🌎");
+                break;
+            case "sun":
+                result.add("☀️");
+                break;
+            case "star", "galaxy":
+                result.add("✨");
+                break;
+            case "comet":
+                result.add("☄️");
+                break;
             }
         }
         return result;

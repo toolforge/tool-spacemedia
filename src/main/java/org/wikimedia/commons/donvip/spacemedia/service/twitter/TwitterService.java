@@ -77,16 +77,16 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
 
     @Override
     public void postStatus(Collection<? extends Media<?, ?>> uploadedMedia, Collection<Metadata> uploadedMetadata,
-            Set<String> accounts) throws IOException {
-        callApi(buildStatusRequest(uploadedMedia, uploadedMetadata, accounts), TweetResponse.class);
+            Set<String> emojis, Set<String> accounts) throws IOException {
+        callApi(buildStatusRequest(uploadedMedia, uploadedMetadata, emojis, accounts), TweetResponse.class);
     }
 
     @Override
     protected OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
-            Collection<Metadata> uploadedMetadata, Set<String> accounts) throws IOException {
+            Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
         return postRequest(V2_TWEET, "application/json",
                 new TweetRequest(createTweetMedia(uploadedMetadata),
-                        createStatusText(accounts, uploadedMedia.size(), uploadedMetadata)));
+                        createStatusText(emojis, accounts, uploadedMedia.size(), uploadedMetadata)));
     }
 
     private TweetMedia createTweetMedia(Collection<Metadata> uploadedMetadata) {

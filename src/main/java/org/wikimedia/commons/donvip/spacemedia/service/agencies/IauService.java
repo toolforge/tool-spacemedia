@@ -126,6 +126,6 @@ public class IauService extends AbstractDjangoplicityService<IauMedia> {
 
     @Override
     protected Set<String> getTwitterAccounts(IauMedia uploadedMedia) {
-        return Set.of("IAU_org");
+        return Set.of("@IAU_org");
     }
 }

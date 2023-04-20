@@ -57,24 +57,38 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService<DvidsMe
     }
 
     @Override
+    protected Set<String> getEmojis(DvidsMedia uploadedMedia) {
+        Set<String> result = super.getEmojis(uploadedMedia);
+        switch (uploadedMedia.getUnit()) {
+        case "SLD30", "45SW":
+            result.add("🚀");
+            break;
+        case "SSC", "SpOC", "STARCOM", "USSPACECOM", "SBD1":
+        default:
+            result.add("🇺🇸");
+        }
+        return result;
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(DvidsMedia uploadedMedia) {
         switch (uploadedMedia.getUnit()) {
         case "SBD1":
-            return Set.of("SpaceBaseDelta1");
+            return Set.of("@SpaceBaseDelta1");
         case "SLD30":
-            return Set.of("SLDelta30");
+            return Set.of("@SLDelta30");
         case "45SW":
-            return Set.of("SLDelta45");
+            return Set.of("@SLDelta45");
         case "SSC":
-            return Set.of("USSF_SSC");
+            return Set.of("@USSF_SSC");
         case "SpOC":
-            return Set.of("ussfspoc");
+            return Set.of("@ussfspoc");
         case "STARCOM":
-            return Set.of("USSF_STARCOM");
+            return Set.of("@USSF_STARCOM");
         case "USSPACECOM":
-            return Set.of("US_SpaceCom");
+            return Set.of("@US_SpaceCom");
         default:
-            return Set.of("SpaceForceDoD");
+            return Set.of("@SpaceForceDoD");
         }
     }
 }

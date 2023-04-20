@@ -71,15 +71,15 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
 
     @Override
     public void postStatus(Collection<? extends Media<?, ?>> uploadedMedia, Collection<Metadata> uploadedMetadata,
-            Set<String> accounts) throws IOException {
-        callApi(buildStatusRequest(uploadedMedia, uploadedMetadata, accounts), Status.class);
+            Set<String> emojis, Set<String> accounts) throws IOException {
+        callApi(buildStatusRequest(uploadedMedia, uploadedMetadata, emojis, accounts), Status.class);
     }
 
     @Override
     protected OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
-            Collection<Metadata> uploadedMetadata, Set<String> accounts) throws IOException {
+            Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
         return postRequest(api.getStatusUrl(), "application/json",
-                new StatusRequest(createStatusText(accounts, uploadedMedia.size(), uploadedMetadata),
+                new StatusRequest(createStatusText(emojis, accounts, uploadedMedia.size(), uploadedMetadata),
                         postMedia(uploadedMetadata)));
     }
 
@@ -117,7 +117,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(url.toURI()));
                 InputStream in = response.getEntity().getContent()) {
             return callApi(request(Verb.POST, api.getMediaUrl(), "multipart/form-data",
-                    new FileByteArrayBodyPartPayload(mime, in.readAllBytes(), "file", fileName),
+                    new FileByteArrayBodyPartPayload("application/octet-stream", in.readAllBytes(), "file", fileName),
                     Map.of("media_type", mime, "description", fileName)), MediaAttachment.class);
         }
     }

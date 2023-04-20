@@ -37,7 +37,7 @@ class MastodonServiceTest {
     @Disabled("This test will post a real toot")
     void testToot() throws Exception {
         when(repo.findMaxTimestampBySha1In(any())).thenReturn("20230414235900");
-        assertDoesNotThrow(() -> mastodon.postStatus(List.of(), List.of(), Set.of()));
+        assertDoesNotThrow(() -> mastodon.postStatus(List.of(), List.of(), Set.of(), Set.of()));
     }
 
     @Test

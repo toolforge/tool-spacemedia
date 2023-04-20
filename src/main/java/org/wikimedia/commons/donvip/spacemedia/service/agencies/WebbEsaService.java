@@ -87,7 +87,12 @@ public class WebbEsaService extends AbstractDjangoplicityService<WebbEsaMedia> {
     }
 
     @Override
+    protected Set<String> getEmojis(WebbEsaMedia uploadedMedia) {
+        return Set.of("✨");
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(WebbEsaMedia uploadedMedia) {
-        return Set.of("ESA_Webb");
+        return Set.of("@ESA_Webb");
     }
 }

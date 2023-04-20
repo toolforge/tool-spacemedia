@@ -260,7 +260,12 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
     }
 
     @Override
+    protected Set<String> getEmojis(KariMedia uploadedMedia) {
+        return Set.of("🇰🇷");
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(KariMedia uploadedMedia) {
-        return Set.of("kari2030");
+        return Set.of("@kari2030");
     }
 }

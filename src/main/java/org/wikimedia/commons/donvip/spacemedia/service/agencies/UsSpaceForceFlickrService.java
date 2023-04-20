@@ -58,6 +58,11 @@ public class UsSpaceForceFlickrService extends AbstractAgencyFlickrService<Dvids
     }
 
     @Override
+    protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
+        return Set.of("🇺🇸");
+    }
+
+    @Override
     public Set<String> findCategories(FlickrMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
@@ -78,9 +83,9 @@ public class UsSpaceForceFlickrService extends AbstractAgencyFlickrService<Dvids
     @Override
     protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
         if ("129133022@N07".equals(uploadedMedia.getPathAlias())) {
-            return Set.of("USSF_SSC");
+            return Set.of("@USSF_SSC");
         } else {
-            return Set.of("SpaceForceDoD");
+            return Set.of("@SpaceForceDoD");
         }
     }
 }

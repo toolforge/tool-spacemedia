@@ -29,6 +29,11 @@ public class PotentialFlickrService extends AbstractAgencyFlickrService<FlickrMe
     }
 
     @Override
+    protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
+        return Set.of("❔");
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
         return Set.of();
     }

@@ -48,7 +48,12 @@ public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia
     }
 
     @Override
+    protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
+        return Set.of("🚀");
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        return Set.of("SpaceX");
+        return Set.of("@SpaceX");
     }
 }

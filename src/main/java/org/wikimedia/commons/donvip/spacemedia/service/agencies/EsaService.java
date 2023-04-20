@@ -44,6 +44,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 
 import com.github.dozermapper.core.Mapper;
 
@@ -628,44 +629,53 @@ public class EsaService
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(EsaMedia uploadedMedia) {
+    protected Set<String> getEmojis(EsaMedia uploadedMedia) {
         Set<String> result = new HashSet<>();
-        String mission = uploadedMedia.getMission();
-        if (mission != null) {
-            for (Entry<String, String> e : Map.of("Ariel", "ESAArielMission", "BepiColombo", "BepiColombo", "CHEOPS",
-                    "ESA_CHEOPS", "Euclid", "ESA_Euclid", "ExoMars", "ExoMars_CaSSIS", "Gaia", "ESAGaia", "Juice",
-                    "ESA_JUICE", "XMM-Newton", "ESA_XMM")
-                    .entrySet()) {
-                if (mission.contains(e.getKey())) {
-                    result.add(e.getValue());
-                }
-            }
-        }
+        fillSet(result, uploadedMedia.getMission(), Map.of("Ariel", "✨", "BepiColombo", "🪐", "CHEOPS", "🪐", "Euclid",
+                "✨", "ExoMars", "🪐", "Gaia", "✨", "Juice", "🪐", "XMM-Newton", "✨"));
         Set<String> systems = uploadedMedia.getSystems();
         if (systems != null) {
             for (String system : systems) {
-                for (Entry<String, String> e : Map.of("Copernicus", "CopernicusEU").entrySet()) {
-                    if (system.contains(e.getKey())) {
-                        result.add(e.getValue());
-                    }
-                }
+                fillSet(result, system, Map.of("Copernicus", "🇪🇺"));
             }
         }
-        String activity = uploadedMedia.getActivity();
-        if (activity != null) {
-            for (Entry<String, String> e : Map
-                    .of("Human Spaceflight", "esaspaceflight", "Observing the Earth", "ESA_EO",
-                            "Operations", "esaoperations", "Photo Archive (ESA Publications)", "ESA_History",
-                            "Space Science", "esascience", "Technology", "esa_tech")
-                    .entrySet()) {
-                if (activity.contains(e.getKey())) {
+        fillSet(result, uploadedMedia.getActivity(),
+                Map.of("Human Spaceflight", "🧑", "Observing the Earth", "🌍", "Operations", "📡", "Space Science",
+                        "🛰️", "Space Transportation", "🚀"));
+        result.addAll(AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords()));
+        return result;
+    }
+
+    @Override
+    protected Set<String> getTwitterAccounts(EsaMedia uploadedMedia) {
+        Set<String> result = new HashSet<>();
+        fillSet(result, uploadedMedia.getMission(),
+                Map.of("Ariel", "@ESAArielMission", "BepiColombo", "@BepiColombo", "CHEOPS", "@ESA_CHEOPS", "Euclid",
+                        "@ESA_Euclid", "ExoMars", "@ExoMars_CaSSIS", "Gaia", "@ESAGaia", "Juice", "@ESA_JUICE",
+                        "XMM-Newton", "@ESA_XMM"));
+        Set<String> systems = uploadedMedia.getSystems();
+        if (systems != null) {
+            for (String system : systems) {
+                fillSet(result, system, Map.of("Copernicus", "@CopernicusEU"));
+            }
+        }
+        fillSet(result, uploadedMedia.getActivity(),
+                Map.of("Human Spaceflight", "@esaspaceflight", "Observing the Earth", "@ESA_EO", "Operations",
+                        "@esaoperations", "Photo Archive (ESA Publications)", "@ESA_History", "Space Science",
+                        "@esascience", "Technology", "@esa_tech"));
+        if (result.isEmpty()) {
+            result.add("@esa");
+        }
+        return result;
+    }
+
+    private static void fillSet(Set<String> result, String text, Map<String, String> map) {
+        if (text != null) {
+            for (Entry<String, String> e : map.entrySet()) {
+                if (text.contains(e.getKey())) {
                     result.add(e.getValue());
                 }
             }
         }
-        if (result.isEmpty()) {
-            result.add("esa");
-        }
-        return result;
     }
 }

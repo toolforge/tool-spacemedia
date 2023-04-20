@@ -64,12 +64,17 @@ public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, L
     }
 
     @Override
+    protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
+        return Set.of("🇩🇪");
+    }
+
+    @Override
     protected Set<String> getMastodonAccounts(FlickrMedia uploadedMedia) {
         return Set.of("@DLR@social.bund.de");
     }
 
     @Override
     protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        return Set.of("DLR_en");
+        return Set.of("@DLR_en");
     }
 }

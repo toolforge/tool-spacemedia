@@ -65,6 +65,20 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
     }
 
     @Override
+    protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
+        switch (uploadedMedia.getPathAlias()) {
+        case "geckzilla", "markmccaughrean":
+            return Set.of("✨");
+        case "kevinmgill":
+            return Set.of("🪐");
+        case "pierre_markuse":
+            return Set.of("🌍");
+        default:
+            return Set.of("❔");
+        }
+    }
+
+    @Override
     protected Set<String> getMastodonAccounts(FlickrMedia uploadedMedia) {
         switch (uploadedMedia.getPathAlias()) {
         case "geckzilla":
@@ -84,13 +98,13 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
     protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
         switch (uploadedMedia.getPathAlias()) {
         case "geckzilla":
-            return Set.of("SpaceGeck");
+            return Set.of("@SpaceGeck");
         case "kevinmgill":
-            return Set.of("kevinmgill");
+            return Set.of("@kevinmgill");
         case "markmccaughrean":
-            return Set.of("markmccaughrean");
+            return Set.of("@markmccaughrean");
         case "pierre_markuse":
-            return Set.of("Pierre_Markuse");
+            return Set.of("@Pierre_Markuse");
         default:
             return Set.of();
         }

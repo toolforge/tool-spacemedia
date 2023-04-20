@@ -327,13 +327,20 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                     uploadedMedia.stream().map(Media::getId).toList());
             socialMediaServices.forEach(socialMedia -> {
                 try {
-                    socialMedia.postStatus(uploadedMedia, uploadedMetadata,
-                            getSocialMediaAccounts(socialMedia, uploadedMedia));
+                    Set<String> accounts = getSocialMediaAccounts(socialMedia, uploadedMedia);
+                    if (accounts.isEmpty()) {
+                        accounts = Set.of(getName());
+                    }
+                    socialMedia.postStatus(uploadedMedia, uploadedMetadata, getEmojis(uploadedMedia), accounts);
                 } catch (IOException e) {
                     LOGGER.error("Failed to post status", e);
                 }
             });
         }
+    }
+
+    protected final Set<String> getEmojis(Collection<? extends T> uploadedMedia) {
+        return uploadedMedia.stream().flatMap(media -> getEmojis(media).stream()).collect(toSet());
     }
 
     protected final Set<String> getSocialMediaAccounts(AbstractSocialMediaService<?, ?> socialMedia,
@@ -345,6 +352,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
         return Set.of();
     }
+
+    protected abstract Set<String> getEmojis(T uploadedMedia);
 
     protected Set<String> getMastodonAccounts(T uploadedMedia) {
         return Set.of();

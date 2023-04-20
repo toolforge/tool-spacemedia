@@ -567,4 +567,9 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
         }
         return result;
     }
+
+    @Override
+    protected Set<String> getEmojis(T uploadedMedia) {
+        return Set.of("🔭");
+    }
 }

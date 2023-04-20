@@ -35,6 +35,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaReposit
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 
 @Service
 public class NasaSirsService
@@ -246,7 +247,12 @@ public class NasaSirsService
     }
 
     @Override
+    protected Set<String> getEmojis(NasaSirsImage uploadedMedia) {
+        return AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords());
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(NasaSirsImage uploadedMedia) {
-        return Set.of("NASAStennis");
+        return Set.of("@NASAStennis");
     }
 }

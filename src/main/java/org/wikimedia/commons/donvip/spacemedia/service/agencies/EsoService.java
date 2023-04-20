@@ -71,7 +71,14 @@ public class EsoService extends AbstractDjangoplicityService<EsoMedia> {
     }
 
     @Override
+    protected Set<String> getEmojis(EsoMedia uploadedMedia) {
+        Set<String> result = super.getEmojis(uploadedMedia);
+        result.add("✨");
+        return result;
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(EsoMedia uploadedMedia) {
-        return Set.of("ESO");
+        return Set.of("@ESO");
     }
 }

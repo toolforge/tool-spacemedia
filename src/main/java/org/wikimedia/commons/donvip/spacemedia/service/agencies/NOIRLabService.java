@@ -156,7 +156,7 @@ public class NOIRLabService extends AbstractDjangoplicityService<NOIRLabMedia> {
 
     @Override
     protected Set<String> getTwitterAccounts(NOIRLabMedia uploadedMedia) {
-        return Set.of("NOIRLabAstro");
+        return Set.of("@NOIRLabAstro");
     }
 
     @Override

@@ -71,7 +71,12 @@ public class HubbleEsaService extends AbstractDjangoplicityService<HubbleEsaMedi
     }
 
     @Override
+    protected Set<String> getEmojis(HubbleEsaMedia uploadedMedia) {
+        return Set.of("✨");
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(HubbleEsaMedia uploadedMedia) {
-        return Set.of("HUBBLE_space");
+        return Set.of("@HUBBLE_space");
     }
 }

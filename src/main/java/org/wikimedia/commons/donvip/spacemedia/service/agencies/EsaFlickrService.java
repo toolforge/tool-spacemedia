@@ -89,6 +89,6 @@ public class EsaFlickrService extends AbstractAgencyFlickrService<EsaMedia, Inte
 
     @Override
     protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        return Set.of("esa");
+        return Set.of("@esa");
     }
 }

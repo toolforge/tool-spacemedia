@@ -63,7 +63,14 @@ public class HubbleNasaService extends AbstractStsciService {
     }
 
     @Override
+    protected Set<String> getEmojis(StsciMedia uploadedMedia) {
+        Set<String> result = super.getEmojis(uploadedMedia);
+        result.add("✨");
+        return result;
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(StsciMedia uploadedMedia) {
-        return Set.of("NASAHubble", "HubbleTelescope");
+        return Set.of("@NASAHubble", "@HubbleTelescope");
     }
 }

@@ -94,7 +94,12 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
     }
 
     @Override
+    protected Set<String> getEmojis(YouTubeVideo uploadedMedia) {
+        return Set.of("🚀");
+    }
+
+    @Override
     protected Set<String> getTwitterAccounts(YouTubeVideo uploadedMedia) {
-        return Set.of("Arianespace");
+        return Set.of("@Arianespace");
     }
 }
