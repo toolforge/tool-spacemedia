@@ -383,4 +383,14 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         return ONLY_DIGITS.matcher(title.replace(" ", "").replace("/", "").replace("_", "").replace("-", "")).matches()
                 || URI_LIKE.matcher(title).matches();
     }
+
+    /**
+     * Determines if the given string is included in title or description.
+     *
+     * @param string string to search
+     * @return {@code true} if the given string is included in title or description
+     */
+    public boolean containsInTitleOrDescription(String string) {
+        return (title != null && title.contains(string)) || (description != null && description.contains(string));
+    }
 }

@@ -232,11 +232,10 @@ public class NasaService
                 }
             }
         }
-        if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && img.getPhotographer() != null
-                && img.getId().toLowerCase(Locale.ENGLISH).startsWith("jsc")) {
+        if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && img.getPhotographer() != null) {
             String normalizedPhotographer = img.getPhotographer().toLowerCase(Locale.ENGLISH).replace(' ', '_');
             if (photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith)) {
-                ignoreFile(media, "JSC image with photographer blocklisted: " + img.getPhotographer());
+                ignoreFile(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer());
                 save = true;
             }
         }

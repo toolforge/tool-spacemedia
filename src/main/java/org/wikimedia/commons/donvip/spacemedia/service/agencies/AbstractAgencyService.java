@@ -734,6 +734,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
      */
     public Set<String> findCategories(T media, Metadata metadata, boolean includeHidden) {
         Set<String> result = new HashSet<>();
+        if (media.containsInTitleOrDescription("360 Panorama")) {
+            result.add("360° panoramas");
+        }
         if (includeHidden) {
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
         }
