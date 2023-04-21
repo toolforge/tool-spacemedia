@@ -65,6 +65,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideoReposit
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
+import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -104,7 +105,6 @@ public class NasaService
     @Value("${nasa.centers}")
     private Set<String> nasaCenters;
 
-    @Value("${nasa.jsc.photographers.blocklist}")
     private Set<String> photographersBlocklist;
 
     @Value("${videos.enabled}")
@@ -142,6 +142,7 @@ public class NasaService
     void init() throws IOException {
         super.init();
         nasaKeywords = loadCsvMapping("nasa.keywords.csv");
+        photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.photographers.csv"));
     }
 
     @Override
@@ -198,54 +199,46 @@ public class NasaService
         Optional<NasaMedia> mediaInRepo = repository.findById(media.getId());
         boolean save = false;
         if (mediaInRepo.isPresent()) {
-            // allow to purge keywords table and recreate contents
-            Set<String> keywordsInRepo = mediaInRepo.get().getKeywords();
-            Set<String> keywordsFromNasa = media.getKeywords();
             media = mediaInRepo.get();
-            if (CollectionUtils.isEmpty(keywordsInRepo) && !CollectionUtils.isEmpty(keywordsFromNasa)) {
-                media.setKeywords(keywordsFromNasa);
-                save = true;
-            }
         } else {
             save = true;
-        }
-        // The API is supposed to send us keywords in a proper JSON array, but sometimes it is not
-        Set<String> normalizedKeywords = normalizeKeywords(media.getKeywords());
-        if (!Objects.equals(normalizedKeywords, media.getKeywords())) {
-            media.setKeywords(normalizedKeywords);
-            save = true;
-        }
-        if (media.getAssetUrl() == null) {
-            Optional<URL> originalUrl = findOriginalMedia(rest, href);
-            if (originalUrl.isPresent()) {
-                media.setAssetUrl(originalUrl.get());
-                save = true;
+            // API is supposed to send us keywords in a proper JSON array, but not always
+            Set<String> normalizedKeywords = normalizeKeywords(media.getKeywords());
+            if (!Objects.equals(normalizedKeywords, media.getKeywords())) {
+                media.setKeywords(normalizedKeywords);
             }
-        }
-        if (media.getThumbnailUrl() == null) {
-            Optional<URL> thumbnailUrl = findThumbnailMedia(rest, href);
-            if (thumbnailUrl.isPresent()) {
-                media.setThumbnailUrl(thumbnailUrl.get());
-                save = true;
+            if (media.getAssetUrl() == null) {
+                findOriginalMedia(rest, href).ifPresent(media::setAssetUrl);
             }
-        }
-        if (media.isIgnored() != Boolean.TRUE && media.getDescription() != null) {
-            if (media.getDescription().contains("/photojournal")) {
-                ignoreFile(media, "Photojournal");
-                save = true;
-            } else if (media.getId().toLowerCase(Locale.ENGLISH).startsWith("jsc")) {
-                String desc = media.getDescription().toLowerCase(Locale.ENGLISH);
-                if (desc.contains("courtesy") || desc.contains("©")
-                        || (media instanceof NasaImage img && img.getPhotographer() != null && photographersBlocklist
-                                .contains(img.getPhotographer().toLowerCase(Locale.ENGLISH).replace(' ', '_')))) {
-                    ignoreFile(media, "Probably non-free image (courtesy)");
+            if (media.getThumbnailUrl() == null) {
+                findThumbnailMedia(rest, href).ifPresent(media::setThumbnailUrl);
+            }
+            if (media.getTitle() != null && media.getTitle().startsWith("Title: ")) {
+                media.setTitle(media.getTitle().replace("Title: ", ""));
+            }
+            if (media.getId().length() < 3) {
+                problem(media.getAssetUrl(), "Strange id: '" + media.getId() + "'");
+            }
+            if (media.isIgnored() != Boolean.TRUE && media.getDescription() != null) {
+                if (media.getDescription().contains("/photojournal")) {
+                    ignoreFile(media, "Photojournal");
                     save = true;
+                } else {
+                    String desc = media.getDescription().toLowerCase(Locale.ENGLISH);
+                    if (desc.contains("courtesy") || desc.contains("©")) {
+                        ignoreFile(media, "Probably non-free image (courtesy)");
+                        save = true;
+                    }
                 }
             }
         }
-        if (media.getTitle() != null && media.getTitle().startsWith("Title: ")) {
-            media.setTitle(media.getTitle().replace("Title: ", ""));
-            save = true;
+        if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && img.getPhotographer() != null
+                && img.getId().toLowerCase(Locale.ENGLISH).startsWith("jsc")) {
+            String normalizedPhotographer = img.getPhotographer().toLowerCase(Locale.ENGLISH).replace(' ', '_');
+            if (photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith)) {
+                ignoreFile(media, "JSC image with photographer blocklisted: " + img.getPhotographer());
+                save = true;
+            }
         }
         if (doCommonUpdate(media)) {
             save = true;
@@ -257,12 +250,6 @@ public class NasaService
             uploadCount += upload.getRight();
             media = saveMedia(upload.getLeft());
             save = false;
-        }
-        if (!nasaCenters.contains(media.getCenter())) {
-            problem(media.getAssetUrl(), "Unknown center for id '" + media.getId() + "': " + media.getCenter());
-        }
-        if (media.getId().length() < 3) {
-            problem(media.getAssetUrl(), "Strange id: '" + media.getId() + "'");
         }
         return Pair.of(saveMediaOrCheckRemote(save, media), uploadCount);
     }
@@ -340,8 +327,13 @@ public class NasaService
             try {
                 ensureApiLimit();
                 NasaCollection collection = rest.getForObject(searchUrl, NasaResponse.class).getCollection();
+                List<NasaItem> items = collection.getItems();
+                if (LOGGER.isDebugEnabled()) {
+                    int size = items.size();
+                    LOGGER.debug("NASA API returned {} item{}", size, size > 1 ? "s" : "");
+                }
                 ok = true;
-                for (NasaItem item : collection.getItems()) {
+                for (NasaItem item : items) {
                     try {
                         Pair<NasaMedia, Integer> update = processMedia(rest, item.getData().get(0), item.getHref());
                         if (update.getValue() > 0) {
@@ -404,36 +396,41 @@ public class NasaService
     }
 
     private static void logStartUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers) {
-        if (centers == null) {
-            if (startYear == endYear) {
-                LOGGER.debug("NASA {} update for year {} started...", mediaType, startYear);
+        if (LOGGER.isDebugEnabled()) {
+            if (centers == null) {
+                if (startYear == endYear) {
+                    LOGGER.debug("NASA {} update for year {} started...", mediaType, startYear);
+                } else {
+                    LOGGER.debug("NASA {} update for years {}-{} started...", mediaType, startYear, endYear);
+                }
+            } else if (startYear == endYear && centers.size() == 1) {
+                LOGGER.debug("NASA {} update for year {} center {} started...", mediaType, startYear,
+                        centers.iterator().next());
             } else {
-                LOGGER.debug("NASA {} update for years {}-{} started...", mediaType, startYear, endYear);
+                LOGGER.debug("NASA {} update for years {}-{} center {} started...", mediaType, startYear, endYear,
+                        centers);
             }
-        } else if (startYear == endYear && centers.size() == 1) {
-            LOGGER.debug("NASA {} update for year {} center {} started...", mediaType, startYear,
-                    centers.iterator().next());
-        } else {
-            LOGGER.debug("NASA {} update for years {}-{} center {} started...", mediaType, startYear, endYear, centers);
         }
     }
 
     private static void logEndUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers, LocalDateTime start, int size) {
-        Duration duration = Duration.between(LocalDateTime.now(), start);
-        if (centers == null) {
-            if (startYear == endYear) {
-                LOGGER.debug("NASA {} update for year {} completed: {} {}s in {}",
-                        mediaType, startYear, size, mediaType, duration);
+        if (LOGGER.isDebugEnabled()) {
+            Duration duration = Duration.between(LocalDateTime.now(), start);
+            if (centers == null) {
+                if (startYear == endYear) {
+                    LOGGER.debug("NASA {} update for year {} completed: {} {}s in {}", mediaType, startYear, size,
+                            mediaType, duration);
+                } else {
+                    LOGGER.debug("NASA {} update for years {}-{} completed: {} {}s in {}", mediaType, startYear,
+                            endYear, size, mediaType, duration);
+                }
+            } else if (startYear == endYear && centers.size() == 1) {
+                LOGGER.debug("NASA {} update for year {} center {} completed: {} {}s in {}", mediaType, startYear,
+                        centers.iterator().next(), size, mediaType, duration);
             } else {
-                LOGGER.debug("NASA {} update for years {}-{} completed: {} {}s in {}",
-                        mediaType, startYear, endYear, size, mediaType, duration);
+                LOGGER.debug("NASA {} update for years {}-{} center {} completed: {} {}s in {}", mediaType, startYear,
+                        endYear, centers.iterator().next(), size, mediaType, duration);
             }
-        } else if (startYear == endYear && centers.size() == 1) {
-            LOGGER.debug("NASA {} update for year {} center {} completed: {} {}s in {}",
-                    mediaType, startYear, centers.iterator().next(), size, mediaType, duration);
-        } else {
-            LOGGER.debug("NASA {} update for years {}-{} center {} completed: {} {}s in {}",
-                    mediaType, startYear, endYear, centers.iterator().next(), size, mediaType, duration);
         }
     }
 
@@ -613,11 +610,17 @@ public class NasaService
         int count = 0;
     }
 
+    /**
+     * Makes sure the service complies with api.nasa.gov hourly limit of 1,000
+     * requests per hour
+     */
     private void ensureApiLimit() {
         LocalDateTime fourSecondsAgo = now().minusSeconds(DELAY);
         if (lastRequest != null && lastRequest.isAfter(fourSecondsAgo)) {
             try {
-                Thread.sleep(DELAY - SECONDS.between(now(), lastRequest.plusSeconds(DELAY)));
+                long millis = DELAY - SECONDS.between(now(), lastRequest.plusSeconds(DELAY));
+                LOGGER.info("Sleeping {} ms to conform to NASA API limit policy", millis);
+                Thread.sleep(millis);
             } catch (InterruptedException e) {
                 LOGGER.error(e.getMessage(), e);
                 Thread.currentThread().interrupt();
