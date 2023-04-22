@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.time.LocalDateTime.now;
-import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Collections.singleton;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toSet;
@@ -67,7 +67,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideoReposit
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
-import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -110,8 +109,6 @@ public class NasaService
     @Value("${nasa.centers}")
     private Set<String> nasaCenters;
 
-    private Set<String> photographersBlocklist;
-
     @Value("${videos.enabled}")
     private boolean videosEnabled;
 
@@ -150,7 +147,6 @@ public class NasaService
     void init() throws IOException {
         super.init();
         nasaKeywords = loadCsvMapping("nasa.keywords.csv");
-        photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.photographers.csv"));
     }
 
     @Override
@@ -240,12 +236,10 @@ public class NasaService
                 }
             }
         }
-        if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && img.getPhotographer() != null) {
-            String normalizedPhotographer = img.getPhotographer().toLowerCase(Locale.ENGLISH).replace(' ', '_');
-            if (photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith)) {
-                ignoreFile(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer());
-                save = true;
-            }
+        if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && img.getPhotographer() != null
+                && mediaService.isPhotographerBlocklisted(img.getPhotographer())) {
+            ignoreFile(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer());
+            save = true;
         }
         if (doCommonUpdate(media)) {
             save = true;
@@ -637,7 +631,7 @@ public class NasaService
         LocalDateTime fourSecondsAgo = now().minusSeconds(DELAY);
         if (lastRequest != null && lastRequest.isAfter(fourSecondsAgo)) {
             try {
-                long millis = DELAY - SECONDS.between(now(), lastRequest.plusSeconds(DELAY));
+                long millis = DELAY * 1000 - MILLIS.between(now(), lastRequest.plusSeconds(DELAY));
                 LOGGER.info("Sleeping {} ms to conform to NASA API limit policy", millis);
                 Thread.sleep(millis);
             } catch (InterruptedException e) {

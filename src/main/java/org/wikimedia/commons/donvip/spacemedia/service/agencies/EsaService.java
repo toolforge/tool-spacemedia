@@ -45,6 +45,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 
 import com.github.dozermapper.core.Mapper;
 
@@ -252,8 +253,7 @@ public class EsaService
                 if (e.getMessage() != null &&
                         (e.getMessage().contains("tiffinfo command failed") || e.getMessage().contains("upstream request timeout"))) {
                     problem(media.getFullResMetadata().getAssetUrl(), e.getMessage());
-                    ignoreFile(media, e.getMessage());
-                    save = true;
+                    save = MediaService.ignoreMedia(media, media.getFullResMetadata().getAssetUrl().toString(), e);
                     break;
                 }
             }
@@ -346,8 +346,7 @@ public class EsaService
         if (problem) {
             problem(url, reason);
         }
-        file.setIgnored(Boolean.TRUE);
-        file.setIgnoredReason(reason);
+        ignoreFile(file, reason);
         return saveMedia(file);
     }
 

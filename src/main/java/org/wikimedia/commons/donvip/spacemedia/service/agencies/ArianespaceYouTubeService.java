@@ -44,19 +44,13 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
     protected boolean customProcessing(YouTubeVideo video) {
         boolean result = super.customProcessing(video);
         if (!Boolean.TRUE.equals(video.isIgnored()) && video.getDescription().contains("copyright: ROSCOSMOS")) {
-            video.setIgnored(Boolean.TRUE);
-            video.setIgnoredReason("ROSCOSMOS copyright");
-            result = true;
+            result = ignoreFile(video, "ROSCOSMOS copyright");
         }
         if (!Boolean.TRUE.equals(video.isIgnored()) && video.getDuration().compareTo(Duration.ofMinutes(6)) > 0) {
-            video.setIgnored(Boolean.TRUE);
-            video.setIgnoredReason("Video longer than 6 minutes");
-            result = true;
+            result = ignoreFile(video, "Video longer than 6 minutes");
         }
         if ("yMy9IfNqJ2k".equals(video.getId())) {
-            video.setIgnored(Boolean.TRUE);
-            video.setIgnoredReason("Video duplicated");
-            result = true;
+            result = ignoreFile(video, "Video duplicated");
         }
         for (String toRemove : TO_REMOVE) {
             if (video.getDescription().contains(toRemove)) {

@@ -122,9 +122,7 @@ public class FlickrMediaProcessorService {
                     savePhotoSets = true;
                 }
                 if (ignoredPhotoAlbums.contains(photoSet.getId())) {
-                    media.setIgnored(true);
-                    media.setIgnoredReason("Photoset ignored: " + photoSet.getTitle());
-                    save = true;
+                    save = MediaService.ignoreMedia(media, "Photoset ignored: " + photoSet.getTitle());
                 }
             }
         }
@@ -132,9 +130,7 @@ public class FlickrMediaProcessorService {
             if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark
                     && !Boolean.TRUE.equals(media.isIgnored())
                     && !UnitedStates.isClearPublicDomain(media.getDescription())) {
-                media.setIgnored(true);
-                media.setIgnoredReason("Public Domain Mark is not a legal license");
-                save = true;
+                save = MediaService.ignoreMedia(media, "Public Domain Mark is not a legal license");
             }
         } catch (IllegalArgumentException e) {
             LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());

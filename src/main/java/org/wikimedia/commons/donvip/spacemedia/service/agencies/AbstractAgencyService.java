@@ -844,9 +844,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final boolean ignoreFile(T media, String reason) {
-        media.setIgnored(Boolean.TRUE);
-        media.setIgnoredReason(reason);
-        return true;
+        return MediaService.ignoreMedia(media, reason);
     }
 
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {

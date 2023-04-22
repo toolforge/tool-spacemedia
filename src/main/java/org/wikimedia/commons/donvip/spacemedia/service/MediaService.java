@@ -112,10 +112,14 @@ public class MediaService {
     private boolean updateFullResImages;
 
     private Set<String> blockListIgnoredTerms;
+    private Set<String> copyrightsBlocklist;
+    private Set<String> photographersBlocklist;
 
     @PostConstruct
     public void init() throws IOException {
         blockListIgnoredTerms = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.terms.csv"));
+        copyrightsBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.copyrights.csv"));
+        photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.photographers.csv"));
     }
 
     public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
@@ -159,12 +163,27 @@ public class MediaService {
             String ignoredTerms = blockListIgnoredTerms.parallelStream().filter(titleAndDescription::contains).sorted()
                     .collect(joining(","));
             if (!ignoredTerms.isEmpty()) {
-                media.setIgnoredReason("Title or description contains term(s) in block list: " + ignoredTerms);
-                media.setIgnored(Boolean.TRUE);
-                return true;
+                return ignoreMedia(media, "Title or description contains term(s) in block list: " + ignoredTerms);
             }
         }
+        if (media.getMetadata() != null && media.getMetadata().getExif() != null
+                && (media.getMetadata().getExif().getPhotographers().anyMatch(this::isPhotographerBlocklisted)
+                        || media.getMetadata().getExif().getCopyrights().anyMatch(this::isCopyrightBlocklisted))) {
+            return ignoreMedia(media,
+                    "Probably non-free image (EXIF photographer/copyright blocklisted) : "
+                            + media.getMetadata().getExif().getPhotographers().sorted().toList() + " / "
+                            + media.getMetadata().getExif().getCopyrights().sorted().toList());
+        }
         return false;
+    }
+
+    public boolean isCopyrightBlocklisted(String copyright) {
+        return copyrightsBlocklist.stream().anyMatch(copyright::contains);
+    }
+
+    public boolean isPhotographerBlocklisted(String photographer) {
+        String normalizedPhotographer = photographer.toLowerCase(Locale.ENGLISH).replace(' ', '_');
+        return photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith);
     }
 
     public boolean findDuplicatesInRepository(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> repo) {
@@ -282,8 +301,7 @@ public class MediaService {
                 .map(DuplicateHolder::toDuplicate).collect(toSet());
         if (isNewDuplicateOrVariant(media, duplicateHolders, duplicates, MediaProjection::getDuplicates)) {
             if (CollectionUtils.isEmpty(media.getAllCommonsFileNames())) {
-                media.setIgnored(true);
-                media.setIgnoredReason("Already present in main repository");
+                ignoreMedia(media, "Already present in main repository");
             }
             duplicates.forEach(media::addDuplicate);
             result = true;
@@ -409,10 +427,18 @@ public class MediaService {
                         && (metadata.getPhash() == null || metadata.getSha1() == null || forceUpdateOfHashes)));
     }
 
-    private static boolean ignoreMedia(Media<?, ?> media, String reason, Exception e) {
-        LOGGER.warn("Ignored {} for reason {}", media, reason, e);
+    public static boolean ignoreMedia(Media<?, ?> media, String reason) {
+        return ignoreMedia(media, reason, null);
+    }
+
+    public static boolean ignoreMedia(Media<?, ?> media, String reason, Exception e) {
+        if (e != null) {
+            LOGGER.warn("Ignored {} for reason {}", media, reason, e);
+        } else {
+            LOGGER.warn("Ignored {} for reason {}", media, reason);
+        }
         media.setIgnored(Boolean.TRUE);
-        media.setIgnoredReason(reason + ": " + e.getMessage());
+        media.setIgnoredReason(reason + (e != null ? ": " + e.getMessage() : ""));
         return true;
     }
 
