@@ -20,7 +20,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -613,7 +612,7 @@ public class CommonsService {
             subcats.parallelStream().forEach(s -> result.addAll(self.getSubCategories(s, depth - 1)));
         }
         LOGGER.debug("Fetching '{}' subcategories with depth {} completed in {}", category, depth,
-                Duration.between(now(), start).truncatedTo(ChronoUnit.SECONDS));
+                Utils.durationInSec(start));
         return result;
     }
 
@@ -658,7 +657,7 @@ public class CommonsService {
             }
         }
         LOGGER.info("Cleaning {} categories with depth {} completed in {}", categories.size(), catSearchDepth,
-                Duration.between(now(), start).truncatedTo(ChronoUnit.SECONDS));
+                Utils.durationInSec(start));
         if (!categories.isEmpty() && result.isEmpty()) {
             throw new IllegalStateException("Cleaning " + categories + " removed all categories!");
         }
@@ -901,8 +900,7 @@ public class CommonsService {
                 }
             }
         }
-        LOGGER.info("{} duplicate files handled in {}", count,
-                Duration.between(start, LocalDateTime.now()).truncatedTo(ChronoUnit.SECONDS));
+        LOGGER.info("{} duplicate files handled in {}", count, Utils.durationInSec(start));
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")
@@ -1018,8 +1016,7 @@ public class CommonsService {
             }
             LOGGER.info(
                     "{} perceptual hashes ({} order) computed in {} ({} pages). Current timestamp: {}",
-                    hashCount, order, Duration.between(start, LocalDateTime.now()).truncatedTo(ChronoUnit.SECONDS),
-                    pageIndex, lastTimestamp);
+                    hashCount, order, Utils.durationInSec(start), pageIndex, lastTimestamp);
         } while (page.hasNext());
     }
 

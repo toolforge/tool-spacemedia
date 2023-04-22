@@ -333,18 +333,16 @@ public class NasaService
 
     @SuppressWarnings("unchecked")
     private <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl,
-            Collection<T> uploadedMedia, Counter count) {
+            Collection<T> uploadedMedia, Counter counter) {
         LOGGER.debug("Fetching {}", searchUrl);
+        LocalDateTime start = LocalDateTime.now();
         boolean ok = false;
+        int count = 0;
         for (int i = 0; i < maxTries && !ok; i++) {
             try {
                 ensureApiLimit();
                 NasaCollection collection = rest.getForObject(searchUrl, NasaResponse.class).getCollection();
                 List<NasaItem> items = collection.getItems();
-                if (LOGGER.isDebugEnabled()) {
-                    int size = items.size();
-                    LOGGER.debug("NASA API returned {} item{}", size, size > 1 ? "s" : "");
-                }
                 ok = true;
                 for (NasaItem item : items) {
                     try {
@@ -352,7 +350,8 @@ public class NasaService
                         if (update.getValue() > 0) {
                             uploadedMedia.add((T) update.getKey());
                         }
-                        count.count++;
+                        ongoingUpdateMedia(start, count++);
+                        counter.count++;
                     } catch (Forbidden e) {
                         problem(item.getHref(), e);
                     } catch (RestClientException e) {
@@ -403,6 +402,7 @@ public class NasaService
         Collection<T> uploadedMedia = new ArrayList<>();
         while (nextUrl != null) {
             nextUrl = processSearchResults(rest, nextUrl, uploadedMedia, count);
+            ongoingUpdateMedia(start, count.count);
         }
         logEndUpdate(mediaType, startYear, endYear, centers, start, count.count);
         return Pair.of(count.count, uploadedMedia);
@@ -428,7 +428,7 @@ public class NasaService
 
     private static void logEndUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers, LocalDateTime start, int size) {
         if (LOGGER.isDebugEnabled()) {
-            Duration duration = Duration.between(LocalDateTime.now(), start);
+            Duration duration = Utils.durationInSec(start);
             if (centers == null) {
                 if (startYear == endYear) {
                     LOGGER.debug("NASA {} update for year {} completed: {} {}s in {}", mediaType, startYear, size,

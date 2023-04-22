@@ -7,7 +7,6 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
@@ -78,6 +77,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateR
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 /**
  * Service fetching images from https://api.dvidshub.net/
@@ -202,10 +202,12 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                         idsKnownToDvidsApi);
                 uploadedMedia.addAll(update.getRight());
                 count += update.getLeft();
+                ongoingUpdateMedia(start, count);
                 if (videosEnabled) {
                     update = updateDvidsMedia(unit, year, DvidsMediaType.video, idsKnownToDvidsApi);
                     uploadedMedia.addAll(update.getRight());
                     count += update.getLeft();
+                    ongoingUpdateMedia(start, count);
                 }
             }
         }
@@ -245,6 +247,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                 uploadedMedia.addAll(ur.uploadedMedia);
                 count += ur.count;
+                ongoingUpdateMedia(start, count);
                 loop = count < ur.totalResults;
                 if (loop) {
                     LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/{})...", type, unit, year, page,
@@ -252,7 +255,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 }
             }
             LOGGER.info("{} {}s for year {} completed: {} {}s in {}", unit, type, year, count, type,
-                    Duration.between(LocalDateTime.now(), start));
+                    Utils.durationInSec(start));
         } catch (ApiException | TooManyResultsException exx) {
             LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
         }
@@ -261,6 +264,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
 
     private DvidsUpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
         int count = 0;
+        LocalDateTime start = LocalDateTime.now();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
         for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted().toList()) {
@@ -271,7 +275,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }
-                count++;
+                ongoingUpdateMedia(start, count++);
             } catch (HttpClientErrorException e) {
                 LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
             } catch (IOException e) {

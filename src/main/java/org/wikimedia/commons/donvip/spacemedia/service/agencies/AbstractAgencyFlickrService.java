@@ -392,6 +392,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     private Pair<Integer, Collection<FlickrMedia>> processFlickrMedia(Iterable<FlickrMedia> medias,
             String flickrAccount) throws MalformedURLException {
         int count = 0;
+        LocalDateTime start = LocalDateTime.now();
         Collection<FlickrMedia> uploadedMedia = new ArrayList<>();
         for (FlickrMedia media : medias) {
             try {
@@ -401,7 +402,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }
-                count++;
+                ongoingUpdateMedia(start, count++);
             } catch (IOException | RuntimeException e) {
                 problem(getPhotoUrl(media), e);
             }

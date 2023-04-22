@@ -514,7 +514,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
                         Triple<Optional<T>, Collection<Metadata>, Integer> update = updateMediaForUrl(url, it.next());
                         Optional<T> optionalMedia = update.getLeft();
                         if (optionalMedia.isPresent()) {
-                            count++;
+                            ongoingUpdateMedia(start, count++);
                             if (update.getRight() > 0) {
                                 uploadedMetadata.addAll(update.getMiddle());
                                 uploadedMedia.add(optionalMedia.get());

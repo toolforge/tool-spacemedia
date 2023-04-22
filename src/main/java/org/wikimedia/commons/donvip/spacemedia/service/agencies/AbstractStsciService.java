@@ -96,7 +96,7 @@ public abstract class AbstractStsciService
                             uploadedMetadata.addAll(update.getMiddle());
                             uploadedMedia.add(update.getLeft());
                         }
-                        count++;
+                        ongoingUpdateMedia(start, count++);
                     } catch (HttpStatusException e) {
                         LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
                         problem(e.getUrl(), e);

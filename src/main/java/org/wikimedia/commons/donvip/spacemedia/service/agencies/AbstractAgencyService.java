@@ -81,6 +81,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.mastodon.MastodonService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 /**
  * Superclass of space agencies services.
@@ -301,6 +302,15 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         RuntimeData runtimeData = getRuntimeData();
         runtimeData.setLastUpdateStart(LocalDateTime.now());
         return runtimeDataRepository.save(runtimeData).getLastUpdateStart();
+    }
+
+    protected final void ongoingUpdateMedia(LocalDateTime start, int count) {
+        if (LOGGER.isInfoEnabled() && count > 0 && count % 1000 == 0) {
+            Duration durationInSec = Utils.durationInSec(start);
+            LOGGER.info("Processed {} images in {} ({} media/s) - ({} ms/media)", count, durationInSec,
+                    String.format("%.2f", (double) count / durationInSec.getSeconds()),
+                    String.format("%d", durationInSec.getSeconds() * 1000 / count));
+        }
     }
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<Metadata> uploadedMetadata,

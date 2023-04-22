@@ -15,6 +15,10 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -172,5 +176,13 @@ public final class Utils {
                 LOGGER.warn("Error while deleting file", e);
             }
         }
+    }
+
+    public static Duration durationInSec(Temporal start) {
+        return durationInSec(start, LocalDateTime.now());
+    }
+
+    public static Duration durationInSec(Temporal start, Temporal end) {
+        return Duration.between(start, end).truncatedTo(ChronoUnit.SECONDS);
     }
 }

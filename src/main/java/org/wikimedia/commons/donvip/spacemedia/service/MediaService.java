@@ -11,7 +11,6 @@ import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,6 +66,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
 public class MediaService {
@@ -726,8 +726,7 @@ public class MediaService {
                 }
                 pageRequest = page.nextPageable();
             } while (page.hasNext() && !missingVideos.isEmpty());
-            LOGGER.info("YouTube videos synchronization from {} completed in {}", category,
-                    Duration.between(LocalDateTime.now(), start));
+            LOGGER.info("YouTube videos synchronization from {} completed in {}", category, Utils.durationInSec(start));
         }
         return missingVideos;
     }
