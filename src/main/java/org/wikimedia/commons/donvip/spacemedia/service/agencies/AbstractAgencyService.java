@@ -7,6 +7,7 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -535,7 +536,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             checkUploadPreconditions(media, checkUnicity, isManual);
             List<Metadata> uploaded = new ArrayList<>();
             return Triple.of(media, uploaded, doUpload(media, checkUnicity, uploaded, isManual));
-        } catch (IOException | RuntimeException e) {
+        } catch (IOException | RuntimeException | URISyntaxException e) {
             throw new UploadException(e);
         }
     }
@@ -775,7 +776,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected void checkUploadPreconditions(T media, boolean checkUnicity, boolean isManual)
-            throws MalformedURLException {
+            throws MalformedURLException, URISyntaxException {
         if (isForbiddenUpload(media, isManual)) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored (manual: " + isManual + ")");
         }

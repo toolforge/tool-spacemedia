@@ -6,9 +6,9 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
@@ -73,9 +73,9 @@ public class FlickrMediaProcessorService {
         return new URL(flickrVideoDownloadUrl.replace("<id>", media.getId().toString()));
     }
 
-    public boolean isBadVideoEntry(FlickrMedia media) throws MalformedURLException {
+    public boolean isBadVideoEntry(FlickrMedia media) throws MalformedURLException, URISyntaxException {
         return FlickrMediaType.video == media.getMedia()
-                && !getVideoUrl(media).equals(media.getMetadata().getAssetUrl());
+                && !getVideoUrl(media).toURI().equals(media.getMetadata().getAssetUrl().toURI());
     }
 
     @Transactional
@@ -86,8 +86,9 @@ public class FlickrMediaProcessorService {
             throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
-        Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
-        if (optMediaInRepo.isPresent()) {
+        final Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
+        final boolean isPresentInDb = optMediaInRepo.isPresent();
+        if (isPresentInDb) {
             FlickrMedia mediaInRepo = optMediaInRepo.get();
             if (mediaInRepo.getLicense() != media.getLicense()) {
                 save = handleLicenseChange(media, flickrAccount, mediaInRepo);
@@ -95,25 +96,43 @@ public class FlickrMediaProcessorService {
             media = mediaInRepo;
         } else {
             save = true;
-        }
-        if (isEmpty(media.getPhotosets())) {
-            try {
-                Set<FlickrPhotoSet> sets = getPhotoSets(media, flickrAccount);
-                if (isNotEmpty(sets)) {
-                    sets.forEach(media::addPhotoSet);
-                    savePhotoSets = true;
-                    save = true;
+            if (isEmpty(media.getPhotosets())) {
+                try {
+                    Set<FlickrPhotoSet> sets = getPhotoSets(media, flickrAccount);
+                    if (isNotEmpty(sets)) {
+                        sets.forEach(media::addPhotoSet);
+                        savePhotoSets = true;
+                    }
+                } catch (FlickrException e) {
+                    LOGGER.error("Failed to retrieve photosets of image " + media.getId(), e);
                 }
-            } catch (FlickrException e) {
-                LOGGER.error("Failed to retrieve photosets of image " + media.getId(), e);
+            }
+            if (StringUtils.isEmpty(media.getPathAlias())) {
+                media.setPathAlias(flickrAccount);
+            }
+            try {
+                if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark
+                        && !Boolean.TRUE.equals(media.isIgnored())
+                        && !UnitedStates.isClearPublicDomain(media.getDescription())) {
+                    MediaService.ignoreMedia(media, "Public Domain Mark is not a legal license");
+                }
+            } catch (IllegalArgumentException e) {
+                LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());
+            }
+            if (StringUtils.isNotBlank(media.getDescription())) {
+                for (String toRemove : stringsToRemove) {
+                    if (media.getDescription().contains(toRemove)) {
+                        media.setDescription(media.getDescription().replace(toRemove, "").trim());
+                    }
+                }
             }
         }
-        if (isBadVideoEntry(media)) {
-            save = handleBadVideo(media);
-        }
-        if (StringUtils.isEmpty(media.getPathAlias())) {
-            media.setPathAlias(flickrAccount);
-            save = true;
+        try {
+            if (isBadVideoEntry(media)) {
+                save = handleBadVideo(media);
+            }
+        } catch (URISyntaxException e) {
+            LOGGER.error("URISyntaxException for video " + media.getId(), e);
         }
         if (media.getPhotosets() != null) {
             for (FlickrPhotoSet photoSet : media.getPhotosets()) {
@@ -126,30 +145,10 @@ public class FlickrMediaProcessorService {
                 }
             }
         }
-        try {
-            if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark
-                    && !Boolean.TRUE.equals(media.isIgnored())
-                    && !UnitedStates.isClearPublicDomain(media.getDescription())) {
-                save = MediaService.ignoreMedia(media, "Public Domain Mark is not a legal license");
-            }
-        } catch (IllegalArgumentException e) {
-            LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());
-        }
-        media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets);
+        media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb);
         savePhotoSets = false;
         save = false;
         if (mediaService.updateMedia(media, originalRepo, false).getResult()) {
-            save = true;
-        }
-        final String originalDescription = media.getDescription();
-        if (StringUtils.isNotBlank(originalDescription)) {
-            for (String toRemove : stringsToRemove) {
-                if (media.getDescription().contains(toRemove)) {
-                    media.setDescription(media.getDescription().replace(toRemove, "").trim());
-                }
-            }
-        }
-        if (!Objects.equals(originalDescription, media.getDescription())) {
             save = true;
         }
         if (customProcessor.test(media)) {
@@ -162,14 +161,21 @@ public class FlickrMediaProcessorService {
             uploadCount = upload.getRight();
             save = true;
         }
-        return Pair.of(saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets), uploadCount);
+        return Pair.of(saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb), uploadCount);
     }
 
-    private FlickrMedia saveMediaAndPhotosetsIfNeeded(FlickrMedia media, boolean save, boolean savePhotoSets) {
+    private FlickrMedia saveMediaAndPhotosetsIfNeeded(FlickrMedia media, boolean save, boolean savePhotoSets,
+            boolean wasPresent) {
         if (save) {
+            if (wasPresent) {
+                LOGGER.debug("Saving existing media {}", media);
+            }
             media = flickrRepository.save(media);
         }
         if (savePhotoSets) {
+            if (wasPresent) {
+                LOGGER.debug("Saving photosets for existing media {}", media);
+            }
             media.getPhotosets().forEach(flickrPhotoSetRepository::save);
         }
         return media;

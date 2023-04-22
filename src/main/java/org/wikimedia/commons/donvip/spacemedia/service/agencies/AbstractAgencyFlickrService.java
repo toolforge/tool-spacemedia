@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
@@ -308,7 +309,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
 
     @Override
     protected void checkUploadPreconditions(FlickrMedia media, boolean checkUnicity, boolean isManual)
-            throws MalformedURLException {
+            throws MalformedURLException, URISyntaxException {
         super.checkUploadPreconditions(media, checkUnicity, isManual);
         if (processor.isBadVideoEntry(media)) {
             throw new ImageUploadForbiddenException("Bad video download link: " + media);
@@ -430,7 +431,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     protected Collection<String> getStringsToRemove() {
-        // To be overriden if special strings have to be removed frm description
+        // To be overriden if special strings have to be removed from description
         return Collections.emptyList();
     }
 
