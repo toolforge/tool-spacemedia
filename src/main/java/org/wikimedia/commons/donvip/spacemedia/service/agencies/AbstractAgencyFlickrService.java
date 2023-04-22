@@ -303,6 +303,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
             if (description.contains("hoto by NASA") || description.contains("hoto/NASA")) {
                 result.add("PD-NASA");
             }
+            Optional.ofNullable(EsaService.getCopernicusTemplate(description)).ifPresent(result::add);
         }
         return result;
     }

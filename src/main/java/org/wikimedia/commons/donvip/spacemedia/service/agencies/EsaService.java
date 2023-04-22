@@ -603,9 +603,9 @@ public class EsaService
         for (String spelling : CC_BY_SA_SPELLINGS) {
             credit = credit.replace(", " + spelling, "").replace("; " + spelling, "").replace(" " + spelling, "").trim();
         }
-        Matcher m = COPERNICUS_CREDIT.matcher(credit);
-        if (m.matches()) {
-            result.add("Attribution-Copernicus |year=" + m.group(1));
+        String copernicusTemplate = getCopernicusTemplate(credit);
+        if (copernicusTemplate != null) {
+            result.add(copernicusTemplate);
             credit = getCopernicusProcessedBy(credit).orElse("ESA");
         }
         result.add("ESA|" + credit);
@@ -615,6 +615,11 @@ public class EsaService
     @Override
     protected EsaMedia refresh(EsaMedia media) throws IOException {
         throw new UnsupportedOperationException(); // TODO
+    }
+
+    static String getCopernicusTemplate(String text) {
+        Matcher m = COPERNICUS_CREDIT.matcher(text);
+        return m.matches() ? "Attribution-Copernicus |year=" + m.group(1) : null;
     }
 
     static Optional<String> getCopernicusProcessedBy(String credit) {
