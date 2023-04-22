@@ -121,7 +121,7 @@ public class FlickrMediaProcessorService {
                     photoSet.setPathAlias(flickrAccount);
                     savePhotoSets = true;
                 }
-                if (ignoredPhotoAlbums.contains(photoSet.getId())) {
+                if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredPhotoAlbums.contains(photoSet.getId())) {
                     save = MediaService.ignoreMedia(media, "Photoset ignored: " + photoSet.getTitle());
                 }
             }
