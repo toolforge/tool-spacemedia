@@ -764,19 +764,20 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final String wikiLink(URL url, String text) {
-        return "[" + Objects.requireNonNull(url, "url") + " " + Objects.requireNonNull(text, "text") + "]";
+        return "[" + Objects.requireNonNull(url, "url") + ' ' + Objects.requireNonNull(text, "text") + ']';
     }
 
     private boolean isForbiddenUpload(T media, boolean isManual) {
         return Boolean.TRUE.equals(media.isIgnored()) && (!isManual || StringUtils.isBlank(media.getIgnoredReason())
                 || !(media.getIgnoredReason().contains("block list")
+                        || media.getIgnoredReason().contains("Photoset ignored")
                         || media.getIgnoredReason().contains("Integer.MAX_VALUE")));
     }
 
     protected void checkUploadPreconditions(T media, boolean checkUnicity, boolean isManual)
             throws MalformedURLException {
         if (isForbiddenUpload(media, isManual)) {
-            throw new ImageUploadForbiddenException(media + " is marked as ignored.");
+            throw new ImageUploadForbiddenException(media + " is marked as ignored (manual: " + isManual + ")");
         }
     }
 
