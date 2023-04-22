@@ -41,10 +41,11 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
     @Column(name = "exposure_date", nullable = true)
     private LocalDate exposureDate;
 
-    @Column(length = 255)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String objectName;
 
-    @Column(length = 255)
+    @Column(length = 100)
     private String constellation;
 
     /**

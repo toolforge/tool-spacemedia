@@ -29,13 +29,13 @@ public class EsaMedia extends FullResMedia<Integer, LocalDateTime> {
     private LocalDateTime date;
     @Column(nullable = false, length = 300)
     private String copyright;
-    @Column(length = 70)
+    @Column(length = 64)
     private String activity;
     @Column(length = 60)
     private String mission;
-    @Column(length = 80)
+    @Column(length = 70)
     private String people;
-    @Column(length = 50)
+    @Column(length = 48)
     private String action;
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> systems = new HashSet<>();
@@ -43,7 +43,7 @@ public class EsaMedia extends FullResMedia<Integer, LocalDateTime> {
     private Set<String> locations = new HashSet<>();
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
-    @Column(length = 80)
+    @Column(length = 70)
     private String photoSet;
 
     public URL getUrl() {

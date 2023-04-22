@@ -114,6 +114,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
+import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1065,7 +1066,7 @@ public class CommonsService {
             BufferedImage bi = null;
             try {
                 URL url = getImageUrl(name);
-                bi = Utils.readImage(url, false, false).getLeft();
+                bi = ImageUtils.readImage(url, false, false).getLeft();
                 if (bi == null) {
                     throw new IOException("Failed to read image from " + url);
                 }

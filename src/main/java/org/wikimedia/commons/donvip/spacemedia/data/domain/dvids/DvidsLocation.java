@@ -1,8 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import static java.util.stream.Collectors.joining;
 
+import java.util.Arrays;
+
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -10,10 +12,13 @@ import org.apache.commons.lang3.StringUtils;
 @Embeddable
 public class DvidsLocation {
 
+    @Column(length = 48)
     private String city;
 
+    @Column(length = 48)
     private String state;
 
+    @Column(length = 48)
     private String country;
 
     public String getCity() {
@@ -42,6 +47,6 @@ public class DvidsLocation {
 
     @Override
     public String toString() {
-        return Arrays.asList(city, state, country).stream().filter(StringUtils::isNotBlank).collect(Collectors.joining(", "));
+        return Arrays.asList(city, state, country).stream().filter(StringUtils::isNotBlank).collect(joining(", "));
     }
 }

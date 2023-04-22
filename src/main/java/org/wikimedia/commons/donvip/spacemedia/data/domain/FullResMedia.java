@@ -11,12 +11,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.AssociationOverride;
+import javax.persistence.AssociationOverrides;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PostLoad;
 
@@ -32,6 +35,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class FullResMedia<ID, D extends Temporal> extends Media<ID, D> {
 
     @Embedded
+    @AssociationOverrides(
+            @AssociationOverride(joinColumns = @JoinColumn(name = "full_res_exif_id"), name = "exif"))
     @AttributeOverrides(value = {
             @AttributeOverride(column = @Column(name = "full_res_asset_url"), name = "assetUrl"),
             @AttributeOverride(column = @Column(name = "full_res_readable_image"), name = "readableImage"),

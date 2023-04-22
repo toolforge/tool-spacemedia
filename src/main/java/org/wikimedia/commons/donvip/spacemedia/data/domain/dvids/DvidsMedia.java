@@ -72,16 +72,19 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     /**
      * Name of branch that produced this asset.
      */
+    @Column(length = 16)
     private String branch;
 
     /**
      * DVIDS abbreviation of unit credited with media asset.
      */
+    @Column(length = 16)
     private String unit;
 
     /**
      * Full name of unit credited with media asset.
      */
+    @Column(length = 64)
     @JsonProperty("unit_name")
     private String unitName;
 
@@ -103,7 +106,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
      * audio.</li>
      * </ul>
      */
-    @Column(nullable = true)
+    @Column(nullable = true, length = 20)
     private String category;
 
     /**
@@ -127,6 +130,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     /**
      * VIRIN of asset.
      */
+    @Column(length = 20)
     private String virin;
 
     @Override

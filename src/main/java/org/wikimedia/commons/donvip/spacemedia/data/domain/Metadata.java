@@ -8,6 +8,8 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
@@ -55,6 +57,10 @@ public class Metadata implements MetadataProjection {
      */
     @Column(name = "`size`", nullable = true)
     private Long size;
+
+    @OneToOne
+    @JoinColumn(name = "exif_id", referencedColumnName = "id")
+    private ExifMetadata exif;
 
     public String getSha1() {
         return sha1;
@@ -105,6 +111,14 @@ public class Metadata implements MetadataProjection {
 
     public void setSize(Long size) {
         this.size = size;
+    }
+
+    public ExifMetadata getExif() {
+        return exif;
+    }
+
+    public void setExif(ExifMetadata exif) {
+        this.exif = exif;
     }
 
     @Transient
@@ -213,7 +227,7 @@ public class Metadata implements MetadataProjection {
 
     @Override
     public int hashCode() {
-        return Objects.hash(phash, sha1, readableImage, assetUrl, size);
+        return Objects.hash(phash, sha1, readableImage, assetUrl, size, exif);
     }
 
     @Override
@@ -224,7 +238,8 @@ public class Metadata implements MetadataProjection {
             return false;
         Metadata other = (Metadata) obj;
         return size == other.size && Objects.equals(phash, other.phash) && Objects.equals(sha1, other.sha1)
-                && Objects.equals(readableImage, other.readableImage) && Objects.equals(assetUrl, other.assetUrl);
+                && Objects.equals(readableImage, other.readableImage) && Objects.equals(assetUrl, other.assetUrl)
+                && Objects.equals(exif, other.exif);
     }
 
     @Override

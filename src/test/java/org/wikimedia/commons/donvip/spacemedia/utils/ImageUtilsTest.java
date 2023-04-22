@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.service.utils;
+package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -7,16 +7,15 @@ import java.awt.image.BufferedImage;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
-class UtilsTest {
+class ImageUtilsTest {
 
     /**
-     * Test of {@link Utils#readImage} with WebP
+     * Test of {@link ImageUtils#readImage} with WebP
      */
     @Test
     void testReadWebpImage() throws Exception {
-        BufferedImage bi = Utils
+        BufferedImage bi = ImageUtils
                 .readImage(new URL("https://upload.wikimedia.org/wikipedia/commons/3/33/2-michel-okujava.webp"), true,
                         true)
                 .getLeft();
@@ -30,11 +29,11 @@ class UtilsTest {
     }
 
     /**
-     * Test of {@link Utils#readImage} with Jpeg
+     * Test of {@link ImageUtils#readImage} with Jpeg
      */
     @Test
     void testReadJpgImage() throws Exception {
-        BufferedImage bi = Utils.readImage(
+        BufferedImage bi = ImageUtils.readImage(
                 new URL("https://upload.wikimedia.org/wikipedia/commons/7/78/Empty_200x1.jpg"), true, true)
                 .getLeft();
         assertNotNull(bi);
@@ -44,5 +43,12 @@ class UtilsTest {
         } finally {
             bi.flush();
         }
+    }
+
+    @Test
+    void testReadImageMetadata() throws Exception {
+        // ImageUtils.readImageMetadata(new
+        // URL("https://images-assets.nasa.gov/image/P22-003-22/P22-003-22~orig.jpg"));
+        // TODO
     }
 }

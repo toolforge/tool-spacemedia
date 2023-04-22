@@ -26,7 +26,7 @@ public class NasaPhotojournalMedia extends FullResExtraMedia<String, ZonedDateTi
     @Column(name = "pia_id", nullable = false, length = 10)
     private String piaId;
 
-    @Column(name = "nasa_id", nullable = true, length = 50)
+    @Column(name = "nasa_id", nullable = true, length = 48)
     private String nasaId;
 
     @Column(name = "photo_date", nullable = false)
@@ -35,16 +35,16 @@ public class NasaPhotojournalMedia extends FullResExtraMedia<String, ZonedDateTi
     @Column(name = "target", nullable = true, length = 50)
     private String target;
 
-    @Column(name = "mission", nullable = true, length = 100)
+    @Column(name = "mission", nullable = true, length = 90)
     private String mission;
 
-    @Column(name = "spacecraft", nullable = true, length = 100)
+    @Column(name = "spacecraft", nullable = true, length = 50)
     private String spacecraft;
 
     @Column(name = "instrument", nullable = true, length = 100)
     private String instrument;
 
-    @Column(name = "producer", nullable = true, length = 100)
+    @Column(name = "producer", nullable = true, length = 64)
     private String producer;
 
     @Column(name = "big")

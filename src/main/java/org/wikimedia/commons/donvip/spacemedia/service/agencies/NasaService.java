@@ -45,6 +45,8 @@ import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.ExifMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
@@ -79,11 +81,11 @@ public class NasaService
 
     static final Pattern ARTEMIS_PATTERN = Pattern.compile("art0{1,2}(\\d{1,2})e\\d{6}");
 
-    static final Map<String, String> TWITTER_CENTER_ACCOUNTS = Map.ofEntries(entry("AFRC", "nasaarmstrong"),
-            entry("ARC", "nasaames"), entry("GRC", "nasaglenn"), entry("GSFC", "NASAGoddard"),
-            entry("HQ", "nasahqphoto"), entry("JPL", "NASAJPL"), entry("JSC", "NASA_Johnson"),
-            entry("KSC", "NASAKennedy"), entry("LARC", "NASA_Langley"), entry("LRC", "NASA_Langley"),
-            entry("MSFC", "NASA_Marshall"), entry("SSC", "NASAStennis"));
+    static final Map<String, String> TWITTER_CENTER_ACCOUNTS = Map.ofEntries(entry("AFRC", "@nasaarmstrong"),
+            entry("ARC", "@nasaames"), entry("GRC", "@nasaglenn"), entry("GSFC", "@NASAGoddard"),
+            entry("HQ", "@nasahqphoto"), entry("JPL", "@NASAJPL"), entry("JSC", "@NASA_Johnson"),
+            entry("KSC", "@NASAKennedy"), entry("LARC", "@NASA_Langley"), entry("LRC", "@NASA_Langley"),
+            entry("MSFC", "@NASA_Marshall"), entry("SSC", "@NASAStennis"));
 
     /**
      * Minimal delay between successive API requests, in seconds.
@@ -95,6 +97,9 @@ public class NasaService
 
     @Value("${nasa.details.link}")
     private String detailsLink;
+
+    @Value("${nasa.metadata.link}")
+    private String metadataLink;
 
     @Value("${nasa.min.year}")
     private int minYear;
@@ -109,6 +114,9 @@ public class NasaService
 
     @Value("${videos.enabled}")
     private boolean videosEnabled;
+
+    @Autowired
+    private ExifMetadataRepository exifRepository;
 
     @Autowired
     private NasaAudioRepository audioRepository;
@@ -241,6 +249,18 @@ public class NasaService
         }
         if (doCommonUpdate(media)) {
             save = true;
+        }
+        if (media.getMetadata() != null && media.getMetadata().getExif() == null) {
+            try {
+                ExifMetadata exifMetadata = rest.getForObject(
+                        Utils.urlToUri(new URL(metadataLink.replace("<id>", media.getId()))), ExifMetadata.class);
+                if (exifMetadata != null) {
+                    media.getMetadata().setExif(exifRepository.save(exifMetadata));
+                    save = true;
+                }
+            } catch (Exception e) {
+                LOGGER.error("Unable to retrieve EXIF metadata for {}", media.getId(), e);
+            }
         }
         int uploadCount = 0;
         if (shouldUploadAuto(media, false)) {
@@ -648,7 +668,7 @@ public class NasaService
     protected Set<String> getEmojis(NasaMedia uploadedMedia) {
         Set<String> result = new HashSet<>();
         if (ISS_PATTERN.matcher(uploadedMedia.getId()).matches()) {
-            result.add("🧑");
+            result.add("\\uD83E\\uDDD1\\u200D\\uD83D\\uDE80"); // astronaut
         }
         result.addAll(AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords()));
         return result;

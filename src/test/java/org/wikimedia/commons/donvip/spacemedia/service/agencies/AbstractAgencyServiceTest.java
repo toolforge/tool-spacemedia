@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.TestPropertySource;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
@@ -32,6 +33,9 @@ public abstract class AbstractAgencyServiceTest {
 
     @MockBean
     protected ProblemRepository problemRepository;
+
+    @MockBean
+    protected ExifMetadataRepository exifRepository;
 
     @MockBean
     protected RuntimeDataRepository runtimeDataRepository;

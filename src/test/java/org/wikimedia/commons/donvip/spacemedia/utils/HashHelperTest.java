@@ -1,9 +1,8 @@
-package org.wikimedia.commons.donvip.spacemedia.service.utils;
+package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 
 class HashHelperTest {
 

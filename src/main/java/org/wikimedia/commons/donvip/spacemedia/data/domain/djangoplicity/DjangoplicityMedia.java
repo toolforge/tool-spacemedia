@@ -29,7 +29,7 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
     private DjangoplicityLicence licence;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
+    @Column(nullable = true, length = 16)
     @JsonProperty("image_type")
     private DjangoplicityMediaType imageType;
 

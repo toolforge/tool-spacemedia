@@ -66,7 +66,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
+import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 
 @Service
 public class MediaService {
@@ -362,7 +362,7 @@ public class MediaService {
             URL assetUrl = metadata.getAssetUrl();
             if (isImage && shouldReadImage(assetUrl, metadata, forceUpdateOfHashes)) {
                 try {
-                    Pair<BufferedImage, Long> pair = Utils.readImage(assetUrl, false, true);
+                    Pair<BufferedImage, Long> pair = ImageUtils.readImage(assetUrl, false, true);
                     bi = pair.getLeft();
                     if (bi != null && !Boolean.TRUE.equals(metadata.isReadableImage())) {
                         metadata.setReadableImage(Boolean.TRUE);
