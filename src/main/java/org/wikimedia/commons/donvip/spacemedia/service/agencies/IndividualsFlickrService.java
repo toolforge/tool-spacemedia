@@ -2,7 +2,11 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,12 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 @Service
 public class IndividualsFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
+
+    private static final Map<String, List<String>> STRINGS_TO_REMOVE = Map.of("pierre_markuse", List.of(
+            "Follow me on Twitter:",
+            "<a href=\"https://twitter.com/Pierre_Markuse\" rel=\"nofollow\">twitter.com/Pierre_Markuse</a>",
+            "Do you want to support this collection of satellite images? Any donation, no matter how small, would be appreciated. <a href=\"https://www.paypal.com/paypalme/PierreMarkuse\">PayPal me!</a>",
+            "Follow me on <a href=\"https://twitter.com/Pierre_Markuse\">Twitter!</a> and <a href=\"https://mastodon.world/@pierre_markuse\">Mastodon!</a>"));
 
     @Autowired
     public IndividualsFlickrService(FlickrMediaRepository repository,
@@ -30,6 +40,11 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
     @Override
     public void updateMedia() throws IOException, UploadException {
         updateFlickrMedia();
+    }
+
+    @Override
+    protected Collection<String> getStringsToRemove(String pathAlias) {
+        return Optional.ofNullable(STRINGS_TO_REMOVE.get(pathAlias)).orElse(List.of());
     }
 
     @Override

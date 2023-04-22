@@ -119,13 +119,6 @@ public class FlickrMediaProcessorService {
             } catch (IllegalArgumentException e) {
                 LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());
             }
-            if (StringUtils.isNotBlank(media.getDescription())) {
-                for (String toRemove : stringsToRemove) {
-                    if (media.getDescription().contains(toRemove)) {
-                        media.setDescription(media.getDescription().replace(toRemove, "").trim());
-                    }
-                }
-            }
         }
         try {
             if (isBadVideoEntry(media)) {
@@ -133,6 +126,14 @@ public class FlickrMediaProcessorService {
             }
         } catch (URISyntaxException e) {
             LOGGER.error("URISyntaxException for video " + media.getId(), e);
+        }
+        if (StringUtils.isNotBlank(media.getDescription())) {
+            for (String toRemove : stringsToRemove) {
+                if (media.getDescription().contains(toRemove)) {
+                    media.setDescription(media.getDescription().replace(toRemove, "").trim());
+                    save = true;
+                }
+            }
         }
         if (media.getPhotosets() != null) {
             for (FlickrPhotoSet photoSet : media.getPhotosets()) {

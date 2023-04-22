@@ -22,7 +22,14 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
         "<b><a href=\"http://www.nasa.gov/centers/goddard/home/index.html\" rel=\"nofollow\">NASA Goddard Space Flight Center</a></b> enables NASA’s mission through four scientific endeavors: Earth Science, Heliophysics, Solar System Exploration, and Astrophysics. Goddard plays a leading role in NASA’s accomplishments by contributing compelling scientific knowledge to advance the Agency’s mission.",
         "<b>Follow us on <a href=\"http://twitter.com/NASA_GoddardPix\" rel=\"nofollow\">Twitter</a></b>",
         "<b>Like us on <a href=\"http://www.facebook.com/pages/Greenbelt-MD/NASA-Goddard/395013845897?ref=tsd\" rel=\"nofollow\">Facebook</a></b>",
-        "<b>Find us on <a href=\"http://instagrid.me/nasagoddard/?vm=grid\" rel=\"nofollow\">Instagram</a></b>");
+        "<b>Find us on <a href=\"http://instagrid.me/nasagoddard/?vm=grid\" rel=\"nofollow\">Instagram</a></b>",
+        "<a href=\"http://www.nasa.gov/audience/formedia/features/MP_Photo_Guidelines.html\" rel=\"nofollow\">NASA Image Use Policy</a>",
+        "<a href=\"http://twitter.com/#!/NASAWebbTelescp\" rel=\"nofollow\">Follow us on Twitter</a>",
+        "<a href=\"http://www.facebook.com/webbtelescope\" rel=\"nofollow\">Like us on Facebook</a>",
+        "<a href=\"http://www.youtube.com/nasawebbtelescope\" rel=\"nofollow\">Subscribe to our YouTube channel</a>",
+        "<a href=\"http://plus.google.com/+NASAWebbTelescope\" rel=\"nofollow\">Follow us on Google Plus</a>",
+        "<a href=\"http://instagram.com/NASAWebbTelescp\" rel=\"nofollow\">Follow us on Instagram</a>"
+            );
 
     @Autowired
     private NasaMediaRepository<NasaMedia> nasaMediaRepository;
@@ -54,7 +61,7 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
     }
 
     @Override
-    protected Collection<String> getStringsToRemove() {
+    protected Collection<String> getStringsToRemove(String pathAlias) {
         return STRINGS_TO_REMOVE;
     }
 
