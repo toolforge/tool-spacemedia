@@ -134,7 +134,9 @@ public class ExifMetadata {
     @Column(columnDefinition = "TEXT")
     private String availDescription;
 
+    @Lob
     @JsonProperty("AVAIL:Description508")
+    @Column(columnDefinition = "TEXT")
     private String availDescription508;
 
     @JsonProperty("AVAIL:Location")
@@ -146,7 +148,9 @@ public class ExifMetadata {
     @JsonProperty("AVAIL:SecondaryCreator")
     private String availSecondaryCreator;
 
+    @Lob
     @JsonProperty("AVAIL:Title")
+    @Column(columnDefinition = "TEXT")
     private String availTitle;
 
     @JsonIgnore

@@ -33,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -136,6 +137,9 @@ public class NasaService
 
     @Autowired
     private Environment env;
+
+    @Autowired
+    private NasaService self;
 
     private LocalDateTime lastRequest;
 
@@ -335,15 +339,16 @@ public class NasaService
         return true;
     }
 
-    private <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl,
+    @Transactional
+    public <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl,
             Collection<T> uploadedMedia, Counter counter, Map<String, Set<String>> foundIds) {
-        LOGGER.debug("Fetching {}", searchUrl);
         LocalDateTime start = LocalDateTime.now();
         boolean ok = false;
         int count = 0;
         for (int i = 0; i < maxTries && !ok; i++) {
             try {
                 ensureApiLimit();
+                LOGGER.debug("Fetching {}", searchUrl);
                 NasaCollection collection = rest.getForObject(searchUrl, NasaResponse.class).getCollection();
                 List<NasaItem> items = collection.getItems();
                 ok = true;
@@ -409,7 +414,7 @@ public class NasaService
         }
         Collection<T> uploadedMedia = new ArrayList<>();
         while (nextUrl != null) {
-            nextUrl = processSearchResults(rest, nextUrl, uploadedMedia, count, foundIds);
+            nextUrl = self.processSearchResults(rest, nextUrl, uploadedMedia, count, foundIds);
             ongoingUpdateMedia(start, count.count);
         }
         logEndUpdate(mediaType, startYear, endYear, centers, start, count.count);
@@ -457,6 +462,7 @@ public class NasaService
 
     public Pair<Integer, Collection<NasaImage>> updateImages() {
         int count = 0;
+        LocalDateTime start = LocalDateTime.now();
         List<NasaImage> uploadedImages = new ArrayList<>();
         Map<String, Set<String>> foundIds = nasaCenters.stream()
                 .collect(toMap(Function.identity(), x -> new TreeSet<>()));
@@ -467,6 +473,7 @@ public class NasaService
                         singleton(center), foundIds);
                 uploadedImages.addAll(update.getRight());
                 count += update.getLeft();
+                ongoingUpdateMedia(start, count);
             }
             postSocialMedia(uploadedImages, uploadedImages.stream().map(Media::getMetadata).toList());
         }
@@ -475,6 +482,7 @@ public class NasaService
             Pair<Integer, Collection<NasaImage>> update = doUpdateMedia(NasaMediaType.image, year, null, foundIds);
             uploadedImages.addAll(update.getRight());
             count += update.getLeft();
+            ongoingUpdateMedia(start, count);
         }
         // Delete media removed from NASA website
         for (String center : nasaCenters) {
