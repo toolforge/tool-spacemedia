@@ -4,6 +4,7 @@ import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Collections.singleton;
 import static java.util.Map.entry;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
@@ -26,6 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -332,9 +335,8 @@ public class NasaService
         return true;
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl,
-            Collection<T> uploadedMedia, Counter counter) {
+            Collection<T> uploadedMedia, Counter counter, Map<String, Set<String>> foundIds) {
         LOGGER.debug("Fetching {}", searchUrl);
         LocalDateTime start = LocalDateTime.now();
         boolean ok = false;
@@ -348,8 +350,13 @@ public class NasaService
                 for (NasaItem item : items) {
                     try {
                         Pair<NasaMedia, Integer> update = processMedia(rest, item.getData().get(0), item.getHref());
+                        @SuppressWarnings("unchecked")
+                        T media = (T) update.getKey();
                         if (update.getValue() > 0) {
-                            uploadedMedia.add((T) update.getKey());
+                            uploadedMedia.add(media);
+                        }
+                        if (foundIds != null) {
+                            foundIds.get(media.getCenter()).add(media.getId());
                         }
                         ongoingUpdateMedia(start, count++);
                         counter.count++;
@@ -381,16 +388,16 @@ public class NasaService
     }
 
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType) {
-        return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear(), null);
+        return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear(), null, null);
     }
 
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType, int year,
-            Set<String> centers) {
-        return doUpdateMedia(mediaType, year, year, centers);
+            Set<String> centers, Map<String, Set<String>> foundIds) {
+        return doUpdateMedia(mediaType, year, year, centers, foundIds);
     }
 
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType, int startYear,
-            int endYear, Set<String> centers) {
+            int endYear, Set<String> centers, Map<String, Set<String>> foundIds) {
         LocalDateTime start = LocalDateTime.now();
         logStartUpdate(mediaType, startYear, endYear, centers);
         Counter count = new Counter();
@@ -402,7 +409,7 @@ public class NasaService
         }
         Collection<T> uploadedMedia = new ArrayList<>();
         while (nextUrl != null) {
-            nextUrl = processSearchResults(rest, nextUrl, uploadedMedia, count);
+            nextUrl = processSearchResults(rest, nextUrl, uploadedMedia, count, foundIds);
             ongoingUpdateMedia(start, count.count);
         }
         logEndUpdate(mediaType, startYear, endYear, centers, start, count.count);
@@ -451,11 +458,13 @@ public class NasaService
     public Pair<Integer, Collection<NasaImage>> updateImages() {
         int count = 0;
         List<NasaImage> uploadedImages = new ArrayList<>();
+        Map<String, Set<String>> foundIds = nasaCenters.stream()
+                .collect(toMap(Function.identity(), x -> new TreeSet<>()));
         // Recent years have a lot of photos: search by center to avoid more than 10k results
         for (int year = LocalDateTime.now().getYear(); year >= 2000; year--) {
             for (String center : nasaCenters) {
                 Pair<Integer, Collection<NasaImage>> update = doUpdateMedia(NasaMediaType.image, year,
-                        singleton(center));
+                        singleton(center), foundIds);
                 uploadedImages.addAll(update.getRight());
                 count += update.getLeft();
             }
@@ -463,9 +472,16 @@ public class NasaService
         }
         // Ancient years have a lot less photos: simple search for all centers
         for (int year = 1999; year >= minYear; year--) {
-            Pair<Integer, Collection<NasaImage>> update = doUpdateMedia(NasaMediaType.image, year, null);
+            Pair<Integer, Collection<NasaImage>> update = doUpdateMedia(NasaMediaType.image, year, null, foundIds);
             uploadedImages.addAll(update.getRight());
             count += update.getLeft();
+        }
+        // Delete media removed from NASA website
+        for (String center : nasaCenters) {
+            for (NasaImage image : imageRepository.findMissingInCommonsByCenterNotIn(center, foundIds.get(center))) {
+                LOGGER.warn("TODO: deleting {} media removed from NASA website: {}", center, image);
+                // imageRepository.delete(image);
+            }
         }
         return Pair.of(count, uploadedImages);
     }

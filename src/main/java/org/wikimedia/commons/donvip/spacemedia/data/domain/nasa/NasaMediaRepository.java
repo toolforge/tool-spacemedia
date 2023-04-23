@@ -4,6 +4,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -132,6 +133,9 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.commonsFileNames)")
     Page<T> findMissingInCommonsByType(NasaMediaType type, Pageable page);
+
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.center = ?1 and m.id not in ?2")
+    List<T> findMissingInCommonsByCenterNotIn(String center, Set<String> ids);
 
     @Override
     default Page<T> findMissingImagesInCommons(Pageable page) {
