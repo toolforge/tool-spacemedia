@@ -772,6 +772,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return Boolean.TRUE.equals(media.isIgnored()) && (!isManual || StringUtils.isBlank(media.getIgnoredReason())
                 || !(media.getIgnoredReason().contains("block list")
                         || media.getIgnoredReason().contains("Photoset ignored")
+                        || media.getIgnoredReason().contains("Public Domain Mark")
                         || media.getIgnoredReason().contains("Integer.MAX_VALUE")));
     }
 
