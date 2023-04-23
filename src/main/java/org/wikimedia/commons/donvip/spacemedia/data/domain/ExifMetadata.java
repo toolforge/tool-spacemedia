@@ -3,7 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain;
 import static javax.persistence.GenerationType.SEQUENCE;
 
 import java.net.URL;
-import java.util.List;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import javax.persistence.Column;
@@ -465,12 +465,12 @@ public class ExifMetadata {
 
     @JsonIgnore
     public Stream<String> getCopyrights() {
-        return List.of(exifCopyright, xmpRights).stream().filter(StringUtils::isNotBlank).distinct();
+        return Arrays.asList(exifCopyright, xmpRights).stream().filter(StringUtils::isNotBlank).distinct();
     }
 
     @JsonIgnore
     public Stream<String> getPhotographers() {
-        return List.of(availPhotographer, availSecondaryCreator, exifArtist, iptcByLine).stream()
+        return Arrays.asList(availPhotographer, availSecondaryCreator, exifArtist, iptcByLine).stream()
                 .filter(StringUtils::isNotBlank)
                 .distinct();
     }
