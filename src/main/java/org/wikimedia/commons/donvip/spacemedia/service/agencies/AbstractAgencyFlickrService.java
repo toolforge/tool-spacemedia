@@ -408,7 +408,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         for (FlickrMedia media : medias) {
             try {
                 Pair<FlickrMedia, Integer> result = processor.processFlickrMedia(media, flickrAccount,
-                        getOriginalRepository(), getStringsToRemove(media.getPathAlias()), this::customProcessing,
+                        getOriginalRepository(), getStringsToRemove(media.getPathAlias()),
                         this::shouldUploadAuto, this::uploadWrapped);
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
@@ -443,11 +443,6 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     protected Collection<String> getStringsToRemove(String pathAlias) {
         // To be overriden if special strings have to be removed from description
         return List.of();
-    }
-
-    protected boolean customProcessing(FlickrMedia media) {
-        // To be overriden for custom processing
-        return false;
     }
 
     @Override

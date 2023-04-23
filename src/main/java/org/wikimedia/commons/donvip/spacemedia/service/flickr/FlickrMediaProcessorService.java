@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
 
@@ -83,7 +82,7 @@ public class FlickrMediaProcessorService {
     @Transactional
     public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
             MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Collection<String> stringsToRemove,
-            Predicate<FlickrMedia> customProcessor, BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
+            BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<Metadata>, Integer>> uploader)
             throws IOException {
         boolean save = false;
@@ -129,22 +128,24 @@ public class FlickrMediaProcessorService {
         } catch (URISyntaxException e) {
             LOGGER.error("URISyntaxException for video " + media.getId(), e);
         }
-        if (StringUtils.isNotBlank(media.getDescription())) {
-            for (String toRemove : stringsToRemove) {
-                if (media.getDescription().contains(toRemove)) {
-                    media.setDescription(media.getDescription().replace(toRemove, "").trim());
-                    save = true;
+        if (!isPresentInDb || isEmpty(media.getCommonsFileNames())) {
+            if (StringUtils.isNotBlank(media.getDescription())) {
+                for (String toRemove : stringsToRemove) {
+                    if (media.getDescription().contains(toRemove)) {
+                        media.setDescription(media.getDescription().replace(toRemove, "").trim());
+                        save = true;
+                    }
                 }
             }
-        }
-        if (media.getPhotosets() != null) {
-            for (FlickrPhotoSet photoSet : media.getPhotosets()) {
-                if (StringUtils.isBlank(photoSet.getPathAlias())) {
-                    photoSet.setPathAlias(flickrAccount);
-                    savePhotoSets = true;
-                }
-                if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredPhotoAlbums.contains(photoSet.getId())) {
-                    save = MediaService.ignoreMedia(media, "Photoset ignored: " + photoSet.getTitle());
+            if (media.getPhotosets() != null) {
+                for (FlickrPhotoSet photoSet : media.getPhotosets()) {
+                    if (StringUtils.isBlank(photoSet.getPathAlias())) {
+                        photoSet.setPathAlias(flickrAccount);
+                        savePhotoSets = true;
+                    }
+                    if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredPhotoAlbums.contains(photoSet.getId())) {
+                        save = MediaService.ignoreMedia(media, "Photoset ignored: " + photoSet.getTitle());
+                    }
                 }
             }
         }
@@ -152,9 +153,6 @@ public class FlickrMediaProcessorService {
         savePhotoSets = false;
         save = false;
         if (mediaService.updateMedia(media, originalRepo, false).getResult()) {
-            save = true;
-        }
-        if (customProcessor.test(media)) {
             save = true;
         }
         int uploadCount = 0;
