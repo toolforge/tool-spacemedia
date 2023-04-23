@@ -45,6 +45,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -248,6 +249,9 @@ public class NasaMediaProcessorService {
                     media.getMetadata().setExif(exifRepository.save(exifMetadata));
                     save = true;
                 }
+            } catch (HttpClientErrorException.Forbidden e) {
+                // NHQ202211160205-2 always retursn http 403
+                LOGGER.error("Unable to retrieve EXIF metadata for {}: {}", media.getId(), e.getMessage());
             } catch (Exception e) {
                 LOGGER.error("Unable to retrieve EXIF metadata for {}", media.getId(), e);
             }
