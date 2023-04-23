@@ -11,9 +11,34 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.web.client.RestTemplate;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.ExifMetadataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+@SpringJUnitConfig(NasaMediaProcessorServiceTest.TestConfig.class)
+@TestPropertySource("/application-test.properties")
 class NasaMediaProcessorServiceTest {
+
+    @MockBean
+    private ExifMetadataRepository exifRepo;
+    @MockBean
+    private NasaMediaRepository<?> nasaRepo;
+    @MockBean
+    private MediaService mediaService;
+
+    @Autowired
+    private NasaMediaProcessorService service;
 
     @Test
     void testFindOriginalMedia() throws Exception {
@@ -33,6 +58,11 @@ class NasaMediaProcessorServiceTest {
                 }).toList()) {
             assertNotNull(NasaMediaProcessorService.findOriginalMedia(rest, href));
         }
+    }
+
+    @Test
+    void testExifRestTemplate() throws Exception {
+        assertNotNull(service.readExifMetadata(service.restExifTemplate(), "AFRC2021-0128-85"));
     }
 
     @Test
@@ -107,5 +137,19 @@ class NasaMediaProcessorServiceTest {
 
     private static void doTestKeywords(String string, List<String> asList) {
         assertEquals(new HashSet<>(asList), NasaMediaProcessorService.normalizeKeywords(Collections.singleton(string)));
+    }
+
+    @Configuration
+    public static class TestConfig {
+
+        @Bean
+        public ObjectMapper jackson() {
+            return new ObjectMapper().registerModules(new Jdk8Module(), new JavaTimeModule());
+        }
+
+        @Bean
+        public NasaMediaProcessorService service() {
+            return new NasaMediaProcessorService();
+        }
     }
 }

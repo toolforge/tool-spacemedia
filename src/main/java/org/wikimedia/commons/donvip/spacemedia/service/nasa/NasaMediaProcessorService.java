@@ -7,6 +7,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMedia;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -39,7 +40,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException.Forbidden;
@@ -59,6 +62,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaResponse;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class NasaMediaProcessorService {
@@ -91,6 +96,9 @@ public class NasaMediaProcessorService {
     @Autowired
     protected MediaService mediaService;
 
+    @Autowired
+    private ObjectMapper jackson;
+
     private LocalDateTime lastRequest;
 
     /**
@@ -112,6 +120,15 @@ public class NasaMediaProcessorService {
         lastRequest = now();
     }
 
+    RestTemplate restExifTemplate() {
+        RestTemplate restExif = new RestTemplate();
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(jackson);
+        // NASA website can return application/octet-stream instead of application/json
+        converter.setSupportedMediaTypes(List.of(MediaType.ALL));
+        restExif.setMessageConverters(List.of(converter));
+        return restExif;
+    }
+
     @Transactional
     public <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl,
             Collection<T> uploadedMedia, Counter counter, String who, Map<String, Set<String>> foundIds,
@@ -121,6 +138,7 @@ public class NasaMediaProcessorService {
             BiFunction<Boolean, NasaMedia, NasaMedia> saveMediaOrCheckRemote,
             TriFunction<NasaMedia, Boolean, Boolean, Triple<NasaMedia, Collection<Metadata>, Integer>> uploader) {
         LocalDateTime start = LocalDateTime.now();
+        RestTemplate restExif = restExifTemplate();
         boolean ok = false;
         int count = 0;
         for (int i = 0; i < maxTries && !ok; i++) {
@@ -132,7 +150,8 @@ public class NasaMediaProcessorService {
                 ok = true;
                 for (NasaItem item : items) {
                     try {
-                        Pair<NasaMedia, Integer> update = processMedia(rest, item.getData().get(0), item.getHref(),
+                        Pair<NasaMedia, Integer> update = processMedia(rest, restExif, item.getData().get(0),
+                                item.getHref(),
                                 doCommonUpdate, shouldUploadAuto, problem, saveMedia, saveMediaOrCheckRemote, uploader);
                         @SuppressWarnings("unchecked")
                         T media = (T) update.getKey();
@@ -172,7 +191,7 @@ public class NasaMediaProcessorService {
         return null;
     }
 
-    private Pair<NasaMedia, Integer> processMedia(RestTemplate rest, NasaMedia media, URL href,
+    private Pair<NasaMedia, Integer> processMedia(RestTemplate rest, RestTemplate restExif, NasaMedia media, URL href,
             Predicate<NasaMedia> doCommonUpdate, BiPredicate<NasaMedia, Boolean> shouldUploadAuto,
             BiConsumer<URL, Throwable> problem, UnaryOperator<NasaMedia> saveMedia,
             BiFunction<Boolean, NasaMedia, NasaMedia> saveMediaOrCheckRemote,
@@ -224,8 +243,7 @@ public class NasaMediaProcessorService {
         }
         if (media.getMetadata() != null && media.getMetadata().getExif() == null) {
             try {
-                ExifMetadata exifMetadata = rest.getForObject(
-                        Utils.urlToUri(new URL(metadataLink.replace("<id>", media.getId()))), ExifMetadata.class);
+                ExifMetadata exifMetadata = readExifMetadata(restExif, media.getId());
                 if (exifMetadata != null) {
                     media.getMetadata().setExif(exifRepository.save(exifMetadata));
                     save = true;
@@ -243,6 +261,11 @@ public class NasaMediaProcessorService {
             save = false;
         }
         return Pair.of(saveMediaOrCheckRemote.apply(save, media), uploadCount);
+    }
+
+    ExifMetadata readExifMetadata(RestTemplate restExif, String id)
+            throws RestClientException, MalformedURLException, URISyntaxException {
+        return restExif.getForObject(Utils.urlToUri(new URL(metadataLink.replace("<id>", id))), ExifMetadata.class);
     }
 
     private static Optional<URL> findSpecificMedia(RestTemplate rest, URL href, String text) throws URISyntaxException {
