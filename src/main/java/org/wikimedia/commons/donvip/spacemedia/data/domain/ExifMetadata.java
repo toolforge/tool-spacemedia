@@ -13,10 +13,12 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 
 import org.apache.commons.lang3.StringUtils;
+import org.wikimedia.commons.donvip.spacemedia.utils.StringArrayAsStringDeserializer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -71,6 +73,7 @@ public class ExifMetadata {
     @JsonProperty("EXIF:SerialNumber")
     private String exifSerialNumber;
 
+    @JsonDeserialize(using = StringArrayAsStringDeserializer.class)
     @JsonProperty("IPTC:By-line")
     private String iptcByLine;
 
@@ -82,7 +85,9 @@ public class ExifMetadata {
     @JsonProperty("IPTC:CopyrightNotice")
     private String iptcCopyrightNotice;
 
+    @Lob
     @JsonProperty("IPTC:ObjectName")
+    @Column(columnDefinition = "TEXT")
     private String iptcObjectName;
 
     @JsonProperty("IPTC:Writer-Editor")
@@ -91,7 +96,9 @@ public class ExifMetadata {
     @JsonProperty("Photoshop:URL")
     private URL photoshopUrl;
 
+    @Lob
     @JsonProperty("XMP:CaptionWriter")
+    @Column(columnDefinition = "TEXT")
     private String xmpCaptionWriter;
 
     @Lob
@@ -114,7 +121,9 @@ public class ExifMetadata {
     @JsonProperty("XMP:SerialNumber")
     private String xmpSerialNumber;
 
+    @Lob
     @JsonProperty("XMP:Title")
+    @Column(columnDefinition = "TEXT")
     private String xmpTitle;
 
     @JsonProperty("XMP:WebStatement")
@@ -142,7 +151,9 @@ public class ExifMetadata {
     @JsonProperty("AVAIL:Location")
     private String availLocation;
 
+    @Lob
     @JsonProperty("AVAIL:Photographer")
+    @Column(columnDefinition = "TEXT")
     private String availPhotographer;
 
     @JsonProperty("AVAIL:SecondaryCreator")

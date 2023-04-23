@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
@@ -60,9 +62,10 @@ class NasaMediaProcessorServiceTest {
         }
     }
 
-    @Test
-    void testExifRestTemplate() throws Exception {
-        assertNotNull(service.readExifMetadata(service.restExifTemplate(), "AFRC2021-0128-85"));
+    @ParameterizedTest
+    @CsvSource({ "AFRC2021-0128-85", "KSC-20220714-PH-KMO06_0021" })
+    void testExifRestTemplate(String id) throws Exception {
+        assertNotNull((service.readExifMetadata(service.restExifTemplate(), id)).getIptcByLine());
     }
 
     @Test
