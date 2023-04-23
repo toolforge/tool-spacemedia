@@ -13,6 +13,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,9 +88,9 @@ public class NasaService
             entry("MSFC", "@NASA_Marshall"), entry("SSC", "@NASAStennis"));
 
     /**
-     * Minimal delay between successive API requests, in seconds.
+     * Minimal delay between successive API requests, in milliseconds.
      */
-    private static final int DELAY = 4;
+    private static final int DELAY = 3601;
 
     @Value("${nasa.search.link}")
     private String searchEndpoint;
@@ -627,11 +628,11 @@ public class NasaService
      * Makes sure the service complies with api.nasa.gov hourly limit of 1,000
      * requests per hour
      */
-    private void ensureApiLimit() {
-        LocalDateTime fourSecondsAgo = now().minusSeconds(DELAY);
+    void ensureApiLimit() {
+        LocalDateTime fourSecondsAgo = now().minus(DELAY, ChronoUnit.MILLIS);
         if (lastRequest != null && lastRequest.isAfter(fourSecondsAgo)) {
             try {
-                long millis = DELAY * 1000 - MILLIS.between(now(), lastRequest.plusSeconds(DELAY));
+                long millis = MILLIS.between(now(), lastRequest.plus(DELAY, ChronoUnit.MILLIS));
                 LOGGER.info("Sleeping {} ms to conform to NASA API limit policy", millis);
                 Thread.sleep(millis);
             } catch (InterruptedException e) {
