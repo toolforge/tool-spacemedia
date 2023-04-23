@@ -36,6 +36,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsIma
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 
 @Service
 public class NasaSirsService
@@ -168,7 +169,7 @@ public class NasaSirsService
                             } catch (DateTimeParseException e) {
                                 media.setYear(Year.parse(values.get(3)));
                             }
-                            media.setKeywords(NasaService.normalizeKeywords(singleton(values.get(4))));
+                            media.setKeywords(NasaMediaProcessorService.normalizeKeywords(singleton(values.get(4))));
                             media.setThumbnailUrl(new URL(url.getProtocol(), url.getHost(), values.get(5)));
                             media.getMetadata().setAssetUrl(new URL(url.getProtocol(), url.getHost(), values.get(6)));
                             media.setDescription(values.get(7));

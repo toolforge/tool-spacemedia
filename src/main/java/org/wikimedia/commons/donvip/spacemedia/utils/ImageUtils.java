@@ -32,6 +32,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
+import org.wikimedia.commons.donvip.spacemedia.exception.WrappedIOException;
 
 public class ImageUtils {
 
@@ -96,19 +97,6 @@ public class ImageUtils {
                 throw new WrappedIOException(e);
             }
         });
-    }
-
-    private static class WrappedIOException extends RuntimeException {
-        private static final long serialVersionUID = 1L;
-
-        private WrappedIOException(IOException e) {
-            super(e);
-        }
-
-        @Override
-        public synchronized IOException getCause() {
-            return (IOException) super.getCause();
-        }
     }
 
     private static <T> T doReadImageOrMetadata(ImageInputStream stream, boolean readMetadata, Function<ImageReader, T> function)
