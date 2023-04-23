@@ -5,6 +5,8 @@
 "landsat9","Satellite pictures by Landsat 9"
 "antarctica","Satellite pictures of Antarctica"
 "fire","Satellite pictures of wildfires"
+"flood","Satellite pictures of floods"
+"flooding","Satellite pictures of floods"
 "tropicalcyclone","Satellite pictures of tropical cyclones"
 "suominpp","Photos by Suomi NPP"
 "viirs","Photos by VIIRS"

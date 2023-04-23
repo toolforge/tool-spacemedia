@@ -80,6 +80,10 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
                 result.remove("Photos by Suomi NPP");
                 result.remove("Photos by VIIRS");
                 result.add("Photos of tropical cyclones by VIIRS");
+            } else if (media.getTags().contains("sentinel") && media.getTags().contains("fire")) {
+                result.add("Photos of wildfires by Sentinel satellites");
+            } else if (media.getTags().contains("sentinel") && media.getTags().contains("flood")) {
+                result.add("Photos of floods by Sentinel satellites");
             }
             break;
         }
