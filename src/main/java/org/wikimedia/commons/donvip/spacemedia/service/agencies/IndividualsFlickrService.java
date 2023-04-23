@@ -127,6 +127,8 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
             return Set.of("@markmccaughrean@mastodon.social");
         case "pierre_markuse":
             return Set.of("@pierre_markuse@mastodon.world");
+        case "harrystrangerphotography", "194849271@N04":
+            return Set.of("@spacefromspace@spacey.space");
         default:
             return Set.of();
         }
@@ -143,6 +145,8 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
             return Set.of("@markmccaughrean");
         case "pierre_markuse":
             return Set.of("@Pierre_Markuse");
+        case "harrystrangerphotography", "194849271@N04":
+            return Set.of("@Harry__Stranger");
         default:
             return Set.of();
         }

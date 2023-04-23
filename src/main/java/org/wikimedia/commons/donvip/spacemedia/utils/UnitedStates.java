@@ -18,13 +18,13 @@ public final class UnitedStates {
      * https://www.dimoc.mil/Submit-DoD-VI/Digital-VI-Toolkit-read-first/Create-a-VIRIN/
      */
     private static final Pattern US_VIRIN = Pattern.compile(
-            "([0-9]{6})-([A-Z])-([0-9A-Z]{5})-([0-9]{3,4})(?:-([A-Z]{2}))?");
+            "([\\d]{6})-([A-Z])-([0-9A-Z]{5})-([\\d]{3,4})(?:-([A-Z]{2}))?");
 
     /**
      * Fake pattern for US Military VIRIN identifiers as found on Flickr.
      */
     private static final Pattern FAKE_US_VIRIN = Pattern.compile(
-            "([0-9]{8})-([A-Z])-([0-9A-Z]{5})-([0-9]{3,4})");
+            "([\\d]{8})-([A-Z])-([0-9A-Z]{5})-([\\d]{3,4})");
 
     private UnitedStates() {
 
@@ -37,7 +37,9 @@ public final class UnitedStates {
                     || description.contains("U.S. Air Force photo")
                     || description.contains("U.S. Marine Corps photo")
                     || description.contains("U.S. Coast Guard photo")
-                    || description.contains("U.S. Space Force photo"));
+                    || description.contains("U.S. Space Force photo")
+                    || description.contains("dds.cr.usgs.gov")
+                    || description.contains("eol.jsc.nasa.gov"));
     }
 
     public static boolean isFakeVirin(String identifier) {
