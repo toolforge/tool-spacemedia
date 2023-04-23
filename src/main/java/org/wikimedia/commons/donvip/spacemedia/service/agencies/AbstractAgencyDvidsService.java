@@ -247,7 +247,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                 uploadedMedia.addAll(ur.uploadedMedia);
                 count += ur.count;
-                ongoingUpdateMedia(start, count);
+                ongoingUpdateMedia(start, unit, count);
                 loop = count < ur.totalResults;
                 if (loop) {
                     LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/{})...", type, unit, year, page,
@@ -275,7 +275,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }
-                ongoingUpdateMedia(start, count++);
+                ongoingUpdateMedia(start, unit, count++);
             } catch (HttpClientErrorException e) {
                 LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
             } catch (IOException e) {

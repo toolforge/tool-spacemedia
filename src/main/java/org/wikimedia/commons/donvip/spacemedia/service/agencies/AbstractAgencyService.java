@@ -306,9 +306,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final void ongoingUpdateMedia(LocalDateTime start, int count) {
+        ongoingUpdateMedia(start, getId(), count);
+    }
+
+    protected final void ongoingUpdateMedia(LocalDateTime start, String who, int count) {
         if (LOGGER.isInfoEnabled() && count > 0 && count % 1000 == 0) {
             Duration durationInSec = Utils.durationInSec(start);
-            LOGGER.info("Processed {} images in {} ({} media/s) - ({} ms/media)", count, durationInSec,
+            LOGGER.info("Processed {} {} images in {} ({} media/s) - ({} ms/media)", count, who, durationInSec,
                     String.format("%.2f", (double) count / durationInSec.getSeconds()),
                     String.format("%d", durationInSec.getSeconds() * 1000 / count));
         }

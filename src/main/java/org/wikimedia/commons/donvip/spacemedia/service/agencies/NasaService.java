@@ -341,7 +341,7 @@ public class NasaService
 
     @Transactional
     public <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl,
-            Collection<T> uploadedMedia, Counter counter, Map<String, Set<String>> foundIds) {
+            Collection<T> uploadedMedia, Counter counter, String who, Map<String, Set<String>> foundIds) {
         LocalDateTime start = LocalDateTime.now();
         boolean ok = false;
         int count = 0;
@@ -363,7 +363,7 @@ public class NasaService
                         if (foundIds != null) {
                             foundIds.get(media.getCenter()).add(media.getId());
                         }
-                        ongoingUpdateMedia(start, count++);
+                        ongoingUpdateMedia(start, who, count++);
                         counter.count++;
                     } catch (Forbidden e) {
                         problem(item.getHref(), e);
@@ -414,8 +414,9 @@ public class NasaService
         }
         Collection<T> uploadedMedia = new ArrayList<>();
         while (nextUrl != null) {
-            nextUrl = self.processSearchResults(rest, nextUrl, uploadedMedia, count, foundIds);
-            ongoingUpdateMedia(start, count.count);
+            String who = centers != null ? centers.toString() : getId();
+            nextUrl = self.processSearchResults(rest, nextUrl, uploadedMedia, count, who, foundIds);
+            ongoingUpdateMedia(start, who, count.count);
         }
         logEndUpdate(mediaType, startYear, endYear, centers, start, count.count);
         return Pair.of(count.count, uploadedMedia);

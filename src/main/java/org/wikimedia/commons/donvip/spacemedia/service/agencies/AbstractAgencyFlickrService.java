@@ -416,7 +416,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }
-                ongoingUpdateMedia(start, count++);
+                ongoingUpdateMedia(start, flickrAccount, count++);
             } catch (IOException | RuntimeException e) {
                 problem(getPhotoUrl(media), e);
             }
