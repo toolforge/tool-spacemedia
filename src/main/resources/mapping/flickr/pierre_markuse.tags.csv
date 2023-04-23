@@ -1,0 +1,7 @@
+"sentinel1","Sentinel-1 images"
+"sentinel2","Sentinel-2 images"
+"sentinel3","Sentinel-3 images"
+"landsat8","Satellite pictures by Landsat 8"
+"landsat9","Satellite pictures by Landsat 9"
+"antarctica","Satellite pictures of Antarctica"
+"fire","Satellite pictures of wildfires"

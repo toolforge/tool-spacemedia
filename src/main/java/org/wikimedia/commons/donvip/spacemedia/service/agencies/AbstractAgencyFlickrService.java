@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,11 +71,13 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
 
     protected final Set<String> flickrAccounts;
     protected final Map<String, Map<String, String>> flickrPhotoSets;
+    protected final Map<String, Map<String, String>> flickrTags;
 
     protected AbstractAgencyFlickrService(FlickrMediaRepository repository, String id, Set<String> flickrAccounts) {
         super(repository, id);
         this.flickrAccounts = Objects.requireNonNull(flickrAccounts);
         this.flickrPhotoSets = new HashMap<>();
+        this.flickrTags = new HashMap<>();
     }
 
     @Override
@@ -82,10 +85,10 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     void init() throws IOException {
         super.init();
         for (String account : flickrAccounts) {
-            Map<String, String> mapping = loadCsvMapping("flickr/" + account + ".photosets.csv");
-            if (mapping != null) {
-                flickrPhotoSets.put(account, mapping);
-            }
+            Optional.ofNullable(loadCsvMapping("flickr/" + account + ".photosets.csv"))
+                    .ifPresent(mapping -> flickrPhotoSets.put(account, mapping));
+            Optional.ofNullable(loadCsvMapping("flickr/" + account + ".tags.csv"))
+                    .ifPresent(mapping -> flickrTags.put(account, mapping));
         }
     }
 
@@ -258,18 +261,24 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
             result.remove("Spacemedia files uploaded by " + commonsService.getAccount());
             result.add("Spacemedia Flickr files uploaded by " + commonsService.getAccount());
         }
-        if (CollectionUtils.isNotEmpty(media.getPhotosets())) {
-            Map<String, String> mapping = flickrPhotoSets.get(media.getPathAlias());
+        useMapping(result, media, media.getPhotosets(), flickrPhotoSets, FlickrPhotoSet::getTitle);
+        useMapping(result, media, media.getTags(), flickrTags, Function.identity());
+        return result;
+    }
+
+    static <T> void useMapping(Set<String> result, FlickrMedia media, Set<T> items,
+            Map<String, Map<String, String>> flickrMappings, Function<T, String> keyFunction) {
+        if (CollectionUtils.isNotEmpty(items)) {
+            Map<String, String> mapping = flickrMappings.get(media.getPathAlias());
             if (MapUtils.isNotEmpty(mapping)) {
-                for (FlickrPhotoSet album : media.getPhotosets()) {
-                    String cats = mapping.get(album.getTitle());
+                for (T item : items) {
+                    String cats = mapping.get(keyFunction.apply(item));
                     if (StringUtils.isNotBlank(cats)) {
                         Arrays.stream(cats.split(";")).map(String::trim).forEach(result::add);
                     }
                 }
             }
         }
-        return result;
     }
 
     @Override
