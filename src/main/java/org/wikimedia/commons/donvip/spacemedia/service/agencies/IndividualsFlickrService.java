@@ -51,25 +51,37 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
     public Set<String> findCategories(FlickrMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         String titleLc = media.getTitle().toLowerCase(Locale.ENGLISH);
-        if (result.contains("Photos by the Curiosity rover") && (result.contains("Photos by Martian rover Mastcams")
-                || titleLc.contains("mastcam"))) {
-            result.remove("Photos by Martian rover Mastcams");
-            result.remove("Photos by the Curiosity rover");
-            result.add("Photos by the Curiosity rover Mastcam");
-        } else if (result.contains("Photos by the Perseverance rover")) {
-            if (titleLc.contains("mastcam")) {
-                result.remove("Photos by the Perseverance rover");
-                result.add("Photos by the Perseverance rover Mastcams");
-            } else if (titleLc.contains("navleft") || titleLc.contains("navright")) {
-                result.remove("Photos by the Perseverance rover");
-                result.add("Photos by the Perseverance rover Navcams");
-            } else if (titleLc.contains("supercam")) {
-                result.remove("Photos by the Perseverance rover");
-                result.add("Photos by the Perseverance rover SuperCam");
-            } else if (titleLc.contains("watson")) {
-                result.remove("Photos by the Perseverance rover");
-                result.add("Photos by WATSON");
+        switch (media.getPathAlias()) {
+        case "kevinmgill":
+            if (result.contains("Photos by the Curiosity rover")
+                    && (result.contains("Photos by Martian rover Mastcams") || titleLc.contains("mastcam"))) {
+                result.remove("Photos by Martian rover Mastcams");
+                result.remove("Photos by the Curiosity rover");
+                result.add("Photos by the Curiosity rover Mastcam");
+            } else if (result.contains("Photos by the Perseverance rover")) {
+                if (titleLc.contains("mastcam")) {
+                    result.remove("Photos by the Perseverance rover");
+                    result.add("Photos by the Perseverance rover Mastcams");
+                } else if (titleLc.contains("navleft") || titleLc.contains("navright")) {
+                    result.remove("Photos by the Perseverance rover");
+                    result.add("Photos by the Perseverance rover Navcams");
+                } else if (titleLc.contains("supercam")) {
+                    result.remove("Photos by the Perseverance rover");
+                    result.add("Photos by the Perseverance rover SuperCam");
+                } else if (titleLc.contains("watson")) {
+                    result.remove("Photos by the Perseverance rover");
+                    result.add("Photos by WATSON");
+                }
             }
+            break;
+        case "pierre_markuse":
+            if (result.contains("Satellite pictures of tropical cyclones") && result.contains("Photos by VIIRS")) {
+                result.remove("Satellite pictures of tropical cyclones");
+                result.remove("Photos by Suomi NPP");
+                result.remove("Photos by VIIRS");
+                result.add("Photos of tropical cyclones by VIIRS");
+            }
+            break;
         }
         if (includeHidden) {
             switch (media.getPathAlias()) {

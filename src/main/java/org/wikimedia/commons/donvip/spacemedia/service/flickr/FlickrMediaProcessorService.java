@@ -60,6 +60,8 @@ public class FlickrMediaProcessorService {
 
     @Value("${flickr.video.download.url}")
     private String flickrVideoDownloadUrl;
+    @Value("${videos.enabled}")
+    private boolean videosEnabled;
 
     private Set<Long> ignoredPhotoAlbums;
 
@@ -156,7 +158,7 @@ public class FlickrMediaProcessorService {
             save = true;
         }
         int uploadCount = 0;
-        if (shouldUploadAuto.test(media, false)) {
+        if (shouldUploadAuto.test(media, false) && (videosEnabled || !media.isVideo())) {
             Triple<FlickrMedia, Collection<Metadata>, Integer> upload = uploader.apply(media);
             media = upload.getLeft();
             uploadCount = upload.getRight();
