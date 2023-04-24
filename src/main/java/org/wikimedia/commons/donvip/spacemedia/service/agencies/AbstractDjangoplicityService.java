@@ -147,19 +147,18 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
             if (media == null) {
                 return Triple.of(Optional.empty(), emptyList(), 0);
             }
-            save = true;
-        }
-        if (media.getCategories() != null) {
-            // Try to detect pictures of identifiable people, as per ESO conditions
-            if (media.getCategories().size() == 1 && media.getCategories().iterator().next().contains(
-                    "People")
-                    && media.getTypes() != null
-                    && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
-                save = ignoreFile(media,
-                        "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.");
-            } else if (media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
-                save = ignoreFile(media, "Forbidden category.");
+            if (media.getCategories() != null && Boolean.TRUE != media.isIgnored()) {
+                // Try to detect pictures of identifiable people, as per ESO conditions
+                if (media.getCategories().size() == 1 && media.getCategories().iterator().next().contains("People")
+                        && media.getTypes() != null
+                        && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
+                    ignoreFile(media,
+                            "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.");
+                } else if (media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
+                    ignoreFile(media, "Forbidden category.");
+                }
             }
+            save = true;
         }
         if (doCommonUpdate(media)) {
             save = true;

@@ -74,7 +74,7 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService<DvidsMe
     protected Set<String> getTwitterAccounts(DvidsMedia uploadedMedia) {
         switch (uploadedMedia.getUnit()) {
         case "SBD1":
-            return Set.of("@SpaceBaseDelta1");
+            return Set.of("@PeteSchriever");
         case "SLD30":
             return Set.of("@SLDelta30");
         case "45SW":

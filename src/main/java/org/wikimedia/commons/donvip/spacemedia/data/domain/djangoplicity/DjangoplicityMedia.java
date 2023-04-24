@@ -53,8 +53,10 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
     @JsonProperty("field_of_view")
     private String fieldOfView;
 
-    // 406 chars for https://noirlab.edu/public/images/MEarth-South-Pic-3-CC/
-    @Column(nullable = true, length = 500)
+    // 541 chars for
+    // https://noirlab.edu/public/images/Cerro-Tololo-Drone-Pano_12-CC/
+    @Lob
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String name;
 
     @Column(nullable = true, length = 63)
