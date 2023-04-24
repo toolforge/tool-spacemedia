@@ -411,8 +411,8 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         for (FlickrMedia media : medias) {
             try {
                 Pair<FlickrMedia, Integer> result = processor.processFlickrMedia(media, flickrAccount,
-                        getOriginalRepository(), getStringsToRemove(media.getPathAlias()),
-                        this::shouldUploadAuto, this::uploadWrapped);
+                        getOriginalRepository(), getStringsToRemove(media), this::shouldUploadAuto,
+                        this::uploadWrapped);
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }
@@ -441,11 +441,6 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         } catch (FlickrException e) {
             throw new IOException(e);
         }
-    }
-
-    protected Collection<String> getStringsToRemove(String pathAlias) {
-        // To be overriden if special strings have to be removed from description
-        return List.of();
     }
 
     @Override

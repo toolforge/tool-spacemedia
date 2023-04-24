@@ -1,7 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -68,6 +70,30 @@ class IndividualsFlickrServiceTest extends AbstractAgencyServiceTest {
                         North is 111.51° clockwise from up.
                         """,
                 service.getDescription(media));
+    }
+
+    @Test
+    void testGetStringsToRemove() {
+        FlickrMedia media = new FlickrMedia();
+        media.setId(52840868995L);
+        media.setPathAlias("pierre_markuse");
+        media.setDescription(
+                """
+                        Contains modified Copernicus Sentinel data [2023], processed by <a href="https://twitter.com/Pierre_Markuse">Pierre Markuse</a>
+
+                        Fires in Western Australia (Lat: -15.925, Lng:124.468) - 20 April 2023
+
+                        Image is about 16 kilometers wide
+
+                        Do you want to support this collection of satellite images? Any donation, no matter how small, would be appreciated. <a href="https://www.paypal.com/paypalme/PierreMarkuse">PayPal me!</a>
+
+                        Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a href="https://mastodon.world/@pierre_markuse">Mastodon!</a>
+                        """);
+        Collection<String> stringsToRemove = service.getStringsToRemove(media);
+        assertTrue(stringsToRemove.contains(
+                "Do you want to support this collection of satellite images? Any donation, no matter how small, would be appreciated. <a href=\"https://www.paypal.com/paypalme/PierreMarkuse\">PayPal me!</a>"));
+        assertTrue(stringsToRemove.contains(
+                "Follow me on <a href=\"https://twitter.com/Pierre_Markuse\">Twitter!</a> and <a href=\"https://mastodon.world/@pierre_markuse\">Mastodon!</a>"));
     }
 
     @Configuration

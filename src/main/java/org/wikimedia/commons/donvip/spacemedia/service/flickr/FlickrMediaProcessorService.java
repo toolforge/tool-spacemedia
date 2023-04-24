@@ -128,31 +128,21 @@ public class FlickrMediaProcessorService {
         } catch (URISyntaxException e) {
             LOGGER.error("URISyntaxException for video " + media.getId(), e);
         }
-        if (!isPresentInDb || isEmpty(media.getCommonsFileNames())) {
-            if (StringUtils.isNotBlank(media.getDescription())) {
-                for (String toRemove : stringsToRemove) {
-                    if (media.getDescription().contains(toRemove)) {
-                        media.setDescription(media.getDescription().replace(toRemove, "").trim());
-                        save = true;
-                    }
+        if ((!isPresentInDb || isEmpty(media.getCommonsFileNames())) && media.getPhotosets() != null) {
+            for (FlickrPhotoSet photoSet : media.getPhotosets()) {
+                if (StringUtils.isBlank(photoSet.getPathAlias())) {
+                    photoSet.setPathAlias(flickrAccount);
+                    savePhotoSets = true;
                 }
-            }
-            if (media.getPhotosets() != null) {
-                for (FlickrPhotoSet photoSet : media.getPhotosets()) {
-                    if (StringUtils.isBlank(photoSet.getPathAlias())) {
-                        photoSet.setPathAlias(flickrAccount);
-                        savePhotoSets = true;
-                    }
-                    if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredPhotoAlbums.contains(photoSet.getId())) {
-                        save = MediaService.ignoreMedia(media, "Photoset ignored: " + photoSet.getTitle());
-                    }
+                if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredPhotoAlbums.contains(photoSet.getId())) {
+                    save = MediaService.ignoreMedia(media, "Photoset ignored: " + photoSet.getTitle());
                 }
             }
         }
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb);
         savePhotoSets = false;
         save = false;
-        if (mediaService.updateMedia(media, originalRepo, false).getResult()) {
+        if (mediaService.updateMedia(media, originalRepo, stringsToRemove, false).getResult()) {
             save = true;
         }
         int uploadCount = 0;
@@ -164,6 +154,7 @@ public class FlickrMediaProcessorService {
         }
         return Pair.of(saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb), uploadCount);
     }
+
 
     private FlickrMedia saveMediaAndPhotosetsIfNeeded(FlickrMedia media, boolean save, boolean savePhotoSets,
             boolean wasPresent) {

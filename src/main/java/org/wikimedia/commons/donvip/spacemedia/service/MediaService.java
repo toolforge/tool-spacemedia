@@ -123,14 +123,15 @@ public class MediaService {
     }
 
     public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
-            boolean forceUpdate) throws IOException {
-        return updateMedia(media, originalRepo, forceUpdate, true, null);
+            Iterable<String> stringsToRemove, boolean forceUpdate) throws IOException {
+        return updateMedia(media, originalRepo, stringsToRemove, forceUpdate, true, null);
     }
 
     public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
-            boolean forceUpdate, boolean checkBlocklist, Path localPath) throws IOException {
+            Iterable<String> stringsToRemove, boolean forceUpdate, boolean checkBlocklist, Path localPath)
+            throws IOException {
         boolean result = false;
-        if (cleanupDescription(media)) {
+        if (cleanupDescription(media, stringsToRemove)) {
             result = true;
         }
         MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, forceUpdate);
@@ -442,9 +443,17 @@ public class MediaService {
         return true;
     }
 
-    public boolean cleanupDescription(Media<?, ?> media) {
+    public static boolean cleanupDescription(Media<?, ?> media, Iterable<String> stringsToRemove) {
         boolean result = false;
-        if (media.getDescription() != null) {
+        if (StringUtils.isNotBlank(media.getDescription())) {
+            if (stringsToRemove != null) {
+                for (String toRemove : stringsToRemove) {
+                    if (media.getDescription().contains(toRemove)) {
+                        media.setDescription(media.getDescription().replace(toRemove, "").trim());
+                        result = true;
+                    }
+                }
+            }
             for (String toRemove : STRINGS_TO_REMOVE) {
                 if (media.getDescription().contains(toRemove)) {
                     media.setDescription(media.getDescription().replace(toRemove, ""));

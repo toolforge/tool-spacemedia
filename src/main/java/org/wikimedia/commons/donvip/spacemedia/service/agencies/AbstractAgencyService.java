@@ -336,6 +336,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
+    protected Collection<String> getStringsToRemove(T media) {
+        // To be overriden if special strings have to be removed from description
+        return List.of();
+    }
+
     protected final void postSocialMedia(Collection<? extends T> uploadedMedia, Collection<Metadata> uploadedMetadata) {
         if (!uploadedMedia.isEmpty()) {
             LOGGER.info("Uploaded media: {} ({})", uploadedMedia.size(),
@@ -865,8 +870,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
-        MediaUpdateResult ur = mediaService.updateMedia(media, getOriginalRepository(), forceUpdate,
-                checkBlocklist(), null);
+        MediaUpdateResult ur = mediaService.updateMedia(media, getOriginalRepository(), getStringsToRemove(media),
+                forceUpdate, checkBlocklist(), null);
         boolean result = false;
         if (media.isIgnored() != Boolean.TRUE) {
             if (media.getDescription() != null) {

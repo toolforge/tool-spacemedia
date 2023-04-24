@@ -67,7 +67,7 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
     }
 
     @Override
-    protected Collection<String> getStringsToRemove(String pathAlias) {
+    protected Collection<String> getStringsToRemove(FlickrMedia media) {
         return STRINGS_TO_REMOVE;
     }
 

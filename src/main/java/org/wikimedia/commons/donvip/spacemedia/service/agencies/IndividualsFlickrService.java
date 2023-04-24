@@ -43,8 +43,8 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
     }
 
     @Override
-    protected Collection<String> getStringsToRemove(String pathAlias) {
-        return Optional.ofNullable(STRINGS_TO_REMOVE.get(pathAlias)).orElse(List.of());
+    protected Collection<String> getStringsToRemove(FlickrMedia media) {
+        return Optional.ofNullable(STRINGS_TO_REMOVE.get(media.getPathAlias())).orElse(List.of());
     }
 
     @Override

@@ -54,7 +54,7 @@ public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, L
     }
 
     @Override
-    protected Collection<String> getStringsToRemove(String pathAlias) {
+    protected Collection<String> getStringsToRemove(FlickrMedia media) {
         return STRINGS_TO_REMOVE;
     }
 
