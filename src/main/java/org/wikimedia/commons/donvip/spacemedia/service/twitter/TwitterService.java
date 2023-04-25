@@ -114,7 +114,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
 
                         final long mediaId = initializeUpload(mime, cat, response.getEntity().getContentLength());
 
-                        performMultipartUpload(in, mime, mediaId, file.getName());
+                        performMultipartUpload(in, mediaId, file.getName());
 
                         ProcessingInfo processingInfo = finalizeUpload(mediaId);
 
@@ -141,13 +141,13 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
                 UploadResponse.class).getMediaId();
     }
 
-    private void performMultipartUpload(InputStream in, String mime, long mediaId, String fileName) throws IOException {
+    private void performMultipartUpload(InputStream in, long mediaId, String fileName) throws IOException {
         int idx = 0;
         byte[] bytes;
         do {
             bytes = in.readNBytes(1 * 1024 * 1024);
             callApi(request(Verb.POST, V1_UPLOAD, "multipart/form-data",
-                    new FileByteArrayBodyPartPayload(mime, bytes, "media", fileName),
+                    new FileByteArrayBodyPartPayload("application/octet-stream", bytes, "media", fileName),
                     Map.of("command", "APPEND", "media_id", mediaId, "segment_index", idx++)), Object.class);
         } while (bytes.length > 0);
     }
