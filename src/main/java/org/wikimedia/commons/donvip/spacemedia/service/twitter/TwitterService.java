@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -24,7 +23,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TweetRequest.TweetMedia;
-import org.wikimedia.commons.donvip.spacemedia.service.twitter.UploadResponse.ProcessingInfo;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.github.scribejava.apis.TwitterApi;
@@ -40,7 +38,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TwitterService.class);
 
-    private static final String V1_UPLOAD = "https://upload.twitter.com/1.1/media/upload.json";
+    private static final String V1_UPLOAD = "https://upload.twitter.com/1.1/media/upload.json?media_category=";
 
     private static final String V2_TWEET = "https://api.twitter.com/2/tweets";
 
@@ -112,77 +110,19 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
                             CloseableHttpResponse response = httpclient.execute(new HttpGet(url.toURI()));
                             InputStream in = response.getEntity().getContent()) {
 
-                        final long mediaId = initializeUpload(mime, cat, response.getEntity().getContentLength());
-
-                        performMultipartUpload(in, mediaId, file.getName());
-
-                        ProcessingInfo processingInfo = finalizeUpload(mediaId);
-
-                        while (processingInfo != null) {
-                            processingInfo = awaitUploadCompletion(mediaIds, mediaId, processingInfo);
-                        }
+                        mediaIds.add(callApi(request(Verb.POST, V1_UPLOAD + cat, "multipart/form-data",
+                                new FileByteArrayBodyPartPayload("application/octet-stream", in.readAllBytes(), "media",
+                                        file.getName()),
+                                null), UploadResponse.class).getMediaId());
                     }
                 } else {
                     LOGGER.error("Couldn't find by its SHA1 a file we've just uploaded: {}", metadata.getSha1());
                 }
             } catch (IOException | RuntimeException | URISyntaxException e) {
                 LOGGER.error("Unable to retrieve JPEG from Commons or upload it to Twitter: {}", e.getMessage(), e);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
             }
         }
         // Don't return empty media object as it causes bad request in v2/tweet endpoint
         return mediaIds.isEmpty() ? null : new TweetMedia(mediaIds);
-    }
-
-    private long initializeUpload(String mime, String cat, final long contentLength) throws IOException {
-        return callApi(request(Verb.POST, V1_UPLOAD, "multipart/form-data", null,
-                Map.of("command", "INIT", "media_type", mime, "total_bytes", contentLength, "media_category", cat)),
-                UploadResponse.class).getMediaId();
-    }
-
-    private void performMultipartUpload(InputStream in, long mediaId, String fileName) throws IOException {
-        int idx = 0;
-        byte[] bytes;
-        do {
-            bytes = in.readNBytes(1 * 1024 * 1024);
-            callApi(request(Verb.POST, V1_UPLOAD, "multipart/form-data",
-                    new FileByteArrayBodyPartPayload("application/octet-stream", bytes, "media", fileName),
-                    Map.of("command", "APPEND", "media_id", mediaId, "segment_index", idx++)), Object.class);
-        } while (bytes.length > 0);
-    }
-
-    private ProcessingInfo finalizeUpload(final long mediaId) throws IOException {
-        return callApi(request(Verb.POST, V1_UPLOAD, "multipart/form-data", null,
-                Map.of("command", "FINALIZE", "media_id", mediaId)), UploadResponse.class).getProcessingInfo();
-    }
-
-    private ProcessingInfo awaitUploadCompletion(List<Long> mediaIds, final long mediaId, ProcessingInfo processingInfo)
-            throws InterruptedException, IOException {
-        int checkAfterSecs = processingInfo.getCheckAfterSecs();
-        LOGGER.info("Waiting {} seconds for the upload to be complete...", checkAfterSecs);
-        Thread.sleep(checkAfterSecs * 1000L);
-        processingInfo = callApi(
-                request(Verb.GET, V1_UPLOAD, null, null, Map.of("command", "STATUS", "media_id", mediaId)),
-                UploadResponse.class).getProcessingInfo();
-
-        switch (processingInfo.getState()) {
-        case "succeeded":
-            LOGGER.info("Upload of media id {} succeeded", mediaId);
-            mediaIds.add(mediaId);
-            processingInfo = null;
-            break;
-        case "failed":
-            LOGGER.error("Upload of media id {} failed", mediaId);
-            processingInfo = null;
-            break;
-        case "pending", "in_progress":
-            LOGGER.info("Upload of media id {} still in progress", mediaId);
-            break;
-        default:
-            LOGGER.error("Upload of media id {} is undetermined", mediaId);
-            processingInfo = null;
-        }
-        return processingInfo;
     }
 }
