@@ -101,6 +101,9 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
             case "pierre_markuse":
                 result.add("Files from Pierre Markuse Flickr stream");
                 break;
+            case "192271236@N03":
+                result.add("Files from Andrea Luck Flickr stream");
+                break;
             }
         }
         return result;
@@ -111,7 +114,7 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
         switch (uploadedMedia.getPathAlias()) {
         case "geckzilla", "markmccaughrean":
             return Set.of("✨");
-        case "kevinmgill":
+        case "kevinmgill", "192271236@N03":
             return Set.of("🪐");
         case "pierre_markuse":
             return Set.of("🌍");
@@ -133,6 +136,8 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
             return Set.of("@pierre_markuse@mastodon.world");
         case "harrystrangerphotography", "194849271@N04":
             return Set.of("@spacefromspace@spacey.space");
+        case "192271236@N03":
+            return Set.of("@andrealuck@fosstodon.org");
         default:
             return Set.of();
         }
@@ -151,6 +156,8 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
             return Set.of("@Pierre_Markuse");
         case "harrystrangerphotography", "194849271@N04":
             return Set.of("@Harry__Stranger");
+        case "192271236@N03":
+            return Set.of("@andrluck");
         default:
             return Set.of();
         }
