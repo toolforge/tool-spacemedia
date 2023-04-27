@@ -46,6 +46,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepositor
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.github.dozermapper.core.Mapper;
 
@@ -635,17 +636,19 @@ public class EsaService
     @Override
     protected Set<String> getEmojis(EsaMedia uploadedMedia) {
         Set<String> result = new HashSet<>();
-        fillSet(result, uploadedMedia.getMission(), Map.of("Ariel", "✨", "BepiColombo", "🪐", "CHEOPS", "🪐", "Euclid",
-                "✨", "ExoMars", "🪐", "Gaia", "✨", "Juice", "🪐", "XMM-Newton", "✨"));
+        fillSet(result, uploadedMedia.getMission(),
+                Map.of("Ariel", Emojis.STARS, "BepiColombo", Emojis.PLANET_WITH_RINGS, "CHEOPS",
+                        Emojis.PLANET_WITH_RINGS, "Euclid", Emojis.STARS, "ExoMars", Emojis.PLANET_WITH_RINGS, "Gaia",
+                        Emojis.STARS, "Juice", Emojis.PLANET_WITH_RINGS, "XMM-Newton", Emojis.STARS));
         Set<String> systems = uploadedMedia.getSystems();
         if (systems != null) {
             for (String system : systems) {
-                fillSet(result, system, Map.of("Copernicus", "🇪🇺"));
+                fillSet(result, system, Map.of("Copernicus", Emojis.FLAG_EUR));
             }
         }
         fillSet(result, uploadedMedia.getActivity(),
-                Map.of("Human Spaceflight", "🧑", "Observing the Earth", "🌍", "Operations", "📡", "Space Science",
-                        "🛰️", "Space Transportation", "🚀"));
+                Map.of("Human Spaceflight", Emojis.ASTRONAUT, "Observing the Earth", Emojis.EARTH_EUROPE, "Operations",
+                        Emojis.ANTENNA, "Space Science", Emojis.SATELLITE, "Space Transportation", Emojis.ROCKET));
         result.addAll(AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords()));
         return result;
     }

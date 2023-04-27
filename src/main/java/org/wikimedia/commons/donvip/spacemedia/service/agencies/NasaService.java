@@ -59,6 +59,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaServic
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService.Counter;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
@@ -456,7 +457,7 @@ public class NasaService
     protected Set<String> getEmojis(NasaMedia uploadedMedia) {
         Set<String> result = new HashSet<>();
         if (ISS_PATTERN.matcher(uploadedMedia.getId()).matches()) {
-            result.add("\\uD83E\\uDDD1\\u200D\\uD83D\\uDE80"); // astronaut
+            result.add(Emojis.ASTRONAUT);
         }
         result.addAll(AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords()));
         return result;

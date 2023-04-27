@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
 public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
@@ -49,7 +50,7 @@ public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia
 
     @Override
     protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
-        return Set.of("🚀");
+        return Set.of(Emojis.ROCKET);
     }
 
     @Override

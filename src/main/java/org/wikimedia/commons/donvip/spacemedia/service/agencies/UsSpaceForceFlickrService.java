@@ -13,6 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaTyped
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
 public class UsSpaceForceFlickrService extends AbstractAgencyFlickrService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
@@ -59,7 +60,7 @@ public class UsSpaceForceFlickrService extends AbstractAgencyFlickrService<Dvids
 
     @Override
     protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
-        return Set.of("🇺🇸");
+        return Set.of(Emojis.FLAG_USA);
     }
 
     @Override

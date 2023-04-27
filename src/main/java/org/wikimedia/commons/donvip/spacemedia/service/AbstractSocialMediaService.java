@@ -26,6 +26,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageReposito
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.core.httpclient.multipart.BodyPartPayload;
@@ -171,42 +172,42 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         for (String keyword : keywords) {
             switch (keyword.toLowerCase(Locale.ENGLISH)) {
             case "astronaut":
-                result.add("🧑");
+                result.add(Emojis.ASTRONAUT);
                 break;
             case "astronaut snoopy", "snoopy":
-                result.add("🐶");
+                result.add(Emojis.DOG_HEAD);
                 break;
             case "artemis":
-                result.add("🧑");
-                result.add("🌑");
+                result.add(Emojis.ASTRONAUT);
+                result.add(Emojis.MOON);
                 break;
             case "moon":
-                result.add("🌑");
+                result.add(Emojis.MOON);
                 break;
             case "launch vehicle", "rocket", "rocket science", "sls", "space launch system", "falcon", "starship",
                     "ariane":
-                result.add("🚀");
+                result.add(Emojis.ROCKET);
                 break;
             case "satellite", "spacecraft", "crew dragon", "starliner", "progress", "soyuz":
-                result.add("🛰️");
+                result.add(Emojis.SATELLITE);
                 break;
             case "planet", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune":
-                result.add("🪐");
+                result.add(Emojis.PLANET_WITH_RINGS);
                 break;
             case "plants", "plant production area":
-                result.add("🌱");
+                result.add(Emojis.PLANT);
                 break;
             case "earth":
-                result.add("🌎");
+                result.add(Emojis.EARTH_AMERICA);
                 break;
             case "sun":
-                result.add("☀️");
+                result.add(Emojis.SUN);
                 break;
             case "star", "galaxy":
-                result.add("✨");
+                result.add(Emojis.STARS);
                 break;
             case "comet":
-                result.add("☄️");
+                result.add(Emojis.COMET);
                 break;
             }
         }

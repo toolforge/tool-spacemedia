@@ -16,6 +16,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
 public class IndividualsFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
@@ -113,11 +114,13 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
     protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
         switch (uploadedMedia.getPathAlias()) {
         case "geckzilla", "markmccaughrean":
-            return Set.of("✨");
+            return Set.of(Emojis.STARS);
         case "kevinmgill", "192271236@N03":
-            return Set.of("🪐");
+            return Set.of(Emojis.PLANET_WITH_RINGS);
         case "pierre_markuse":
-            return Set.of("🌍");
+            return Set.of(Emojis.EARTH_EUROPE);
+        case "harrystrangerphotography", "194849271@N04":
+            return Set.of(Emojis.EARTH_EUROPE, Emojis.SATELLITE);
         default:
             return Set.of("❔");
         }

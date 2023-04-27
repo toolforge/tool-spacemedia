@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
 public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
@@ -89,7 +90,7 @@ public class ArianespaceYouTubeService extends AbstractAgencyYouTubeService {
 
     @Override
     protected Set<String> getEmojis(YouTubeVideo uploadedMedia) {
-        return Set.of("🚀");
+        return Set.of(Emojis.ROCKET);
     }
 
     @Override

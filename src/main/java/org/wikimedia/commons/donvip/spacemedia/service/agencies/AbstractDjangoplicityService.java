@@ -48,6 +48,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.Djangop
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -569,6 +570,6 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
 
     @Override
     protected Set<String> getEmojis(T uploadedMedia) {
-        return Set.of("🔭");
+        return Set.of(Emojis.TELESCCOPE);
     }
 }

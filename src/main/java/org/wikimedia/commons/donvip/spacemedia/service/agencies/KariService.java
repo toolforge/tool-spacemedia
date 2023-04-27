@@ -26,6 +26,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
 public class KariService extends AbstractAgencyService<KariMedia, Integer, LocalDate, KariMedia, Integer, LocalDate> {
@@ -261,7 +262,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
 
     @Override
     protected Set<String> getEmojis(KariMedia uploadedMedia) {
-        return Set.of("🇰🇷");
+        return Set.of(Emojis.FLAG_KOR);
     }
 
     @Override

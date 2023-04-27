@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
 public class HubbleEsaService extends AbstractDjangoplicityService<HubbleEsaMedia> {
@@ -72,7 +73,7 @@ public class HubbleEsaService extends AbstractDjangoplicityService<HubbleEsaMedi
 
     @Override
     protected Set<String> getEmojis(HubbleEsaMedia uploadedMedia) {
-        return Set.of("✨");
+        return Set.of(Emojis.STARS);
     }
 
     @Override

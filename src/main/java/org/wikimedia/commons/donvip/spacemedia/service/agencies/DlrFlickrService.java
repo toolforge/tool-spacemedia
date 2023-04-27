@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
 public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
@@ -65,7 +66,7 @@ public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, L
 
     @Override
     protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
-        return Set.of("🇩🇪");
+        return Set.of(Emojis.FLAG_GER);
     }
 
     @Override

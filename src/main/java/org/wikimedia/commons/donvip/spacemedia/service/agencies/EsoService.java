@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
 public class EsoService extends AbstractDjangoplicityService<EsoMedia> {
@@ -73,7 +74,7 @@ public class EsoService extends AbstractDjangoplicityService<EsoMedia> {
     @Override
     protected Set<String> getEmojis(EsoMedia uploadedMedia) {
         Set<String> result = super.getEmojis(uploadedMedia);
-        result.add("✨");
+        result.add(Emojis.STARS);
         return result;
     }
 

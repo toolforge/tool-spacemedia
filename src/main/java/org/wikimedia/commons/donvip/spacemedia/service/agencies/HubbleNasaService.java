@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 /**
  * Service harvesting images from NASA Hubble website.
@@ -65,7 +66,7 @@ public class HubbleNasaService extends AbstractStsciService {
     @Override
     protected Set<String> getEmojis(StsciMedia uploadedMedia) {
         Set<String> result = super.getEmojis(uploadedMedia);
-        result.add("✨");
+        result.add(Emojis.STARS);
         return result;
     }
 
