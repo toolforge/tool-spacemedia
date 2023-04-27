@@ -88,8 +88,10 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             request.setPayload(jackson.writeValueAsString(payload));
         } else if (payload instanceof BodyPartPayload bodyPartPayload) {
             request.initMultipartPayload();
-            params.forEach((k, v) -> request.addBodyPartPayloadInMultipartPayload(
-                    new FileByteArrayBodyPartPayload(v.toString().getBytes(), k)));
+            if (params != null) {
+                params.forEach((k, v) -> request.addBodyPartPayloadInMultipartPayload(
+                        new FileByteArrayBodyPartPayload(v.toString().getBytes(), k)));
+            }
             request.addBodyPartPayloadInMultipartPayload(bodyPartPayload);
         }
         getSignMethod().accept(getOAuthService(), getAccessToken(), request);
