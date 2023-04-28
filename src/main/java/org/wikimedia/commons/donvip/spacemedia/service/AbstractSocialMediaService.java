@@ -80,7 +80,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             Map<String, Object> params) throws IOException {
         checkInitialization();
         OAuthRequest request = new OAuthRequest(verb, endpoint);
-        if (verb.isPermitBody()) {
+        if (verb.isPermitBody() && contentType != null) {
             request.addHeader("Content-Type", contentType);
         }
         request.setCharset(StandardCharsets.UTF_8.name());

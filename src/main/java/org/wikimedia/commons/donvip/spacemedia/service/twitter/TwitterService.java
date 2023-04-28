@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -33,6 +34,10 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth10aService;
 
+import io.github.redouane59.twitter.TwitterClient;
+import io.github.redouane59.twitter.dto.tweet.MediaCategory;
+import io.github.redouane59.twitter.signature.TwitterCredentials;
+
 @Service
 public class TwitterService extends AbstractSocialMediaService<OAuth10aService, OAuth1AccessToken> {
 
@@ -45,6 +50,8 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
     private OAuth10aService oAuthService;
     private OAuth1AccessToken oAuthAccessToken;
 
+    private TwitterClient twitterClient;
+
     public TwitterService(
             @Value("${twitter.api.oauth1.consumer-token}") String consumerToken,
             @Value("${twitter.api.oauth1.consumer-secret}") String consumerSecret,
@@ -53,6 +60,8 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
         try {
             oAuthService = new ServiceBuilder(consumerToken).apiSecret(consumerSecret).build(TwitterApi.instance());
             oAuthAccessToken = new OAuth1AccessToken(accessToken, accessSecret);
+            twitterClient = new TwitterClient(TwitterCredentials.builder().accessToken(accessToken)
+                    .accessTokenSecret(accessSecret).apiKey(consumerToken).apiSecretKey(consumerSecret).build());
         } catch (IllegalArgumentException e) {
             LOGGER.error("Unable to setup Twitter API: {}", e.getMessage(), e);
         }
@@ -109,11 +118,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
                     try (CloseableHttpClient httpclient = HttpClients.createDefault();
                             CloseableHttpResponse response = httpclient.execute(new HttpGet(url.toURI()));
                             InputStream in = response.getEntity().getContent()) {
-
-                        mediaIds.add(callApi(request(Verb.POST, V1_UPLOAD + cat, "multipart/form-data",
-                                new FileByteArrayBodyPartPayload("application/octet-stream", in.readAllBytes(), "media",
-                                        file.getName()),
-                                null), UploadResponse.class).getMediaId());
+                        mediaIds.add(postMedia(cat, file, in.readAllBytes()));
                     }
                 } else {
                     LOGGER.error("Couldn't find by its SHA1 a file we've just uploaded: {}", metadata.getSha1());
@@ -124,5 +129,19 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
         }
         // Don't return empty media object as it causes bad request in v2/tweet endpoint
         return mediaIds.isEmpty() ? null : new TweetMedia(mediaIds);
+    }
+
+    private long postMedia(String cat, CommonsImageProjection file, byte[] data) {
+        try {
+            return callApi(request(Verb.POST, V1_UPLOAD + cat, null,
+                    new FileByteArrayBodyPartPayload("application/octet-stream", data, "media", file.getName()), null),
+                    UploadResponse.class).getMediaId();
+        } catch (Exception e) {
+            LOGGER.error("Unable to post media with own code: {}", e.getMessage(), e);
+            return Long.parseLong(
+                    twitterClient
+                            .uploadMedia(file.getName(), data, MediaCategory.valueOf(cat.toUpperCase(Locale.ENGLISH)))
+                            .getMediaId());
+        }
     }
 }
