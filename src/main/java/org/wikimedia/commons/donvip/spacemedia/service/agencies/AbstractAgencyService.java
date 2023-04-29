@@ -872,7 +872,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
         MediaUpdateResult ur = mediaService.updateMedia(media, getOriginalRepository(), getStringsToRemove(media),
                 forceUpdate, checkBlocklist(), null);
-        boolean result = false;
+        boolean result = ur.getResult();
         if (media.isIgnored() != Boolean.TRUE) {
             if (media.getDescription() != null) {
                 String description = media.getDescription().toLowerCase(Locale.ENGLISH);
