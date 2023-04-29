@@ -41,7 +41,7 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
 
     @Override
     @Cacheable("nasaSirsCountMissing")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
     @Override
@@ -57,17 +57,17 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
 
     @Override
     @Cacheable("nasaSirsCountUploaded")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     long countUploadedToCommons();
 
     // FIND
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     List<NasaSirsImage> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     Page<NasaSirsImage> findMissingInCommons(Pageable page);
 
     @Override
@@ -81,15 +81,15 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
     }
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     List<NasaSirsImage> findUploadedToCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     Page<NasaSirsImage> findUploadedToCommons(Pageable page);
 
     @Override
-    @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2")
+    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
     List<NasaSirsImage> findDuplicateInCommons();
 
     @Override

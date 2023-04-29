@@ -44,7 +44,7 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
     long countByIgnoredTrueAndMission(String mission);
 
     @Cacheable("stsciCountMissing")
-    @Query("select count(*) from #{#entityName} m where m.mission = ?1 and (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
+    @Query("select count(*) from #{#entityName} m where m.mission = ?1 and (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames)))")
     long countMissingInCommons(String mission);
 
     @Override
@@ -70,7 +70,7 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
     }
 
     @Cacheable("stsciCountUploaded")
-    @Query("select count(*) from #{#entityName} m where m.mission = ?1 and (exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames))")
+    @Query("select count(*) from #{#entityName} m where m.mission = ?1 and (exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames))")
     long countUploadedToCommons(String mission);
 
     @Cacheable("stsciCountPhashNotNullByMission")
@@ -87,17 +87,17 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
     Page<StsciMedia> findByIgnoredTrueAndMission(String mission, Pageable page);
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames)))")
     List<StsciMedia> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)))")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames)))")
     Page<StsciMedia> findMissingInCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames))) and m.mission = ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames))) and m.mission = ?1")
     List<StsciMedia> findMissingInCommons(String mission);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames))) and m.mission = ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames))) and m.mission = ?1")
     Page<StsciMedia> findMissingInCommons(String mission, Pageable page);
 
     @Override
@@ -119,24 +119,24 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
     }
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames)")
     List<StsciMedia> findUploadedToCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames)")
     Page<StsciMedia> findUploadedToCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m where (exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames)) and m.mission = ?1")
+    @Query("select m from #{#entityName} m where (exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames)) and m.mission = ?1")
     List<StsciMedia> findUploadedToCommons(String mission);
 
-    @Query("select m from #{#entityName} m where (exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames)) and m.mission = ?1")
+    @Query("select m from #{#entityName} m where (exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames)) and m.mission = ?1")
     Page<StsciMedia> findUploadedToCommons(String mission, Pageable page);
 
     @Override
-    @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2 or size (m.fullResCommonsFileNames) >= 2")
+    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2 or size (m.fullResMetadata.commonsFileNames) >= 2")
     List<StsciMedia> findDuplicateInCommons();
 
-    @Query("select m from #{#entityName} m where (size (m.commonsFileNames) >= 2 or size (m.fullResCommonsFileNames) >= 2) and m.mission = ?1")
+    @Query("select m from #{#entityName} m where (size (m.metadata.commonsFileNames) >= 2 or size (m.fullResMetadata.commonsFileNames) >= 2) and m.mission = ?1")
     List<StsciMedia> findDuplicateInCommons(String mission);
 
     @Override

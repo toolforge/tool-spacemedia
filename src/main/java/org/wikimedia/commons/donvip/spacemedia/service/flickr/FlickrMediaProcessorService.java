@@ -176,7 +176,7 @@ public class FlickrMediaProcessorService {
     private boolean handleBadVideo(FlickrMedia media) throws MalformedURLException {
         URL videoUrl = getVideoUrl(media);
         media.setOriginalUrl(videoUrl);
-        media.setCommonsFileNames(null);
+        media.getMetadata().setCommonsFileNames(null);
         media.getMetadata().setSha1(null);
         media.getMetadata().setAssetUrl(videoUrl);
         return true;

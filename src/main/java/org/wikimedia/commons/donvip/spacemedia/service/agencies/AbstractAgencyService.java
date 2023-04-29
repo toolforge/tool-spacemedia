@@ -30,9 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
@@ -552,26 +550,23 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded, boolean isManual)
             throws IOException, UploadException {
-        return doUpload(media, media.getMetadata(), media::getCommonsFileNames, media::setCommonsFileNames,
-                checkUnicity, uploaded, isManual);
+        return doUpload(media, media.getMetadata(), checkUnicity, uploaded, isManual);
     }
 
-    protected final int doUpload(T media, Metadata metadata, Supplier<Set<String>> getter,
-            Consumer<Set<String>> setter, boolean checkUnicity, Collection<Metadata> uploaded, boolean isManual)
-            throws IOException, UploadException {
+    protected final int doUpload(T media, Metadata metadata, boolean checkUnicity, Collection<Metadata> uploaded,
+            boolean isManual) throws IOException, UploadException {
         if (metadata != null && metadata.getAssetUrl() != null
-                && shouldUpload(new UploadContext<>(media, metadata, getter.get(), isManual))) {
-            checkUploadPreconditions(media, metadata, getter.get(), checkUnicity);
-            setter.accept(new HashSet<>(Set.of(
+                && shouldUpload(new UploadContext<>(media, metadata, isManual))) {
+            checkUploadPreconditions(media, metadata, checkUnicity);
+            metadata.setCommonsFileNames(new HashSet<>(Set.of(
                     commonsService.upload(getWikiCode(media, metadata), media.getUploadTitle(),
                             metadata.getFileExtension(), metadata.getAssetUrl(), metadata.getSha1()))));
             uploaded.add(metadata);
             return 1;
         } else {
             LOGGER.info(
-                    "Upload not done for {} / {}. Upload mode: {}. Ignored: {}. Commons filenames: {}. Permitted file type: {}",
-                    media.getId(), metadata, getUploadMode(), media.isIgnored(), getter.get(),
-                    isPermittedFileType(metadata));
+                    "Upload not done for {} / {}. Upload mode: {}. Ignored: {}. Permitted file type: {}",
+                    media.getId(), metadata, getUploadMode(), media.isIgnored(), isPermittedFileType(metadata));
             return 0;
         }
     }
@@ -792,7 +787,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected void checkUploadPreconditions(T media, Metadata metadata, Set<String> commonsFileNames, boolean checkUnicity) throws IOException {
+    protected void checkUploadPreconditions(T media, Metadata metadata, boolean checkUnicity) throws IOException {
         String sha1 = metadata.getSha1();
         if (sha1 == null) {
             throw new ImageUploadForbiddenException(media + " SHA-1 has not been computed.");
@@ -802,12 +797,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             throw new ImageUploadForbiddenException(media + " is present several times.");
         }
         // Double-check for duplicates before upload!
-        if (isNotEmpty(commonsFileNames)) {
-            throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
+        if (isNotEmpty(metadata.getCommonsFileNames())) {
+            throw new ImageUploadForbiddenException(media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
         if (mediaService.findCommonsFiles(media)) {
             media = saveMedia(media);
-            throw new ImageUploadForbiddenException(media + " is already on Commons: " + media.getCommonsFileNames());
+            throw new ImageUploadForbiddenException(media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
         if (findTemplates(media).isEmpty()) {
             throw new ImageUploadForbiddenException(media + " has no template, so may be not free");
@@ -980,7 +975,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 || (getUploadMode() == UploadMode.AUTO_FROM_DATE
                         && (ctx.isManual() || ctx.getMedia().getYear().getValue() >= minYearUploadAuto))
                 || getUploadMode() == UploadMode.MANUAL)
-                && !isForbiddenUpload(ctx.getMedia(), ctx.isManual()) && isEmpty(ctx.getCommonsFilenames())
+                && !isForbiddenUpload(ctx.getMedia(), ctx.isManual())
+                && isEmpty(ctx.getMetadata().getCommonsFileNames())
                 && isPermittedFileType(ctx.getMetadata());
     }
 
@@ -988,12 +984,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return (getUploadMode() == UploadMode.AUTO
                 || (getUploadMode() == UploadMode.AUTO_FROM_DATE
                         && (ctx.isManual() || ctx.getMedia().getYear().getValue() >= minYearUploadAuto)))
-                && !Boolean.TRUE.equals(ctx.getMedia().isIgnored()) && isEmpty(ctx.getCommonsFilenames())
+                && !Boolean.TRUE.equals(ctx.getMedia().isIgnored()) && isEmpty(ctx.getMetadata().getCommonsFileNames())
                 && isEmpty(ctx.getMedia().getDuplicates()) && isPermittedFileType(ctx.getMetadata());
     }
 
     protected boolean shouldUploadAuto(T media, boolean isManual) {
-        return shouldUploadAuto(new UploadContext<>(media, media.getMetadata(), media.getCommonsFileNames(), isManual));
+        return shouldUploadAuto(new UploadContext<>(media, media.getMetadata(), isManual));
     }
 
     protected static void addOtherField(StringBuilder sb, String name, Collection<?> values, Map<String, String> catMapping) {

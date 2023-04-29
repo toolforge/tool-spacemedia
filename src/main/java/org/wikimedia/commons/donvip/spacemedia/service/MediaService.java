@@ -21,9 +21,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -547,30 +545,26 @@ public class MediaService {
      * @throws IOException in case of I/O error
      */
     public boolean findCommonsFilesWithSha1(Media<?, ?> media) throws IOException {
-        boolean result = findCommonsFilesWithSha1(media.getMetadata(), media::getCommonsFileNames,
-                media::setCommonsFileNames);
+        boolean result = findCommonsFilesWithSha1(media.getMetadata());
         if (media instanceof FullResMedia<?, ?> frMedia) {
-            if (findCommonsFilesWithSha1(frMedia.getFullResMetadata(), frMedia::getFullResCommonsFileNames,
-                    frMedia::setFullResCommonsFileNames)) {
+            if (findCommonsFilesWithSha1(frMedia.getFullResMetadata())) {
                 result = true;
             }
         }
         if (media instanceof FullResExtraMedia<?, ?> exMedia) {
-            if (findCommonsFilesWithSha1(exMedia.getExtraMetadata(), exMedia::getExtraCommonsFileNames,
-                    exMedia::setExtraCommonsFileNames)) {
+            if (findCommonsFilesWithSha1(exMedia.getExtraMetadata())) {
                 result = true;
             }
         }
         return result;
     }
 
-    private boolean findCommonsFilesWithSha1(Metadata metadata, Supplier<Set<String>> getter,
-            Consumer<Set<String>> setter) throws IOException {
+    private boolean findCommonsFilesWithSha1(Metadata metadata) throws IOException {
         String sha1 = metadata.getSha1();
-        if (sha1 != null && isEmpty(getter.get())) {
+        if (sha1 != null && isEmpty(metadata.getCommonsFileNames())) {
             Set<String> files = commonsService.findFilesWithSha1(sha1);
             if (!files.isEmpty()) {
-                setter.accept(files);
+                metadata.setCommonsFileNames(files);
                 return true;
             }
         }
@@ -588,27 +582,23 @@ public class MediaService {
      * @throws IOException in case of I/O error
      */
     public boolean findCommonsFilesWithPhash(Media<?, ?> media, boolean excludeSelfSha1) throws IOException {
-        boolean result = findCommonsFilesWithPhash(media.getMetadata(), media::getCommonsFileNames,
-                media::setCommonsFileNames, excludeSelfSha1);
+        boolean result = findCommonsFilesWithPhash(media.getMetadata(), excludeSelfSha1);
         if (media instanceof FullResMedia<?, ?> frMedia) {
-            if (findCommonsFilesWithPhash(frMedia.getFullResMetadata(), frMedia::getFullResCommonsFileNames,
-                    frMedia::setFullResCommonsFileNames, excludeSelfSha1)) {
+            if (findCommonsFilesWithPhash(frMedia.getFullResMetadata(), excludeSelfSha1)) {
                 result = true;
             }
         }
         if (media instanceof FullResExtraMedia<?, ?> exMedia) {
-            if (findCommonsFilesWithPhash(exMedia.getExtraMetadata(), exMedia::getExtraCommonsFileNames,
-                    exMedia::setExtraCommonsFileNames, excludeSelfSha1)) {
+            if (findCommonsFilesWithPhash(exMedia.getExtraMetadata(), excludeSelfSha1)) {
                 result = true;
             }
         }
         return result;
     }
 
-    private boolean findCommonsFilesWithPhash(Metadata metadata, Supplier<Set<String>> getter,
-            Consumer<Set<String>> setter, boolean excludeSelfSha1) throws IOException {
+    private boolean findCommonsFilesWithPhash(Metadata metadata, boolean excludeSelfSha1) throws IOException {
         String phash = metadata.getPhash();
-        if (phash != null && isEmpty(getter.get())) {
+        if (phash != null && isEmpty(metadata.getCommonsFileNames())) {
             List<String> sha1s = hashRepository.findSha1ByPhash(phash);
             if (excludeSelfSha1) {
                 sha1s.remove(metadata.getSha1());
@@ -616,7 +606,7 @@ public class MediaService {
             if (!sha1s.isEmpty()) {
                 Set<String> files = commonsService.findFilesWithSha1(sha1s);
                 if (!files.isEmpty()) {
-                    setter.accept(files);
+                    metadata.setCommonsFileNames(files);
                     return true;
                 }
             }
@@ -628,19 +618,16 @@ public class MediaService {
         boolean result = false;
         Collection<WikiPage> images = commonsService.searchImages(media.getIdUsedInCommons());
         if (!images.isEmpty()) {
-            if (findCommonsFilesWithIdAndPhash(images, media.getMetadata(), media::getCommonsFileNames,
-                    media::setCommonsFileNames)) {
+            if (findCommonsFilesWithIdAndPhash(images, media.getMetadata())) {
                 result = true;
             }
             if (media instanceof FullResMedia<?, ?> frMedia) {
-                if (findCommonsFilesWithIdAndPhash(images, frMedia.getFullResMetadata(),
-                        frMedia::getFullResCommonsFileNames, frMedia::setFullResCommonsFileNames)) {
+                if (findCommonsFilesWithIdAndPhash(images, frMedia.getFullResMetadata())) {
                     result = true;
                 }
             }
             if (media instanceof FullResExtraMedia<?, ?> exMedia) {
-                if (findCommonsFilesWithIdAndPhash(images, exMedia.getExtraMetadata(),
-                        exMedia::getExtraCommonsFileNames, exMedia::setExtraCommonsFileNames)) {
+                if (findCommonsFilesWithIdAndPhash(images, exMedia.getExtraMetadata())) {
                     result = true;
                 }
             }
@@ -648,9 +635,8 @@ public class MediaService {
         return result;
     }
 
-    private boolean findCommonsFilesWithIdAndPhash(Collection<WikiPage> images, Metadata metadata,
-            Supplier<Set<String>> getter, Consumer<Set<String>> setter) {
-        if (metadata.getPhash() != null && isEmpty(getter.get())) {
+    private boolean findCommonsFilesWithIdAndPhash(Collection<WikiPage> images, Metadata metadata) {
+        if (metadata.getPhash() != null && isEmpty(metadata.getCommonsFileNames())) {
             for (WikiPage image : images.stream().filter(i -> filterByMimeAndSize(metadata, i.getImageInfo()[0]))
                     .toList()) {
                 String filename = image.getTitle().replace("File:", "").replace(' ', '_');
@@ -663,7 +649,7 @@ public class MediaService {
                         hash.orElseThrow(() -> new IllegalStateException("No hash for " + sha1base36)).getPhash());
                 if (score <= perceptualThresholdIdenticalId) {
                     LOGGER.info("Found match ({}) between {} and {}", score, metadata, image);
-                    setter.accept(new HashSet<>(Set.of(filename)));
+                    metadata.setCommonsFileNames(new HashSet<>(Set.of(filename)));
                     return true;
                 } else if (hash.isPresent() && LOGGER.isDebugEnabled()) {
                     LOGGER.debug("No match between {} and {} / {} -> {}", metadata, image, hash,
@@ -742,7 +728,7 @@ public class MediaService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public YouTubeVideo updateYouTubeCommonsFileName(YouTubeVideo video, String filename) {
-        video.setCommonsFileNames(new HashSet<>(Set.of(filename)));
+        video.getMetadata().setCommonsFileNames(new HashSet<>(Set.of(filename)));
         return youtubeRepository.save(video);
     }
 }

@@ -46,11 +46,11 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
 
     @Override
     @Cacheable("youtubeCountMissing")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
     @Cacheable("youtubeCountMissingByChannel")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.channelId in ?1")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.channelId in ?1")
     long countMissingInCommons(Set<String> youtubeChannels);
 
     @Override
@@ -66,11 +66,11 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
 
     @Override
     @Cacheable("youtubeCountUploaded")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     long countUploadedToCommons();
 
     @Cacheable("youtubeCountUploadedByChannel")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames) and m.channelId in ?1")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.channelId in ?1")
     long countUploadedToCommons(Set<String> youtubeChannels);
 
     // FIND
@@ -88,17 +88,17 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
     Page<YouTubeVideo> findByIgnoredTrue(Set<String> youtubeChannels, Pageable page);
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     List<YouTubeVideo> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     Page<YouTubeVideo> findMissingInCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.channelId in ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.channelId in ?1")
     List<YouTubeVideo> findMissingInCommons(Set<String> youtubeChannels);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.channelId in ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.channelId in ?1")
     Page<YouTubeVideo> findMissingInCommons(Set<String> youtubeChannels, Pageable page);
 
     @Override
@@ -112,24 +112,24 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
     }
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     List<YouTubeVideo> findUploadedToCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     Page<YouTubeVideo> findUploadedToCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) and m.channelId in ?1")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.channelId in ?1")
     List<YouTubeVideo> findUploadedToCommons(Set<String> youtubeChannels);
 
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) and m.channelId in ?1")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.channelId in ?1")
     Page<YouTubeVideo> findUploadedToCommons(Set<String> youtubeChannels, Pageable page);
 
     @Override
-    @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2")
+    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
     List<YouTubeVideo> findDuplicateInCommons();
 
-    @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2 and m.channelId in ?1")
+    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2 and m.channelId in ?1")
     List<YouTubeVideo> findDuplicateInCommons(Set<String> youtubeChannels);
 
     @Override

@@ -262,7 +262,6 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
                 + (metadata != null ? "sha1=" + metadata + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
-                + (commonsFileNames != null ? "commonsFileNames=" + commonsFileNames + ", " : "")
                 + (ignored != null ? "ignored=" + ignored + ", " : "")
                 + (ignoredReason != null ? "ignoredReason=" + ignoredReason : "") + "]";
     }

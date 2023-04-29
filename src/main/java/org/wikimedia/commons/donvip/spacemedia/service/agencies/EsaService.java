@@ -358,7 +358,7 @@ public class EsaService
             Metadata metadata = media.getMetadata();
             Metadata fullResMetadata = media.getFullResMetadata();
             if ("Envisat".equalsIgnoreCase(media.getMission()) && fullResMetadata.getAssetUrl() != null
-                    && CollectionUtils.isEmpty(media.getCommonsFileNames())) {
+                    && CollectionUtils.isEmpty(metadata.getCommonsFileNames())) {
                 ignoreAndSaveFile(media, metadata.getAssetUrl(), "ENVISAT low resolution image", false);
             }
             if (media.isIgnored() == null) {

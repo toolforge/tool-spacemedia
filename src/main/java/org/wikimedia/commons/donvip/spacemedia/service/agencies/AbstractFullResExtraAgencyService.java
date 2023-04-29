@@ -30,8 +30,7 @@ public abstract class AbstractFullResExtraAgencyService<T extends FullResExtraMe
     @Override
     protected final boolean shouldUploadAuto(T media, boolean isManual) {
         return super.shouldUploadAuto(media, isManual)
-                || shouldUploadAuto(new UploadContext<>(media, media.getExtraMetadata(),
-                        media.getExtraCommonsFileNames(), isManual));
+                || shouldUploadAuto(new UploadContext<>(media, media.getExtraMetadata(), isManual));
     }
 
     @Override
@@ -61,7 +60,7 @@ public abstract class AbstractFullResExtraAgencyService<T extends FullResExtraMe
     protected final int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded, boolean isManual)
             throws IOException, UploadException {
         return super.doUpload(media, checkUnicity, uploaded, isManual) + doUpload(media, media.getExtraMetadata(),
-                media::getExtraCommonsFileNames, media::setExtraCommonsFileNames, checkUnicity, uploaded, isManual);
+                checkUnicity, uploaded, isManual);
     }
 
     protected final T findByExtraSha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {

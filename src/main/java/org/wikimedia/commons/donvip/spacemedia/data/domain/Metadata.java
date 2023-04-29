@@ -1,13 +1,19 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
@@ -62,6 +68,10 @@ public class Metadata implements MetadataProjection {
     @JoinColumn(name = "exif_id", referencedColumnName = "id")
     private ExifMetadata exif;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @JsonProperty("commons_file_names")
+    protected Set<String> commonsFileNames = new HashSet<>();
+
     public String getSha1() {
         return sha1;
     }
@@ -87,6 +97,11 @@ public class Metadata implements MetadataProjection {
     @Transient
     public void setPerceptualHash(BigInteger phash) {
         setPhash(HashHelper.encode(phash));
+    }
+
+    @Transient
+    public boolean shouldUpload() {
+        return isNotBlank(sha1) && isEmpty(getCommonsFileNames());
     }
 
     public Boolean isReadableImage() {
@@ -119,6 +134,14 @@ public class Metadata implements MetadataProjection {
 
     public void setExif(ExifMetadata exif) {
         this.exif = exif;
+    }
+
+    public Set<String> getCommonsFileNames() {
+        return commonsFileNames;
+    }
+
+    public void setCommonsFileNames(Set<String> commonsFileNames) {
+        this.commonsFileNames = commonsFileNames;
     }
 
     @Transient
@@ -227,7 +250,7 @@ public class Metadata implements MetadataProjection {
 
     @Override
     public int hashCode() {
-        return Objects.hash(phash, sha1, readableImage, assetUrl, size, exif);
+        return Objects.hash(phash, sha1, readableImage, assetUrl, size, commonsFileNames, exif);
     }
 
     @Override
@@ -239,7 +262,7 @@ public class Metadata implements MetadataProjection {
         Metadata other = (Metadata) obj;
         return size == other.size && Objects.equals(phash, other.phash) && Objects.equals(sha1, other.sha1)
                 && Objects.equals(readableImage, other.readableImage) && Objects.equals(assetUrl, other.assetUrl)
-                && Objects.equals(exif, other.exif);
+                && Objects.equals(commonsFileNames, other.commonsFileNames) && Objects.equals(exif, other.exif);
     }
 
     @Override

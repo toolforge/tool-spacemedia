@@ -1,10 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 import java.time.temporal.Temporal;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -16,13 +12,13 @@ import javax.persistence.AssociationOverrides;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PostLoad;
+import javax.persistence.Transient;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -35,8 +31,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class FullResExtraMedia<ID, D extends Temporal> extends FullResMedia<ID, D> {
 
     @Embedded
-    @AssociationOverrides(
-            @AssociationOverride(joinColumns = @JoinColumn(name = "extra_exif_id"), name = "exif"))
+    @AssociationOverrides(value = {
+            @AssociationOverride(joinColumns = @JoinColumn(name = "extra_commons_file_names"), name = "commonsFileNames"),
+            @AssociationOverride(joinColumns = @JoinColumn(name = "extra_exif_id"), name = "exif") })
     @AttributeOverrides(value = {
             @AttributeOverride(column = @Column(name = "extra_asset_url"), name = "assetUrl"),
             @AttributeOverride(column = @Column(name = "extra_readable_image"), name = "readableImage"),
@@ -45,10 +42,6 @@ public abstract class FullResExtraMedia<ID, D extends Temporal> extends FullResM
             @AttributeOverride(column = @Column(name = "extra_phash", columnDefinition = "VARCHAR(52)", length = 52), name = "phash") })
     @JsonProperty("extra_metadata")
     protected Metadata extraMetadata = new Metadata();
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    @JsonProperty("extra_commons_file_names")
-    protected Set<String> extraCommonsFileNames = new HashSet<>();
 
     @Override
     @PostLoad
@@ -67,17 +60,15 @@ public abstract class FullResExtraMedia<ID, D extends Temporal> extends FullResM
         this.extraMetadata = extraMetadata;
     }
 
+    @Transient
+    @JsonIgnore
     public Set<String> getExtraCommonsFileNames() {
-        return extraCommonsFileNames;
-    }
-
-    public void setExtraCommonsFileNames(Set<String> extraCommonsFileNames) {
-        this.extraCommonsFileNames = extraCommonsFileNames;
+        return getExtraMetadata().getCommonsFileNames();
     }
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(extraCommonsFileNames, extraMetadata);
+        return 31 * super.hashCode() + Objects.hash(extraMetadata);
     }
 
     @Override
@@ -87,16 +78,14 @@ public abstract class FullResExtraMedia<ID, D extends Temporal> extends FullResM
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         FullResExtraMedia<?, ?> other = (FullResExtraMedia<?, ?>) obj;
-        return Objects.equals(extraCommonsFileNames, other.extraCommonsFileNames)
-                && Objects.equals(extraMetadata, other.extraMetadata);
+        return Objects.equals(extraMetadata, other.extraMetadata);
     }
 
     @Override
     public List<String> getAssetsToUpload() {
         List<String> result = super.getAssetsToUpload();
-        String extraSha1 = extraMetadata.getSha1();
-        if (isNotBlank(extraSha1) && isEmpty(getExtraCommonsFileNames())) {
-            result.add(extraSha1);
+        if (extraMetadata.shouldUpload()) {
+            result.add(extraMetadata.getSha1());
         }
         return result;
     }
@@ -127,9 +116,6 @@ public abstract class FullResExtraMedia<ID, D extends Temporal> extends FullResM
         super.copyDataFrom(mediaFromApi);
         if (extraMetadata.getAssetUrl() == null) {
             setExtraMetadata(mediaFromApi.getExtraMetadata());
-        }
-        if (extraCommonsFileNames.isEmpty()) {
-            setExtraCommonsFileNames(mediaFromApi.getExtraCommonsFileNames());
         }
         return this;
     }

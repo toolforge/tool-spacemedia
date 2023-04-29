@@ -38,31 +38,31 @@ public interface FullResExtraMediaRepository<T extends FullResExtraMedia<ID, D>,
     List<T> findByMetadata_Sha1OrFullResMetadata_Sha1OrExtraMetadata_Sha1(String sha1, String fullResSha1, String extraSha1);
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.duplicates) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)) or (m.extraMetadata.sha1 is not null and not exists elements (m.extraCommonsFileNames)))")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.duplicates) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames)) or (m.extraMetadata.sha1 is not null and not exists elements (m.extraMetadata.commonsFileNames)))")
     List<T> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.duplicates) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)) or (m.extraMetadata.sha1 is not null and not exists elements (m.extraCommonsFileNames)))")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.duplicates) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames)) or (m.extraMetadata.sha1 is not null and not exists elements (m.extraMetadata.commonsFileNames)))")
     Page<T> findMissingInCommons(Pageable page);
 
     @Override
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.duplicates) and ((m.metadata.sha1 is not null and not exists elements (m.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResCommonsFileNames)) or (m.extraMetadata.sha1 is not null and not exists elements (m.extraCommonsFileNames)))")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.duplicates) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames)) or (m.extraMetadata.sha1 is not null and not exists elements (m.extraMetadata.commonsFileNames)))")
     long countMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames) or exists elements (m.extraCommonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames) or exists elements (m.extraMetadata.commonsFileNames)")
     List<T> findUploadedToCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames) or exists elements (m.extraCommonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames) or exists elements (m.extraMetadata.commonsFileNames)")
     Page<T> findUploadedToCommons(Pageable page);
 
     @Override
-    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames) or exists elements (m.fullResCommonsFileNames) or exists elements (m.extraCommonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames) or exists elements (m.extraMetadata.commonsFileNames)")
     long countUploadedToCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2 or size (m.fullResCommonsFileNames) >= 2 or size (m.extraCommonsFileNames) >= 2")
+    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2 or size (m.fullResMetadata.commonsFileNames) >= 2 or size (m.extraMetadata.commonsFileNames) >= 2")
     List<T> findDuplicateInCommons();
 
     @Override

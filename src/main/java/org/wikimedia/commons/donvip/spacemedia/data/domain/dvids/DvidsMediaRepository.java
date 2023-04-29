@@ -54,18 +54,18 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
 
     @Override
     @Cacheable("dvidsCountMissing")
-    @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
     @Cacheable("dvidsCountMissingByUnit")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.unit in ?1")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
     long countMissingInCommonsByUnit(Set<String> units);
 
     @Cacheable("dvidsCountMissingByType")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.id.type in ?1")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.id.type in ?1")
     long countMissingInCommonsByType(Set<DvidsMediaType> types);
 
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
     long countMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units);
 
     @Override
@@ -92,11 +92,11 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
 
     @Override
     @Cacheable("dvidsCountUploaded")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     long countUploadedToCommons();
 
     @Cacheable("dvidsCountUploadedByUnit")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames) and m.unit in ?1")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
     long countUploadedToCommons(Set<String> units);
 
     @Override
@@ -122,24 +122,24 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     Page<T> findByIgnoredTrue(Set<String> units, Pageable page);
 
     @Override
-    @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2")
+    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
     List<T> findDuplicateInCommons();
 
-    @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2 and m.unit in ?1")
+    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2 and m.unit in ?1")
     List<T> findDuplicateInCommons(Set<String> units);
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     List<T> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     Page<T> findMissingInCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.id.type in ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.id.type in ?1")
     Page<T> findMissingInCommonsByType(Set<DvidsMediaType> types, Pageable page);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
     Page<T> findMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units, Pageable page);
 
     @Override
@@ -160,24 +160,24 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
         return findMissingInCommonsByTypeAndUnit(DvidsMediaType.videos(), units, page);
     }
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.unit in ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
     List<T> findMissingInCommonsByUnit(Set<String> units);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.commonsFileNames) and m.unit in ?1")
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
     Page<T> findMissingInCommonsByUnit(Set<String> units, Pageable page);
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     List<T> findUploadedToCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     Page<T> findUploadedToCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) and m.unit in ?1")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
     List<T> findUploadedToCommons(Set<String> units);
 
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames) and m.unit in ?1")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
     Page<T> findUploadedToCommons(Set<String> units, Pageable page);
 
     @Override

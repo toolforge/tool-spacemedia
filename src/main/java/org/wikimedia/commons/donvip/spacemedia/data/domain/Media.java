@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -65,10 +64,6 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     @Column(nullable = true, columnDefinition = "MEDIUMTEXT")
     @FullTextField
     protected String description;
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    @JsonProperty("commons_file_names")
-    protected Set<String> commonsFileNames = new HashSet<>();
 
     @Column(nullable = true)
     protected Boolean ignored;
@@ -172,12 +167,10 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         return getCommonsFileNames();
     }
 
+    @Transient
+    @JsonIgnore
     public Set<String> getCommonsFileNames() {
-        return commonsFileNames;
-    }
-
-    public void setCommonsFileNames(Set<String> commonsFileNames) {
-        this.commonsFileNames = commonsFileNames;
+        return getMetadata().getCommonsFileNames();
     }
 
     public Boolean isIgnored() {
@@ -285,9 +278,8 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     public List<String> getAssetsToUpload() {
         List<String> result = new ArrayList<>();
-        String sha1 = metadata.getSha1();
-        if (isNotBlank(sha1) && isEmpty(getCommonsFileNames())) {
-            result.add(sha1);
+        if (metadata.shouldUpload()) {
+            result.add(metadata.getSha1());
         }
         return result;
     }

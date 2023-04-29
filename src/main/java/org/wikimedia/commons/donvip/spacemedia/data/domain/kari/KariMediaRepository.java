@@ -41,7 +41,7 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
 
     @Override
     @Cacheable("kariCountMissing")
-    @Query("select count(*) from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
     @Override
@@ -57,17 +57,17 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
 
     @Override
     @Cacheable("kariCountUploaded")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     long countUploadedToCommons();
 
     // FIND
 
     @Override
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where not exists elements (m.metadata.commonsFileNames)")
     List<KariMedia> findMissingInCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where not exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where not exists elements (m.metadata.commonsFileNames)")
     Page<KariMedia> findMissingInCommons(Pageable page);
 
     @Override
@@ -81,15 +81,15 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
     }
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     List<KariMedia> findUploadedToCommons();
 
     @Override
-    @Query("select m from #{#entityName} m where exists elements (m.commonsFileNames)")
+    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     Page<KariMedia> findUploadedToCommons(Pageable page);
 
     @Override
-    @Query("select m from #{#entityName} m where size (m.commonsFileNames) >= 2")
+    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
     List<KariMedia> findDuplicateInCommons();
 
     @Override
