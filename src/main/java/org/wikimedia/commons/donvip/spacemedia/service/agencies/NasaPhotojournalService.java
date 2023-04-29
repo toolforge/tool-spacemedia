@@ -60,6 +60,9 @@ public class NasaPhotojournalService
     static final Pattern QTVR_PATTERN = Pattern.compile(
             ".*<a href=\"(https?://.+\\.mov)\".*");
 
+    static final Pattern FIGURE_PATTERN = Pattern.compile(
+            ".*<a href=\"(https?://.+/figures/.+\\.png)\".*");
+
     static final Pattern ACQ_PATTERN = Pattern.compile(
             ".*acquired ((?:January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, [1-2]\\d{3}).*");
 
@@ -162,6 +165,10 @@ public class NasaPhotojournalService
         boolean save = false;
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
+            // To remove after all previous files have been correctly identified
+            if (detectFigures(media)) {
+                save = true;
+            }
         } else {
             media = solrDocumentToMedia(document);
             save = true;
@@ -206,7 +213,20 @@ public class NasaPhotojournalService
                 }
             }
         }
+        detectFigures(media);
         return media;
+    }
+
+    private boolean detectFigures(NasaPhotojournalMedia media) throws MalformedURLException {
+        String caption = media.getDescription();
+        if (media.getExtraMetadata().getAssetUrl() == null && caption.contains("<img ")) {
+            Matcher m = FIGURE_PATTERN.matcher(caption);
+            if (m.matches()) {
+                media.getExtraMetadata().setAssetUrl(new URL(m.group(1)));
+                return true;
+            }
+        }
+        return false;
     }
 
     private void sanityChecks(SolrDocument doc) throws MalformedURLException {
@@ -240,7 +260,7 @@ public class NasaPhotojournalService
                 .append("\n| instrument= ").append(media.getInstrument()).append("\n| caption = ").append("{{")
                 .append(getLanguage(media)).append("|1=").append(CommonsService.formatWikiCode(getDescription(media)))
                 .append("}}\n| credit= ").append(media.getCredit());
-        getUploadDate(media).ifPresent(s -> sb.append("\n| addition_date = ").append(s));
+        getUploadDate(media).ifPresent(s -> sb.append("\n| addition_date = ").append(toIso8601(s)));
         getCreationDate(media).ifPresent(s -> sb.append("\n| creation_date = ").append(s));
         if (globes.contains(media.getTarget())) {
             sb.append("\n| globe= ").append(media.getTarget());
@@ -278,7 +298,7 @@ public class NasaPhotojournalService
     @Override
     public Set<String> findCategories(NasaPhotojournalMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        result.add("NASA Photojournal entries from " + media.getYear());
+        result.add("NASA Photojournal entries from " + media.getYear() + '|' + media.getId());
         if (media.getKeywords().contains("anaglyph")) {
             result.add("Moon".equalsIgnoreCase(media.getTarget()) ? "Anaglyphs of the Moon" : "Anaglyphs");
         }
@@ -298,6 +318,17 @@ public class NasaPhotojournalService
                 result.add(cat);
             } else {
                 LOGGER.error("No category found for NASA mission {}", media.getMission());
+            }
+        }
+        if ("Mars".equalsIgnoreCase(media.getTarget())) {
+            if (result.contains("2001 Mars Odyssey")) {
+                result.remove("2001 Mars Odyssey");
+                result.add("Photos of Mars by 2001 Mars Odyssey");
+            }
+            if (result.contains("Photos of Mars by 2001 Mars Odyssey")
+                    && "THEMIS".equalsIgnoreCase(media.getInstrument())) {
+                result.remove("Photos of Mars by 2001 Mars Odyssey");
+                result.add("Photos of Mars by THEMIS");
             }
         }
         return result;
