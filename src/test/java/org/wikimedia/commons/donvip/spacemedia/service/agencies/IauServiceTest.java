@@ -26,7 +26,7 @@ class IauServiceTest extends AbstractAgencyServiceTest {
     @Test
     void testReadHtml() throws Exception {
         assertEquals(
-                "IauMedia [id=ann22001b, imageType=Artwork, date=2022-01-04T11:30, width=2605, height=3689, objectType=[Unspecified], objectCategories=[Illustrations], credit=IAU/GA2022, fullResMetadata=Metadata [assetUrl=https://www.iau.org/static/archives/images/original/ann22001b.tif, ], sha1=Metadata [assetUrl=https://www.iau.org/static/archives/images/large/ann22001b.jpg, ], title=Season’s Greetings from the IAUGA2022 team, description=Season’s Greetings from the IAUGA2022 team., ]",
+                "IauMedia [id=ann22001b, imageType=Artwork, date=2022-01-04T11:30, dimensions=[width=2605, height=3689], objectType=[Unspecified], objectCategories=[Illustrations], credit=IAU/GA2022, fullResMetadata=Metadata [assetUrl=https://www.iau.org/static/archives/images/original/ann22001b.tif, ], sha1=Metadata [assetUrl=https://www.iau.org/static/archives/images/large/ann22001b.jpg, ], title=Season’s Greetings from the IAUGA2022 team, description=Season’s Greetings from the IAUGA2022 team., ]",
                 service
                         .newMediaFromHtml(html("iau/ann22001b.html"),
                                 new URL("https://www.iau.org/public/images/detail/ann22001b/"), "ann22001b", null)

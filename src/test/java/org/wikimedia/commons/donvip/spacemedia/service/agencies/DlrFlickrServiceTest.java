@@ -40,8 +40,8 @@ class DlrFlickrServiceTest extends AbstractAgencyServiceTest {
                         + "    Bericht mit Fotos der Überführung von ATTAS: <a href=\"http://bit.ly/15Ocizr\" rel=\"noreferrer nofollow\">bit.ly/15Ocizr</a>\r\n"
                         + "    Quelle: DLR (CC-BY 3.0)");
         assertEquals(
-                "Wichtige Informationen und Fotos von ATTAS: <a href=\"http://www.deutsches-museum.de/flugwerft/sammlungen/strahlflugzeuge/vfw-614-attas/\" rel=\"noreferrer nofollow\">http://www.deutsches-museum.de/flugwerft/sammlungen/strahlflugzeuge/vfw-614-attas/</a>\r\n"
-                        + "    Bericht mit Fotos der Überführung von ATTAS: <a href=\"http://www.deutsches-museum.de/presse/presse-2013/attas/\" rel=\"noreferrer nofollow\">http://www.deutsches-museum.de/presse/presse-2013/attas/</a>\r\n"
+                "Wichtige Informationen und Fotos von ATTAS: <a href=\"https://www.deutsches-museum.de/flugwerft/sammlungen/strahlflugzeuge/vfw-614-attas/\" rel=\"noreferrer nofollow\">https://www.deutsches-museum.de/flugwerft/sammlungen/strahlflugzeuge/vfw-614-attas/</a>\r\n"
+                        + "    Bericht mit Fotos der Überführung von ATTAS: <a href=\"https://www.deutsches-museum.de/presse/presse-2013/attas/\" rel=\"noreferrer nofollow\">https://www.deutsches-museum.de/presse/presse-2013/attas/</a>\r\n"
                         + "    Quelle: DLR (CC-BY 3.0)",
                 service.getDescription(media));
     }
@@ -60,7 +60,7 @@ class DlrFlickrServiceTest extends AbstractAgencyServiceTest {
         assertEquals(
                 "Das Kontrollzentrum des Landegeräts #Philae der Kometen-Mission #Rosetta befindet sich im DLR-Nutzerzentrum für #Weltraumexperimente (MUSC - Microgravity User Support Center) in Köln. Von hier werden nach der erfolgreichen Inbetriebnahme am 28. März 2014 die Telemetrie-Daten des des #Kometenlanders empfangen - die Signallaufzeit zur Erde dauert rund 45 Minuten. Im November 2014 wird #Philae auf dem Kometen 67P/Churyumov-Gerasimenko aufsetzen und Messungen durchführen.\r\n"
                         + "Nutzerzentrum MUSC:\r\n"
-                        + "<a href=\"http://www.dlr.de/dlr/desktopdefault.aspx/tabid-10725/1282_read-9201/#gallery/9151\" rel=\"nofollow\">www.dlr.de/dlr/desktopdefault.aspx/tabid-10725/1282_read-...</a>\r\n"
+                        + "<a href=\"https://www.dlr.de/dlr/desktopdefault.aspx/tabid-10725/1282_read-9201/#gallery/9151\" rel=\"nofollow\">www.dlr.de/dlr/desktopdefault.aspx/tabid-10725/1282_read-...</a>\r\n"
                         + "Rosetta-Sonderseite: dlr.de/rosetta\r\n"
                         + "Aufzeichnung zum Event “Inbetriebnahme #Philae-Lander:\r\n"
                         + "<a href=\"https://www.youtube.com/watch?v=Nmuh8vYLSW0\" rel=\"nofollow\">https://www.youtube.com/watch?v=Nmuh8vYLSW0</a>\r\n"

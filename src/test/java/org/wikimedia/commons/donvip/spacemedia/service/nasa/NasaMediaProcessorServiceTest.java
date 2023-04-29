@@ -23,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -41,6 +42,8 @@ class NasaMediaProcessorServiceTest {
 
     @Autowired
     private NasaMediaProcessorService service;
+    @Autowired
+    private ObjectMapper jackson;
 
     @Test
     void testFindOriginalMedia() throws Exception {
@@ -65,7 +68,7 @@ class NasaMediaProcessorServiceTest {
     @ParameterizedTest
     @CsvSource({ "AFRC2021-0128-85", "KSC-20220714-PH-KMO06_0021" })
     void testExifRestTemplate(String id) throws Exception {
-        assertNotNull((service.readExifMetadata(service.restExifTemplate(), id)).getIptcByLine());
+        assertNotNull((service.readExifMetadata(Utils.restTemplateSupportingAll(jackson), id)).getIptcByLine());
     }
 
     @Test

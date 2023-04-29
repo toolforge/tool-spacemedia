@@ -41,8 +41,8 @@ class WebbEsaServiceTest extends AbstractAgencyServiceTest {
         assertEquals("NASA, ESA, CSA, STScI, and K. McQuinn (Rutgers University), A. Pagan (STScI).",
                 media.getCredit());
         assertEquals("2022-11-09T17:00", media.getDate().toString());
-        assertEquals(4134, media.getHeight());
-        assertEquals(4134, media.getWidth());
+        assertEquals(4134, media.getImageDimensions().getHeight());
+        assertEquals(4134, media.getImageDimensions().getWidth());
         assertEquals("Cetus", media.getConstellation());
         assertEquals("[PGU2007] cep35", media.getName());
         assertEquals(DjangoplicityMediaType.Observation, media.getImageType());

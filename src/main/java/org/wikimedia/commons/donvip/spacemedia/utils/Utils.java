@@ -35,6 +35,11 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class Utils {
 
@@ -184,5 +189,13 @@ public final class Utils {
 
     public static Duration durationInSec(Temporal start, Temporal end) {
         return Duration.between(start, end).truncatedTo(ChronoUnit.SECONDS);
+    }
+
+    public static RestTemplate restTemplateSupportingAll(ObjectMapper jackson) {
+        RestTemplate restTemplate = new RestTemplate();
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(jackson);
+        converter.setSupportedMediaTypes(List.of(MediaType.ALL));
+        restTemplate.setMessageConverters(List.of(converter));
+        return restTemplate;
     }
 }

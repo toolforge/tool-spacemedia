@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityLicence;
@@ -374,8 +375,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
             if (!m.matches()) {
                 scrapingError(imgUrlLink, text);
             }
-            media.setWidth(Integer.parseInt(m.group(1)));
-            media.setHeight(Integer.parseInt(m.group(2)));
+            media.setImageDimensions(new ImageDimensions(Integer.valueOf(m.group(1)), Integer.valueOf(m.group(2))));
             break;
         case "Field of View:":
             media.setFieldOfView(text);

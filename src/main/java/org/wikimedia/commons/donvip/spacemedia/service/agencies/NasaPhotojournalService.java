@@ -156,13 +156,13 @@ public class NasaPhotojournalService
         }
     }
 
-    private void processDocuments(SolrDocumentList documents) throws IOException {
+    private void processDocuments(SolrDocumentList documents) throws IOException, UploadException {
         for (SolrDocument document : documents) {
             processMedia((String) document.getFirstValue("id"), document);
         }
     }
 
-    private NasaPhotojournalMedia processMedia(String id, SolrDocument document) throws IOException {
+    private NasaPhotojournalMedia processMedia(String id, SolrDocument document) throws IOException, UploadException {
         Optional<NasaPhotojournalMedia> mediaInRepo = repository.findById(id);
         NasaPhotojournalMedia media;
         boolean save = false;
@@ -178,6 +178,10 @@ public class NasaPhotojournalService
         }
         if (doCommonUpdate(media)) {
             save = true;
+        }
+        if (shouldUploadAuto(media, false)) {
+            media = saveMedia(upload(save ? saveMedia(media) : media, true, false).getLeft());
+            save = false;
         }
         if (save) {
             media = saveMedia(media);

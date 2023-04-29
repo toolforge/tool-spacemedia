@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -24,7 +25,7 @@ public class DvidsImage extends DvidsMedia {
      * Original dimensions (width and height) of the asset
      */
     @Embedded
-    private DvidsImageDimensions dimensions;
+    private ImageDimensions dimensions;
 
     @Transient
     public URL getImage() {
@@ -44,11 +45,11 @@ public class DvidsImage extends DvidsMedia {
         this.aspectRatio = aspectRatio;
     }
 
-    public DvidsImageDimensions getDimensions() {
+    public ImageDimensions getDimensions() {
         return dimensions;
     }
 
-    public void setDimensions(DvidsImageDimensions dimensions) {
+    public void setDimensions(ImageDimensions dimensions) {
         this.dimensions = dimensions;
     }
 

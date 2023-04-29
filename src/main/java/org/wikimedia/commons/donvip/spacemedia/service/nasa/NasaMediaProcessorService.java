@@ -40,9 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException;
@@ -121,15 +119,6 @@ public class NasaMediaProcessorService {
         lastRequest = now();
     }
 
-    RestTemplate restExifTemplate() {
-        RestTemplate restExif = new RestTemplate();
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(jackson);
-        // NASA website can return application/octet-stream instead of application/json
-        converter.setSupportedMediaTypes(List.of(MediaType.ALL));
-        restExif.setMessageConverters(List.of(converter));
-        return restExif;
-    }
-
     @Transactional
     public <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl,
             Collection<T> uploadedMedia, Counter counter, String who, Map<String, Set<String>> foundIds,
@@ -139,7 +128,8 @@ public class NasaMediaProcessorService {
             BiFunction<Boolean, NasaMedia, NasaMedia> saveMediaOrCheckRemote,
             TriFunction<NasaMedia, Boolean, Boolean, Triple<NasaMedia, Collection<Metadata>, Integer>> uploader) {
         LocalDateTime start = LocalDateTime.now();
-        RestTemplate restExif = restExifTemplate();
+        // NASA website can return application/octet-stream instead of application/json
+        RestTemplate restExif = Utils.restTemplateSupportingAll(jackson);
         boolean ok = false;
         int count = 0;
         for (int i = 0; i < maxTries && !ok; i++) {

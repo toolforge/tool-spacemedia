@@ -81,14 +81,14 @@
   schedule: "45 7 * * *"
   emails: onfailure
 
-#- name: nasa
-#  image: tf-jdk17
-#  command: ./run.sh custom nasa
-#  cpu: 1
-#  mem: 4Gi
-#  no-filelog: true
-#  schedule: "45 8,18 * * *"
-#  emails: onfailure
+- name: nasa
+  image: tf-jdk17
+  command: ./run.sh custom nasa-aster
+  cpu: 1
+  mem: 4Gi
+  no-filelog: true
+  schedule: "45 8 * * *"
+  emails: onfailure
 
 #- name: nasa-flickr
 #  image: tf-jdk17

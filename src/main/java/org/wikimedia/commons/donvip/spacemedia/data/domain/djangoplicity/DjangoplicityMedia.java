@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -14,6 +15,7 @@ import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -46,8 +48,8 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
     @JsonProperty("related_releases")
     private Set<String> relatedReleases = new HashSet<>();
 
-    private int width;
-    private int height;
+    @Embedded
+    private ImageDimensions dimensions;
 
     @Column(nullable = true, length = 63)
     @JsonProperty("field_of_view")
@@ -128,20 +130,12 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
         this.date = date;
     }
 
-    public int getWidth() {
-        return width;
+    public ImageDimensions getImageDimensions() {
+        return dimensions;
     }
 
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
+    public void setImageDimensions(ImageDimensions dimensions) {
+        this.dimensions = dimensions;
     }
 
     public String getName() {
@@ -253,8 +247,8 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
         return getClass().getSimpleName() + " [" + (id != null ? "id=" + id + ", " : "")
                 + (licence != null ? "licence=" + licence + ", " : "")
                 + (imageType != null ? "imageType=" + imageType + ", " : "")
-                + (date != null ? "date=" + date + ", " : "") + "width=" + width + ", height="
-                + height + ", " + (name != null ? "objectName=" + name + ", " : "")
+                + (date != null ? "date=" + date + ", " : "") + "dimensions=" + dimensions + ", "
+                + (name != null ? "objectName=" + name + ", " : "")
                 + (types != null ? "objectType=" + types + ", " : "")
                 + (categories != null ? "objectCategories=" + categories + ", " : "")
                 + (credit != null ? "credit=" + credit + ", " : "")
@@ -289,7 +283,7 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
         this.date = mediaFromApi.date;
         this.distance = mediaFromApi.distance;
         this.fieldOfView = mediaFromApi.fieldOfView;
-        this.height = mediaFromApi.height;
+        this.dimensions = mediaFromApi.dimensions;
         this.imageType = mediaFromApi.imageType;
         this.licence = mediaFromApi.licence;
         this.name = mediaFromApi.name;
@@ -300,7 +294,6 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
         this.relatedReleases = mediaFromApi.relatedReleases;
         this.telescopes = mediaFromApi.telescopes;
         this.types = mediaFromApi.types;
-        this.width = mediaFromApi.width;
         return this;
     }
 }
