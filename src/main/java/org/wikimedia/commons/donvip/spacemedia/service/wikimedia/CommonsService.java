@@ -27,6 +27,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -110,8 +111,10 @@ import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundExcepti
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -171,6 +174,9 @@ public class CommonsService {
 
     @Autowired
     protected RuntimeDataRepository runtimeDataRepository;
+
+    @Autowired(required = false)
+    private List<AbstractSocialMediaService<?, ?>> socialMediaServices = new ArrayList<>();
 
     @Autowired
     private ObjectMapper jackson;
@@ -901,6 +907,18 @@ public class CommonsService {
             }
         }
         LOGGER.info("{} duplicate files handled in {}", count, Utils.durationInSec(start));
+        if (count > 0) {
+            String status = String.format(
+                    "%s Nominated %d exact duplicate files for deletion%n%n▶️ https://commons.wikimedia.org/wiki/Category:Duplicate",
+                    Emojis.BIN, count);
+            socialMediaServices.forEach(socialMedia -> {
+                try {
+                    socialMedia.postStatus(status);
+                } catch (IOException e) {
+                    LOGGER.error("Failed to post status", e);
+                }
+            });
+        }
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")

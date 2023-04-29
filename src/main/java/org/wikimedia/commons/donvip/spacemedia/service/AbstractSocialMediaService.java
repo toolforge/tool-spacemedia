@@ -55,6 +55,8 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     @Value("${commons.api.account}")
     private String commonsAccount;
 
+    public abstract void postStatus(String text) throws IOException;
+
     public abstract void postStatus(Collection<? extends Media<?, ?>> uploadedMedia,
             Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException;
 
@@ -69,6 +71,8 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             throw new IOException("API not initialized correctly");
         }
     }
+
+    protected abstract OAuthRequest buildStatusRequest(String text) throws IOException;
 
     protected abstract OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
             Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException;

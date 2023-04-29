@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 public final class Emojis {
 
     public static final String ANTENNA = "📡";
+    public static final String BIN = "🚮";
     public static final String ASTRONAUT = "\uD83E\uDDD1\u200D\uD83D\uDE80";
     public static final String COMET = "☄️";
     public static final String DOG_HEAD = "🐶";

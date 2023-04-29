@@ -83,9 +83,19 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
     }
 
     @Override
+    public void postStatus(String text) throws IOException {
+        callApi(buildStatusRequest(text), TweetResponse.class);
+    }
+
+    @Override
     public void postStatus(Collection<? extends Media<?, ?>> uploadedMedia, Collection<Metadata> uploadedMetadata,
             Set<String> emojis, Set<String> accounts) throws IOException {
         callApi(buildStatusRequest(uploadedMedia, uploadedMetadata, emojis, accounts), TweetResponse.class);
+    }
+
+    @Override
+    protected OAuthRequest buildStatusRequest(String text) throws IOException {
+        return postRequest(V2_TWEET, "application/json", new TweetRequest(null, text));
     }
 
     @Override
