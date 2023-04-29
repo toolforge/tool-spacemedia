@@ -51,14 +51,14 @@ class TwitterServiceTest {
                 twitter.buildStatusRequest(List.of(new NasaImage()), List.of(newMetadata()), Set.of(), Set.of())
                         .getStringPayload(),
                 TweetRequest.class);
-        assertEquals("1 new picture\n\nList → https://commons.wikimedia.org/wiki/Special:ListFiles?limit=1&user=OptimusPrimeBot&ilshowall=1&offset=20230407000354", request.getText());
+        assertEquals("1 new picture", request.getText());
 
         request = jackson.readValue(
                 twitter.buildStatusRequest(List.of(new NasaImage(), new NasaImage()),
                         List.of(newMetadata(), newMetadata()), Set.of(), Set.of("@ESA", "@NASA"))
                         .getStringPayload(),
                 TweetRequest.class);
-        assertEquals("2 new pictures from @ESA @NASA\n\nList → https://commons.wikimedia.org/wiki/Special:ListFiles?limit=2&user=OptimusPrimeBot&ilshowall=1&offset=20230407000354", request.getText());
+        assertEquals("2 new pictures from @ESA @NASA\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=2&user=OptimusPrimeBot&ilshowall=1&offset=20230407000354", request.getText());
     }
 
     private static final Metadata newMetadata() {

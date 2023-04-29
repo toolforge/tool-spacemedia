@@ -5,6 +5,7 @@ import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsS
 import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.similarityScore;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -121,16 +123,27 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     protected String createStatusText(Set<String> emojis, Set<String> accounts, int size,
             Collection<Metadata> uploadedMetadata) {
         String text = String.format("%s %d new picture%s", emojis.stream().sorted().collect(joining()), size,
-                size >= 2 ? "s" : "");
+                size > 1 ? "s" : "");
         if (!accounts.isEmpty()) {
             text += " from " + accounts.stream().sorted().collect(joining(" "));
         }
-        text += "\n\nList → https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
-                + "&user=" + commonsAccount + "&ilshowall=1&offset="
-                + timestampFormatter.format(timestampFormatter
-                        .parse(imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
-                                .map(Metadata::getSha1).map(CommonsService::base36Sha1).toList()), LocalDateTime::from)
-                        .plusSeconds(1));
+        if (size > 1) {
+            text += "\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
+                    + "&user=" + commonsAccount + "&ilshowall=1&offset="
+                    + timestampFormatter
+                            .format(timestampFormatter.parse(
+                                    imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
+                                            .map(Metadata::getSha1).map(CommonsService::base36Sha1).toList()),
+                                    LocalDateTime::from).plusSeconds(1));
+        } else {
+            try {
+                text += "\n\n▶️ https://commons.wikimedia.org/wiki/File:"
+                        + URLEncoder.encode(uploadedMetadata.iterator().next().getCommonsFileNames().iterator().next(),
+                                StandardCharsets.UTF_8);
+            } catch (NoSuchElementException e) {
+                LOGGER.error("No commons file name for uploaded metadata ?! {}", uploadedMetadata);
+            }
+        }
         return text.strip();
     }
 
