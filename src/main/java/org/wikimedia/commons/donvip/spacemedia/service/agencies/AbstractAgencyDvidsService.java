@@ -393,13 +393,14 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     private MediaUpdateResult processDvidsMediaUpdate(DvidsMedia media, boolean forceUpdate) throws IOException {
         MediaUpdateResult commonUpdate = doCommonUpdate(media, forceUpdate);
         boolean save = commonUpdate.getResult();
-        if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredCategories.contains(media.getCategory())) {
-            save = ignoreFile(media, "Ignored category: " + media.getCategory());
-        }
-        if (findTemplates(media).isEmpty()) {
-            // DVIDS media with VIRIN "O". we can assume it implies a courtesy photo
-            // https://www.dvidshub.net/image/3322521/45th-sw-supports-successful-atlas-v-oa-7-launch
-            save = ignoreFile(media, "No template found (VIRIN O): " + media.getVirin());
+        if (!Boolean.TRUE.equals(media.isIgnored())) {
+            if (ignoredCategories.contains(media.getCategory())) {
+                save = ignoreFile(media, "Ignored category: " + media.getCategory());
+            } else if (findTemplates(media).isEmpty()) {
+                // DVIDS media with VIRIN "O". we can assume it implies a courtesy photo
+                // https://www.dvidshub.net/image/3322521/45th-sw-supports-successful-atlas-v-oa-7-launch
+                save = ignoreFile(media, "No template found (VIRIN O): " + media.getVirin());
+            }
         }
         return new MediaUpdateResult(save, commonUpdate.getException());
     }
