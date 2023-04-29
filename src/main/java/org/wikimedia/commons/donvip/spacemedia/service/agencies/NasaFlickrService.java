@@ -73,7 +73,37 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
 
     @Override
     protected String getSource(FlickrMedia media) throws MalformedURLException {
-        return super.getSource(media) + "\n{{NASA-image|id=" + media.getId() + "|center=}}";
+        return super.getSource(media) + "\n{{NASA-image|id=" + media.getId() + "|center=" + center(media) + "}}";
+    }
+
+    private static String center(FlickrMedia media) {
+        // https://commons.wikimedia.org/wiki/Template:NASA-image#Table_of_identification_codes
+        switch (media.getPathAlias()) {
+        case "nasa-jpl", "uahirise-mars", "atmospheric-infrared-sounder", "earthrightnow", "oursolarsystem":
+            return "JPL";
+        case "nasamarshall", "nasamarshallphotos", "ghrcdaac":
+            return "MSFC";
+        case "gsfc", "nasa_goddard", "nasahubble", "nasawebbtelescope", "nasaearthobservatory", "sdomission":
+            return "GSFC";
+        case "nasadfrc":
+            return "DFRC";
+        case "nasaarmstrong", "nasafo":
+            return "AFRC";
+        case "nasa_langley", "larc-science", "nasaedge":
+            return "LARC";
+        case "nasaglenn":
+            return "GRC";
+        case "nasa_jsc_photo", "nasa2explore", "nasarobonaut", "morpheuslander":
+            return "JSC";
+        case "nasacolab", "hmpresearchstation":
+            return "AMES";
+        case "nasakennedy":
+            return "KSC";
+        case "nasahqphoto":
+            return "HQ";
+        default:
+            return "";
+        }
     }
 
     @Override
@@ -85,6 +115,57 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
 
     @Override
     protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        return Set.of("@NASA");
+        switch (uploadedMedia.getPathAlias()) {
+        case "uahirise-mars":
+            return Set.of("@HiRISE");
+        case "atmospheric-infrared-sounder", "ghrcdaac", "nasaearthobservatory", "earthrightnow":
+            return Set.of("@NASAEarth");
+        case "nasawebbtelescope":
+            return Set.of("@NASAWebb");
+        case "nasaarmstrong", "nasadfrc", "nasafo":
+            return Set.of("@NASAArmstrong");
+        case "nasaedge":
+            return Set.of("@NASA_EDGE");
+        case "nasaglenn":
+            return Set.of("@NASAglenn");
+        case "gsfc", "nasa_goddard":
+            return Set.of("@NASAGoddard");
+        case "nasahubble":
+            return Set.of("@NASAHubble");
+        case "nasa_ice":
+            return Set.of("@NASA_ICE");
+        case "nasa2explore", "nasa_jsc_photo", "nasarobonaut":
+            return Set.of("@NASA_Johnson");
+        case "nasampcv", "nasaorion":
+            return Set.of("@NASA_Orion");
+        case "nasa_langley", "larc-science":
+            return Set.of("@NASA_Langley");
+        case "nasamarshall", "nasamarshallphotos":
+            return Set.of("@NASA_Marshall");
+        case "nasablueshift":
+            return Set.of("@NASAUniverse");
+        case "nasacolab":
+            return Set.of("@NASACoLab");
+        case "nasa-jpl":
+            return Set.of("@NASAJPL");
+        case "oursolarsystem":
+            return Set.of("@NASASolarSystem");
+        case "nasakennedy":
+            return Set.of("@NASAKennedy");
+        case "sdomission":
+            return Set.of("@NASASun");
+        case "43066628@N07":
+            return Set.of("@NASAXrocks");
+        case "nasahqphoto":
+            return Set.of("@nasahqphoto");
+        case "hmpresearchstation":
+            return Set.of("@HMP");
+        case "morpheuslander":
+            return Set.of("@MorpheusLander");
+        case "40054892@N06", "nasa_appel", "nasa_larss", "nasacommons", "nasaspaceflightawareness", "eospso",
+                "nasa_hsf", "nasadesertrats":
+        default:
+            return Set.of("@NASA");
+        }
     }
 }

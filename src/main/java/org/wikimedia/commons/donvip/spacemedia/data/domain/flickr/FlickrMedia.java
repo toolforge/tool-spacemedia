@@ -22,6 +22,7 @@ import javax.persistence.Transient;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.LatLon;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
@@ -32,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, phash") })
-public class FlickrMedia extends Media<Long, LocalDateTime> {
+public class FlickrMedia extends Media<Long, LocalDateTime> implements LatLon {
 
     @Id
     @Column(nullable = false)

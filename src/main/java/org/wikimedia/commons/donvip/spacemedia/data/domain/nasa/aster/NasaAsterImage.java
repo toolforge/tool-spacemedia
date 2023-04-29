@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.temporal.ChronoField;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -13,12 +15,14 @@ import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.LatLon;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, phash") })
-public class NasaAsterImage extends Media<String, LocalDate> {
+public class NasaAsterImage extends Media<String, LocalDate> implements LatLon {
 
     @Id
     @Column(nullable = false, length = 32)
@@ -27,7 +31,7 @@ public class NasaAsterImage extends Media<String, LocalDate> {
     /**
      * Acquisition date
      */
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate date;
 
     @Column(nullable = false)
@@ -79,18 +83,22 @@ public class NasaAsterImage extends Media<String, LocalDate> {
         this.publicationDate = publicationDate;
     }
 
+    @Override
     public double getLatitude() {
         return latitude;
     }
 
+    @Override
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
+    @Override
     public double getLongitude() {
         return longitude;
     }
 
+    @Override
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
@@ -125,6 +133,16 @@ public class NasaAsterImage extends Media<String, LocalDate> {
 
     public void setDimensions(ImageDimensions dimensions) {
         this.dimensions = dimensions;
+    }
+
+    @Override
+    public String getUploadTitle() {
+        return CommonsService.normalizeFilename(title) + " (ASTER)";
+    }
+
+    @Override
+    public Year getYear() {
+        return Year.of(getDate() != null ? getDate().get(ChronoField.YEAR) : getPublicationDate().getYear());
     }
 
     @Override

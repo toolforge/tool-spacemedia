@@ -164,7 +164,7 @@ public class EsaMedia extends FullResMedia<Integer, LocalDateTime> {
 
     @Override
     public String getUploadTitle() {
-        return CommonsService.normalizeFilename(title) + " ESA" + getId();
+        return CommonsService.normalizeFilename(title) + " ESA" + getUploadId();
     }
 
     @Override

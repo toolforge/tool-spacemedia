@@ -289,9 +289,6 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         } catch (IllegalArgumentException e) {
             LOGGER.warn("Non-free Flickr licence for media {}: {}", media.getId(), e.getMessage());
         }
-        if (media.getLatitude() != 0d && media.getLongitude() != 0d) {
-            result.add("Location |1=" + media.getLatitude() + " |2=" + media.getLongitude());
-        }
         result.add("Flickrreview");
         try {
             VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media));

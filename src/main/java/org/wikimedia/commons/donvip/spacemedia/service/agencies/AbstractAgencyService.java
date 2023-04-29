@@ -55,6 +55,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.client.RestClientException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.DuplicateMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.LatLon;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
@@ -629,6 +630,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
+        if (media instanceof LatLon ll && ll.getLatitude() != 0d && ll.getLongitude() != 0d) {
+            sb.append("{{Location |1=" + ll.getLatitude() + " |2=" + ll.getLongitude() + "}}");
+        }
         return sb.toString();
     }
 
