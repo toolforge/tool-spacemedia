@@ -564,9 +564,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             uploaded.add(metadata);
             return 1;
         } else {
-            LOGGER.info(
-                    "Upload not done for {} / {}. Upload mode: {}. Ignored: {}. Permitted file type: {}",
-                    media.getId(), metadata, getUploadMode(), media.isIgnored(), isPermittedFileType(metadata));
+            if (metadata != null && metadata.getAssetUrl() != null) {
+                LOGGER.info("Upload not done for {} / {}. Upload mode: {}. Ignored: {}. Permitted file type: {}",
+                        media.getId(), metadata, getUploadMode(), media.isIgnored(), isPermittedFileType(metadata));
+            }
             return 0;
         }
     }
@@ -624,11 +625,16 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         sb.append("\n| source = ").append(getSource(media))
           .append("\n| author = ").append(CommonsService.formatWikiCode(getAuthor(media)));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
-        getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| other versions = <gallery>\n").append(s).append("\n</gallery>"));
+        appendWikiOtherVersions(sb, media, metadata, "other versions");
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
         return sb.toString();
+    }
+
+    protected final void appendWikiOtherVersions(StringBuilder sb, T media, Metadata metadata, String key) {
+        getOtherVersions(media, metadata)
+                .ifPresent(s -> sb.append("\n| " + key + " = <gallery>\n").append(s).append("\n</gallery>"));
     }
 
     protected final void appendWikiDescriptionInLanguage(StringBuilder sb, String language, String description) {
@@ -698,7 +704,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                     LOGGER.error(group + " -> " + e.getMessage(), e);
                 }
                 return group;
-            });
+            }).replace("http://", "https://");
         }
     }
 

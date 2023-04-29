@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.ORDER;
@@ -83,6 +84,7 @@ public class NasaPhotojournalService
     @Value("${nasa.photojournal.geohack.globes}")
     private Set<String> globes;
 
+    private Map<String, String> nasaInstruments;
     private Map<String, String> nasaKeywords;
     private Map<String, String> nasaMissions;
 
@@ -95,6 +97,7 @@ public class NasaPhotojournalService
     @PostConstruct
     void init() throws IOException {
         super.init();
+        nasaInstruments = loadCsvMapping("nasa.instruments.csv");
         nasaKeywords = loadCsvMapping("nasa.keywords.csv");
         nasaMissions = loadCsvMapping("nasa.missions.csv");
     }
@@ -267,7 +270,7 @@ public class NasaPhotojournalService
         }
         getLocation(media)
                 .ifPresent(p -> sb.append("\n| lat= ").append(p.getX()).append("\n| long= ").append(p.getY()));
-        getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| gallery = ").append(s));
+        appendWikiOtherVersions(sb, media, metadata, "gallery");
         if (List.of("gif", "mp4").contains(metadata.getFileExtension())) {
             sb.append("\n| link= ").append(metadata.getAssetUrl());
         }
@@ -312,26 +315,31 @@ public class NasaPhotojournalService
             result.add("Art from NASA");
         }
         result.addAll(media.getKeywords().stream().map(nasaKeywords::get).filter(Objects::nonNull).toList());
-        if (media.getMission() != null) {
-            String cat = nasaMissions.get(media.getMission().trim());
-            if (cat != null) {
-                result.add(cat);
-            } else {
-                LOGGER.error("No category found for NASA mission {}", media.getMission());
-            }
-        }
+        getCategoryFromMapping(media.getInstrument(), "instrument", nasaInstruments).ifPresent(result::add);
+        getCategoryFromMapping(media.getMission(), "mission", nasaMissions).ifPresent(result::add);
         if ("Mars".equalsIgnoreCase(media.getTarget())) {
             if (result.contains("2001 Mars Odyssey")) {
                 result.remove("2001 Mars Odyssey");
                 result.add("Photos of Mars by 2001 Mars Odyssey");
             }
-            if (result.contains("Photos of Mars by 2001 Mars Odyssey")
-                    && "THEMIS".equalsIgnoreCase(media.getInstrument())) {
-                result.remove("Photos of Mars by 2001 Mars Odyssey");
+            if (result.contains("Photos by THEMIS")) {
+                result.remove("Photos by THEMIS");
                 result.add("Photos of Mars by THEMIS");
             }
         }
         return result;
+    }
+
+    private static Optional<String> getCategoryFromMapping(String value, String type, Map<String, String> mappings) {
+        if (value != null) {
+            String cat = mappings.get(value.replace('\n', ' ').trim());
+            if (StringUtils.isBlank(cat)) {
+                LOGGER.warn("No category found for NASA {} {}", type, value);
+            } else {
+                return Optional.of(cat);
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
