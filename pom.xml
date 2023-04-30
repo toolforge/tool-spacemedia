@@ -77,6 +77,11 @@
 			<artifactId>mariadb-java-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-geojson-store</artifactId>
+			<version>29.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>fluent-hc</artifactId>
 		</dependency>
@@ -226,6 +231,13 @@
 	</dependencies>
 
 	<repositories>
+		<repository>
+			<id>osgeo</id>
+			<name>OSGeo Release Repository</name>
+			<url>https://repo.osgeo.org/repository/release/</url>
+			<snapshots><enabled>false</enabled></snapshots>
+			<releases><enabled>true</enabled></releases>
+		</repository>
 		<repository>
 			<id>geosolutions</id>
 			<name>GeoSolutions Repository</name>

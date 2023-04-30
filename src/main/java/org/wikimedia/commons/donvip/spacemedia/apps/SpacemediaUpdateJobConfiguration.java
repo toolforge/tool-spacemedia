@@ -6,6 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
@@ -34,6 +35,11 @@ public class SpacemediaUpdateJobConfiguration {
     @Bean
     public SearchService searchService() {
         return new SearchService();
+    }
+
+    @Bean
+    public GeometryService geometryService() {
+        return new GeometryService();
     }
 
     @Bean

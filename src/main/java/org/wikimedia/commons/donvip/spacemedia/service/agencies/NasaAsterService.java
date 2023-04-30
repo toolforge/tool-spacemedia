@@ -35,6 +35,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -109,6 +110,9 @@ public class NasaAsterService
 
     @Autowired
     private ObjectMapper jackson;
+
+    @Autowired
+    private GeometryService geometry;
 
     public NasaAsterService(NasaAsterImageRepository repository) {
         super(repository, "nasa.aster");
@@ -202,7 +206,8 @@ public class NasaAsterService
     @Override
     public Set<String> findCategories(NasaAsterImage media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        result.add("Photos by ASTER");
+        String continent = geometry.getContinent(media.getLatitude(), media.getLongitude());
+        result.add(continent != null ? "Photos of " + continent + " by ASTER" : "Photos by ASTER");
         return result;
     }
 
