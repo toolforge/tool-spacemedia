@@ -261,6 +261,7 @@ public class NasaPhotojournalService
     @Override
     protected final String getWikiFileDesc(NasaPhotojournalMedia media, Metadata metadata)
             throws MalformedURLException {
+        // https://commons.wikimedia.org/wiki/Template:NASA_Photojournal/attribution/mission
         StringBuilder sb = new StringBuilder("{{NASA Photojournal\n| catalog = ").append(media.getId())
                 .append("\n| image= ").append(media.isImage()).append("\n| video= ").append(media.isVideo())
                 .append("\n| animation= ").append("gif".equals(metadata.getFileExtension()))

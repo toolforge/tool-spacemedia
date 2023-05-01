@@ -89,7 +89,9 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
     protected OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
             Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
         return postRequest(api.getStatusUrl(), "application/json",
-                new StatusRequest(createStatusText(emojis, accounts, uploadedMedia.size(), uploadedMetadata),
+                new StatusRequest(
+                        createStatusText(emojis, accounts, uploadedMedia.stream().filter(Media::isImage).count(),
+                                uploadedMedia.stream().filter(Media::isVideo).count(), uploadedMetadata),
                         postMedia(uploadedMetadata)));
     }
 

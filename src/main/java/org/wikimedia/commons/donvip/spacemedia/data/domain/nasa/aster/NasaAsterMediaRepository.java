@@ -12,8 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 
-public interface NasaAsterImageRepository extends MediaRepository<NasaAsterImage, String, LocalDate> {
+public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia, String, LocalDate> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -44,15 +45,19 @@ public interface NasaAsterImageRepository extends MediaRepository<NasaAsterImage
     @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
+    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
+    long countMissingInCommons(NasaMediaType type);
+
     @Override
     @Cacheable("nasaAsterCountMissingImages")
     default long countMissingImagesInCommons() {
-        return countMissingInCommons();
+        return countMissingInCommons(NasaMediaType.image);
     }
 
     @Override
+    @Cacheable("nasaAsterCountMissingVideos")
     default long countMissingVideosInCommons() {
-        return 0;
+        return countMissingInCommons(NasaMediaType.video);
     }
 
     @Override
@@ -64,33 +69,36 @@ public interface NasaAsterImageRepository extends MediaRepository<NasaAsterImage
 
     @Override
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    List<NasaAsterImage> findMissingInCommons();
+    List<NasaAsterMedia> findMissingInCommons();
 
     @Override
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    Page<NasaAsterImage> findMissingInCommons(Pageable page);
+    Page<NasaAsterMedia> findMissingInCommons(Pageable page);
+
+    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
+    Page<NasaAsterMedia> findMissingInCommonsByType(NasaMediaType type, Pageable page);
 
     @Override
-    default Page<NasaAsterImage> findMissingImagesInCommons(Pageable page) {
-        return findMissingInCommons(page);
+    default Page<NasaAsterMedia> findMissingImagesInCommons(Pageable page) {
+        return findMissingInCommonsByType(NasaMediaType.image, page);
     }
 
     @Override
-    default Page<NasaAsterImage> findMissingVideosInCommons(Pageable page) {
-        return Page.empty();
+    default Page<NasaAsterMedia> findMissingVideosInCommons(Pageable page) {
+        return findMissingInCommonsByType(NasaMediaType.video, page);
     }
 
     @Override
     @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    List<NasaAsterImage> findUploadedToCommons();
+    List<NasaAsterMedia> findUploadedToCommons();
 
     @Override
     @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    Page<NasaAsterImage> findUploadedToCommons(Pageable page);
+    Page<NasaAsterMedia> findUploadedToCommons(Pageable page);
 
     @Override
     @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
-    List<NasaAsterImage> findDuplicateInCommons();
+    List<NasaAsterMedia> findDuplicateInCommons();
 
     @Override
     @Cacheable("nasaAsterFindByPhashNotNull")
@@ -100,11 +108,11 @@ public interface NasaAsterImageRepository extends MediaRepository<NasaAsterImage
 
     @Override
     @CacheEvictNasaAsterAll
-    <S extends NasaAsterImage> S save(S entity);
+    <S extends NasaAsterMedia> S save(S entity);
 
     @Override
     @CacheEvictNasaAsterAll
-    <S extends NasaAsterImage> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends NasaAsterMedia> Iterable<S> saveAll(Iterable<S> entities);
 
     // DELETE
 
@@ -114,11 +122,11 @@ public interface NasaAsterImageRepository extends MediaRepository<NasaAsterImage
 
     @Override
     @CacheEvictNasaAsterAll
-    void delete(NasaAsterImage entity);
+    void delete(NasaAsterMedia entity);
 
     @Override
     @CacheEvictNasaAsterAll
-    void deleteAll(Iterable<? extends NasaAsterImage> entities);
+    void deleteAll(Iterable<? extends NasaAsterMedia> entities);
 
     @Override
     @CacheEvictNasaAsterAll

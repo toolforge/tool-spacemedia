@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.threeten.bp.LocalDate;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterImage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.NasaAsterService.AsterItem;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,7 +40,7 @@ class NasaAsterServiceTest extends AbstractAgencyServiceTest {
             "uzbekistan", "Eyjafyallajokull", "gdem", "surfire", "Anatahan", "zaca", "tibesti", "monument", "horn",
             "topanga", "msh", "aceh", "Hawaii", "sanberdofire", "Isabel", "AspenFire" })
     void testParseHtml(String id) throws IOException {
-        NasaAsterImage media = new NasaAsterImage();
+        NasaAsterMedia media = new NasaAsterMedia();
         NasaAsterService.fillMediaWithHtml(Jsoup.parse(new File("src/test/resources/nasa/aster/" + id + ".html")),
                 media);
         assertFalse(media.getTitle().isEmpty());

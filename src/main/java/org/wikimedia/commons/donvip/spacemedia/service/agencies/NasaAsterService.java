@@ -32,8 +32,9 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterImage;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterImageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -49,7 +50,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Service
 public class NasaAsterService
-        extends AbstractAgencyService<NasaAsterImage, String, LocalDate, NasaMedia, String, ZonedDateTime> {
+        extends AbstractAgencyService<NasaAsterMedia, String, LocalDate, NasaMedia, String, ZonedDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaAsterService.class);
 
@@ -114,13 +115,13 @@ public class NasaAsterService
     @Autowired
     private GeometryService geometry;
 
-    public NasaAsterService(NasaAsterImageRepository repository) {
+    public NasaAsterService(NasaAsterMediaRepository repository) {
         super(repository, "nasa.aster");
     }
 
     @Override
-    protected Class<NasaAsterImage> getMediaClass() {
-        return NasaAsterImage.class;
+    protected Class<NasaAsterMedia> getMediaClass() {
+        return NasaAsterMedia.class;
     }
 
     @Override
@@ -139,29 +140,29 @@ public class NasaAsterService
     }
 
     @Override
-    public URL getSourceUrl(NasaAsterImage media) throws MalformedURLException {
+    public URL getSourceUrl(NasaAsterMedia media) throws MalformedURLException {
         return new URL(detailsUrl.replace("<id>", media.getId()));
     }
 
     @Override
-    protected String getAuthor(NasaAsterImage media) {
+    protected String getAuthor(NasaAsterMedia media) {
         return "NASA/METI/AIST/Japan Space Systems, and U.S./Japan ASTER Science Team";
     }
 
     @Override
-    protected Optional<Temporal> getCreationDate(NasaAsterImage media) {
+    protected Optional<Temporal> getCreationDate(NasaAsterMedia media) {
         return Optional.ofNullable(media.getDate());
     }
 
     @Override
-    protected final Optional<Temporal> getUploadDate(NasaAsterImage media) {
+    protected final Optional<Temporal> getUploadDate(NasaAsterMedia media) {
         return Optional.of(media.getPublicationDate());
     }
 
     @Override
     public void updateMedia() throws IOException, UploadException {
         LocalDateTime start = startUpdateMedia();
-        List<NasaAsterImage> uploadedMedia = new ArrayList<>();
+        List<NasaAsterMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         for (AsterItem item : Utils.restTemplateSupportingAll(jackson).getForObject(galleryUrl, AsterItem[].class)) {
             try {
@@ -174,11 +175,11 @@ public class NasaAsterService
         endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start);
     }
 
-    private NasaAsterImage updateImage(AsterItem item, List<NasaAsterImage> uploadedMedia)
+    private NasaAsterMedia updateImage(AsterItem item, List<NasaAsterMedia> uploadedMedia)
             throws IOException, UploadException {
         boolean save = false;
-        NasaAsterImage media = null;
-        Optional<NasaAsterImage> imageInDb = repository.findById(item.getName());
+        NasaAsterMedia media = null;
+        Optional<NasaAsterMedia> imageInDb = repository.findById(item.getName());
         if (imageInDb.isPresent()) {
             media = imageInDb.get();
         } else {
@@ -204,7 +205,7 @@ public class NasaAsterService
     }
 
     @Override
-    public Set<String> findCategories(NasaAsterImage media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(NasaAsterMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         String continent = geometry.getContinent(media.getLatitude(), media.getLongitude());
         result.add(continent != null ? "Photos of " + continent + " by ASTER" : "Photos by ASTER");
@@ -212,36 +213,37 @@ public class NasaAsterService
     }
 
     @Override
-    protected String getSource(NasaAsterImage media) throws MalformedURLException {
+    protected String getSource(NasaAsterMedia media) throws MalformedURLException {
         return super.getSource(media)
                 + " ([" + media.getMetadata().getAssetUrl() + " direct link])\n"
                 + "{{NASA-image|id=" + media.getId() + "|center=JPL}}";
     }
 
     @Override
-    public Set<String> findTemplates(NasaAsterImage media) {
+    public Set<String> findTemplates(NasaAsterMedia media) {
         Set<String> result = super.findTemplates(media);
+        result.add("NASA Photojournal/attribution|class=Terra|mission=Terra|name=Terra|credit=ASTER");
         result.add("PD-USGov-NASA");
         return result;
     }
 
     @Override
-    protected NasaAsterImage refresh(NasaAsterImage media) throws IOException {
+    protected NasaAsterMedia refresh(NasaAsterMedia media) throws IOException {
         throw new UnsupportedOperationException(); // TODO
     }
 
     @Override
-    protected Set<String> getEmojis(NasaAsterImage uploadedMedia) {
+    protected Set<String> getEmojis(NasaAsterMedia uploadedMedia) {
         return Set.of(Emojis.SATELLITE, Emojis.EARTH_AMERICA);
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(NasaAsterImage uploadedMedia) {
+    protected Set<String> getTwitterAccounts(NasaAsterMedia uploadedMedia) {
         return Set.of("@NASAEarth");
     }
 
-    private NasaAsterImage fetchMedia(AsterItem item) throws IOException {
-        NasaAsterImage image = new NasaAsterImage();
+    private NasaAsterMedia fetchMedia(AsterItem item) throws IOException {
+        NasaAsterMedia image = new NasaAsterMedia();
         image.setId(item.getName());
         image.setLongName(item.getLname());
         image.setCategory(item.getCat());
@@ -255,7 +257,7 @@ public class NasaAsterService
         return image;
     }
 
-    static LocalDate extractAcquisitionDate(NasaAsterImage image) {
+    static LocalDate extractAcquisitionDate(NasaAsterMedia image) {
         String text = image.getDescription();
         for (Entry<DateTimeFormatter, List<Pattern>> e : ACQUIRED.entrySet()) {
             for (Pattern p : e.getValue()) {
@@ -293,7 +295,7 @@ public class NasaAsterService
         throw new IllegalStateException("No publication date found: " + meta);
     }
 
-    static void fillMediaWithHtml(Document html, NasaAsterImage image) throws MalformedURLException {
+    static void fillMediaWithHtml(Document html, NasaAsterMedia image) throws MalformedURLException {
         Element bodyText = Objects.requireNonNull(html.getElementsByClass("BodyText").first(), "BodyText");
         Elements tables = bodyText.getElementsByTag("table");
         image.setPublicationDate(extractPublicationDate(html));
@@ -308,6 +310,9 @@ public class NasaAsterService
         // FIXME ASTER entries can have two images in fact
         // https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=Istanbul
         // https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=oroville
+        // FIXME ASTER entries can be videos too
+        // https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=fuji
+        image.setMediaType(NasaMediaType.image);
         image.getMetadata().setAssetUrl(
                 new URL(tables.get(2).getElementsByTag("a").first().attr("href").replace("http://", "https://")));
         String meta = tables.get(2).getElementsByTag("td").get(1).text();

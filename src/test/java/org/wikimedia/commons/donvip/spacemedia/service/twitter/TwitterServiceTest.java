@@ -21,6 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -47,14 +48,17 @@ class TwitterServiceTest {
     void testTweetContents() throws IOException {
         when(repo.findMaxTimestampBySha1In(any())).thenReturn("20230407000353");
 
+        NasaImage image = new NasaImage();
+        image.setMediaType(NasaMediaType.image);
+
         TweetRequest request = jackson.readValue(
-                twitter.buildStatusRequest(List.of(new NasaImage()), List.of(newMetadata()), Set.of(), Set.of())
+                twitter.buildStatusRequest(List.of(image), List.of(newMetadata()), Set.of(), Set.of())
                         .getStringPayload(),
                 TweetRequest.class);
         assertEquals("1 new picture", request.getText());
 
         request = jackson.readValue(
-                twitter.buildStatusRequest(List.of(new NasaImage(), new NasaImage()),
+                twitter.buildStatusRequest(List.of(image, image),
                         List.of(newMetadata(), newMetadata()), Set.of(), Set.of("@ESA", "@NASA"))
                         .getStringPayload(),
                 TweetRequest.class);

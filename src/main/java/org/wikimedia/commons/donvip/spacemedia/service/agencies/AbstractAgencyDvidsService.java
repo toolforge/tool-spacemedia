@@ -150,9 +150,6 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     @Value("${dvids.ignored.categories}")
     private Set<String> ignoredCategories;
 
-    @Value("${videos.enabled}")
-    private boolean videosEnabled;
-
     private final int minYear;
 
     private final Set<String> units;

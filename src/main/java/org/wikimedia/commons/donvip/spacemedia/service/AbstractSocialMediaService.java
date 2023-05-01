@@ -124,31 +124,39 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         }
     }
 
-    protected String createStatusText(Set<String> emojis, Set<String> accounts, int size,
+    protected String createStatusText(Set<String> emojis, Set<String> accounts, long imgCount, long vidCount,
             Collection<Metadata> uploadedMetadata) {
-        String text = String.format("%s %d new picture%s", emojis.stream().sorted().collect(joining()), size,
-                size > 1 ? "s" : "");
-        if (!accounts.isEmpty()) {
-            text += " from " + accounts.stream().sorted().collect(joining(" "));
+        StringBuilder sb = new StringBuilder(emojis.stream().sorted().collect(joining()));
+        if (imgCount > 0) {
+            sb.append(String.format("%d new picture%s", imgCount, imgCount > 1 ? "s" : ""));
+            if (vidCount > 0) {
+                sb.append(" and ");
+            }
         }
-        if (size > 1) {
-            text += "\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
+        if (vidCount > 0) {
+            sb.append(String.format("%d new video%s", vidCount, vidCount > 1 ? "s" : ""));
+        }
+        if (!accounts.isEmpty()) {
+            sb.append(" from " + accounts.stream().sorted().collect(joining(" ")));
+        }
+        if (imgCount + vidCount > 1) {
+            sb.append("\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
                     + "&user=" + commonsAccount + "&ilshowall=1&offset="
                     + timestampFormatter
                             .format(timestampFormatter.parse(
                                     imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
                                             .map(Metadata::getSha1).map(CommonsService::base36Sha1).toList()),
-                                    LocalDateTime::from).plusSeconds(1));
+                                    LocalDateTime::from).plusSeconds(1)));
         } else {
             try {
-                text += "\n\n▶️ https://commons.wikimedia.org/wiki/File:"
+                sb.append("\n\n▶️ https://commons.wikimedia.org/wiki/File:"
                         + URLEncoder.encode(uploadedMetadata.iterator().next().getCommonsFileNames().iterator().next(),
-                                StandardCharsets.UTF_8);
+                                StandardCharsets.UTF_8));
             } catch (NoSuchElementException e) {
                 LOGGER.error("No commons file name for uploaded metadata ?! {}", uploadedMetadata);
             }
         }
-        return text.strip();
+        return sb.toString().strip();
     }
 
     protected Collection<Metadata> determineMediaToUploadToSocialMedia(Collection<Metadata> uploadedMedia) {

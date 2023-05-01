@@ -9,6 +9,8 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -47,6 +49,8 @@ public abstract class NasaMedia extends Media<String, ZonedDateTime> {
     private ZonedDateTime date;
 
     @JsonProperty("media_type")
+    @Enumerated(EnumType.ORDINAL)
+    @Column(nullable = false, columnDefinition = "TINYINT default 0")
     private NasaMediaType mediaType;
 
     @Column(length = 340)

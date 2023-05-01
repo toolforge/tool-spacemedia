@@ -93,9 +93,6 @@ public class NasaService
     @Value("${nasa.centers}")
     private Set<String> nasaCenters;
 
-    @Value("${videos.enabled}")
-    private boolean videosEnabled;
-
     @Autowired
     private NasaAudioRepository audioRepository;
 

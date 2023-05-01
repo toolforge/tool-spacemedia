@@ -9,6 +9,8 @@ import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
@@ -17,12 +19,13 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.LatLon;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, phash") })
-public class NasaAsterImage extends Media<String, LocalDate> implements LatLon {
+public class NasaAsterMedia extends Media<String, LocalDate> implements LatLon {
 
     @Id
     @Column(nullable = false, length = 32)
@@ -54,6 +57,10 @@ public class NasaAsterImage extends Media<String, LocalDate> implements LatLon {
 
     @Column(nullable = false, length = 16)
     private String icon;
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(nullable = false, columnDefinition = "TINYINT default 0")
+    private NasaMediaType mediaType;
 
     @Override
     public String getId() {
@@ -135,6 +142,24 @@ public class NasaAsterImage extends Media<String, LocalDate> implements LatLon {
         this.dimensions = dimensions;
     }
 
+    public NasaMediaType getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(NasaMediaType mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    @Override
+    public boolean isImage() {
+        return mediaType == NasaMediaType.image;
+    }
+
+    @Override
+    public boolean isVideo() {
+        return mediaType == NasaMediaType.video;
+    }
+
     @Override
     public String getUploadTitle() {
         return CommonsService.normalizeFilename(title) + " (ASTER)";
@@ -148,7 +173,8 @@ public class NasaAsterImage extends Media<String, LocalDate> implements LatLon {
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(id, date, publicationDate, latitude, longitude, longName, category, icon, dimensions);
+                + Objects.hash(id, date, publicationDate, latitude, longitude, longName, category, icon, dimensions,
+                        mediaType);
     }
 
     @Override
@@ -157,17 +183,18 @@ public class NasaAsterImage extends Media<String, LocalDate> implements LatLon {
             return true;
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
-        NasaAsterImage other = (NasaAsterImage) obj;
+        NasaAsterMedia other = (NasaAsterMedia) obj;
         return Objects.equals(date, other.date) && Objects.equals(publicationDate, other.publicationDate)
                 && Objects.equals(id, other.id) && latitude == other.latitude && longitude == other.longitude
                 && Objects.equals(longName, other.longName) && Objects.equals(category, other.category)
-                && Objects.equals(icon, other.icon) && Objects.equals(dimensions, other.dimensions);
+                && Objects.equals(icon, other.icon) && Objects.equals(dimensions, other.dimensions)
+                && mediaType == other.mediaType;
     }
 
     @Override
     public String toString() {
-        return "NasaAsterImage [id=" + id + ", date=" + date + ", publicationDate=" + publicationDate + ", dimensions="
+        return "NasaSdoMedia [id=" + id + ", date=" + date + ", publicationDate=" + publicationDate + ", dimensions="
                 + dimensions + ", latitude=" + latitude + ", longitude=" + longitude + ", longName=" + longName
-                + ", category=" + category + ", icon=" + icon + "]";
+                + ", category=" + category + ", icon=" + icon + ", mediaType=" + mediaType + ']';
     }
 }
