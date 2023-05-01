@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,6 +12,7 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -17,7 +20,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 @Service
 public class HubbleEsaService extends AbstractDjangoplicityService<HubbleEsaMedia> {
 
-    private static final String HUB_BASE_PUBLIC_URL = "https://www.spacetelescope.org/public/";
+    private static final String HUB_BASE_PUBLIC_URL = "https://esahubble.org/";
 
     private static final String HUB_IMAGES_PATH = "images/";
 
@@ -43,6 +46,16 @@ public class HubbleEsaService extends AbstractDjangoplicityService<HubbleEsaMedi
     @Override
     public String getName() {
         return "Hubble (ESA)";
+    }
+
+    @Override
+    public Set<String> findCategories(HubbleEsaMedia media, Metadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        replace(result, "Galaxies", "Hubble images of galaxies");
+        replace(result, "Nebulae", "Hubble images of nebulae");
+        replace(result, "Solar System", "Hubble Solar System images");
+        replace(result, "Star clusters", "Hubble images of star clusters");
+        return result;
     }
 
     @Override

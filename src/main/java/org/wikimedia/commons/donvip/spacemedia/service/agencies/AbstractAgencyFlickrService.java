@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.stream.Collectors.toSet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -258,8 +259,8 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     public Set<String> findCategories(FlickrMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
-            result.remove("Spacemedia files uploaded by " + commonsService.getAccount());
-            result.add("Spacemedia Flickr files uploaded by " + commonsService.getAccount());
+            replace(result, "Spacemedia files uploaded by " + commonsService.getAccount(),
+                    "Spacemedia Flickr files uploaded by " + commonsService.getAccount());
         }
         useMapping(result, media, media.getPhotosets(), flickrPhotoSets, FlickrPhotoSet::getTitle);
         useMapping(result, media, media.getTags(), flickrTags, Function.identity());

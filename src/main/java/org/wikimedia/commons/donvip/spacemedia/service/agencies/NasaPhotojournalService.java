@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.lang.Double.parseDouble;
 import static java.util.stream.Collectors.toSet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -322,14 +323,8 @@ public class NasaPhotojournalService
         getCategoryFromMapping(media.getInstrument(), "instrument", nasaInstruments).ifPresent(result::add);
         getCategoryFromMapping(media.getMission(), "mission", nasaMissions).ifPresent(result::add);
         if ("Mars".equalsIgnoreCase(media.getTarget())) {
-            if (result.contains("2001 Mars Odyssey")) {
-                result.remove("2001 Mars Odyssey");
-                result.add("Photos of Mars by 2001 Mars Odyssey");
-            }
-            if (result.contains("Photos by THEMIS")) {
-                result.remove("Photos by THEMIS");
-                result.add("Photos of Mars by THEMIS");
-            }
+            replace(result, "2001 Mars Odyssey", "Photos of Mars by 2001 Mars Odyssey");
+            replace(result, "Photos by THEMIS", "Photos of Mars by THEMIS");
         }
         return result;
     }

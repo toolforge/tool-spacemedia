@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -197,5 +198,9 @@ public final class Utils {
         converter.setSupportedMediaTypes(List.of(MediaType.ALL));
         restTemplate.setMessageConverters(List.of(converter));
         return restTemplate;
+    }
+
+    public static <T> boolean replace(Collection<T> collection, T oldValue, T newValue) {
+        return collection.remove(oldValue) && collection.add(newValue);
     }
 }
