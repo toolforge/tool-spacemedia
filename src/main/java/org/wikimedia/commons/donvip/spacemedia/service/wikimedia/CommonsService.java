@@ -233,6 +233,9 @@ public class CommonsService {
     @Value("${commons.dpla.max.duplicates}")
     private int dplaMaxDuplicates;
 
+    @Value("${commons.duplicates.social.media.threshold}")
+    private int socialMediaDuplicatesThreshold;
+
     @Value("${commons.automatic.hashes.computation.asc:false}")
     private boolean automaticHashComputationAsc;
 
@@ -907,7 +910,7 @@ public class CommonsService {
             }
         }
         LOGGER.info("{} duplicate files handled in {}", count, Utils.durationInSec(start));
-        if (count > 0) {
+        if (count > socialMediaDuplicatesThreshold) {
             String status = String.format(
                     "%s Nominated %d exact duplicate files for deletion%n%n▶️ https://commons.wikimedia.org/wiki/Category:Duplicate",
                     Emojis.BIN, count);
