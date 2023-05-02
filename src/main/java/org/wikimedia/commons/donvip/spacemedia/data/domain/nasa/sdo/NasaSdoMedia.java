@@ -109,8 +109,7 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> {
 
     @Override
     public String getUploadTitle() {
-        return String.format("SDO_%s (%s %s)", CommonsService.normalizeFilename(title), instrument.name(),
-                dataType.name().replace("_", ""));
+        return String.format("SDO_%s (%s)", CommonsService.normalizeFilename(title), instrument.name());
     }
 
     @Override
