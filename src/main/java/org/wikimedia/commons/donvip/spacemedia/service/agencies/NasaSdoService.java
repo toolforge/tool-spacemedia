@@ -15,6 +15,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 import org.jsoup.Jsoup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
@@ -26,13 +28,13 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoDataT
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.exception.WrappedIOException;
-import org.wikimedia.commons.donvip.spacemedia.exception.WrappedUploadException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
 public class NasaSdoService
         extends AbstractAgencyService<NasaSdoMedia, String, LocalDateTime, NasaMedia, String, ZonedDateTime> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NasaSdoService.class);
 
     private static final String BASE_URL = "https://sdo.gsfc.nasa.gov";
     private static final String BASE_URL_IMG = BASE_URL + "/assets/img";
@@ -102,19 +104,19 @@ public class NasaSdoService
         int count = 0;
         for (LocalDate date = LocalDate.now(); date.getYear() >= 2010; date = date.minusDays(1)) {
             String dateStringPath = DateTimeFormatter.ISO_LOCAL_DATE.format(date).replace('-', '/');
-            updateImages(dateStringPath, date, uploadedMedia);
+            count += updateImages(dateStringPath, date, uploadedMedia, start, count);
             if (videosEnabled) {
-                updateVideos(dateStringPath, date, uploadedMedia);
+                count += updateVideos(dateStringPath, date, uploadedMedia, start, count);
             }
         }
         endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start);
     }
 
     // First image of each day
-    private void updateImages(String dateStringPath, LocalDate date, List<NasaSdoMedia> uploadedMedia)
-            throws IOException {
-        updateImagesOrVideos(dateStringPath, date, 4096, NasaMediaType.image, "browse", "jpg", uploadedMedia,
-                NasaSdoService::parseImageDateTime);
+    private int updateImages(String dateStringPath, LocalDate date, List<NasaSdoMedia> uploadedMedia,
+            LocalDateTime start, int count) throws IOException, UploadException {
+        return updateImagesOrVideos(dateStringPath, date, 4096, NasaMediaType.image, "browse", "jpg", uploadedMedia,
+                start, count, NasaSdoService::parseImageDateTime);
     }
 
     static LocalDateTime parseImageDateTime(String filename) {
@@ -122,39 +124,42 @@ public class NasaSdoService
     }
 
     // Daily movies
-    private void updateVideos(String dateStringPath, LocalDate date, List<NasaSdoMedia> uploadedMedia)
-            throws IOException {
-        updateImagesOrVideos(dateStringPath, date, 1024, NasaMediaType.video, "dailymov", "ogv", uploadedMedia,
-                NasaSdoService::parseMovieDateTime);
+    private int updateVideos(String dateStringPath, LocalDate date, List<NasaSdoMedia> uploadedMedia,
+            LocalDateTime start, int count) throws IOException, UploadException {
+        return updateImagesOrVideos(dateStringPath, date, 1024, NasaMediaType.video, "dailymov", "ogv", uploadedMedia,
+                start, count, NasaSdoService::parseMovieDateTime);
     }
 
     static LocalDateTime parseMovieDateTime(String filename) {
         return LocalDate.parse(filename.substring(0, 8), DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay();
     }
 
-    private void updateImagesOrVideos(String dateStringPath, LocalDate date, int dim, NasaMediaType mediaType,
-            String browse, String ext, List<NasaSdoMedia> uploadedMedia,
-            Function<String, LocalDateTime> dateTimeExtractor) throws IOException {
+    private int updateImagesOrVideos(String dateStringPath, LocalDate date, int dim, NasaMediaType mediaType,
+            String browse, String ext, List<NasaSdoMedia> uploadedMedia, LocalDateTime start, int count,
+            Function<String, LocalDateTime> dateTimeExtractor) throws IOException, UploadException {
         ImageDimensions dimensions = new ImageDimensions(dim, dim);
-        if (sdoRepository.countByMediaTypeAndDimensionsAndDate(mediaType, dimensions,
-                date) < NasaSdoDataType.values().length) {
+        int localCount = 0;
+        if (mediaType == NasaMediaType.image && date.getDayOfMonth() == 1) {
+            LOGGER.info("Current update date: {} ...", date);
+        }
+        long imagesInDatabase = sdoRepository.countByMediaTypeAndDimensionsAndDate(mediaType, dimensions, date);
+        if (imagesInDatabase < NasaSdoDataType.values().length) {
             String browseUrl = String.join("/", BASE_URL_IMG, browse, dateStringPath);
+            LOGGER.info("Fetching {} ({}<{})", browseUrl, imagesInDatabase, NasaSdoDataType.values().length);
             List<String> files = Jsoup.connect(browseUrl).timeout(30_000).get().getElementsByTag("a").stream()
                     .map(e -> e.attr("href")).filter(href -> href.contains("_" + dimensions.getWidth() + "_")).sorted()
                     .toList();
             for (NasaSdoDataType dataType : NasaSdoDataType.values()) {
-                files.stream().filter(i -> i.endsWith(dataType.name() + '.' + ext)).findFirst().ifPresent(firstFile -> {
-                    try {
-                        updateMedia(firstFile.replace("." + ext, ""), dateTimeExtractor.apply(firstFile), dimensions,
-                                new URL(browseUrl + '/' + firstFile), mediaType, dataType, uploadedMedia);
-                    } catch (IOException e) {
-                        throw new WrappedIOException(e);
-                    } catch (UploadException e) {
-                        throw new WrappedUploadException(e);
-                    }
-                });
+                Optional<String> opt = files.stream().filter(i -> i.endsWith(dataType.name() + '.' + ext)).findFirst();
+                if (opt.isPresent()) {
+                    String firstFile = opt.get();
+                    updateMedia(firstFile.replace("." + ext, ""), dateTimeExtractor.apply(firstFile), dimensions,
+                            new URL(browseUrl + '/' + firstFile), mediaType, dataType, uploadedMedia);
+                    ongoingUpdateMedia(start, count + localCount++);
+                }
             }
         }
+        return localCount;
     }
 
     private NasaSdoMedia updateMedia(String id, LocalDateTime date, ImageDimensions dimensions, URL url,
