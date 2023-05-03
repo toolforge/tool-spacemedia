@@ -81,6 +81,11 @@ public abstract class AbstractAgencyYouTubeService
         return Optional.of(video.getDate());
     }
 
+    @Override
+    protected boolean includeByPerceptualHash() {
+        return false;
+    }
+
     protected void updateYouTubeVideos() {
         if (!videosEnabled) {
             LOGGER.info("Videos support disabled. Exiting...");
@@ -191,8 +196,8 @@ public abstract class AbstractAgencyYouTubeService
             save = true;
         }
         Path path = video.getMetadata().getSha1() == null ? downloadVideo(video) : null;
-        if (mediaService.updateMedia(video, getOriginalRepository(), getStringsToRemove(video), false, true, path)
-                .getResult()) {
+        if (mediaService.updateMedia(video, getOriginalRepository(), getStringsToRemove(video), false, true,
+                includeByPerceptualHash(), path).getResult()) {
             save = true;
         }
         if (path != null) {

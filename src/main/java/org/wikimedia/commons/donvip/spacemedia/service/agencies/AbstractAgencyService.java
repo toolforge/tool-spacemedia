@@ -813,7 +813,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         if (isNotEmpty(metadata.getCommonsFileNames())) {
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
-        if (mediaService.findCommonsFiles(media)) {
+        if (mediaService.findCommonsFiles(media, includeByPerceptualHash())) {
             media = saveMedia(media);
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
@@ -879,7 +879,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
         MediaUpdateResult ur = mediaService.updateMedia(media, getOriginalRepository(), getStringsToRemove(media),
-                forceUpdate, checkBlocklist(), null);
+                forceUpdate, checkBlocklist(), includeByPerceptualHash(), null);
         boolean result = ur.getResult();
         if (media.isIgnored() != Boolean.TRUE) {
             if (media.getDescription() != null) {
@@ -898,6 +898,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected boolean checkBlocklist() {
+        return true;
+    }
+
+    protected boolean includeByPerceptualHash() {
         return true;
     }
 

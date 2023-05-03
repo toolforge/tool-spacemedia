@@ -122,11 +122,12 @@ public class MediaService {
 
     public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
             Iterable<String> stringsToRemove, boolean forceUpdate) throws IOException {
-        return updateMedia(media, originalRepo, stringsToRemove, forceUpdate, true, null);
+        return updateMedia(media, originalRepo, stringsToRemove, forceUpdate, true, true, null);
     }
 
     public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
-            Iterable<String> stringsToRemove, boolean forceUpdate, boolean checkBlocklist, Path localPath)
+            Iterable<String> stringsToRemove, boolean forceUpdate, boolean checkBlocklist,
+            boolean includeByPerceptualHash, Path localPath)
             throws IOException {
         boolean result = false;
         if (cleanupDescription(media, stringsToRemove)) {
@@ -136,10 +137,10 @@ public class MediaService {
         if (ur.getResult()) {
             result = true;
         }
-        if (findCommonsFiles(media)) {
+        if (findCommonsFiles(media, includeByPerceptualHash)) {
             result = true;
         }
-        if (originalRepo != null && findDuplicatesInRepository(media, originalRepo)) {
+        if (originalRepo != null && findDuplicatesInRepository(media, originalRepo, includeByPerceptualHash)) {
             result = true;
         }
         if (checkBlocklist && !Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
@@ -185,7 +186,8 @@ public class MediaService {
         return photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith);
     }
 
-    public boolean findDuplicatesInRepository(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> repo) {
+    public boolean findDuplicatesInRepository(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> repo,
+            boolean includeByPerceptualHash) {
         boolean result = false;
         // Find exact duplicates by SHA-1
         String sha1 = media.getMetadata().getSha1();
@@ -197,26 +199,26 @@ public class MediaService {
                         : repo.findByMetadata_Sha1(sha1))) {
             result = true;
         }
-        // Find exact duplicates by perceptual hash
-        String phash = media.getMetadata().getPhash();
-        if (phash != null && handleExactDuplicates(media,
-                repo instanceof FullResExtraMediaRepository<?, ?, ?> exRepo
-                        ? exRepo.findByMetadata_PhashOrFullResMetadata_PhashOrExtraMetadata_Phash(phash)
-                        : repo instanceof FullResMediaRepository<?, ?, ?> frRepo
-                        ? frRepo.findByMetadata_PhashOrFullResMetadata_Phash(phash)
-                        : repo.findByMetadata_Phash(phash))) {
-            result = true;
-        }
-        // Find almost duplicates by perceptual hash
-        BigInteger perceptualHash = media.getMetadata().getPerceptualHash();
-        if (perceptualHash != null && handleDuplicatesAndVariants(media, repo
-                .findByMetadata_PhashNotNull()
-                .parallelStream()
-                .filter(m -> !m.getId().equals(media.getId()))
-                .map(m -> new DuplicateHolder(m, HashHelper.similarityScore(perceptualHash, m.getMetadata().getPhash())))
-                .filter(h -> h.similarityScore < perceptualThreshold)
-                .collect(toSet()))) {
-            result = true;
+        if (includeByPerceptualHash) {
+            // Find exact duplicates by perceptual hash
+            String phash = media.getMetadata().getPhash();
+            if (phash != null && handleExactDuplicates(media,
+                    repo instanceof FullResExtraMediaRepository<?, ?, ?> exRepo
+                            ? exRepo.findByMetadata_PhashOrFullResMetadata_PhashOrExtraMetadata_Phash(phash)
+                            : repo instanceof FullResMediaRepository<?, ?, ?> frRepo
+                                    ? frRepo.findByMetadata_PhashOrFullResMetadata_Phash(phash)
+                                    : repo.findByMetadata_Phash(phash))) {
+                result = true;
+            }
+            // Find almost duplicates by perceptual hash
+            BigInteger perceptualHash = media.getMetadata().getPerceptualHash();
+            if (perceptualHash != null && handleDuplicatesAndVariants(media,
+                    repo.findByMetadata_PhashNotNull().parallelStream().filter(m -> !m.getId().equals(media.getId()))
+                            .map(m -> new DuplicateHolder(m,
+                                    HashHelper.similarityScore(perceptualHash, m.getMetadata().getPhash())))
+                            .filter(h -> h.similarityScore < perceptualThreshold).collect(toSet()))) {
+                result = true;
+            }
         }
         return result;
     }
@@ -531,9 +533,9 @@ public class MediaService {
         return false;
     }
 
-    public boolean findCommonsFiles(Media<?, ?> media) throws IOException {
-        return findCommonsFilesWithSha1(media) || findCommonsFilesWithPhash(media, true)
-                || findCommonsFilesWithIdAndPhash(media);
+    public boolean findCommonsFiles(Media<?, ?> media, boolean includeByPerceptualHash) throws IOException {
+        return findCommonsFilesWithSha1(media) || (includeByPerceptualHash
+                && (findCommonsFilesWithPhash(media, true) || findCommonsFilesWithIdAndPhash(media)));
     }
 
     /**

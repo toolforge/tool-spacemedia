@@ -67,6 +67,11 @@ public class NasaSdoService
     }
 
     @Override
+    protected boolean includeByPerceptualHash() {
+        return false;
+    }
+
+    @Override
     public URL getSourceUrl(NasaSdoMedia media) throws MalformedURLException {
         if (media.isVideo()) {
             return new URL(BASE_URL + "/data/dailymov/movie.php?q=" + media.getId());
