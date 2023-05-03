@@ -1,3 +1,4 @@
 0 0 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa
 0 2 * * * /bin/sh /data/project/spacemedia/run.sh flickr nasa-flickr
 0 4 * * * /bin/sh /data/project/spacemedia/run.sh web
+0 23 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-sdo

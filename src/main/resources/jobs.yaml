@@ -90,15 +90,6 @@
   schedule: "45 8 * * *"
   emails: onfailure
 
-- name: nasa-sdo
-  image: tf-jdk17
-  command: ./run.sh custom nasa-sdo
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 9 * * *"
-  emails: onfailure
-
 - name: nasa-photojournal
   image: tf-jdk17
   command: ./run.sh custom nasa-photojournal
