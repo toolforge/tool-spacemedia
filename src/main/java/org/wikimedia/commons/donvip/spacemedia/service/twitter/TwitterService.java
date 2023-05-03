@@ -36,6 +36,7 @@ import com.github.scribejava.core.oauth.OAuth10aService;
 
 import io.github.redouane59.twitter.TwitterClient;
 import io.github.redouane59.twitter.dto.tweet.MediaCategory;
+import io.github.redouane59.twitter.dto.tweet.UploadMediaResponse;
 import io.github.redouane59.twitter.signature.TwitterCredentials;
 
 @Service
@@ -142,17 +143,20 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
         return mediaIds.isEmpty() ? null : new TweetMedia(mediaIds);
     }
 
-    private long postMedia(String cat, CommonsImageProjection file, byte[] data) {
+    private long postMedia(String cat, CommonsImageProjection file, byte[] data) throws IOException {
         try {
             return callApi(request(Verb.POST, V1_UPLOAD + cat, null,
                     new FileByteArrayBodyPartPayload("application/octet-stream", data, "media", file.getName()), null),
                     UploadResponse.class).getMediaId();
         } catch (Exception e) {
             LOGGER.error("Unable to post media with own code: {}", e.getMessage(), e);
-            return Long.parseLong(
-                    twitterClient
-                            .uploadMedia(file.getName(), data, MediaCategory.valueOf(cat.toUpperCase(Locale.ENGLISH)))
-                            .getMediaId());
+            LOGGER.info("Fallback to twittered client call...");
+            UploadMediaResponse r = twitterClient.uploadMedia(file.getName(), data,
+                    MediaCategory.valueOf(cat.toUpperCase(Locale.ENGLISH)));
+            if (r.getMediaId() == null) {
+                throw new IOException("Twitter response without media id: " + r, e);
+            }
+            return Long.parseLong(r.getMediaId());
         }
     }
 }
