@@ -3,7 +3,9 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
@@ -97,6 +99,10 @@ public abstract class AbstractStsciService
                             uploadedMedia.add(update.getLeft());
                         }
                         ongoingUpdateMedia(start, count++);
+                    } catch (UpdateFinishedException e) {
+                        // End of search when an old image found
+                        LOGGER.info("End of search: {}", e.getMessage());
+                        loop = false;
                     } catch (HttpStatusException e) {
                         LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
                         problem(e.getUrl(), e);
@@ -111,12 +117,17 @@ public abstract class AbstractStsciService
     }
 
     private Triple<StsciMedia, Collection<Metadata>, Integer> doUpdateMedia(String id)
-            throws IOException, UploadException {
+            throws IOException, UploadException, UpdateFinishedException {
         boolean save = false;
         StsciMedia media;
         Optional<StsciMedia> mediaInRepo = repository.findById(id);
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
+            LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
+            if (doNotFetchEarlierThan != null
+                    && media.getDate().isBefore(doNotFetchEarlierThan.atStartOfDay(ZoneId.systemDefault()))) {
+                throw new UpdateFinishedException(media.getDate().toString());
+            }
         } else {
             media = getMediaFromWebsite(id);
             save = true;

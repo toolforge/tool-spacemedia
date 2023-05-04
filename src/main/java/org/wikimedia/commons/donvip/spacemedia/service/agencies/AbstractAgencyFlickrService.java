@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
@@ -341,19 +342,24 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     protected void updateFlickrMedia() {
         LocalDateTime start = startUpdateMedia();
         List<FlickrMedia> uploadedMedia = new ArrayList<>();
+        LocalDate minUploadDate = getRuntimeData().getDoNotFetchEarlierThan();
         int count = 0;
         for (String flickrAccount : flickrAccounts) {
             try {
                 LOGGER.info("Fetching Flickr media from account '{}'...", flickrAccount);
-                List<FlickrMedia> freePictures = buildFlickrMediaList(flickrService.findFreePhotos(flickrAccount));
+                List<FlickrMedia> freePictures = buildFlickrMediaList(
+                        flickrService.findFreePhotos(flickrAccount, minUploadDate));
                 LOGGER.info("Found {} free Flickr media for account '{}'", freePictures.size(), flickrAccount);
                 Pair<Integer, Collection<FlickrMedia>> result = processFlickrMedia(freePictures, flickrAccount);
                 uploadedMedia.addAll(result.getRight());
                 count += result.getLeft();
-                Set<FlickrMedia> noLongerFreePictures = flickrRepository.findNotIn(Set.of(flickrAccount),
-                        freePictures.stream().map(FlickrMedia::getId).collect(toSet()));
-                if (!noLongerFreePictures.isEmpty()) {
-                    count += updateNoLongerFreeFlickrMedia(flickrAccount, noLongerFreePictures);
+                if (minUploadDate == null) {
+                    // Only delete pictures not found in complete updates
+                    Set<FlickrMedia> noLongerFreePictures = flickrRepository.findNotIn(Set.of(flickrAccount),
+                            freePictures.stream().map(FlickrMedia::getId).collect(toSet()));
+                    if (!noLongerFreePictures.isEmpty()) {
+                        count += updateNoLongerFreeFlickrMedia(flickrAccount, noLongerFreePictures);
+                    }
                 }
             } catch (FlickrException | MalformedURLException | RuntimeException e) {
                 LOGGER.error("Error while fetching Flickr media from account {}", flickrAccount, e);

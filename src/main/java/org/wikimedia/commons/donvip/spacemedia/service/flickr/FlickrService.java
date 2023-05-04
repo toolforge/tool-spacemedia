@@ -2,8 +2,11 @@ package org.wikimedia.commons.donvip.spacemedia.service.flickr;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,11 +80,14 @@ public class FlickrService {
         return result;
     }
 
-    public List<Photo> findFreePhotos(String userId) throws FlickrException {
+    public List<Photo> findFreePhotos(String userId, LocalDate minUploadDate) throws FlickrException {
         List<Photo> result = new ArrayList<>();
         SearchParameters params = new SearchParameters();
         params.setUserId(Objects.requireNonNull(userId));
         params.setExtras(EXTRAS);
+        if (minUploadDate != null) {
+            params.setMinUploadDate(Date.from(minUploadDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        }
         // Multi-license search does not work
         // https://www.flickr.com/groups/51035612836@N01/discuss/72157665503298714/72157667263924940
         for (int license : Arrays.stream(FlickrFreeLicense.values()).map(FlickrFreeLicense::getCode).toList()) {

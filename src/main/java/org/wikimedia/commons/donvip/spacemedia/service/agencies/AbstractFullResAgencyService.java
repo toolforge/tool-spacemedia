@@ -120,4 +120,12 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
         }
         return Optional.of(result.toString());
     }
+
+    protected static final class UpdateFinishedException extends Exception {
+        private static final long serialVersionUID = 1L;
+
+        public UpdateFinishedException(String message) {
+            super(message);
+        }
+    }
 }

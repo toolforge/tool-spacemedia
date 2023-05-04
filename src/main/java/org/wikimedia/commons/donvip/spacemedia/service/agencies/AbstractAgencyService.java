@@ -322,15 +322,21 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<Metadata> uploadedMetadata,
             LocalDateTime start) {
-        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, true);
+        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, LocalDate.now().minusDays(2), true);
     }
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<Metadata> uploadedMetadata,
-            LocalDateTime start, boolean postTweet) {
+            LocalDateTime start, LocalDate newDoNotFetchEarlierThan) {
+        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, newDoNotFetchEarlierThan, true);
+    }
+
+    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<Metadata> uploadedMetadata,
+            LocalDateTime start, LocalDate newDoNotFetchEarlierThan, boolean postTweet) {
         RuntimeData runtimeData = getRuntimeData();
         LocalDateTime end = LocalDateTime.now();
         runtimeData.setLastUpdateEnd(end);
         runtimeData.setLastUpdateDuration(Duration.between(start, end));
+        runtimeData.setDoNotFetchEarlierThan(newDoNotFetchEarlierThan);
         LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 runtimeDataRepository.save(runtimeData).getLastUpdateDuration());
         if (postTweet) {

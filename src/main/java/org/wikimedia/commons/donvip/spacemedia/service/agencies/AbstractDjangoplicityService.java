@@ -128,7 +128,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
     protected abstract Matcher getLocalizedUrlMatcher(String imgUrlLink);
 
     private Triple<Optional<T>, Collection<Metadata>, Integer> updateMediaForUrl(URL url, DjangoplicityFrontPageItem item)
-            throws IOException, ReflectiveOperationException, UploadException {
+            throws IOException, ReflectiveOperationException, UploadException, UpdateFinishedException {
         String imgUrlLink = url.getProtocol() + "://" + url.getHost() + item.getUrl();
         Matcher m = getLocalizedUrlMatcher(imgUrlLink);
         if (m.matches()) {
@@ -144,6 +144,10 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
         Optional<T> mediaInRepo = repository.findById(id);
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
+            LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
+            if (doNotFetchEarlierThan != null && media.getDate().isBefore(doNotFetchEarlierThan.atStartOfDay())) {
+                throw new UpdateFinishedException(media.getDate().toString());
+            }
         } else {
             media = fetchMedia(url, id, imgUrlLink);
             if (media == null) {
@@ -524,8 +528,9 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
                         LOGGER.error("Upload error when processing {}", url, e);
                     }
                 }
-            } catch (HttpStatusException e) {
-                // End of search when we receive an HTTP 404
+            } catch (HttpStatusException | UpdateFinishedException e) {
+                // End of search when we receive an HTTP 404 or an old image found
+                LOGGER.info("End of search: {}", e.getMessage());
                 loop = false;
             } catch (IOException | ReflectiveOperationException | RuntimeException e) {
                 LOGGER.error("Error when fetching {}", url, e);

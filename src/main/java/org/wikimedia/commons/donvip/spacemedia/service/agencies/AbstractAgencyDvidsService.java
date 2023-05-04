@@ -7,6 +7,7 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
@@ -193,7 +194,9 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         Set<String> idsKnownToDvidsApi = new HashSet<>();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
-        for (int year = LocalDateTime.now().getYear(); year >= minYear; year--) {
+        LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
+        for (int year = LocalDateTime.now().getYear(); year >= minYear
+                && (doNotFetchEarlierThan == null || year >= doNotFetchEarlierThan.getYear()); year--) {
             for (String unit : units) {
                 Pair<Integer, Collection<DvidsMedia>> update = updateDvidsMedia(unit, year, DvidsMediaType.image,
                         idsKnownToDvidsApi);
@@ -208,8 +211,12 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 }
             }
         }
-        deleteOldDvidsMedia(idsKnownToDvidsApi);
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start);
+        if (doNotFetchEarlierThan == null) {
+            // Only delete pictures not found in complete updates
+            deleteOldDvidsMedia(idsKnownToDvidsApi);
+        }
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start,
+                LocalDate.now().minusYears(1), true);
     }
 
     private void deleteOldDvidsMedia(Set<String> idsKnownToDvidsApi) {

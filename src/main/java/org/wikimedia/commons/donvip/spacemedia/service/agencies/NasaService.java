@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
@@ -174,23 +175,27 @@ public class NasaService
 
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType, int startYear,
             int endYear, Set<String> centers, Map<String, Set<String>> foundIds) {
-        LocalDateTime start = LocalDateTime.now();
-        logStartUpdate(mediaType, startYear, endYear, centers);
         Counter count = new Counter();
-        RestTemplate rest = new RestTemplate();
-        rest.getMessageConverters().add(new NasaResponseHtmlErrorHandler());
-        String nextUrl = searchEndpoint + "media_type=" + mediaType + "&year_start=" + startYear + "&year_end=" + endYear;
-        if (centers != null) {
-            nextUrl += "&center=" + String.join(",", centers);
-        }
         Collection<T> uploadedMedia = new ArrayList<>();
-        while (nextUrl != null) {
-            String who = centers != null ? centers.toString() : getId();
-            nextUrl = processor.processSearchResults(rest, nextUrl, uploadedMedia, count, who, foundIds,
-                    this::ongoingUpdateMedia, this::doCommonUpdateUnchecked, this::shouldUploadAuto, this::problem,
-                    this::saveMedia, this::saveMediaOrCheckRemote, this::uploadUnchecked);
+        LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
+        if (doNotFetchEarlierThan == null || endYear >= doNotFetchEarlierThan.getYear()) {
+            LocalDateTime start = LocalDateTime.now();
+            logStartUpdate(mediaType, startYear, endYear, centers);
+            RestTemplate rest = new RestTemplate();
+            rest.getMessageConverters().add(new NasaResponseHtmlErrorHandler());
+            String nextUrl = searchEndpoint + "media_type=" + mediaType + "&year_start=" + startYear + "&year_end="
+                    + endYear;
+            if (centers != null) {
+                nextUrl += "&center=" + String.join(",", centers);
+            }
+            while (nextUrl != null) {
+                String who = centers != null ? centers.toString() : getId();
+                nextUrl = processor.processSearchResults(rest, nextUrl, uploadedMedia, count, who, foundIds,
+                        this::ongoingUpdateMedia, this::doCommonUpdateUnchecked, this::shouldUploadAuto, this::problem,
+                        this::saveMedia, this::saveMediaOrCheckRemote, this::uploadUnchecked);
+            }
+            logEndUpdate(mediaType, startYear, endYear, centers, start, count.count);
         }
-        logEndUpdate(mediaType, startYear, endYear, centers, start, count.count);
         return Pair.of(count.count, uploadedMedia);
     }
 
@@ -311,7 +316,9 @@ public class NasaService
             count += videos.getLeft();
             uploadedMedia.addAll(videos.getRight());
         }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start, false);
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start,
+                LocalDate.now().minusYears(1), // NASA sometimes post old images dating a few months back
+                false /* not mature enough to assume a public tweet yet */);
     }
 
     @Override

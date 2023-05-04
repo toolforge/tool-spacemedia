@@ -258,7 +258,6 @@ public abstract class AbstractAgencyYouTubeService
         List<String> categories = new ArrayList<>();
         categories.add("Spacemedia files (review needed)");
         categories.addAll(getAgencyCategories());
-        categories.add("Media from YouTube");
         mediaService.syncYouTubeVideos(
                 youtubeRepository.findMissingInCommons(youtubeChannels), categories);
     }
