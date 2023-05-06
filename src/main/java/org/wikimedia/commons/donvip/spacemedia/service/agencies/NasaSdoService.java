@@ -206,23 +206,19 @@ public class NasaSdoService
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (media.isVideo()) {
             result.add("Videos from the Solar Dynamics Observatory");
-        } else if (media.isImage()) {
-            result.add("Photos by Solar Dynamics Observatory");
         }
         return result;
     }
 
     @Override
-    protected String getSource(NasaSdoMedia media) throws MalformedURLException {
-        return super.getSource(media)
-                + " ([" + media.getMetadata().getAssetUrl() + " direct link])\n"
-                + "{{NASA-image|id=" + media.getId() + "|center=GSFC}}";
+    protected String getWikiFileDesc(NasaSdoMedia media, Metadata metadata) throws IOException {
+        return "{{NASA SDO|instrument=" + media.getInstrument() + "|band=" + media.getDataType() + "|type="
+                + metadata.getFileExtension() + "|id=" + media.getId() + "}}";
     }
 
     @Override
     public Set<String> findTemplates(NasaSdoMedia media) {
         Set<String> result = super.findTemplates(media);
-        result.add("NASA Photojournal/attribution|class=SDO|mission=SDO|name=SDO|credit=" + media.getInstrument());
         result.add("PD-USGov-NASA");
         return result;
     }
