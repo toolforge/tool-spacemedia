@@ -5,8 +5,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 class TweetRequest {
-    private TweetRequest.TweetMedia media;
     private String text;
+    private TweetMedia media;
 
     public TweetRequest() {
         // Default constructor for jackson
