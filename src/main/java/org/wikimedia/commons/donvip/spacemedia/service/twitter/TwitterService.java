@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.twitter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -121,8 +122,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
                     String mime = metadata.getMime();
                     String cat = "tweet_gif";
                     if (!"image/gif".equals(mime)) {
-                        url = new URL(String.format("%s/%dpx-%s.jpg", url.toExternalForm(),
-                                Math.max(4096, file.getWidth()), file.getName()));
+                        url = getImageUrl(url, file.getWidth(), file.getName());
                         mime = "image/jpeg";
                         cat = "tweet_image";
                     }
@@ -130,6 +130,9 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
                     try (CloseableHttpClient httpclient = HttpClients.createDefault();
                             CloseableHttpResponse response = httpclient.execute(new HttpGet(url.toURI()));
                             InputStream in = response.getEntity().getContent()) {
+                        if (response.getStatusLine().getStatusCode() >= 400) {
+                            throw new IOException(response.getStatusLine().toString());
+                        }
                         mediaIds.add(postMedia(cat, file, in.readAllBytes()));
                     }
                 } else {
@@ -141,6 +144,10 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
         }
         // Don't return empty media object as it causes bad request in v2/tweet endpoint
         return mediaIds.isEmpty() ? null : new TweetMedia(mediaIds);
+    }
+
+    static URL getImageUrl(URL url, int width, String fileName) throws MalformedURLException {
+        return width > 4096 ? new URL(String.format("%s/%dpx-%s.jpg", url.toExternalForm(), 4096, fileName)) : url;
     }
 
     private long postMedia(String cat, CommonsImageProjection file, byte[] data) throws IOException {

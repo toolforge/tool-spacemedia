@@ -2,13 +2,17 @@ package org.wikimedia.commons.donvip.spacemedia.service.twitter;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +26,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageReposito
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -63,6 +69,21 @@ class TwitterServiceTest {
                         .getStringPayload(),
                 TweetRequest.class);
         assertEquals("2 new pictures from @ESA @NASA\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=2&user=OptimusPrimeBot&ilshowall=1&offset=20230407000354", request.getText());
+    }
+
+    @Test
+    void testGetImageUrl_small() throws Exception {
+        URL url = TwitterService.getImageUrl(
+                CommonsService.getImageUrl(
+                        "Transmission_Bands_for_LSST_Filters_(slac-2021_0312_lsst_r_filter_lange-49_5).jpg"),
+                848, "Transmission_Bands_for_LSST_Filters_(slac-2021_0312_lsst_r_filter_lange-49_5).jpg");
+        assertEquals(
+                "https://upload.wikimedia.org/wikipedia/commons/1/17/Transmission_Bands_for_LSST_Filters_(slac-2021_0312_lsst_r_filter_lange-49_5).jpg",
+                url.toExternalForm());
+        Pair<BufferedImage, Long> img = ImageUtils.readImage(url, false, false);
+        assertNotNull(img.getKey());
+        assertEquals(86820, img.getValue());
+        img.getKey().flush();
     }
 
     private static final Metadata newMetadata() {

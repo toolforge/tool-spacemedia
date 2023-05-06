@@ -128,13 +128,13 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             Collection<Metadata> uploadedMetadata) {
         StringBuilder sb = new StringBuilder(emojis.stream().sorted().collect(joining()));
         if (imgCount > 0) {
-            sb.append(String.format("%d new picture%s", imgCount, imgCount > 1 ? "s" : ""));
+            sb.append(String.format(" %d new picture%s", imgCount, imgCount > 1 ? "s" : ""));
             if (vidCount > 0) {
-                sb.append(" and ");
+                sb.append(" and");
             }
         }
         if (vidCount > 0) {
-            sb.append(String.format("%d new video%s", vidCount, vidCount > 1 ? "s" : ""));
+            sb.append(String.format(" %d new video%s", vidCount, vidCount > 1 ? "s" : ""));
         }
         if (!accounts.isEmpty()) {
             sb.append(" from " + accounts.stream().sorted().collect(joining(" ")));

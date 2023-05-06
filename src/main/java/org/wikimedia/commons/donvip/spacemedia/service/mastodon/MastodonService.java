@@ -128,6 +128,9 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(url.toURI()));
                 InputStream in = response.getEntity().getContent()) {
+            if (response.getStatusLine().getStatusCode() >= 400) {
+                throw new IOException(response.getStatusLine().toString());
+            }
             return callApi(request(Verb.POST, api.getMediaUrl(), "multipart/form-data",
                     new FileByteArrayBodyPartPayload("application/octet-stream", in.readAllBytes(), "file", fileName),
                     Map.of("media_type", mime, "description", fileName)), MediaAttachment.class);
