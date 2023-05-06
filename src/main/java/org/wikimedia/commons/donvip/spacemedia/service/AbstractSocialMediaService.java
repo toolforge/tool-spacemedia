@@ -5,6 +5,8 @@ import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsS
 import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.similarityScore;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -190,6 +192,12 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             }
         }
         return result;
+    }
+
+    protected static URL getImageUrl(URL url, int width, String fileName) throws MalformedURLException {
+        return width > 2560
+                ? new URL(String.format("https://commons.wikimedia.org/w/thumb.php?f=%s&w=%d", fileName, 2560))
+                : url;
     }
 
     public static Set<String> getEmojis(Set<String> keywords) {

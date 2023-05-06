@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.twitter;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -144,10 +143,6 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
         }
         // Don't return empty media object as it causes bad request in v2/tweet endpoint
         return mediaIds.isEmpty() ? null : new TweetMedia(mediaIds);
-    }
-
-    static URL getImageUrl(URL url, int width, String fileName) throws MalformedURLException {
-        return width > 4096 ? new URL(String.format("%s/%dpx-%s.jpg", url.toExternalForm(), 4096, fileName)) : url;
     }
 
     private long postMedia(String cat, CommonsImageProjection file, byte[] data) throws IOException {

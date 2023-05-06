@@ -107,8 +107,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
                     URL url = CommonsService.getImageUrl(file.getName());
                     String mime = metadata.getMime();
                     if (!"image/gif".equals(mime)) {
-                        url = new URL(String.format("%s/%dpx-%s.jpg", url.toExternalForm(),
-                                Math.max(4096, file.getWidth()), file.getName()));
+                        url = getImageUrl(url, file.getWidth(), file.getName());
                         mime = "image/jpeg";
                     }
                     LOGGER.info("File and URL resolved to: {} - {}", file, url);
