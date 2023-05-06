@@ -848,37 +848,37 @@ public class CommonsService {
             statements.forEach(
                     (prop, qid) -> statUpdateBuilder.add(statement(entityId, prop, makeWikidataItemIdValue(qid))));
             if (creationDate != null) {
-                statUpdateBuilder.add(statement(entityId, "P571", timeValue(creationDate)));
+                statUpdateBuilder.add(statement(entityId, "P571", dateValue(creationDate)));
                 if (publicationDate != null) {
-                    statUpdateBuilder.add(statement(entityId, "P577", timeValue(publicationDate)));
+                    statUpdateBuilder.add(statement(entityId, "P577", dateValue(publicationDate)));
                 }
             } else if (publicationDate != null) {
-                statUpdateBuilder.add(statement(entityId, "P571", timeValue(publicationDate)));
+                statUpdateBuilder.add(statement(entityId, "P571", dateValue(publicationDate)));
             }
             editor.editEntityDocument(MediaInfoUpdateBuilder
                     .forEntityId(entityId)
                     .updateLabels(termUpdateBuilder.build())
                     .updateStatements(statUpdateBuilder.build())
                     .build(), false, "Adding SDC details after upload of " + url, null);
+            LOGGER.info("SDC edit of {} done", entityId);
         } catch (MediaWikiApiErrorException | RuntimeException e) {
             LOGGER.error("Unable to add SDC data", e);
         }
         return uploadedFilename;
     }
 
-    private TimeValue timeValue(Temporal temporal) {
+    private TimeValue dateValue(Temporal temporal) {
         if (temporal instanceof LocalDate d) {
             return makeTimeValue(d.getYear(), (byte) d.getMonthValue(), (byte) d.getDayOfMonth(),
                     TimeValue.CM_GREGORIAN_PRO);
         } else if (temporal instanceof LocalDateTime d) {
-            return makeTimeValue(d.getYear(), (byte) d.getMonthValue(), (byte) d.getDayOfMonth(), (byte) d.getHour(),
-                    (byte) d.getMinute(), (byte) d.getSecond(), 0, TimeValue.CM_GREGORIAN_PRO);
+            return makeTimeValue(d.getYear(), (byte) d.getMonthValue(), (byte) d.getDayOfMonth(),
+                    TimeValue.CM_GREGORIAN_PRO);
         } else if (temporal instanceof ZonedDateTime d) {
-            return makeTimeValue(d.getYear(), (byte) d.getMonthValue(), (byte) d.getDayOfMonth(), (byte) d.getHour(),
-                    (byte) d.getMinute(), (byte) d.getSecond(), d.getOffset().getTotalSeconds() / 60,
+            return makeTimeValue(d.getYear(), (byte) d.getMonthValue(), (byte) d.getDayOfMonth(),
                     TimeValue.CM_GREGORIAN_PRO);
         } else if (temporal instanceof Instant i) {
-            return timeValue(i.atZone(ZoneOffset.UTC));
+            return dateValue(i.atZone(ZoneOffset.UTC));
         }
         throw new UnsupportedOperationException(temporal.toString());
     }
