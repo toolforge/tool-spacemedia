@@ -284,8 +284,8 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     }
 
     @Override
-    public Set<String> findTemplates(FlickrMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(FlickrMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         try {
             result.add(FlickrFreeLicense.of(media.getLicense()).getWikiTemplate());
         } catch (IllegalArgumentException e) {

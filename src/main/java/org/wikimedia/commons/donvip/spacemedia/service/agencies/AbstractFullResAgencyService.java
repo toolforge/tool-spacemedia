@@ -78,7 +78,7 @@ public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>
 
     @Override
     public final String getWikiCode(String sha1) throws TooManyResultsException {
-        return doForAnySha1(sha1, this::getWikiCode);
+        return doForAnySha1(sha1, this::getWikiCode).getKey();
     }
 
     @Override

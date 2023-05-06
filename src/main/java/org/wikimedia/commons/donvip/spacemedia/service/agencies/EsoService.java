@@ -45,8 +45,8 @@ public class EsoService extends AbstractDjangoplicityService<EsoMedia> {
     }
 
     @Override
-    public Set<String> findTemplates(EsoMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(EsoMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         result.add("ESO");
         return result;
     }

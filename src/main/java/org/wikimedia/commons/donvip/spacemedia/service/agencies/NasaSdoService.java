@@ -10,10 +10,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +97,13 @@ public class NasaSdoService
     @Override
     protected final Optional<Temporal> getUploadDate(NasaSdoMedia media) {
         return Optional.of(media.getDate());
+    }
+
+    @Override
+    protected Map<String, String> getStatements(NasaSdoMedia media) {
+        Map<String, String> result = super.getStatements(media);
+        result.put("P180", "Q525"); // Depicts the Sun
+        return result;
     }
 
     @Override
@@ -211,14 +220,16 @@ public class NasaSdoService
     }
 
     @Override
-    protected String getWikiFileDesc(NasaSdoMedia media, Metadata metadata) throws IOException {
-        return "{{NASA SDO|instrument=" + media.getInstrument() + "|band=" + media.getDataType() + "|type="
-                + metadata.getFileExtension() + "|id=" + media.getId() + "}}";
+    protected Pair<String, Map<String, String>> getWikiFileDesc(NasaSdoMedia media, Metadata metadata)
+            throws IOException {
+        return Pair.of("{{NASA SDO|instrument=" + media.getInstrument() + "|band="
+                + media.getDataType().name().replace("_", "") + "|type=" + metadata.getFileExtension() + "|id="
+                + media.getId() + "}}", Map.of());
     }
 
     @Override
-    public Set<String> findTemplates(NasaSdoMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(NasaSdoMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         result.add("PD-USGov-NASA");
         return result;
     }

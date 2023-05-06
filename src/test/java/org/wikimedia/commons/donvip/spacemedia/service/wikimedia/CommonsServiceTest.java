@@ -125,6 +125,22 @@ class CommonsServiceTest {
     }
 
     @Test
+    void testTruncatedLabel() {
+        assertEquals("", CommonsService.truncatedLabel("", 250));
+        assertEquals("foo.", CommonsService.truncatedLabel("foo.", 250));
+        assertEquals(
+                "truncation of a very long sentence without any dot",
+                CommonsService.truncatedLabel(
+                        "truncation of a very long sentence without any dot so that the service cannot find any dot and may not know what to do if it was dumb and not tested here",
+                        50));
+        assertEquals(
+                "Potosi is the capital city of the Department of Potosi in Bolivia, and one of the highest cities in the world at 4090 m.",
+                CommonsService.truncatedLabel(
+                        "Potosi is the capital city of the Department of Potosi in Bolivia, and one of the highest cities in the world at 4090 m. For centuries it was the location of the Spanish colonial silver mint, the major supplier of silver for the Spanish Empire until the 18th century. Potosi lies at the foot of the Cerro Rico (“rich mountain”), rumored to be made of silver. Today, Potosi continues to be an important mining center, and is famous for its well-preserved colonial architecture. The perspective view covers an area of about 20 by 30 km, was acquired October 12, 2021, and is located at 19.6 degrees south, 65.7 degrees west.",
+                        250));
+    }
+
+    @Test
     @Disabled("requires credentials on command line")
     void testgetWikiHtmlPreview() throws IOException {
         assertNotNull(service.getWikiHtmlPreview(

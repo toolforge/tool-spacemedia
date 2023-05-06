@@ -58,7 +58,7 @@
 		          </div>
 		        </td>
 		        <td th:if="'ignored' != ${tab}">
-		          <div th:each="template : ${agency.findTemplates(media)}">
+		          <div th:each="template : ${agency.findLicenceTemplates(media)}">
 		            <a th:text="${template}"
 		               th:href="@{https://commons.wikimedia.org/wiki/Template:{t}(t=${template.split('\|')[0].trim()})}"></a>
 		          </div>

@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -550,6 +551,18 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
     }
 
     @Override
+    protected Map<String, String> getStatements(T media) {
+        Map<String, String> result = super.getStatements(media);
+        if (StringUtils.isNotBlank(media.getName())) {
+            for (String name : media.getName().split(", ")) {
+                wikidata.searchAstronomicalObject(name).map(Pair::getKey)
+                    .ifPresent(qid -> result.put("P180", qid)); // Depicts the object
+            }
+        }
+        return result;
+    }
+
+    @Override
     public Set<String> findCategories(T media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (media.getCategories() != null) {
@@ -566,7 +579,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
                 result.add(catName);
             } else {
                 for (String name : media.getName().split(", ")) {
-                    wikidata.searchAstronomicalObjectCommonsCategory(name).ifPresent(result::add);
+                    wikidata.searchAstronomicalObject(name).map(Pair::getValue).ifPresent(result::add);
                 }
             }
         }

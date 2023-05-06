@@ -435,8 +435,8 @@ public class NasaService
     }
 
     @Override
-    public Set<String> findTemplates(NasaMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(NasaMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         result.add("PD-USGov-NASA");
         return result;
     }

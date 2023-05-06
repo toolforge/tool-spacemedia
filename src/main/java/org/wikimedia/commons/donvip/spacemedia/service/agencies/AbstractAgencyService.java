@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,6 +40,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -568,9 +570,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         if (metadata != null && metadata.getAssetUrl() != null
                 && shouldUpload(new UploadContext<>(media, metadata, isManual))) {
             checkUploadPreconditions(media, metadata, checkUnicity);
+            Pair<String, Map<String, String>> codeAndDescs = getWikiCode(media, metadata);
             metadata.setCommonsFileNames(new HashSet<>(Set.of(
-                    commonsService.upload(getWikiCode(media, metadata), media.getUploadTitle(),
-                            metadata.getFileExtension(), metadata.getAssetUrl(), metadata.getSha1()))));
+                    commonsService.upload(codeAndDescs.getLeft(), codeAndDescs.getRight(), getStatements(media),
+                            getCreationDate(media).orElse(null), getUploadDate(media).orElse(null),
+                            media.getUploadTitle(), metadata.getFileExtension(), metadata.getAssetUrl(),
+                            metadata.getSha1()))));
             uploaded.add(metadata);
             return 1;
         } else {
@@ -582,6 +587,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
+    protected Map<String, String> getStatements(T media) {
+        return new HashMap<>();
+    }
+
     @Override
     public String getWikiHtmlPreview(String sha1) throws TooManyResultsException {
         T media = findBySha1OrThrow(sha1, true);
@@ -591,7 +600,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final String getWikiHtmlPreview(T media, Metadata metadata) {
         try {
-            return commonsService.getWikiHtmlPreview(getWikiCode(media, metadata), getPageTile(media),
+            return commonsService.getWikiHtmlPreview(getWikiCode(media, metadata).getKey(), getPageTile(media),
                     metadata.getAssetUrl().toExternalForm());
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -605,31 +614,35 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Override
     public String getWikiCode(String sha1) throws TooManyResultsException {
         T media = findBySha1OrThrow(sha1, true);
-        return getWikiCode(media, media.getMetadata());
+        return getWikiCode(media, media.getMetadata()).getKey();
     }
 
     @Override
-    public final String getWikiCode(T media, Metadata metadata) {
+    public final Pair<String, Map<String, String>> getWikiCode(T media, Metadata metadata) {
         try {
+            Pair<String, Map<String, String>> desc = getWikiFileDesc(media, metadata);
             StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n")
-                    .append(getWikiFileDesc(media, metadata))
+                    .append(desc.getKey())
                     .append("\n=={{int:license-header}}==\n");
-            findTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
+            findLicenceTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
             commonsService.cleanupCategories(findCategories(media, metadata, true), media.getDate())
                     .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
-            return sb.toString();
+            return Pair.of(sb.toString(), desc.getValue());
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    protected String getWikiFileDesc(T media, Metadata metadata) throws IOException {
+    protected Pair<String, Map<String, String>> getWikiFileDesc(T media, Metadata metadata) throws IOException {
         String language = getLanguage(media);
         String description = getDescription(media);
         StringBuilder sb = new StringBuilder("{{Information\n| description = ");
+        Map<String, String> descriptions = new HashMap<>(Map.of(language, description));
         appendWikiDescriptionInLanguage(sb, language, description);
         if (!"en".equals(language)) {
-            appendWikiDescriptionInLanguage(sb, "en", translateService.translate(description, language, "en"));
+            String englishDescription = translateService.translate(description, language, "en");
+            appendWikiDescriptionInLanguage(sb, "en", englishDescription);
+            descriptions.put("en", englishDescription);
         }
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
         sb.append("\n| source = ").append(getSource(media))
@@ -640,9 +653,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
         if (media instanceof LatLon ll && ll.getLatitude() != 0d && ll.getLongitude() != 0d) {
-            sb.append("{{Location |1=" + ll.getLatitude() + " |2=" + ll.getLongitude() + "}}");
+            sb.append("{{Location |1=" + ll.getLatitude() + " |2=" + ll.getLongitude() + "}}\n");
         }
-        return sb.toString();
+        findInformationTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
+        return Pair.of(sb.toString(), descriptions);
     }
 
     protected final void appendWikiOtherVersions(StringBuilder sb, T media, Metadata metadata, String key) {
@@ -778,12 +792,22 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     /**
-     * Returns the list of Wikimedia Commons templates to apply to the given media.
+     * Returns the list of licence templates to apply to the given media.
      *
-     * @param media the media for which template names are wanted
-     * @return the list of Wikimedia Commons templates to apply to {@code media}
+     * @param media the media for which licence template names are wanted
+     * @return the list of licence templates to apply to {@code media}
      */
-    public Set<String> findTemplates(T media) {
+    public Set<String> findInformationTemplates(T media) {
+        return new LinkedHashSet<>();
+    }
+
+    /**
+     * Returns the list of licence templates to apply to the given media.
+     *
+     * @param media the media for which licence template names are wanted
+     * @return the list of licence templates to apply to {@code media}
+     */
+    public Set<String> findLicenceTemplates(T media) {
         return new LinkedHashSet<>();
     }
 
@@ -823,7 +847,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             media = saveMedia(media);
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
-        if (findTemplates(media).isEmpty()) {
+        if (findLicenceTemplates(media).isEmpty()) {
             throw new ImageUploadForbiddenException(media + " has no template, so may be not free");
         }
     }
@@ -891,7 +915,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             if (media.getDescription() != null) {
                 String description = media.getDescription().toLowerCase(Locale.ENGLISH);
                 if (description.contains("courtesy")
-                        && (findTemplates(media).isEmpty() || courtesyOk.stream().noneMatch(description::contains))) {
+                        && (findLicenceTemplates(media).isEmpty() || courtesyOk.stream().noneMatch(description::contains))) {
                     result = ignoreFile(media, "Probably non-free image (courtesy)");
                 }
             }

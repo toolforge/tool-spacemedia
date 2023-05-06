@@ -400,7 +400,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         if (!Boolean.TRUE.equals(media.isIgnored())) {
             if (ignoredCategories.contains(media.getCategory())) {
                 save = ignoreFile(media, "Ignored category: " + media.getCategory());
-            } else if (findTemplates(media).isEmpty()) {
+            } else if (findLicenceTemplates(media).isEmpty()) {
                 // DVIDS media with VIRIN "O". we can assume it implies a courtesy photo
                 // https://www.dvidshub.net/image/3322521/45th-sw-supports-successful-atlas-v-oa-7-launch
                 save = ignoreFile(media, "No template found (VIRIN O): " + media.getVirin());
@@ -517,10 +517,12 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
-    protected final String getWikiFileDesc(DvidsMedia media, Metadata metadata) throws MalformedURLException {
+    protected final Pair<String, Map<String, String>> getWikiFileDesc(DvidsMedia media, Metadata metadata)
+            throws MalformedURLException {
+        String lang = getLanguage(media);
+        String desc = getDescription(media);
         StringBuilder sb = new StringBuilder("{{milim\n| description = ")
-                .append("{{").append(getLanguage(media)).append("|1=")
-                .append(CommonsService.formatWikiCode(getDescription(media))).append("}}");
+                .append("{{").append(lang).append("|1=").append(CommonsService.formatWikiCode(desc)).append("}}");
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
         sb.append("\n| source = ").append(getSource(media))
           .append("\n| author = ").append(getAuthor(media));
@@ -533,7 +535,7 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
-        return sb.toString();
+        return Pair.of(sb.toString(), Map.of(lang, desc));
     }
 
     @Override
@@ -550,8 +552,8 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
     }
 
     @Override
-    public Set<String> findTemplates(DvidsMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(DvidsMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getMetadata().getAssetUrl());
         if (t != null && StringUtils.isNotBlank(t.getPdTemplate())) {
             result.add(t.getPdTemplate());

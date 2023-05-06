@@ -11,10 +11,12 @@ import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jsoup.HttpStatusException;
 import org.slf4j.Logger;
@@ -158,14 +160,25 @@ public abstract class AbstractStsciService
     }
 
     @Override
+    protected Map<String, String> getStatements(StsciMedia media) {
+        Map<String, String> result = super.getStatements(media);
+        if (StringUtils.isNotBlank(media.getObjectName())) {
+            wikidata.searchAstronomicalObject(media.getObjectName()).map(Pair::getKey)
+                    .ifPresent(qid -> result.put("P180", qid)); // Depicts the object
+        }
+        return result;
+    }
+
+    @Override
     public Set<String> findCategories(StsciMedia media, Metadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (StringUtils.isNotBlank(media.getObjectName())) {
-            wikidata.searchAstronomicalObjectCommonsCategory(media.getObjectName()).ifPresentOrElse(result::add,
+            wikidata.searchAstronomicalObject(media.getObjectName()).map(Pair::getValue)
+                    .ifPresentOrElse(result::add,
                     () -> {
                         if (StringUtils.isNotBlank(media.getConstellation())) {
-                            wikidata.searchConstellationCommonsCategory(media.getConstellation())
-                                    .ifPresent(result::add);
+                            wikidata.searchConstellation(media.getConstellation())
+                                    .map(Pair::getValue).ifPresent(result::add);
                         }
                     });
         }
@@ -173,8 +186,8 @@ public abstract class AbstractStsciService
     }
 
     @Override
-    public final Set<String> findTemplates(StsciMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public final Set<String> findLicenceTemplates(StsciMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         switch (media.getMission()) {
         case "hubble":
             result.add("PD-Hubble");

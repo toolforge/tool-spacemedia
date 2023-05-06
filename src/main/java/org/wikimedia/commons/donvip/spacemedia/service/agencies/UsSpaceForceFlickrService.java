@@ -48,8 +48,8 @@ public class UsSpaceForceFlickrService extends AbstractAgencyFlickrService<Dvids
     }
 
     @Override
-    public Set<String> findTemplates(FlickrMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(FlickrMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.United_States_Government_Work
                 || (media.getDescription() != null && media.getDescription().contains("Air Force photo"))) {
             result.remove(FlickrFreeLicense.United_States_Government_Work.getWikiTemplate());

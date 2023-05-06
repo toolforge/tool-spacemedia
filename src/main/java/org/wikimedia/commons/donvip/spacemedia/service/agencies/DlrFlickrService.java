@@ -40,8 +40,8 @@ public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, L
     }
 
     @Override
-    public Set<String> findTemplates(FlickrMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(FlickrMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         result.add("DLR-License");
         if (media.getDescription() != null && media.getDescription().contains("ESA/DLR/FU Berlin")) {
             result.add("ESA|ESA/DLR/FU Berlin");

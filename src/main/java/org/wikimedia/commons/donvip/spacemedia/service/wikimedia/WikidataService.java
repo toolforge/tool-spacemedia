@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -149,16 +150,16 @@ public class WikidataService {
     }
 
     @Cacheable("wikidataAstronomicalObjects")
-    public Optional<String> searchAstronomicalObjectCommonsCategory(String catalogName) {
+    public Optional<Pair<String, String>> searchAstronomicalObject(String catalogName) {
         return searchCommonsCategory(WikidataService::getAstronomicalObjectQuery, catalogName);
     }
 
     @Cacheable("wikidataConstellations")
-    public Optional<String> searchConstellationCommonsCategory(String officialName) {
+    public Optional<Pair<String, String>> searchConstellation(String officialName) {
         return searchCommonsCategory(WikidataService::getConstellationQuery, officialName);
     }
 
-    private static Optional<String> searchCommonsCategory(UnaryOperator<String> query, String name) {
+    private static Optional<Pair<String, String>> searchCommonsCategory(UnaryOperator<String> query, String name) {
         try (RepositoryConnection sparqlConnection = sparqlRepository.getConnection();
                 TupleQueryResult result = sparqlConnection
                         .prepareTupleQuery(QueryLanguage.SPARQL, query.apply(name)).evaluate()) {
@@ -166,10 +167,10 @@ public class WikidataService {
             if (results.size() != 1) {
                 LOGGER.info("Not exactly 1 item when looking for {} in Wikidata: {}", name, results);
             } else {
-                Binding commonsCat = results.get(0).getBinding("commonsCat");
-                if (commonsCat != null) {
-                    return Optional.of(commonsCat.getValue().stringValue());
-                }
+                BindingSet firstResult = results.get(0);
+                String itemId = firstResult.getBinding("item").getValue().stringValue();
+                Binding commonsCat = firstResult.getBinding("commonsCat");
+                return Optional.of(Pair.of(itemId, commonsCat != null ? commonsCat.getValue().stringValue() : null));
             }
         }
         return Optional.empty();

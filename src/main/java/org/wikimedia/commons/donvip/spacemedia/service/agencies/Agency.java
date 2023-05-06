@@ -6,7 +6,9 @@ import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -103,7 +105,7 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     String getWikiCode(String sha1) throws TooManyResultsException;
 
-    String getWikiCode(T media, Metadata metadata);
+    Pair<String, Map<String, String>> getWikiCode(T media, Metadata metadata);
 
     URL getSourceUrl(T media) throws MalformedURLException;
 

@@ -51,8 +51,8 @@ public class WebbEsaService extends AbstractDjangoplicityService<WebbEsaMedia> {
     }
 
     @Override
-    public Set<String> findTemplates(WebbEsaMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(WebbEsaMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         result.add("ESA-Webb|" + media.getCredit());
         return result;
     }

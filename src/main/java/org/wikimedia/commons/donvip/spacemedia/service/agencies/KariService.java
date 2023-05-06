@@ -102,8 +102,8 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
     }
 
     @Override
-    public Set<String> findTemplates(KariMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(KariMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         result.add("KOGL");
         return result;
     }

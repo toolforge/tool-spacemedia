@@ -598,8 +598,8 @@ public class EsaService
     }
 
     @Override
-    public Set<String> findTemplates(EsaMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(EsaMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         String credit = media.getCopyright();
         for (String spelling : CC_BY_SA_SPELLINGS) {
             credit = credit.replace(", " + spelling, "").replace("; " + spelling, "").replace(" " + spelling, "").trim();

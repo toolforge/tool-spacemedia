@@ -133,8 +133,8 @@ public class NOIRLabService extends AbstractDjangoplicityService<NOIRLabMedia> {
     }
 
     @Override
-    public Set<String> findTemplates(NOIRLabMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(NOIRLabMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         result.add("NOIRLab");
         return result;
     }

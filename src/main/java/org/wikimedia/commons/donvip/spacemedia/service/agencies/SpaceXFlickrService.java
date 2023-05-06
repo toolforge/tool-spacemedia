@@ -35,8 +35,8 @@ public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia
     }
 
     @Override
-    public Set<String> findTemplates(FlickrMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(FlickrMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         try {
             if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Dedication_CC0) {
                 result.remove(FlickrFreeLicense.Public_Domain_Dedication_CC0.getWikiTemplate());

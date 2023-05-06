@@ -98,8 +98,8 @@ public class IauService extends AbstractDjangoplicityService<IauMedia> {
     }
 
     @Override
-    public Set<String> findTemplates(IauMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(IauMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         result.add("IAU");
         return result;
     }

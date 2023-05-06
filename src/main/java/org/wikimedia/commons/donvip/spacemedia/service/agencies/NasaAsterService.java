@@ -220,9 +220,15 @@ public class NasaAsterService
     }
 
     @Override
-    public Set<String> findTemplates(NasaAsterMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findInformationTemplates(NasaAsterMedia media) {
+        Set<String> result = super.findInformationTemplates(media);
         result.add("NASA Photojournal/attribution|class=Terra|mission=Terra|name=Terra|credit=ASTER");
+        return result;
+    }
+
+    @Override
+    public Set<String> findLicenceTemplates(NasaAsterMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         result.add("PD-USGov-NASA");
         return result;
     }

@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.ORDER;
@@ -259,15 +260,17 @@ public class NasaPhotojournalService
     }
 
     @Override
-    protected final String getWikiFileDesc(NasaPhotojournalMedia media, Metadata metadata)
+    protected final Pair<String, Map<String, String>> getWikiFileDesc(NasaPhotojournalMedia media, Metadata metadata)
             throws MalformedURLException {
         // https://commons.wikimedia.org/wiki/Template:NASA_Photojournal/attribution/mission
+        String lang = getLanguage(media);
+        String desc = getDescription(media);
         StringBuilder sb = new StringBuilder("{{NASA Photojournal\n| catalog = ").append(media.getId())
                 .append("\n| image= ").append(media.isImage()).append("\n| video= ").append(media.isVideo())
                 .append("\n| animation= ").append("gif".equals(metadata.getFileExtension()))
                 .append("\n| mission= ").append(media.getMission())
                 .append("\n| instrument= ").append(media.getInstrument()).append("\n| caption = ").append("{{")
-                .append(getLanguage(media)).append("|1=").append(CommonsService.formatWikiCode(getDescription(media)))
+                .append(lang).append("|1=").append(CommonsService.formatWikiCode(desc))
                 .append("}}\n| credit= ").append(media.getCredit());
         getUploadDate(media).ifPresent(s -> sb.append("\n| addition_date = ").append(toIso8601(s)));
         getCreationDate(media).ifPresent(s -> sb.append("\n| creation_date = ").append(s));
@@ -281,7 +284,7 @@ public class NasaPhotojournalService
             sb.append("\n| link= ").append(metadata.getAssetUrl());
         }
         sb.append("\n}}");
-        return sb.toString();
+        return Pair.of(sb.toString(), Map.of(lang, desc));
     }
 
     protected final Optional<Point> getLocation(NasaPhotojournalMedia media) {
@@ -343,8 +346,8 @@ public class NasaPhotojournalService
     }
 
     @Override
-    public Set<String> findTemplates(NasaPhotojournalMedia media) {
-        Set<String> result = super.findTemplates(media);
+    public Set<String> findLicenceTemplates(NasaPhotojournalMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
         result.add("JPL Image Copyright");
         return result;
     }
