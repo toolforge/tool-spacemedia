@@ -168,7 +168,8 @@ public class WikidataService {
                 LOGGER.info("Not exactly 1 item when looking for {} in Wikidata: {}", name, results);
             } else {
                 BindingSet firstResult = results.get(0);
-                String itemId = firstResult.getBinding("item").getValue().stringValue();
+                String itemId = firstResult.getBinding("item").getValue().stringValue()
+                        .replace("http://www.wikidata.org/entity/", "");
                 Binding commonsCat = firstResult.getBinding("commonsCat");
                 return Optional.of(Pair.of(itemId, commonsCat != null ? commonsCat.getValue().stringValue() : null));
             }

@@ -47,7 +47,7 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> implements WithDi
     private ImageDimensions dimensions;
 
     @Embedded
-    private NasaSdoAiaKeywords aiaKeywords;
+    private NasaSdoAiaKeywords aiaKeywords = new NasaSdoAiaKeywords();
 
     @Override
     public String getId() {

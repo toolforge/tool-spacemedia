@@ -85,7 +85,9 @@ import org.wikidata.wdtk.datamodel.helpers.MediaInfoUpdateBuilder;
 import org.wikidata.wdtk.datamodel.helpers.StatementBuilder;
 import org.wikidata.wdtk.datamodel.helpers.StatementUpdateBuilder;
 import org.wikidata.wdtk.datamodel.helpers.TermUpdateBuilder;
+import org.wikidata.wdtk.datamodel.interfaces.EntityDocument;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
+import org.wikidata.wdtk.datamodel.interfaces.MediaInfoDocument;
 import org.wikidata.wdtk.datamodel.interfaces.MediaInfoIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.QuantityValue;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
@@ -841,26 +843,32 @@ public class CommonsService {
         return upload.getFilename();
     }
 
-    public void editStructuredDataContent(String uploadedFilename, Map<String, String> descriptions,
+    public void editStructuredDataContent(String filename, Map<String, String> descriptions,
             Map<String, Pair<Object, Map<String, Object>>> statements) throws IOException, MediaWikiApiErrorException {
-        MediaInfoIdValue entityId = fetcher.getMediaInfoIdByFileName(uploadedFilename);
-        if (entityId == null) {
-            throw new IllegalStateException("No commons mediaInfo found for uploaded filename " + uploadedFilename);
-        }
-        LOGGER.info("Upload done for {}, editing SDC {}...", uploadedFilename, entityId);
+        MediaInfoDocument doc = getMediaInfoDocument(filename);
+        MediaInfoIdValue entityId = doc.getEntityId();
+        LOGGER.info("Editing SDC {} of {}...", entityId, filename);
         // Build update objects
         TermUpdateBuilder termUpdateBuilder = TermUpdateBuilder.create();
         descriptions.forEach(
                 (code, desc) -> termUpdateBuilder.put(makeMonolingualTextValue(truncatedLabel(desc, 250), code)));
-        StatementUpdateBuilder statementUpdateBuilder = StatementUpdateBuilder.create(entityId);
+        StatementUpdateBuilder statementUpdateBuilder = StatementUpdateBuilder.forStatementGroups(entityId,
+                doc.getStatementGroups());
         statements.forEach(
                 (prop, pair) -> statementUpdateBuilder.add(statement(entityId, prop, pair.getLeft(), pair.getValue())));
         // update SDC
-        editor.editEntityDocument(
-                MediaInfoUpdateBuilder.forEntityId(entityId).updateLabels(termUpdateBuilder.build())
-                        .updateStatements(statementUpdateBuilder.build()).build(),
-                false, "Adding SDC details", null);
+        editor.editEntityDocument(MediaInfoUpdateBuilder.forEntityId(entityId).updateLabels(termUpdateBuilder.build())
+                .updateStatements(statementUpdateBuilder.build()).build(), false, "Adding SDC details", null);
         LOGGER.info("SDC edit of {} done", entityId);
+    }
+
+    static MediaInfoDocument getMediaInfoDocument(String filename) throws MediaWikiApiErrorException, IOException {
+        // Ugly workaround to https://github.com/Wikidata/Wikidata-Toolkit/issues/777
+        Map<String, EntityDocument> map = fetcher.getEntityDocumentsByTitle("commonswiki", "File:" + filename);
+        if (!map.isEmpty() && map.values().iterator().next() instanceof MediaInfoDocument doc) {
+            return doc;
+        }
+        throw new IllegalStateException("No commons mediaInfo found for filename " + filename);
     }
 
     static org.wikidata.wdtk.datamodel.interfaces.Value createWikidataValue(Object o) {

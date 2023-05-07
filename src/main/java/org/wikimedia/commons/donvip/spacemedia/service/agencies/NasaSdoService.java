@@ -26,6 +26,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoAiaKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoDataType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoMediaRepository;
@@ -108,7 +109,7 @@ public class NasaSdoService
         result.put("P1071", Pair.of("Q472251", null)); // Created in geosynchronous orbit
         result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
         result.put("P4082", Pair.of(media.getInstrument().getQid(), null)); // Taken with SDO instrument
-        Optional.ofNullable(media.getAiaKeywords().getExpTime()) // Exposure time in seconds
+        Optional.ofNullable(media.getAiaKeywords()).map(NasaSdoAiaKeywords::getExpTime) // Exposure time in seconds
                 .ifPresent(exp -> result.put("P6757", Pair.of(exp.toString(), null)));
         return result;
     }

@@ -191,7 +191,6 @@ public class ImageInfo {
                 + (height != null ? "height=" + height + ", " : "")
                 + (comment != null ? "comment=" + comment + ", " : "")
                 + (parsedComment != null ? "parsedComment=" + parsedComment + ", " : "")
-                + (html != null ? "html=" + html + ", " : "")
                 + (canonicalTitle != null ? "canonicalTitle=" + canonicalTitle + ", " : "")
                 + (url != null ? "url=" + url + ", " : "")
                 + (descriptionUrl != null ? "descriptionUrl=" + descriptionUrl + ", " : "")

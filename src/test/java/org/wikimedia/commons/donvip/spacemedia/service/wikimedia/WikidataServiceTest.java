@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
+import java.util.Optional;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
@@ -57,6 +59,11 @@ class WikidataServiceTest {
                         e("Fedyayev", "Andrey Fedyaev")),
                 service.mapCommonsCategoriesByFamilyName(
                         service.findCommonsStatementGroup("Category:ISS Expedition 68", "P1029").get()));
+    }
+
+    @Test
+    void testSearchAstronomicalObject() {
+        assertEquals(Optional.of(Pair.of("Q86709121", null)), service.searchAstronomicalObject("[KAG2008] globule 13"));
     }
 
     private static final SimpleEntry<String, String> e(String k, String v) {

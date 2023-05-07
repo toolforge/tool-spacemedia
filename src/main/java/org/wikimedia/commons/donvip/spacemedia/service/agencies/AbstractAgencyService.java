@@ -612,13 +612,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             throws MalformedURLException {
         Map<String, Pair<Object, Map<String, Object>>> result = new TreeMap<>();
         // Source: file available on the internet
-        result.put("P7482", Pair.of("Q74228490", Map.of("P973", getSourceUrl(media).toExternalForm(), "P2699",
-                metadata.getAssetUrl().toExternalForm())));
+        result.put("P7482", Pair.of("Q74228490", new TreeMap<>(Map.of("P973", getSourceUrl(media).toExternalForm(),
+                "P2699", metadata.getAssetUrl().toExternalForm()))));
         // Licences
         Set<String> licences = findLicenceTemplates(media);
         boolean usPublicDomain = PD_US.stream().anyMatch(pd -> licences.stream().anyMatch(l -> l.startsWith(pd)));
         result.put("P6216", Pair.of(usPublicDomain ? "Q19652" : "Q50423863",
-                usPublicDomain ? Map.of("P459", "Q60671452", "P1001", "Q30") : null));
+                usPublicDomain ? new TreeMap<>(Map.of("P459", "Q60671452", "P1001", "Q30")) : null));
         if (!usPublicDomain) {
             LICENCES.entrySet().stream().filter(e -> licences.stream().anyMatch(l -> l.startsWith(e.getKey())))
                     .map(Entry::getValue).distinct().forEach(l -> result.put("P275", Pair.of(l, null)));
@@ -649,7 +649,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             result.put("P2048", Pair.of(Pair.of(wd.getImageDimensions().getHeight(), "Q355198"), null));
         }
         // Location
-        if (media instanceof WithLatLon ll) {
+        if (media instanceof WithLatLon ll && (ll.getLatitude() != 0d || ll.getLongitude() != 0d)) {
             result.put("P9149", Pair
                     .of(Triple.of(ll.getLatitude(), ll.getLongitude(), ll.getPrecision()), null));
         }
@@ -717,7 +717,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
-        if (media instanceof WithLatLon ll && ll.getLatitude() != 0d && ll.getLongitude() != 0d) {
+        if (media instanceof WithLatLon ll && (ll.getLatitude() != 0d || ll.getLongitude() != 0d)) {
             sb.append("{{Object location |1=" + ll.getLatitude() + " |2=" + ll.getLongitude() + "}}\n");
         }
         findInformationTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));

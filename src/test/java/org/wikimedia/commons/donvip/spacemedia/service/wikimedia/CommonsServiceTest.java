@@ -13,6 +13,8 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.convert.ApplicationConversionService;
@@ -24,6 +26,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikidata.wdtk.datamodel.interfaces.MediaInfoDocument;
 import org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaCommonConfiguration;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategory;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
@@ -167,6 +170,15 @@ class CommonsServiceTest {
                         [[Category:Lunar Flashlight]]
                                         """,
                 "PIA25257", "https://photojournal.jpl.nasa.gov/archive/PIA25257.gif"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "IAU_2006_General_Assembly-_Result_of_the_IAU_Resolution_Votes_(iau0603d).jpg,M131648616",
+            "IAU_2006_General_Assembly-_Result_of_the_IAU_Resolution_Votes_(iau0603c).jpg,M131649766" })
+    void testGetMediaInfoDocument(String filename, String entityId) throws Exception {
+        MediaInfoDocument doc = CommonsService.getMediaInfoDocument(filename);
+        assertNotNull(doc);
+        assertEquals(entityId, doc.getEntityId().getId());
     }
 
     private void mockCategoryLinks() {
