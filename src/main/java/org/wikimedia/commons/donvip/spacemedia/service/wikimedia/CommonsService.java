@@ -14,7 +14,6 @@ import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeStringValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeTimeValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeWikidataItemIdValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeWikidataPropertyIdValue;
-import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeWikimediaCommonsMediaInfoIdValue;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -94,6 +93,7 @@ import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
 import org.wikidata.wdtk.wikibaseapi.BasicApiConnection;
 import org.wikidata.wdtk.wikibaseapi.OAuthApiConnection;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataEditor;
+import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
@@ -273,6 +273,8 @@ public class CommonsService {
 
     private final OAuthApiConnection commonsApiConnection;
     private final WikibaseDataEditor editor;
+
+    private static final WikibaseDataFetcher fetcher = WikibaseDataFetcher.getWikimediaCommonsDataFetcher();
 
     private final String account;
     private final OAuth10aService oAuthService;
@@ -841,15 +843,16 @@ public class CommonsService {
 
     public void editStructuredDataContent(String uploadedFilename, Map<String, String> descriptions,
             Map<String, Pair<Object, Map<String, Object>>> statements) throws IOException, MediaWikiApiErrorException {
-        MediaInfoIdValue entityId = makeWikimediaCommonsMediaInfoIdValue(
-                "M" + pageRepository.findByFileTitle(uploadedFilename).orElseThrow(() -> new IllegalStateException(
-                        "No commons page found for uploaded filename " + uploadedFilename)).getId());
+        MediaInfoIdValue entityId = fetcher.getMediaInfoIdByFileName(uploadedFilename);
+        if (entityId == null) {
+            throw new IllegalStateException("No commons mediaInfo found for uploaded filename " + uploadedFilename);
+        }
         LOGGER.info("Upload done for {}, editing SDC {}...", uploadedFilename, entityId);
         // Build update objects
         TermUpdateBuilder termUpdateBuilder = TermUpdateBuilder.create();
         descriptions.forEach(
                 (code, desc) -> termUpdateBuilder.put(makeMonolingualTextValue(truncatedLabel(desc, 250), code)));
-        StatementUpdateBuilder statementUpdateBuilder = StatementUpdateBuilder.create();
+        StatementUpdateBuilder statementUpdateBuilder = StatementUpdateBuilder.create(entityId);
         statements.forEach(
                 (prop, pair) -> statementUpdateBuilder.add(statement(entityId, prop, pair.getLeft(), pair.getValue())));
         // update SDC
