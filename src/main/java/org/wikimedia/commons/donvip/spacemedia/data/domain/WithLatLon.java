@@ -1,6 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
-public interface LatLon {
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+public interface WithLatLon {
 
     public double getLatitude();
 
@@ -9,4 +13,8 @@ public interface LatLon {
     public double getLongitude();
 
     public void setLongitude(double longitude);
+
+    @Transient
+    @JsonIgnore
+    public double getPrecision();
 }

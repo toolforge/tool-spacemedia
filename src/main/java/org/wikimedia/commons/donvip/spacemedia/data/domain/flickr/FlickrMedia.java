@@ -22,8 +22,9 @@ import javax.persistence.Transient;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.LatLon;
+import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -33,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, phash") })
-public class FlickrMedia extends Media<Long, LocalDateTime> implements LatLon {
+public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLon {
 
     @Id
     @Column(nullable = false)
@@ -163,20 +164,29 @@ public class FlickrMedia extends Media<Long, LocalDateTime> implements LatLon {
         this.originalFormat = originalFormat;
     }
 
+    @Override
     public double getLatitude() {
         return latitude;
     }
 
+    @Override
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
+    @Override
     public double getLongitude() {
         return longitude;
     }
 
+    @Override
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    @Override
+    public double getPrecision() {
+        return GlobeCoordinatesValue.PREC_MILLI_ARCSECOND;
     }
 
     public double getAccuracy() {

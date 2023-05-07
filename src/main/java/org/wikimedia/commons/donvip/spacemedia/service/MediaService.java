@@ -18,6 +18,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -73,7 +75,8 @@ public class MediaService {
 
     private static final List<String> STRINGS_TO_REMOVE = Arrays.asList(" rel=\"noreferrer nofollow\"");
 
-    private static final List<String> STRINGS_TO_REPLACE_BY_SPACE = Arrays.asList("&nbsp;", "  ");
+    private static final Map<String, String> STRINGS_TO_REPLACE = Map.of("&nbsp;", " ", "  ", " ", "â€™", "’", "ÔÇÖ",
+            "’", "ÔÇ£", "«", "ÔÇØ", "»");
 
     // Taken from https://github.com/eatcha-wikimedia/YouTubeReviewBot/blob/master/main.py
     private static final Pattern FROM_YOUTUBE = Pattern.compile(
@@ -460,15 +463,11 @@ public class MediaService {
                     result = true;
                 }
             }
-            for (String toReplace : STRINGS_TO_REPLACE_BY_SPACE) {
-                while (media.getDescription().contains(toReplace)) {
-                    media.setDescription(media.getDescription().replace(toReplace, " "));
+            for (Entry<String, String> toReplace : STRINGS_TO_REPLACE.entrySet()) {
+                while (media.getDescription().contains(toReplace.getKey())) {
+                    media.setDescription(media.getDescription().replace(toReplace.getKey(), toReplace.getValue()));
                     result = true;
                 }
-            }
-            if (media.getDescription().contains("â€™")) {
-                media.setDescription(media.getDescription().replace("â€™", "’"));
-                result = true;
             }
         }
         return result;

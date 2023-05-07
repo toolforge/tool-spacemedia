@@ -15,13 +15,14 @@ import javax.persistence.Table;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, phash") })
-public class NasaSdoMedia extends Media<String, LocalDateTime> {
+public class NasaSdoMedia extends Media<String, LocalDateTime> implements WithDimensions {
 
     @Id
     @Column(nullable = false, length = 32)
@@ -44,6 +45,9 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> {
 
     @Embedded
     private ImageDimensions dimensions;
+
+    @Embedded
+    private NasaSdoAiaKeywords aiaKeywords;
 
     @Override
     public String getId() {
@@ -81,8 +85,14 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> {
         this.instrument = instrument;
     }
 
-    public ImageDimensions getDimensions() {
+    @Override
+    public ImageDimensions getImageDimensions() {
         return dimensions;
+    }
+
+    @Override
+    public void setImageDimensions(ImageDimensions dimensions) {
+        this.dimensions = dimensions;
     }
 
     public NasaSdoDataType getDataType() {
@@ -93,8 +103,12 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> {
         this.dataType = dataType;
     }
 
-    public void setDimensions(ImageDimensions dimensions) {
-        this.dimensions = dimensions;
+    public NasaSdoAiaKeywords getAiaKeywords() {
+        return aiaKeywords;
+    }
+
+    public void setAiaKeywords(NasaSdoAiaKeywords keywords) {
+        this.aiaKeywords = keywords;
     }
 
     @Override
@@ -114,10 +128,7 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + Objects.hash(dataType, date, dimensions, id, instrument, mediaType);
-        return result;
+        return 31 * super.hashCode() + Objects.hash(dataType, date, dimensions, id, instrument, mediaType, aiaKeywords);
     }
 
     @Override
@@ -129,14 +140,14 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> {
         if (getClass() != obj.getClass())
             return false;
         NasaSdoMedia other = (NasaSdoMedia) obj;
-        return dataType == other.dataType && Objects.equals(date, other.date)
-                && Objects.equals(dimensions, other.dimensions) && Objects.equals(id, other.id)
-                && instrument == other.instrument && mediaType == other.mediaType;
+        return dataType == other.dataType && instrument == other.instrument && mediaType == other.mediaType
+                && Objects.equals(date, other.date) && Objects.equals(dimensions, other.dimensions)
+                && Objects.equals(id, other.id) && Objects.equals(aiaKeywords, other.aiaKeywords);
     }
 
     @Override
     public String toString() {
         return "NasaSdoMedia [id=" + id + ", date=" + date + ", mediaType=" + mediaType + ", instrument=" + instrument
-                + ", dataType=" + dataType + ", dimensions=" + dimensions + "]";
+                + ", dataType=" + dataType + ", dimensions=" + dimensions + ']';
     }
 }

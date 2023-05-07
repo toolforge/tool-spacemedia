@@ -312,7 +312,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
                 result.add("PD-SpaceX");
             }
             if (description.contains("hoto by NASA") || description.contains("hoto/NASA")) {
-                result.add("PD-NASA");
+                result.add("PD-USGov-NASA");
             }
             Optional.ofNullable(EsaService.getCopernicusTemplate(description)).ifPresent(result::add);
         }

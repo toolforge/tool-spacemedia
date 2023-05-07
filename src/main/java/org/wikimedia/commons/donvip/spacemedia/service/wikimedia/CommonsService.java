@@ -7,7 +7,10 @@ import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
+import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeGlobeCoordinatesValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeMonolingualTextValue;
+import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeQuantityValue;
+import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeStringValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeTimeValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeWikidataItemIdValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeWikidataPropertyIdValue;
@@ -16,6 +19,7 @@ import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeWikimediaCommons
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -61,6 +65,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -81,7 +86,9 @@ import org.wikidata.wdtk.datamodel.helpers.MediaInfoUpdateBuilder;
 import org.wikidata.wdtk.datamodel.helpers.StatementBuilder;
 import org.wikidata.wdtk.datamodel.helpers.StatementUpdateBuilder;
 import org.wikidata.wdtk.datamodel.helpers.TermUpdateBuilder;
+import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikidata.wdtk.datamodel.interfaces.MediaInfoIdValue;
+import org.wikidata.wdtk.datamodel.interfaces.QuantityValue;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
 import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
 import org.wikidata.wdtk.wikibaseapi.BasicApiConnection;
@@ -725,11 +732,9 @@ public class CommonsService {
         return badWikiCode.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", "[$1 $2]");
     }
 
-    public String upload(String wikiCode, Map<String, String> descriptions, Map<String, String> statements,
-            Temporal creationDate, Temporal publicationDate, String filename, String ext, URL url, String sha1)
+    public String upload(String wikiCode, String filename, String ext, URL url, String sha1)
             throws IOException, UploadException {
-        return doUpload(wikiCode, descriptions, statements, creationDate, publicationDate, normalizeFilename(filename),
-                ext, url, sha1, true, true, true, true);
+        return doUpload(wikiCode, normalizeFilename(filename), ext, url, sha1, true, true, true, true);
     }
 
     public static String normalizeFilename(String filename) {
@@ -744,10 +749,10 @@ public class CommonsService {
                 || permittedFileTypes.stream().anyMatch(type -> lowerCaseUrl.endsWith("." + type));
     }
 
-    private synchronized String doUpload(String wikiCode, Map<String, String> descriptions,
-            Map<String, String> statements, Temporal creationDate, Temporal publicationDate, String filename,
-            String ext, URL url, String sha1, boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl,
-            boolean retryAfterRandomProxy403error, boolean uploadByUrl) throws IOException, UploadException {
+    private synchronized String doUpload(String wikiCode, String filename, String ext, URL url, String sha1,
+            boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error,
+            boolean uploadByUrl)
+            throws IOException, UploadException {
         if (!isPermittedFileType(url.toExternalForm())) {
             throw new UploadException(url + " does not match any supported file type: " + permittedFileTypes);
         }
@@ -778,9 +783,8 @@ public class CommonsService {
                 if (e.getMessage() != null && e.getMessage().contains("bytes exhausted (tried to allocate")) {
                     LOGGER.warn("Unable to upload {} by URL (memory exhaustion), fallback to upload in chunks...", url);
                     // T334814 - upload by chunk in case of memory exhaustion during upload by url
-                    return doUpload(wikiCode, descriptions, statements, creationDate, publicationDate, filename, ext,
-                            url, sha1, renewTokenIfBadToken, retryWithSanitizedUrl, retryAfterRandomProxy403error,
-                            false);
+                    return doUpload(wikiCode, filename, ext, url, sha1, renewTokenIfBadToken, retryWithSanitizedUrl,
+                            retryAfterRandomProxy403error, false);
                 }
                 throw e;
             }
@@ -797,13 +801,12 @@ public class CommonsService {
         if (error != null) {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
                 token = queryTokens().getCsrftoken();
-                return doUpload(wikiCode, descriptions, statements, creationDate, publicationDate, filename, ext, url,
-                        sha1, false, retryWithSanitizedUrl, true, uploadByUrl);
+                return doUpload(wikiCode, filename, ext, url, sha1, false, retryWithSanitizedUrl, true, uploadByUrl);
             }
             if (retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
                 try {
-                    return doUpload(wikiCode, descriptions, statements, creationDate, publicationDate, filename, ext,
-                            Utils.urlToUri(url).toURL(), sha1, renewTokenIfBadToken, false, true, uploadByUrl);
+                    return doUpload(wikiCode, filename, ext, Utils.urlToUri(url).toURL(), sha1, renewTokenIfBadToken,
+                            false, true, uploadByUrl);
                 } catch (URISyntaxException e) {
                     throw new UploadException(error.getCode(), e);
                 }
@@ -816,15 +819,13 @@ public class CommonsService {
             }
             if (retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
                     && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT".equals(error.getInfo())) {
-                return doUpload(wikiCode, descriptions, statements, creationDate, publicationDate, filename, ext, url,
-                        sha1, renewTokenIfBadToken, true, false, uploadByUrl);
+                return doUpload(wikiCode, filename, ext, url, sha1, renewTokenIfBadToken, true, false, uploadByUrl);
             }
             if ("verification-error".equals(error.getCode())) {
                 Matcher m = FILE_EXT_MISMATCH.matcher(error.getInfo());
                 if (m.matches()) {
-                    return doUpload(wikiCode, descriptions, statements, creationDate, publicationDate, filename,
-                            m.group(2), url, sha1, renewTokenIfBadToken, retryWithSanitizedUrl,
-                            retryAfterRandomProxy403error, uploadByUrl);
+                    return doUpload(wikiCode, filename, m.group(2), url, sha1, renewTokenIfBadToken,
+                            retryWithSanitizedUrl, retryAfterRandomProxy403error, uploadByUrl);
                 }
             }
             throw new UploadException(error.toString());
@@ -835,39 +836,51 @@ public class CommonsService {
             throw new IllegalStateException(String.format(
                     "SHA1 mismatch for %s ! Expected %s, got %s", url, sha1, upload.getImageInfo().getSha1()));
         }
-        String uploadedFilename = upload.getFilename();
-        try {
-            MediaInfoIdValue entityId = makeWikimediaCommonsMediaInfoIdValue(
-                    "M" + pageRepository.findByFileTitle(uploadedFilename).orElseThrow(() -> new IllegalStateException(
-                            "No commons page found for uploaded filename " + uploadedFilename)).getId());
-            LOGGER.info("Upload done for {}, editing SDC {}...", uploadedFilename, entityId);
-            TermUpdateBuilder termUpdateBuilder = TermUpdateBuilder.create();
-            descriptions.forEach((code, desc) -> termUpdateBuilder
-                    .put(makeMonolingualTextValue(truncatedLabel(desc, 250), code)));
-            StatementUpdateBuilder statUpdateBuilder = StatementUpdateBuilder.create();
-            statements.forEach(
-                    (prop, qid) -> statUpdateBuilder.add(statement(entityId, prop, makeWikidataItemIdValue(qid))));
-            if (creationDate != null) {
-                statUpdateBuilder.add(statement(entityId, "P571", dateValue(creationDate)));
-                if (publicationDate != null) {
-                    statUpdateBuilder.add(statement(entityId, "P577", dateValue(publicationDate)));
-                }
-            } else if (publicationDate != null) {
-                statUpdateBuilder.add(statement(entityId, "P571", dateValue(publicationDate)));
-            }
-            editor.editEntityDocument(MediaInfoUpdateBuilder
-                    .forEntityId(entityId)
-                    .updateLabels(termUpdateBuilder.build())
-                    .updateStatements(statUpdateBuilder.build())
-                    .build(), false, "Adding SDC details after upload of " + url, null);
-            LOGGER.info("SDC edit of {} done", entityId);
-        } catch (MediaWikiApiErrorException | RuntimeException e) {
-            LOGGER.error("Unable to add SDC data", e);
-        }
-        return uploadedFilename;
+        return upload.getFilename();
     }
 
-    private TimeValue dateValue(Temporal temporal) {
+    public void editStructuredDataContent(String uploadedFilename, Map<String, String> descriptions,
+            Map<String, Pair<Object, Map<String, Object>>> statements) throws IOException, MediaWikiApiErrorException {
+        MediaInfoIdValue entityId = makeWikimediaCommonsMediaInfoIdValue(
+                "M" + pageRepository.findByFileTitle(uploadedFilename).orElseThrow(() -> new IllegalStateException(
+                        "No commons page found for uploaded filename " + uploadedFilename)).getId());
+        LOGGER.info("Upload done for {}, editing SDC {}...", uploadedFilename, entityId);
+        // Build update objects
+        TermUpdateBuilder termUpdateBuilder = TermUpdateBuilder.create();
+        descriptions.forEach(
+                (code, desc) -> termUpdateBuilder.put(makeMonolingualTextValue(truncatedLabel(desc, 250), code)));
+        StatementUpdateBuilder statementUpdateBuilder = StatementUpdateBuilder.create();
+        statements.forEach(
+                (prop, pair) -> statementUpdateBuilder.add(statement(entityId, prop, pair.getLeft(), pair.getValue())));
+        // update SDC
+        editor.editEntityDocument(
+                MediaInfoUpdateBuilder.forEntityId(entityId).updateLabels(termUpdateBuilder.build())
+                        .updateStatements(statementUpdateBuilder.build()).build(),
+                false, "Adding SDC details", null);
+        LOGGER.info("SDC edit of {} done", entityId);
+    }
+
+    static org.wikidata.wdtk.datamodel.interfaces.Value createWikidataValue(Object o) {
+        if (o instanceof org.wikidata.wdtk.datamodel.interfaces.Value v) {
+            return v;
+        } else if (o instanceof String s) {
+            return s.matches("Q\\d+") ? makeWikidataItemIdValue(s) : makeStringValue(s);
+        } else if (o instanceof Temporal t) {
+            return createDateValue(t);
+        } else if (o instanceof Pair<?, ?> p && p.getKey() instanceof Number n && p.getValue() instanceof String u) {
+            return createQuantityValue(n, u);
+        } else if (o instanceof Triple<?, ?, ?> t && t.getLeft() instanceof Double lat
+                && t.getMiddle() instanceof Double lon && t.getRight() instanceof Double pre) {
+            return makeGlobeCoordinatesValue(lat, lon, pre, GlobeCoordinatesValue.GLOBE_EARTH);
+        }
+        throw new UnsupportedOperationException(o.toString());
+    }
+
+    static QuantityValue createQuantityValue(Number value, String unitQid) {
+        return makeQuantityValue(new BigDecimal(value.toString()), makeWikidataItemIdValue(unitQid));
+    }
+
+    static TimeValue createDateValue(Temporal temporal) {
         if (temporal instanceof LocalDate d) {
             return makeTimeValue(d.getYear(), (byte) d.getMonthValue(), (byte) d.getDayOfMonth(),
                     TimeValue.CM_GREGORIAN_PRO);
@@ -878,15 +891,24 @@ public class CommonsService {
             return makeTimeValue(d.getYear(), (byte) d.getMonthValue(), (byte) d.getDayOfMonth(),
                     TimeValue.CM_GREGORIAN_PRO);
         } else if (temporal instanceof Instant i) {
-            return dateValue(i.atZone(ZoneOffset.UTC));
+            return createDateValue(i.atZone(ZoneOffset.UTC));
         }
         throw new UnsupportedOperationException(temporal.toString());
     }
 
     static Statement statement(MediaInfoIdValue entityId, String prop,
             org.wikidata.wdtk.datamodel.interfaces.Value value) {
-        return StatementBuilder.forSubjectAndProperty(entityId, makeWikidataPropertyIdValue(prop))
-                .withValue(value).build();
+        return statement(entityId, prop, value, null);
+    }
+
+    static Statement statement(MediaInfoIdValue entityId, String prop, Object value, Map<String, Object> qualifiers) {
+        StatementBuilder builder = StatementBuilder.forSubjectAndProperty(entityId, makeWikidataPropertyIdValue(prop))
+                .withValue(createWikidataValue(value));
+        if (qualifiers != null) {
+            qualifiers.forEach((qual, val) -> builder.withQualifierValue(makeWikidataPropertyIdValue(qual),
+                    createWikidataValue(val)));
+        }
+        return builder.build();
     }
 
     static String truncatedLabel(String desc, int limit) {

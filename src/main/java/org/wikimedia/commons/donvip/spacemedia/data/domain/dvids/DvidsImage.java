@@ -8,12 +8,13 @@ import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithDimensions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-public class DvidsImage extends DvidsMedia {
+public class DvidsImage extends DvidsMedia implements WithDimensions {
 
     /**
      * Aspect ratio of the asset.
@@ -45,11 +46,13 @@ public class DvidsImage extends DvidsMedia {
         this.aspectRatio = aspectRatio;
     }
 
-    public ImageDimensions getDimensions() {
+    @Override
+    public ImageDimensions getImageDimensions() {
         return dimensions;
     }
 
-    public void setDimensions(ImageDimensions dimensions) {
+    @Override
+    public void setImageDimensions(ImageDimensions dimensions) {
         this.dimensions = dimensions;
     }
 
@@ -69,7 +72,7 @@ public class DvidsImage extends DvidsMedia {
         super.copyDataFrom(mediaFromApi);
         if (mediaFromApi instanceof DvidsImage imgFromApi) {
             setAspectRatio(imgFromApi.getAspectRatio());
-            setDimensions(imgFromApi.getDimensions());
+            setImageDimensions(imgFromApi.getImageDimensions());
             setImage(imgFromApi.getImage());
         }
         return this;

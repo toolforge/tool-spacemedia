@@ -16,11 +16,12 @@ import javax.persistence.MappedSuperclass;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithDimensions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @MappedSuperclass
-public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateTime> {
+public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateTime> implements WithDimensions {
 
     @Id
     @Column(length = 127)

@@ -160,11 +160,12 @@ public abstract class AbstractStsciService
     }
 
     @Override
-    protected Map<String, String> getStatements(StsciMedia media) {
-        Map<String, String> result = super.getStatements(media);
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(StsciMedia media, Metadata metadata)
+            throws MalformedURLException {
+        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         if (StringUtils.isNotBlank(media.getObjectName())) {
             wikidata.searchAstronomicalObject(media.getObjectName()).map(Pair::getKey)
-                    .ifPresent(qid -> result.put("P180", qid)); // Depicts the object
+                    .ifPresent(qid -> result.put("P180", Pair.of(qid, null))); // Depicts the object
         }
         return result;
     }

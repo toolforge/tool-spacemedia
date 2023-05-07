@@ -551,12 +551,13 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
     }
 
     @Override
-    protected Map<String, String> getStatements(T media) {
-        Map<String, String> result = super.getStatements(media);
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, Metadata metadata)
+            throws MalformedURLException {
+        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         if (StringUtils.isNotBlank(media.getName())) {
             for (String name : media.getName().split(", ")) {
                 wikidata.searchAstronomicalObject(name).map(Pair::getKey)
-                    .ifPresent(qid -> result.put("P180", qid)); // Depicts the object
+                        .ifPresent(qid -> result.put("P180", Pair.of(qid, null))); // Depicts the object
             }
         }
         return result;

@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -234,6 +235,17 @@ public class NasaAsterService
     }
 
     @Override
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaAsterMedia media, Metadata metadata)
+            throws MalformedURLException {
+        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
+        result.put("P170", Pair.of("Q584697", null)); // Created by Terra
+        result.put("P1071", Pair.of("Q663611", null)); // Created in low earth orbit
+        result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
+        result.put("P4082", Pair.of("Q298019", null)); // Taken with ASTER instrument
+        return result;
+    }
+
+    @Override
     protected NasaAsterMedia refresh(NasaAsterMedia media) throws IOException {
         throw new UnsupportedOperationException(); // TODO
     }
@@ -337,7 +349,7 @@ public class NasaAsterService
         }
         m = RESOLUTION.matcher(meta);
         if (m.matches()) {
-            image.setDimensions(
+            image.setImageDimensions(
                     new ImageDimensions(Integer.valueOf(numval(m.group(1))), Integer.valueOf(numval(m.group(2)))));
         } else {
             throw new IllegalStateException("No resolution found: " + meta);

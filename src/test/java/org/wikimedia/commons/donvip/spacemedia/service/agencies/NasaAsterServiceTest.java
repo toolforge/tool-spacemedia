@@ -48,7 +48,7 @@ class NasaAsterServiceTest extends AbstractAgencyServiceTest {
         assertFalse(media.getDescription().isEmpty());
         assertNotNull(media.getDate());
         assertNotNull(media.getMetadata().getSize());
-        assertNotNull(media.getDimensions());
+        assertNotNull(media.getImageDimensions());
         assertNotNull(media.getPublicationDate());
         assertTrue(media.getYear().getValue() >= 1999);
         assertTrue(media.getYear().getValue() <= LocalDate.now().getYear());

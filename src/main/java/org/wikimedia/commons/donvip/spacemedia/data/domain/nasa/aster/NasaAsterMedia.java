@@ -16,16 +16,18 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.LatLon;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, phash") })
-public class NasaAsterMedia extends Media<String, LocalDate> implements LatLon {
+public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatLon, WithDimensions {
 
     @Id
     @Column(nullable = false, length = 32)
@@ -110,6 +112,11 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements LatLon {
         this.longitude = longitude;
     }
 
+    @Override
+    public double getPrecision() {
+        return GlobeCoordinatesValue.PREC_DECI_DEGREE;
+    }
+
     public String getLongName() {
         return longName;
     }
@@ -134,11 +141,13 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements LatLon {
         this.icon = icon;
     }
 
-    public ImageDimensions getDimensions() {
+    @Override
+    public ImageDimensions getImageDimensions() {
         return dimensions;
     }
 
-    public void setDimensions(ImageDimensions dimensions) {
+    @Override
+    public void setImageDimensions(ImageDimensions dimensions) {
         this.dimensions = dimensions;
     }
 

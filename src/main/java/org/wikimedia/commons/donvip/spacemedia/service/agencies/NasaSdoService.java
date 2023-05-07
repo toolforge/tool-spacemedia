@@ -100,9 +100,16 @@ public class NasaSdoService
     }
 
     @Override
-    protected Map<String, String> getStatements(NasaSdoMedia media) {
-        Map<String, String> result = super.getStatements(media);
-        result.put("P180", "Q525"); // Depicts the Sun
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaSdoMedia media, Metadata metadata)
+            throws MalformedURLException {
+        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
+        result.put("P170", Pair.of("Q382494", null)); // Created by SDO
+        result.put("P180", Pair.of("Q525", null)); // Depicts the Sun
+        result.put("P1071", Pair.of("Q472251", null)); // Created in geosynchronous orbit
+        result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
+        result.put("P4082", Pair.of(media.getInstrument().getQid(), null)); // Taken with SDO instrument
+        Optional.ofNullable(media.getAiaKeywords().getExpTime()) // Exposure time in seconds
+                .ifPresent(exp -> result.put("P6757", Pair.of(exp.toString(), null)));
         return result;
     }
 
@@ -192,7 +199,7 @@ public class NasaSdoService
             if (dimensions.getWidth() == 4096) {
                 media.setThumbnailUrl(new URL(url.toExternalForm().replace("_4096_", "_1024_")));
             }
-            media.setDimensions(dimensions);
+            media.setImageDimensions(dimensions);
             media.setMediaType(mediaType);
             save = true;
         }

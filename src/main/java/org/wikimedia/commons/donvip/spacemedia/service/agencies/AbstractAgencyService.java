@@ -17,6 +17,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,9 +29,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
@@ -55,9 +58,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.client.RestClientException;
+import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.DuplicateMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.LatLon;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
@@ -67,6 +70,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
@@ -104,6 +109,14 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     private static final Pattern PATTERN_SHORT = Pattern
             .compile("(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{7}|youtu.be/[0-9a-zA-Z]{11}|flic.kr/p/[0-9a-zA-Z]{6})");
+
+    private static final Set<String> PD_US = Set.of("PD-US", "PD-NASA", "PD-Hubble", "PD-Webb");
+
+    private static final Map<String, String> LICENCES = Map.ofEntries(e("YouTube CC-BY", "Q14947546"),
+            e("Cc-by-2.0", "Q19125117"), e("Cc-by-sa-2.0", "Q19068220"), e("Cc-zero", "Q6938433"),
+            e("DLR-License", "Q62619894"), e("ESA|", "Q26259495"), e("ESO", "Q20007257"), e("IAU", "Q20007257"),
+            e("KOGL", "Q12584618"), e("NOIRLab", "Q20007257"), e("ESA-Hubble", "Q20007257"),
+            e("ESA-Webb", "Q20007257"));
 
     protected final MediaRepository<T, ID, D> repository;
 
@@ -571,12 +584,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 && shouldUpload(new UploadContext<>(media, metadata, isManual))) {
             checkUploadPreconditions(media, metadata, checkUnicity);
             Pair<String, Map<String, String>> codeAndDescs = getWikiCode(media, metadata);
-            metadata.setCommonsFileNames(new HashSet<>(Set.of(
-                    commonsService.upload(codeAndDescs.getLeft(), codeAndDescs.getRight(), getStatements(media),
-                            getCreationDate(media).orElse(null), getUploadDate(media).orElse(null),
-                            media.getUploadTitle(), metadata.getFileExtension(), metadata.getAssetUrl(),
-                            metadata.getSha1()))));
+            String uploadedFilename = commonsService.upload(codeAndDescs.getLeft(), media.getUploadTitle(),
+                    metadata.getFileExtension(), metadata.getAssetUrl(), metadata.getSha1());
+            metadata.setCommonsFileNames(new HashSet<>(Set.of(uploadedFilename)));
             uploaded.add(metadata);
+            editStructuredDataContent(uploadedFilename, codeAndDescs.getRight(), media, metadata);
             return 1;
         } else {
             if (metadata != null && metadata.getAssetUrl() != null) {
@@ -587,8 +599,61 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected Map<String, String> getStatements(T media) {
-        return new HashMap<>();
+    protected void editStructuredDataContent(String uploadedFilename, Map<String, String> descriptions, T media,
+            Metadata metadata) {
+        try {
+            commonsService.editStructuredDataContent(uploadedFilename, descriptions, getStatements(media, metadata));
+        } catch (MediaWikiApiErrorException | IOException | RuntimeException e) {
+            LOGGER.error("Unable to add SDC data", e);
+        }
+    }
+
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, Metadata metadata)
+            throws MalformedURLException {
+        Map<String, Pair<Object, Map<String, Object>>> result = new TreeMap<>();
+        // Source: file available on the internet
+        result.put("P7482", Pair.of("Q74228490", Map.of("P973", getSourceUrl(media).toExternalForm(), "P2699",
+                metadata.getAssetUrl().toExternalForm())));
+        // Licences
+        Set<String> licences = findLicenceTemplates(media);
+        boolean usPublicDomain = PD_US.stream().anyMatch(pd -> licences.stream().anyMatch(l -> l.startsWith(pd)));
+        result.put("P6216", Pair.of(usPublicDomain ? "Q19652" : "Q50423863",
+                usPublicDomain ? Map.of("P459", "Q60671452", "P1001", "Q30") : null));
+        if (!usPublicDomain) {
+            LICENCES.entrySet().stream().filter(e -> licences.stream().anyMatch(l -> l.startsWith(e.getKey())))
+                    .map(Entry::getValue).distinct().forEach(l -> result.put("P275", Pair.of(l, null)));
+        }
+        // MIME type
+        result.put("P1163", Pair.of(metadata.getMime(), null));
+        // Hashes
+        result.put("P4092", Pair.of(metadata.getSha1(), Map.of("P459", "Q13414952")));
+        result.put("P9310", Pair.of(metadata.getPhash(), Map.of("P459", "Q118189277")));
+        // Dates
+        Temporal creationDate = getCreationDate(media).orElse(null);
+        Temporal publicationDate = getUploadDate(media).orElse(null);
+        if (creationDate != null) {
+            result.put("P571", Pair.of(creationDate, null));
+            if (publicationDate != null) {
+                result.put("P577", Pair.of(publicationDate, null));
+            }
+        } else if (publicationDate != null) {
+            result.put("P571", Pair.of(publicationDate, null));
+        }
+        // File size
+        if (metadata.getSize() != null) {
+            result.put("P3575", Pair.of(Pair.of(metadata.getSize(), "Q8799"), null));
+        }
+        // Dimensions
+        if (media instanceof WithDimensions wd) {
+            result.put("P2049", Pair.of(Pair.of(wd.getImageDimensions().getWidth(), "Q355198"), null));
+            result.put("P2048", Pair.of(Pair.of(wd.getImageDimensions().getHeight(), "Q355198"), null));
+        }
+        // Location
+        if (media instanceof WithLatLon ll) {
+            result.put("P9149", Pair
+                    .of(Triple.of(ll.getLatitude(), ll.getLongitude(), ll.getPrecision()), null));
+        }
+        return result;
     }
 
     @Override
@@ -652,8 +717,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
-        if (media instanceof LatLon ll && ll.getLatitude() != 0d && ll.getLongitude() != 0d) {
-            sb.append("{{Location |1=" + ll.getLatitude() + " |2=" + ll.getLongitude() + "}}\n");
+        if (media instanceof WithLatLon ll && ll.getLatitude() != 0d && ll.getLongitude() != 0d) {
+            sb.append("{{Object location |1=" + ll.getLatitude() + " |2=" + ll.getLongitude() + "}}\n");
         }
         findInformationTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
         return Pair.of(sb.toString(), descriptions);
@@ -1075,5 +1140,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             }
             sb.append("{{information field|name=").append(name).append("|value=").append(s).append("}}");
         }
+    }
+
+    protected static final SimpleEntry<String, String> e(String k, String v) {
+        return new SimpleEntry<>(k, v);
     }
 }
