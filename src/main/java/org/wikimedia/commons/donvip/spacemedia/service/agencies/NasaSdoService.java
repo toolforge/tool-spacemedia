@@ -162,9 +162,11 @@ public class NasaSdoService
             LOGGER.info("Current update date: {} ...", date);
         }
         long imagesInDatabase = sdoRepository.countByMediaTypeAndDimensionsAndDate(mediaType, dimensions, date);
-        if (imagesInDatabase < NasaSdoDataType.values().length) {
+        int expectedCount = mediaType == NasaMediaType.video ? NasaSdoDataType.values().length - 1
+                : NasaSdoDataType.values().length;
+        if (imagesInDatabase < expectedCount) {
             String browseUrl = String.join("/", BASE_URL_IMG, browse, dateStringPath);
-            LOGGER.info("Fetching {} ({}<{})", browseUrl, imagesInDatabase, NasaSdoDataType.values().length);
+            LOGGER.info("Fetching {} ({}<{})", browseUrl, imagesInDatabase, expectedCount);
             List<String> files = Jsoup.connect(browseUrl).timeout(30_000).get().getElementsByTag("a").stream()
                     .map(e -> e.attr("href")).filter(href -> href.contains("_" + dimensions.getWidth() + "_")).sorted()
                     .toList();
