@@ -105,7 +105,9 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         request.setCharset(StandardCharsets.UTF_8.name());
         if ("application/json".equals(contentType)) {
             params.forEach((k, v) -> request.addParameter(k, v.toString()));
-            request.setPayload(jackson.writeValueAsString(payload));
+            String json = jackson.writeValueAsString(payload);
+            LOGGER.info("JSON payload: {}", json);
+            request.setPayload(json);
         } else if (payload instanceof BodyPartPayload bodyPartPayload) {
             request.initMultipartPayload();
             if (params != null) {

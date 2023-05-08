@@ -31,6 +31,8 @@ import com.github.scribejava.core.oauth.OAuth10aService;
 
 import io.github.redouane59.twitter.TwitterClient;
 import io.github.redouane59.twitter.dto.tweet.MediaCategory;
+import io.github.redouane59.twitter.dto.tweet.TweetParameters;
+import io.github.redouane59.twitter.dto.tweet.TweetParameters.TweetParametersBuilder;
 import io.github.redouane59.twitter.dto.tweet.UploadMediaResponse;
 import io.github.redouane59.twitter.signature.TwitterCredentials;
 
@@ -86,7 +88,22 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
     @Override
     public void postStatus(Collection<? extends Media<?, ?>> uploadedMedia, Collection<Metadata> uploadedMetadata,
             Set<String> emojis, Set<String> accounts) throws IOException {
-        callApi(buildStatusRequest(uploadedMedia, uploadedMetadata, emojis, accounts), TweetResponse.class);
+        OAuthRequest request = buildStatusRequest(uploadedMedia, uploadedMetadata, emojis, accounts);
+        try {
+            callApi(request, TweetResponse.class);
+        } catch (IOException e) {
+            LOGGER.error("Unable to post status with own code: {}", e.getMessage(), e);
+            LOGGER.info("Fallback to twittered client call...");
+            TweetRequest tweet = jackson.readValue(request.getStringPayload(), TweetRequest.class);
+            TweetParametersBuilder builder = TweetParameters.builder().text(tweet.getText());
+            if (tweet.getMedia() != null) {
+                builder.media(TweetParameters.Media.builder()
+                        .mediaIds(tweet.getMedia().getMediaIds().stream().map(l -> l.toString()).toList()).build());
+            }
+            TweetParameters params = builder.build();
+            LOGGER.info("Twittered JSON payload: {}", jackson.writeValueAsString(params));
+            twitterClient.postTweet(params);
+        }
     }
 
     @Override
@@ -97,10 +114,9 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
     @Override
     protected OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
             Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
-        return postRequest(V2_TWEET, "application/json",
-                new TweetRequest(createTweetMedia(uploadedMetadata),
+        return postRequest(V2_TWEET, "application/json", new TweetRequest(createTweetMedia(uploadedMetadata),
                         createStatusText(emojis, accounts, uploadedMedia.stream().filter(Media::isImage).count(),
-                                uploadedMedia.stream().filter(Media::isVideo).count(), uploadedMetadata)));
+                        uploadedMedia.stream().filter(Media::isVideo).count(), uploadedMetadata)));
     }
 
     private TweetMedia createTweetMedia(Collection<Metadata> uploadedMetadata) {
