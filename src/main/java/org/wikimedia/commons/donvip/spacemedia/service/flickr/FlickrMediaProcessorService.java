@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 
@@ -81,7 +82,7 @@ public class FlickrMediaProcessorService {
 
     @Transactional
     public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
-            MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Collection<String> stringsToRemove,
+            MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Supplier<Collection<String>> stringsToRemove,
             BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<Metadata>, Integer>> uploader)
             throws IOException {
@@ -142,7 +143,7 @@ public class FlickrMediaProcessorService {
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb);
         savePhotoSets = false;
         save = false;
-        if (mediaService.updateMedia(media, originalRepo, stringsToRemove, false).getResult()) {
+        if (mediaService.updateMedia(media, originalRepo, stringsToRemove.get(), false).getResult()) {
             save = true;
         }
         int uploadCount = 0;

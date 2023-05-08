@@ -415,7 +415,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         for (FlickrMedia media : medias) {
             try {
                 Pair<FlickrMedia, Integer> result = processor.processFlickrMedia(media, flickrAccount,
-                        getOriginalRepository(), getStringsToRemove(media), this::shouldUploadAuto,
+                        getOriginalRepository(), () -> getStringsToRemove(media), this::shouldUploadAuto,
                         this::uploadWrapped);
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
