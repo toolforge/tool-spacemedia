@@ -450,11 +450,15 @@ public class NasaService
             if (items.size() == 1) {
                 List<NasaMedia> data = items.get(0).getData();
                 if (data.size() == 1) {
-                    return media.copyDataFrom(data.get(0));
+                    NasaMedia mediaFromApi = data.get(0);
+                    if (mediaFromApi.getAssetUrl() != null) {
+                        LOGGER.info("Copying up-to-date data from {}", mediaFromApi);
+                        return media.copyDataFrom(mediaFromApi);
+                    }
                 }
             }
         }
-        return media;
+        return null; // delete
     }
 
     @Override

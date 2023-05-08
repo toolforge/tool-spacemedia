@@ -240,7 +240,7 @@ public class NasaMediaProcessorService {
                     save = true;
                 }
             } catch (HttpClientErrorException.Forbidden e) {
-                // NHQ202211160205-2 always retursn http 403
+                // NHQ202211160205-2 always return http 403
                 LOGGER.error("Unable to retrieve EXIF metadata for {}: {}", media.getId(), e.getMessage());
             } catch (Exception e) {
                 LOGGER.error("Unable to retrieve EXIF metadata for {}", media.getId(), e);
