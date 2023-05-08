@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -32,7 +33,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
-import org.wikimedia.commons.donvip.spacemedia.exception.WrappedIOException;
+
+import com.fasterxml.jackson.datatype.jdk8.WrappedIOException;
 
 public class ImageUtils {
 
@@ -71,7 +73,7 @@ public class ImageUtils {
             try {
                 return reader.read(0, reader.getDefaultReadParam());
             } catch (IOException e) {
-                throw new WrappedIOException(e);
+                throw new UncheckedIOException(e);
             }
         });
     }

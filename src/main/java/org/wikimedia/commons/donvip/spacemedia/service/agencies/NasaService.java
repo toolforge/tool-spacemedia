@@ -5,6 +5,7 @@ import static java.util.Map.entry;
 import static java.util.stream.Collectors.toMap;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
@@ -54,7 +55,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.exception.WrappedIOException;
 import org.wikimedia.commons.donvip.spacemedia.exception.WrappedUploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
@@ -203,7 +203,7 @@ public class NasaService
         try {
             return doCommonUpdate(media);
         } catch (IOException e) {
-            throw new WrappedIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

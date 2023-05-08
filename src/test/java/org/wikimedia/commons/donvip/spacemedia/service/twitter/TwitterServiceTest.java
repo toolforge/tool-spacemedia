@@ -22,6 +22,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageReposito
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,6 +38,9 @@ class TwitterServiceTest {
 
     @MockBean
     private CommonsImageRepository repo;
+
+    @MockBean
+    private CommonsService commonsService;
 
     @Test
     @Disabled("This test will post a real tweet")

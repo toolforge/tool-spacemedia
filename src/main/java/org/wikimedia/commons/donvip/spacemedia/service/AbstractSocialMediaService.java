@@ -5,7 +5,9 @@ import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsS
 import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.similarityScore;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -20,12 +22,18 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
@@ -47,6 +55,9 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
 
     @Autowired
     protected ObjectMapper jackson;
+
+    @Autowired
+    protected CommonsService commonsService;
 
     @Autowired
     protected CommonsImageRepository imageRepo;
@@ -198,6 +209,40 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         return width > 2560
                 ? new URL(String.format("https://commons.wikimedia.org/w/thumb.php?f=%s&w=%d", fileName, 2560))
                 : url;
+    }
+
+    protected <M> M postMedia(MediaUploadContext muc, BiFunction<MediaUploadContext, byte[], M> poster)
+            throws IOException, URISyntaxException {
+        LOGGER.info("Uploading media for file {} resolved to URL {}", muc.filename, muc.url);
+        try (CloseableHttpClient httpclient = HttpClients.custom().setUserAgent(commonsService.getUserAgent()).build();
+                CloseableHttpResponse response = httpclient.execute(new HttpGet(muc.url.toURI()));
+                InputStream in = response.getEntity().getContent()) {
+            if (response.getStatusLine().getStatusCode() >= 400) {
+                throw new IOException(muc.url.toURI().toString() + " -> " + response.getStatusLine().toString());
+            }
+            return poster.apply(muc, in.readAllBytes());
+        }
+    }
+
+    protected static class MediaUploadContext {
+        public final String filename;
+        public final String mime;
+        public final String cat;
+        public final URL url;
+
+        public MediaUploadContext(CommonsImageProjection file, String mime) throws MalformedURLException {
+            final URL fileUrl = CommonsService.getImageUrl(file.getName());
+            this.filename = file.getName();
+            if ("image/gif".equals(mime)) {
+                this.mime = mime;
+                this.cat = "tweet_gif";
+                this.url = fileUrl;
+            } else {
+                this.mime = "image/jpeg";
+                this.cat = "tweet_image";
+                this.url = getImageUrl(fileUrl, file.getWidth(), file.getName());
+            }
+        }
     }
 
     public static Set<String> getEmojis(Set<String> keywords) {

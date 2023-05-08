@@ -279,6 +279,7 @@ public class CommonsService {
     private static final WikibaseDataFetcher fetcher = WikibaseDataFetcher.getWikimediaCommonsDataFetcher();
 
     private final String account;
+    private final String userAgent;
     private final OAuth10aService oAuthService;
     private final OAuth1AccessToken oAuthAccessToken;
 
@@ -309,7 +310,7 @@ public class CommonsService {
         if (!account.toLowerCase(ENGLISH).contains("bot")) {
             throw new IllegalArgumentException("Bot account must include 'bot' in its name!");
         }
-        String userAgent = String.format("%s/%s (%s - %s) %s/%s %s/%s %s/%s",
+        userAgent = String.format("%s/%s (%s - %s) %s/%s %s/%s %s/%s",
                 "Spacemedia", appVersion, appContact, apiAccount, "SpringBoot", bootVersion, "ScribeJava",
                 scribeVersion, "Flickr4Java", flickr4javaVersion);
         oAuthService = new ServiceBuilder(consumerToken).apiSecret(consumerSecret).userAgent(userAgent)
@@ -343,6 +344,10 @@ public class CommonsService {
         if (automaticHashComputationDesc) {
             taskExecutor.submit(this::computeHashesOfAllFilesDesc);
         }
+    }
+
+    public String getUserAgent() {
+        return userAgent;
     }
 
     private boolean hasUploadByUrlRight() {

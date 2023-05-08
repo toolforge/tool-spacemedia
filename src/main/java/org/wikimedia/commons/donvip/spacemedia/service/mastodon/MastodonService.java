@@ -1,19 +1,14 @@
 package org.wikimedia.commons.donvip.spacemedia.service.mastodon;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,15 +98,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
                 List<CommonsImageProjection> files = imageRepo
                         .findBySha1OrderByTimestamp(CommonsService.base36Sha1(metadata.getSha1()));
                 if (!files.isEmpty()) {
-                    final CommonsImageProjection file = files.get(0);
-                    URL url = CommonsService.getImageUrl(file.getName());
-                    String mime = metadata.getMime();
-                    if (!"image/gif".equals(mime)) {
-                        url = getImageUrl(url, file.getWidth(), file.getName());
-                        mime = "image/jpeg";
-                    }
-                    LOGGER.info("File and URL resolved to: {} - {}", file, url);
-                    mediaIds.add(postMedia(url, mime, file.getName()).getId());
+                    mediaIds.add(postMedia(new MediaUploadContext(files.get(0), metadata.getMime()), this::postMedia));
                 } else {
                     LOGGER.error("Couldn't find by its SHA1 a file we've just uploaded: {}", metadata.getSha1());
                 }
@@ -122,17 +109,13 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
         return mediaIds.isEmpty() ? null : mediaIds;
     }
 
-    MediaAttachment postMedia(URL url, String mime, String fileName)
-            throws IOException, URISyntaxException {
-        try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(new HttpGet(url.toURI()));
-                InputStream in = response.getEntity().getContent()) {
-            if (response.getStatusLine().getStatusCode() >= 400) {
-                throw new IOException(response.getStatusLine().toString());
-            }
+    private String postMedia(MediaUploadContext muc, byte[] data) {
+        try {
             return callApi(request(Verb.POST, api.getMediaUrl(), "multipart/form-data",
-                    new FileByteArrayBodyPartPayload("application/octet-stream", in.readAllBytes(), "file", fileName),
-                    Map.of("media_type", mime, "description", fileName)), MediaAttachment.class);
+                    new FileByteArrayBodyPartPayload("application/octet-stream", data, "file", muc.filename),
+                    Map.of("media_type", muc.mime, "description", muc.filename)), MediaAttachment.class).getId();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 }
