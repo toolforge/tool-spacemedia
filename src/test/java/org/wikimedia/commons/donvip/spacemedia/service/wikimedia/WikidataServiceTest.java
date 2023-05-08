@@ -9,6 +9,8 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
 
@@ -61,9 +63,33 @@ class WikidataServiceTest {
                         service.findCommonsStatementGroup("Category:ISS Expedition 68", "P1029").get()));
     }
 
-    @Test
-    void testSearchAstronomicalObject() {
-        assertEquals(Optional.of(Pair.of("Q86709121", null)), service.searchAstronomicalObject("[KAG2008] globule 13"));
+    @ParameterizedTest
+    @CsvSource({ "Q86709121,null,[KAG2008] globule 13" })
+    void testSearchAstronomicalObject(String qid, String cat, String name) {
+        doWikidataSearchTest(qid, cat, service.searchAstronomicalObject(name));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "Q8865,Scorpius (constellation),Scorpius" })
+    void testSearchConstellation(String qid, String cat, String name) {
+        doWikidataSearchTest(qid, cat, service.searchConstellation(name));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "Q2513,Hubble Space Telescope,Hubble Space Telescope",
+            "Q186447,James Webb Space Telescope,James Webb Space Telescope" })
+    void testSearchTelescope(String qid, String cat, String name) {
+        doWikidataSearchTest(qid, cat, service.searchTelescope(name));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "Q209981,Wide Field Camera 3,Wide Field Camera 3" })
+    void testSearchInstrument(String qid, String cat, String name) {
+        doWikidataSearchTest(qid, cat, service.searchInstrument(name));
+    }
+
+    private static void doWikidataSearchTest(String qid, String cat, Optional<Pair<String, String>> result) {
+        assertEquals(Optional.of(Pair.of(qid, "null".equals(cat) ? null : cat)), result);
     }
 
     private static final SimpleEntry<String, String> e(String k, String v) {

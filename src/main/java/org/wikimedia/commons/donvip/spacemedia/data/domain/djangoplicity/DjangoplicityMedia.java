@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity;
 
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -83,6 +85,10 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> telescopes = new HashSet<>();
 
+    @Column(nullable = true, length = 63)
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> instruments = new HashSet<>();
+
     @Column(nullable = false, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> types = new HashSet<>();
@@ -131,10 +137,12 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
         this.date = date;
     }
 
+    @Override
     public ImageDimensions getImageDimensions() {
         return dimensions;
     }
 
+    @Override
     public void setImageDimensions(ImageDimensions dimensions) {
         this.dimensions = dimensions;
     }
@@ -243,20 +251,30 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
         this.telescopes = telescopes;
     }
 
+    public Set<String> getInstruments() {
+        return instruments;
+    }
+
+    public void setInstruments(Set<String> instruments) {
+        this.instruments = instruments;
+    }
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + " [" + (id != null ? "id=" + id + ", " : "")
                 + (licence != null ? "licence=" + licence + ", " : "")
                 + (imageType != null ? "imageType=" + imageType + ", " : "")
                 + (date != null ? "date=" + date + ", " : "") + "dimensions=" + dimensions + ", "
-                + (name != null ? "objectName=" + name + ", " : "")
-                + (types != null ? "objectType=" + types + ", " : "")
-                + (categories != null ? "objectCategories=" + categories + ", " : "")
+                + (name != null ? "name=" + name + ", " : "")
+                + (isNotEmpty(types) ? "types=" + types + ", " : "")
+                + (isNotEmpty(categories) ? "categories=" + categories + ", " : "")
                 + (credit != null ? "credit=" + credit + ", " : "")
                 + (fullResMetadata != null ? "fullResMetadata=" + fullResMetadata + ", " : "")
-                + (metadata != null ? "sha1=" + metadata + ", " : "")
+                + (metadata != null ? "metadata=" + metadata + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
+                + (isNotEmpty(telescopes) ? "telescopes=" + telescopes + ", " : "")
+                + (isNotEmpty(instruments) ? "instruments=" + instruments + ", " : "")
                 + (ignored != null ? "ignored=" + ignored + ", " : "")
                 + (ignoredReason != null ? "ignoredReason=" + ignoredReason : "") + "]";
     }
@@ -294,6 +312,7 @@ public abstract class DjangoplicityMedia extends FullResMedia<String, LocalDateT
         this.relatedAnnouncements = mediaFromApi.relatedAnnouncements;
         this.relatedReleases = mediaFromApi.relatedReleases;
         this.telescopes = mediaFromApi.telescopes;
+        this.instruments = mediaFromApi.instruments;
         this.types = mediaFromApi.types;
         return this;
     }

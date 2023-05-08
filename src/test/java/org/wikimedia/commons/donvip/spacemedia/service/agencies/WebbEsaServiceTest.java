@@ -50,6 +50,8 @@ class WebbEsaServiceTest extends AbstractAgencyServiceTest {
                 media.getMetadata().getAssetUrl().toExternalForm());
         assertEquals("https://cdn.esawebb.org/archives/images/screen/WLMb.jpg",
                 media.getThumbnailUrl().toExternalForm());
+        assertEquals(Set.of("James Webb Space Telescope"), media.getTelescopes());
+        assertEquals(Set.of("NIRCam"), media.getInstruments());
     }
 
     @Configuration

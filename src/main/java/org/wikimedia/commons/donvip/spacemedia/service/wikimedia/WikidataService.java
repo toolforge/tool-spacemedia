@@ -159,6 +159,16 @@ public class WikidataService {
         return searchCommonsCategory(WikidataService::getConstellationQuery, officialName);
     }
 
+    @Cacheable("wikidataTelescopes")
+    public Optional<Pair<String, String>> searchTelescope(String name) {
+        return searchCommonsCategory(WikidataService::getTelescopeQuery, name);
+    }
+
+    @Cacheable("wikidataInstruments")
+    public Optional<Pair<String, String>> searchInstrument(String name) {
+        return searchCommonsCategory(WikidataService::getInstrumentQuery, name);
+    }
+
     private static Optional<Pair<String, String>> searchCommonsCategory(UnaryOperator<String> query, String name) {
         try (RepositoryConnection sparqlConnection = sparqlRepository.getConnection();
                 TupleQueryResult result = sparqlConnection
@@ -182,7 +192,15 @@ public class WikidataService {
     }
 
     private static String getConstellationQuery(String officialName) {
-        return getNamedObjectQuery("Q8928", "P1448", officialName);
+        return getNamedObjectQuery("Q8928", "P1448", officialName, "la");
+    }
+
+    private static String getTelescopeQuery(String name) {
+        return getNamedObjectQuery("Q4213", "P1705", name, "en");
+    }
+
+    private static String getInstrumentQuery(String name) {
+        return getNamedObjectQuery("Q3099911", "P1705", name, "en");
     }
 
     private static String getNamedObjectQuery(String natureQid, String namingProperty, String name) {
@@ -197,5 +215,20 @@ public class WikidataService {
                 }
                 LIMIT 2
                 """.replace("$name", name).replace("$namingProperty", namingProperty).replace("$natureQid", natureQid);
+    }
+
+    private static String getNamedObjectQuery(String natureQid, String namingProperty, String name, String lang) {
+        return """
+                SELECT DISTINCT ?item ?itemLabel ?commonsCat
+                WHERE
+                {
+                  ?item wdt:P31/wdt:P279* wd:$natureQid;
+                        wdt:$namingProperty ?name FILTER(?name = "$name"@$lang).
+                  OPTIONAL { ?item wdt:P373 ?commonsCat }.
+                  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+                }
+                LIMIT 2
+                """.replace("$lang", lang).replace("$name", name).replace("$namingProperty", namingProperty)
+                .replace("$natureQid", natureQid);
     }
 }

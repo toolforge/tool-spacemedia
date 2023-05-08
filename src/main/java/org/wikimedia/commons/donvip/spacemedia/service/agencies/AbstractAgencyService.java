@@ -34,6 +34,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
@@ -1142,7 +1143,16 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected static final SimpleEntry<String, String> e(String k, String v) {
+    protected static void doFor(Iterable<String> set, Function<String, Optional<String>> mapper,
+            Consumer<String> consumer) {
+        if (set != null) {
+            for (String s : set) {
+                mapper.apply(s).ifPresent(consumer::accept);
+            }
+        }
+    }
+
+    protected static SimpleEntry<String, String> e(String k, String v) {
         return new SimpleEntry<>(k, v);
     }
 }

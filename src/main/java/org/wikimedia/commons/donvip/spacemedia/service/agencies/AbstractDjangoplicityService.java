@@ -326,6 +326,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
     protected void processObjectInfos(URL url, String imgUrlLink, String id, T media, Document doc)
             throws MalformedURLException {
         for (Element info : doc.getElementsByClass(getObjectInfoClass())) {
+            // Iterate on h3/h4 tags, depending on website
             for (Element h3 : info.getElementsByTag(getObjectInfoH3Tag())) {
                 for (Element title : getObjectInfoTitles(h3.nextElementSibling())) {
                     Element sibling = title.nextElementSibling();
@@ -351,6 +352,9 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
                         scrapingError(imgUrlLink, h3.text());
                     }
                 }
+            }
+            // Colours & filters is always h3, even for website using h4 for other tags
+            for (Element h3 : info.getElementsByTag("h3")) {
                 if ("Colours & filters".equals(h3.text())) {
                     processColoursAndFilters(imgUrlLink, media, h3);
                 }
@@ -409,8 +413,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
     }
 
     protected void processAboutTheObject(String imgUrlLink, T media, Element title, Element sibling,
-            String html,
-            String text) {
+            String html, String text) {
         switch (title.text()) {
         case "Name:":
             media.setName(text);
@@ -471,13 +474,23 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
             scrapingError(imgUrlLink, table.html());
         }
         Set<String> telescopes = new HashSet<>();
+        Set<String> instruments = new HashSet<>();
         Elements tds = table.getElementsByTag("td");
         for (int i = telescopeIndex; i < tds.size(); i += ths.size()) {
-            tds.get(i).getElementsByTag("a").forEach(a -> telescopes.add(a.text()));
+            Element td = tds.get(i);
+            Elements links = td.getElementsByTag("a");
+            links.forEach(a -> (a.attr("href").contains("instrument") ? instruments : telescopes).add(a.text()));
+            if (links.isEmpty()) {
+                telescopes.add(td.ownText());
+                td.getElementsByClass("band_instrument").forEach(s -> instruments.add(s.text()));
+            }
         }
         if (!telescopes.isEmpty()) {
             // Can be empty, example: https://www.eso.org/public/images/potw1817a/
             media.setTelescopes(telescopes);
+        }
+        if (!instruments.isEmpty()) {
+            media.setInstruments(instruments);
         }
     }
 
@@ -560,6 +573,10 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
                         .ifPresent(qid -> result.put("P180", Pair.of(qid, null))); // Depicts the object
             }
         }
+        doFor(media.getTelescopes(), t -> wikidata.searchTelescope(t).map(Pair::getKey),
+                qid -> result.put("P170", Pair.of(qid, null))); // Created by telescope
+        doFor(media.getInstruments(), i -> wikidata.searchInstrument(i).map(Pair::getKey),
+                qid -> result.put("P4082", Pair.of(qid, null))); // Taken with instrument
         return result;
     }
 
@@ -584,6 +601,8 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
                 }
             }
         }
+        doFor(media.getTelescopes(), t -> wikidata.searchTelescope(t).map(Pair::getValue), result::add);
+        doFor(media.getInstruments(), i -> wikidata.searchInstrument(i).map(Pair::getValue), result::add);
         return result;
     }
 
