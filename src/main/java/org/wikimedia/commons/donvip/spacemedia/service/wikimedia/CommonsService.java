@@ -738,7 +738,11 @@ public class CommonsService {
     }
 
     public static String formatWikiCode(String badWikiCode) {
-        return badWikiCode.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", "[$1 $2]");
+        return replaceLinks(badWikiCode, "[$1 $2]");
+    }
+
+    private static String replaceLinks(String text, String replacement) {
+        return text.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", replacement);
     }
 
     public String upload(String wikiCode, String filename, String ext, URL url, String sha1)
@@ -929,12 +933,15 @@ public class CommonsService {
 
     static String truncatedLabel(String desc, int limit) {
         String result = desc;
-        if (desc.contains(".")) {
-            while (result.length() > limit) {
-                result = result.substring(0, result.lastIndexOf('.', result.length() - 2) + 1).trim();
+        if (result != null) {
+            result = replaceLinks(result.trim().replace("\r\n", ". ").replace("\n\n", ". ").replace(".. ", ". "), "$2");
+            if (result.contains(".")) {
+                while (result.length() > limit) {
+                    result = result.substring(0, result.lastIndexOf('.', result.length() - 2) + 1).trim();
+                }
             }
         }
-        return result.length() > limit ? result.substring(0, limit) : result;
+        return result != null && result.length() > limit ? result.substring(0, limit) : result;
     }
 
     private UploadApiResponse doUploadInChunks(String ext, Map<String, String> params,

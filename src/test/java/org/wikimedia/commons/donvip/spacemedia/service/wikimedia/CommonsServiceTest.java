@@ -127,19 +127,30 @@ class CommonsServiceTest {
         assertTrue(service.isPermittedFileType("https://photojournal.jpl.nasa.gov/archive/PIA25257.gif"));
     }
 
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = { ";;250", "foo.;foo.;250",
+            "truncation of a very long sentence without any dot;truncation of a very long sentence without any dot so that the service cannot find any dot and may not know what to do if it was dumb and not tested here;50",
+            "Potosi is the capital city of the Department of Potosi in Bolivia, and one of the highest cities in the world at 4090 m.;Potosi is the capital city of the Department of Potosi in Bolivia, and one of the highest cities in the world at 4090 m. For centuries it was the location of the Spanish colonial silver mint, the major supplier of silver for the Spanish Empire until the 18th century. Potosi lies at the foot of the Cerro Rico (“rich mountain”), rumored to be made of silver. Today, Potosi continues to be an important mining center, and is famous for its well-preserved colonial architecture. The perspective view covers an area of about 20 by 30 km, was acquired October 12, 2021, and is located at 19.6 degrees south, 65.7 degrees west.;250", })
+    void testTruncatedLabel(String expected, String description, int limit) {
+        assertEquals(expected, CommonsService.truncatedLabel(description, limit));
+    }
+
     @Test
-    void testTruncatedLabel() {
-        assertEquals("", CommonsService.truncatedLabel("", 250));
-        assertEquals("foo.", CommonsService.truncatedLabel("foo.", 250));
+    void testTruncatedLabelMultiline() {
         assertEquals(
-                "truncation of a very long sentence without any dot",
+                "Contains modified Copernicus Sentinel data [2023], processed by Pierre Markuse. Multiple Fires near Bulanash, Sverdlovsk Oblast, Russia (Lat: 57.165, Lng: 61.547) - 4 May 2023. Image is about 71 kilometers wide.",
                 CommonsService.truncatedLabel(
-                        "truncation of a very long sentence without any dot so that the service cannot find any dot and may not know what to do if it was dumb and not tested here",
-                        50));
-        assertEquals(
-                "Potosi is the capital city of the Department of Potosi in Bolivia, and one of the highest cities in the world at 4090 m.",
-                CommonsService.truncatedLabel(
-                        "Potosi is the capital city of the Department of Potosi in Bolivia, and one of the highest cities in the world at 4090 m. For centuries it was the location of the Spanish colonial silver mint, the major supplier of silver for the Spanish Empire until the 18th century. Potosi lies at the foot of the Cerro Rico (“rich mountain”), rumored to be made of silver. Today, Potosi continues to be an important mining center, and is famous for its well-preserved colonial architecture. The perspective view covers an area of about 20 by 30 km, was acquired October 12, 2021, and is located at 19.6 degrees south, 65.7 degrees west.",
+                        """
+                        Contains modified Copernicus Sentinel data [2023], processed by <a href="https://twitter.com/Pierre_Markuse">Pierre Markuse</a>
+
+Multiple Fires near Bulanash, Sverdlovsk Oblast, Russia (Lat: 57.165, Lng: 61.547) - 4 May 2023
+
+Image is about 71 kilometers wide
+
+Do you want to support this collection of satellite images? Any donation, no matter how small, would be appreciated. <a href="https://www.paypal.com/paypalme/PierreMarkuse">PayPal me!</a>
+
+Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a href="https://mastodon.world/@pierre_markuse">Mastodon!</a>
+                                                                                                                """,
                         250));
     }
 
