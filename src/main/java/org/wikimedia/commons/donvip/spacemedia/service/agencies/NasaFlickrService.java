@@ -4,18 +4,26 @@ import java.net.MalformedURLException;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 
+
 @Service
 public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, String, ZonedDateTime> {
+
+    private static final Pattern NHQ = Pattern.compile(".+\\((NHQ\\d{12})\\)");
 
     private static final List<String> STRINGS_TO_REMOVE = List.of(
             "<a href=\"http://instagram.com/NASAWebbTelescp\" rel=\"nofollow\">Follow us on Instagram</a>",
@@ -73,7 +81,25 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
 
     @Override
     protected String getSource(FlickrMedia media) throws MalformedURLException {
-        return super.getSource(media) + "\n{{NASA-image|id=" + media.getId() + "|center=" + center(media) + "}}";
+        String result = super.getSource(media);
+        String nasaId = getNasaId(media);
+        if (nasaId != null) {
+            result += "\n{{NASA-image|id=" + nasaId + "|center=" + center(media) + "}}";
+        }
+        return result;
+    }
+
+    /**
+     * Extract a NASA id we could search on images.nasa.gov
+     */
+    protected String getNasaId(FlickrMedia media) {
+        if ("nasahqphoto".equals(media.getPathAlias())) {
+            Matcher m = NHQ.matcher(media.getTitle());
+            if (m.matches()) {
+                return m.group(1);
+            }
+        }
+        return null;
     }
 
     private static String center(FlickrMedia media) {
@@ -104,6 +130,29 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
         default:
             return "";
         }
+    }
+
+    @Override
+    public Set<String> findInformationTemplates(FlickrMedia media) {
+        Set<String> result = super.findInformationTemplates(media);
+        if ("uahirise-mars".equals(media.getPathAlias())) {
+            result.add("NASA Photojournal/attribution|class=MRO|mission=MRO|name=MRO|credit=HiRISE");
+        }
+        return result;
+    }
+
+    @Override
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(FlickrMedia media, Metadata metadata)
+            throws MalformedURLException {
+        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
+        if ("uahirise-mars".equals(media.getPathAlias())) {
+            result.put("P170", Pair.of("Q183160", null)); // Created by MRO
+            result.put("P180", Pair.of("Q111", null)); // Depicts Mars
+            result.put("P1071", Pair.of("Q111", null)); // Created in Mars orbit
+            result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
+            result.put("P4082", Pair.of("Q1036092", null)); // Taken with HiRISE
+        }
+        return result;
     }
 
     @Override

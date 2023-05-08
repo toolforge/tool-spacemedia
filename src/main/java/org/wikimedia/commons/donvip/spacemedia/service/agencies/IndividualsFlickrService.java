@@ -27,7 +27,8 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService<Flickr
             "Do you want to support this collection of satellite images? Any donation, no matter how small, would be appreciated. <a href=\"https://www.paypal.com/paypalme/PierreMarkuse\">PayPal me!</a>",
             "Follow me on <a href=\"https://twitter.com/Pierre_Markuse\">Twitter!</a> and <a href=\"https://mastodon.world/@pierre_markuse\">Mastodon!</a>"),
             "192271236@N03",
-            List.of("Feel free to share, giving the appropriate credit and providing a link to the original image or tweet: <a href=\"https://creativecommons.org/licenses/by/3.0/\">creativecommons.org/licenses/by/3.0/</a>"));
+            List.of("Feel free to share, giving the appropriate credit and providing a link to the original image or tweet: <a href=\"https://creativecommons.org/licenses/by/3.0/\">creativecommons.org/licenses/by/3.0/</a>",
+                    "Feel free to share, giving the appropriate credit and providing a link to the original image or tweet <a href=\"https://creativecommons.org/licenses/by/3.0/\">creativecommons.org/licenses/by/3.0/</a>"));
 
     @Autowired
     public IndividualsFlickrService(FlickrMediaRepository repository,
