@@ -446,13 +446,17 @@ public class CommonsService {
     }
 
     public Collection<WikiPage> searchImages(String text) throws IOException {
-        SearchQuery query = apiHttpGet(
+        SearchQueryResponse response = apiHttpGet(
                 List.of("?action=query", "generator=search", "gsrlimit=10", "gsroffset=0", "gsrinfo=totalhits",
                         "gsrsearch=filetype%3Abitmap|drawing-fileres%3A0%20"
                                 + URLEncoder.encode(text, StandardCharsets.UTF_8),
                         "prop=info|imageinfo|entityterms", "inprop=url", "gsrnamespace=6", "iiprop=url|size|mime|sha1")
                         .stream().collect(joining("&")),
-                SearchQueryResponse.class).getQuery();
+                SearchQueryResponse.class);
+        if (response.getError() != null) {
+            throw new IOException(response.getError().toString());
+        }
+        SearchQuery query = response.getQuery();
         return query != null && query.getPages() != null ? query.getPages().values() : Collections.emptyList();
     }
 

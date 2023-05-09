@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -190,6 +191,12 @@ Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a hr
         MediaInfoDocument doc = CommonsService.getMediaInfoDocument(filename);
         assertNotNull(doc);
         assertEquals(entityId, doc.getEntityId().getId());
+    }
+
+    @Test
+    @Disabled("requires credentials on command line")
+    void testSearchImages() throws IOException {
+        assertFalse(service.searchImages("NHQ202112250006").isEmpty());
     }
 
     private void mockCategoryLinks() {

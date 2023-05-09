@@ -608,6 +608,6 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
 
     @Override
     protected Set<String> getEmojis(T uploadedMedia) {
-        return Set.of(Emojis.TELESCCOPE);
+        return new HashSet<>(Set.of(Emojis.TELESCCOPE));
     }
 }

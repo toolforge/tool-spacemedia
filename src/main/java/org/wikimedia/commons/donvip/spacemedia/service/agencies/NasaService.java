@@ -7,6 +7,7 @@ import static java.util.stream.Collectors.toMap;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -164,20 +165,20 @@ public class NasaService
         return result;
     }
 
-    private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType) {
-        return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear(), null, null);
+    private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType,
+            LocalDate doNotFetchEarlierThan) {
+        return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear(), null, null, doNotFetchEarlierThan);
     }
 
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType, int year,
-            Set<String> centers, Map<String, Set<String>> foundIds) {
-        return doUpdateMedia(mediaType, year, year, centers, foundIds);
+            Set<String> centers, Map<String, Set<String>> foundIds, LocalDate doNotFetchEarlierThan) {
+        return doUpdateMedia(mediaType, year, year, centers, foundIds, doNotFetchEarlierThan);
     }
 
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType, int startYear,
-            int endYear, Set<String> centers, Map<String, Set<String>> foundIds) {
+            int endYear, Set<String> centers, Map<String, Set<String>> foundIds, LocalDate doNotFetchEarlierThan) {
         Counter count = new Counter();
         Collection<T> uploadedMedia = new ArrayList<>();
-        LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
         if (doNotFetchEarlierThan == null || endYear >= doNotFetchEarlierThan.getYear()) {
             LocalDateTime start = LocalDateTime.now();
             logStartUpdate(mediaType, startYear, endYear, centers);
@@ -261,40 +262,47 @@ public class NasaService
         List<NasaImage> uploadedImages = new ArrayList<>();
         Map<String, Set<String>> foundIds = nasaCenters.stream()
                 .collect(toMap(Function.identity(), x -> new TreeSet<>()));
+        LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
         // Recent years have a lot of photos: search by center to avoid more than 10k results
         for (int year = LocalDateTime.now().getYear(); year >= 2000; year--) {
             for (String center : nasaCenters) {
+                List<NasaImage> localUploadedImages = new ArrayList<>();
                 Pair<Integer, Collection<NasaImage>> update = doUpdateMedia(NasaMediaType.image, year,
-                        singleton(center), foundIds);
-                uploadedImages.addAll(update.getRight());
+                        singleton(center), foundIds, doNotFetchEarlierThan);
+                localUploadedImages.addAll(update.getRight());
                 count += update.getLeft();
                 ongoingUpdateMedia(start, count);
+                uploadedImages.addAll(localUploadedImages);
+                postSocialMedia(localUploadedImages, localUploadedImages.stream().map(Media::getMetadata).toList());
             }
-            postSocialMedia(uploadedImages, uploadedImages.stream().map(Media::getMetadata).toList());
         }
         // Ancient years have a lot less photos: simple search for all centers
         for (int year = 1999; year >= minYear; year--) {
-            Pair<Integer, Collection<NasaImage>> update = doUpdateMedia(NasaMediaType.image, year, null, foundIds);
+            Pair<Integer, Collection<NasaImage>> update = doUpdateMedia(NasaMediaType.image, year, null, foundIds,
+                    doNotFetchEarlierThan);
             uploadedImages.addAll(update.getRight());
             count += update.getLeft();
             ongoingUpdateMedia(start, count);
         }
-        // Delete media removed from NASA website
-        for (String center : nasaCenters) {
-            for (NasaImage image : imageRepository.findMissingInCommonsByCenterNotIn(center, foundIds.get(center))) {
-                LOGGER.warn("TODO: deleting {} media removed from NASA website: {}", center, image);
-                // imageRepository.delete(image);
+        if (doNotFetchEarlierThan == null) {
+            // Delete media removed from NASA website (only for complete updates)
+            for (String center : nasaCenters) {
+                for (NasaImage image : imageRepository.findMissingInCommonsByCenterNotIn(center,
+                        foundIds.get(center))) {
+                    LOGGER.warn("TODO: deleting {} media removed from NASA website: {}", center, image);
+                    // imageRepository.delete(image);
+                }
             }
         }
         return Pair.of(count, uploadedImages);
     }
 
     public Pair<Integer, Collection<NasaAudio>> updateAudios() {
-        return doUpdateMedia(NasaMediaType.audio);
+        return doUpdateMedia(NasaMediaType.audio, getRuntimeData().getDoNotFetchEarlierThan());
     }
 
     public Pair<Integer, Collection<NasaVideo>> updateVideos() {
-        return doUpdateMedia(NasaMediaType.video);
+        return doUpdateMedia(NasaMediaType.video, getRuntimeData().getDoNotFetchEarlierThan());
     }
 
     @Override
@@ -391,7 +399,7 @@ public class NasaService
                 if (List.of("in the cupola", "in the Cupola", "inside the cupola", "inside the Cupola",
                         "inside the newly-installed cupola", "inside the seven window cupola",
                         "in the seven-windowed Cupola", "from the Cupola", "through the cupola",
-                        "inside the seven-windowed cupola").stream()
+                        "inside the seven-windowed cupola", "out of the cupola").stream()
                         .anyMatch(description::contains)) {
                     result.add("Interior of Cupola (ISS module)");
                 }
@@ -443,17 +451,23 @@ public class NasaService
 
     @Override
     protected NasaMedia refresh(NasaMedia media) throws IOException {
-        NasaResponse response = new RestTemplate().getForObject(searchEndpoint + "nasa_id=" + media.getId(),
-                NasaResponse.class);
+        RestTemplate rest = new RestTemplate();
+        NasaResponse response = rest.getForObject(searchEndpoint + "nasa_id=" + media.getId(), NasaResponse.class);
         if (response != null) {
             List<NasaItem> items = response.getCollection().getItems();
             if (items.size() == 1) {
-                List<NasaMedia> data = items.get(0).getData();
+                NasaItem item = items.get(0);
+                List<NasaMedia> data = item.getData();
                 if (data.size() == 1) {
-                    NasaMedia mediaFromApi = data.get(0);
-                    if (mediaFromApi.getAssetUrl() != null) {
-                        LOGGER.info("Copying up-to-date data from {}", mediaFromApi);
-                        return media.copyDataFrom(mediaFromApi);
+                    try {
+                        NasaMedia mediaFromApi = data.get(0);
+                        processor.processMediaFromApi(rest, mediaFromApi, item.getHref(), this::problem);
+                        if (mediaFromApi.getAssetUrl() != null) {
+                            LOGGER.info("Copying up-to-date data from {}", mediaFromApi);
+                            return media.copyDataFrom(mediaFromApi);
+                        }
+                    } catch (URISyntaxException e) {
+                        throw new IOException(e);
                     }
                 }
             }

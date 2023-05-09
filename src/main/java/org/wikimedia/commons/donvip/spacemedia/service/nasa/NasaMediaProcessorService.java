@@ -193,36 +193,7 @@ public class NasaMediaProcessorService {
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
         } else {
-            save = true;
-            // API is supposed to send us keywords in a proper JSON array, but not always
-            Set<String> normalizedKeywords = normalizeKeywords(media.getKeywords());
-            if (!Objects.equals(normalizedKeywords, media.getKeywords())) {
-                media.setKeywords(normalizedKeywords);
-            }
-            if (media.getAssetUrl() == null) {
-                findOriginalMedia(rest, href).ifPresent(media::setAssetUrl);
-            }
-            if (media.getThumbnailUrl() == null) {
-                findThumbnailMedia(rest, href).ifPresent(media::setThumbnailUrl);
-            }
-            if (media.getTitle() != null && media.getTitle().startsWith("Title: ")) {
-                media.setTitle(media.getTitle().replace("Title: ", ""));
-            }
-            if (media.getId().length() < 3) {
-                problem.accept(media.getAssetUrl(), new Exception("Strange id: '" + media.getId() + "'"));
-            }
-            if (media.isIgnored() != Boolean.TRUE && media.getDescription() != null) {
-                if (media.getDescription().contains("/photojournal")) {
-                    ignoreMedia(media, "Photojournal");
-                    save = true;
-                } else {
-                    String desc = media.getDescription().toLowerCase(Locale.ENGLISH);
-                    if (desc.contains("courtesy") || desc.contains("©")) {
-                        ignoreMedia(media, "Probably non-free image (courtesy)");
-                        save = true;
-                    }
-                }
-            }
+            save = processMediaFromApi(rest, media, href, problem);
         }
         if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && img.getPhotographer() != null
                 && mediaService.isPhotographerBlocklisted(img.getPhotographer())) {
@@ -255,6 +226,38 @@ public class NasaMediaProcessorService {
             save = false;
         }
         return Pair.of(saveMediaOrCheckRemote.apply(save, media), uploadCount);
+    }
+
+    public boolean processMediaFromApi(RestTemplate rest, NasaMedia media, URL href,
+            BiConsumer<URL, Throwable> problem) throws URISyntaxException {
+        // API is supposed to send us keywords in a proper JSON array, but not always
+        Set<String> normalizedKeywords = normalizeKeywords(media.getKeywords());
+        if (!Objects.equals(normalizedKeywords, media.getKeywords())) {
+            media.setKeywords(normalizedKeywords);
+        }
+        if (media.getAssetUrl() == null) {
+            findOriginalMedia(rest, href).ifPresent(media::setAssetUrl);
+        }
+        if (media.getThumbnailUrl() == null) {
+            findThumbnailMedia(rest, href).ifPresent(media::setThumbnailUrl);
+        }
+        if (media.getTitle() != null && media.getTitle().startsWith("Title: ")) {
+            media.setTitle(media.getTitle().replace("Title: ", ""));
+        }
+        if (media.getId().length() < 3) {
+            problem.accept(media.getAssetUrl(), new Exception("Strange id: '" + media.getId() + "'"));
+        }
+        if (media.isIgnored() != Boolean.TRUE && media.getDescription() != null) {
+            if (media.getDescription().contains("/photojournal")) {
+                ignoreMedia(media, "Photojournal");
+            } else {
+                String desc = media.getDescription().toLowerCase(Locale.ENGLISH);
+                if (desc.contains("courtesy") || desc.contains("©")) {
+                    ignoreMedia(media, "Probably non-free image (courtesy)");
+                }
+            }
+        }
+        return true;
     }
 
     ExifMetadata readExifMetadata(RestTemplate restExif, String id)
