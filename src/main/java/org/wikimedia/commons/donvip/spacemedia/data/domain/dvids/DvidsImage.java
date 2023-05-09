@@ -47,11 +47,13 @@ public class DvidsImage extends DvidsMedia implements WithDimensions {
     }
 
     @Override
+    @JsonProperty("dimensions")
     public ImageDimensions getImageDimensions() {
         return dimensions;
     }
 
     @Override
+    @JsonProperty("dimensions")
     public void setImageDimensions(ImageDimensions dimensions) {
         this.dimensions = dimensions;
     }

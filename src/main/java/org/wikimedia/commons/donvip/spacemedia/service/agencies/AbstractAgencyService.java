@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
@@ -637,9 +638,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             result.put("P3575", Pair.of(Pair.of(metadata.getSize(), "Q8799"), null));
         }
         // Dimensions
-        if (media instanceof WithDimensions wd) {
-            result.put("P2049", Pair.of(Pair.of(wd.getImageDimensions().getWidth(), "Q355198"), null));
-            result.put("P2048", Pair.of(Pair.of(wd.getImageDimensions().getHeight(), "Q355198"), null));
+        if (media instanceof WithDimensions wd && wd.getImageDimensions() != null) {
+            ofNullable(wd.getImageDimensions().getWidth())
+                    .ifPresent(w -> result.put("P2049", Pair.of(Pair.of(w, "Q355198"), null)));
+            ofNullable(wd.getImageDimensions().getHeight())
+                    .ifPresent(h -> result.put("P2048", Pair.of(Pair.of(h, "Q355198"), null)));
         }
         // Location
         if (media instanceof WithLatLon ll && (ll.getLatitude() != 0d || ll.getLongitude() != 0d)) {
