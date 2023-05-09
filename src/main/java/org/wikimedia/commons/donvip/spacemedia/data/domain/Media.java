@@ -8,7 +8,6 @@ import java.time.Year;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,10 +15,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.EntityListeners;
-import javax.persistence.FetchType;
 import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PostLoad;
@@ -72,20 +69,6 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     @Column(nullable = true, columnDefinition = "TEXT")
     @JsonProperty("ignored_reason")
     protected String ignoredReason;
-
-    /**
-     * Duplicates are other media considered strictly or nearly identical, thus ignored and not to be uploaded.
-     */
-    @Column(nullable = false)
-    @ElementCollection(fetch = FetchType.EAGER)
-    protected Set<Duplicate> duplicates = new HashSet<>();
-
-    /**
-     * Variants are other media considered similar but not identical, thus not ignored and to be uploaded and linked to this media.
-     */
-    @Column(nullable = false)
-    @ElementCollection(fetch = FetchType.EAGER)
-    protected Set<Duplicate> variants = new HashSet<>();
 
     @Column(nullable = true)
     @JsonProperty("last_update")
@@ -209,58 +192,6 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     @Override
-    public Set<Duplicate> getDuplicates() {
-        return duplicates;
-    }
-
-    public void setDuplicates(Set<Duplicate> originalIds) {
-        this.duplicates = originalIds;
-    }
-
-    public boolean addDuplicate(Duplicate duplicate) {
-        if (duplicates == null) {
-            duplicates = new HashSet<>();
-        }
-        return duplicates.add(duplicate);
-    }
-
-    public boolean removeDuplicate(Duplicate duplicate) {
-        return duplicates != null && duplicates.remove(duplicate);
-    }
-
-    public void clearDuplicates() {
-        if (duplicates != null) {
-            duplicates.clear();
-        }
-    }
-
-    @Override
-    public Set<Duplicate> getVariants() {
-        return variants;
-    }
-
-    public void setVariants(Set<Duplicate> originalIds) {
-        this.variants = originalIds;
-    }
-
-    public boolean addVariant(Duplicate variant) {
-        if (variants == null) {
-            variants = new HashSet<>();
-        }
-        return variants.add(variant);
-    }
-
-    public boolean removeVariant(Duplicate variant) {
-        return variants != null && variants.remove(variant);
-    }
-
-    public void clearVariants() {
-        if (variants != null) {
-            variants.clear();
-        }
-    }
-
-    @Override
     public int hashCode() {
         return Objects.hash(title, metadata);
     }
@@ -326,15 +257,6 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      */
     public final URL getPreviewUrl() {
         return Optional.ofNullable(getThumbnailUrl()).orElse(getMetadata().getAssetUrl());
-    }
-
-    /**
-     * Determines if other media with a low but positive perceptual hash difference are considered as variants instead of duplicates.
-     *
-     * @return {@code true} if other media with a low but positive perceptual hash difference are considered as variants instead of duplicates.
-     */
-    public boolean considerVariants() {
-        return false;
     }
 
     /**

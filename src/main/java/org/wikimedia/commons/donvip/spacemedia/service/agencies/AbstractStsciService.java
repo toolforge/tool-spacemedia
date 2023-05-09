@@ -36,9 +36,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService
 /**
  * Service harvesting images from NASA Hubble / Jame Webb websites.
  */
-public abstract class AbstractStsciService
-        extends
-        AbstractFullResAgencyService<StsciMedia, String, ZonedDateTime, StsciMedia, String, ZonedDateTime> {
+public abstract class AbstractStsciService extends AbstractFullResAgencyService<StsciMedia, String, ZonedDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStsciService.class);
 

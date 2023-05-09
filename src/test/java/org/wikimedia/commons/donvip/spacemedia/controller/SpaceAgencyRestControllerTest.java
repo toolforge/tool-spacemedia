@@ -37,7 +37,7 @@ class SpaceAgencyRestControllerTest {
     private AsyncAgencyUpdaterService async;
 
     @MockBean
-    private AbstractAgencyService<Media<String, LocalDate>, String, LocalDate, Media<String, LocalDate>, String, LocalDate> service;
+    private AbstractAgencyService<Media<String, LocalDate>, String, LocalDate> service;
 
     @Test
     void testExtractId() {
@@ -81,7 +81,7 @@ class SpaceAgencyRestControllerTest {
         @Bean
         @Autowired
         public TestSpaceAgencyRestController controller(
-                AbstractAgencyService<Media<String, LocalDate>, String, LocalDate, Media<String, LocalDate>, String, LocalDate> service) {
+                AbstractAgencyService<Media<String, LocalDate>, String, LocalDate> service) {
             return new TestSpaceAgencyRestController(service);
         }
     }
@@ -92,7 +92,7 @@ class SpaceAgencyRestControllerTest {
             extends SpaceAgencyRestController<Media<String, LocalDate>, String, LocalDate> {
 
         public TestSpaceAgencyRestController(
-                AbstractAgencyService<Media<String, LocalDate>, String, LocalDate, Media<String, LocalDate>, String, LocalDate> service) {
+                AbstractAgencyService<Media<String, LocalDate>, String, LocalDate> service) {
             super(service);
         }
     }

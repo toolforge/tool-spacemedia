@@ -150,8 +150,6 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
 
     Page<T> findByIgnoredTrue(Pageable page);
 
-    List<T> findByDuplicatesIsNotEmpty();
-
     @Modifying
     @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true")
     int resetIgnored();

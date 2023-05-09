@@ -29,7 +29,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateR
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class KariService extends AbstractAgencyService<KariMedia, Integer, LocalDate, KariMedia, Integer, LocalDate> {
+public class KariService extends AbstractAgencyService<KariMedia, Integer, LocalDate> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KariService.class);
 

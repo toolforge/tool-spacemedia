@@ -32,14 +32,14 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Pagination;
 public class SpaceAgencyWebController<T extends Media<ID, D>, ID, D extends Temporal> {
 
     @Autowired
-    private List<AbstractAgencyService<? extends Media<?, ?>, ?, ?, ?, ?, ?>> agencies;
+    private List<AbstractAgencyService<? extends Media<?, ?>, ?, ?>> agencies;
 
     @Autowired
     private SearchService searchService;
 
     protected final Agency<T, ID, D> service;
 
-    public SpaceAgencyWebController(AbstractAgencyService<T, ID, D, ?, ?, ?> service) {
+    public SpaceAgencyWebController(AbstractAgencyService<T, ID, D> service) {
         this.service = Objects.requireNonNull(service);
     }
 

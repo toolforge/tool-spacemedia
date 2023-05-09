@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
-import java.time.LocalDateTime;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -14,7 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class SpaceXFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
+public class SpaceXFlickrService extends AbstractAgencyFlickrService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpaceXFlickrService.class);
 

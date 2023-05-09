@@ -187,9 +187,6 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     @Query("select m from #{#entityName} m where m.metadata.phash is not null and m.unit in ?1")
     Page<T> findByMetadata_PhashNotNull(Set<String> units, Pageable page);
 
-    @Query("select m from #{#entityName} m where m.duplicates is not empty and m.unit in ?1")
-    List<T> findByDuplicatesIsNotEmpty(Set<String> units);
-
     // SAVE
 
     @Override

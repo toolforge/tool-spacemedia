@@ -1,25 +1,18 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
-import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaTypedId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class UsSpaceForceFlickrService extends AbstractAgencyFlickrService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
-
-    @Autowired
-    private DvidsMediaRepository<DvidsMedia> dvidsRepository;
+public class UsSpaceForceFlickrService extends AbstractAgencyFlickrService {
 
     @Autowired
     public UsSpaceForceFlickrService(FlickrMediaRepository repository,
@@ -35,16 +28,6 @@ public class UsSpaceForceFlickrService extends AbstractAgencyFlickrService<Dvids
     @Override
     public String getName() {
         return "U.S. Space Force/Command (Flickr)";
-    }
-
-    @Override
-    protected DvidsMediaRepository<DvidsMedia> getOriginalRepository() {
-        return dvidsRepository;
-    }
-
-    @Override
-    protected DvidsMediaTypedId getOriginalId(String id) {
-        return new DvidsMediaTypedId(id);
     }
 
     @Override

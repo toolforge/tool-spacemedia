@@ -46,7 +46,7 @@ public abstract class SpaceAgencyRestController<T extends Media<ID, D>, ID, D ex
 
     protected final Agency<T, ID, D> service;
 
-    protected SpaceAgencyRestController(AbstractAgencyService<T, ID, D, ?, ?, ?> service) {
+    protected SpaceAgencyRestController(AbstractAgencyService<T, ID, D> service) {
         this.service = Objects.requireNonNull(service);
     }
 

@@ -13,14 +13,13 @@ import java.util.function.BiFunction;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
-public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>, ID, D extends Temporal, OT extends Media<OID, OD>, OID, OD extends Temporal>
-        extends AbstractAgencyService<T, ID, D, OT, OID, OD> {
+public abstract class AbstractFullResAgencyService<T extends FullResMedia<ID, D>, ID, D extends Temporal>
+        extends AbstractAgencyService<T, ID, D> {
 
     private FullResMediaRepository<T, ID, D> fullResRepository;
 

@@ -29,7 +29,7 @@ import net.bytebuddy.implementation.MethodCall;
 public class SpaceAgencyControllerConfiguration {
 
     @Autowired
-    private List<AbstractAgencyService<?, ?, ?, ?, ?, ?>> agencies;
+    private List<AbstractAgencyService<?, ?, ?>> agencies;
 
     @Autowired
     private AbstractAutowireCapableBeanFactory factory;

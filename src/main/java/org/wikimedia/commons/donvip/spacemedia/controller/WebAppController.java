@@ -13,7 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencySe
 public class WebAppController {
 
     @Autowired
-    private List<AbstractAgencyService<? extends Media<?, ?>, ?, ?, ?, ?, ?>> agencies;
+    private List<AbstractAgencyService<? extends Media<?, ?>, ?, ?>> agencies;
 
     @GetMapping("/")
     public String index(Model model) {

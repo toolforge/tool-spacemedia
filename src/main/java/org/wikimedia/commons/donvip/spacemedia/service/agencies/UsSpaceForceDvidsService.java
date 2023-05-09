@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
-import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +8,10 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaTypedId;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
+public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService {
 
     @Autowired
     public UsSpaceForceDvidsService(DvidsMediaRepository<DvidsMedia> repository,

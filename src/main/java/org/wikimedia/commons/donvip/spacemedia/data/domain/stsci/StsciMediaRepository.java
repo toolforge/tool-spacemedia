@@ -145,8 +145,6 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
 
     Page<StsciMedia> findByMetadata_PhashNotNullAndMission(String mission, Pageable page);
 
-    List<StsciMedia> findByDuplicatesIsNotEmptyAndMission(String mission);
-
     // SAVE
 
     @Override

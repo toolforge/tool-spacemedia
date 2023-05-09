@@ -5,7 +5,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMediaRepository;
@@ -51,7 +49,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Service
 public class NasaAsterService
-        extends AbstractAgencyService<NasaAsterMedia, String, LocalDate, NasaMedia, String, ZonedDateTime> {
+        extends AbstractAgencyService<NasaAsterMedia, String, LocalDate> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaAsterService.class);
 

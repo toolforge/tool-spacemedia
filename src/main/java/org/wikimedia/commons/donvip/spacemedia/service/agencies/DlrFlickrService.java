@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -14,7 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class DlrFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
+public class DlrFlickrService extends AbstractAgencyFlickrService {
 
     private static final List<String> STRINGS_TO_REMOVE = List.of("Über die Mission Mars Express:",
             "<a href=\"https://www.dlr.de/content/de/missionen/marsexpress\">www.dlr.de/content/de/missionen/marsexpress</a>");

@@ -46,8 +46,7 @@ import com.google.api.services.youtube.model.VideoContentDetails;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.VideoSnippet;
 
-public abstract class AbstractAgencyYouTubeService
-        extends AbstractAgencyService<YouTubeVideo, String, Instant, YouTubeVideo, String, Instant> {
+public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService<YouTubeVideo, String, Instant> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyYouTubeService.class);
 
@@ -196,7 +195,7 @@ public abstract class AbstractAgencyYouTubeService
             save = true;
         }
         Path path = video.getMetadata().getSha1() == null ? downloadVideo(video) : null;
-        if (mediaService.updateMedia(video, getOriginalRepository(), getStringsToRemove(video), false, true,
+        if (mediaService.updateMedia(video, getStringsToRemove(video), false, true,
                 includeByPerceptualHash(), path).getResult()) {
             save = true;
         }

@@ -21,8 +21,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -37,7 +35,6 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -60,8 +57,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.client.RestClientException;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.DuplicateMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
@@ -97,12 +92,9 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
  * @param <T>   the media type the repository manages
  * @param <ID>  the type of the id of the entity the repository manages
  * @param <D>   the media date type
- * @param <OT>  the media type the original repository manages
- * @param <OID> the type of the id of the entity the original repository manages
- * @param <OD>  the original media date type
  */
-public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extends Temporal, OT extends Media<OID, OD>, OID, OD extends Temporal>
-        implements Comparable<AbstractAgencyService<T, ID, D, OT, OID, OD>>, Agency<T, ID, D> {
+public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extends Temporal>
+        implements Comparable<AbstractAgencyService<T, ID, D>>, Agency<T, ID, D> {
 
     protected static final String EN = "en";
 
@@ -820,14 +812,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected Optional<String> getOtherVersions(T media, Metadata metadata) {
-        Set<Duplicate> variants = media.getVariants();
-        return isEmpty(variants)
-                ? Optional.empty()
-                : Optional.of(variants.stream().sorted(Comparator.comparing(Duplicate::getOriginalId))
-                    .map(v -> getOriginalRepository().findById(getOriginalId(v.getOriginalId())))
-                    .filter(Optional::isPresent).map(Optional::get)
-                    .map(o -> o.getFirstCommonsFileNameOrUploadTitle(o.getCommonsFileNames(), o.getMetadata().getFileExtension()))
-                        .collect(joining("\n")));
+        return Optional.empty();
     }
 
     protected Optional<String> getOtherFields(T media) {
@@ -918,31 +903,6 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected MediaRepository<OT, OID, OD> getOriginalRepository() {
-        return null;
-    }
-
-    /**
-     * Returns the original media identifier for the given string representation.
-     *
-     * @param id the string representation of an original media identifier
-     * @return the original media identifier for the given string representation
-     */
-    protected OID getOriginalId(String id) {
-        return null;
-    }
-
-    public final List<DuplicateMedia<OID, OD, OT>> getOriginalMedia(T media) {
-        Set<Duplicate> dupes = media.getDuplicates();
-        return isEmpty(dupes) ? Collections.emptyList()
-                : dupes.stream().sorted().map(this::mapDuplicateMedia).filter(Objects::nonNull).toList();
-    }
-
-    private DuplicateMedia<OID, OD, OT> mapDuplicateMedia(Duplicate duplicate) {
-        Optional<OT> optional = getOriginalRepository().findById(getOriginalId(duplicate.getOriginalId()));
-        return optional.isPresent() ? new DuplicateMedia<>(duplicate, optional.get()) : null;
-    }
-
     protected abstract Class<T> getMediaClass();
 
     /**
@@ -974,7 +934,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
-        MediaUpdateResult ur = mediaService.updateMedia(media, getOriginalRepository(), getStringsToRemove(media),
+        MediaUpdateResult ur = mediaService.updateMedia(media, getStringsToRemove(media),
                 forceUpdate, checkBlocklist(), includeByPerceptualHash(), null);
         boolean result = ur.getResult();
         if (media.isIgnored() != Boolean.TRUE) {
@@ -1006,22 +966,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public int compareTo(AbstractAgencyService<T, ID, D, OT, OID, OD> o) {
+    public int compareTo(AbstractAgencyService<T, ID, D> o) {
         return getName().compareTo(o.getName());
-    }
-
-    protected List<T> findDuplicates() {
-        return repository.findByDuplicatesIsNotEmpty();
-    }
-
-    protected long doResetDuplicates() {
-        return StreamSupport.stream(repository.saveAll(
-                findDuplicates().stream().map(m -> {
-                    m.clearDuplicates();
-                    m.setIgnoredReason(null);
-                    m.setIgnored(null);
-                    return m;
-                }).toList()).spliterator(), false).count();
     }
 
     protected int doResetPerceptualHashes() {
@@ -1038,12 +984,6 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected int doResetProblems() {
         return problemRepository.deleteByAgency(getId());
-    }
-
-    public final long resetDuplicates() {
-        long result = doResetDuplicates();
-        LOGGER.info("Reset {} duplicates for agency {}", result, getName());
-        return result;
     }
 
     public final int resetIgnored() {
@@ -1098,7 +1038,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 || (getUploadMode() == UploadMode.AUTO_FROM_DATE
                         && (ctx.isManual() || ctx.getMedia().getYear().getValue() >= minYearUploadAuto)))
                 && !Boolean.TRUE.equals(ctx.getMedia().isIgnored()) && isEmpty(ctx.getMetadata().getCommonsFileNames())
-                && isEmpty(ctx.getMedia().getDuplicates()) && isPermittedFileType(ctx.getMetadata());
+                && isPermittedFileType(ctx.getMetadata());
     }
 
     protected boolean shouldUploadAuto(T media, boolean isManual) {

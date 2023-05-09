@@ -82,14 +82,10 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 /**
  * Service fetching images from https://api.dvidshub.net/
- *
- * @param <OT> Original media type
- * @param <OID> Original media identifier type
- * @param <OD> Original media date type
  */
 @Service
-public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID, OD extends Temporal>
-        extends AbstractAgencyService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime, OT, OID, OD> {
+public abstract class AbstractAgencyDvidsService
+        extends AbstractAgencyService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
 
     private static final String OLD_DVIDS_CDN = "https://cdn.dvidshub.net/";
 
@@ -688,11 +684,6 @@ public abstract class AbstractAgencyDvidsService<OT extends Media<OID, OD>, OID,
                 mediaRepository.countMissingImagesInCommons(singleton),
                 mediaRepository.countMissingVideosInCommons(singleton),
                 mediaRepository.countByMetadata_PhashNotNull(singleton), null);
-    }
-
-    @Override
-    protected final List<DvidsMedia> findDuplicates() {
-        return mediaRepository.findByDuplicatesIsNotEmpty(units);
     }
 
     @Override

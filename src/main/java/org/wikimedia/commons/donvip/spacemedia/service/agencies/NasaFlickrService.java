@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.net.MalformedURLException;
-import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -16,12 +15,10 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 
 
 @Service
-public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, String, ZonedDateTime> {
+public class NasaFlickrService extends AbstractAgencyFlickrService {
 
     private static final Pattern NHQ = Pattern.compile(".+\\((NHQ\\d{12})\\)");
 
@@ -46,9 +43,6 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
             );
 
     @Autowired
-    private NasaMediaRepository<NasaMedia> nasaMediaRepository;
-
-    @Autowired
     public NasaFlickrService(FlickrMediaRepository repository,
             @Value("${nasa.flickr.accounts}") Set<String> flickrAccounts) {
         super(repository, "nasa.flickr", flickrAccounts);
@@ -62,16 +56,6 @@ public class NasaFlickrService extends AbstractAgencyFlickrService<NasaMedia, St
     @Override
     public String getName() {
         return "NASA (Flickr)";
-    }
-
-    @Override
-    protected NasaMediaRepository<NasaMedia> getOriginalRepository() {
-        return nasaMediaRepository;
-    }
-
-    @Override
-    protected String getOriginalId(String id) {
-        return id;
     }
 
     @Override

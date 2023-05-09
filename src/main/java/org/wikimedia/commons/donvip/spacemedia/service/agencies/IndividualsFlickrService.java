@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -19,7 +18,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class IndividualsFlickrService extends AbstractAgencyFlickrService<FlickrMedia, Long, LocalDateTime> {
+public class IndividualsFlickrService extends AbstractAgencyFlickrService {
 
     private static final Map<String, List<String>> STRINGS_TO_REMOVE = Map.of("pierre_markuse", List.of(
             "Follow me on Twitter:",

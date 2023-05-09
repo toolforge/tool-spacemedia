@@ -62,7 +62,7 @@ import io.micrometer.core.instrument.util.StringUtils;
  * @param <T> Type of media
  */
 public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
-        extends AbstractFullResAgencyService<T, String, LocalDateTime, T, String, LocalDateTime> {
+        extends AbstractFullResAgencyService<T, String, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDjangoplicityService.class);
 

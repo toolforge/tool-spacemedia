@@ -52,8 +52,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Service
 public class NasaPhotojournalService
-        extends
-        AbstractFullResExtraAgencyService<NasaPhotojournalMedia, String, ZonedDateTime, NasaPhotojournalMedia, String, ZonedDateTime> {
+        extends AbstractFullResExtraAgencyService<NasaPhotojournalMedia, String, ZonedDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaPhotojournalService.class);
 

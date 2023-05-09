@@ -56,8 +56,7 @@ import com.flickr4java.flickr.people.User;
 import com.flickr4java.flickr.photos.Photo;
 import com.github.dozermapper.core.Mapper;
 
-public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID, OD extends Temporal>
-        extends AbstractAgencyService<FlickrMedia, Long, LocalDateTime, OT, OID, OD> {
+public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<FlickrMedia, Long, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgencyFlickrService.class);
     private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"(\\d+)\" not found \\(invalid ID\\)");
@@ -415,8 +414,7 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
         for (FlickrMedia media : medias) {
             try {
                 Pair<FlickrMedia, Integer> result = processor.processFlickrMedia(media, flickrAccount,
-                        getOriginalRepository(), () -> getStringsToRemove(media), this::shouldUploadAuto,
-                        this::uploadWrapped);
+                        () -> getStringsToRemove(media), this::shouldUploadAuto, this::uploadWrapped);
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }
@@ -450,11 +448,6 @@ public abstract class AbstractAgencyFlickrService<OT extends Media<OID, OD>, OID
     @Override
     protected final Long getMediaId(String id) {
         return Long.parseLong(id);
-    }
-
-    @Override
-    protected final List<FlickrMedia> findDuplicates() {
-        return flickrRepository.findByDuplicatesIsNotEmpty(flickrAccounts);
     }
 
     @Override

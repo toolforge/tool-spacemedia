@@ -26,8 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
@@ -82,8 +80,7 @@ public class FlickrMediaProcessorService {
 
     @Transactional
     public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
-            MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo, Supplier<Collection<String>> stringsToRemove,
-            BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
+            Supplier<Collection<String>> stringsToRemove, BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<Metadata>, Integer>> uploader)
             throws IOException {
         boolean save = false;
@@ -143,7 +140,7 @@ public class FlickrMediaProcessorService {
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb);
         savePhotoSets = false;
         save = false;
-        if (mediaService.updateMedia(media, originalRepo, stringsToRemove.get(), false).getResult()) {
+        if (mediaService.updateMedia(media, stringsToRemove.get(), false).getResult()) {
             save = true;
         }
         int uploadCount = 0;

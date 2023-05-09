@@ -188,9 +188,6 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Query("select m from #{#entityName} m where m.metadata.phash is not null and m.pathAlias in ?1")
     Page<FlickrMedia> findByMetadata_PhashNotNull(Set<String> flickrAccounts, Pageable page);
 
-    @Query("select m from #{#entityName} m where m.duplicates is not empty and m.pathAlias in ?1")
-    List<FlickrMedia> findByDuplicatesIsNotEmpty(Set<String> flickrAccounts);
-
     // SAVE
 
     @Override

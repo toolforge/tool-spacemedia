@@ -1,29 +1,23 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,18 +41,12 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkI
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.ImageInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.WikiPage;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Duplicate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResExtraMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResExtraMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MetadataProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
@@ -103,9 +91,6 @@ public class MediaService {
     @Value("${perceptual.threshold}")
     private double perceptualThreshold;
 
-    @Value("${perceptual.threshold.variant}")
-    private double perceptualThresholdVariant;
-
     @Value("${perceptual.threshold.identicalid}")
     private double perceptualThresholdIdenticalId;
 
@@ -123,14 +108,13 @@ public class MediaService {
         photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.photographers.csv"));
     }
 
-    public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
-            Iterable<String> stringsToRemove, boolean forceUpdate) throws IOException {
-        return updateMedia(media, originalRepo, stringsToRemove, forceUpdate, true, true, null);
+    public MediaUpdateResult updateMedia(Media<?, ?> media, Iterable<String> stringsToRemove, boolean forceUpdate)
+            throws IOException {
+        return updateMedia(media, stringsToRemove, forceUpdate, true, true, null);
     }
 
-    public MediaUpdateResult updateMedia(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> originalRepo,
-            Iterable<String> stringsToRemove, boolean forceUpdate, boolean checkBlocklist,
-            boolean includeByPerceptualHash, Path localPath)
+    public MediaUpdateResult updateMedia(Media<?, ?> media, Iterable<String> stringsToRemove, boolean forceUpdate,
+            boolean checkBlocklist, boolean includeByPerceptualHash, Path localPath)
             throws IOException {
         boolean result = false;
         if (cleanupDescription(media, stringsToRemove)) {
@@ -141,9 +125,6 @@ public class MediaService {
             result = true;
         }
         if (findCommonsFiles(media, includeByPerceptualHash)) {
-            result = true;
-        }
-        if (originalRepo != null && findDuplicatesInRepository(media, originalRepo, includeByPerceptualHash)) {
             result = true;
         }
         if (checkBlocklist && !Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
@@ -187,157 +168,6 @@ public class MediaService {
     public boolean isPhotographerBlocklisted(String photographer) {
         String normalizedPhotographer = photographer.toLowerCase(Locale.ENGLISH).replace(' ', '_');
         return photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith);
-    }
-
-    public boolean findDuplicatesInRepository(Media<?, ?> media, MediaRepository<? extends Media<?, ?>, ?, ?> repo,
-            boolean includeByPerceptualHash) {
-        boolean result = false;
-        // Find exact duplicates by SHA-1
-        String sha1 = media.getMetadata().getSha1();
-        if (sha1 != null && handleExactDuplicates(media,
-                repo instanceof FullResExtraMediaRepository<?, ?, ?> exRepo
-                        ? exRepo.findByMetadata_Sha1OrFullResMetadata_Sha1OrExtraMetadata_Sha1(sha1)
-                        : repo instanceof FullResMediaRepository<?, ?, ?> frRepo
-                        ? frRepo.findByMetadata_Sha1OrFullResMetadata_Sha1(sha1)
-                        : repo.findByMetadata_Sha1(sha1))) {
-            result = true;
-        }
-        if (includeByPerceptualHash) {
-            // Find exact duplicates by perceptual hash
-            String phash = media.getMetadata().getPhash();
-            if (phash != null && handleExactDuplicates(media,
-                    repo instanceof FullResExtraMediaRepository<?, ?, ?> exRepo
-                            ? exRepo.findByMetadata_PhashOrFullResMetadata_PhashOrExtraMetadata_Phash(phash)
-                            : repo instanceof FullResMediaRepository<?, ?, ?> frRepo
-                                    ? frRepo.findByMetadata_PhashOrFullResMetadata_Phash(phash)
-                                    : repo.findByMetadata_Phash(phash))) {
-                result = true;
-            }
-            // Find almost duplicates by perceptual hash
-            BigInteger perceptualHash = media.getMetadata().getPerceptualHash();
-            if (perceptualHash != null && handleDuplicatesAndVariants(media,
-                    repo.findByMetadata_PhashNotNull().parallelStream().filter(m -> !m.getId().equals(media.getId()))
-                            .map(m -> new DuplicateHolder(m,
-                                    HashHelper.similarityScore(perceptualHash, m.getMetadata().getPhash())))
-                            .filter(h -> h.similarityScore < perceptualThreshold).collect(toSet()))) {
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    private static class DuplicateHolder {
-        private final MediaProjection<?> media;
-        private final double similarityScore;
-
-        DuplicateHolder(MediaProjection<?> media, double similarityScore) {
-            this.media = media;
-            this.similarityScore = similarityScore;
-        }
-
-        Duplicate toDuplicate() {
-            return new Duplicate(media.getId().toString(), similarityScore);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(media.getId());
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null || getClass() != obj.getClass())
-                return false;
-            return Objects.equals(media.getId(), ((DuplicateHolder) obj).media.getId());
-        }
-    }
-
-    private static class DuplicateIdMediaProjection implements MediaProjection<Object> {
-
-        private final Object id;
-
-        DuplicateIdMediaProjection(Object id) {
-            this.id = id;
-        }
-
-        @Override
-        public Object getId() {
-            return id;
-        }
-
-        @Override
-        public MetadataProjection getMetadata() {
-            return null;
-        }
-
-        @Override
-        public Set<Duplicate> getDuplicates() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public Set<Duplicate> getVariants() {
-            return Collections.emptySet();
-        }
-    }
-
-    private boolean handleExactDuplicates(Media<?, ?> media, List<? extends Media<?, ?>> exactDuplicates) {
-        return handleDuplicatesAndVariants(media, exactDuplicates.stream()
-                .filter(x -> !Objects.equals(x.getId(), media.getId()))
-                .map(d -> new DuplicateHolder(new DuplicateIdMediaProjection(d.getId()), 0d))
-                .collect(toSet()));
-    }
-
-    /**
-     * Handles duplicates and variants for a given media.
-     *
-     * @param media The currently considered media
-     * @param duplicateHolders set of identified duplicates and variants, with their similiarity score
-     * @return {@code true} if media has been updated and must be persisted
-     */
-    private boolean handleDuplicatesAndVariants(Media<?, ?> media, Set<DuplicateHolder> duplicateHolders) {
-        boolean result = false;
-        // Duplicates are media with a low similarity score. Usually exact duplicates with small variations in resolution
-        Set<Duplicate> duplicates = duplicateHolders.stream()
-                .filter(h -> !media.considerVariants() || h.similarityScore < perceptualThresholdVariant)
-                .map(DuplicateHolder::toDuplicate).collect(toSet());
-        if (isNewDuplicateOrVariant(media, duplicateHolders, duplicates, MediaProjection::getDuplicates)) {
-            if (CollectionUtils.isEmpty(media.getAllCommonsFileNames())) {
-                ignoreMedia(media, "Already present in main repository");
-            }
-            duplicates.forEach(media::addDuplicate);
-            result = true;
-        }
-        // Variants are media with an higher similarity score. Usually same shapes with different colors
-        Set<Duplicate> variants = duplicateHolders.stream()
-                .filter(h -> media.considerVariants() && h.similarityScore >= perceptualThresholdVariant)
-                .map(DuplicateHolder::toDuplicate).collect(toSet());
-        if (isNewDuplicateOrVariant(media, duplicateHolders, variants, MediaProjection::getVariants)) {
-            variants.forEach(media::addVariant);
-            result = true;
-        }
-        return result;
-    }
-
-    /**
-     * Determines if we just found a new duplicate or variant.
-     *
-     * @param media The currently considered media
-     * @param duplicateHolders set of identified duplicates and variants, with their similiarity score
-     * @param set set or duplicates or variants
-     * @param getter getter method to retrieve duplicates or variants of a given media
-     * @return {@code true} if we just found a new duplicate or variant
-     */
-    private static boolean isNewDuplicateOrVariant(Media<?, ?> media, Set<DuplicateHolder> duplicateHolders,
-            Set<Duplicate> set, Function<MediaProjection<?>, Set<Duplicate>> getter) {
-        return isNotEmpty(set)
-                // Only consider media that are not already known duplicates/variants of the given set
-                && (isEmpty(getter.apply(media)) || !getter.apply(media).containsAll(set))
-                // Only consider media that are not already known originals for the given set of duplicates/variants
-                && duplicateHolders.stream().noneMatch(h -> getter.apply(h.media).stream().anyMatch(
-                        d -> d.getOriginalId().equals(media.getId())));
     }
 
     public MediaUpdateResult updateReadableStateAndHashes(Media<?, ?> media, Path localPath, boolean forceUpdateOfHashes) {

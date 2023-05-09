@@ -24,10 +24,7 @@ public class InitializationService implements ApplicationRunner {
     private StatsService statsService;
 
     @Autowired
-    private List<AbstractAgencyService<?, ?, ?, ?, ?, ?>> agencies;
-
-    @Value("${reset.duplicates}")
-    private boolean resetDuplicates;
+    private List<AbstractAgencyService<?, ?, ?>> agencies;
 
     @Value("${reset.ignored}")
     private boolean resetIgnored;
@@ -46,9 +43,6 @@ public class InitializationService implements ApplicationRunner {
         if (resetProblems) {
             LOGGER.info("Reset a total number of {} problems", self.resetProblems());
         }
-        if (resetDuplicates) {
-            LOGGER.info("Reset a total number of {} duplicates", self.resetDuplicates());
-        }
         if (resetIgnored) {
             LOGGER.info("Reset a total number of {} ignored media", self.resetIgnored());
         }
@@ -60,11 +54,6 @@ public class InitializationService implements ApplicationRunner {
         }
         // Perform the most exhaustive data-fetching operation to populate all caches at startup
         statsService.getStats(true);
-    }
-
-    @Transactional
-    public long resetDuplicates() {
-        return agencies.stream().mapToLong(AbstractAgencyService::resetDuplicates).sum();
     }
 
     @Transactional

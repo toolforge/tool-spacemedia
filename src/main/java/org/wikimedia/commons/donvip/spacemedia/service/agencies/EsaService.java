@@ -51,8 +51,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import com.github.dozermapper.core.Mapper;
 
 @Service
-public class EsaService
-        extends AbstractFullResAgencyService<EsaMedia, Integer, LocalDateTime, EsaMedia, Integer, LocalDateTime> {
+public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaService.class);
 
@@ -428,16 +427,6 @@ public class EsaService
     @Override
     public String getName() {
         return "ESA";
-    }
-
-    @Override
-    protected EsaMediaRepository getOriginalRepository() {
-        return mediaRepository;
-    }
-
-    @Override
-    protected Integer getOriginalId(String id) {
-        return Integer.valueOf(id);
     }
 
     @Override

@@ -181,9 +181,4 @@ public class EsaMedia extends FullResMedia<Integer, LocalDateTime> {
     public boolean isVideo() {
         return false;
     }
-
-    @Override
-    public boolean considerVariants() {
-        return "Mars Express".equals(mission) || "BepiColombo".equals(mission);
-    }
 }

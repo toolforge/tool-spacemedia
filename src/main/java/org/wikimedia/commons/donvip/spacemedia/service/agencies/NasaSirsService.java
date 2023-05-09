@@ -9,7 +9,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
@@ -26,12 +25,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -40,7 +36,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorSe
 
 @Service
 public class NasaSirsService
-        extends AbstractAgencyService<NasaSirsImage, String, LocalDate, NasaMedia, String, ZonedDateTime> {
+        extends AbstractAgencyService<NasaSirsImage, String, LocalDate> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaSirsService.class);
 
@@ -61,9 +57,6 @@ public class NasaSirsService
     @Value("${nasa.ssc.name}")
     private String sscName;
 
-    @Autowired
-    private NasaMediaRepository<NasaMedia> nasaMediaRepository;
-
     public NasaSirsService(NasaSirsImageRepository repository) {
         super(repository, "nasa.sirs");
     }
@@ -76,16 +69,6 @@ public class NasaSirsService
     @Override
     public String getName() {
         return "NASA (SIRS)";
-    }
-
-    @Override
-    protected NasaMediaRepository<NasaMedia> getOriginalRepository() {
-        return nasaMediaRepository;
-    }
-
-    @Override
-    protected String getOriginalId(String id) {
-        return id;
     }
 
     @Override
