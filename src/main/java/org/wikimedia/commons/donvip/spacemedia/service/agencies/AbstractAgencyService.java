@@ -577,12 +577,23 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         if (metadata != null && metadata.getAssetUrl() != null
                 && shouldUpload(new UploadContext<>(media, metadata, isManual))) {
             checkUploadPreconditions(media, metadata, checkUnicity);
-            Pair<String, Map<String, String>> codeAndDescs = getWikiCode(media, metadata);
-            String uploadedFilename = commonsService.upload(codeAndDescs.getLeft(), media.getUploadTitle(),
-                    metadata.getFileExtension(), metadata.getAssetUrl(), metadata.getSha1());
-            metadata.setCommonsFileNames(new HashSet<>(Set.of(uploadedFilename)));
+            List<String> smallerFiles = mediaService.findSmallerCommonsFilesWithIdAndPhash(media, metadata);
+            if (!smallerFiles.isEmpty()) {
+                LOGGER.info(
+                        "Found existing smaller files with same id and perceptual hash on Commons, replacing them: {}",
+                        smallerFiles);
+                for (String smallerFile : smallerFiles) {
+                    commonsService.uploadExistingFile(smallerFile, metadata.getAssetUrl(), metadata.getSha1());
+                }
+                metadata.setCommonsFileNames(new HashSet<>(smallerFiles));
+            } else {
+                Pair<String, Map<String, String>> codeAndDescs = getWikiCode(media, metadata);
+                String uploadedFilename = commonsService.uploadNewFile(codeAndDescs.getLeft(), media.getUploadTitle(),
+                        metadata.getFileExtension(), metadata.getAssetUrl(), metadata.getSha1());
+                metadata.setCommonsFileNames(new HashSet<>(Set.of(uploadedFilename)));
+                editStructuredDataContent(uploadedFilename, codeAndDescs.getRight(), media, metadata);
+            }
             uploaded.add(metadata);
-            editStructuredDataContent(uploadedFilename, codeAndDescs.getRight(), media, metadata);
             return 1;
         } else {
             if (metadata != null && metadata.getAssetUrl() != null) {

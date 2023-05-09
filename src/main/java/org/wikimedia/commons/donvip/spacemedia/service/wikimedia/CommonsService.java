@@ -4,9 +4,11 @@ import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.time.temporal.TemporalQueries.localDate;
 import static java.util.Locale.ENGLISH;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeGlobeCoordinatesValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeMonolingualTextValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeQuantityValue;
@@ -45,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -749,9 +750,13 @@ public class CommonsService {
         return text.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", replacement);
     }
 
-    public String upload(String wikiCode, String filename, String ext, URL url, String sha1)
+    public String uploadNewFile(String wikiCode, String filename, String ext, URL url, String sha1)
             throws IOException, UploadException {
-        return doUpload(wikiCode, normalizeFilename(filename), ext, url, sha1, true, true, true, true);
+        return doUpload(requireNonNull(wikiCode), normalizeFilename(filename), ext, url, sha1, true, true, true, true);
+    }
+
+    public String uploadExistingFile(String filename, URL url, String sha1) throws IOException, UploadException {
+        return doUpload(null, filename, null, url, sha1, true, true, true, true);
     }
 
     public static String normalizeFilename(String filename) {
@@ -768,25 +773,30 @@ public class CommonsService {
 
     private synchronized String doUpload(String wikiCode, String filename, String ext, URL url, String sha1,
             boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error,
-            boolean uploadByUrl)
-            throws IOException, UploadException {
+            boolean uploadByUrl) throws IOException, UploadException {
         if (!isPermittedFileType(url.toExternalForm())) {
             throw new UploadException(url + " does not match any supported file type: " + permittedFileTypes);
+        }
+        String filenameExt = requireNonNull(filename, "filename");
+        if (isNotBlank(ext) && !filenameExt.endsWith('.' + ext)) {
+            filenameExt += '.' + ext;
         }
         Map<String, String> params = new TreeMap<>(Map.of(
                 "action", "upload",
                 "comment", "#Spacemedia - Upload of " + url + " via [[:Commons:Spacemedia]]",
-                "filename", Objects.requireNonNull(filename, "filename") + '.' + ext,
+                "filename", filenameExt,
                 "format", "json",
                 "ignorewarnings", "1",
-                "text", Objects.requireNonNull(wikiCode, "wikiCode"),
-                "token", Objects.requireNonNull(token, "token")
+                "token", requireNonNull(token, "token")
         ));
+        if (isNotBlank(wikiCode)) {
+            params.put("text", wikiCode);
+        }
         Pair<Path, Long> localFile = null;
         if (uploadByUrl && hasUploadByUrlRight()) {
             params.put("url", url.toExternalForm());
         } else {
-            localFile = Utils.downloadFile(url, filename + '.' + ext);
+            localFile = Utils.downloadFile(url, filenameExt);
         }
 
         ensureUploadRate();
@@ -794,7 +804,7 @@ public class CommonsService {
         UploadApiResponse apiResponse = null;
         if (uploadByUrl && hasUploadByUrlRight()) {
             try {
-                LOGGER.info("Uploading {} by URL as {}..", url, filename);
+                LOGGER.info("Uploading {} by URL as {}..", url, filenameExt);
                 apiResponse = apiHttpPost(params, UploadApiResponse.class);
             } catch (IOException e) {
                 if (e.getMessage() != null && e.getMessage().contains("bytes exhausted (tried to allocate")) {
@@ -806,10 +816,10 @@ public class CommonsService {
                 throw e;
             }
         } else if (localFile != null) {
-            LOGGER.info("Uploading {} in chunks as {}..", url, filename);
+            LOGGER.info("Uploading {} in chunks as {}..", url, filenameExt);
             apiResponse = doUploadInChunks(ext, params, localFile, 5_242_880);
         }
-        LOGGER.info("Upload of {} as {}: {}", url, filename, apiResponse);
+        LOGGER.info("Upload of {} as {}: {}", url, filenameExt, apiResponse);
         if (apiResponse == null) {
             throw new UploadException("No upload response");
         }

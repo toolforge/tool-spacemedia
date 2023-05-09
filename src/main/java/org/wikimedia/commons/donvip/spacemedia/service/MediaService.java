@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -466,10 +468,26 @@ public class MediaService {
         return result;
     }
 
+    public List<String> findSmallerCommonsFilesWithIdAndPhash(Media<?, ?> media, Metadata metadata) throws IOException {
+        return findCommonsFilesWithIdAndPhashFiltered(commonsService.searchImages(media.getIdUsedInCommons()), metadata,
+                MediaService::filterBySameMimeAndSmallerSize);
+    }
+
     private boolean findCommonsFilesWithIdAndPhash(Collection<WikiPage> images, Metadata metadata) {
+        List<String> filenames = findCommonsFilesWithIdAndPhashFiltered(images, metadata,
+                MediaService::filterBySameMimeAndLargerOrEqualSize);
+        if (!filenames.isEmpty()) {
+            metadata.setCommonsFileNames(new HashSet<>(filenames));
+            return true;
+        }
+        return false;
+    }
+
+    private List<String> findCommonsFilesWithIdAndPhashFiltered(Collection<WikiPage> images, Metadata metadata,
+            BiPredicate<Metadata, ImageInfo> filter) {
+        List<String> filenames = new ArrayList<>();
         if (metadata.getPhash() != null && isEmpty(metadata.getCommonsFileNames())) {
-            for (WikiPage image : images.stream().filter(i -> filterByMimeAndSize(metadata, i.getImageInfo()[0]))
-                    .toList()) {
+            for (WikiPage image : images.stream().filter(i -> filter.test(metadata, i.getImageInfo()[0])).toList()) {
                 String filename = image.getTitle().replace("File:", "").replace(' ', '_');
                 String sha1base36 = CommonsService.base36Sha1(image.getImageInfo()[0].getSha1());
                 Optional<HashAssociation> hash = hashRepository.findById(sha1base36);
@@ -480,20 +498,24 @@ public class MediaService {
                         hash.orElseThrow(() -> new IllegalStateException("No hash for " + sha1base36)).getPhash());
                 if (score <= perceptualThresholdIdenticalId) {
                     LOGGER.info("Found match ({}) between {} and {}", score, metadata, image);
-                    metadata.setCommonsFileNames(new HashSet<>(Set.of(filename)));
-                    return true;
+                    filenames.add(filename);
                 } else if (hash.isPresent() && LOGGER.isDebugEnabled()) {
                     LOGGER.debug("No match between {} and {} / {} -> {}", metadata, image, hash,
                             HashHelper.similarityScore(metadata.getPhash(), hash.get().getPhash()));
                 }
             }
         }
-        return false;
+        return filenames;
     }
 
-    private static boolean filterByMimeAndSize(Metadata metadata, ImageInfo imageInfo) {
+    private static boolean filterBySameMimeAndLargerOrEqualSize(Metadata metadata, ImageInfo imageInfo) {
         return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.getSize() != null
                 && metadata.getSize() <= imageInfo.getSize();
+    }
+
+    private static boolean filterBySameMimeAndSmallerSize(Metadata metadata, ImageInfo imageInfo) {
+        return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.getSize() != null
+                && metadata.getSize() > imageInfo.getSize();
     }
 
     private static String findYouTubeId(String text) {
