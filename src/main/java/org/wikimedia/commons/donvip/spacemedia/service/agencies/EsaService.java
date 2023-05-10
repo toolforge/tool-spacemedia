@@ -44,7 +44,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
@@ -624,7 +623,7 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
 
     @Override
     protected Set<String> getEmojis(EsaMedia uploadedMedia) {
-        Set<String> result = new HashSet<>();
+        Set<String> result = super.getEmojis(uploadedMedia);
         fillSet(result, uploadedMedia.getMission(),
                 Map.of("Ariel", Emojis.STARS, "BepiColombo", Emojis.PLANET_WITH_RINGS, "CHEOPS",
                         Emojis.PLANET_WITH_RINGS, "Euclid", Emojis.STARS, "ExoMars", Emojis.PLANET_WITH_RINGS, "Gaia",
@@ -638,7 +637,6 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
         fillSet(result, uploadedMedia.getActivity(),
                 Map.of("Human Spaceflight", Emojis.ASTRONAUT, "Observing the Earth", Emojis.EARTH_EUROPE, "Operations",
                         Emojis.ANTENNA, "Space Science", Emojis.SATELLITE, "Space Transportation", Emojis.ROCKET));
-        result.addAll(AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords()));
         return result;
     }
 

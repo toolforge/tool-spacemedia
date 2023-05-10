@@ -68,6 +68,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.WithDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
@@ -85,6 +86,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.mastodon.MastodonService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
+import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 /**
@@ -390,7 +392,22 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return Set.of();
     }
 
-    protected abstract Set<String> getEmojis(T uploadedMedia);
+    protected Set<String> getEmojis(T uploadedMedia) {
+        Set<String> result = new HashSet<>();
+        String description = uploadedMedia.getDescription();
+        if (description != null) {
+            if (List.of("astronaut", "cosmonaut", "spationaut").stream().anyMatch(description::contains)) {
+                result.add(Emojis.ASTRONAUT);
+            }
+            if (List.of("lift off", "lifts off").stream().anyMatch(description::contains)) {
+                result.add(Emojis.ROCKET);
+            }
+        }
+        if (uploadedMedia instanceof WithKeywords kw) {
+            result.addAll(AbstractSocialMediaService.getEmojis(kw.getKeywords()));
+        }
+        return result;
+    }
 
     protected Set<String> getMastodonAccounts(T uploadedMedia) {
         return Set.of();

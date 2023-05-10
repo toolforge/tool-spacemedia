@@ -29,7 +29,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.stsci.StsciService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 
@@ -328,10 +327,5 @@ public abstract class AbstractStsciService extends AbstractFullResAgencyService<
                     stsciRepository.countByMetadata_PhashNotNullAndMission(mission), null)));
         }
         return stats;
-    }
-
-    @Override
-    protected Set<String> getEmojis(StsciMedia uploadedMedia) {
-        return AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords());
     }
 }

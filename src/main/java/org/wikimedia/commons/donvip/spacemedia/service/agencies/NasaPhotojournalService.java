@@ -47,7 +47,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Service
@@ -384,11 +383,6 @@ public class NasaPhotojournalService
             // Photojournal nginx returns text/plain instead of application/json
             return null;
         }
-    }
-
-    @Override
-    protected Set<String> getEmojis(NasaPhotojournalMedia uploadedMedia) {
-        return AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords());
     }
 
     @Override

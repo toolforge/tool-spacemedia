@@ -24,9 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, phash") })
-public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLon {
+public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLon, WithKeywords {
 
     @Id
     @Column(nullable = false)
@@ -154,6 +156,20 @@ public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLo
 
     public void setTags(Set<String> tags) {
         this.tags = tags;
+    }
+
+    @Override
+    @Transient
+    @JsonIgnore
+    public Set<String> getKeywords() {
+        return getTags();
+    }
+
+    @Override
+    @Transient
+    @JsonIgnore
+    public void setKeywords(Set<String> tags) {
+        setTags(tags);
     }
 
     public String getOriginalFormat() {

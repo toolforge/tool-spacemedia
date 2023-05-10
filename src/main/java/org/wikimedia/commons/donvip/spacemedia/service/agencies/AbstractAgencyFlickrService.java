@@ -45,7 +45,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -463,10 +462,5 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
     @Override
     protected final int doResetSha1Hashes() {
         return flickrRepository.resetSha1Hashes(flickrAccounts);
-    }
-
-    @Override
-    protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
-        return AbstractSocialMediaService.getEmojis(uploadedMedia.getTags());
     }
 }

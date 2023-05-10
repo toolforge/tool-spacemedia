@@ -16,13 +16,14 @@ import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, phash") })
-public class NasaSirsImage extends Media<String, LocalDate> {
+public class NasaSirsImage extends Media<String, LocalDate> implements WithKeywords {
 
     @Id
     @Column(name = "nasa_id", nullable = false, length = 60)
@@ -79,10 +80,12 @@ public class NasaSirsImage extends Media<String, LocalDate> {
         this.year = photoYear;
     }
 
+    @Override
     public Set<String> getKeywords() {
         return keywords;
     }
 
+    @Override
     public void setKeywords(Set<String> keywords) {
         this.keywords = keywords;
     }

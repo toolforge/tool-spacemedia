@@ -16,11 +16,12 @@ import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResExtraMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
 
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, full_res_sha1, extra_sha1, phash, full_res_phash, extra_phash") })
-public class NasaPhotojournalMedia extends FullResExtraMedia<String, ZonedDateTime> {
+public class NasaPhotojournalMedia extends FullResExtraMedia<String, ZonedDateTime> implements WithKeywords {
 
     @Id
     @Column(name = "pia_id", nullable = false, length = 10)
@@ -125,10 +126,12 @@ public class NasaPhotojournalMedia extends FullResExtraMedia<String, ZonedDateTi
         this.producer = producer;
     }
 
+    @Override
     public Set<String> getKeywords() {
         return keywords;
     }
 
+    @Override
     public void setKeywords(Set<String> keywords) {
         this.keywords = keywords;
     }

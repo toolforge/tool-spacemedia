@@ -73,7 +73,6 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -699,10 +698,5 @@ public abstract class AbstractAgencyDvidsService
     @Override
     protected final int doResetSha1Hashes() {
         return mediaRepository.resetSha1Hashes(units);
-    }
-
-    @Override
-    protected Set<String> getEmojis(DvidsMedia uploadedMedia) {
-        return AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords());
     }
 }

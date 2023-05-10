@@ -31,7 +31,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 
 @Service
@@ -228,11 +227,6 @@ public class NasaSirsService
     @Override
     protected NasaSirsImage refresh(NasaSirsImage media) throws IOException {
         throw new UnsupportedOperationException(); // TODO
-    }
-
-    @Override
-    protected Set<String> getEmojis(NasaSirsImage uploadedMedia) {
-        return AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords());
     }
 
     @Override

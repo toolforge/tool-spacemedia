@@ -23,6 +23,7 @@ import javax.persistence.Table;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -37,7 +38,7 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 @Table(indexes = { @Index(columnList = "sha1, phash") })
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "id", visible = true)
 @JsonTypeIdResolver(value = DvidsMediaTypeIdResolver.class)
-public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime> {
+public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime> implements WithKeywords {
 
     /**
      * Specific document id to retrieve for search.
@@ -166,10 +167,12 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
         this.datePublished = datePublished;
     }
 
+    @Override
     public Set<String> getKeywords() {
         return keywords;
     }
 
+    @Override
     public void setKeywords(Set<String> keywords) {
         this.keywords = keywords;
     }

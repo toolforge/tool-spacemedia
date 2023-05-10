@@ -20,11 +20,12 @@ import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
 
 @Entity
 @Indexed
 @Table(indexes = { @Index(columnList = "sha1, full_res_sha1, phash, full_res_phash") })
-public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
+public class StsciMedia extends FullResMedia<String, ZonedDateTime> implements WithKeywords {
 
     private static final Pattern HORRIBLE_ID_FORMAT = Pattern.compile("\\d{4}-\\d{3}-[A-Z0-9]{26}");
 
@@ -117,10 +118,12 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> {
         this.mission = mission;
     }
 
+    @Override
     public Set<String> getKeywords() {
         return keywords;
     }
 
+    @Override
     public void setKeywords(Set<String> keywords) {
         this.keywords = keywords;
     }

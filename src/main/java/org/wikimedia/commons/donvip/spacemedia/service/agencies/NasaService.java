@@ -57,7 +57,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.exception.WrappedUploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService.Counter;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
@@ -477,11 +476,10 @@ public class NasaService
 
     @Override
     protected Set<String> getEmojis(NasaMedia uploadedMedia) {
-        Set<String> result = new HashSet<>();
+        Set<String> result = super.getEmojis(uploadedMedia);
         if (ISS_PATTERN.matcher(uploadedMedia.getId()).matches()) {
             result.add(Emojis.ASTRONAUT);
         }
-        result.addAll(AbstractSocialMediaService.getEmojis(uploadedMedia.getKeywords()));
         return result;
     }
 

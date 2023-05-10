@@ -20,6 +20,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -34,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = NasaImage.class, name = "image"),
     @JsonSubTypes.Type(value = NasaVideo.class, name = "video") }
 )
-public abstract class NasaMedia extends Media<String, ZonedDateTime> {
+public abstract class NasaMedia extends Media<String, ZonedDateTime> implements WithKeywords {
 
     @Id
     @Column(name = "nasa_id", nullable = false, length = 170)
@@ -85,10 +86,12 @@ public abstract class NasaMedia extends Media<String, ZonedDateTime> {
         this.date = date;
     }
 
+    @Override
     public Set<String> getKeywords() {
         return keywords;
     }
 
+    @Override
     public void setKeywords(Set<String> keywords) {
         this.keywords = keywords;
     }
