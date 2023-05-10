@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.wikimedia.commons.donvip</groupId>
 	<artifactId>spacemedia</artifactId>
-	<version>0.4.1</version>
+	<version>0.4.2-SNAPSHOT</version>
 	<name>spacemedia</name>
 	<description>Find free media released by space agencies missing in Wikimedia Commons</description>
 
@@ -24,7 +24,7 @@
 
 	<scm>
 		<connection>scm:git:https://gitlab.wikimedia.org/toolforge-repos/spacemedia.git</connection>
-		<tag>spacemedia-0.4.1</tag>
+		<tag>HEAD</tag>
 		<url>https://gitlab.wikimedia.org/toolforge-repos/spacemedia</url>
 	</scm>
 
