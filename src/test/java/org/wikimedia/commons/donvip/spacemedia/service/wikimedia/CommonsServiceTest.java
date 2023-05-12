@@ -185,8 +185,8 @@ Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a hr
     }
 
     @ParameterizedTest
-    @CsvSource({ "IAU_2006_General_Assembly-_Result_of_the_IAU_Resolution_Votes_(iau0603d).jpg,M131648616",
-            "IAU_2006_General_Assembly-_Result_of_the_IAU_Resolution_Votes_(iau0603c).jpg,M131649766" })
+    @CsvSource({ "IAU 2006 General Assembly- Result of the IAU Resolution Votes (iau0603d).jpg,M131648616",
+            "IAU 2006 General Assembly- Result of the IAU Resolution Votes (iau0603c).jpg,M131649766" })
     void testGetMediaInfoDocument(String filename, String entityId) throws Exception {
         MediaInfoDocument doc = CommonsService.getMediaInfoDocument(filename);
         assertNotNull(doc);

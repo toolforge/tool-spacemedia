@@ -86,7 +86,6 @@ import org.wikidata.wdtk.datamodel.helpers.MediaInfoUpdateBuilder;
 import org.wikidata.wdtk.datamodel.helpers.StatementBuilder;
 import org.wikidata.wdtk.datamodel.helpers.StatementUpdateBuilder;
 import org.wikidata.wdtk.datamodel.helpers.TermUpdateBuilder;
-import org.wikidata.wdtk.datamodel.interfaces.EntityDocument;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikidata.wdtk.datamodel.interfaces.MediaInfoDocument;
 import org.wikidata.wdtk.datamodel.interfaces.MediaInfoIdValue;
@@ -886,9 +885,7 @@ public class CommonsService {
     }
 
     static MediaInfoDocument getMediaInfoDocument(String filename) throws MediaWikiApiErrorException, IOException {
-        // Ugly workaround to https://github.com/Wikidata/Wikidata-Toolkit/issues/777
-        Map<String, EntityDocument> map = fetcher.getEntityDocumentsByTitle("commonswiki", "File:" + filename);
-        if (!map.isEmpty() && map.values().iterator().next() instanceof MediaInfoDocument doc) {
+        if (fetcher.getEntityDocumentByTitle("commonswiki", "File:" + filename) instanceof MediaInfoDocument doc) {
             return doc;
         }
         throw new IllegalStateException("No commons mediaInfo found for filename " + filename);
