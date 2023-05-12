@@ -11,18 +11,15 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-@Table(indexes = { @Index(columnList = "sha1, phash") })
 public class NasaSirsImage extends Media<String, LocalDate> implements WithKeywords {
 
     @Id
@@ -99,7 +96,7 @@ public class NasaSirsImage extends Media<String, LocalDate> implements WithKeywo
                 + (year != null ? "photoYear=" + year + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (keywords != null ? "keywords=" + keywords + ", " : "")
-                + "metadata=" + metadata + "]";
+                + "metadata=" + getMetadata() + "]";
     }
 
     @Override

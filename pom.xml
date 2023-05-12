@@ -16,8 +16,8 @@
 		<sonar.organization>toolforge</sonar.organization>
 		<sonar.projectKey>tool-spacemedia</sonar.projectKey>
 
-		<flickr4java-version>3.0.6</flickr4java-version>
-		<springboot-version>2.7.11</springboot-version>
+		<flickr4java-version>3.0.8</flickr4java-version>
+		<springboot-version>2.7.12</springboot-version>
 		<scribejava-version>8.3.3</scribejava-version>
 		<twelvemonkeys-version>3.9.4</twelvemonkeys-version>
 	</properties>
@@ -95,6 +95,11 @@
 			<artifactId>commons-codec</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.4</version>
+		</dependency>
+		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-jpeg</artifactId>
 			<version>${twelvemonkeys-version}</version>
@@ -118,11 +123,6 @@
 			<groupId>com.github.scribejava</groupId>
 			<artifactId>scribejava-apis</artifactId>
 			<version>${scribejava-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.dozermapper</groupId>
-			<artifactId>dozer-spring-boot-starter</artifactId>
-			<version>6.5.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jaxb</groupId>

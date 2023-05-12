@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -18,8 +19,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -39,9 +40,9 @@ class AbstractDjangoplicityServiceTest extends AbstractAgencyServiceTest {
     void testGetStatements() throws MalformedURLException {
         TestDjangoplicityMedia media = new TestDjangoplicityMedia();
         media.setDate(LocalDateTime.of(2022, 12, 19, 6, 0));
-        media.setImageDimensions(new ImageDimensions(3977, 3878));
         media.setName("[KAG2008] globule 13");
-        Metadata metadata = new Metadata();
+        FileMetadata metadata = new FileMetadata();
+        metadata.setImageDimensions(new ImageDimensions(3977, 3878));
         metadata.setAssetUrl(new URL("https://esahubble.org/media/archives/images/original/potw2251a.tif"));
         metadata.setPhash("57edtmbje3hvtfycdzpni9fyfal1ujv80pnmwmgwaw0h1p9nzq");
         metadata.setSha1("dde6dbb2424a7a21608302f8cad9a5b3bcccb589");
@@ -79,8 +80,8 @@ class AbstractDjangoplicityServiceTest extends AbstractAgencyServiceTest {
             }
 
             @Override
-            public URL getSourceUrl(TestDjangoplicityMedia media) throws MalformedURLException {
-                return new URL("https://esahubble.org/images/potw2251a/");
+            public URL getSourceUrl(TestDjangoplicityMedia media) {
+                return newURL("https://esahubble.org/images/potw2251a/");
             }
 
             @Override

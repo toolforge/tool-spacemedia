@@ -6,16 +6,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 @NoRepositoryBean
 public interface DjangoplicityMediaRepository<T extends DjangoplicityMedia>
-        extends FullResMediaRepository<T, String, LocalDateTime> {
+        extends MediaRepository<T, String, LocalDateTime> {
 
     // COUNT
 
     @Override
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames)))")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     long countMissingImagesInCommons();
 
     @Override

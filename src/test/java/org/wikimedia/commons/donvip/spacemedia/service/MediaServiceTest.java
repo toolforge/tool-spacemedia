@@ -17,7 +17,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaCommonConfiguration;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
@@ -34,6 +35,9 @@ class MediaServiceTest {
 
     @MockBean
     private HashAssociationRepository hashRepository;
+
+    @MockBean
+    private FileMetadataRepository metadataRepository;
 
     @Autowired
     private MediaService service;

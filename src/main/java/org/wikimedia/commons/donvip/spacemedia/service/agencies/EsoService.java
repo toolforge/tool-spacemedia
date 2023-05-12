@@ -1,7 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -52,13 +53,13 @@ public class EsoService extends AbstractDjangoplicityService<EsoMedia> {
     }
 
     @Override
-    public URL getSourceUrl(EsoMedia media) throws MalformedURLException {
-        return new URL(ESO_BASE_PUBLIC_URL + ESO_IMAGES_PATH + media.getId());
+    public URL getSourceUrl(EsoMedia media) {
+        return newURL(ESO_BASE_PUBLIC_URL + ESO_IMAGES_PATH + media.getId());
     }
 
     @Override
-    public final String getSource(EsoMedia media) throws MalformedURLException {
-        return "{{ESO-source|" + media.getId() + "|" + media.getId() + "}}";
+    public final String getSource(EsoMedia media) {
+        return "{{ESO-source|" + media.getId() + '|' + media.getId() + "}}";
     }
 
     @Override

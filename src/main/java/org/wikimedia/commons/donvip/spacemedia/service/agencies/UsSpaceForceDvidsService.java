@@ -5,7 +5,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -35,7 +35,7 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService {
     }
 
     @Override
-    public Set<String> findCategories(DvidsMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(DvidsMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
             switch (media.getUnit()) {

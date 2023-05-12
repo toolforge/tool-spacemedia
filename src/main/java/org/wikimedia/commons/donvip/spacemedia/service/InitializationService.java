@@ -10,6 +10,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
 
 @Service
@@ -25,6 +26,9 @@ public class InitializationService implements ApplicationRunner {
 
     @Autowired
     private List<AbstractAgencyService<?, ?, ?>> agencies;
+
+    @Autowired
+    private FileMetadataRepository metadataRepo;
 
     @Value("${reset.ignored}")
     private boolean resetIgnored;
@@ -63,12 +67,12 @@ public class InitializationService implements ApplicationRunner {
 
     @Transactional
     public int resetPerceptualHashes() {
-        return agencies.stream().mapToInt(AbstractAgencyService::resetPerceptualHashes).sum();
+        return metadataRepo.resetPerceptualHashes();
     }
 
     @Transactional
     public int resetSha1Hashes() {
-        return agencies.stream().mapToInt(AbstractAgencyService::resetSha1Hashes).sum();
+        return metadataRepo.resetSha1Hashes();
     }
 
     @Transactional

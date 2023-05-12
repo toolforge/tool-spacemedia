@@ -9,19 +9,16 @@ import java.util.regex.Pattern;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-@Table(indexes = { @Index(columnList = "sha1, phash") })
-public class KariMedia extends Media<Integer, LocalDate> {
+public class KariMedia extends SingleFileMedia<Integer, LocalDate> {
 
     private static final Pattern ID_REGEX = Pattern.compile("P_[^_]*_([^_]*)_(\\d{2})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})",
             Pattern.CASE_INSENSITIVE);
@@ -88,7 +85,7 @@ public class KariMedia extends Media<Integer, LocalDate> {
                 + (title != null ? "title=" + title + ", " : "") + (kariId != null ? "kariId=" + kariId + ", " : "")
                 + (date != null ? "date=" + date + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
-                + "metadata=" + metadata + "]";
+                + "metadata=" + getMetadata() + "]";
     }
 
     @Override

@@ -2,10 +2,12 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.lang.Double.parseDouble;
 import static java.util.stream.Collectors.toSet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -44,7 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.springframework.transaction.annotation.Transactional;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -52,7 +55,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Service
 public class NasaPhotojournalService
-        extends AbstractFullResExtraAgencyService<NasaPhotojournalMedia, String, ZonedDateTime> {
+        extends AbstractAgencyService<NasaPhotojournalMedia, String, ZonedDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaPhotojournalService.class);
 
@@ -72,6 +75,9 @@ public class NasaPhotojournalService
             ".*located at (\\d+\\.?\\d*) degrees (north|south), (\\d+\\.?\\d*) degrees (west|east).*");
 
     private static final DateTimeFormatter ACQ_DATE_FORMAT = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.US);
+
+    @Autowired
+    private NasaPhotojournalService self;
 
     @Value("${nasa.photojournal.solr.retries}")
     private int solrRetries;
@@ -104,11 +110,7 @@ public class NasaPhotojournalService
     }
 
     private SolrQuery buildSolrQuery(int start) {
-        SolrQuery query = new SolrQuery("*:*");
-        query.setSort("publication-date", ORDER.desc);
-        query.setRows(solrPage);
-        query.setStart(start);
-        return query;
+        return new SolrQuery("*:*").setSort("publication-date", ORDER.desc).setRows(solrPage).setStart(start);
     }
 
     private QueryResponse queryWithRetries(SolrQuery query) throws IOException {
@@ -166,12 +168,13 @@ public class NasaPhotojournalService
             throws IOException, UploadException {
         List<NasaPhotojournalMedia> result = new ArrayList<>();
         for (SolrDocument document : documents) {
-            result.add(processMedia((String) document.getFirstValue("id"), document));
+            result.add(self.processMedia((String) document.getFirstValue("id"), document));
         }
         return result;
     }
 
-    private NasaPhotojournalMedia processMedia(String id, SolrDocument document) throws IOException, UploadException {
+    @Transactional
+    public NasaPhotojournalMedia processMedia(String id, SolrDocument document) throws IOException, UploadException {
         Optional<NasaPhotojournalMedia> mediaInRepo = repository.findById(id);
         NasaPhotojournalMedia media;
         boolean save = false;
@@ -198,7 +201,7 @@ public class NasaPhotojournalService
         return media;
     }
 
-    private NasaPhotojournalMedia solrDocumentToMedia(SolrDocument doc) throws MalformedURLException {
+    private NasaPhotojournalMedia solrDocumentToMedia(SolrDocument doc) throws IOException {
         sanityChecks(doc);
         NasaPhotojournalMedia media = new NasaPhotojournalMedia();
         String caption = (String) doc.getFirstValue("original-caption");
@@ -211,12 +214,12 @@ public class NasaPhotojournalService
         media.setSpacecraft((String) doc.getFirstValue("spacecraft"));
         media.setInstrument((String) doc.getFirstValue("instrument"));
         media.setProducer((String) doc.getFirstValue("producer"));
-        media.setThumbnailUrl(new URL((String) doc.getFirstValue("browse-url")));
+        media.setThumbnailUrl(newURL((String) doc.getFirstValue("browse-url")));
         media.setTitle((String) doc.getFieldValue("image-title"));
         media.setBig("YES".equals(doc.getFirstValue("big-flag")));
         media.setCredit((String) doc.getFirstValue("credit"));
-        media.getMetadata().setAssetUrl(new URL((String) doc.getFirstValue("full-res-jpeg")));
-        media.getFullResMetadata().setAssetUrl(new URL((String) doc.getFirstValue("full-res-tiff")));
+        addMetadata(media, (String) doc.getFirstValue("full-res-jpeg"));
+        addMetadata(media, (String) doc.getFirstValue("full-res-tiff"));
         Collection<Object> keywords = doc.getFieldValues("keywords");
         if (keywords != null) {
             media.setKeywords(keywords.stream().map(String.class::cast).collect(toSet()));
@@ -225,7 +228,7 @@ public class NasaPhotojournalService
             if (isAnimation || isQtvr) {
                 Matcher m = (isAnimation ? ANIMATION_PATTERN : QTVR_PATTERN).matcher(caption);
                 if (m.matches()) {
-                    media.getExtraMetadata().setAssetUrl(new URL(m.group(1)));
+                    addMetadata(media, newURL(m.group(1)));
                 }
             }
         }
@@ -233,19 +236,26 @@ public class NasaPhotojournalService
         return media;
     }
 
-    private boolean detectFigures(NasaPhotojournalMedia media) throws MalformedURLException {
+    private boolean detectFigures(NasaPhotojournalMedia media) throws IOException {
         String caption = media.getDescription();
-        if (media.getExtraMetadata().getAssetUrl() == null && caption.contains("<img ")) {
+        if (caption.contains("<img ")) {
             Matcher m = FIGURE_PATTERN.matcher(caption);
             if (m.matches()) {
-                media.getExtraMetadata().setAssetUrl(new URL(m.group(1)));
-                return true;
+                String url = m.group(1);
+                try {
+                    if (!media.containsMetadata(url)) {
+                        addMetadata(media, url);
+                        return true;
+                    }
+                } catch (URISyntaxException e) {
+                    throw new IOException(e);
+                }
             }
         }
         return false;
     }
 
-    private void sanityChecks(SolrDocument doc) throws MalformedURLException {
+    private void sanityChecks(SolrDocument doc) {
         String catalogUrl = (String) doc.getFirstValue("catalog-url");
         if (!"IMAGE".equals(doc.getFirstValue("data-type")) || !"image".equals(doc.getFieldValue("image-type"))) {
             problem(catalogUrl, "Not an image: " + doc);
@@ -262,12 +272,12 @@ public class NasaPhotojournalService
     }
 
     @Override
-    public URL getSourceUrl(NasaPhotojournalMedia media) throws MalformedURLException {
-        return new URL("https://photojournal.jpl.nasa.gov/catalog/" + media.getId());
+    public URL getSourceUrl(NasaPhotojournalMedia media) {
+        return newURL("https://photojournal.jpl.nasa.gov/catalog/" + media.getId());
     }
 
     @Override
-    protected final Pair<String, Map<String, String>> getWikiFileDesc(NasaPhotojournalMedia media, Metadata metadata)
+    protected final Pair<String, Map<String, String>> getWikiFileDesc(NasaPhotojournalMedia media, FileMetadata metadata)
             throws MalformedURLException {
         // https://commons.wikimedia.org/wiki/Template:NASA_Photojournal/attribution/mission
         String lang = getLanguage(media);
@@ -315,7 +325,7 @@ public class NasaPhotojournalService
     }
 
     @Override
-    public Set<String> findCategories(NasaPhotojournalMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(NasaPhotojournalMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         result.add("NASA Photojournal entries from " + media.getYear() + '|' + media.getId());
         if (media.getKeywords().contains("anaglyph")) {

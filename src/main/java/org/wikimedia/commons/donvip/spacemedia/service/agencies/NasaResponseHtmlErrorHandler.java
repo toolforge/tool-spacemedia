@@ -1,11 +1,12 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -39,7 +40,7 @@ public class NasaResponseHtmlErrorHandler implements HttpMessageConverter<NasaRe
         try (InputStream in = inputMessage.getBody()) {
             throw new IOException(
                     "HTML contents received instead of JSON: " + new String(in.readAllBytes(),
-                            CollectionUtils.isEmpty(encodings) ? StandardCharsets.UTF_8.name() : encodings.get(0)));
+                            isEmpty(encodings) ? StandardCharsets.UTF_8.name() : encodings.get(0)));
         }
     }
 

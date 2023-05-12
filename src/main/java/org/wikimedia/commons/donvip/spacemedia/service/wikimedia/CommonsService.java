@@ -16,13 +16,18 @@ import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeStringValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeTimeValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeWikidataItemIdValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeWikidataPropertyIdValue;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.appendChildElement;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.downloadFile;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.prependChildElement;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUri;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -56,13 +61,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -80,6 +86,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.helpers.MediaInfoUpdateBuilder;
@@ -92,7 +99,7 @@ import org.wikidata.wdtk.datamodel.interfaces.MediaInfoIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.QuantityValue;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
 import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
-import org.wikidata.wdtk.wikibaseapi.BasicApiConnection;
+import org.wikidata.wdtk.wikibaseapi.ApiConnection;
 import org.wikidata.wdtk.wikibaseapi.OAuthApiConnection;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataEditor;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
@@ -145,7 +152,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.apis.MediaWikiApi;
@@ -243,6 +249,9 @@ public class CommonsService {
     @Value("${commons.cat.search.depth}")
     private int catSearchDepth;
 
+    @Value("${commons.datasource.hikari.maximum-pool-size}")
+    private int commonsMaxPoolSize;
+
     @Value("${commons.img.preview.width}")
     private int imgPreviewWidth;
 
@@ -316,7 +325,7 @@ public class CommonsService {
         oAuthService = new ServiceBuilder(consumerToken).apiSecret(consumerSecret).userAgent(userAgent)
                 .build(MediaWikiApi.instance());
         oAuthAccessToken = new OAuth1AccessToken(accessToken, accessSecret);
-        commonsApiConnection = new OAuthApiConnection(BasicApiConnection.URL_WIKIMEDIA_COMMONS_API, consumerToken,
+        commonsApiConnection = new OAuthApiConnection(ApiConnection.URL_WIKIMEDIA_COMMONS_API, consumerToken,
                 consumerSecret, accessToken, accessSecret);
         editor = new WikibaseDataEditor(commonsApiConnection, Datamodel.SITE_WIKIMEDIA_COMMONS);
         editor.setEditAsBot(true);
@@ -571,8 +580,8 @@ public class CommonsService {
         Document doc = Jsoup.parse(getWikiHtmlPreview(wikiCode, pageTitle));
         Element body = doc.getElementsByTag("body").get(0);
         // Display image
-        Element imgLink = Utils.prependChildElement(body, "a", null, Map.of("href", imgUrl));
-        Utils.appendChildElement(imgLink, "img", null,
+        Element imgLink = prependChildElement(body, "a", null, Map.of("href", imgUrl));
+        appendChildElement(imgLink, "img", null,
                 Map.of("src", imgUrl, "width", Integer.toString(imgPreviewWidth)));
         // Fix links
         fixLinks(doc, "link", "href");
@@ -664,11 +673,24 @@ public class CommonsService {
         Set<String> subcats = self.getSubCategories(category);
         Set<String> result = subcats.stream().collect(toCollection(ConcurrentHashMap::newKeySet));
         if (depth > 0) {
-            subcats.parallelStream().forEach(s -> result.addAll(self.getSubCategories(s, depth - 1)));
+            if (subcats.size() < commonsMaxPoolSize) {
+                try {
+                    fetchSubCategories(subcats.parallelStream(), result, depth);
+                } catch (CannotCreateTransactionException e) {
+                    LOGGER.error("Failed to fetch subcategories in parallel stream, retrying with single thread", e);
+                    fetchSubCategories(subcats.stream(), result, depth);
+                }
+            } else {
+                fetchSubCategories(subcats.stream(), result, depth);
+            }
         }
         LOGGER.debug("Fetching '{}' subcategories with depth {} completed in {}", category, depth,
-                Utils.durationInSec(start));
+                durationInSec(start));
         return result;
+    }
+
+    private void fetchSubCategories(Stream<String> catStream, Set<String> result, int depth) {
+        catStream.forEach(s -> result.addAll(self.getSubCategories(s, depth - 1)));
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")
@@ -712,7 +734,7 @@ public class CommonsService {
             }
         }
         LOGGER.info("Cleaning {} categories with depth {} completed in {}", categories.size(), catSearchDepth,
-                Utils.durationInSec(start));
+                durationInSec(start));
         if (!categories.isEmpty() && result.isEmpty()) {
             throw new IllegalStateException("Cleaning " + categories + " removed all categories!");
         }
@@ -795,7 +817,7 @@ public class CommonsService {
         if (uploadByUrl && hasUploadByUrlRight()) {
             params.put("url", url.toExternalForm());
         } else {
-            localFile = Utils.downloadFile(url, filenameExt);
+            localFile = downloadFile(url, filenameExt);
         }
 
         ensureUploadRate();
@@ -831,8 +853,8 @@ public class CommonsService {
             }
             if (retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
                 try {
-                    return doUpload(wikiCode, filename, ext, Utils.urlToUri(url).toURL(), sha1, renewTokenIfBadToken,
-                            false, true, uploadByUrl);
+                    return doUpload(wikiCode, filename, ext, urlToUri(url).toURL(), sha1, renewTokenIfBadToken, false,
+                            true, uploadByUrl);
                 } catch (URISyntaxException e) {
                     throw new UploadException(error.getCode(), e);
                 }
@@ -1059,7 +1081,7 @@ public class CommonsService {
                 }
             }
         }
-        LOGGER.info("{} duplicate files handled in {}", count, Utils.durationInSec(start));
+        LOGGER.info("{} duplicate files handled in {}", count, durationInSec(start));
         if (count > socialMediaDuplicatesThreshold) {
             String status = String.format(
                     "%s Nominated %d exact duplicate files for deletion%n%n▶️ https://commons.wikimedia.org/wiki/Category:Duplicate",
@@ -1187,7 +1209,7 @@ public class CommonsService {
             }
             LOGGER.info(
                     "{} perceptual hashes ({} order) computed in {} ({} pages). Current timestamp: {}",
-                    hashCount, order, Utils.durationInSec(start), pageIndex, lastTimestamp);
+                    hashCount, order, durationInSec(start), pageIndex, lastTimestamp);
         } while (page.hasNext());
     }
 
@@ -1255,7 +1277,7 @@ public class CommonsService {
         return null;
     }
 
-    public static URL getImageUrl(String imageName) throws MalformedURLException {
+    public static URL getImageUrl(String imageName) {
         // https://www.mediawiki.org/wiki/Manual:$wgHashedUploadDirectory
         String md5 = DigestUtils.md5Hex(imageName);
         // https://www.mediawiki.org/wiki/Manual:PAGENAMEE_encoding#Encodings_compared
@@ -1265,7 +1287,7 @@ public class CommonsService {
                 .replace("=", "%3D").replace(">", "%3E").replace("?", "%3F").replace("[", "%5B").replace("\\", "%5C")
                 .replace("]", "%5D").replace("^", "%5E").replace("`", "%60").replace("{", "%7B").replace("|", "%7C")
                 .replace("}", "%7D").replace(" ", "%C2%A0").replace("¡", "%C2%A1");
-        return new URL(String.format("https://upload.wikimedia.org/wikipedia/commons/%c/%s/%s", md5.charAt(0),
+        return newURL(String.format("https://upload.wikimedia.org/wikipedia/commons/%c/%s/%s", md5.charAt(0),
                 md5.substring(0, 2), encodedFilename));
     }
 }

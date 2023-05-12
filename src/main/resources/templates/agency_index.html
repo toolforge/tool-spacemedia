@@ -71,15 +71,6 @@
 		        </td>
 		        <td th:if="'ignored' == ${tab}">
 		          <a th:text="${media.ignoredReason}"></a>
-		          <div th:each="original : ${agency.getOriginalMedia(media)}">
-		            <a th:text="${original.media.id} + ' (' + ${#numbers.formatDecimal(original.duplicate.similarityScore, 1, 2)} + ')'"></a>
-		            <a th:href="${original.media.metadata.assetUrl}">
-		              <img th:src="${original.media.previewUrl}" width="210px" alt="${original.media.previewUrl}"/>
-		            </a>
-		            <div th:each="file : ${original.media.allCommonsFileNames}">
-		              <a th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a><br>
-		            </div>
-		          </div>
 		        </td>
 		      </tr>
 	      </tbody>

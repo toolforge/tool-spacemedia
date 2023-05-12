@@ -2,7 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -42,9 +42,8 @@ import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.HttpClientErrorException.NotFound;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudioRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsCredit;
@@ -210,8 +209,8 @@ public abstract class AbstractAgencyDvidsService
             // Only delete pictures not found in complete updates
             deleteOldDvidsMedia(idsKnownToDvidsApi);
         }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start,
-                LocalDate.now().minusYears(1), true);
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(m -> m.getMetadata().stream()).toList(),
+                start, LocalDate.now().minusYears(1), true);
     }
 
     private void deleteOldDvidsMedia(Set<String> idsKnownToDvidsApi) {
@@ -375,7 +374,7 @@ public abstract class AbstractAgencyDvidsService
         }
         int uploadCount = 0;
         if (shouldUploadAuto(media, false)) {
-            Triple<DvidsMedia, Collection<Metadata>, Integer> upload = upload(media, true, false);
+            Triple<DvidsMedia, Collection<FileMetadata>, Integer> upload = upload(media, true, false);
             uploadCount = upload.getRight();
             media = upload.getLeft();
             save = true;
@@ -409,13 +408,13 @@ public abstract class AbstractAgencyDvidsService
         // old: https://cdn.dvidshub.net/media/photos/2104/6622429.jpg
         // new: https://d34w7g4gy10iej.cloudfront.net/photos/2104/6622429.jpg
         if ((MEDIA_WITH_CATEGORIES.contains(media.getClass()) && media.getCategory() == null)
-                || media.getMetadata().getAssetUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
+                || media.getMetadata().get(0).getAssetUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
                 || media.getThumbnailUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
                 || (media instanceof DvidsVideo videoMedia
                         && videoMedia.getImage().toExternalForm().startsWith(OLD_DVIDS_CDN))) {
             DvidsMedia mediaFromApi = apiFetcher.get();
             media.setCategory(mediaFromApi.getCategory());
-            media.getMetadata().setAssetUrl(mediaFromApi.getMetadata().getAssetUrl());
+            media.getMetadata().get(0).setAssetUrl(mediaFromApi.getMetadata().get(0).getAssetUrl());
             media.setThumbnailUrl(mediaFromApi.getThumbnailUrl());
             if (media instanceof DvidsVideo videoMedia && mediaFromApi instanceof DvidsVideo videoMediaFromApi) {
                 videoMedia.setImage(videoMediaFromApi.getImage());
@@ -468,12 +467,16 @@ public abstract class AbstractAgencyDvidsService
     }
 
     @Override
-    public final URL getSourceUrl(DvidsMedia media) throws MalformedURLException {
-        return mediaUrl.expand(Map.of("type", media.getId().getType(), "id", media.getId().getId())).toURL();
+    public final URL getSourceUrl(DvidsMedia media) {
+        try {
+            return mediaUrl.expand(Map.of("type", media.getId().getType(), "id", media.getId().getId())).toURL();
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override
-    protected final String getSource(DvidsMedia media) throws MalformedURLException {
+    protected final String getSource(DvidsMedia media) {
         URL sourceUrl = getSourceUrl(media);
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), sourceUrl);
         return t != null ? "{{" + t.getVirinTemplate() + "}}" : sourceUrl.toExternalForm();
@@ -512,7 +515,7 @@ public abstract class AbstractAgencyDvidsService
     }
 
     @Override
-    protected final Pair<String, Map<String, String>> getWikiFileDesc(DvidsMedia media, Metadata metadata)
+    protected final Pair<String, Map<String, String>> getWikiFileDesc(DvidsMedia media, FileMetadata metadata)
             throws MalformedURLException {
         String lang = getLanguage(media);
         String desc = getDescription(media);
@@ -534,7 +537,7 @@ public abstract class AbstractAgencyDvidsService
     }
 
     @Override
-    public Set<String> findCategories(DvidsMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(DvidsMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (isNotEmpty(media.getKeywords())) {
             result.addAll(media.getKeywords().stream().map(KEYWORDS_CATS::get).filter(StringUtils::isNotBlank)
@@ -549,7 +552,7 @@ public abstract class AbstractAgencyDvidsService
     @Override
     public Set<String> findLicenceTemplates(DvidsMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
-        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getMetadata().getAssetUrl());
+        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getMetadata().get(0).getAssetUrl());
         if (t != null && StringUtils.isNotBlank(t.getPdTemplate())) {
             result.add(t.getPdTemplate());
         }
@@ -688,15 +691,5 @@ public abstract class AbstractAgencyDvidsService
     @Override
     protected final int doResetIgnored() {
         return mediaRepository.resetIgnored(units);
-    }
-
-    @Override
-    protected final int doResetPerceptualHashes() {
-        return mediaRepository.resetPerceptualHashes(units);
-    }
-
-    @Override
-    protected final int doResetSha1Hashes() {
-        return mediaRepository.resetSha1Hashes(units);
     }
 }

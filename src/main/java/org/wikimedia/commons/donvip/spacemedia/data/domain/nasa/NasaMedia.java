@@ -13,14 +13,12 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -28,14 +26,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@Table(indexes = { @Index(columnList = "sha1, phash, center") })
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "media_type", visible = true)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = NasaAudio.class, name = "audio"),
     @JsonSubTypes.Type(value = NasaImage.class, name = "image"),
     @JsonSubTypes.Type(value = NasaVideo.class, name = "video") }
 )
-public abstract class NasaMedia extends Media<String, ZonedDateTime> implements WithKeywords {
+public abstract class NasaMedia extends SingleFileMedia<String, ZonedDateTime> implements WithKeywords {
 
     @Id
     @Column(name = "nasa_id", nullable = false, length = 170)
@@ -107,13 +104,13 @@ public abstract class NasaMedia extends Media<String, ZonedDateTime> implements 
     @Transient
     @JsonProperty("asset_url")
     public URL getAssetUrl() {
-        return metadata.getAssetUrl();
+        return getUniqueMetadata().getAssetUrl();
     }
 
     @Transient
     @JsonProperty("asset_url")
     public void setAssetUrl(URL assetUrl) {
-        metadata.setAssetUrl(assetUrl);
+        getUniqueMetadata().setAssetUrl(assetUrl);
     }
 
     @Override
@@ -142,7 +139,7 @@ public abstract class NasaMedia extends Media<String, ZonedDateTime> implements 
                 + (date != null ? "date=" + date + ", " : "")
                 + (mediaType != null ? "mediaType=" + mediaType + ", " : "")
                 + (getAssetUrl() != null ? "assetUrl=" + getAssetUrl() + ", " : "")
-                + (metadata != null ? "metadata=" + metadata : "") + "]";
+                + (getMetadata() != null ? "metadata=" + getMetadata() : "") + "]";
     }
 
     @Override

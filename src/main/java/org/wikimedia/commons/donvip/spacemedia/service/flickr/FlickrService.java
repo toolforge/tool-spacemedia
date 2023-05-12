@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.flickr;
 
-import java.net.MalformedURLException;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -64,8 +65,8 @@ public class FlickrService {
     }
 
     @Cacheable("userProfilesByNsid")
-    public URL findUserProfileUrl(String nsid) throws FlickrException, MalformedURLException {
-        return new URL(flickr.getUrlsInterface().getUserProfile(nsid));
+    public URL findUserProfileUrl(String nsid) throws FlickrException {
+        return newURL(flickr.getUrlsInterface().getUserProfile(nsid));
     }
 
     public Photo findPhoto(String photoId) throws FlickrException {

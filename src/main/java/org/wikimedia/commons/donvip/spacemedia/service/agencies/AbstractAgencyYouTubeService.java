@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.execOutput;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -31,12 +33,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeApiService;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.youtube.model.SearchListResponse;
@@ -71,8 +72,8 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
     }
 
     @Override
-    public URL getSourceUrl(YouTubeVideo video) throws MalformedURLException {
-        return video.getMetadata().getAssetUrl();
+    public URL getSourceUrl(YouTubeVideo video) {
+        return video.getUniqueMetadata().getAssetUrl();
     }
 
     @Override
@@ -131,17 +132,17 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
         endUpdateMedia(count, emptyList(), emptyList(), start);
     }
 
-    private static List<YouTubeVideo> buildYouTubeVideoList(SearchListResponse searchList, VideoListResponse videoList) {
+    private List<YouTubeVideo> buildYouTubeVideoList(SearchListResponse searchList, VideoListResponse videoList) {
         return searchList.getItems().stream()
                 .map(sr -> toYouTubeVideo(
                         videoList.getItems().stream().filter(v -> sr.getId().getVideoId().equals(v.getId())).findFirst().get()))
                 .toList();
     }
 
-    private static YouTubeVideo toYouTubeVideo(Video ytVideo) {
+    private YouTubeVideo toYouTubeVideo(Video ytVideo) {
         YouTubeVideo video = new YouTubeVideo();
         video.setId(ytVideo.getId());
-        video.getMetadata().setAssetUrl(newURL("https://www.youtube.com/watch?v=" + video.getId()));
+        addMetadata(video, newURL("https://www.youtube.com/watch?v=" + video.getId()));
         return fillVideoSnippetAndDetails(video, ytVideo);
     }
 
@@ -157,14 +158,6 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
         ofNullable(details.getDuration()).map(Duration::parse).ifPresent(video::setDuration);
         ofNullable(details.getCaption()).map(Boolean::valueOf).ifPresent(video::setCaption);
         return video;
-    }
-
-    private static URL newURL(String url) {
-        try {
-            return new URL(url);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(e);
-        }
     }
 
     private static URL getBestThumbnailUrl(ThumbnailDetails td) {
@@ -194,7 +187,7 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
         } else {
             save = true;
         }
-        Path path = video.getMetadata().getSha1() == null ? downloadVideo(video) : null;
+        Path path = video.getMetadata().get(0).getSha1() == null ? downloadVideo(video) : null;
         if (mediaService.updateMedia(video, getStringsToRemove(video), false, true,
                 includeByPerceptualHash(), path).getResult()) {
             save = true;
@@ -210,8 +203,8 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
 
     private Path downloadVideo(YouTubeVideo video) {
         try {
-            String url = video.getMetadata().getAssetUrl().toExternalForm();
-            String[] output = Utils.execOutput(List.of(
+            String url = video.getMetadata().get(0).getAssetUrl().toExternalForm();
+            String[] output = execOutput(List.of(
                 "youtube-dl", "--no-progress", "--id", "--write-auto-sub", "--convert-subs", "srt", url),
                 30, TimeUnit.MINUTES).split("\n");
             Optional<Matcher> matcher = Arrays.stream(output).map(ALREADY_DL::matcher).filter(Matcher::matches).findFirst();
@@ -228,15 +221,16 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
     }
 
     @Override
-    protected final int doUpload(YouTubeVideo video, boolean checkUnicity, Collection<Metadata> uploaded,
+    protected final int doUpload(YouTubeVideo video, boolean checkUnicity, Collection<FileMetadata> uploaded,
             boolean isManual) throws IOException {
+        FileMetadata metadata = video.getMetadata().get(0);
         throw new UnsupportedOperationException("<h2>Spacemedia is not able to upload YouTube videos by itself.</h2>\n"
                 + "<p>Please go to <a href=\"https://video2commons.toolforge.org/\">video2commons</a> and upload the <b>"
                 + video.getId()
                 + ".mkv/mp4/webm</b> file, using following information:</p>\n"
                 + "<h4>Title:</h4>\n"
-                + CommonsService.normalizeFilename(video.getUploadTitle())
-                + "\n<h4>Wikicode:</h4>\n<pre>" + getWikiCode(video, video.getMetadata()) + "</pre>");
+                + CommonsService.normalizeFilename(video.getUploadTitle(metadata))
+                + "\n<h4>Wikicode:</h4>\n<pre>" + getWikiCode(video, metadata) + "</pre>");
     }
 
     @Override
@@ -264,7 +258,7 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
     protected abstract List<String> getAgencyCategories();
 
     @Override
-    public Set<String> findCategories(YouTubeVideo media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(YouTubeVideo media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
             // To import by hand from personal account

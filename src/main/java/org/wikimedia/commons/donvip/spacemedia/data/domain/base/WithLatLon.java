@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import javax.persistence.Transient;
 

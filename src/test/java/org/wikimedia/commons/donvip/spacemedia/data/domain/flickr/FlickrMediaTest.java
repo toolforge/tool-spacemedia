@@ -19,6 +19,6 @@ class FlickrMediaTest {
                         + "\r\n"
                         + "Vollständiger Artikel unter <a href=\"http://www.dlr.de/dlr/desktopdefault.aspx/tabid-10081/151_read-17505/\" rel=\"nofollow\">www.dlr.de/dlr/desktopdefault.aspx/tabid-10081/151_read-17505/</a>\r\n"
                         + "\r\n" + "Fotos: DLR / Maasewerd CC-BY 3.0");
-        assertEquals("Flugversuche mit dem A320 ATRA (26635829145)", media.getUploadTitle());
+        assertEquals("Flugversuche mit dem A320 ATRA (26635829145)", media.getUploadTitle(null));
     }
 }

@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -52,14 +52,14 @@ class MediaTest {
         media.setId("11290168785");
         media.setTitle("DLR Annual General Assembly / Jahreshauptversammlung &amp; Science Slam 2013");
         assertEquals("DLR Annual General Assembly - Jahreshauptversammlung & Science Slam 2013 (11290168785)",
-                media.getUploadTitle());
+                media.getUploadTitle(null));
 
         media.setId("25254739045");
         media.setTitle(
                 "Ein Kolbenkernprobenehmer (piston corer) hängt am Seil neben der Bordwand. Gleich wird er in 1300 mm Tiefe hinabgelassen, um viele Meter in das weiche Sediment auf dem Meeresboden einzudringen und einen entsprechend langen Sedimentkern zu entnehmen.");
         assertEquals(
                 "Ein Kolbenkernprobenehmer (piston corer) hängt am Seil neben der Bordwand_ Gleich wird er in 1300 mm Tiefe hinabgelassen, um viele Meter in das weiche Sediment auf dem Meeresboden einzudringen und einen entsprechend lang (25254739045)",
-                media.getUploadTitle());
-        assertEquals(234, media.getUploadTitle().length());
+                media.getUploadTitle(null));
+        assertEquals(234, media.getUploadTitle(null).length());
     }
 }

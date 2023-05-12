@@ -9,6 +9,7 @@ public final class Emojis {
     public static final String DOG_HEAD = "🐶";
     public static final String EARTH_AMERICA = "🌎";
     public static final String EARTH_EUROPE = "🌍";
+    public static final String FIRE = "🔥";
     public static final String FLAG_EUR = "🇪🇺";
     public static final String FLAG_GER = "🇩🇪";
     public static final String FLAG_KOR = "🇰🇷";

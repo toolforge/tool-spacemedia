@@ -11,7 +11,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -51,7 +51,7 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    public Set<String> findCategories(FlickrMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(FlickrMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         String titleLc = media.getTitle().toLowerCase(Locale.ENGLISH);
         switch (media.getPathAlias()) {
@@ -98,9 +98,6 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService {
             case "kevinmgill":
                 result.add("Files from Kevin Gill Flickr stream");
                 break;
-            case "markmccaughrean":
-                result.add("Files from Mark McCaughrean Flickr stream");
-                break;
             case "pierre_markuse":
                 result.add("Files from Pierre Markuse Flickr stream");
                 break;
@@ -114,18 +111,22 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService {
 
     @Override
     protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
+        Set<String> result = super.getEmojis(uploadedMedia);
         switch (uploadedMedia.getPathAlias()) {
-        case "geckzilla", "markmccaughrean":
-            return Set.of(Emojis.STARS);
+        case "geckzilla":
+            result.add(Emojis.STARS);
+            break;
         case "kevinmgill", "192271236@N03":
-            return Set.of(Emojis.PLANET_WITH_RINGS);
-        case "pierre_markuse":
-            return Set.of(Emojis.EARTH_EUROPE);
-        case "harrystrangerphotography", "194849271@N04":
-            return Set.of(Emojis.EARTH_EUROPE, Emojis.SATELLITE);
+            result.add(Emojis.PLANET_WITH_RINGS);
+            break;
+        case "pierre_markuse", "harrystrangerphotography", "194849271@N04":
+            result.add(Emojis.EARTH_EUROPE);
+            result.add(Emojis.SATELLITE);
+            break;
         default:
-            return Set.of("❔");
+            result.add("❔");
         }
+        return result;
     }
 
     @Override
@@ -135,8 +136,6 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService {
             return Set.of("@spacegeck@astrodon.social");
         case "kevinmgill":
             return Set.of("@kevinmgill@deepspace.social");
-        case "markmccaughrean":
-            return Set.of("@markmccaughrean@mastodon.social");
         case "pierre_markuse":
             return Set.of("@pierre_markuse@mastodon.world");
         case "harrystrangerphotography", "194849271@N04":
@@ -155,8 +154,6 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService {
             return Set.of("@SpaceGeck");
         case "kevinmgill":
             return Set.of("@kevinmgill");
-        case "markmccaughrean":
-            return Set.of("@markmccaughrean");
         case "pierre_markuse":
             return Set.of("@Pierre_Markuse");
         case "harrystrangerphotography", "194849271@N04":

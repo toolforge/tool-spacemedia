@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,8 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -35,7 +37,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService
 /**
  * Service harvesting images from NASA Hubble / Jame Webb websites.
  */
-public abstract class AbstractStsciService extends AbstractFullResAgencyService<StsciMedia, String, ZonedDateTime> {
+public abstract class AbstractStsciService extends AbstractAgencyService<StsciMedia, String, ZonedDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStsciService.class);
 
@@ -84,7 +86,7 @@ public abstract class AbstractStsciService extends AbstractFullResAgencyService<
         int count = 0;
         boolean loop = true;
         int idx = 1;
-        List<Metadata> uploadedMetadata = new ArrayList<>();
+        List<FileMetadata> uploadedMetadata = new ArrayList<>();
         List<StsciMedia> uploadedMedia = new ArrayList<>();
         while (loop) {
             String[] response = stsci.fetchImagesByScrapping(searchEndpoint.replace("<idx>", Integer.toString(idx++)));
@@ -92,7 +94,7 @@ public abstract class AbstractStsciService extends AbstractFullResAgencyService<
             if (loop) {
                 for (String imageId : response) {
                     try {
-                        Triple<StsciMedia, Collection<Metadata>, Integer> update = doUpdateMedia(imageId);
+                        Triple<StsciMedia, Collection<FileMetadata>, Integer> update = doUpdateMedia(imageId);
                         if (update.getRight() > 0) {
                             uploadedMetadata.addAll(update.getMiddle());
                             uploadedMedia.add(update.getLeft());
@@ -115,7 +117,7 @@ public abstract class AbstractStsciService extends AbstractFullResAgencyService<
         endUpdateMedia(count, uploadedMedia, uploadedMetadata, start);
     }
 
-    private Triple<StsciMedia, Collection<Metadata>, Integer> doUpdateMedia(String id)
+    private Triple<StsciMedia, Collection<FileMetadata>, Integer> doUpdateMedia(String id)
             throws IOException, UploadException, UpdateFinishedException {
         boolean save = false;
         StsciMedia media;
@@ -135,9 +137,9 @@ public abstract class AbstractStsciService extends AbstractFullResAgencyService<
             save = true;
         }
         int uploadCount = 0;
-        List<Metadata> uploadedMetadata = new ArrayList<>();
+        List<FileMetadata> uploadedMetadata = new ArrayList<>();
         if (shouldUploadAuto(media, false)) {
-            Triple<StsciMedia, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media, true,
+            Triple<StsciMedia, Collection<FileMetadata>, Integer> upload = upload(save ? saveMedia(media) : media, true,
                     false);
             uploadCount += upload.getRight();
             uploadedMetadata.addAll(upload.getMiddle());
@@ -157,7 +159,7 @@ public abstract class AbstractStsciService extends AbstractFullResAgencyService<
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(StsciMedia media, Metadata metadata)
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(StsciMedia media, FileMetadata metadata)
             throws MalformedURLException {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         if (StringUtils.isNotBlank(media.getObjectName())) {
@@ -168,7 +170,7 @@ public abstract class AbstractStsciService extends AbstractFullResAgencyService<
     }
 
     @Override
-    public Set<String> findCategories(StsciMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(StsciMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (StringUtils.isNotBlank(media.getObjectName())) {
             wikidata.searchAstronomicalObject(media.getObjectName()).map(Pair::getValue)
@@ -200,8 +202,8 @@ public abstract class AbstractStsciService extends AbstractFullResAgencyService<
     }
 
     @Override
-    public final URL getSourceUrl(StsciMedia media) throws MalformedURLException {
-        return new URL(getImageDetailsLink(media.getId()));
+    public final URL getSourceUrl(StsciMedia media) {
+        return newURL(getImageDetailsLink(media.getId()));
     }
 
     @Override

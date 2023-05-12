@@ -2,9 +2,9 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -76,8 +76,8 @@ public class NasaSirsService
     }
 
     @Override
-    public URL getSourceUrl(NasaSirsImage media) throws MalformedURLException {
-        return new URL(detailsUrl.replace("<id>", media.getId()));
+    public URL getSourceUrl(NasaSirsImage media) {
+        return newURL(detailsUrl.replace("<id>", media.getId()));
     }
 
     @Override
@@ -98,7 +98,7 @@ public class NasaSirsService
         // SIRS doesn"t work anymore so make sure we're still able to handle existing files
         for (NasaSirsImage image : repository.findMissingInCommons()) {
             if (!processedImages.contains(image.getId())) {
-                for (NasaSirsImage dupe : repository.findByMetadata_Sha1(image.getMetadata().getSha1())) {
+                for (NasaSirsImage dupe : repository.findByMetadata_Sha1(image.getMetadata().get(0).getSha1())) {
                     if (!dupe.getId().equals(image.getId())) {
                         processedImages.add(dupe.getId());
                         LOGGER.warn("Deleting {} SIRS image (duplicate of {})", dupe.getId(), image.getId());
@@ -128,7 +128,7 @@ public class NasaSirsService
                 loop = !imageLinks.isEmpty();
                 for (String imageLink : imageLinks) {
                     String id = imageLink.substring(imageLink.lastIndexOf('=') + 1);
-                    URL url = new URL(imageLink);
+                    URL url = newURL(imageLink);
                     if ("$id\\\"".equals(id)) {
                         problem(url, "invalid id");
                         return count;
@@ -152,8 +152,9 @@ public class NasaSirsService
                                 media.setYear(Year.parse(values.get(3)));
                             }
                             media.setKeywords(NasaMediaProcessorService.normalizeKeywords(singleton(values.get(4))));
-                            media.setThumbnailUrl(new URL(url.getProtocol(), url.getHost(), values.get(5)));
-                            media.getMetadata().setAssetUrl(new URL(url.getProtocol(), url.getHost(), values.get(6)));
+                            media.setThumbnailUrl(newURL(url.getProtocol(), url.getHost(), values.get(5)));
+                            media.getMetadata().get(0)
+                                    .setAssetUrl(newURL(url.getProtocol(), url.getHost(), values.get(6)));
                             media.setDescription(values.get(7));
                             save = true;
                         }
@@ -190,7 +191,7 @@ public class NasaSirsService
 
     private List<String> loadImageLinks(String category, int page) throws IOException {
         String link = imagesUrl.replace("<cat>", category).replace("<idx>", Integer.toString(page));
-        URL url = new URL(link);
+        URL url = newURL(link);
         return Jsoup.connect(link).timeout(15_000).get().getElementsByTag("tr").stream()
                 .map(e -> url.getProtocol() + "://" + url.getHost() + e.getElementsByTag("a").get(1).attr("href"))
                 .toList();
@@ -202,7 +203,7 @@ public class NasaSirsService
     }
 
     @Override
-    public Set<String> findCategories(NasaSirsImage media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(NasaSirsImage media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
             result.add("Stennis Space Center in " + media.getYear());
@@ -211,9 +212,9 @@ public class NasaSirsService
     }
 
     @Override
-    protected String getSource(NasaSirsImage media) throws MalformedURLException {
+    protected String getSource(NasaSirsImage media) {
         return super.getSource(media)
-                + " ([" + media.getMetadata().getAssetUrl() + " direct link])\n"
+                + " ([" + media.getMetadata().get(0).getAssetUrl() + " direct link])\n"
                 + "{{NASA-image|id=" + media.getId() + "|center=SSC}}";
     }
 

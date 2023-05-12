@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.wikimedia.commons.donvip.spacemedia.controller.SpaceAgencyRestControllerTest.TestSpaceAgencyRestController;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AsyncAgencyUpdaterService;
 

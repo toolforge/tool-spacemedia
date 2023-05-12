@@ -16,17 +16,17 @@ class DvidsMediaTest {
 
         media.setTitle("9/11 2017");
         id.setId(3796505L);
-        assertEquals("9-11 2017 (Space Systems Command 3796505)", media.getUploadTitle());
+        assertEquals("9-11 2017 (Space Systems Command 3796505)", media.getUploadTitle(null));
 
         media.setTitle("AF 70th Birthday at Angel game");
         id.setId(3793475L);
-        assertEquals("AF 70th Birthday at Angel game (3793475)", media.getUploadTitle());
+        assertEquals("AF 70th Birthday at Angel game (3793475)", media.getUploadTitle(null));
 
         media.setTitle(
                 "http://www.patrick.af.mil/News/Article-Display/Article/1319994/air-force-senior-leaders-thank-team-patrick-cape-for-irma-recovery-efforts");
         id.setId(3809731L);
         assertEquals(
                 "www_patrick_af_mil-News-Article-Display-Article-1319994-air-force-senior-leaders-thank-team-patrick-cape-for-irma-recovery-efforts (3809731)",
-                media.getUploadTitle());
+                media.getUploadTitle(null));
     }
 }

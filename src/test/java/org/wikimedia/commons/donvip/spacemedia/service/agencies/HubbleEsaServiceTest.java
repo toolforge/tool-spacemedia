@@ -3,6 +3,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.net.URL;
 import java.util.Set;
@@ -15,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.hubble.HubbleEsaMediaRepository;
@@ -30,6 +33,7 @@ class HubbleEsaServiceTest extends AbstractAgencyServiceTest {
 
     @Test
     void testReadHtml() throws Exception {
+        when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         HubbleEsaMedia media = service.newMediaFromHtml(html("esahubble/potw2319a.html"),
                 new URL("https://esahubble.org/images/potw2319a/"), "potw2319a", null);
         assertNotNull(media);
@@ -41,13 +45,14 @@ class HubbleEsaServiceTest extends AbstractAgencyServiceTest {
         assertEquals(Set.of("Galaxies"), media.getCategories());
         assertEquals("ESA/Hubble & NASA, H. Ebeling", media.getCredit());
         assertEquals("2023-05-08T06:00", media.getDate().toString());
-        assertEquals(2389, media.getImageDimensions().getHeight());
-        assertEquals(2839, media.getImageDimensions().getWidth());
+        assertEquals(2389, media.getMetadata().get(0).getImageDimensions().getHeight());
+        assertEquals(2839, media.getMetadata().get(0).getImageDimensions().getWidth());
         assertEquals("Draco", media.getConstellation());
         assertNull(media.getName());
         assertEquals(DjangoplicityMediaType.Observation, media.getImageType());
-        assertEquals("https://cdn.spacetelescope.org/archives/images/large/potw2319a.jpg",
-                media.getMetadata().getAssetUrl().toExternalForm());
+        assertEquals(
+                "[https://esahubble.org/media/archives/images/original/potw2319a.tif, https://cdn.spacetelescope.org/archives/images/large/potw2319a.jpg]",
+                media.getMetadata().stream().map(FileMetadata::getAssetUrl).toList().toString());
         assertEquals("https://cdn.spacetelescope.org/archives/images/screen/potw2319a.jpg",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals(Set.of("Hubble Space Telescope"), media.getTelescopes());

@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -14,29 +13,26 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.ManyToMany;
-import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithLatLon;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-@Table(indexes = { @Index(columnList = "sha1, phash") })
-public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLon, WithKeywords {
+public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements WithLatLon, WithKeywords {
 
     @Id
     @Column(nullable = false)
@@ -77,23 +73,13 @@ public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLo
     @JsonProperty("media_status")
     private String mediaStatus;
 
-    @Transient
-    @JsonInclude
-    @JsonProperty("url_o")
-    private URL originalUrl;
-
-    @JsonProperty("height_o")
-    private int originalHeight;
-
-    @JsonProperty("width_o")
-    private int originalWidth;
-
     @Column(nullable = false)
     @JsonProperty("pathalias")
     private String pathAlias;
 
     @JsonIgnoreProperties({ "pathAlias", "members" })
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, mappedBy = "members")
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.REFRESH }, mappedBy = "members")
     private Set<FlickrPhotoSet> photosets = new HashSet<>();
 
     @Override
@@ -229,31 +215,6 @@ public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLo
         this.mediaStatus = mediaStatus;
     }
 
-    public URL getOriginalUrl() {
-        return originalUrl;
-    }
-
-    public void setOriginalUrl(URL originalUrl) {
-        metadata.setAssetUrl(originalUrl);
-        this.originalUrl = originalUrl;
-    }
-
-    public int getOriginalHeight() {
-        return originalHeight;
-    }
-
-    public void setOriginalHeight(int originalHeight) {
-        this.originalHeight = originalHeight;
-    }
-
-    public int getOriginalWidth() {
-        return originalWidth;
-    }
-
-    public void setOriginalWidth(int originalWidth) {
-        this.originalWidth = originalWidth;
-    }
-
     public String getPathAlias() {
         return pathAlias;
     }
@@ -277,7 +238,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLo
     }
 
     @Override
-    public String getUploadTitle() {
+    public String getUploadTitle(FileMetadata fileMetadata) {
         if (title.isEmpty() || (UnitedStates.isVirin(title) || UnitedStates.isFakeVirin(title))
                 && CollectionUtils.isNotEmpty(getPhotosets())) {
             String albumTitle = getPhotosets().iterator().next().getTitle();
@@ -285,7 +246,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLo
                 return albumTitle + " (" + getId() + ")";
             }
         }
-        return super.getUploadTitle();
+        return super.getUploadTitle(fileMetadata);
     }
 
     @Override
@@ -308,7 +269,7 @@ public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLo
         return "FlickrMedia [" + (id != null ? "id=" + id + ", " : "") + (title != null ? "title=" + title + ", " : "")
                 + "license=" + license + ", " + (date != null ? "date=" + date + ", " : "")
                 + (pathAlias != null ? "pathAlias=" + pathAlias + ", " : "")
-                + "metadata=" + metadata + "]";
+                + "metadata=" + getMetadata() + "]";
     }
 
     @Override
@@ -340,11 +301,8 @@ public class FlickrMedia extends Media<Long, LocalDateTime> implements WithLatLo
         this.accuracy = mediaFromApi.accuracy;
         this.media = mediaFromApi.media;
         this.mediaStatus = mediaFromApi.mediaStatus;
-        this.originalUrl = mediaFromApi.originalUrl;
-        this.originalHeight = mediaFromApi.originalHeight;
-        this.originalWidth = mediaFromApi.originalWidth;
         // Do not override pathAlias !
-        this.metadata.setAssetUrl(originalUrl);
+        this.getUniqueMetadata().setAssetUrl(mediaFromApi.getUniqueMetadata().getAssetUrl());
         return this;
     }
 }

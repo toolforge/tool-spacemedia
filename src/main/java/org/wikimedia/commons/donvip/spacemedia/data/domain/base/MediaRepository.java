@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import java.net.URL;
 import java.time.temporal.Temporal;
@@ -23,15 +23,6 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
         extends PagingAndSortingRepository<T, ID> {
 
     void evictCaches();
-
-    /**
-     * Count files matching the given perceptual hash.
-     *
-     * @param phash perceptual hash
-     *
-     * @return number of files matching the given perceptual hash
-     */
-    long countByMetadata_Phash(String phash);
 
     /**
      * Count files with a computed perceptual hash.
@@ -61,6 +52,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return number of files not yet uploaded to Wikimedia Commons
      */
+    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     long countMissingInCommons();
 
     /**
@@ -82,6 +74,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return files not yet uploaded to Wikimedia Commons
      */
+    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     List<T> findMissingInCommons();
 
     /**
@@ -91,6 +84,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return files not yet uploaded to Wikimedia Commons
      */
+    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     Page<T> findMissingInCommons(Pageable page);
 
     /**
@@ -116,6 +110,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return number of files already uploaded to Wikimedia Commons
      */
+    @Query("select count(*) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames)")
     long countUploadedToCommons();
 
     /**
@@ -123,6 +118,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return files already uploaded to Wikimedia Commons
      */
+    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames)")
     List<T> findUploadedToCommons();
 
     /**
@@ -132,8 +128,10 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return files already uploaded to Wikimedia Commons
      */
+    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames)")
     Page<T> findUploadedToCommons(Pageable page);
 
+    @Query("select m from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2")
     List<T> findDuplicateInCommons();
 
     List<T> findByMetadata_AssetUrl(URL imageUrl);
@@ -153,12 +151,4 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
     @Modifying
     @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true")
     int resetIgnored();
-
-    @Modifying
-    @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null")
-    int resetPerceptualHashes();
-
-    @Modifying
-    @Query("update #{#entityName} m set m.metadata.sha1 = null where m.metadata.sha1 is not null")
-    int resetSha1Hashes();
 }

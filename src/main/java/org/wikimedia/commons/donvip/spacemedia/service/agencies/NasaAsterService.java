@@ -1,5 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.regex.Pattern.compile;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.restTemplateSupportingAll;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,25 +32,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- * FIXME ASTER entries can have two images in fact
- * https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=Istanbul
- * https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=oroville
- */
 @Service
 public class NasaAsterService
         extends AbstractAgencyService<NasaAsterMedia, String, LocalDate> {
@@ -55,52 +52,47 @@ public class NasaAsterService
 
     private static final Map<DateTimeFormatter, Pattern> ADDED = Map.of(
             DateTimeFormatter.ofPattern("M/d/yyyy h:m:s a", Locale.ENGLISH),
-            Pattern.compile(".*Added: (\\d{1,2}/\\d{1,2}/\\d{4} \\d{1,2}:\\d{1,2}:\\d{1,2} [AP]M)$"),
-            DateTimeFormatter.ofPattern("M/d/yyyy", Locale.ENGLISH),
-            Pattern.compile(".*Added: (\\d{1,2}/\\d{1,2}/\\d{4})$"));
+            compile(".*Added: (\\d{1,2}/\\d{1,2}/\\d{4} \\d{1,2}:\\d{1,2}:\\d{1,2} [AP]M)$"),
+            DateTimeFormatter.ofPattern("M/d/yyyy", Locale.ENGLISH), compile(".*Added: (\\d{1,2}/\\d{1,2}/\\d{4})$"));
 
     private static final Map<DateTimeFormatter, List<Pattern>> ACQUIRED = Map.of(
             DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ENGLISH),
             List.of(
-                    Pattern.compile(
-                            ".*(?:ASTER|acquired)(?: on)? (?:20 )?(?:[A-Z][a-z]+, )?([A-Z][a-z]+ \\d{1,2}, \\d{4}).*"),
-                    Pattern.compile(".*ASTER image from ([A-Z][a-z]+ \\d{1,2}, \\d{4}).*"),
-                    Pattern.compile(".* ([A-Z][a-z]+ \\d{1,2}, \\d{4}) (?:by )?\\(?ASTER\\)?.*"),
-                    Pattern.compile(".* ([A-Z][a-z]+ \\d{1,2}, \\d{4}), acquired by ASTER.*"),
-                    Pattern.compile(".*ASTER captured th.+ image.* on ([A-Z][a-z]+ \\d{1,2}, \\d{4}).*"),
-                    Pattern.compile(
-                            ".* ([A-Z][a-z]+ \\d{1,2}, \\d{4}),? when (?:the )?ASTER (?:image was )?acquired.*"),
-                    Pattern.compile(".* ([A-Z][a-z]+ \\d{1,2}, \\d{4}) (?:ASTER|image|sub-scene).*"),
-                    Pattern.compile(".*ASTER image .+ as seen on ([A-Z][a-z]+ \\d{1,2}, \\d{4}),.*"),
-                    Pattern.compile(".*ASTER .* on ([A-Z][a-z]+ \\d{1,2}, \\d{4}).*"),
-                    Pattern.compile(".* ([A-Z][a-z]+ \\d{1,2}, \\d{4}).+ acquired by ASTER.*"),
-                    Pattern.compile(".*[Oo]n ([A-Z][a-z]+ \\d{1,2}, \\d{4}),.*"),
-                    Pattern.compile(".*acquired .+ ([A-Z][a-z]+ \\d{1,2},) .+ (\\d{4}) image.*"),
-                    Pattern.compile(".* ([A-Z][a-z]+ \\d{1,2}), when .+(?:ASTER)? (?:thermal )?image was acquired.*"),
-                    Pattern.compile(".* ([A-Z][a-z]+ \\d{1,2}), ASTER (?:captured|acquired).*"),
-                    Pattern.compile(".* ([A-Z][a-z]+ \\d{1,2}), .+ can be seen.*"),
-                    Pattern.compile(
-                            ".*ASTER captured this image .*on (?:[A-Z][a-z]+, )?([A-Z][a-z]+ \\d{1,2})(?:\\.| at).*"),
-                    Pattern.compile(".*ASTER image .+ was captured .+ ([A-Z][a-z]+ \\d{1,2}) [a-z].*"),
-                    Pattern.compile(".*acquired(?: by ASTER)?(?: on)? ([A-Z][a-z]+ \\d{1,2}).*")),
+                    compile(".*(?:ASTER|acquired)(?: on)? (?:20 )?(?:[A-Z][a-z]+, )?([A-Z][a-z]+ \\d{1,2}, \\d{4}).*"),
+                    compile(".*ASTER image from ([A-Z][a-z]+ \\d{1,2}, \\d{4}).*"),
+                    compile(".* ([A-Z][a-z]+ \\d{1,2}, \\d{4}) (?:by )?\\(?ASTER\\)?.*"),
+                    compile(".* ([A-Z][a-z]+ \\d{1,2}, \\d{4}), acquired by ASTER.*"),
+                    compile(".*ASTER captured th.+ image.* on ([A-Z][a-z]+ \\d{1,2}, \\d{4}).*"),
+                    compile(".* ([A-Z][a-z]+ \\d{1,2}, \\d{4}),? when (?:the )?ASTER (?:image was )?acquired.*"),
+                    compile(".* ([A-Z][a-z]+ \\d{1,2}, \\d{4}) (?:ASTER|image|sub-scene).*"),
+                    compile(".*ASTER image .+ as seen on ([A-Z][a-z]+ \\d{1,2}, \\d{4}),.*"),
+                    compile(".*ASTER .* on ([A-Z][a-z]+ \\d{1,2}, \\d{4}).*"),
+                    compile(".* ([A-Z][a-z]+ \\d{1,2}, \\d{4}).+ acquired by ASTER.*"),
+                    compile(".*[Oo]n ([A-Z][a-z]+ \\d{1,2}, \\d{4}),.*"),
+                    compile(".*acquired .+ ([A-Z][a-z]+ \\d{1,2},) .+ (\\d{4}) image.*"),
+                    compile(".* ([A-Z][a-z]+ \\d{1,2}), when .+(?:ASTER)? (?:thermal )?image was acquired.*"),
+                    compile(".* ([A-Z][a-z]+ \\d{1,2}), ASTER (?:captured|acquired).*"),
+                    compile(".* ([A-Z][a-z]+ \\d{1,2}), .+ can be seen.*"),
+                    compile(".*ASTER captured this image .*on (?:[A-Z][a-z]+, )?([A-Z][a-z]+ \\d{1,2})(?:\\.| at).*"),
+                    compile(".*ASTER image .+ was captured .+ ([A-Z][a-z]+ \\d{1,2}) [a-z].*"),
+                    compile(".*acquired(?: by ASTER)?(?: on)? ([A-Z][a-z]+ \\d{1,2}).*")),
             DateTimeFormatter.ofPattern("MMMM d yyyy", Locale.ENGLISH),
-            List.of(Pattern.compile(".*ASTER .*image .+ ([A-Z][a-z]+ \\d{1,2} \\d{4}).*")),
+            List.of(compile(".*ASTER .*image .+ ([A-Z][a-z]+ \\d{1,2} \\d{4}).*")),
             DateTimeFormatter.ofPattern("MMMMd, yyyy", Locale.ENGLISH),
-            List.of(Pattern.compile(".*(?:ASTER|acquired)(?: on)? ([A-Z][a-z]+\\d{1,2}, \\d{4}).*")),
+            List.of(compile(".*(?:ASTER|acquired)(?: on)? ([A-Z][a-z]+\\d{1,2}, \\d{4}).*")),
             DateTimeFormatter.ofPattern("d MMMM, yyyy", Locale.ENGLISH),
-            List.of(Pattern.compile(".*ASTER image was acquired (\\d{1,2} [A-Z][a-z]+, \\d{4}).*")),
+            List.of(compile(".*ASTER image was acquired (\\d{1,2} [A-Z][a-z]+, \\d{4}).*")),
             DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH),
-            List.of(Pattern.compile(".*ASTER image (?:on|from) (\\d{1,2} [A-Z][a-z]+ \\d{4}).*"),
-                    Pattern.compile(".*acquired (?:on )?(\\d{1,2} [A-Za-z]+ \\d{4}).*")),
+            List.of(compile(".*ASTER image (?:on|from) (\\d{1,2} [A-Z][a-z]+ \\d{4}).*"),
+                    compile(".*acquired (?:on )?(\\d{1,2} [A-Za-z]+ \\d{4}).*")),
             DateTimeFormatter.ofPattern("yyyy MMMM d", Locale.ENGLISH),
-            List.of(Pattern.compile(".*(\\d{4})\\..+([A-Z][a-z]+ \\d{1,2}) ASTER .*"),
-                    Pattern.compile(".*(\\d{4}) \\(ASTER image from ([A-Z][a-z]+ \\d{1,2})\\).*"),
-                    Pattern.compile(
-                            ".*(\\d{4}).+ ASTER image (?:was )?acquired on [A-Za-z]+, ([A-Z][a-z]+ \\d{1,2}).*")));
+            List.of(compile(".*(\\d{4})\\..+([A-Z][a-z]+ \\d{1,2}) ASTER .*"),
+                    compile(".*(\\d{4}) \\(ASTER image from ([A-Z][a-z]+ \\d{1,2})\\).*"),
+                    compile(".*(\\d{4}).+ ASTER image (?:was )?acquired on [A-Za-z]+, ([A-Z][a-z]+ \\d{1,2}).*")));
 
-    private static final Pattern SIZE = Pattern.compile(".*Size: \\( ?([\\d,.]+)(?: (MB|KB|bytes))?\\).*");
+    private static final Pattern SIZE = compile(".*Size: \\( ?([\\d,.]+)(?: (MB|KB|bytes))?\\).*");
 
-    private static final Pattern RESOLUTION = Pattern.compile(".*Resolution \\( ([\\d,]+) x ([\\d,]+) \\).*");
+    private static final Pattern RESOLUTION = compile(".*Resolution \\( ([\\d,]+) x ([\\d,]+) \\).*");
 
     @Value("${nasa.aster.gallery.url}")
     private String galleryUrl;
@@ -139,8 +131,8 @@ public class NasaAsterService
     }
 
     @Override
-    public URL getSourceUrl(NasaAsterMedia media) throws MalformedURLException {
-        return new URL(detailsUrl.replace("<id>", media.getId()));
+    public URL getSourceUrl(NasaAsterMedia media) {
+        return newURL(detailsUrl.replace("<id>", media.getId()));
     }
 
     @Override
@@ -163,7 +155,7 @@ public class NasaAsterService
         LocalDateTime start = startUpdateMedia();
         List<NasaAsterMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
-        for (AsterItem item : Utils.restTemplateSupportingAll(jackson).getForObject(galleryUrl, AsterItem[].class)) {
+        for (AsterItem item : restTemplateSupportingAll(jackson).getForObject(galleryUrl, AsterItem[].class)) {
             try {
                 updateImage(item, uploadedMedia);
             } catch (IOException | UploadException | RuntimeException e) {
@@ -171,7 +163,7 @@ public class NasaAsterService
             }
             ongoingUpdateMedia(start, "ASTER", count++);
         }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start);
+        endUpdateMedia(count, uploadedMedia, start);
     }
 
     private NasaAsterMedia updateImage(AsterItem item, List<NasaAsterMedia> uploadedMedia)
@@ -204,7 +196,7 @@ public class NasaAsterService
     }
 
     @Override
-    public Set<String> findCategories(NasaAsterMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(NasaAsterMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         String continent = geometry.getContinent(media.getLatitude(), media.getLongitude());
         result.add(continent != null ? "Photos of " + continent + " by ASTER" : "Photos by ASTER");
@@ -212,9 +204,9 @@ public class NasaAsterService
     }
 
     @Override
-    protected String getSource(NasaAsterMedia media) throws MalformedURLException {
+    protected String getSource(NasaAsterMedia media) {
         return super.getSource(media)
-                + " ([" + media.getMetadata().getAssetUrl() + " direct link])\n"
+                + " ([" + media.getMetadata().get(0).getAssetUrl() + " direct link])\n"
                 + "{{NASA-image|id=" + media.getId() + "|center=JPL}}";
     }
 
@@ -233,7 +225,7 @@ public class NasaAsterService
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaAsterMedia media, Metadata metadata)
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaAsterMedia media, FileMetadata metadata)
             throws MalformedURLException {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         result.put("P170", Pair.of("Q584697", null)); // Created by Terra
@@ -311,7 +303,7 @@ public class NasaAsterService
         throw new IllegalStateException("No publication date found: " + meta);
     }
 
-    static void fillMediaWithHtml(Document html, NasaAsterMedia image) throws MalformedURLException {
+    void fillMediaWithHtml(Document html, NasaAsterMedia image) {
         Element bodyText = Objects.requireNonNull(html.getElementsByClass("BodyText").first(), "BodyText");
         Elements tables = bodyText.getElementsByTag("table");
         image.setPublicationDate(extractPublicationDate(html));
@@ -319,38 +311,39 @@ public class NasaAsterService
         image.setTitle(Objects.requireNonNull(bodyText.getElementsByTag("font").first(), "font").text());
         // Image at top is used as thumbnail
         image.setThumbnailUrl(
-                new URL(tables.get(0).getElementsByTag("img").first().attr("src").replace("http://", "https://")));
+                newURL(tables.get(0).getElementsByTag("img").first().attr("src").replace("http://", "https://")));
         // Description and acquisition date
         image.setDescription(tables.get(1).getElementsByTag("td").text());
         image.setDate(extractAcquisitionDate(image));
-        // FIXME ASTER entries can have two images in fact
-        // https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=Istanbul
-        // https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=oroville
         // FIXME ASTER entries can be videos too
         // https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=fuji
         image.setMediaType(NasaMediaType.image);
-        image.getMetadata().setAssetUrl(
-                new URL(tables.get(2).getElementsByTag("a").first().attr("href").replace("http://", "https://")));
-        String meta = tables.get(2).getElementsByTag("td").get(1).text();
-        Matcher m = SIZE.matcher(meta);
-        if (m.matches()) {
-            String unit = m.groupCount() >= 2 ? m.group(2) : null;
-            Long size = "MB".equals(unit) ? 1024 * 1024 : "KB".equals(unit) ? 1024L : 1L;
-            if (m.group(1).contains(".")) {
-                size = (long) (size * Double.valueOf(m.group(1)));
+        tables.get(1).siblingElements();
+        for (int i = 2; i < tables.size(); i++) {
+            Element table = tables.get(i);
+            FileMetadata metadata = addMetadata(image,
+                    table.getElementsByTag("a").first().attr("href").replace("http://", "https://"));
+            String meta = table.getElementsByTag("td").get(1).text();
+            Matcher m = SIZE.matcher(meta);
+            if (m.matches()) {
+                String unit = m.groupCount() >= 2 ? m.group(2) : null;
+                Long size = "MB".equals(unit) ? 1024 * 1024 : "KB".equals(unit) ? 1024L : 1L;
+                if (m.group(1).contains(".")) {
+                    size = (long) (size * Double.valueOf(m.group(1)));
+                } else {
+                    size *= Long.valueOf(numval(m.group(1)));
+                }
+                metadata.setSize(size);
             } else {
-                size *= Long.valueOf(numval(m.group(1)));
+                throw new IllegalStateException("No size found: " + meta);
             }
-            image.getMetadata().setSize(size);
-        } else {
-            throw new IllegalStateException("No size found: " + meta);
-        }
-        m = RESOLUTION.matcher(meta);
-        if (m.matches()) {
-            image.setImageDimensions(
-                    new ImageDimensions(Integer.valueOf(numval(m.group(1))), Integer.valueOf(numval(m.group(2)))));
-        } else {
-            throw new IllegalStateException("No resolution found: " + meta);
+            m = RESOLUTION.matcher(meta);
+            if (m.matches()) {
+                metadata.setImageDimensions(
+                        new ImageDimensions(Integer.valueOf(numval(m.group(1))), Integer.valueOf(numval(m.group(2)))));
+            } else {
+                throw new IllegalStateException("No resolution found: " + meta);
+            }
         }
     }
 

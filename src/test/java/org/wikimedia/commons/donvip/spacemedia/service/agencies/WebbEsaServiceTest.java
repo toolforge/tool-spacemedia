@@ -2,8 +2,11 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMediaRepository;
@@ -29,6 +33,7 @@ class WebbEsaServiceTest extends AbstractAgencyServiceTest {
 
     @Test
     void testReadHtml() throws Exception {
+        when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         WebbEsaMedia media = service.newMediaFromHtml(html("esawebb/WLMb.html"),
                 new URL("https://esawebb.org/images/WLMb/"), "WLMb", null);
         assertNotNull(media);
@@ -41,13 +46,15 @@ class WebbEsaServiceTest extends AbstractAgencyServiceTest {
         assertEquals("NASA, ESA, CSA, STScI, and K. McQuinn (Rutgers University), A. Pagan (STScI).",
                 media.getCredit());
         assertEquals("2022-11-09T17:00", media.getDate().toString());
-        assertEquals(4134, media.getImageDimensions().getHeight());
-        assertEquals(4134, media.getImageDimensions().getWidth());
+        assertEquals(4134, media.getMetadata().get(0).getImageDimensions().getHeight());
+        assertEquals(4134, media.getMetadata().get(0).getImageDimensions().getWidth());
         assertEquals("Cetus", media.getConstellation());
         assertEquals("[PGU2007] cep35", media.getName());
         assertEquals(DjangoplicityMediaType.Observation, media.getImageType());
-        assertEquals("https://cdn.esawebb.org/archives/images/large/WLMb.jpg",
-                media.getMetadata().getAssetUrl().toExternalForm());
+        assertEquals(
+                List.of("https://esawebb.org/media/archives/images/original/WLMb.tif",
+                        "https://cdn.esawebb.org/archives/images/large/WLMb.jpg"),
+                media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).toList());
         assertEquals("https://cdn.esawebb.org/archives/images/screen/WLMb.jpg",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals(Set.of("James Webb Space Telescope"), media.getTelescopes());

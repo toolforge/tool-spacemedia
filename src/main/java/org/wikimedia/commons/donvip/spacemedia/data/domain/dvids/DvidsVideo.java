@@ -89,7 +89,7 @@ public class DvidsVideo extends DvidsMedia {
 
     public void setFiles(Set<DvidsVideoFile> files) {
         this.files = files;
-        this.metadata.setAssetUrl(files.stream().max(Comparator.comparing(DvidsVideoFile::getSize))
+        getUniqueMetadata().setAssetUrl(files.stream().max(Comparator.comparing(DvidsVideoFile::getSize))
                 .map(DvidsVideoFile::getSrc).orElse(null));
     }
 

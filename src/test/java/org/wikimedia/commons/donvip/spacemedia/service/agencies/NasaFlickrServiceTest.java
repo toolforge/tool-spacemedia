@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
@@ -44,7 +44,8 @@ class NasaFlickrServiceTest extends AbstractAgencyServiceTest {
         media.setId(52867079337L);
         media.setPathAlias("nasahqphoto");
         media.setTitle("Czech Republic Artemis Accords Signing (NHQ202305030019)");
-        media.getMetadata().setAssetUrl(new URL("https://live.staticflickr.com/65535/52867079337_932f992c50_o_d.jpg"));
+        media.addMetadata(
+                new FileMetadata("https://live.staticflickr.com/65535/52867079337_932f992c50_o_d.jpg"));
 
         assertEquals("NHQ202305030019", service.getNasaId(media));
         assertEquals(

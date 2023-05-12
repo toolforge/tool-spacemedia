@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.stsci;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -12,8 +13,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,7 +28,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciImageFiles;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 
@@ -46,7 +49,7 @@ public class StsciService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StsciService.class);
 
     public String[] fetchImagesByScrapping(String urlLink) throws IOException {
-        URL url = new URL(urlLink);
+        URL url = newURL(urlLink);
         Document html = fetchHtml(url);
         Elements divs = html.getElementsByClass("ad-research-box");
         String[] result = new String[divs.size()];
@@ -59,7 +62,7 @@ public class StsciService {
     }
 
     public StsciMedia getImageDetailsByScrapping(String id, String urlLink) throws IOException {
-        URL url = new URL(urlLink);
+        URL url = newURL(urlLink);
         return getImageDetailsByScrapping(id, urlLink, url, fetchHtml(url));
     }
 
@@ -113,51 +116,26 @@ public class StsciService {
     }
 
     private static void fillMetadata(StsciMedia result, List<StsciImageFiles> files) throws MalformedURLException {
-        int width = -1;
-        Metadata metadata = result.getMetadata();
-        Metadata frMetadata = result.getFullResMetadata();
+        Map<String, FileMetadata> metadataByExtension = new HashMap<>();
         for (StsciImageFiles imageFile : files) {
             String fileUrl = imageFile.getFileUrl();
-            URL assetUrl = toUrl(fileUrl);
-            if (fileUrl.endsWith(".tif") || fileUrl.endsWith(".tiff")) {
-                frMetadata.setAssetUrl(assetUrl);
-                frMetadata.setSize((long) imageFile.getFileSize());
-            } else if ((fileUrl.endsWith(".png") || fileUrl.endsWith(".jpg") || fileUrl.endsWith(".pdf"))
-                    && (metadata.getAssetUrl() == null || (metadata.getSize().intValue() < imageFile.getFileSize()
-                            && width <= imageFile.getWidth()))) {
-                metadata.setAssetUrl(assetUrl);
-                metadata.setSize((long) imageFile.getFileSize());
-                width = imageFile.getWidth();
+            long fileSize = imageFile.getFileSize();
+            String ext = fileUrl.substring(fileUrl.lastIndexOf('.') + 1);
+            if (!"pdf".equals(ext)) {
+                FileMetadata metadata = metadataByExtension.computeIfAbsent(ext, x -> new FileMetadata());
+                if (metadata.getSize() == null || metadata.getSize() < fileSize) {
+                    metadata.setAssetUrl(toUrl(fileUrl));
+                    metadata.setSize(fileSize);
+                }
             }
         }
-        int finalWidth = width;
-        if (frMetadata.getAssetUrl() == null && files.size() > 1) {
-            files.stream().filter(f -> f.getWidth() >= finalWidth)
-                    .max(Comparator.comparingInt(StsciImageFiles::getFileSize))
-                    .map(StsciImageFiles::getFileUrl).ifPresent(max -> {
-                        try {
-                            frMetadata.setAssetUrl(toUrl(max));
-                        } catch (MalformedURLException e) {
-                            LOGGER.error(max, e);
-                        }
-                    });
-        }
-        if (endsWith(frMetadata.getAssetUrl(), ".png", ".jpg") && endsWith(metadata.getAssetUrl(), ".png", ".jpg")) {
-            metadata.setAssetUrl(frMetadata.getAssetUrl());
-            frMetadata.setAssetUrl(null);
-        }
+        result.getMetadata().addAll(metadataByExtension.values());
         files.stream().filter(f -> !f.getFileUrl().endsWith(".pdf"))
                 .min(Comparator.comparingInt(StsciImageFiles::getFileSize)).map(StsciImageFiles::getFileUrl)
-                .ifPresent(min -> {
-                    try {
-                        result.setThumbnailUrl(toUrl(min));
-                    } catch (MalformedURLException e) {
-                        LOGGER.error(min, e);
-                    }
-                });
+                .ifPresent(min -> result.setThumbnailUrl(toUrl(min)));
     }
 
-    private static URL toUrl(String fileUrl) throws MalformedURLException {
+    private static URL toUrl(String fileUrl) {
         if (fileUrl.startsWith("//")) {
             fileUrl = "https:" + fileUrl;
         }
@@ -165,19 +143,7 @@ public class StsciService {
             // Broken https, redirected anyway to https://hubblesite.org/ without hvi folder
             fileUrl = fileUrl.replace("imgsrc.", "").replace("/hvi/", "/");
         }
-        return new URL(fileUrl);
-    }
-
-    private static boolean endsWith(URL url, String... exts) {
-        if (url != null) {
-            String externalForm = url.toExternalForm();
-            for (String ext : exts) {
-                if (externalForm.endsWith(ext)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return newURL(fileUrl);
     }
 
     private static Optional<String> findTd(Elements tds, String label) {

@@ -1,9 +1,11 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static javax.persistence.GenerationType.SEQUENCE;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Locale;
@@ -12,10 +14,15 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
-import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
@@ -23,12 +30,18 @@ import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Embeddable
-public class Metadata implements MetadataProjection {
+@Entity
+@Table(indexes = { @Index(columnList = "assetUrl"), @Index(columnList = "sha1, phash") })
+public class FileMetadata implements FileMetadataProjection {
 
     private static final Set<String> AUDIO_EXTENSIONS = Set.of("wav", "mp3", "flac", "midi");
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "tiff", "png", "webp", "xcf", "gif", "svg");
     private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg");
+
+    @Id
+    @JsonIgnore
+    @GeneratedValue(strategy = SEQUENCE, generator = "file_metadata_sequence")
+    private Long id;
 
     /**
      * SHA-1 hash.
@@ -64,6 +77,9 @@ public class Metadata implements MetadataProjection {
     @Column(name = "`size`", nullable = true)
     private Long size;
 
+    @Embedded
+    private ImageDimensions dimensions;
+
     @OneToOne
     @JoinColumn(name = "exif_id", referencedColumnName = "id")
     private ExifMetadata exif;
@@ -71,6 +87,18 @@ public class Metadata implements MetadataProjection {
     @ElementCollection(fetch = FetchType.EAGER)
     @JsonProperty("commons_file_names")
     protected Set<String> commonsFileNames = new HashSet<>();
+
+    public FileMetadata() {
+
+    }
+
+    public FileMetadata(URL assetUrl) {
+        this.assetUrl = assetUrl;
+    }
+
+    public FileMetadata(String assetUrl) throws MalformedURLException {
+        this(new URL(assetUrl));
+    }
 
     public String getSha1() {
         return sha1;
@@ -126,6 +154,14 @@ public class Metadata implements MetadataProjection {
 
     public void setSize(Long size) {
         this.size = size;
+    }
+
+    public ImageDimensions getImageDimensions() {
+        return dimensions;
+    }
+
+    public void setImageDimensions(ImageDimensions dimensions) {
+        this.dimensions = dimensions;
     }
 
     public ExifMetadata getExif() {
@@ -250,7 +286,7 @@ public class Metadata implements MetadataProjection {
 
     @Override
     public int hashCode() {
-        return Objects.hash(phash, sha1, readableImage, assetUrl, size, commonsFileNames, exif);
+        return Objects.hash(phash, sha1, readableImage, assetUrl, size, commonsFileNames, exif, dimensions);
     }
 
     @Override
@@ -259,15 +295,16 @@ public class Metadata implements MetadataProjection {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        Metadata other = (Metadata) obj;
+        FileMetadata other = (FileMetadata) obj;
         return size == other.size && Objects.equals(phash, other.phash) && Objects.equals(sha1, other.sha1)
                 && Objects.equals(readableImage, other.readableImage) && Objects.equals(assetUrl, other.assetUrl)
-                && Objects.equals(commonsFileNames, other.commonsFileNames) && Objects.equals(exif, other.exif);
+                && Objects.equals(commonsFileNames, other.commonsFileNames) && Objects.equals(exif, other.exif)
+                && Objects.equals(dimensions, other.dimensions);
     }
 
     @Override
     public String toString() {
-        return "Metadata [" + (sha1 != null ? "sha1=" + sha1 + ", " : "")
+        return "FileMetadata [" + (sha1 != null ? "sha1=" + sha1 + ", " : "")
                 + (phash != null ? "phash=" + phash + ", " : "")
                 + (readableImage != null ? "readableImage=" + readableImage + ", " : "")
                 + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "") + (size != null ? "size=" + size : "") + "]";

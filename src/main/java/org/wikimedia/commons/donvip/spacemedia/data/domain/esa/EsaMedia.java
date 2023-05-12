@@ -10,16 +10,14 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
 
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
-@Table(indexes = { @Index(columnList = "sha1, full_res_sha1, phash, full_res_phash") })
-public class EsaMedia extends FullResMedia<Integer, LocalDateTime> implements WithKeywords {
+public class EsaMedia extends Media<Integer, LocalDateTime> implements WithKeywords {
 
     @Id
     @Column(nullable = false)
@@ -166,7 +164,7 @@ public class EsaMedia extends FullResMedia<Integer, LocalDateTime> implements Wi
     }
 
     @Override
-    public String getUploadTitle() {
+    public String getUploadTitle(FileMetadata fileMetadata) {
         return CommonsService.normalizeFilename(title) + " ESA" + getUploadId();
     }
 

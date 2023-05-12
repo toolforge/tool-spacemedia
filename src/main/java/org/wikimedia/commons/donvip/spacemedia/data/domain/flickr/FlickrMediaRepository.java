@@ -12,8 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository.CacheEvictDvidsAll;
 
 public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long, LocalDateTime> {
@@ -51,19 +51,18 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
 
     @Override
     @Cacheable("flickrCountMissing")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
     @Cacheable("flickrCountMissingByAccount")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.pathAlias in ?1")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.pathAlias in ?1")
     long countMissingInCommons(Set<String> flickrAccounts);
 
     @Cacheable("flickrCountMissingByType")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.media = ?1")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.media = ?1")
     long countMissingInCommons(FlickrMediaType type);
 
     @Cacheable("flickrCountMissingByTypeAndAccount")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.media = ?1 and m.pathAlias in ?2")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.media = ?1 and m.pathAlias in ?2")
     long countMissingInCommons(FlickrMediaType type, Set<String> flickrAccounts);
 
     @Override
@@ -90,11 +89,10 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
 
     @Override
     @Cacheable("flickrCountUploaded")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     long countUploadedToCommons();
 
     @Cacheable("flickrCountUploadedByAccount")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.pathAlias in ?1")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.pathAlias in ?1")
     long countUploadedToCommons(Set<String> flickrAccounts);
 
     @Override
@@ -102,7 +100,7 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     long countByMetadata_PhashNotNull();
 
     @Cacheable("flickrCountPhashNotNullByAccount")
-    @Query("select count(*) from #{#entityName} m where m.metadata.phash is not null and m.pathAlias in ?1")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where md.phash is not null and m.pathAlias in ?1")
     long countByMetadata_PhashNotNull(Set<String> flickrAccounts);
 
     // FIND
@@ -122,24 +120,16 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @Query("select m from #{#entityName} m where m.ignored = true and m.pathAlias in ?1")
     Page<FlickrMedia> findByIgnoredTrue(Set<String> flickrAccounts, Pageable page);
 
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    List<FlickrMedia> findMissingInCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    Page<FlickrMedia> findMissingInCommons(Pageable page);
-
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.pathAlias in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.pathAlias in ?1")
     List<FlickrMedia> findMissingInCommons(Set<String> flickrAccounts);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.pathAlias in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.pathAlias in ?1")
     Page<FlickrMedia> findMissingInCommons(Set<String> flickrAccounts, Pageable page);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.media = ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.media = ?1")
     Page<FlickrMedia> findMissingInCommons(FlickrMediaType type, Pageable page);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.media = ?1 and m.pathAlias in ?2")
+    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.media = ?1 and m.pathAlias in ?2")
     Page<FlickrMedia> findMissingInCommons(FlickrMediaType type, Set<String> flickrAccounts, Pageable page);
 
     @Override
@@ -160,32 +150,20 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
         return findMissingInCommons(FlickrMediaType.video, flickrAccounts, page);
     }
 
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    List<FlickrMedia> findUploadedToCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    Page<FlickrMedia> findUploadedToCommons(Pageable page);
-
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.pathAlias in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.pathAlias in ?1")
     List<FlickrMedia> findUploadedToCommons(Set<String> flickrAccounts);
 
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.pathAlias in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.pathAlias in ?1")
     Page<FlickrMedia> findUploadedToCommons(Set<String> flickrAccounts, Pageable page);
 
-    @Override
-    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
-    List<FlickrMedia> findDuplicateInCommons();
-
-    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2 and m.pathAlias in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.pathAlias in ?1")
     List<FlickrMedia> findDuplicateInCommons(Set<String> flickrAccounts);
 
     @Override
     @Cacheable("flickrFindByPhashNotNull")
     List<MediaProjection<Long>> findByMetadata_PhashNotNull();
 
-    @Query("select m from #{#entityName} m where m.metadata.phash is not null and m.pathAlias in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where md.phash is not null and m.pathAlias in ?1")
     Page<FlickrMedia> findByMetadata_PhashNotNull(Set<String> flickrAccounts, Pageable page);
 
     // SAVE
@@ -222,14 +200,4 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     @CacheEvictDvidsAll
     @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true and m.pathAlias in ?1")
     int resetIgnored(Set<String> flickrAccounts);
-
-    @Modifying
-    @CacheEvictFlickrAll
-    @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null and m.pathAlias in ?1")
-    int resetPerceptualHashes(Set<String> flickrAccounts);
-
-    @Modifying
-    @CacheEvictFlickrAll
-    @Query("update #{#entityName} m set m.metadata.sha1 = null where m.metadata.sha1 is not null and m.pathAlias in ?1")
-    int resetSha1Hashes(Set<String> flickrAccounts);
 }

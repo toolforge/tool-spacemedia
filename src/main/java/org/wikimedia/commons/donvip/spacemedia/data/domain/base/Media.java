@@ -1,7 +1,13 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -15,11 +21,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.EntityListeners;
+import javax.persistence.FetchType;
 import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.PostLoad;
 import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
@@ -45,8 +51,8 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     private static final Pattern ONLY_DIGITS = Pattern.compile("\\d+");
     private static final Pattern URI_LIKE = Pattern.compile("Https?\\-\\-.*", Pattern.CASE_INSENSITIVE);
 
-    @Embedded
-    protected Metadata metadata = new Metadata();
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<FileMetadata> metadata = new ArrayList<>();
 
     @Column(nullable = true, length = 380)
     @JsonProperty("thumbnail_url")
@@ -74,20 +80,27 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     @JsonProperty("last_update")
     protected LocalDateTime lastUpdate;
 
-    @PostLoad
-    protected void initData() {
-        if (metadata == null) {
-            metadata = new Metadata();
-        }
-    }
-
     @Override
-    public Metadata getMetadata() {
+    public List<FileMetadata> getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(Metadata metadata) {
+    public void setMetadata(List<FileMetadata> metadata) {
         this.metadata = metadata;
+    }
+
+    public boolean addMetadata(FileMetadata metadata) {
+        return getMetadata().add(metadata);
+    }
+
+    public boolean containsMetadata(String assetUrl) throws MalformedURLException, URISyntaxException {
+        return containsMetadata(new URL(assetUrl));
+    }
+
+    public boolean containsMetadata(URL assetUrl) throws URISyntaxException {
+        URI uri = assetUrl.toURI();
+        return getMetadata().stream()
+                .anyMatch(m -> m.getAssetUrl() != null && uri.equals(urlToUriUnchecked(m.getAssetUrl())));
     }
 
     public URL getThumbnailUrl() {
@@ -98,7 +111,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         this.thumbnailUrl = thumbnailUrl;
     }
 
-    public String getUploadTitle() {
+    public String getUploadTitle(FileMetadata fileMetadata) {
         // Upload title must not exceed mediawiki limit (240 characters, filename-toolong API error)
         String id = getUploadId();
         String s = CommonsService.normalizeFilename(title);
@@ -147,13 +160,8 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     @Transient
     @JsonIgnore
     public Set<String> getAllCommonsFileNames() {
-        return getCommonsFileNames();
-    }
-
-    @Transient
-    @JsonIgnore
-    public Set<String> getCommonsFileNames() {
-        return getMetadata().getCommonsFileNames();
+        return getMetadata().stream()
+                .flatMap(m -> Optional.ofNullable(m.getCommonsFileNames()).orElse(Set.of()).stream()).collect(toSet());
     }
 
     public Boolean isIgnored() {
@@ -208,11 +216,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     public List<String> getAssetsToUpload() {
-        List<String> result = new ArrayList<>();
-        if (metadata.shouldUpload()) {
-            result.add(metadata.getSha1());
-        }
-        return result;
+        return getMetadata().stream().filter(FileMetadata::shouldUpload).map(FileMetadata::getSha1).toList();
     }
 
     public LocalDateTime getLastUpdate() {
@@ -229,7 +233,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return {@code true} if this media is an audio
      */
     public boolean isAudio() {
-        return getMetadata().isAudio();
+        return getMetadata().stream().anyMatch(FileMetadata::isAudio);
     }
 
     /**
@@ -238,7 +242,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return {@code true} if this media is an image
      */
     public boolean isImage() {
-        return getMetadata().isImage();
+        return getMetadata().stream().anyMatch(FileMetadata::isImage);
     }
 
     /**
@@ -247,7 +251,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return {@code true} if this media is a video
      */
     public boolean isVideo() {
-        return getMetadata().isVideo();
+        return getMetadata().stream().anyMatch(FileMetadata::isVideo);
     }
 
     /**
@@ -256,18 +260,22 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return the preview URL to display in UI. Thumbnail if available, otherwise asset.
      */
     public final URL getPreviewUrl() {
-        return Optional.ofNullable(getThumbnailUrl()).orElse(getMetadata().getAssetUrl());
+        return Optional.ofNullable(getThumbnailUrl()).orElse(
+                getMetadata().stream().map(FileMetadata::getAssetUrl).filter(Objects::nonNull).findFirst().orElse(null));
     }
 
     /**
-     * Returns either the first file name found in Commons database, or the upload title followed by the given extension.
+     * Returns either the first file name found in Commons database, or the upload
+     * title followed by the given extension.
      *
-     * @param commonsFileNames file names found in Commons database
-     * @param ext file extension to be appended to upload title no filename is found in Commons database
-     * @return either the first file name found in Commons database, or the upload title followed by the given extension
+     * @param metadata file metadata
+     * @return either the first file name found in Commons database, or the upload
+     *         title followed by the given extension
      */
-    public final String getFirstCommonsFileNameOrUploadTitle(Set<String> commonsFileNames, String ext) {
-        return isEmpty(commonsFileNames) ? getUploadTitle() + '.' + ext : commonsFileNames.iterator().next();
+    public final String getFirstCommonsFileNameOrUploadTitle(FileMetadata metadata) {
+        Set<String> commonsFileNames = metadata.getCommonsFileNames();
+        return isEmpty(commonsFileNames) ? getUploadTitle(metadata) + '.' + metadata.getFileExtension()
+                : commonsFileNames.iterator().next();
     }
 
     /**
@@ -278,10 +286,16 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     public final void copyDataFrom(Media<ID, D> mediaFromApi) {
         setDescription(mediaFromApi.getDescription());
         setTitle(mediaFromApi.getTitle());
-        if (mediaFromApi.getMetadata() != null) {
-            Metadata apiMetadata = mediaFromApi.getMetadata();
-            if (!Objects.equals(metadata.getAssetUrl(), apiMetadata.getAssetUrl())) {
-                setMetadata(apiMetadata);
+        if (isNotEmpty(mediaFromApi.getMetadata())) {
+            for (FileMetadata m : getMetadata()) {
+                if (mediaFromApi.getMetadata().stream().map(FileMetadata::getAssetUrl).noneMatch(m.getAssetUrl()::equals)) {
+                    getMetadata().remove(m);
+                }
+            }
+            for (FileMetadata apiMetadata : mediaFromApi.getMetadata()) {
+                if (getMetadata().stream().map(FileMetadata::getAssetUrl).noneMatch(apiMetadata.getAssetUrl()::equals)) {
+                    getMetadata().add(apiMetadata);
+                }
             }
         }
     }

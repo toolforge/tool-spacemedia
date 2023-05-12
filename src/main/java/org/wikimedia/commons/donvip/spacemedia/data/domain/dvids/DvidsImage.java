@@ -2,19 +2,17 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
 
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-public class DvidsImage extends DvidsMedia implements WithDimensions {
+public class DvidsImage extends DvidsMedia {
 
     /**
      * Aspect ratio of the asset.
@@ -22,20 +20,14 @@ public class DvidsImage extends DvidsMedia implements WithDimensions {
     @JsonProperty("aspect_ratio")
     private DvidsAspectRatio aspectRatio;
 
-    /**
-     * Original dimensions (width and height) of the asset
-     */
-    @Embedded
-    private ImageDimensions dimensions;
-
     @Transient
     public URL getImage() {
-        return metadata.getAssetUrl();
+        return getUniqueMetadata().getAssetUrl();
     }
 
     @Transient
     public void setImage(URL imageUrl) {
-        metadata.setAssetUrl(imageUrl);
+        getUniqueMetadata().setAssetUrl(imageUrl);
     }
 
     public DvidsAspectRatio getAspectRatio() {
@@ -46,16 +38,16 @@ public class DvidsImage extends DvidsMedia implements WithDimensions {
         this.aspectRatio = aspectRatio;
     }
 
-    @Override
+    @Transient
     @JsonProperty("dimensions")
     public ImageDimensions getImageDimensions() {
-        return dimensions;
+        return getUniqueMetadata().getImageDimensions();
     }
 
-    @Override
+    @Transient
     @JsonProperty("dimensions")
     public void setImageDimensions(ImageDimensions dimensions) {
-        this.dimensions = dimensions;
+        getUniqueMetadata().setImageDimensions(dimensions);
     }
 
     @Override

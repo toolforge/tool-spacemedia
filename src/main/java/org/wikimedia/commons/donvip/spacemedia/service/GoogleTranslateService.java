@@ -51,7 +51,7 @@ public class GoogleTranslateService {
                 return "";
             });
         } catch (IOException | RuntimeException e) {
-            LOGGER.error("Cannot create Google Translation client", e);
+            LOGGER.error("Cannot create Google Translation client: {}", e.getMessage());
             LOGGER.warn("google.translate.project: {}", project);
             LOGGER.warn("google.translate.location: {}", location);
             LOGGER.warn("google.translate.privateKeyId: {}", privateKeyId);

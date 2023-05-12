@@ -3,10 +3,11 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import static java.util.Collections.singleton;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toMap;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -41,9 +42,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAudioRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImage;
@@ -61,7 +61,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorSe
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService.Counter;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
 public class NasaService
@@ -146,18 +145,13 @@ public class NasaService
 
     @Override
     public NasaMedia saveMedia(NasaMedia media) {
-        NasaMedia result;
-        switch (media.getMediaType()) {
-        case image:
-            result = imageRepository.save((NasaImage) media);
-            break;
-        case video:
-            result = videoRepository.save((NasaVideo) media);
-            break;
-        case audio:
-            result = audioRepository.save((NasaAudio) media);
-            break;
-        default:
+        LOGGER.info("Saving {}", media);
+        NasaMedia result = switch (media.getMediaType()) {
+        case image -> imageRepository.save((NasaImage) media);
+        case video -> videoRepository.save((NasaVideo) media);
+        case audio -> audioRepository.save((NasaAudio) media);
+        };
+        if (result == null) {
             throw new IllegalArgumentException(media.toString());
         }
         checkRemoteMedia(result);
@@ -209,7 +203,7 @@ public class NasaService
         }
     }
 
-    private Triple<NasaMedia, Collection<Metadata>, Integer> uploadUnchecked(NasaMedia media, boolean checkUnicity,
+    private Triple<NasaMedia, Collection<FileMetadata>, Integer> uploadUnchecked(NasaMedia media, boolean checkUnicity,
             boolean isManual) {
         try {
             return upload(media, checkUnicity, isManual);
@@ -238,7 +232,7 @@ public class NasaService
 
     private static void logEndUpdate(NasaMediaType mediaType, int startYear, int endYear, Set<String> centers, LocalDateTime start, int size) {
         if (LOGGER.isDebugEnabled()) {
-            Duration duration = Utils.durationInSec(start);
+            Duration duration = durationInSec(start);
             if (centers == null) {
                 if (startYear == endYear) {
                     LOGGER.debug("NASA {} update for year {} completed: {} {}s in {}", mediaType, startYear, size,
@@ -274,7 +268,8 @@ public class NasaService
                 count += update.getLeft();
                 ongoingUpdateMedia(start, count);
                 uploadedImages.addAll(localUploadedImages);
-                postSocialMedia(localUploadedImages, localUploadedImages.stream().map(Media::getMetadata).toList());
+                postSocialMedia(localUploadedImages,
+                        localUploadedImages.stream().flatMap(m -> m.getMetadata().stream()).toList());
             }
         }
         // Ancient years have a lot less photos: simple search for all centers
@@ -327,8 +322,8 @@ public class NasaService
             count += videos.getLeft();
             uploadedMedia.addAll(videos.getRight());
         }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start,
-                LocalDate.now().minusYears(1), // NASA sometimes post old images dating a few months back
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(m -> m.getMetadata().stream()).toList(),
+                start, LocalDate.now().minusYears(1), // NASA sometimes post old images dating a few months back
                 false /* not mature enough to assume a public tweet yet */);
     }
 
@@ -338,8 +333,8 @@ public class NasaService
     }
 
     @Override
-    public URL getSourceUrl(NasaMedia media) throws MalformedURLException {
-        return new URL(detailsLink.replace("<id>", media.getId()));
+    public URL getSourceUrl(NasaMedia media) {
+        return newURL(detailsLink.replace("<id>", media.getId()));
     }
 
     @Override
@@ -379,12 +374,12 @@ public class NasaService
     }
 
     @Override
-    protected String getSource(NasaMedia media) throws MalformedURLException {
+    protected String getSource(NasaMedia media) {
         return "{{NASA-image|id=" + media.getId() + "|center=" + media.getCenter() + "}}";
     }
 
     @Override
-    public Set<String> findCategories(NasaMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(NasaMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         result.addAll(media.getKeywords().stream().map(nasaKeywords::get).filter(Objects::nonNull).toList());
         String description = media.getDescription();

@@ -1,6 +1,6 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
-public interface MetadataProjection {
+public interface FileMetadataProjection {
 
     /**
      * Returns the perceptual hash value.

@@ -7,7 +7,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -29,7 +29,7 @@ public class DlrFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    public Set<String> findCategories(FlickrMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(FlickrMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
             result.add("Files from Deutsches Zentrum für Luft- und Raumfahrt Flickr stream");

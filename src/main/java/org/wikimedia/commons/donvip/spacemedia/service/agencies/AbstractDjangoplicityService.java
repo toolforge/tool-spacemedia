@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -40,8 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityLicence;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
@@ -62,7 +63,7 @@ import io.micrometer.core.instrument.util.StringUtils;
  * @param <T> Type of media
  */
 public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
-        extends AbstractFullResAgencyService<T, String, LocalDateTime> {
+        extends AbstractAgencyService<T, String, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDjangoplicityService.class);
 
@@ -128,7 +129,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
 
     protected abstract Matcher getLocalizedUrlMatcher(String imgUrlLink);
 
-    private Triple<Optional<T>, Collection<Metadata>, Integer> updateMediaForUrl(URL url, DjangoplicityFrontPageItem item)
+    private Triple<Optional<T>, Collection<FileMetadata>, Integer> updateMediaForUrl(URL url, DjangoplicityFrontPageItem item)
             throws IOException, ReflectiveOperationException, UploadException, UpdateFinishedException {
         String imgUrlLink = url.getProtocol() + "://" + url.getHost() + item.getUrl();
         Matcher m = getLocalizedUrlMatcher(imgUrlLink);
@@ -171,9 +172,9 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
             save = true;
         }
         int uploadCount = 0;
-        List<Metadata> uploadedMetadata = new ArrayList<>();
+        List<FileMetadata> uploadedMetadata = new ArrayList<>();
         if (shouldUploadAuto(media, false)) {
-            Triple<T, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media, true, false);
+            Triple<T, Collection<FileMetadata>, Integer> upload = upload(save ? saveMedia(media) : media, true, false);
             saveMedia(upload.getLeft());
             uploadedMetadata.addAll(upload.getMiddle());
             uploadCount = upload.getRight();
@@ -193,7 +194,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
     }
 
     protected T newMediaFromHtml(Document html, URL url, String id, String imgUrlLink)
-            throws ReflectiveOperationException, MalformedURLException {
+            throws ReflectiveOperationException {
         Element div = html.getElementsByClass(mainDivClass()).last();
         if (div == null) {
             scrapingError(imgUrlLink, html.toString());
@@ -221,9 +222,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
             return null;
         }
 
-        processObjectInfos(url, imgUrlLink, id, media, html);
-        Metadata metadata = media.getMetadata();
-        Metadata frMetadata = media.getFullResMetadata();
+        ImageDimensions dimensions = processObjectInfos(url, imgUrlLink, id, media, html);
 
         for (Element link : html.getElementsByClass("archive_dl_text")) {
             Elements innerLinks = link.getElementsByTag("a");
@@ -233,20 +232,17 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
             }
             String assetUrlLink = innerLinks.get(0).attr("href");
             if (assetUrlLink.endsWith(".psb")) {
-                continue; // format not supported by Wikimedia Commons
-            } else if (assetUrlLink.contains("/original/")) {
-                frMetadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
-            } else if (assetUrlLink.contains("/large/")) {
-                metadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
+                // format not supported by Wikimedia Commons
             } else if (assetUrlLink.contains("/screen/")) {
                 media.setThumbnailUrl(buildAssetUrl(assetUrlLink, url));
-            } else if (frMetadata.getAssetUrl() == null && assetUrlLink.contains(".tif")) {
-                frMetadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
-            } else if (metadata.getAssetUrl() == null && assetUrlLink.contains(".jp")) {
-                metadata.setAssetUrl(buildAssetUrl(assetUrlLink, url));
-            } else if (metadata.getAssetUrl() != null && frMetadata.getAssetUrl() != null
-                    && media.getThumbnailUrl() != null) {
-                break;
+            } else if (assetUrlLink.contains("/original/") || assetUrlLink.contains("/large/")
+                    || (assetUrlLink.contains(".tif") && !assetUrlLink.contains("/publication"))
+                    || (assetUrlLink.contains(".jp") && !assetUrlLink.contains("/wallpaper")
+                            && !assetUrlLink.contains("/publication"))) {
+                FileMetadata metadata = addMetadata(media, buildAssetUrl(assetUrlLink, url));
+                if (assetUrlLink.contains("/original/")) {
+                    metadata.setImageDimensions(dimensions);
+                }
             }
         }
         return media;
@@ -302,8 +298,8 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
 
     protected abstract String getCopyrightLink();
 
-    private static URL buildAssetUrl(String assetUrlLink, URL url) throws MalformedURLException {
-        return new URL(
+    private static URL buildAssetUrl(String assetUrlLink, URL url) {
+        return newURL(
                 assetUrlLink.startsWith("/") ? url.getProtocol() + "://" + url.getHost() + assetUrlLink : assetUrlLink);
     }
 
@@ -323,8 +319,8 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
         return div.getElementsByClass(getObjectInfoTitleClass());
     }
 
-    protected void processObjectInfos(URL url, String imgUrlLink, String id, T media, Document doc)
-            throws MalformedURLException {
+    protected ImageDimensions processObjectInfos(URL url, String imgUrlLink, String id, T media, Document doc) {
+        ImageDimensions result = null;
         for (Element info : doc.getElementsByClass(getObjectInfoClass())) {
             // Iterate on h3/h4 tags, depending on website
             for (Element h3 : info.getElementsByTag(getObjectInfoH3Tag())) {
@@ -340,7 +336,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
                     String text = sibling.text();
                     switch (h3.text()) {
                     case "About the Image":
-                        processAboutTheImage(url, imgUrlLink, id, media, title, sibling, text);
+                        result = processAboutTheImage(url, imgUrlLink, id, media, title, sibling, text);
                         break;
                     case "About the Object":
                         processAboutTheObject(imgUrlLink, media, title, sibling, html, text);
@@ -360,14 +356,16 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
                 }
             }
         }
+        return result;
     }
 
-    protected void processAboutTheImage(URL url, String imgUrlLink, String id, T media, Element title,
-            Element sibling, String text) throws MalformedURLException {
+    protected ImageDimensions processAboutTheImage(URL url, String imgUrlLink, String id, T media, Element title,
+            Element sibling, String text) {
+        ImageDimensions result = null;
         switch (title.text()) {
         case "Id:":
             if (!id.equals(text)) {
-                problem(new URL(imgUrlLink), "Different ids: " + id + " <> " + text);
+                problem(newURL(imgUrlLink), "Different ids: " + id + " <> " + text);
             }
             break;
         case "Licence:":
@@ -384,7 +382,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
             if (!m.matches()) {
                 scrapingError(imgUrlLink, text);
             }
-            media.setImageDimensions(new ImageDimensions(Integer.valueOf(m.group(1)), Integer.valueOf(m.group(2))));
+            result = new ImageDimensions(Integer.valueOf(m.group(1)), Integer.valueOf(m.group(2)));
             break;
         case "Field of View:":
             media.setFieldOfView(text);
@@ -402,6 +400,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
         default:
             scrapingError(imgUrlLink, title.text());
         }
+        return result;
     }
 
     protected LocalDateTime parseDateTime(String text) {
@@ -520,16 +519,16 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
         int count = 0;
         boolean loop = true;
         int idx = 1;
-        List<Metadata> uploadedMetadata = new ArrayList<>();
+        List<FileMetadata> uploadedMetadata = new ArrayList<>();
         List<T> uploadedMedia = new ArrayList<>();
         while (loop) {
             String urlLink = searchLink.replace("<idx>", Integer.toString(idx++));
-            URL url = new URL(urlLink);
+            URL url = newURL(urlLink);
             try {
                 for (Iterator<DjangoplicityFrontPageItem> it = findFrontPageItems(
                         Jsoup.connect(urlLink).timeout(60_000).get()); it.hasNext();) {
                     try {
-                        Triple<Optional<T>, Collection<Metadata>, Integer> update = updateMediaForUrl(url, it.next());
+                        Triple<Optional<T>, Collection<FileMetadata>, Integer> update = updateMediaForUrl(url, it.next());
                         Optional<T> optionalMedia = update.getLeft();
                         if (optionalMedia.isPresent()) {
                             ongoingUpdateMedia(start, count++);
@@ -564,7 +563,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, Metadata metadata)
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, FileMetadata metadata)
             throws MalformedURLException {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         if (StringUtils.isNotBlank(media.getName())) {
@@ -581,7 +580,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
     }
 
     @Override
-    public Set<String> findCategories(T media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(T media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (media.getCategories() != null) {
             result.addAll(media.getCategories().stream().map(dpCategories::get).filter(StringUtils::isNotBlank)

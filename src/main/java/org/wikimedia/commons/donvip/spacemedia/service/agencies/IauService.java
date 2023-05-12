@@ -1,7 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -105,13 +106,13 @@ public class IauService extends AbstractDjangoplicityService<IauMedia> {
     }
 
     @Override
-    public URL getSourceUrl(IauMedia media) throws MalformedURLException {
-        return new URL(IAU_BASE_PUBLIC_URL + IAU_IMAGES_PATH + media.getId());
+    public URL getSourceUrl(IauMedia media) {
+        return newURL(IAU_BASE_PUBLIC_URL + IAU_IMAGES_PATH + media.getId());
     }
 
     @Override
-    public final String getSource(IauMedia media) throws MalformedURLException {
-        return "{{IAU-source|" + media.getId() + "|" + media.getId() + "}}";
+    public final String getSource(IauMedia media) {
+        return "{{IAU-source|" + media.getId() + '|' + media.getId() + "}}";
     }
 
     @Override

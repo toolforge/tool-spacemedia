@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.Collection;
@@ -12,10 +11,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -94,7 +93,7 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     T uploadAndSaveById(String id, boolean isManual) throws UploadException, TooManyResultsException;
 
-    Triple<T, Collection<Metadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
+    Triple<T, Collection<FileMetadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
             throws UploadException;
 
     T refreshAndSaveById(String id) throws ImageNotFoundException, IOException;
@@ -105,9 +104,9 @@ public interface Agency<T extends Media<ID, D>, ID, D extends Temporal> {
 
     String getWikiCode(String sha1) throws TooManyResultsException;
 
-    Pair<String, Map<String, String>> getWikiCode(T media, Metadata metadata);
+    Pair<String, Map<String, String>> getWikiCode(T media, FileMetadata metadata);
 
-    URL getSourceUrl(T media) throws MalformedURLException;
+    URL getSourceUrl(T media);
 
     List<T> searchMedia(String q);
 

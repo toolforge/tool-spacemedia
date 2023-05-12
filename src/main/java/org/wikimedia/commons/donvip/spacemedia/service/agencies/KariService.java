@@ -1,9 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.Collections.emptyList;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
@@ -78,12 +78,12 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
     }
 
     @Override
-    public final URL getSourceUrl(KariMedia media) throws MalformedURLException {
-        return new URL(getViewUrl(media.getId()));
+    public final URL getSourceUrl(KariMedia media) {
+        return newURL(getViewUrl(media.getId()));
     }
 
     @Override
-    public final String getSource(KariMedia media) throws MalformedURLException {
+    public final String getSource(KariMedia media) {
         return "{{KARI-source|" + media.getId() + "|" + media.getKariId() + "}}";
     }
 
@@ -117,7 +117,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         while (consecutiveFailures < maxFailures) {
             boolean save = false;
             String viewUrl = getViewUrl(id);
-            URL view = new URL(viewUrl);
+            URL view = newURL(viewUrl);
             Optional<KariMedia> mediaInRepo = repository.findById(id);
             KariMedia media = mediaInRepo.orElse(null);
             if (media == null) {
@@ -170,9 +170,9 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         }
     }
 
-    private KariUpdateResult fetchMedia(int id) throws MalformedURLException {
+    private KariUpdateResult fetchMedia(int id) {
         String viewUrl = getViewUrl(id);
-        URL view = new URL(viewUrl);
+        URL view = newURL(viewUrl);
         KariMedia media = null;
         boolean resetConsecutiveFailures = false;
         boolean incrementConsecutiveFailures = false;
@@ -207,7 +207,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         if (StringUtils.isBlank(media.getDescription())) {
             problem(view, "Empty description");
         }
-        Metadata metadata = media.getMetadata();
+        FileMetadata metadata = media.getMetadata().get(0);
         if (metadata.getAssetUrl() != null) {
             String mediaUrl = metadata.getAssetUrl().toExternalForm();
             if (StringUtils.isBlank(mediaUrl) || "https://www.kari.re.kr".equals(mediaUrl)) {
@@ -227,8 +227,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         return saveMediaOrCheckRemote(save, media);
     }
 
-    private static KariMedia buildMedia(int id, URL view, Element div, String title, Element infos, Elements lis)
-            throws MalformedURLException {
+    private KariMedia buildMedia(int id, URL view, Element div, String title, Element infos, Elements lis) {
         KariMedia media = new KariMedia();
         media.setId(id);
         media.setKariId(lis.get(0).getElementsByClass("txt").get(0).text());
@@ -238,18 +237,18 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         media.setDescription(div.getElementsByClass("photo_txt").get(0).text());
         String href = infos.getElementsByTag("a").attr("href");
         if (StringUtils.isNotBlank(href)) {
-            media.getMetadata().setAssetUrl(new URL(view.getProtocol(), view.getHost(), href));
+            addMetadata(media, newURL(view.getProtocol(), view.getHost(), href));
         }
         String src = div.getElementsByClass("board_txt").get(0).getElementsByTag("img").attr("src").replace("/view/",
                 "/lst/");
         if (StringUtils.isNotBlank(src)) {
-            media.setThumbnailUrl(new URL(view.getProtocol(), view.getHost(), src));
+            media.setThumbnailUrl(newURL(view.getProtocol(), view.getHost(), src));
         }
         return media;
     }
 
     @Override
-    protected boolean isPermittedFileType(Metadata metadata) {
+    protected boolean isPermittedFileType(FileMetadata metadata) {
         return metadata.getAssetUrl() != null && metadata.getAssetUrl().toExternalForm()
                 .startsWith("https://www.kari.re.kr/image/kari_image_down.do?");
     }

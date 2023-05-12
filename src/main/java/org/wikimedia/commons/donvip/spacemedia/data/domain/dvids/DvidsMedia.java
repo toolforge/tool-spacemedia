@@ -14,16 +14,15 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToMany;
-import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,10 +34,9 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@Table(indexes = { @Index(columnList = "sha1, phash") })
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "id", visible = true)
 @JsonTypeIdResolver(value = DvidsMediaTypeIdResolver.class)
-public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime> implements WithKeywords {
+public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, ZonedDateTime> implements WithKeywords {
 
     /**
      * Specific document id to retrieve for search.
@@ -92,7 +90,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     /**
      * Who created the asset.
      */
-    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH })
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH })
     @JsonDeserialize(using = DvidsCreditDeserializer.class)
     private List<DvidsCredit> credit;
 
@@ -293,7 +291,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
                 + (title != null ? "title=" + title + ", " : "") + (datePublished != null ? "datePublished=" + datePublished + ", " : "")
                 + (date != null ? "date=" + date + ", " : "")
                 + (category != null ? "category=" + category + ", " : "")
-                + (metadata != null ? "metadata=" + metadata : "") + "]";
+                + (getMetadata() != null ? "metadata=" + getMetadata() : "") + "]";
     }
 
     @Override
@@ -312,7 +310,7 @@ public abstract class DvidsMedia extends Media<DvidsMediaTypedId, ZonedDateTime>
     }
 
     @Override
-    public final String getUploadTitle() {
+    public final String getUploadTitle(FileMetadata fileMetadata) {
         String normalizedTitle = CommonsService.normalizeFilename(title);
         if (isTitleBlacklisted(normalizedTitle)) {
             // Avoid https://commons.wikimedia.org/wiki/MediaWiki:Titleblacklist

@@ -30,6 +30,15 @@ public class FlickrPhotoSet {
     @JsonIgnoreProperties("photosets")
     protected Set<FlickrMedia> members = new HashSet<>();
 
+    public FlickrPhotoSet() {
+
+    }
+
+    public FlickrPhotoSet(Long id, String title) {
+        setId(id);
+        setTitle(title);
+    }
+
     public Long getId() {
         return id;
     }

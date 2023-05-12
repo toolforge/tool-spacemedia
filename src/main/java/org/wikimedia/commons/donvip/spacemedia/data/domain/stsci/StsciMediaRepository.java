@@ -11,10 +11,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia, String, ZonedDateTime> {
+public interface StsciMediaRepository extends MediaRepository<StsciMedia, String, ZonedDateTime> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -44,7 +44,7 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
     long countByIgnoredTrueAndMission(String mission);
 
     @Cacheable("stsciCountMissing")
-    @Query("select count(*) from #{#entityName} m where m.mission = ?1 and (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames)))")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where m.mission = ?1 and (m.ignored is null or m.ignored is false) and md.sha1 is not null and not exists elements (md.commonsFileNames)")
     long countMissingInCommons(String mission);
 
     @Override
@@ -70,7 +70,7 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
     }
 
     @Cacheable("stsciCountUploaded")
-    @Query("select count(*) from #{#entityName} m where m.mission = ?1 and (exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames))")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where m.mission = ?1 and exists elements (md.commonsFileNames)")
     long countUploadedToCommons(String mission);
 
     @Cacheable("stsciCountPhashNotNullByMission")
@@ -86,18 +86,10 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
 
     Page<StsciMedia> findByIgnoredTrueAndMission(String mission, Pageable page);
 
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames)))")
-    List<StsciMedia> findMissingInCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames)))")
-    Page<StsciMedia> findMissingInCommons(Pageable page);
-
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames))) and m.mission = ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where m.mission = ?1 and (m.ignored is null or m.ignored is false) and md.sha1 is not null and not exists elements (md.commonsFileNames)")
     List<StsciMedia> findMissingInCommons(String mission);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and ((m.metadata.sha1 is not null and not exists elements (m.metadata.commonsFileNames)) or (m.fullResMetadata.sha1 is not null and not exists elements (m.fullResMetadata.commonsFileNames))) and m.mission = ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where m.mission = ?1 and (m.ignored is null or m.ignored is false) and md.sha1 is not null and not exists elements (md.commonsFileNames)")
     Page<StsciMedia> findMissingInCommons(String mission, Pageable page);
 
     @Override
@@ -118,25 +110,13 @@ public interface StsciMediaRepository extends FullResMediaRepository<StsciMedia,
         return Page.empty();
     }
 
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames)")
-    List<StsciMedia> findUploadedToCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames)")
-    Page<StsciMedia> findUploadedToCommons(Pageable page);
-
-    @Query("select m from #{#entityName} m where (exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames)) and m.mission = ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where m.mission = ?1 and exists elements (md.commonsFileNames)")
     List<StsciMedia> findUploadedToCommons(String mission);
 
-    @Query("select m from #{#entityName} m where (exists elements (m.metadata.commonsFileNames) or exists elements (m.fullResMetadata.commonsFileNames)) and m.mission = ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where m.mission = ?1 and exists elements (md.commonsFileNames)")
     Page<StsciMedia> findUploadedToCommons(String mission, Pageable page);
 
-    @Override
-    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2 or size (m.fullResMetadata.commonsFileNames) >= 2")
-    List<StsciMedia> findDuplicateInCommons();
-
-    @Query("select m from #{#entityName} m where (size (m.metadata.commonsFileNames) >= 2 or size (m.fullResMetadata.commonsFileNames) >= 2) and m.mission = ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where m.mission = ?1 and size (md.commonsFileNames) >= 2")
     List<StsciMedia> findDuplicateInCommons(String mission);
 
     @Override

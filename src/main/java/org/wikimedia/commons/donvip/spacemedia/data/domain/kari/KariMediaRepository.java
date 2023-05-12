@@ -9,9 +9,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface KariMediaRepository extends MediaRepository<KariMedia, Integer, LocalDate> {
 
@@ -41,7 +40,6 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
 
     @Override
     @Cacheable("kariCountMissing")
-    @Query("select count(*) from #{#entityName} m where not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
     @Override
@@ -57,18 +55,9 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
 
     @Override
     @Cacheable("kariCountUploaded")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     long countUploadedToCommons();
 
     // FIND
-
-    @Override
-    @Query("select m from #{#entityName} m where not exists elements (m.metadata.commonsFileNames)")
-    List<KariMedia> findMissingInCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where not exists elements (m.metadata.commonsFileNames)")
-    Page<KariMedia> findMissingInCommons(Pageable page);
 
     @Override
     default Page<KariMedia> findMissingImagesInCommons(Pageable page) {
@@ -79,18 +68,6 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
     default Page<KariMedia> findMissingVideosInCommons(Pageable page) {
         return Page.empty();
     }
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    List<KariMedia> findUploadedToCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    Page<KariMedia> findUploadedToCommons(Pageable page);
-
-    @Override
-    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
-    List<KariMedia> findDuplicateInCommons();
 
     @Override
     @Cacheable("kariFindByPhashNotNull")

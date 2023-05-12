@@ -10,18 +10,15 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.Lob;
-import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResExtraMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
 @Indexed
-@Table(indexes = { @Index(columnList = "sha1, full_res_sha1, extra_sha1, phash, full_res_phash, extra_phash") })
-public class NasaPhotojournalMedia extends FullResExtraMedia<String, ZonedDateTime> implements WithKeywords {
+public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implements WithKeywords {
 
     @Id
     @Column(name = "pia_id", nullable = false, length = 10)
@@ -169,8 +166,8 @@ public class NasaPhotojournalMedia extends FullResExtraMedia<String, ZonedDateTi
 
     @Override
     public String toString() {
-        return "NasaPhotojournalMedia [id=" + piaId + ", nasaId=" + nasaId + ", "
-                + "date=" + date + ", " + (target != null ? "target=" + target + ", " : "")
+        return "NasaPhotojournalMedia [id=" + piaId + ", date=" + date + ", nasaId=" + nasaId + ", "
+                + (target != null ? "target=" + target + ", " : "")
                 + (mission != null ? "mission=" + mission + ", " : "")
                 + (spacecraft != null ? "spacecraft=" + spacecraft + ", " : "")
                 + (instrument != null ? "instrument=" + instrument + ", " : "")

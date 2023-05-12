@@ -3,10 +3,13 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -58,18 +61,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.client.RestClientException;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithLatLon;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
@@ -87,7 +90,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 /**
  * Superclass of space agencies services.
@@ -121,6 +123,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Autowired
     protected TransactionService transactionService;
 
+    @Autowired
+    protected FileMetadataRepository metadataRepository;
     @Autowired
     protected RuntimeDataRepository runtimeDataRepository;
     @Autowired
@@ -163,6 +167,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Value("${videos.enabled}")
     protected boolean videosEnabled;
 
+    private Map<String, String> categoriesStatements;
+
     private UploadMode uploadMode;
 
     protected AbstractAgencyService(MediaRepository<T, ID, D> repository, String id) {
@@ -173,6 +179,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @PostConstruct
     void init() throws IOException {
         ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/search.ignored.terms.csv"));
+        categoriesStatements = loadCsvMapping("categories.statements.csv");
         uploadMode = UploadMode.valueOf(
                 env.getProperty(id + ".upload", String.class, UploadMode.DISABLED.name())
                     .toUpperCase(Locale.ENGLISH));
@@ -292,13 +299,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public final List<T> searchMedia(String q) {
+    public List<T> searchMedia(String q) {
         searchService.checkSearchEnabled();
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public final Page<T> searchMedia(String q, Pageable page) {
+    public Page<T> searchMedia(String q, Pageable page) {
         searchService.checkSearchEnabled();
         throw new UnsupportedOperationException();
     }
@@ -309,7 +316,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
      * @return an unique identifier specified by implementations
      */
     @Override
-    public final String getId() {
+    public String getId() {
         return id;
     }
 
@@ -327,24 +334,29 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final void ongoingUpdateMedia(LocalDateTime start, String who, int count) {
         if (LOGGER.isInfoEnabled() && count > 0 && count % 1000 == 0) {
-            Duration durationInSec = Utils.durationInSec(start);
+            Duration durationInSec = durationInSec(start);
             LOGGER.info("Processed {} {} media in {} ({} media/s) - ({} ms/media)", count, who, durationInSec,
                     String.format("%.2f", (double) count / durationInSec.getSeconds()),
                     String.format("%d", durationInSec.getSeconds() * 1000 / count));
         }
     }
 
-    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<Metadata> uploadedMetadata,
+    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, LocalDateTime start) {
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(m -> m.getMetadata().stream()).toList(),
+                start);
+    }
+
+    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
             LocalDateTime start) {
         endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, LocalDate.now().minusDays(2), true);
     }
 
-    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<Metadata> uploadedMetadata,
+    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
             LocalDateTime start, LocalDate newDoNotFetchEarlierThan) {
         endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, newDoNotFetchEarlierThan, true);
     }
 
-    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<Metadata> uploadedMetadata,
+    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
             LocalDateTime start, LocalDate newDoNotFetchEarlierThan, boolean postTweet) {
         RuntimeData runtimeData = getRuntimeData();
         LocalDateTime end = LocalDateTime.now();
@@ -363,7 +375,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return List.of();
     }
 
-    protected final void postSocialMedia(Collection<? extends T> uploadedMedia, Collection<Metadata> uploadedMetadata) {
+    protected final void postSocialMedia(Collection<? extends T> uploadedMedia, Collection<FileMetadata> uploadedMetadata) {
         if (!uploadedMedia.isEmpty()) {
             LOGGER.info("Uploaded media: {} ({})", uploadedMedia.size(),
                     uploadedMedia.stream().map(Media::getId).toList());
@@ -428,17 +440,17 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public final List<Problem> getProblems() {
+    public List<Problem> getProblems() {
         return problemRepository.findByAgency(getId());
     }
 
     @Override
-    public final Page<Problem> getProblems(Pageable page) {
+    public Page<Problem> getProblems(Pageable page) {
         return problemRepository.findByAgency(getId(), page);
     }
 
     @Override
-    public final long getProblemsCount() {
+    public long getProblemsCount() {
         return problemRepository.countByAgency(getId());
     }
 
@@ -446,12 +458,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return problem(problematicUrl, t.toString());
     }
 
-    protected final Problem problem(String problematicUrl, Throwable t) throws MalformedURLException {
+    protected final Problem problem(String problematicUrl, Throwable t) {
         return problem(problematicUrl, t.toString());
     }
 
-    protected final Problem problem(String problematicUrl, String errorMessage) throws MalformedURLException {
-        return problem(new URL(problematicUrl), errorMessage);
+    protected final Problem problem(String problematicUrl, String errorMessage) {
+        return problem(newURL(problematicUrl), errorMessage);
     }
 
     protected final Problem problem(URL problematicUrl, String errorMessage) {
@@ -501,7 +513,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public final T refreshAndSaveById(String id) throws ImageNotFoundException, IOException {
+    public T refreshAndSaveById(String id) throws ImageNotFoundException, IOException {
         return refreshAndSave(getById(id));
     }
 
@@ -521,6 +533,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public T saveMedia(T media) {
+        LOGGER.info("Saving {}", media);
         T result = repository.save(media);
         checkRemoteMedia(result);
         return result;
@@ -534,7 +547,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             try {
                 remoteService.evictCaches(getId());
             } catch (RestClientException e) {
-                LOGGER.warn("{}", e.getMessage(), e);
+                LOGGER.warn("Remote instance returned: {}", e.getMessage());
             }
         }
     }
@@ -563,7 +576,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public final T uploadAndSaveById(String id, boolean isManual) throws UploadException, TooManyResultsException {
+    public T uploadAndSaveById(String id, boolean isManual) throws UploadException, TooManyResultsException {
         return saveMedia(upload(getById(id), false, isManual).getLeft());
     }
 
@@ -573,29 +586,37 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     @Override
-    public final Triple<T, Collection<Metadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
+    public Triple<T, Collection<FileMetadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
             throws UploadException {
         if (!isUploadEnabled()) {
             throw new ImageUploadForbiddenException("Upload is not enabled for " + getClass().getSimpleName());
         }
         try {
             checkUploadPreconditions(media, checkUnicity, isManual);
-            List<Metadata> uploaded = new ArrayList<>();
+            List<FileMetadata> uploaded = new ArrayList<>();
             return Triple.of(media, uploaded, doUpload(media, checkUnicity, uploaded, isManual));
         } catch (IOException | RuntimeException | URISyntaxException e) {
             throw new UploadException(e);
         }
     }
 
-    protected int doUpload(T media, boolean checkUnicity, Collection<Metadata> uploaded, boolean isManual)
+    protected int doUpload(T media, boolean checkUnicity, Collection<FileMetadata> uploaded, boolean isManual)
             throws IOException, UploadException {
-        return doUpload(media, media.getMetadata(), checkUnicity, uploaded, isManual);
+        int count = 0;
+        for (FileMetadata metadata : media.getMetadata()) {
+            try {
+                count += doUpload(media, metadata, checkUnicity, uploaded, isManual);
+            } catch (ImageUploadForbiddenException e) {
+                LOGGER.warn("File {} not uploaded: {}", metadata, e.getMessage());
+            }
+        }
+        return count;
     }
 
-    protected final int doUpload(T media, Metadata metadata, boolean checkUnicity, Collection<Metadata> uploaded,
+    protected final int doUpload(T media, FileMetadata metadata, boolean checkUnicity, Collection<FileMetadata> uploaded,
             boolean isManual) throws IOException, UploadException {
-        if (metadata != null && metadata.getAssetUrl() != null
-                && shouldUpload(new UploadContext<>(media, metadata, isManual))) {
+        if (metadata != null && metadata.getAssetUrl() != null && new UploadContext<>(media, metadata, getUploadMode(),
+                minYearUploadAuto, this::isPermittedFileType, isManual).shouldUpload()) {
             checkUploadPreconditions(media, metadata, checkUnicity);
             List<String> smallerFiles = mediaService.findSmallerCommonsFilesWithIdAndPhash(media, metadata);
             if (!smallerFiles.isEmpty()) {
@@ -608,8 +629,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 metadata.setCommonsFileNames(new HashSet<>(smallerFiles));
             } else {
                 Pair<String, Map<String, String>> codeAndDescs = getWikiCode(media, metadata);
-                String uploadedFilename = commonsService.uploadNewFile(codeAndDescs.getLeft(), media.getUploadTitle(),
-                        metadata.getFileExtension(), metadata.getAssetUrl(), metadata.getSha1());
+                String uploadedFilename = commonsService.uploadNewFile(codeAndDescs.getLeft(),
+                        media.getUploadTitle(metadata), metadata.getFileExtension(), metadata.getAssetUrl(),
+                        metadata.getSha1());
                 metadata.setCommonsFileNames(new HashSet<>(Set.of(uploadedFilename)));
                 editStructuredDataContent(uploadedFilename, codeAndDescs.getRight(), media, metadata);
             }
@@ -625,7 +647,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected void editStructuredDataContent(String uploadedFilename, Map<String, String> descriptions, T media,
-            Metadata metadata) {
+            FileMetadata metadata) {
         try {
             commonsService.editStructuredDataContent(uploadedFilename, descriptions, getStatements(media, metadata));
         } catch (MediaWikiApiErrorException | IOException | RuntimeException e) {
@@ -633,7 +655,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, Metadata metadata)
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, FileMetadata metadata)
             throws MalformedURLException {
         Map<String, Pair<Object, Map<String, Object>>> result = new TreeMap<>();
         // Source: file available on the internet
@@ -651,8 +673,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         // MIME type
         result.put("P1163", Pair.of(metadata.getMime(), null));
         // Hashes
-        result.put("P4092", Pair.of(metadata.getSha1(), Map.of("P459", "Q13414952")));
-        result.put("P9310", Pair.of(metadata.getPhash(), Map.of("P459", "Q118189277")));
+        ofNullable(metadata.getSha1()).ifPresent(h -> result.put("P4092", Pair.of(h, Map.of("P459", "Q13414952"))));
+        ofNullable(metadata.getPhash()).ifPresent(h -> result.put("P9310", Pair.of(h, Map.of("P459", "Q118189277"))));
         // Dates
         Temporal creationDate = getCreationDate(media).orElse(null);
         Temporal publicationDate = getUploadDate(media).orElse(null);
@@ -669,10 +691,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             result.put("P3575", Pair.of(Pair.of(metadata.getSize(), "Q8799"), null));
         }
         // Dimensions
-        if (media instanceof WithDimensions wd && wd.getImageDimensions() != null) {
-            ofNullable(wd.getImageDimensions().getWidth())
+        if (metadata.getImageDimensions() != null) {
+            ofNullable(metadata.getImageDimensions().getWidth())
                     .ifPresent(w -> result.put("P2049", Pair.of(Pair.of(w, "Q355198"), null)));
-            ofNullable(wd.getImageDimensions().getHeight())
+            ofNullable(metadata.getImageDimensions().getHeight())
                     .ifPresent(h -> result.put("P2048", Pair.of(Pair.of(h, "Q355198"), null)));
         }
         // Location
@@ -680,22 +702,30 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             result.put("P9149", Pair
                     .of(Triple.of(ll.getLatitude(), ll.getLongitude(), ll.getPrecision()), null));
         }
+        // Categories
+        Set<String> cats = findCategories(media, metadata, false);
+        for (Entry<String, String> e : categoriesStatements.entrySet()) {
+            if (Arrays.stream(e.getKey().split(";")).anyMatch(cats::contains)) {
+                for (String statement : e.getValue().split(";")) {
+                    String[] kv = statement.split("=");
+                    result.put(kv[0], Pair.of(kv[1], null));
+                }
+            }
+        }
         return result;
     }
 
     @Override
     public String getWikiHtmlPreview(String sha1) throws TooManyResultsException {
-        T media = findBySha1OrThrow(sha1, true);
-        Metadata metadata = media.getMetadata();
-        return getWikiHtmlPreview(media, metadata);
+        return getWikiHtmlPreview(findBySha1OrThrow(sha1, true), metadataRepository.findBySha1(sha1));
     }
 
-    protected final String getWikiHtmlPreview(T media, Metadata metadata) {
+    protected final String getWikiHtmlPreview(T media, FileMetadata metadata) {
         try {
             return commonsService.getWikiHtmlPreview(getWikiCode(media, metadata).getKey(), getPageTile(media),
                     metadata.getAssetUrl().toExternalForm());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -705,12 +735,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     @Override
     public String getWikiCode(String sha1) throws TooManyResultsException {
-        T media = findBySha1OrThrow(sha1, true);
-        return getWikiCode(media, media.getMetadata()).getKey();
+        return getWikiCode(findBySha1OrThrow(sha1, true), metadataRepository.findBySha1(sha1)).getKey();
     }
 
     @Override
-    public final Pair<String, Map<String, String>> getWikiCode(T media, Metadata metadata) {
+    public Pair<String, Map<String, String>> getWikiCode(T media, FileMetadata metadata) {
         try {
             Pair<String, Map<String, String>> desc = getWikiFileDesc(media, metadata);
             StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n")
@@ -725,7 +754,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected Pair<String, Map<String, String>> getWikiFileDesc(T media, Metadata metadata) throws IOException {
+    protected Pair<String, Map<String, String>> getWikiFileDesc(T media, FileMetadata metadata) throws IOException {
         String language = getLanguage(media);
         String description = getDescription(media);
         StringBuilder sb = new StringBuilder("{{Information\n| description = ");
@@ -751,7 +780,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return Pair.of(sb.toString(), descriptions);
     }
 
-    protected final void appendWikiOtherVersions(StringBuilder sb, T media, Metadata metadata, String key) {
+    protected final void appendWikiOtherVersions(StringBuilder sb, T media, FileMetadata metadata, String key) {
         getOtherVersions(media, metadata)
                 .ifPresent(s -> sb.append("\n| " + key + " = <gallery>\n").append(s).append("\n</gallery>"));
     }
@@ -827,7 +856,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected String getSource(T media) throws MalformedURLException {
+    protected String getSource(T media) {
         return wikiLink(getSourceUrl(media), media.getTitle());
     }
 
@@ -845,8 +874,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return Optional.empty();
     }
 
-    protected Optional<String> getOtherVersions(T media, Metadata metadata) {
-        return Optional.empty();
+    protected Optional<String> getOtherVersions(T media, FileMetadata metadata) {
+        StringBuilder sb = new StringBuilder();
+        media.getMetadata().stream().filter(m -> m != metadata && m.getAssetUrl() != null)
+                .forEach(m -> sb.append(media.getFirstCommonsFileNameOrUploadTitle(m)).append('|')
+                        .append(m.getFileExtension().toUpperCase(Locale.ENGLISH)).append(" version"));
+        String result = sb.toString();
+        return result.isEmpty() ? Optional.empty() : Optional.of(result);
     }
 
     protected Optional<String> getOtherFields(T media) {
@@ -865,7 +899,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
      * @param includeHidden {@code true} if hidden categories are wanted
      * @return the list of Wikimedia Commons categories to apply to {@code media}
      */
-    public Set<String> findCategories(T media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(T media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = new HashSet<>();
         if (media.containsInTitleOrDescription("360 Panorama")) {
             result.add("360° panoramas");
@@ -900,22 +934,14 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return "[" + Objects.requireNonNull(url, "url") + ' ' + Objects.requireNonNull(text, "text") + ']';
     }
 
-    private boolean isForbiddenUpload(T media, boolean isManual) {
-        return Boolean.TRUE.equals(media.isIgnored()) && (!isManual || StringUtils.isBlank(media.getIgnoredReason())
-                || !(media.getIgnoredReason().contains("block list")
-                        || media.getIgnoredReason().contains("Photoset ignored")
-                        || media.getIgnoredReason().contains("Public Domain Mark")
-                        || media.getIgnoredReason().contains("Integer.MAX_VALUE")));
-    }
-
     protected void checkUploadPreconditions(T media, boolean checkUnicity, boolean isManual)
             throws MalformedURLException, URISyntaxException {
-        if (isForbiddenUpload(media, isManual)) {
+        if (UploadContext.isForbiddenUpload(media, isManual)) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored (manual: " + isManual + ")");
         }
     }
 
-    protected void checkUploadPreconditions(T media, Metadata metadata, boolean checkUnicity) throws IOException {
+    protected void checkUploadPreconditions(T media, FileMetadata metadata, boolean checkUnicity) throws IOException {
         String sha1 = metadata.getSha1();
         if (sha1 == null) {
             throw new ImageUploadForbiddenException(media + " SHA-1 has not been computed.");
@@ -928,8 +954,8 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         if (isNotEmpty(metadata.getCommonsFileNames())) {
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
-        if (mediaService.findCommonsFiles(media, includeByPerceptualHash())) {
-            media = saveMedia(media);
+        if (mediaService.findCommonsFiles(List.of(metadata), media.getIdUsedInCommons(), includeByPerceptualHash())) {
+            metadata = metadataRepository.save(metadata);
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
         if (findLicenceTemplates(media).isEmpty()) {
@@ -1004,14 +1030,6 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return getName().compareTo(o.getName());
     }
 
-    protected int doResetPerceptualHashes() {
-        return repository.resetPerceptualHashes();
-    }
-
-    protected int doResetSha1Hashes() {
-        return repository.resetSha1Hashes();
-    }
-
     protected int doResetIgnored() {
         return repository.resetIgnored();
     }
@@ -1023,18 +1041,6 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     public final int resetIgnored() {
         int result = doResetIgnored();
         LOGGER.info("Reset {} ignored media for agency {}", result, getName());
-        return result;
-    }
-
-    public final int resetPerceptualHashes() {
-        int result = doResetPerceptualHashes();
-        LOGGER.info("Reset {} perceptual hashes for agency {}", result, getName());
-        return result;
-    }
-
-    public final int resetSha1Hashes() {
-        int result = doResetSha1Hashes();
-        LOGGER.info("Reset {} SHA-1 hashes for agency {}", result, getName());
         return result;
     }
 
@@ -1052,31 +1058,26 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return uploadMode;
     }
 
-    protected boolean isPermittedFileType(Metadata metadata) {
+    protected boolean isPermittedFileType(FileMetadata metadata) {
         return metadata.getAssetUrl() != null
                 && commonsService.isPermittedFileType(metadata.getAssetUrl().toExternalForm());
     }
 
-    protected final boolean shouldUpload(UploadContext<T> ctx) {
-        return (getUploadMode() == UploadMode.AUTO
-                || (getUploadMode() == UploadMode.AUTO_FROM_DATE
-                        && (ctx.isManual() || ctx.getMedia().getYear().getValue() >= minYearUploadAuto))
-                || getUploadMode() == UploadMode.MANUAL)
-                && !isForbiddenUpload(ctx.getMedia(), ctx.isManual())
-                && isEmpty(ctx.getMetadata().getCommonsFileNames())
-                && isPermittedFileType(ctx.getMetadata());
-    }
-
-    protected final boolean shouldUploadAuto(UploadContext<T> ctx) {
-        return (getUploadMode() == UploadMode.AUTO
-                || (getUploadMode() == UploadMode.AUTO_FROM_DATE
-                        && (ctx.isManual() || ctx.getMedia().getYear().getValue() >= minYearUploadAuto)))
-                && !Boolean.TRUE.equals(ctx.getMedia().isIgnored()) && isEmpty(ctx.getMetadata().getCommonsFileNames())
-                && isPermittedFileType(ctx.getMetadata());
-    }
-
     protected boolean shouldUploadAuto(T media, boolean isManual) {
-        return shouldUploadAuto(new UploadContext<>(media, media.getMetadata(), isManual));
+        return media.getMetadata().stream().anyMatch(
+                metadata -> new UploadContext<>(media, metadata, getUploadMode(), minYearUploadAuto,
+                        this::isPermittedFileType, isManual).shouldUploadAuto());
+    }
+
+    protected FileMetadata addMetadata(T media, String assetUrl) {
+        return addMetadata(media, newURL(assetUrl));
+    }
+
+    protected FileMetadata addMetadata(T media, URL assetUrl) {
+        FileMetadata fm = metadataRepository.findByAssetUrl(assetUrl)
+                .orElseGet(() -> metadataRepository.save(new FileMetadata(assetUrl)));
+        media.addMetadata(fm);
+        return fm;
     }
 
     protected static void addOtherField(StringBuilder sb, String name, Collection<?> values, Map<String, String> catMapping) {
@@ -1128,5 +1129,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected static SimpleEntry<String, String> e(String k, String v) {
         return new SimpleEntry<>(k, v);
+    }
+
+    protected static final class UpdateFinishedException extends Exception {
+        private static final long serialVersionUID = 1L;
+
+        public UpdateFinishedException(String message) {
+            super(message);
+        }
     }
 }

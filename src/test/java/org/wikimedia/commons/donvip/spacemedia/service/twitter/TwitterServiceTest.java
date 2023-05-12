@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
@@ -69,8 +69,8 @@ class TwitterServiceTest {
         assertEquals("2 new pictures from @ESA @NASA\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=2&user=OptimusPrimeBot&ilshowall=1&offset=20230407000354", request.getText());
     }
 
-    private static final Metadata newMetadata() {
-        Metadata m = new Metadata();
+    private static final FileMetadata newMetadata() {
+        FileMetadata m = new FileMetadata();
         m.setSha1("1");
         return m;
     }

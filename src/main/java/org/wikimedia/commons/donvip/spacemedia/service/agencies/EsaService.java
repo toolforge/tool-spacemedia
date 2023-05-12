@@ -1,9 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.util.Collections.emptyList;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.time.LocalDate;
@@ -38,27 +38,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
-import com.github.dozermapper.core.Mapper;
-
 @Service
-public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, LocalDateTime> {
+public class EsaService extends AbstractAgencyService<EsaMedia, Integer, LocalDateTime> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaService.class);
-
-    /**
-     * Resulting SHA-1 hash of an HTML error page.
-     * See <a href="https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2006/10/envisat_sees_madagascar/10084739-2-eng-GB/Envisat_sees_Madagascar.tiff">this example</a>
-     */
-    private static final String SHA1_ERROR = "860f6466c5f3da5d62b2065c33aa5548697d817c";
 
     static final Pattern COPERNICUS_CREDIT = Pattern.compile(
                     ".*Copernicus[ -](?:Sentinel[ -])?dat(?:a|en)(?:/ESA)? [\\(\\[](2\\d{3}(?:[-–/]\\d{2,4})?)[\\)\\]].*",
@@ -89,9 +80,6 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
 
     @Value("${esa.date.pattern}")
     private String datePattern;
-
-    @Autowired
-    protected Mapper dozerMapper;
 
     private DateTimeFormatter dateFormatter;
 
@@ -138,11 +126,11 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
         return false;
     }
 
-    private static Optional<URL> getImageUrl(String src, URL imageUrl) throws MalformedURLException {
+    private static Optional<URL> getImageUrl(String src, URL imageUrl) {
         if (src.startsWith("http://") || src.startsWith("https://")) {
-            return Optional.of(new URL(src.replace("esamultimeda.esa.int", "esamultimedia.esa.int")));
+            return Optional.of(newURL(src.replace("esamultimeda.esa.int", "esamultimedia.esa.int")));
         } else {
-            return Optional.of(new URL(imageUrl.getProtocol(), imageUrl.getHost(), src));
+            return Optional.of(newURL(imageUrl.getProtocol(), imageUrl.getHost(), src));
         }
     }
 
@@ -214,7 +202,7 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
                                 && image.getMission().toUpperCase(Locale.ENGLISH).contains("SENTINEL"))));
     }
 
-    private Triple<Optional<EsaMedia>, Collection<Metadata>, Integer> checkEsaImage(URL url) {
+    private Triple<Optional<EsaMedia>, Collection<FileMetadata>, Integer> checkEsaImage(URL url) {
         EsaMedia media;
         boolean save = false;
         Optional<EsaMedia> mediaInRepo = mediaRepository.findByUrl(url);
@@ -222,7 +210,7 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
             media = mediaInRepo.get();
         } else {
             media = fetchMedia(url);
-            if (media.getMetadata().getAssetUrl() == null) {
+            if (media.getMetadata().isEmpty()) {
                 return Triple.of(Optional.empty(), emptyList(), 0);
             }
             save = true;
@@ -232,14 +220,14 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
             return Triple.of(Optional.empty(), emptyList(), 0);
         }
         int uploadCount = 0;
-        List<Metadata> uploadedMetadata = new ArrayList<>();
+        List<FileMetadata> uploadedMetadata = new ArrayList<>();
         for (int i = 0; i < maxTries; i++) {
             try {
                 if (doCommonUpdate(media)) {
                     save = true;
                 }
                 if (shouldUploadAuto(media, false)) {
-                    Triple<EsaMedia, Collection<Metadata>, Integer> upload = upload(save ? saveMedia(media) : media,
+                    Triple<EsaMedia, Collection<FileMetadata>, Integer> upload = upload(save ? saveMedia(media) : media,
                             true, false);
                     uploadCount += upload.getRight();
                     uploadedMetadata.addAll(upload.getMiddle());
@@ -251,8 +239,7 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
                 LOGGER.error(media.toString(), e);
                 if (e.getMessage() != null &&
                         (e.getMessage().contains("tiffinfo command failed") || e.getMessage().contains("upstream request timeout"))) {
-                    problem(media.getFullResMetadata().getAssetUrl(), e.getMessage());
-                    save = MediaService.ignoreMedia(media, media.getFullResMetadata().getAssetUrl().toString(), e);
+                    save = MediaService.ignoreMedia(media, media.getMetadata().toString(), e);
                     break;
                 }
             }
@@ -289,31 +276,9 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
                 int size = files.size();
                 if (size == 0) {
                     problem(media.getUrl(), "Image without any file");
-                } else if (size == 1) {
-                    media.getMetadata().setAssetUrl(files.get(0));
-                } else if (size == 2) {
-                    // When a file is a tif or png, the other is always a jpg (320+6 occurences),
-                    // never something else
-                    for (URL fileUrl : files) {
-                        if (fileUrl.toExternalForm().endsWith(".tif") || fileUrl.toExternalForm().endsWith(".png")) {
-                            media.getFullResMetadata().setAssetUrl(fileUrl);
-                        } else {
-                            media.getMetadata().setAssetUrl(fileUrl);
-                        }
-                    }
-                } else if (size == 3) {
-                    // assume tif + png + jpg:
-                    // https://www.esa.int/ESA_Multimedia/Images/2020/11/Kiruna_Sweden
-                    // https://www.esa.int/ESA_Multimedia/Images/2021/11/Shetland_Islands
-                    for (URL fileUrl : files) {
-                        if (fileUrl.toExternalForm().endsWith(".tif")) {
-                            media.getFullResMetadata().setAssetUrl(fileUrl);
-                        } else if (fileUrl.toExternalForm().endsWith(".png")) {
-                            media.getMetadata().setAssetUrl(fileUrl);
-                        }
-                    }
-                } else {
-                    throw new IllegalStateException("Media with more than three files: " + media);
+                }
+                for (URL file : files) {
+                    addMetadata(media, file);
                 }
                 if (size > 1) {
                     checkAssetUrlCorrectness(media);
@@ -332,7 +297,7 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
     }
 
     private void checkAssetUrlCorrectness(EsaMedia media) {
-        if (media.getMetadata().getAssetUrl() == null || media.getFullResMetadata().getAssetUrl() == null) {
+        if (media.getMetadata().stream().filter(m -> m.getAssetUrl() != null).count() < 2) {
             problem(media.getUrl(), "Image without two asset URLs");
         }
     }
@@ -341,48 +306,16 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
         return new TreeSet<>(Arrays.asList(label.replace(", ", ",").split(",")));
     }
 
-    private EsaMedia ignoreAndSaveFile(EsaMedia file, URL url, String reason, boolean problem) {
-        if (problem) {
-            problem(url, reason);
-        }
-        ignoreFile(file, reason);
-        return saveMedia(file);
-    }
-
-    private void updateMissingImages() {
-        for (EsaMedia media : listMissingMedia()) {
-            // Envisat pictures are released in two versions: 1 hi-res TIFF file and 1 not-so-hi-res JPEG file
-            // On wikimedia commons, the TIFF file has been uploaded in both TIFF and JPEG format to benefit from hi-res
-            Metadata metadata = media.getMetadata();
-            Metadata fullResMetadata = media.getFullResMetadata();
-            if ("Envisat".equalsIgnoreCase(media.getMission()) && fullResMetadata.getAssetUrl() != null
-                    && CollectionUtils.isEmpty(metadata.getCommonsFileNames())) {
-                ignoreAndSaveFile(media, metadata.getAssetUrl(), "ENVISAT low resolution image", false);
-            }
-            if (media.isIgnored() == null) {
-                // Ignore file from which we get an HTML error page instead of a real image
-                if (SHA1_ERROR.equals(metadata.getSha1())) {
-                    ignoreAndSaveFile(media, metadata.getAssetUrl(), "HTML error page", true);
-                } else {
-                    if (SHA1_ERROR.equals(fullResMetadata.getSha1())) {
-                        ignoreAndSaveFile(media, fullResMetadata.getAssetUrl(), "HTML error page", true);
-                    }
-                }
-            }
-        }
-    }
-
     @Override
     public void updateMedia() throws IOException {
         LocalDateTime start = startUpdateMedia();
-        updateMissingImages();
-        final URL url = new URL(searchLink);
+        final URL url = newURL(searchLink);
         final String proto = url.getProtocol();
         final String host = url.getHost();
         boolean moreImages = true;
         int count = 0;
         int index = 0;
-        List<Metadata> uploadedMetadata = new ArrayList<>();
+        List<FileMetadata> uploadedMetadata = new ArrayList<>();
         List<EsaMedia> uploadedMedia = new ArrayList<>();
         do {
             String searchUrl = searchLink.replace("<idx>", Integer.toString(index));
@@ -394,10 +327,10 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
                         Document html = Jsoup.connect(searchUrl).timeout(15_000).get();
                         Elements divs = html.getElementsByClass("grid-item");
                         for (Element div : divs) {
-                            URL imageUrl = new URL(proto, host, div.select("a").get(0).attr("href"));
+                            URL imageUrl = newURL(proto, host, div.select("a").get(0).attr("href"));
                             index++;
                             LOGGER.debug("Checking ESA image {}: {}", index, imageUrl);
-                            Triple<Optional<EsaMedia>, Collection<Metadata>, Integer> check = checkEsaImage(imageUrl);
+                            Triple<Optional<EsaMedia>, Collection<FileMetadata>, Integer> check = checkEsaImage(imageUrl);
                             Optional<EsaMedia> optionalMedia = check.getLeft();
                             if (optionalMedia.isPresent()) {
                                 count++;
@@ -429,11 +362,11 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
     }
 
     @Override
-    public URL getSourceUrl(EsaMedia media) throws MalformedURLException {
+    public URL getSourceUrl(EsaMedia media) {
         URL url = media.getUrl();
         String externalForm = url.toExternalForm();
         if (externalForm.contains("://www.esa.int/spaceinimages/layout/set/html_npl/Images/")) {
-            url = new URL(externalForm.replace("layout/set/html_npl/", ""));
+            url = newURL(externalForm.replace("layout/set/html_npl/", ""));
         }
         return url;
     }
@@ -470,7 +403,7 @@ public class EsaService extends AbstractFullResAgencyService<EsaMedia, Integer, 
     }
 
     @Override
-    public Set<String> findCategories(EsaMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(EsaMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
             result.add("ESA images (review needed)");

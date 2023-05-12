@@ -9,9 +9,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, String, LocalDate> {
 
@@ -41,7 +40,6 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
 
     @Override
     @Cacheable("nasaSirsCountMissing")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
     @Override
@@ -57,18 +55,9 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
 
     @Override
     @Cacheable("nasaSirsCountUploaded")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     long countUploadedToCommons();
 
     // FIND
-
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    List<NasaSirsImage> findMissingInCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    Page<NasaSirsImage> findMissingInCommons(Pageable page);
 
     @Override
     default Page<NasaSirsImage> findMissingImagesInCommons(Pageable page) {
@@ -79,18 +68,6 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
     default Page<NasaSirsImage> findMissingVideosInCommons(Pageable page) {
         return Page.empty();
     }
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    List<NasaSirsImage> findUploadedToCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    Page<NasaSirsImage> findUploadedToCommons(Pageable page);
-
-    @Override
-    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
-    List<NasaSirsImage> findDuplicateInCommons();
 
     @Override
     @Cacheable("nasaSirsFindByPhashNotNull")

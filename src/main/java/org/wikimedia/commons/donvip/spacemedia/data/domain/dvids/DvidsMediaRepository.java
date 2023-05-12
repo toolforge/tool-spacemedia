@@ -12,8 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface DvidsMediaRepository<T extends DvidsMedia>
         extends MediaRepository<T, DvidsMediaTypedId, ZonedDateTime> {
@@ -54,18 +54,17 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
 
     @Override
     @Cacheable("dvidsCountMissing")
-    @Query("select count(*) from #{#entityName} m where not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
     @Cacheable("dvidsCountMissingByUnit")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
     long countMissingInCommonsByUnit(Set<String> units);
 
     @Cacheable("dvidsCountMissingByType")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.id.type in ?1")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1")
     long countMissingInCommonsByType(Set<DvidsMediaType> types);
 
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
     long countMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units);
 
     @Override
@@ -92,11 +91,10 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
 
     @Override
     @Cacheable("dvidsCountUploaded")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     long countUploadedToCommons();
 
     @Cacheable("dvidsCountUploadedByUnit")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
     long countUploadedToCommons(Set<String> units);
 
     @Override
@@ -104,7 +102,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     long countByMetadata_PhashNotNull();
 
     @Cacheable("dvidsCountPhashNotNullByAccount")
-    @Query("select count(*) from #{#entityName} m where m.metadata.phash is not null and m.unit in ?1")
+    @Query("select count(*) from #{#entityName} m join m.metadata md where md.phash is not null and m.unit in ?1")
     long countByMetadata_PhashNotNull(Set<String> units);
 
     // FIND
@@ -121,25 +119,13 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     @Query("select m from #{#entityName} m where m.ignored = true and m.unit in ?1")
     Page<T> findByIgnoredTrue(Set<String> units, Pageable page);
 
-    @Override
-    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
-    List<T> findDuplicateInCommons();
-
-    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2 and m.unit in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.unit in ?1")
     List<T> findDuplicateInCommons(Set<String> units);
 
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    List<T> findMissingInCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    Page<T> findMissingInCommons(Pageable page);
-
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.id.type in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1")
     Page<T> findMissingInCommonsByType(Set<DvidsMediaType> types, Pageable page);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
+    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
     Page<T> findMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units, Pageable page);
 
     @Override
@@ -160,31 +146,23 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
         return findMissingInCommonsByTypeAndUnit(DvidsMediaType.videos(), units, page);
     }
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
     List<T> findMissingInCommonsByUnit(Set<String> units);
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
     Page<T> findMissingInCommonsByUnit(Set<String> units, Pageable page);
 
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    List<T> findUploadedToCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    Page<T> findUploadedToCommons(Pageable page);
-
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
     List<T> findUploadedToCommons(Set<String> units);
 
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames) and m.unit in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
     Page<T> findUploadedToCommons(Set<String> units, Pageable page);
 
     @Override
     @Cacheable("dvidsFindByPhashNotNull")
     List<MediaProjection<DvidsMediaTypedId>> findByMetadata_PhashNotNull();
 
-    @Query("select m from #{#entityName} m where m.metadata.phash is not null and m.unit in ?1")
+    @Query("select m from #{#entityName} m join m.metadata md where md.phash is not null and m.unit in ?1")
     Page<T> findByMetadata_PhashNotNull(Set<String> units, Pageable page);
 
     // SAVE
@@ -221,14 +199,4 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     @CacheEvictDvidsAll
     @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true and m.unit in ?1")
     int resetIgnored(Set<String> units);
-
-    @Modifying
-    @CacheEvictDvidsAll
-    @Query("update #{#entityName} m set m.metadata.phash = null where m.metadata.phash is not null and m.unit in ?1")
-    int resetPerceptualHashes(Set<String> units);
-
-    @Modifying
-    @CacheEvictDvidsAll
-    @Query("update #{#entityName} m set m.metadata.sha1 = null where m.metadata.sha1 is not null and m.unit in ?1")
-    int resetSha1Hashes(Set<String> units);
 }

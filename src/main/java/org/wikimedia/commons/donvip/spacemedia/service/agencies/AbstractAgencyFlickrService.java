@@ -1,7 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.toLocalDateTime;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -26,8 +29,8 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -36,12 +39,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -53,7 +57,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates
 import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.people.User;
 import com.flickr4java.flickr.photos.Photo;
-import com.github.dozermapper.core.Mapper;
+import com.flickr4java.flickr.tags.Tag;
 
 public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<FlickrMedia, Long, LocalDateTime> {
 
@@ -64,8 +68,6 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
     protected FlickrMediaRepository flickrRepository;
     @Autowired
     protected FlickrService flickrService;
-    @Autowired
-    protected Mapper dozerMapper;
     @Autowired
     protected FlickrMediaProcessorService processor;
 
@@ -85,9 +87,9 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
     void init() throws IOException {
         super.init();
         for (String account : flickrAccounts) {
-            Optional.ofNullable(loadCsvMapping("flickr/" + account + ".photosets.csv"))
+            ofNullable(loadCsvMapping("flickr/" + account + ".photosets.csv"))
                     .ifPresent(mapping -> flickrPhotoSets.put(account, mapping));
-            Optional.ofNullable(loadCsvMapping("flickr/" + account + ".tags.csv"))
+            ofNullable(loadCsvMapping("flickr/" + account + ".tags.csv"))
                     .ifPresent(mapping -> flickrTags.put(account, mapping));
         }
     }
@@ -215,13 +217,13 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
     }
 
     @Override
-    public final URL getSourceUrl(FlickrMedia media) throws MalformedURLException {
+    public final URL getSourceUrl(FlickrMedia media) {
         return getPhotoUrl(media);
     }
 
     @Override
     protected final Optional<Temporal> getCreationDate(FlickrMedia media) {
-        return Optional.ofNullable(media.getDateTaken());
+        return ofNullable(media.getDateTaken());
     }
 
     @Override
@@ -255,7 +257,7 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
     }
 
     @Override
-    public Set<String> findCategories(FlickrMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(FlickrMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
             replace(result, "Spacemedia files uploaded by " + commonsService.getAccount(),
@@ -290,16 +292,12 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
             LOGGER.warn("Non-free Flickr licence for media {}: {}", media.getId(), e.getMessage());
         }
         result.add("Flickrreview");
-        try {
-            VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media));
-            if (t != null) {
-                result.add(t.getVirinTemplate());
-                if (StringUtils.isNotBlank(t.getPdTemplate())) {
-                    result.add(t.getPdTemplate());
-                }
+        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media));
+        if (t != null) {
+            result.add(t.getVirinTemplate());
+            if (StringUtils.isNotBlank(t.getPdTemplate())) {
+                result.add(t.getPdTemplate());
             }
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(e);
         }
         String description = media.getDescription();
         if (description != null) {
@@ -312,7 +310,7 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
             if (description.contains("hoto by NASA") || description.contains("hoto/NASA")) {
                 result.add("PD-USGov-NASA");
             }
-            Optional.ofNullable(EsaService.getCopernicusTemplate(description)).ifPresent(result::add);
+            ofNullable(EsaService.getCopernicusTemplate(description)).ifPresent(result::add);
         }
         return result;
     }
@@ -329,12 +327,12 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
         }
     }
 
-    private static final URL getUserPhotosUrl(FlickrMedia media) throws MalformedURLException {
-        return new URL("https://www.flickr.com/photos/" + media.getPathAlias());
+    private static final URL getUserPhotosUrl(FlickrMedia media) {
+        return newURL("https://www.flickr.com/photos/" + media.getPathAlias());
     }
 
-    private static final URL getPhotoUrl(FlickrMedia media) throws MalformedURLException {
-        return new URL(getUserPhotosUrl(media).toExternalForm() + "/" + media.getId());
+    private static final URL getPhotoUrl(FlickrMedia media) {
+        return newURL(getUserPhotosUrl(media).toExternalForm() + "/" + media.getId());
     }
 
     protected void updateFlickrMedia() {
@@ -363,7 +361,7 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
                 LOGGER.error("Error while fetching Flickr media from account {}", flickrAccount, e);
             }
         }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start);
+        endUpdateMedia(count, uploadedMedia, start);
     }
 
     private int updateNoLongerFreeFlickrMedia(String flickrAccount, Set<FlickrMedia> pictures)
@@ -401,12 +399,19 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
     }
 
     private FlickrMedia photoToFlickrMedia(Photo p) {
-        return flickrRepository.findById(Long.parseLong(p.getId()))
-                .orElseGet(() -> dozerMapper.map(p, FlickrMedia.class));
+        return flickrRepository.findById(Long.parseLong(p.getId())).orElseGet(() -> {
+            try {
+                FlickrMedia media = mapPhoto(p);
+                metadataRepository.save(media.getUniqueMetadata());
+                return flickrRepository.save(media);
+            } catch (FlickrException e) {
+                throw new IllegalArgumentException(e);
+            }
+        });
     }
 
     private Pair<Integer, Collection<FlickrMedia>> processFlickrMedia(Iterable<FlickrMedia> medias,
-            String flickrAccount) throws MalformedURLException {
+            String flickrAccount) {
         int count = 0;
         LocalDateTime start = LocalDateTime.now();
         Collection<FlickrMedia> uploadedMedia = new ArrayList<>();
@@ -425,7 +430,7 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
         return Pair.of(count, uploadedMedia);
     }
 
-    protected final Triple<FlickrMedia, Collection<Metadata>, Integer> uploadWrapped(FlickrMedia media) {
+    protected final Triple<FlickrMedia, Collection<FileMetadata>, Integer> uploadWrapped(FlickrMedia media) {
         try {
             return upload(media, true, false);
         } catch (UploadException e) {
@@ -437,11 +442,36 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
     @Override
     protected final FlickrMedia refresh(FlickrMedia media) throws IOException {
         try {
-            return media.copyDataFrom(
-                    dozerMapper.map(flickrService.findPhoto(media.getId().toString()), FlickrMedia.class));
+            return media.copyDataFrom(mapPhoto(flickrService.findPhoto(media.getId().toString())));
         } catch (FlickrException e) {
             throw new IOException(e);
         }
+    }
+
+    private static FlickrMedia mapPhoto(Photo p) throws FlickrException {
+        FlickrMedia m = new FlickrMedia();
+        ofNullable(p.getGeoData()).ifPresent(geo -> {
+            m.setLatitude(geo.getLatitude());
+            m.setLongitude(geo.getLongitude());
+            m.setAccuracy(geo.getAccuracy());
+        });
+        m.setDate(toLocalDateTime(p.getDatePosted()));
+        m.setDateTaken(toLocalDateTime(p.getDateTaken()));
+        ofNullable(p.getTakenGranularity()).ifPresent(granu -> m.setDateTakenGranularity(Integer.parseInt(granu)));
+        m.setDescription(p.getDescription());
+        m.setId(Long.valueOf(p.getId()));
+        m.setLicense(Integer.parseInt(p.getLicense()));
+        m.setMedia(FlickrMediaType.valueOf(p.getMedia()));
+        m.setMediaStatus(p.getMediaStatus());
+        m.setOriginalFormat(p.getOriginalFormat());
+        FileMetadata md = m.getUniqueMetadata();
+        md.setAssetUrl(newURL(p.getOriginalUrl()));
+        md.setImageDimensions(new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight()));
+        m.setPathAlias(p.getPathAlias());
+        m.setTags(p.getTags().stream().map(Tag::getValue).collect(toSet()));
+        m.setThumbnailUrl(newURL(p.getThumbnailUrl()));
+        m.setTitle(p.getTitle());
+        return m;
     }
 
     @Override
@@ -452,15 +482,5 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
     @Override
     protected final int doResetIgnored() {
         return flickrRepository.resetIgnored(flickrAccounts);
-    }
-
-    @Override
-    protected final int doResetPerceptualHashes() {
-        return flickrRepository.resetPerceptualHashes(flickrAccounts);
-    }
-
-    @Override
-    protected final int doResetSha1Hashes() {
-        return flickrRepository.resetSha1Hashes(flickrAccounts);
     }
 }

@@ -11,9 +11,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 
 public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, String, LocalDateTime> {
@@ -44,7 +44,6 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
 
     @Override
     @Cacheable("nasaSdoCountMissing")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
     @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
@@ -64,10 +63,14 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
 
     @Override
     @Cacheable("nasaSdoCountUploaded")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     long countUploadedToCommons();
 
-    @Query(value = "select count(*) from nasa_sdo_media where media_type = ?1 and width = ?2 and height = ?3 and DATE(date) = ?4", nativeQuery = true)
+    @Query(value = """
+            select count(*)
+            from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
+            on (nasa_sdo_media.id = nasa_sdo_media_metadata.nasa_sdo_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
+            where media_type = ?1 and width = ?2 and height = ?3 and DATE(date) = ?4
+            """, nativeQuery = true)
     long countByMediaTypeAndDimensionsAndDate(int mediaType, int width, int height, LocalDate date);
 
     default long countByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, ImageDimensions dim, LocalDate date) {
@@ -75,14 +78,6 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
     }
 
     // FIND
-
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    List<NasaSdoMedia> findMissingInCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    Page<NasaSdoMedia> findMissingInCommons(Pageable page);
 
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
     Page<NasaSdoMedia> findMissingInCommonsByType(NasaMediaType type, Pageable page);
@@ -96,18 +91,6 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
     default Page<NasaSdoMedia> findMissingVideosInCommons(Pageable page) {
         return findMissingInCommonsByType(NasaMediaType.video, page);
     }
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    List<NasaSdoMedia> findUploadedToCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    Page<NasaSdoMedia> findUploadedToCommons(Pageable page);
-
-    @Override
-    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
-    List<NasaSdoMedia> findDuplicateInCommons();
 
     @Override
     @Cacheable("nasaSdoFindByPhashNotNull")

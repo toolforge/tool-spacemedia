@@ -10,8 +10,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 
 public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia, String, LocalDate> {
@@ -42,7 +42,6 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
 
     @Override
     @Cacheable("nasaAsterCountMissing")
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons();
 
     @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
@@ -62,18 +61,9 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
 
     @Override
     @Cacheable("nasaAsterCountUploaded")
-    @Query("select count(*) from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
     long countUploadedToCommons();
 
     // FIND
-
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    List<NasaAsterMedia> findMissingInCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and not exists elements (m.metadata.commonsFileNames)")
-    Page<NasaAsterMedia> findMissingInCommons(Pageable page);
 
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
     Page<NasaAsterMedia> findMissingInCommonsByType(NasaMediaType type, Pageable page);
@@ -87,18 +77,6 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
     default Page<NasaAsterMedia> findMissingVideosInCommons(Pageable page) {
         return findMissingInCommonsByType(NasaMediaType.video, page);
     }
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    List<NasaAsterMedia> findUploadedToCommons();
-
-    @Override
-    @Query("select m from #{#entityName} m where exists elements (m.metadata.commonsFileNames)")
-    Page<NasaAsterMedia> findUploadedToCommons(Pageable page);
-
-    @Override
-    @Query("select m from #{#entityName} m where size (m.metadata.commonsFileNames) >= 2")
-    List<NasaAsterMedia> findDuplicateInCommons();
 
     @Override
     @Cacheable("nasaAsterFindByPhashNotNull")

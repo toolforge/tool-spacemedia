@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.stsci;
 
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
@@ -14,18 +13,16 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.Lob;
-import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithKeywords;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
 @Indexed
-@Table(indexes = { @Index(columnList = "sha1, full_res_sha1, phash, full_res_phash") })
-public class StsciMedia extends FullResMedia<String, ZonedDateTime> implements WithKeywords {
+public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeywords {
 
     private static final Pattern HORRIBLE_ID_FORMAT = Pattern.compile("\\d{4}-\\d{3}-[A-Z0-9]{26}");
 
@@ -176,8 +173,8 @@ public class StsciMedia extends FullResMedia<String, ZonedDateTime> implements W
 
     @Override
     public boolean isImage() {
-        URL assertUrl = getMetadata().getAssetUrl();
-        return assertUrl != null && !assertUrl.toExternalForm().toLowerCase(Locale.ENGLISH).endsWith(".pdf");
+        return getMetadata().stream().map(FileMetadata::getAssetUrl)
+                .anyMatch(url -> url != null && !url.toExternalForm().toLowerCase(Locale.ENGLISH).endsWith(".pdf"));
     }
 
     @Override

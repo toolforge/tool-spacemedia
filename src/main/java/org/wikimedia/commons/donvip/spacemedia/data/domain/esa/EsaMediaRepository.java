@@ -11,10 +11,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface EsaMediaRepository extends FullResMediaRepository<EsaMedia, Integer, LocalDateTime> {
+public interface EsaMediaRepository extends MediaRepository<EsaMedia, Integer, LocalDateTime> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {

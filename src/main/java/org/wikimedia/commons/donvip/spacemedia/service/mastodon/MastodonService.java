@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
@@ -70,7 +70,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
     }
 
     @Override
-    public void postStatus(Collection<? extends Media<?, ?>> uploadedMedia, Collection<Metadata> uploadedMetadata,
+    public void postStatus(Collection<? extends Media<?, ?>> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
             Set<String> emojis, Set<String> accounts) throws IOException {
         callApi(buildStatusRequest(uploadedMedia, uploadedMetadata, emojis, accounts), Status.class);
     }
@@ -82,7 +82,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
 
     @Override
     protected OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
-            Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
+            Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
         return postRequest(api.getStatusUrl(), "application/json",
                 new StatusRequest(
                         createStatusText(emojis, accounts, uploadedMedia.stream().filter(Media::isImage).count(),
@@ -90,9 +90,9 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
                         postMedia(uploadedMetadata)));
     }
 
-    private List<String> postMedia(Collection<Metadata> uploadedMetadata) {
+    private List<String> postMedia(Collection<FileMetadata> uploadedMetadata) {
         List<String> mediaIds = new ArrayList<>();
-        for (Metadata metadata : determineMediaToUploadToSocialMedia(uploadedMetadata)) {
+        for (FileMetadata metadata : determineMediaToUploadToSocialMedia(uploadedMetadata)) {
             try {
                 LOGGER.info("Start uploading of media to Mastodon: {}", metadata);
                 List<CommonsImageProjection> files = imageRepo

@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import org.springframework.data.repository.CrudRepository;
 

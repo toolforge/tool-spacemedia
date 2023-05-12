@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.geo.Point;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
@@ -59,6 +60,7 @@ class NasaPhotojournalServiceTest extends AbstractAgencyServiceTest {
     void testReadXml() throws Exception {
         when(mediaService.updateMedia(any(), any(), anyBoolean(), anyBoolean(), anyBoolean(), any())).thenReturn(new MediaUpdateResult(true, null));
         when(repository.save(any(NasaPhotojournalMedia.class))).thenAnswer(a -> a.getArgument(0, NasaPhotojournalMedia.class));
+        when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
 
         List<NasaPhotojournalMedia> medias = service.processResponse(solrResponse("PIA25927"));
 
@@ -77,11 +79,11 @@ class NasaPhotojournalServiceTest extends AbstractAgencyServiceTest {
         assertEquals("NASA/JPL-Caltech/ASU", media.getCredit());
         assertFalse(media.isBig());
         assertNotNull(media.getMetadata());
-//        assertEquals(3, media.getMetadata().size());
-//        assertEquals(List.of("https://photojournal.jpl.nasa.gov/jpeg/PIA25927.jpg",
-//                "https://photojournal.jpl.nasa.gov/tiff/PIA25927.tif",
-//                "https://photojournal.jpl.nasa.gov/figures/PIA25927_fig1.png"),
-//                media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).toList());
+        assertEquals(3, media.getMetadata().size());
+        assertEquals(List.of("https://photojournal.jpl.nasa.gov/jpeg/PIA25927.jpg",
+                "https://photojournal.jpl.nasa.gov/tiff/PIA25927.tif",
+                "https://photojournal.jpl.nasa.gov/figures/PIA25927_fig1.png"),
+                media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).toList());
     }
 
     private static QueryResponse solrResponse(String id) throws IOException {

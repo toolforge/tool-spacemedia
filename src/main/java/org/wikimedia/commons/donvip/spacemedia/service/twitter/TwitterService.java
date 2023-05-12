@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TweetRequest.TweetMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
@@ -86,7 +86,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
     }
 
     @Override
-    public void postStatus(Collection<? extends Media<?, ?>> uploadedMedia, Collection<Metadata> uploadedMetadata,
+    public void postStatus(Collection<? extends Media<?, ?>> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
             Set<String> emojis, Set<String> accounts) throws IOException {
         OAuthRequest request = buildStatusRequest(uploadedMedia, uploadedMetadata, emojis, accounts);
         try {
@@ -112,15 +112,15 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
 
     @Override
     protected OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
-            Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
+            Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
         return postRequest(V2_TWEET, "application/json", new TweetRequest(createTweetMedia(uploadedMetadata),
                         createStatusText(emojis, accounts, uploadedMedia.stream().filter(Media::isImage).count(),
                         uploadedMedia.stream().filter(Media::isVideo).count(), uploadedMetadata)));
     }
 
-    private TweetMedia createTweetMedia(Collection<Metadata> uploadedMetadata) {
+    private TweetMedia createTweetMedia(Collection<FileMetadata> uploadedMetadata) {
         List<String> mediaIds = new ArrayList<>();
-        for (Metadata metadata : determineMediaToUploadToSocialMedia(uploadedMetadata)) {
+        for (FileMetadata metadata : determineMediaToUploadToSocialMedia(uploadedMetadata)) {
             try {
                 LOGGER.info("Start uploading of media to Twitter: {}", metadata);
                 List<CommonsImageProjection> files = imageRepo

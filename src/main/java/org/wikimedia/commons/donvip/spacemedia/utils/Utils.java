@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -17,9 +18,11 @@ import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -50,6 +53,30 @@ public final class Utils {
         // Hide default constructor
     }
 
+    public static URL newURL(String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public static URL newURL(String protocol, String host, String file) {
+        try {
+            return new URL(protocol, host, file);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public static URI urlToUriUnchecked(URL url) {
+        try {
+            return urlToUri(url);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     public static URI urlToUri(URL url) throws URISyntaxException {
         URI uri = null;
         try {
@@ -60,11 +87,14 @@ public final class Utils {
         return new URI(uri.toASCIIString());
     }
 
-
     public static String findExtension(String path) {
         return path.substring(path.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH);
     }
 
+    public static String getFilename(URL url) {
+        String file = url.getFile();
+        return file.substring(file.lastIndexOf('/') + 1, file.lastIndexOf('.'));
+    }
 
     public static Pair<Path, Long> downloadFile(URL url, String fileName) throws IOException {
         Path output = Files.createDirectories(Path.of("files")).resolve(fileName);
@@ -190,6 +220,10 @@ public final class Utils {
 
     public static Duration durationInSec(Temporal start, Temporal end) {
         return Duration.between(start, end).truncatedTo(ChronoUnit.SECONDS);
+    }
+
+    public static LocalDateTime toLocalDateTime(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
     public static RestTemplate restTemplateSupportingAll(ObjectMapper jackson) {

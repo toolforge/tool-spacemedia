@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaProjection;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 
 public interface WebbEsaMediaRepository extends DjangoplicityMediaRepository<WebbEsaMedia> {

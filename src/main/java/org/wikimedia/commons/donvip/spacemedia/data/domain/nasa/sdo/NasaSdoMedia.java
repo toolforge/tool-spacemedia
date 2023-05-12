@@ -9,20 +9,16 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Indexed
-@Table(indexes = { @Index(columnList = "sha1, phash") })
-public class NasaSdoMedia extends Media<String, LocalDateTime> implements WithDimensions {
+public class NasaSdoMedia extends SingleFileMedia<String, LocalDateTime> {
 
     @Id
     @Column(nullable = false, length = 32)
@@ -42,9 +38,6 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> implements WithDi
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 6)
     private NasaSdoDataType dataType;
-
-    @Embedded
-    private ImageDimensions dimensions;
 
     @Embedded
     private NasaSdoAiaKeywords aiaKeywords = new NasaSdoAiaKeywords();
@@ -85,16 +78,6 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> implements WithDi
         this.instrument = instrument;
     }
 
-    @Override
-    public ImageDimensions getImageDimensions() {
-        return dimensions;
-    }
-
-    @Override
-    public void setImageDimensions(ImageDimensions dimensions) {
-        this.dimensions = dimensions;
-    }
-
     public NasaSdoDataType getDataType() {
         return dataType;
     }
@@ -122,13 +105,13 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> implements WithDi
     }
 
     @Override
-    public String getUploadTitle() {
+    public String getUploadTitle(FileMetadata fileMetadata) {
         return String.format("SDO_%s (%s)", CommonsService.normalizeFilename(title), instrument.name());
     }
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(dataType, date, dimensions, id, instrument, mediaType, aiaKeywords);
+        return 31 * super.hashCode() + Objects.hash(dataType, date, id, instrument, mediaType, aiaKeywords);
     }
 
     @Override
@@ -141,13 +124,13 @@ public class NasaSdoMedia extends Media<String, LocalDateTime> implements WithDi
             return false;
         NasaSdoMedia other = (NasaSdoMedia) obj;
         return dataType == other.dataType && instrument == other.instrument && mediaType == other.mediaType
-                && Objects.equals(date, other.date) && Objects.equals(dimensions, other.dimensions)
+                && Objects.equals(date, other.date)
                 && Objects.equals(id, other.id) && Objects.equals(aiaKeywords, other.aiaKeywords);
     }
 
     @Override
     public String toString() {
         return "NasaSdoMedia [id=" + id + ", date=" + date + ", mediaType=" + mediaType + ", instrument=" + instrument
-                + ", dataType=" + dataType + ", dimensions=" + dimensions + ']';
+                + ", dataType=" + dataType + ']';
     }
 }

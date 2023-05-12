@@ -1,7 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -58,8 +59,8 @@ public class WebbEsaService extends AbstractDjangoplicityService<WebbEsaMedia> {
     }
 
     @Override
-    public URL getSourceUrl(WebbEsaMedia media) throws MalformedURLException {
-        return new URL(BASE_PUBLIC_URL + IMAGES_PATH + media.getId());
+    public URL getSourceUrl(WebbEsaMedia media) {
+        return newURL(BASE_PUBLIC_URL + IMAGES_PATH + media.getId());
     }
 
     @Override

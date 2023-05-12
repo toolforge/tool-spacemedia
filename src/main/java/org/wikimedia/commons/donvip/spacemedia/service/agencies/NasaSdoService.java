@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,9 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoAiaKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoDataType;
@@ -75,11 +76,11 @@ public class NasaSdoService
     }
 
     @Override
-    public URL getSourceUrl(NasaSdoMedia media) throws MalformedURLException {
+    public URL getSourceUrl(NasaSdoMedia media) {
         if (media.isVideo()) {
-            return new URL(BASE_URL + "/data/dailymov/movie.php?q=" + media.getId());
+            return newURL(BASE_URL + "/data/dailymov/movie.php?q=" + media.getId());
         }
-        return media.getMetadata().getAssetUrl();
+        return media.getMetadata().get(0).getAssetUrl();
     }
 
     @Override
@@ -99,7 +100,7 @@ public class NasaSdoService
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaSdoMedia media, Metadata metadata)
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaSdoMedia media, FileMetadata metadata)
             throws MalformedURLException {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         result.put("P170", Pair.of("Q382494", null)); // Created by SDO
@@ -126,7 +127,7 @@ public class NasaSdoService
                 count += updateVideos(dateStringPath, date, uploadedMedia, start, count);
             }
         }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().map(Media::getMetadata).toList(), start);
+        endUpdateMedia(count, uploadedMedia, start);
     }
 
     // First image of each day
@@ -173,7 +174,7 @@ public class NasaSdoService
                 if (opt.isPresent()) {
                     String firstFile = opt.get();
                     updateMedia(firstFile.replace("." + ext, ""), dateTimeExtractor.apply(firstFile), dimensions,
-                            new URL(browseUrl + '/' + firstFile), mediaType, dataType, uploadedMedia);
+                            newURL(browseUrl + '/' + firstFile), mediaType, dataType, uploadedMedia);
                     ongoingUpdateMedia(start, count + localCount++);
                 }
             }
@@ -191,16 +192,18 @@ public class NasaSdoService
             media = imageInDb.get();
         } else {
             media = new NasaSdoMedia();
+            FileMetadata metadata = media.getUniqueMetadata();
             media.setId(id);
             media.setTitle(id);
             media.setDate(date);
             media.setDataType(dataType);
             media.setInstrument(dataType.getInstrument());
-            media.getMetadata().setAssetUrl(url);
+            metadata.setAssetUrl(url);
             if (dimensions.getWidth() == 4096) {
-                media.setThumbnailUrl(new URL(url.toExternalForm().replace("_4096_", "_1024_")));
+                media.setThumbnailUrl(newURL(url.toExternalForm().replace("_4096_", "_1024_")));
             }
-            media.setImageDimensions(dimensions);
+            metadata.setImageDimensions(dimensions);
+            metadataRepository.save(metadata);
             media.setMediaType(mediaType);
             save = true;
         }
@@ -219,7 +222,7 @@ public class NasaSdoService
     }
 
     @Override
-    public Set<String> findCategories(NasaSdoMedia media, Metadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(NasaSdoMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (media.isVideo()) {
             result.add("Videos from the Solar Dynamics Observatory");
@@ -228,7 +231,7 @@ public class NasaSdoService
     }
 
     @Override
-    protected Pair<String, Map<String, String>> getWikiFileDesc(NasaSdoMedia media, Metadata metadata)
+    protected Pair<String, Map<String, String>> getWikiFileDesc(NasaSdoMedia media, FileMetadata metadata)
             throws IOException {
         return Pair.of("{{NASA SDO|instrument=" + media.getInstrument() + "|band="
                 + media.getDataType().name().replace("_", "") + "|type=" + metadata.getFileExtension() + "|id="

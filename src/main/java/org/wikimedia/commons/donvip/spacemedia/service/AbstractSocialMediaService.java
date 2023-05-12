@@ -3,10 +3,10 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 import static java.util.stream.Collectors.joining;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.timestampFormatter;
 import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.similarityScore;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -34,8 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
@@ -70,7 +70,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     public abstract void postStatus(String text) throws IOException;
 
     public abstract void postStatus(Collection<? extends Media<?, ?>> uploadedMedia,
-            Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException;
+            Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException;
 
     protected abstract S getOAuthService();
 
@@ -87,7 +87,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     protected abstract OAuthRequest buildStatusRequest(String text) throws IOException;
 
     protected abstract OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
-            Collection<Metadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException;
+            Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException;
 
     protected OAuthRequest postRequest(String endpoint, String contentType, Object payload)
             throws IOException {
@@ -139,7 +139,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     }
 
     protected String createStatusText(Set<String> emojis, Set<String> accounts, long imgCount, long vidCount,
-            Collection<Metadata> uploadedMetadata) {
+            Collection<FileMetadata> uploadedMetadata) {
         StringBuilder sb = new StringBuilder(emojis.stream().sorted().collect(joining()));
         if (imgCount > 0) {
             sb.append(String.format(" %d new picture%s", imgCount, imgCount > 1 ? "s" : ""));
@@ -159,7 +159,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
                     + timestampFormatter
                             .format(timestampFormatter.parse(
                                     imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
-                                            .map(Metadata::getSha1).map(CommonsService::base36Sha1).toList()),
+                                            .map(FileMetadata::getSha1).map(CommonsService::base36Sha1).toList()),
                                     LocalDateTime::from).plusSeconds(1)));
         } else {
             try {
@@ -173,7 +173,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         return sb.toString().strip();
     }
 
-    protected Collection<Metadata> determineMediaToUploadToSocialMedia(Collection<Metadata> uploadedMedia) {
+    protected Collection<FileMetadata> determineMediaToUploadToSocialMedia(Collection<FileMetadata> uploadedMedia) {
         // https://developer.twitter.com/en/docs/twitter-api/v1/media/upload-media/uploading-media/media-best-practices
         // attach up to 4 photos
         return determineAtMost(4, uploadedMedia.stream().filter(x -> x.isReadableImage() == Boolean.TRUE
@@ -181,9 +181,9 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
                 && !"image/gif".equals(x.getMime())).toList());
     }
 
-    private List<Metadata> determineAtMost(int max, List<Metadata> imgs) {
-        List<Metadata> result = new ArrayList<>(max);
-        for (Metadata img : imgs) {
+    private List<FileMetadata> determineAtMost(int max, List<FileMetadata> imgs) {
+        List<FileMetadata> result = new ArrayList<>(max);
+        for (FileMetadata img : imgs) {
             if (result.isEmpty()) {
                 // Start by the first random image
                 result.add(img);
@@ -201,9 +201,9 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         return result;
     }
 
-    protected static URL getImageUrl(URL url, int width, String fileName) throws MalformedURLException {
+    protected static URL getImageUrl(URL url, int width, String fileName) {
         return width > 2560
-                ? new URL(String.format("https://commons.wikimedia.org/w/thumb.php?f=%s&w=%d", fileName, 2560))
+                ? newURL(String.format("https://commons.wikimedia.org/w/thumb.php?f=%s&w=%d", fileName, 2560))
                 : url;
     }
 
@@ -226,7 +226,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         public final String cat;
         public final URL url;
 
-        public MediaUploadContext(CommonsImageProjection file, String mime) throws MalformedURLException {
+        public MediaUploadContext(CommonsImageProjection file, String mime) {
             final URL fileUrl = CommonsService.getImageUrl(file.getName());
             this.filename = file.getName();
             if ("image/gif".equals(mime)) {
@@ -282,6 +282,9 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
                 break;
             case "comet":
                 result.add(Emojis.COMET);
+                break;
+            case "fire", "wildfire":
+                result.add(Emojis.FIRE);
                 break;
             }
         }

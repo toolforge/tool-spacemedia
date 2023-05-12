@@ -12,10 +12,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
-
 
 @Service
 public class NasaFlickrService extends AbstractAgencyFlickrService {
@@ -64,7 +63,7 @@ public class NasaFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    protected String getSource(FlickrMedia media) throws MalformedURLException {
+    protected String getSource(FlickrMedia media) {
         String result = super.getSource(media);
         String nasaId = getNasaId(media);
         if (nasaId != null) {
@@ -126,7 +125,7 @@ public class NasaFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(FlickrMedia media, Metadata metadata)
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(FlickrMedia media, FileMetadata metadata)
             throws MalformedURLException {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         if ("uahirise-mars".equals(media.getPathAlias())) {

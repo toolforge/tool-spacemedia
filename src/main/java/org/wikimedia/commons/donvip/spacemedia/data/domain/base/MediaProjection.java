@@ -1,4 +1,6 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain;
+package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
+
+import java.util.List;
 
 public interface MediaProjection<ID> {
 
@@ -14,5 +16,5 @@ public interface MediaProjection<ID> {
      *
      * @return the metadata
      */
-    MetadataProjection getMetadata();
+    List<? extends FileMetadataProjection> getMetadata();
 }

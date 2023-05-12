@@ -1,10 +1,15 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Set;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.converter.ConvertWith;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -12,6 +17,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.noirlab.NOIRLabMediaRepository;
 
 @SpringJUnitConfig(NOIRLabServiceTest.TestConfig.class)
@@ -23,73 +31,33 @@ class NOIRLabServiceTest extends AbstractAgencyServiceTest {
     @Autowired
     private NOIRLabService service;
 
-    @Test
-    void testReadHtmlTime1() throws Exception {
-        // Dec. 5, 2022, 10:25 a.m.
-        assertEquals(
-                "NOIRLabMedia [id=360Pano_NicholasU-Mayall_4m_Telescope-CC-FD, imageType=Photographic, date=2022-12-05T10:25, dimensions=[width=11051, height=11051], name=Nicholas U. Mayall 4-meter Telescope, categories=[Fulldome, Kitt Peak National Observatory], credit=NOIRLab/NSF/AURA/T. Slovinský, fullResMetadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/original/360Pano_NicholasU-Mayall_4m_Telescope-CC-FD.tif, ], metadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/large/360Pano_NicholasU-Mayall_4m_Telescope-CC-FD.jpg, ], title=Nicholas U. Mayall 4-meter Telescope Fulldome, description=A fulldome view of the Nicholas U. Mayall 4-meter Telescope at Kitt Peak National Observatory in Arizona.A 360 panorama version of this image can be viewed <a href=\"https://noirlab.edu/public/images/360Pano_NicholasU-Mayall_4m_Telescope-CC/\">here</a>., ]",
-                service.newMediaFromHtml(html("noirlab/Nicholas_U_Mayall_4-meter_Telescope_Fulldome_NOIRLab.htm"),
-                                new URL("https://noirlab.edu/public/images/360Pano_NicholasU-Mayall_4m_Telescope-CC-FD/"),
-                                "360Pano_NicholasU-Mayall_4m_Telescope-CC-FD", null)
-                        .toString());
-    }
-
-    @Test
-    void testReadHtmlTime2() throws Exception {
-        // March 2, 2023, 10:07 a.m.
-        assertEquals(
-                "NOIRLabMedia [id=Roll_off_Roof_Observatory_pic_8-CC, imageType=Photographic, date=2023-03-02T10:07, dimensions=[width=5426, height=3322], name=Visitor Center Roll Off Roof Observatory, categories=[Kitt Peak National Observatory], credit=KPNO/NOIRLab/NSF/AURA/T. Matsopoulos, fullResMetadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/original/Roll_off_Roof_Observatory_pic_8-CC.tif, ], metadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/large/Roll_off_Roof_Observatory_pic_8-CC.jpg, ], title=Kitt Peak Visitor Center Roll Off Roof Observatory 0.4-meter Telescope, description=The 0.4-meter Telescope inside the&nbsp;<a href=\"https://noirlab.edu/public/programs/kitt-peak-national-observatory/visitor-center-roll-off-roof/\">Kitt Peak Visitor Center Roll Off Roof Observatory</a>, located at Kitt Peak National Observatory (<a href=\"https://noirlab.edu/public/programs/kitt-peak-national-observatory\">KPNO</a>), a Program of NSF's NOIRLab., ]",
-                service.newMediaFromHtml(html("noirlab/Roll_off_Roof_Observatory_pic_8-CC.htm"),
-                        new URL("https://noirlab.edu/public/images/Roll_off_Roof_Observatory_pic_8-CC/"),
-                        "Roll_off_Roof_Observatory_pic_8-CC", null).toString());
-    }
-
-    @Test
-    void testReadHtmlTime3() throws Exception {
-        // March 1, 2023, 11 a.m.
-        assertEquals(
-                "NOIRLabMedia [id=noirlab2307a, imageType=Observation, date=2023-03-01T11:00, dimensions=[width=13546, height=10647], name=RCW 86, categories=[Stars], credit=CTIO/NOIRLab/DOE/NSF/AURA T.A. Rector (University of Alaska Anchorage/NSF’s NOIRLab), J. Miller (Gemini Observatory/NSF’s NOIRLab), M. Zamani & D. de Martin (NSF’s NOIRLab), fullResMetadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/original/noirlab2307a.tif, ], metadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/large/noirlab2307a.jpg, ], title=DECam Images RCW 86, Remains of Supernova Witnessed in 185, description=The tattered shell of the first-ever recorded supernova was captured by the US Department of Energy-fabricated Dark Energy Camera, which is mounted on the National Science Foundation’s (NSF) <a href=\"https://noirlab.edu/public/programs/ctio/victor-blanco-4m-telescope/\">Víctor M. Blanco 4-meter Telescope</a> at <a href=\"https://noirlab.edu/public/programs/ctio/\">Cerro Tololo Inter-American Observatory</a> in Chile, a Program of NSF’s NOIRLab. A ring of glowing debris is all that remains of a white dwarf star that exploded more than 1800 years ago when it was recorded by Chinese astronomers as a ‘guest star’. This special image, which covers an impressive 45 arcminutes on the sky, gives a rare view of the entirety of this supernova remnant., ]",
-                service.newMediaFromHtml(html("noirlab/noirlab2307a.htm"),
-                                new URL("https://noirlab.edu/public/images/noirlab2307a/"), "noirlab2307a", null)
-                        .toString());
-    }
-
-    @Test
-    void testReadHtmlTime4() throws Exception {
-        // Feb. 9, 2021, noon
-        assertEquals(
-                "NOIRLabMedia [id=ann20019a, imageType=Artwork, date=2021-02-09T12:00, dimensions=[width=801, height=801], categories=[Illustrations], credit=Rubin Observatory/NSF/AURA, fullResMetadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/original/ann20019a.tif, ], metadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/large/ann20019a.jpg, ], title=Rubin Observatory Logo, description=Rubin Observatory Logo, ]",
-                service.newMediaFromHtml(html("noirlab/ann20019a.htm"),
-                new URL("https://noirlab.edu/public/images/ann20019a/"), "ann20019a", null).toString());
-    }
-
-    @Test
-    void testReadHtmlTime5() throws Exception {
-        // April 5, 2023, noon
-        assertEquals(
-                "NOIRLabMedia [id=iotw2314a, imageType=Photographic, date=2023-04-05T12:00, dimensions=[width=6226, height=4151], name=McMath-Pierce Solar Telescope, categories=[Kitt Peak National Observatory], credit=KPNO/NOIRLab/NSF/AURA/P. Horálek (Institute of Physics in Opava), fullResMetadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/original/iotw2314a.tif, ], metadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/large/iotw2314a.jpg, ], title=The Belt of Venus over the McMath-Pierce Solar Telescope, description=The <a href=\"https://noirlab.edu/public/programs/kitt-peak-national-observatory/mcmath-pierce-solar-telescope/\">McMath-Pierce Solar Telescope</a>, located at Kitt Peak National Observatory (<a href=\"https://noirlab.edu/public/programs/kitt-peak-national-observatory/\">KPNO</a>), a Program of NSF’s NOIRLab, is captured here beneath the full moon just after sunset. This is the perfect time of day to witness a phenomenon known as the anti-twilight arch, nicknamed the <a href=\"https://en.wikipedia.org/wiki/Belt_of_Venus\">Belt of Venus</a>. The belt forms directly opposite the rising or setting Sun — in this image, the Sun is setting in the west behind the camera. Rays of light from the Sun hit the eastern atmosphere at the <a href=\"https://en.wikipedia.org/wiki/Antisolar_point\">antisolar point</a>, the point directly opposite the sun from an observer’s perspective. The light is then backscattered off of the atmosphere and reflected back to the observer at a longer wavelength, changing the typically blue-appearing light into pink. The band of dark blue sky below the anti-twilight arch is actually the Earth’s shadow!You can find a diagram representation of this phenomenon <a href=\"https://www.skyatnightmagazine.com/advice/belt-of-venus/\">here</a>.This photo was taken as part of the recent <a href=\"https://www.instagram.com/p/Cb-7Y5SPUKi/?utm_source=ig_web_copy_link\">NOIRLab 2022 Photo Expedition</a> to all the NOIRLab sites., ]",
-                service.newMediaFromHtml(html("noirlab/iotw2314a.htm"),
-                new URL("https://noirlab.edu/public/images/iotw2314a/"), "iotw2314a", null).toString());
-    }
-
-    @Test
-    void testReadHtmlTime6() throws Exception {
-        // Feb. 1, 2023, 9 a.m.
-        assertEquals(
-                "NOIRLabMedia [id=noirlab2303b, imageType=Artwork, date=2023-02-01T09:00, dimensions=[width=3840, height=3840], categories=[Illustrations], credit=CTIO/NOIRLab/NSF/AURA/P. Marenfeld, fullResMetadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/original/noirlab2303b.tif, ], metadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/large/noirlab2303b.jpg, ], title=Infographic: The Evolution of CPD-29 2176, a Kilonova Progenitor, description=This infographic illustrates the evolution of the star system CPD-29 2176, the first confirmed kilonova progenitor. Stage 1, two massive blue stars form in a binary star system. Stage 2, the larger of the two stars nears the end of its life. Stage 3, the smaller of the two stars siphons off material from its larger, more mature companion, stripping it of much of its outer atmosphere. Stage 4, the larger star forms an ultra-stripped supernova, the end-of-life explosion of a star with less of a “kick” than a more normal supernova. Stage 5, as currently observed by astronomers, the resulting neutron star from the earlier supernova begins to siphon off material from its companion, turning the tables on the binary pair. Stage 6, with the loss of much of its outer atmosphere, the companion star also undergoes an ultra-stripped supernova. This stage will happen in about one million years. Stage 7, a pair of neutron stars in close mutual orbit now remain where once there were two massive stars. Stage 8, the two neutron stars spiral into toward each other, giving up their orbital energy as faint gravitational radiation. Stage 9, the final stage of this system as both neutron stars collide, producing a powerful kilonova, the cosmic factory of heavy elements in our Universe.&nbsp;&nbsp;, ]",
-                service.newMediaFromHtml(html("noirlab/noirlab2303b.htm"),
-                        new URL("https://noirlab.edu/public/images/noirlab2303b/"), "noirlab2303b", null)
-                        .toString());
-    }
-
-    @Test
-    void testReadHtmlDate() throws Exception {
-        // July 21, 2017
-        assertEquals(
-                "NOIRLabMedia [id=noaoann17007a, imageType=Collage, date=2017-07-21T00:00, dimensions=[width=848, height=400], categories=[Galaxies], credit=Observers: D. Gerdes and S. Jouvel; Inset Image Credit: T. Abbott and NOAO/AURA/<a href=\"https://www.nsf.gov/\">NSF</a>, fullResMetadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/original/noaoann17007a.tif, ], metadata=Metadata [assetUrl=https://noirlab.edu/public/media/archives/images/large/noaoann17007a.jpg, ], title=Superluminous supernova proclaims the death of a star at cosmic high noon, description=Ten billion years ago, a massive star ended its life in a brilliant explosion three times as bright as all of the stars in our galaxy, the Milky Way, combined. News of its death, which recently reached Earth, was detected in the Dark Energy Survey being carried out with DECam at the CTIO Blanco telescope (pictured, above right). The supernova is one of the most distant ever discovered and confirmed., ]",
-                service.newMediaFromHtml(html("noirlab/noaoann17007a.htm"),
-                                new URL("https://noirlab.edu/public/images/noaoann17007a/"), "noaoann17007a", null)
-                        .toString());
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            // Dec. 5, 2022, 10:25 a.m.
+            "360Pano_NicholasU-Mayall_4m_Telescope-CC-FD|Photographic|2022-12-05T10:25|11051|11051|Nicholas U. Mayall 4-meter Telescope||Fulldome,Kitt Peak National Observatory|NOIRLab/NSF/AURA/T. Slovinský|https://noirlab.edu/public/media/archives/images/original/360Pano_NicholasU-Mayall_4m_Telescope-CC-FD.tif,https://noirlab.edu/public/media/archives/images/large/360Pano_NicholasU-Mayall_4m_Telescope-CC-FD.jpg|Nicholas U. Mayall 4-meter Telescope Fulldome|A fulldome view of the Nicholas U. Mayall 4-meter Telescope at Kitt Peak National Observatory in Arizona.A 360 panorama version of this image can be viewed <a href=\"https://noirlab.edu/public/images/360Pano_NicholasU-Mayall_4m_Telescope-CC/\">here</a>.|",
+            // March 2, 2023, 10:07 a.m.
+            "Roll_off_Roof_Observatory_pic_8-CC|Photographic|2023-03-02T10:07|5426|3322|Visitor Center Roll Off Roof Observatory||Kitt Peak National Observatory|KPNO/NOIRLab/NSF/AURA/T. Matsopoulos|https://noirlab.edu/public/media/archives/images/original/Roll_off_Roof_Observatory_pic_8-CC.tif,https://noirlab.edu/public/media/archives/images/large/Roll_off_Roof_Observatory_pic_8-CC.jpg|Kitt Peak Visitor Center Roll Off Roof Observatory 0.4-meter Telescope|The 0.4-meter Telescope inside the&nbsp;<a href=\"https://noirlab.edu/public/programs/kitt-peak-national-observatory/visitor-center-roll-off-roof/\">Kitt Peak Visitor Center Roll Off Roof Observatory</a>, located at Kitt Peak National Observatory (<a href=\"https://noirlab.edu/public/programs/kitt-peak-national-observatory\">KPNO</a>), a Program of NSF's NOIRLab.|",
+            // March 1, 2023, 11 a.m.
+            "noirlab2307a|Observation|2023-03-01T11:00|13546|10647|RCW 86||Stars|CTIO/NOIRLab/DOE/NSF/AURA T.A. Rector (University of Alaska Anchorage/NSF’s NOIRLab), J. Miller (Gemini Observatory/NSF’s NOIRLab), M. Zamani & D. de Martin (NSF’s NOIRLab)|https://noirlab.edu/public/media/archives/images/original/noirlab2307a.tif,https://noirlab.edu/public/media/archives/images/large/noirlab2307a.jpg|DECam Images RCW 86, Remains of Supernova Witnessed in 185|The tattered shell of the first-ever recorded supernova was captured by the US Department of Energy-fabricated Dark Energy Camera, which is mounted on the National Science Foundation’s (NSF) <a href=\"https://noirlab.edu/public/programs/ctio/victor-blanco-4m-telescope/\">Víctor M. Blanco 4-meter Telescope</a> at <a href=\"https://noirlab.edu/public/programs/ctio/\">Cerro Tololo Inter-American Observatory</a> in Chile, a Program of NSF’s NOIRLab. A ring of glowing debris is all that remains of a white dwarf star that exploded more than 1800 years ago when it was recorded by Chinese astronomers as a ‘guest star’. This special image, which covers an impressive 45 arcminutes on the sky, gives a rare view of the entirety of this supernova remnant.|",
+            // Feb. 9, 2021, noon
+            "ann20019a|Artwork|2021-02-09T12:00|801|801|||Illustrations|Rubin Observatory/NSF/AURA|https://noirlab.edu/public/media/archives/images/original/ann20019a.tif,https://noirlab.edu/public/media/archives/images/large/ann20019a.jpg|Rubin Observatory Logo|Rubin Observatory Logo|",
+            // April 5, 2023, noon
+            "iotw2314a|Photographic|2023-04-05T12:00|6226|4151|McMath-Pierce Solar Telescope||Kitt Peak National Observatory|KPNO/NOIRLab/NSF/AURA/P. Horálek (Institute of Physics in Opava)|https://noirlab.edu/public/media/archives/images/original/iotw2314a.tif,https://noirlab.edu/public/media/archives/images/large/iotw2314a.jpg|The Belt of Venus over the McMath-Pierce Solar Telescope|The <a href=\"https://noirlab.edu/public/programs/kitt-peak-national-observatory/mcmath-pierce-solar-telescope/\">McMath-Pierce Solar Telescope</a>, located at Kitt Peak National Observatory (<a href=\"https://noirlab.edu/public/programs/kitt-peak-national-observatory/\">KPNO</a>), a Program of NSF’s NOIRLab, is captured here beneath the full moon just after sunset. This is the perfect time of day to witness a phenomenon known as the anti-twilight arch, nicknamed the <a href=\"https://en.wikipedia.org/wiki/Belt_of_Venus\">Belt of Venus</a>. The belt forms directly opposite the rising or setting Sun — in this image, the Sun is setting in the west behind the camera. Rays of light from the Sun hit the eastern atmosphere at the <a href=\"https://en.wikipedia.org/wiki/Antisolar_point\">antisolar point</a>, the point directly opposite the sun from an observer’s perspective. The light is then backscattered off of the atmosphere and reflected back to the observer at a longer wavelength, changing the typically blue-appearing light into pink. The band of dark blue sky below the anti-twilight arch is actually the Earth’s shadow!You can find a diagram representation of this phenomenon <a href=\"https://www.skyatnightmagazine.com/advice/belt-of-venus/\">here</a>.This photo was taken as part of the recent <a href=\"https://www.instagram.com/p/Cb-7Y5SPUKi/?utm_source=ig_web_copy_link\">NOIRLab 2022 Photo Expedition</a> to all the NOIRLab sites.|",
+            // Feb. 1, 2023, 9 a.m.
+            "noirlab2303b|Artwork|2023-02-01T09:00|3840|3840|||Illustrations|CTIO/NOIRLab/NSF/AURA/P. Marenfeld|https://noirlab.edu/public/media/archives/images/original/noirlab2303b.tif,https://noirlab.edu/public/media/archives/images/large/noirlab2303b.jpg|Infographic: The Evolution of CPD-29 2176, a Kilonova Progenitor|This infographic illustrates the evolution of the star system CPD-29 2176, the first confirmed kilonova progenitor. Stage 1, two massive blue stars form in a binary star system. Stage 2, the larger of the two stars nears the end of its life. Stage 3, the smaller of the two stars siphons off material from its larger, more mature companion, stripping it of much of its outer atmosphere. Stage 4, the larger star forms an ultra-stripped supernova, the end-of-life explosion of a star with less of a “kick” than a more normal supernova. Stage 5, as currently observed by astronomers, the resulting neutron star from the earlier supernova begins to siphon off material from its companion, turning the tables on the binary pair. Stage 6, with the loss of much of its outer atmosphere, the companion star also undergoes an ultra-stripped supernova. This stage will happen in about one million years. Stage 7, a pair of neutron stars in close mutual orbit now remain where once there were two massive stars. Stage 8, the two neutron stars spiral into toward each other, giving up their orbital energy as faint gravitational radiation. Stage 9, the final stage of this system as both neutron stars collide, producing a powerful kilonova, the cosmic factory of heavy elements in our Universe.&nbsp;&nbsp;|",
+            // July 21, 2017
+            "noaoann17007a|Collage|2017-07-21T00:00|848|400|||Galaxies|Observers: D. Gerdes and S. Jouvel; Inset Image Credit: T. Abbott and NOAO/AURA/<a href=\"https://www.nsf.gov/\">NSF</a>|https://noirlab.edu/public/media/archives/images/original/noaoann17007a.tif,https://noirlab.edu/public/media/archives/images/large/noaoann17007a.jpg|Superluminous supernova proclaims the death of a star at cosmic high noon|Ten billion years ago, a massive star ended its life in a brilliant explosion three times as bright as all of the stars in our galaxy, the Milky Way, combined. News of its death, which recently reached Earth, was detected in the Dark Energy Survey being carried out with DECam at the CTIO Blanco telescope (pictured, above right). The supernova is one of the most distant ever discovered and confirmed.|" })
+    void testReadHtml(String id, DjangoplicityMediaType imageType, String date, int width, int height, String name,
+            @ConvertWith(SetArgumentConverter.class) Set<String> types,
+            @ConvertWith(SetArgumentConverter.class) Set<String> categories, String credit,
+            @ConvertWith(ListArgumentConverter.class) List<String> assetUrls, String title, String description,
+            @ConvertWith(SetArgumentConverter.class) Set<String> telescopes)
+            throws Exception {
+        when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
+        doDjangoplicityMediaTest(service.newMediaFromHtml(html("noirlab/" + id + ".htm"),
+                new URL("https://noirlab.edu/public/images/" + id + "/"), id, null), id, imageType, date,
+                new ImageDimensions(width, height), name, types, categories, credit, assetUrls, title, description,
+                telescopes);
     }
 
     @Configuration

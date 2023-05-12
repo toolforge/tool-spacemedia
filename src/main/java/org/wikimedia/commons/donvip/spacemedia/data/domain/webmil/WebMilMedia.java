@@ -2,7 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.webmil;
 
 import java.time.LocalDateTime;
 
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
 public class WebMilMedia extends Media<String, LocalDateTime> {
 

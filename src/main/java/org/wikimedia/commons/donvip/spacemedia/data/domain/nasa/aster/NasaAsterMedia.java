@@ -7,27 +7,23 @@ import java.time.temporal.ChronoField;
 import java.util.Objects;
 
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.WithLatLon;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Entity
 @Indexed
-@Table(indexes = { @Index(columnList = "sha1, phash") })
-public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatLon, WithDimensions {
+public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatLon {
 
     @Id
     @Column(nullable = false, length = 32)
@@ -41,9 +37,6 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatL
 
     @Column(nullable = false)
     private LocalDateTime publicationDate;
-
-    @Embedded
-    private ImageDimensions dimensions;
 
     @Column(nullable = false)
     private double latitude;
@@ -141,15 +134,6 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatL
         this.icon = icon;
     }
 
-    @Override
-    public ImageDimensions getImageDimensions() {
-        return dimensions;
-    }
-
-    @Override
-    public void setImageDimensions(ImageDimensions dimensions) {
-        this.dimensions = dimensions;
-    }
 
     public NasaMediaType getMediaType() {
         return mediaType;
@@ -170,8 +154,9 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatL
     }
 
     @Override
-    public String getUploadTitle() {
-        return CommonsService.normalizeFilename(title) + " (ASTER)";
+    public String getUploadTitle(FileMetadata fileMetadata) {
+        return (getMetadata().size() < 2 ? CommonsService.normalizeFilename(title)
+                : Utils.getFilename(fileMetadata.getAssetUrl())) + " (ASTER)";
     }
 
     @Override
@@ -182,8 +167,7 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatL
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(id, date, publicationDate, latitude, longitude, longName, category, icon, dimensions,
-                        mediaType);
+                + Objects.hash(id, date, publicationDate, latitude, longitude, longName, category, icon, mediaType);
     }
 
     @Override
@@ -196,14 +180,13 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatL
         return Objects.equals(date, other.date) && Objects.equals(publicationDate, other.publicationDate)
                 && Objects.equals(id, other.id) && latitude == other.latitude && longitude == other.longitude
                 && Objects.equals(longName, other.longName) && Objects.equals(category, other.category)
-                && Objects.equals(icon, other.icon) && Objects.equals(dimensions, other.dimensions)
-                && mediaType == other.mediaType;
+                && Objects.equals(icon, other.icon) && mediaType == other.mediaType;
     }
 
     @Override
     public String toString() {
-        return "NasaSdoMedia [id=" + id + ", date=" + date + ", publicationDate=" + publicationDate + ", dimensions="
-                + dimensions + ", latitude=" + latitude + ", longitude=" + longitude + ", longName=" + longName
+        return "NasaSdoMedia [id=" + id + ", date=" + date + ", publicationDate=" + publicationDate + ", latitude="
+                + latitude + ", longitude=" + longitude + ", longName=" + longName
                 + ", category=" + category + ", icon=" + icon + ", mediaType=" + mediaType + ']';
     }
 }

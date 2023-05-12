@@ -5,7 +5,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.Agency;
 
 public class SpacemediaAgencyUpdateJobApplication extends AbstractSpacemediaAgencyUpdateJobApplication {

@@ -1,7 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
 import static java.util.stream.Collectors.joining;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -25,7 +26,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -43,12 +43,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkI
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.ImageInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.WikiPage;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResExtraMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.FullResMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Metadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
@@ -90,6 +89,9 @@ public class MediaService {
     @Autowired
     private HashAssociationRepository hashRepository;
 
+    @Autowired
+    private FileMetadataRepository metadataRepository;
+
     @Value("${perceptual.threshold}")
     private double perceptualThreshold;
 
@@ -116,8 +118,7 @@ public class MediaService {
     }
 
     public MediaUpdateResult updateMedia(Media<?, ?> media, Iterable<String> stringsToRemove, boolean forceUpdate,
-            boolean checkBlocklist, boolean includeByPerceptualHash, Path localPath)
-            throws IOException {
+            boolean checkBlocklist, boolean includeByPerceptualHash, Path localPath) throws IOException {
         boolean result = false;
         if (cleanupDescription(media, stringsToRemove)) {
             result = true;
@@ -126,7 +127,8 @@ public class MediaService {
         if (ur.getResult()) {
             result = true;
         }
-        if (findCommonsFiles(media, includeByPerceptualHash)) {
+        if (findCommonsFiles(media.getMetadata(), media.getIdUsedInCommons(), includeByPerceptualHash)) {
+            metadataRepository.saveAll(media.getMetadata());
             result = true;
         }
         if (checkBlocklist && !Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
@@ -152,13 +154,15 @@ public class MediaService {
                 return ignoreMedia(media, "Title or description contains term(s) in block list: " + ignoredTerms);
             }
         }
-        if (media.getMetadata() != null && media.getMetadata().getExif() != null
-                && (media.getMetadata().getExif().getPhotographers().anyMatch(this::isPhotographerBlocklisted)
-                        || media.getMetadata().getExif().getCopyrights().anyMatch(this::isCopyrightBlocklisted))) {
-            return ignoreMedia(media,
-                    "Probably non-free image (EXIF photographer/copyright blocklisted) : "
-                            + media.getMetadata().getExif().getPhotographers().sorted().toList() + " / "
-                            + media.getMetadata().getExif().getCopyrights().sorted().toList());
+        for (FileMetadata metadata : media.getMetadata()) {
+            if (metadata != null && metadata.getExif() != null
+                    && (metadata.getExif().getPhotographers().anyMatch(this::isPhotographerBlocklisted)
+                            || metadata.getExif().getCopyrights().anyMatch(this::isCopyrightBlocklisted))) {
+                return ignoreMedia(media,
+                        "Probably non-free image (EXIF photographer/copyright blocklisted) : "
+                                + metadata.getExif().getPhotographers().sorted().toList() + " / "
+                                + metadata.getExif().getCopyrights().sorted().toList());
+            }
         }
         return false;
     }
@@ -173,20 +177,19 @@ public class MediaService {
     }
 
     public MediaUpdateResult updateReadableStateAndHashes(Media<?, ?> media, Path localPath, boolean forceUpdateOfHashes) {
-        MediaUpdateResult ur = updateReadableStateAndHashes(media, media.getMetadata(), localPath, forceUpdateOfHashes);
-        boolean result = ur.getResult();
+        boolean result = false;
+        Exception exception = null;
+        for (FileMetadata metadata : media.getMetadata()) {
+            MediaUpdateResult ur = updateReadableStateAndHashes(media, metadata, localPath, forceUpdateOfHashes);
+            if (ur.getResult()) {
+                result = true;
+            }
+            if (ur.getException() != null) {
+                exception = ur.getException();
+            }
+        }
         // T230284 - Processing full-res images can lead to OOM errors
-        if (updateFullResImages && media instanceof FullResMedia<?, ?> frMedia
-                && updateReadableStateAndHashes(frMedia, frMedia.getFullResMetadata(), localPath, forceUpdateOfHashes)
-                        .getResult()) {
-            result = true;
-        }
-        if (updateFullResImages && media instanceof FullResExtraMedia<?, ?> exMedia
-                && updateReadableStateAndHashes(exMedia, exMedia.getExtraMetadata(), localPath, forceUpdateOfHashes)
-                        .getResult()) {
-            result = true;
-        }
-        return new MediaUpdateResult(result, ur.getException());
+        return new MediaUpdateResult(result, exception);
     }
 
     public static class MediaUpdateResult {
@@ -207,7 +210,7 @@ public class MediaService {
         }
     }
 
-    private MediaUpdateResult updateReadableStateAndHashes(Media<?, ?> media, Metadata metadata, Path localPath,
+    private MediaUpdateResult updateReadableStateAndHashes(Media<?, ?> media, FileMetadata metadata, Path localPath,
             boolean forceUpdateOfHashes) {
         boolean isImage = metadata.isImage();
         boolean result = false;
@@ -254,10 +257,13 @@ public class MediaService {
                 bi.flush();
             }
         }
+        if (result) {
+            metadataRepository.save(metadata);
+        }
         return new MediaUpdateResult(result, null);
     }
 
-    private static boolean shouldReadImage(URL assetUrl, Metadata metadata, boolean forceUpdateOfHashes) {
+    private static boolean shouldReadImage(URL assetUrl, FileMetadata metadata, boolean forceUpdateOfHashes) {
         return assetUrl != null
                 && (metadata.isReadableImage() == null || (Boolean.TRUE.equals(metadata.isReadableImage())
                         && (metadata.getPhash() == null || metadata.getSha1() == null || forceUpdateOfHashes)));
@@ -315,7 +321,7 @@ public class MediaService {
      * @throws IOException        in case of I/O error
      * @throws URISyntaxException if URL cannot be converted to URI
      */
-    public boolean updateSha1(Metadata metadata, Path localPath, boolean forceUpdate)
+    public boolean updateSha1(FileMetadata metadata, Path localPath, boolean forceUpdate)
             throws IOException, URISyntaxException {
         if ((metadata.getSha1() == null || forceUpdate) && (metadata.getAssetUrl() != null || localPath != null)) {
             metadata.setSha1(getSha1(localPath, metadata.getAssetUrl()));
@@ -351,7 +357,7 @@ public class MediaService {
      * @return {@code true} if media has been updated with computed perceptual hash
      *         and must be persisted
      */
-    public boolean updatePerceptualHash(Metadata metadata, BufferedImage image, boolean forceUpdate) {
+    public boolean updatePerceptualHash(FileMetadata metadata, BufferedImage image, boolean forceUpdate) {
         if (image != null && metadata.getAssetUrl() != null && (metadata.getPhash() == null || forceUpdate)) {
             try {
                 metadata.setPhash(HashHelper.encode(HashHelper.computePerceptualHash(image)));
@@ -364,35 +370,30 @@ public class MediaService {
         return false;
     }
 
-    public boolean findCommonsFiles(Media<?, ?> media, boolean includeByPerceptualHash) throws IOException {
-        return findCommonsFilesWithSha1(media) || (includeByPerceptualHash
-                && (findCommonsFilesWithPhash(media, true) || findCommonsFilesWithIdAndPhash(media)));
+    public boolean findCommonsFiles(List<FileMetadata> metadata, String idUsedInCommons,
+            boolean includeByPerceptualHash) throws IOException {
+        return findCommonsFilesWithSha1(metadata) || (includeByPerceptualHash
+                && (findCommonsFilesWithPhash(metadata, true)
+                        || findCommonsFilesWithIdAndPhash(metadata, idUsedInCommons)));
     }
 
     /**
-     * Looks for Wikimedia Commons files matching the media SHA-1, if required.
+     * Looks for Wikimedia Commons files matching the metadata SHA-1, if required.
      *
-     * @param media media object
-     * @return {@code true} if media has been updated with list of Wikimedia Commons
-     *         files and must be persisted
+     * @param metadatas list of file metadata objects
+     * @return {@code true} if at least one metadata has been updated with list of
+     *         Wikimedia Commons files and must be persisted
      * @throws IOException in case of I/O error
      */
-    public boolean findCommonsFilesWithSha1(Media<?, ?> media) throws IOException {
-        boolean result = findCommonsFilesWithSha1(media.getMetadata());
-        if (media instanceof FullResMedia<?, ?> frMedia) {
-            if (findCommonsFilesWithSha1(frMedia.getFullResMetadata())) {
-                result = true;
-            }
-        }
-        if (media instanceof FullResExtraMedia<?, ?> exMedia) {
-            if (findCommonsFilesWithSha1(exMedia.getExtraMetadata())) {
-                result = true;
-            }
+    public boolean findCommonsFilesWithSha1(List<FileMetadata> metadatas) throws IOException {
+        boolean result = false;
+        for (FileMetadata metadata : metadatas) {
+            result |= findCommonsFilesWithSha1(metadata);
         }
         return result;
     }
 
-    private boolean findCommonsFilesWithSha1(Metadata metadata) throws IOException {
+    private boolean findCommonsFilesWithSha1(FileMetadata metadata) throws IOException {
         String sha1 = metadata.getSha1();
         if (sha1 != null && isEmpty(metadata.getCommonsFileNames())) {
             Set<String> files = commonsService.findFilesWithSha1(sha1);
@@ -405,31 +406,26 @@ public class MediaService {
     }
 
     /**
-     * Looks for Wikimedia Commons files matching exactly the media perceptual hash,
-     * if required.
+     * Looks for Wikimedia Commons files matching exactly the metadata perceptual
+     * hash, if required.
      *
-     * @param media media object
-     * @param excludeSelfSha1 whether to exclude media's own sha1 from search
-     * @return {@code true} if media has been updated with list of Wikimedia Commons
-     *         files and must be persisted
+     * @param metadatas       list of file metadata objects
+     * @param excludeSelfSha1 whether to exclude metadata's own sha1 from search
+     * @return {@code true} if at least one metadata has been updated with list of
+     *         Wikimedia Commons files and must be persisted
      * @throws IOException in case of I/O error
      */
-    public boolean findCommonsFilesWithPhash(Media<?, ?> media, boolean excludeSelfSha1) throws IOException {
-        boolean result = findCommonsFilesWithPhash(media.getMetadata(), excludeSelfSha1);
-        if (media instanceof FullResMedia<?, ?> frMedia) {
-            if (findCommonsFilesWithPhash(frMedia.getFullResMetadata(), excludeSelfSha1)) {
-                result = true;
-            }
-        }
-        if (media instanceof FullResExtraMedia<?, ?> exMedia) {
-            if (findCommonsFilesWithPhash(exMedia.getExtraMetadata(), excludeSelfSha1)) {
+    public boolean findCommonsFilesWithPhash(List<FileMetadata> metadatas, boolean excludeSelfSha1) throws IOException {
+        boolean result = false;
+        for (FileMetadata metadata : metadatas) {
+            if (findCommonsFilesWithPhash(metadata, excludeSelfSha1)) {
                 result = true;
             }
         }
         return result;
     }
 
-    private boolean findCommonsFilesWithPhash(Metadata metadata, boolean excludeSelfSha1) throws IOException {
+    private boolean findCommonsFilesWithPhash(FileMetadata metadata, boolean excludeSelfSha1) throws IOException {
         String phash = metadata.getPhash();
         if (phash != null && isEmpty(metadata.getCommonsFileNames())) {
             List<String> sha1s = hashRepository.findSha1ByPhash(phash);
@@ -447,20 +443,13 @@ public class MediaService {
         return false;
     }
 
-    public boolean findCommonsFilesWithIdAndPhash(Media<?, ?> media) throws IOException {
+    public boolean findCommonsFilesWithIdAndPhash(List<FileMetadata> metadatas, String idUsedInCommons)
+            throws IOException {
         boolean result = false;
-        Collection<WikiPage> images = commonsService.searchImages(media.getIdUsedInCommons());
+        Collection<WikiPage> images = commonsService.searchImages(idUsedInCommons);
         if (!images.isEmpty()) {
-            if (findCommonsFilesWithIdAndPhash(images, media.getMetadata())) {
-                result = true;
-            }
-            if (media instanceof FullResMedia<?, ?> frMedia) {
-                if (findCommonsFilesWithIdAndPhash(images, frMedia.getFullResMetadata())) {
-                    result = true;
-                }
-            }
-            if (media instanceof FullResExtraMedia<?, ?> exMedia) {
-                if (findCommonsFilesWithIdAndPhash(images, exMedia.getExtraMetadata())) {
+            for (FileMetadata metadata : metadatas) {
+                if (findCommonsFilesWithIdAndPhash(images, metadata)) {
                     result = true;
                 }
             }
@@ -468,12 +457,12 @@ public class MediaService {
         return result;
     }
 
-    public List<String> findSmallerCommonsFilesWithIdAndPhash(Media<?, ?> media, Metadata metadata) throws IOException {
+    public List<String> findSmallerCommonsFilesWithIdAndPhash(Media<?, ?> media, FileMetadata metadata) throws IOException {
         return findCommonsFilesWithIdAndPhashFiltered(commonsService.searchImages(media.getIdUsedInCommons()), metadata,
                 MediaService::filterBySameMimeAndSmallerSize);
     }
 
-    private boolean findCommonsFilesWithIdAndPhash(Collection<WikiPage> images, Metadata metadata) {
+    private boolean findCommonsFilesWithIdAndPhash(Collection<WikiPage> images, FileMetadata metadata) {
         List<String> filenames = findCommonsFilesWithIdAndPhashFiltered(images, metadata,
                 MediaService::filterBySameMimeAndLargerOrEqualSize);
         if (!filenames.isEmpty()) {
@@ -483,8 +472,8 @@ public class MediaService {
         return false;
     }
 
-    private List<String> findCommonsFilesWithIdAndPhashFiltered(Collection<WikiPage> images, Metadata metadata,
-            BiPredicate<Metadata, ImageInfo> filter) {
+    private List<String> findCommonsFilesWithIdAndPhashFiltered(Collection<WikiPage> images, FileMetadata metadata,
+            BiPredicate<FileMetadata, ImageInfo> filter) {
         List<String> filenames = new ArrayList<>();
         if (metadata.getPhash() != null && isEmpty(metadata.getCommonsFileNames())) {
             for (WikiPage image : images.stream().filter(i -> filter.test(metadata, i.getImageInfo()[0])).toList()) {
@@ -508,12 +497,12 @@ public class MediaService {
         return filenames;
     }
 
-    private static boolean filterBySameMimeAndLargerOrEqualSize(Metadata metadata, ImageInfo imageInfo) {
+    private static boolean filterBySameMimeAndLargerOrEqualSize(FileMetadata metadata, ImageInfo imageInfo) {
         return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.getSize() != null
                 && metadata.getSize() <= imageInfo.getSize();
     }
 
-    private static boolean filterBySameMimeAndSmallerSize(Metadata metadata, ImageInfo imageInfo) {
+    private static boolean filterBySameMimeAndSmallerSize(FileMetadata metadata, ImageInfo imageInfo) {
         return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.getSize() != null
                 && metadata.getSize() > imageInfo.getSize();
     }
@@ -535,7 +524,7 @@ public class MediaService {
 
     public void syncYouTubeVideos(List<YouTubeVideo> videos, List<String> categories) {
         for (String category : categories) {
-            if (CollectionUtils.isEmpty(self.syncYouTubeVideos(videos, category))) {
+            if (isEmpty(self.syncYouTubeVideos(videos, category))) {
                 break;
             }
         }
@@ -543,7 +532,7 @@ public class MediaService {
 
     @Transactional(transactionManager = "commonsTransactionManager")
     public List<YouTubeVideo> syncYouTubeVideos(List<YouTubeVideo> missingVideos, String category) {
-        if (CollectionUtils.isNotEmpty(missingVideos)) {
+        if (isNotEmpty(missingVideos)) {
             LOGGER.info("Starting YouTube videos synchronization from {}...", category);
             LocalDateTime start = LocalDateTime.now();
             Pageable pageRequest = PageRequest.of(0, 500);
@@ -581,7 +570,7 @@ public class MediaService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public YouTubeVideo updateYouTubeCommonsFileName(YouTubeVideo video, String filename) {
-        video.getMetadata().setCommonsFileNames(new HashSet<>(Set.of(filename)));
+        video.getMetadata().get(0).setCommonsFileNames(new HashSet<>(Set.of(filename)));
         return youtubeRepository.save(video);
     }
 }

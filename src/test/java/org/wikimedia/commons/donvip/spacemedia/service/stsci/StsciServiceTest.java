@@ -7,6 +7,7 @@ import static org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractA
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -73,8 +74,10 @@ class StsciServiceTest {
                         + "The left panel shows the portion of Abell 370 where the multiple images of the supernova appeared. Panel A, a composite of Hubble observations from 2011 to 2016, shows the locations of the multiply imaged host galaxy after the supernova faded. Panel B, a Hubble picture from December 2010, shows the three images of the host galaxy and the supernova at different phases in its evolution. Panel C, which subtracts the image in Panel B from that in Panel A, shows three different faces of the evolving supernova. Using a similar image subtraction process for multiple filters of data, Panel D shows the different colors of the cooling supernova at three different stages in its evolution.",
                 media.getDescription());
         assertEquals("2022-11-09T11:00-05:00[America/New_York]", media.getDate().toString());
-        assertEquals("https://stsci-opo.org/STScI-01GGT9R6NXMYV39JGQF1TCH3V8.png",
-                media.getMetadata().getAssetUrl().toExternalForm());
+        assertEquals(
+                List.of("https://stsci-opo.org/STScI-01GGT9RV3H6JVMQWEM3WKJGZVW.tif",
+                        "https://stsci-opo.org/STScI-01GGT9R6NXMYV39JGQF1TCH3V8.png"),
+                media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).toList());
         assertEquals("https://stsci-opo.org/STScI-01GGT9TZJC2031623AM72RSVY8.png",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals("2022-054", media.getNewsId());
@@ -100,7 +103,7 @@ class StsciServiceTest {
                 media.getDescription());
         assertEquals("2022-11-22T11:00-05:00[America/New_York]", media.getDate().toString());
         assertEquals("https://stsci-opo.org/STScI-01GJ3Q3PRF2VG9DNG7J5YX1N44.jpg",
-                media.getMetadata().getAssetUrl().toExternalForm());
+                media.getMetadata().get(0).getAssetUrl().toExternalForm());
         assertEquals("https://stsci-opo.org/STScI-01GJ3Q46VFXMCFM4WZANYCC4MR.jpg",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals("2022-060", media.getNewsId());
@@ -123,7 +126,7 @@ class StsciServiceTest {
                 media.getDescription());
         assertEquals("2018-03-09T10:00-05:00[America/New_York]", media.getDate().toString());
         assertEquals("https://stsci-opo.org/STScI-01EVT0Y2KZAV2YF3ARK6X2PT7S.jpg",
-                media.getMetadata().getAssetUrl().toExternalForm());
+                media.getMetadata().get(0).getAssetUrl().toExternalForm());
         assertEquals("https://stsci-opo.org/STScI-01EVT0Y2KZAV2YF3ARK6X2PT7S.jpg",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals("2018-14", media.getNewsId());
