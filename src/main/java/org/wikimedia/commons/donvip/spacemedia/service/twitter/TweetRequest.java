@@ -35,21 +35,21 @@ class TweetRequest {
 
     static class TweetMedia {
         @JsonProperty("media_ids")
-        private List<Long> mediaIds;
+        private List<String> mediaIds;
 
         public TweetMedia() {
             // Default constructor for jackson
         }
 
-        public TweetMedia(List<Long> mediaIds) {
+        public TweetMedia(List<String> mediaIds) {
             this.mediaIds = mediaIds;
         }
 
-        public List<Long> getMediaIds() {
+        public List<String> getMediaIds() {
             return mediaIds;
         }
 
-        public void setMediaIds(List<Long> mediaIds) {
+        public void setMediaIds(List<String> mediaIds) {
             this.mediaIds = mediaIds;
         }
     }

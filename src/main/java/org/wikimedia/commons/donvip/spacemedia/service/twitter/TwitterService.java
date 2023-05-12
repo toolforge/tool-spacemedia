@@ -120,7 +120,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
     }
 
     private TweetMedia createTweetMedia(Collection<Metadata> uploadedMetadata) {
-        List<Long> mediaIds = new ArrayList<>();
+        List<String> mediaIds = new ArrayList<>();
         for (Metadata metadata : determineMediaToUploadToSocialMedia(uploadedMetadata)) {
             try {
                 LOGGER.info("Start uploading of media to Twitter: {}", metadata);
@@ -139,11 +139,11 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
         return mediaIds.isEmpty() ? null : new TweetMedia(mediaIds);
     }
 
-    private long postMedia(MediaUploadContext muc, byte[] data) {
+    private String postMedia(MediaUploadContext muc, byte[] data) {
         try {
             return callApi(request(Verb.POST, V1_UPLOAD + muc.cat, null,
                     new FileByteArrayBodyPartPayload("application/octet-stream", data, "media", muc.filename), null),
-                    UploadResponse.class).getMediaId();
+                    UploadResponse.class).getMediaIdString();
         } catch (Exception e) {
             LOGGER.error("Unable to post media with own code: {}", e.getMessage(), e);
             LOGGER.info("Fallback to twittered client call...");
@@ -152,7 +152,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
             if (r.getMediaId() == null) {
                 throw new UncheckedIOException(new IOException("Twitter response without media id: " + r, e));
             }
-            return Long.parseLong(r.getMediaId());
+            return r.getMediaId();
         }
     }
 }
