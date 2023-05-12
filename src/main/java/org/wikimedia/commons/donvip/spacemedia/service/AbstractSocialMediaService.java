@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
@@ -176,15 +175,10 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
 
     protected Collection<Metadata> determineMediaToUploadToSocialMedia(Collection<Metadata> uploadedMedia) {
         // https://developer.twitter.com/en/docs/twitter-api/v1/media/upload-media/uploading-media/media-best-practices
-        List<Metadata> imgs = uploadedMedia.stream().filter(x -> x.isReadableImage() == Boolean.TRUE
-                && x.getPhash() != null & x.getMime() != null && x.getMime().startsWith("image/")).toList();
-        Optional<Metadata> gif = imgs.stream().filter(x -> "image/gif".equals(x.getMime())).findAny();
-        // attach up to 4 photos, 1 animated GIF or 1 video in a Tweet
-        if (gif.isPresent()) {
-            return List.of(gif.get());
-        } else {
-            return determineAtMost(4, imgs);
-        }
+        // attach up to 4 photos
+        return determineAtMost(4, uploadedMedia.stream().filter(x -> x.isReadableImage() == Boolean.TRUE
+                && x.getPhash() != null & x.getMime() != null && x.getMime().startsWith("image/")
+                && !"image/gif".equals(x.getMime())).toList());
     }
 
     private List<Metadata> determineAtMost(int max, List<Metadata> imgs) {

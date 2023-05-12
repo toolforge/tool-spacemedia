@@ -97,8 +97,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
             TweetRequest tweet = jackson.readValue(request.getStringPayload(), TweetRequest.class);
             TweetParametersBuilder builder = TweetParameters.builder().text(tweet.getText());
             if (tweet.getMedia() != null) {
-                builder.media(TweetParameters.Media.builder()
-                        .mediaIds(tweet.getMedia().getMediaIds().stream().map(l -> l.toString()).toList()).build());
+                builder.media(TweetParameters.Media.builder().mediaIds(tweet.getMedia().getMediaIds()).build());
             }
             TweetParameters params = builder.build();
             LOGGER.info("Twittered JSON payload: {}", jackson.writeValueAsString(params));
