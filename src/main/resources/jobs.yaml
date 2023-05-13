@@ -18,14 +18,14 @@
   schedule: "45 0 * * *"
   emails: onfailure
 
-- name: esa
-  image: tf-jdk17
-  command: ./run.sh custom esa
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 1,17 * * *"
-  emails: onfailure
+#- name: esa
+#  image: tf-jdk17
+#  command: ./run.sh custom esa
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 1,17 * * *"
+#  emails: onfailure
 
 - name: esa-flickr
   image: tf-jdk17
@@ -36,14 +36,14 @@
   schedule: "45 2 * * *"
   emails: onfailure
 
-- name: eso
-  image: tf-jdk17
-  command: ./run.sh djangoplicity eso
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 3 * * *"
-  emails: onfailure
+#- name: eso
+#  image: tf-jdk17
+#  command: ./run.sh djangoplicity eso
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 3 * * *"
+#  emails: onfailure
 
 - name: hubble-esa
   image: tf-jdk17
@@ -144,14 +144,14 @@
   schedule: "45 12 * * *"
   emails: onfailure
 
-- name: noirlab
-  image: tf-jdk17
-  command: ./run.sh djangoplicity noirlab
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 13 * * *"
-  emails: onfailure
+#- name: noirlab
+#  image: tf-jdk17
+#  command: ./run.sh djangoplicity noirlab
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 13 * * *"
+#  emails: onfailure
 
 - name: webb-esa
   image: tf-jdk17
