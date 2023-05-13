@@ -166,7 +166,9 @@ public class NasaService
 
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType,
             LocalDate doNotFetchEarlierThan) {
-        return doUpdateMedia(mediaType, minYear, LocalDateTime.now().getYear(), null, null, doNotFetchEarlierThan);
+        return doUpdateMedia(mediaType,
+                doNotFetchEarlierThan != null ? Math.max(minYear, doNotFetchEarlierThan.getYear()) : minYear,
+                LocalDateTime.now().getYear(), null, null, doNotFetchEarlierThan);
     }
 
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType, int year,
