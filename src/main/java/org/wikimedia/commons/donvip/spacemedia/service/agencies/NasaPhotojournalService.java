@@ -12,6 +12,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -56,13 +57,13 @@ public class NasaPhotojournalService
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaPhotojournalService.class);
 
     static final Pattern ANIMATION_PATTERN = Pattern.compile(
-            ".*<a href=\"(https?://.+\\.(?:gif|mp4))\".*");
+            ".*<a href=\"(https?://[^\"]+\\.(?:gif|mp4))\".*");
 
     static final Pattern QTVR_PATTERN = Pattern.compile(
-            ".*<a href=\"(https?://.+\\.mov)\".*");
+            ".*<a href=\"(https?://[^\"]+\\.mov)\".*");
 
     static final Pattern FIGURE_PATTERN = Pattern.compile(
-            ".*<a href=\"(https?://.+/figures/.+\\.png)\".*");
+            ".*<a href=\"(https?://[^\"]+/figures/[^\"]+\\.png)\".*");
 
     static final Pattern ACQ_PATTERN = Pattern.compile(
             ".*acquired ((?:January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, [1-2]\\d{3}).*");
@@ -142,24 +143,32 @@ public class NasaPhotojournalService
 
     @Override
     public void updateMedia() throws IOException, UploadException {
-        QueryResponse response = queryWithRetries(buildSolrQuery(0));
+        processResponse(queryWithRetries(buildSolrQuery(0)));
+    }
+
+    protected List<NasaPhotojournalMedia> processResponse(QueryResponse response) throws IOException, UploadException {
+        List<NasaPhotojournalMedia> result = new ArrayList<>();
         if (response != null) {
             final long total = response.getResults().getNumFound();
             LOGGER.info("Found {} documents", total);
-            processDocuments(response.getResults());
+            result.addAll(processDocuments(response.getResults()));
             for (int start = solrPage; start < total; start += solrPage) {
                 response = queryWithRetries(buildSolrQuery(start));
                 if (response != null) {
-                    processDocuments(response.getResults());
+                    result.addAll(processDocuments(response.getResults()));
                 }
             }
         }
+        return result;
     }
 
-    private void processDocuments(SolrDocumentList documents) throws IOException, UploadException {
+    private List<NasaPhotojournalMedia> processDocuments(SolrDocumentList documents)
+            throws IOException, UploadException {
+        List<NasaPhotojournalMedia> result = new ArrayList<>();
         for (SolrDocument document : documents) {
-            processMedia((String) document.getFirstValue("id"), document);
+            result.add(processMedia((String) document.getFirstValue("id"), document));
         }
+        return result;
     }
 
     private NasaPhotojournalMedia processMedia(String id, SolrDocument document) throws IOException, UploadException {
@@ -377,7 +386,7 @@ public class NasaPhotojournalService
         return new HttpSolrClient.Builder(host).withResponseParser(new XMLResponseWithoutContentTypeParser()).build();
     }
 
-    private static class XMLResponseWithoutContentTypeParser extends XMLResponseParser {
+    protected static final class XMLResponseWithoutContentTypeParser extends XMLResponseParser {
         @Override
         public String getContentType() {
             // Photojournal nginx returns text/plain instead of application/json
