@@ -316,9 +316,11 @@ public class NasaService
         count += images.getLeft();
         uploadedMedia.addAll(images.getRight());
 
-        Pair<Integer, Collection<NasaAudio>> audios = updateAudios();
-        count += audios.getLeft();
-        uploadedMedia.addAll(audios.getRight());
+        if (audiosEnabled) {
+            Pair<Integer, Collection<NasaAudio>> audios = updateAudios();
+            count += audios.getLeft();
+            uploadedMedia.addAll(audios.getRight());
+        }
 
         if (videosEnabled) {
             Pair<Integer, Collection<NasaVideo>> videos = updateVideos();

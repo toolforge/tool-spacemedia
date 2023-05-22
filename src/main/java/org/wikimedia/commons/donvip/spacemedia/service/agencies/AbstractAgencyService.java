@@ -157,6 +157,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     @Value("${upload.auto.min.year}")
     private int minYearUploadAuto;
 
+    @Value("${audios.enabled}")
+    protected boolean audiosEnabled;
+
     @Value("${videos.enabled}")
     protected boolean videosEnabled;
 
