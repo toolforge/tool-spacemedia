@@ -166,7 +166,8 @@ public class NasaSdoService
         if (imagesInDatabase < expectedCount) {
             String browseUrl = String.join("/", BASE_URL_IMG, browse, dateStringPath);
             LOGGER.info("Fetching {} ({}<{})", browseUrl, imagesInDatabase, expectedCount);
-            List<String> files = Jsoup.connect(browseUrl).timeout(30_000).get().getElementsByTag("a").stream()
+            List<String> files = Jsoup.connect(browseUrl).header("Accept", "text/html").timeout(30_000).get()
+                    .getElementsByTag("a").stream()
                     .map(e -> e.attr("href")).filter(href -> href.contains("_" + dimensions.getWidth() + "_")).sorted()
                     .toList();
             for (NasaSdoDataType dataType : NasaSdoDataType.values()) {
