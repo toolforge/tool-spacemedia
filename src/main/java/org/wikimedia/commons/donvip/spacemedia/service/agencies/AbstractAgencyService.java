@@ -715,6 +715,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return result;
     }
 
+    protected final void wikidataStatementMapping(String value, Map<String, Map<String, String>> csvMapping,
+            String property, Map<String, Pair<Object, Map<String, Object>>> result) {
+        ofNullable(value).map(csvMapping::get).map(m -> m.get("Wikidata"))
+                .ifPresent(m -> result.put(property, Pair.of(m, null)));
+    }
+
     @Override
     public String getWikiHtmlPreview(String sha1) throws TooManyResultsException {
         return getWikiHtmlPreview(findBySha1OrThrow(sha1, true), metadataRepository.findBySha1(sha1));
@@ -991,6 +997,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    protected final Map<String, Map<String, String>> loadCsvMapMapping(String filename) throws IOException {
+        return CsvHelper.loadMapMap(getClass().getResource("/mapping/" + filename));
     }
 
     protected final boolean ignoreFile(T media, String reason) {

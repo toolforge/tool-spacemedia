@@ -14,9 +14,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +93,10 @@ class NasaPhotojournalServiceTest extends AbstractAgencyServiceTest {
                 service.getOtherVersions(media, jpeg));
         assertEquals(611, jpeg.getImageDimensions().getWidth());
         assertEquals(2696, jpeg.getImageDimensions().getHeight());
+
+        Map<String, Pair<Object, Map<String, Object>>> statements = service.getStatements(media, jpeg);
+        assertEquals(Pair.of("Q1108979", null), statements.get("P4082"));
+        assertEquals(Pair.of("Q207164", null), statements.get("P170"));
     }
 
     private static QueryResponse solrResponse(String id) throws IOException {

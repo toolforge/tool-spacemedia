@@ -92,9 +92,9 @@ public class NasaPhotojournalService
     @Value("${nasa.photojournal.geohack.globes}")
     private Set<String> globes;
 
-    private Map<String, String> nasaInstruments;
+    private Map<String, Map<String, String>> nasaInstruments;
+    private Map<String, Map<String, String>> nasaMissions;
     private Map<String, String> nasaKeywords;
-    private Map<String, String> nasaMissions;
 
     @Autowired
     public NasaPhotojournalService(NasaPhotojournalMediaRepository repository) {
@@ -105,9 +105,9 @@ public class NasaPhotojournalService
     @PostConstruct
     void init() throws IOException {
         super.init();
-        nasaInstruments = loadCsvMapping("nasa.instruments.csv");
+        nasaInstruments = loadCsvMapMapping("nasa.instruments.csv");
+        nasaMissions = loadCsvMapMapping("nasa.missions.csv");
         nasaKeywords = loadCsvMapping("nasa.keywords.csv");
-        nasaMissions = loadCsvMapping("nasa.missions.csv");
     }
 
     private SolrQuery buildSolrQuery(int start) {
@@ -353,13 +353,17 @@ public class NasaPhotojournalService
         return result;
     }
 
-    private static Optional<String> getCategoryFromMapping(String value, String type, Map<String, String> mappings) {
+    private static Optional<String> getCategoryFromMapping(String value, String type,
+            Map<String, Map<String, String>> mappings) {
         if (value != null) {
-            String cat = mappings.get(value.replace('\n', ' ').trim());
-            if (StringUtils.isBlank(cat)) {
-                LOGGER.warn("No category found for NASA {} {}", type, value);
-            } else {
-                return Optional.of(cat);
+            Map<String, String> map = mappings.get(value.replace('\n', ' ').trim());
+            if (map != null) {
+                String cat = map.get("Commons categories");
+                if (StringUtils.isBlank(cat)) {
+                    LOGGER.warn("No category found for NASA {} {}", type, value);
+                } else {
+                    return Optional.of(cat);
+                }
             }
         }
         return Optional.empty();
@@ -417,5 +421,14 @@ public class NasaPhotojournalService
     @Override
     protected Set<String> getTwitterAccounts(NasaPhotojournalMedia uploadedMedia) {
         return Set.of("@NASAJPL");
+    }
+
+    @Override
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaPhotojournalMedia media,
+            FileMetadata metadata) {
+        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
+        wikidataStatementMapping(media.getInstrument(), nasaInstruments, "P4082", result); // Taken with instrment
+        wikidataStatementMapping(media.getSpacecraft(), nasaMissions, "P170", result); // Created by mission
+        return result;
     }
 }
