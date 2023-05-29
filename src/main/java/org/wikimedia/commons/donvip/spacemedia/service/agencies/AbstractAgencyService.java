@@ -636,7 +636,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 metadata.setCommonsFileNames(new HashSet<>(Set.of(uploadedFilename)));
                 editStructuredDataContent(uploadedFilename, codeAndDescs.getRight(), media, metadata);
             }
-            uploaded.add(metadata);
+            uploaded.add(metadataRepository.save(metadata));
             return 1;
         } else {
             if (metadata != null && metadata.getAssetUrl() != null) {
