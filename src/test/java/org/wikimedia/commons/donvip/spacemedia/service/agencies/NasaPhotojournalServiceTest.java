@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -84,6 +85,9 @@ class NasaPhotojournalServiceTest extends AbstractAgencyServiceTest {
                 "https://photojournal.jpl.nasa.gov/tiff/PIA25927.tif",
                 "https://photojournal.jpl.nasa.gov/figures/PIA25927_fig1.png"),
                 media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).toList());
+
+        assertEquals(Optional.of("Kasei Valles (PIA25927).tiff|TIFF version\nKasei Valles (PIA25927).png|PNG version"),
+                service.getOtherVersions(media, media.getMetadata().get(0)));
     }
 
     private static QueryResponse solrResponse(String id) throws IOException {
