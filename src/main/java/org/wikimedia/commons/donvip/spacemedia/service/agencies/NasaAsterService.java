@@ -5,7 +5,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.restTemplateSupportingAll;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -225,8 +224,8 @@ public class NasaAsterService
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaAsterMedia media, FileMetadata metadata)
-            throws MalformedURLException {
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaAsterMedia media,
+            FileMetadata metadata) {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         result.put("P170", Pair.of("Q584697", null)); // Created by Terra
         result.put("P1071", Pair.of("Q663611", null)); // Created in low earth orbit

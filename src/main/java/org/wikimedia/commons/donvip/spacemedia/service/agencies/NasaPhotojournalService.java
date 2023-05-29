@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -201,7 +202,7 @@ public class NasaPhotojournalService
         return media;
     }
 
-    private NasaPhotojournalMedia solrDocumentToMedia(SolrDocument doc) throws IOException {
+    private NasaPhotojournalMedia solrDocumentToMedia(SolrDocument doc) {
         sanityChecks(doc);
         NasaPhotojournalMedia media = new NasaPhotojournalMedia();
         String caption = (String) doc.getFirstValue("original-caption");
@@ -218,6 +219,7 @@ public class NasaPhotojournalService
         media.setTitle((String) doc.getFieldValue("image-title"));
         media.setBig("YES".equals(doc.getFirstValue("big-flag")));
         media.setCredit((String) doc.getFirstValue("credit"));
+        media.setLegend((String) doc.getFirstValue("alt-tag"));
         ImageDimensions dims = new ImageDimensions(getInt(doc, "x-dim"), getInt(doc, "y-dim"));
         addMetadata(media, (String) doc.getFirstValue("full-res-jpeg"), dims);
         addMetadata(media, (String) doc.getFirstValue("full-res-tiff"), dims);
@@ -391,6 +393,13 @@ public class NasaPhotojournalService
     @Override
     protected String getMediaId(String id) {
         return id;
+    }
+
+    @Override
+    protected Map<String, String> getLegends(NasaPhotojournalMedia media, Map<String, String> descriptions) {
+        Map<String, String> result = new TreeMap<>(super.getLegends(media, descriptions));
+        result.put("en", media.getLegend());
+        return result;
     }
 
     private static SolrClient solrClient(String host) {

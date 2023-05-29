@@ -52,6 +52,10 @@ public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implemen
     @Column(name = "credit", nullable = false, columnDefinition = "TEXT")
     private String credit;
 
+    @Lob
+    @Column(name = "legend", nullable = true, columnDefinition = "TEXT")
+    private String legend;
+
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
 
@@ -149,6 +153,14 @@ public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implemen
         this.credit = credit;
     }
 
+    public String getLegend() {
+        return legend;
+    }
+
+    public void setLegend(String legend) {
+        this.legend = legend;
+    }
+
     @Override
     public int hashCode() {
         return 31 * super.hashCode() + Objects.hash(piaId);
@@ -186,6 +198,7 @@ public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implemen
         setKeywords(mediaFromApi.getKeywords());
         setBig(mediaFromApi.isBig());
         setCredit(mediaFromApi.getCredit());
+        setLegend(mediaFromApi.getLegend());
         return this;
     }
 }

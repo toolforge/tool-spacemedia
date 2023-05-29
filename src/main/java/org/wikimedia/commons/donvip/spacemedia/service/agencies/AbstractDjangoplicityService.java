@@ -561,8 +561,7 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, FileMetadata metadata)
-            throws MalformedURLException {
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, FileMetadata metadata) {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         if (StringUtils.isNotBlank(media.getName())) {
             for (String name : media.getName().split(", ")) {

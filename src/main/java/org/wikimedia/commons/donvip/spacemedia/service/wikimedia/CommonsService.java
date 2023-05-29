@@ -887,15 +887,15 @@ public class CommonsService {
         return upload.getFilename();
     }
 
-    public void editStructuredDataContent(String filename, Map<String, String> descriptions,
+    public void editStructuredDataContent(String filename, Map<String, String> legends,
             Map<String, Pair<Object, Map<String, Object>>> statements) throws IOException, MediaWikiApiErrorException {
         MediaInfoDocument doc = getMediaInfoDocument(filename);
         MediaInfoIdValue entityId = doc.getEntityId();
         LOGGER.info("Editing SDC {} of {}...", entityId, filename);
         // Build update objects
         TermUpdateBuilder termUpdateBuilder = TermUpdateBuilder.create();
-        descriptions.forEach(
-                (code, desc) -> termUpdateBuilder.put(makeMonolingualTextValue(truncatedLabel(desc, 250), code)));
+        legends.forEach(
+                (code, legend) -> termUpdateBuilder.put(makeMonolingualTextValue(truncatedLabel(legend, 250), code)));
         StatementUpdateBuilder statementUpdateBuilder = StatementUpdateBuilder.forStatementGroups(entityId,
                 doc.getStatementGroups());
         statements.forEach(

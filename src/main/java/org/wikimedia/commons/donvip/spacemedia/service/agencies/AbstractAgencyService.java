@@ -629,12 +629,12 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 }
                 metadata.setCommonsFileNames(new HashSet<>(smallerFiles));
             } else {
-                Pair<String, Map<String, String>> codeAndDescs = getWikiCode(media, metadata);
-                String uploadedFilename = commonsService.uploadNewFile(codeAndDescs.getLeft(),
+                Pair<String, Map<String, String>> codeAndLegends = getWikiCode(media, metadata);
+                String uploadedFilename = commonsService.uploadNewFile(codeAndLegends.getLeft(),
                         media.getUploadTitle(metadata), metadata.getFileExtension(), metadata.getAssetUrl(),
                         metadata.getSha1());
                 metadata.setCommonsFileNames(new HashSet<>(Set.of(uploadedFilename)));
-                editStructuredDataContent(uploadedFilename, codeAndDescs.getRight(), media, metadata);
+                editStructuredDataContent(uploadedFilename, codeAndLegends.getRight(), media, metadata);
             }
             uploaded.add(metadataRepository.save(metadata));
             return 1;
@@ -647,17 +647,16 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         }
     }
 
-    protected void editStructuredDataContent(String uploadedFilename, Map<String, String> descriptions, T media,
+    protected void editStructuredDataContent(String uploadedFilename, Map<String, String> legends, T media,
             FileMetadata metadata) {
         try {
-            commonsService.editStructuredDataContent(uploadedFilename, descriptions, getStatements(media, metadata));
+            commonsService.editStructuredDataContent(uploadedFilename, legends, getStatements(media, metadata));
         } catch (MediaWikiApiErrorException | IOException | RuntimeException e) {
             LOGGER.error("Unable to add SDC data", e);
         }
     }
 
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, FileMetadata metadata)
-            throws MalformedURLException {
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, FileMetadata metadata) {
         Map<String, Pair<Object, Map<String, Object>>> result = new TreeMap<>();
         // Source: file available on the internet
         result.put("P7482", Pair.of("Q74228490", new TreeMap<>(Map.of("P973", getSourceUrl(media).toExternalForm(),
@@ -749,10 +748,14 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             findLicenceTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
             commonsService.cleanupCategories(findCategories(media, metadata, true), media.getDate())
                     .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
-            return Pair.of(sb.toString(), desc.getValue());
+            return Pair.of(sb.toString(), getLegends(media, desc.getValue()));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    protected Map<String, String> getLegends(T media, Map<String, String> descriptions) {
+        return descriptions;
     }
 
     protected Pair<String, Map<String, String>> getWikiFileDesc(T media, FileMetadata metadata) throws IOException {

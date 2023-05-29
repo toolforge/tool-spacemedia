@@ -159,8 +159,7 @@ public abstract class AbstractStsciService extends AbstractAgencyService<StsciMe
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(StsciMedia media, FileMetadata metadata)
-            throws MalformedURLException {
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(StsciMedia media, FileMetadata metadata) {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         if (StringUtils.isNotBlank(media.getObjectName())) {
             wikidata.searchAstronomicalObject(media.getObjectName()).map(Pair::getKey)

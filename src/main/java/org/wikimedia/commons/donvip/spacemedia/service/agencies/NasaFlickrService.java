@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -125,8 +124,7 @@ public class NasaFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(FlickrMedia media, FileMetadata metadata)
-            throws MalformedURLException {
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(FlickrMedia media, FileMetadata metadata) {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         if ("uahirise-mars".equals(media.getPathAlias())) {
             result.put("P170", Pair.of("Q183160", null)); // Created by MRO

@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -100,8 +99,7 @@ public class NasaSdoService
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaSdoMedia media, FileMetadata metadata)
-            throws MalformedURLException {
+    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaSdoMedia media, FileMetadata metadata) {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
         result.put("P170", Pair.of("Q382494", null)); // Created by SDO
         result.put("P180", Pair.of("Q525", null)); // Depicts the Sun
