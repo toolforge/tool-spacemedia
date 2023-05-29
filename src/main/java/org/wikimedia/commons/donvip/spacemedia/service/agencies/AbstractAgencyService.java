@@ -69,6 +69,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
@@ -1069,13 +1070,16 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                         this::isPermittedFileType, isManual).shouldUploadAuto());
     }
 
-    protected FileMetadata addMetadata(T media, String assetUrl) {
-        return addMetadata(media, newURL(assetUrl));
+    protected FileMetadata addMetadata(T media, String assetUrl, ImageDimensions dims) {
+        return addMetadata(media, newURL(assetUrl), dims);
     }
 
-    protected FileMetadata addMetadata(T media, URL assetUrl) {
+    protected FileMetadata addMetadata(T media, URL assetUrl, ImageDimensions dims) {
         FileMetadata fm = metadataRepository.findByAssetUrl(assetUrl)
                 .orElseGet(() -> metadataRepository.save(new FileMetadata(assetUrl)));
+        if (dims != null) {
+            fm.setImageDimensions(dims);
+        }
         media.addMetadata(fm);
         return fm;
     }

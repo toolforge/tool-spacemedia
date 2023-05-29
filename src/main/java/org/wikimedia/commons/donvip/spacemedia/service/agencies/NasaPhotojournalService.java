@@ -48,6 +48,7 @@ import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -218,8 +219,9 @@ public class NasaPhotojournalService
         media.setTitle((String) doc.getFieldValue("image-title"));
         media.setBig("YES".equals(doc.getFirstValue("big-flag")));
         media.setCredit((String) doc.getFirstValue("credit"));
-        addMetadata(media, (String) doc.getFirstValue("full-res-jpeg"));
-        addMetadata(media, (String) doc.getFirstValue("full-res-tiff"));
+        ImageDimensions dims = new ImageDimensions(getInt(doc, "x-dim"), getInt(doc, "y-dim"));
+        addMetadata(media, (String) doc.getFirstValue("full-res-jpeg"), dims);
+        addMetadata(media, (String) doc.getFirstValue("full-res-tiff"), dims);
         Collection<Object> keywords = doc.getFieldValues("keywords");
         if (keywords != null) {
             media.setKeywords(keywords.stream().map(String.class::cast).collect(toSet()));
@@ -228,12 +230,16 @@ public class NasaPhotojournalService
             if (isAnimation || isQtvr) {
                 Matcher m = (isAnimation ? ANIMATION_PATTERN : QTVR_PATTERN).matcher(caption);
                 if (m.matches()) {
-                    addMetadata(media, newURL(m.group(1)));
+                    addMetadata(media, newURL(m.group(1)), null);
                 }
             }
         }
         detectFigures(media);
         return media;
+    }
+
+    private static Integer getInt(SolrDocument doc, String key) {
+        return (Integer) doc.getFirstValue(key);
     }
 
     private boolean detectFigures(NasaPhotojournalMedia media) throws IOException {
@@ -244,7 +250,7 @@ public class NasaPhotojournalService
                 String url = m.group(1);
                 try {
                     if (!media.containsMetadata(url)) {
-                        addMetadata(media, url);
+                        addMetadata(media, url, null);
                         return true;
                     }
                 } catch (URISyntaxException e) {

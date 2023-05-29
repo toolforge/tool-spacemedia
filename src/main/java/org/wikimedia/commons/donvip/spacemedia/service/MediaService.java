@@ -47,6 +47,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
@@ -221,9 +222,15 @@ public class MediaService {
                 try {
                     Pair<BufferedImage, Long> pair = ImageUtils.readImage(assetUrl, false, true);
                     bi = pair.getLeft();
-                    if (bi != null && !Boolean.TRUE.equals(metadata.isReadableImage())) {
-                        metadata.setReadableImage(Boolean.TRUE);
-                        result = true;
+                    if (bi != null) {
+                        if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
+                            metadata.setReadableImage(Boolean.TRUE);
+                            result = true;
+                        }
+                        if (bi.getWidth() > 0 && bi.getHeight() > 0 && !metadata.hasValidDimensions()) {
+                            metadata.setImageDimensions(new ImageDimensions(bi.getWidth(), bi.getHeight()));
+                            result = true;
+                        }
                     }
                     Long contentLength = pair.getRight();
                     if (contentLength > 0 && metadata.getSize() == null) {
@@ -266,7 +273,8 @@ public class MediaService {
     private static boolean shouldReadImage(URL assetUrl, FileMetadata metadata, boolean forceUpdateOfHashes) {
         return assetUrl != null
                 && (metadata.isReadableImage() == null || (Boolean.TRUE.equals(metadata.isReadableImage())
-                        && (metadata.getPhash() == null || metadata.getSha1() == null || forceUpdateOfHashes)));
+                        && (metadata.getPhash() == null || metadata.getSha1() == null || !metadata.hasValidDimensions()
+                                || forceUpdateOfHashes)));
     }
 
     public static boolean ignoreMedia(Media<?, ?> media, String reason) {

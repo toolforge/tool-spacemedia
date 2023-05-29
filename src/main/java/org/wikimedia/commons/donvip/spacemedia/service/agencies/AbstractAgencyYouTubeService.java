@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
@@ -44,6 +45,7 @@ import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.ThumbnailDetails;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoContentDetails;
+import com.google.api.services.youtube.model.VideoFileDetailsVideoStream;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.VideoSnippet;
 
@@ -142,8 +144,17 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
     private YouTubeVideo toYouTubeVideo(Video ytVideo) {
         YouTubeVideo video = new YouTubeVideo();
         video.setId(ytVideo.getId());
-        addMetadata(video, newURL("https://www.youtube.com/watch?v=" + video.getId()));
+        addMetadata(video, newURL("https://www.youtube.com/watch?v=" + video.getId()),
+                getDimensions(ytVideo.getFileDetails().getVideoStreams()));
         return fillVideoSnippetAndDetails(video, ytVideo);
+    }
+
+    private static ImageDimensions getDimensions(List<VideoFileDetailsVideoStream> videos) {
+        Optional<Long> maxWidth = videos.stream().map(VideoFileDetailsVideoStream::getWidthPixels).max(Long::compare);
+        Optional<Long> maxHeigth = videos.stream().map(VideoFileDetailsVideoStream::getHeightPixels).max(Long::compare);
+        return maxWidth.isPresent() && maxHeigth.isPresent()
+                ? new ImageDimensions(maxWidth.get().intValue(), maxHeigth.get().intValue())
+                : null;
     }
 
     private static YouTubeVideo fillVideoSnippetAndDetails(YouTubeVideo video, Video ytVideo) {

@@ -278,7 +278,7 @@ public class EsaService extends AbstractAgencyService<EsaMedia, Integer, LocalDa
                     problem(media.getUrl(), "Image without any file");
                 }
                 for (URL file : files) {
-                    addMetadata(media, file);
+                    addMetadata(media, file, null);
                 }
                 if (size > 1) {
                     checkAssetUrlCorrectness(media);

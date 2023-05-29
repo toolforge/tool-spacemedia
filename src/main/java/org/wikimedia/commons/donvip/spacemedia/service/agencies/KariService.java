@@ -237,7 +237,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         media.setDescription(div.getElementsByClass("photo_txt").get(0).text());
         String href = infos.getElementsByTag("a").attr("href");
         if (StringUtils.isNotBlank(href)) {
-            addMetadata(media, newURL(view.getProtocol(), view.getHost(), href));
+            addMetadata(media, newURL(view.getProtocol(), view.getHost(), href), null);
         }
         String src = div.getElementsByClass("board_txt").get(0).getElementsByTag("img").attr("src").replace("/view/",
                 "/lst/");

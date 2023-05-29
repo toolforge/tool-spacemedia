@@ -164,6 +164,12 @@ public class FileMetadata implements FileMetadataProjection {
         this.dimensions = dimensions;
     }
 
+    @Transient
+    @JsonIgnore
+    public boolean hasValidDimensions() {
+        return dimensions != null && dimensions.isValid();
+    }
+
     public ExifMetadata getExif() {
         return exif;
     }

@@ -3,6 +3,9 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 import java.util.Objects;
 
 import javax.persistence.Embeddable;
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Embeddable
 public class ImageDimensions {
@@ -59,5 +62,11 @@ public class ImageDimensions {
     @Override
     public String toString() {
         return "[width=" + width + ", height=" + height + ']';
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean isValid() {
+        return height != null && width != null && height > 0 && width > 0;
     }
 }

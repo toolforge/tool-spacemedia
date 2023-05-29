@@ -321,26 +321,25 @@ public class NasaAsterService
         tables.get(1).siblingElements();
         for (int i = 2; i < tables.size(); i++) {
             Element table = tables.get(i);
-            FileMetadata metadata = addMetadata(image,
-                    table.getElementsByTag("a").first().attr("href").replace("http://", "https://"));
             String meta = table.getElementsByTag("td").get(1).text();
-            Matcher m = SIZE.matcher(meta);
+            Matcher m = RESOLUTION.matcher(meta);
             if (m.matches()) {
-                String unit = m.groupCount() >= 2 ? m.group(2) : null;
-                Long size = "MB".equals(unit) ? 1024 * 1024 : "KB".equals(unit) ? 1024L : 1L;
-                if (m.group(1).contains(".")) {
-                    size = (long) (size * Double.valueOf(m.group(1)));
-                } else {
-                    size *= Long.valueOf(numval(m.group(1)));
-                }
-                metadata.setSize(size);
-            } else {
-                throw new IllegalStateException("No size found: " + meta);
-            }
-            m = RESOLUTION.matcher(meta);
-            if (m.matches()) {
-                metadata.setImageDimensions(
+                FileMetadata metadata = addMetadata(image,
+                        table.getElementsByTag("a").first().attr("href").replace("http://", "https://"),
                         new ImageDimensions(Integer.valueOf(numval(m.group(1))), Integer.valueOf(numval(m.group(2)))));
+                m = SIZE.matcher(meta);
+                if (m.matches()) {
+                    String unit = m.groupCount() >= 2 ? m.group(2) : null;
+                    Long size = "MB".equals(unit) ? 1024 * 1024 : "KB".equals(unit) ? 1024L : 1L;
+                    if (m.group(1).contains(".")) {
+                        size = (long) (size * Double.valueOf(m.group(1)));
+                    } else {
+                        size *= Long.valueOf(numval(m.group(1)));
+                    }
+                    metadata.setSize(size);
+                } else {
+                    throw new IllegalStateException("No size found: " + meta);
+                }
             } else {
                 throw new IllegalStateException("No resolution found: " + meta);
             }

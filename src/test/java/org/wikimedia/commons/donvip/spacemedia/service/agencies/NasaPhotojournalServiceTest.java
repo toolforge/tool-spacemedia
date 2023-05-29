@@ -86,8 +86,11 @@ class NasaPhotojournalServiceTest extends AbstractAgencyServiceTest {
                 "https://photojournal.jpl.nasa.gov/figures/PIA25927_fig1.png"),
                 media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).toList());
 
+        FileMetadata jpeg = media.getMetadata().get(0);
         assertEquals(Optional.of("Kasei Valles (PIA25927).tiff|TIFF version\nKasei Valles (PIA25927).png|PNG version"),
-                service.getOtherVersions(media, media.getMetadata().get(0)));
+                service.getOtherVersions(media, jpeg));
+        assertEquals(611, jpeg.getImageDimensions().getWidth());
+        assertEquals(2696, jpeg.getImageDimensions().getHeight());
     }
 
     private static QueryResponse solrResponse(String id) throws IOException {

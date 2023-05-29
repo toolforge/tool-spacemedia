@@ -239,10 +239,8 @@ public abstract class AbstractDjangoplicityService<T extends DjangoplicityMedia>
                     || (assetUrlLink.contains(".tif") && !assetUrlLink.contains("/publication"))
                     || (assetUrlLink.contains(".jp") && !assetUrlLink.contains("/wallpaper")
                             && !assetUrlLink.contains("/publication"))) {
-                FileMetadata metadata = addMetadata(media, buildAssetUrl(assetUrlLink, url));
-                if (assetUrlLink.contains("/original/")) {
-                    metadata.setImageDimensions(dimensions);
-                }
+                addMetadata(media, buildAssetUrl(assetUrlLink, url),
+                        assetUrlLink.contains("/original/") ? dimensions : null);
             }
         }
         return media;
