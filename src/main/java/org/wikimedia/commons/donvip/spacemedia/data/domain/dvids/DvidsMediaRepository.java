@@ -57,14 +57,14 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     long countMissingInCommons();
 
     @Cacheable("dvidsCountMissingByUnit")
-    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
     long countMissingInCommonsByUnit(Set<String> units);
 
     @Cacheable("dvidsCountMissingByType")
-    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1")
     long countMissingInCommonsByType(Set<DvidsMediaType> types);
 
-    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
     long countMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units);
 
     @Override
@@ -94,7 +94,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     long countUploadedToCommons();
 
     @Cacheable("dvidsCountUploadedByUnit")
-    @Query("select count(*) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
     long countUploadedToCommons(Set<String> units);
 
     @Override
@@ -102,7 +102,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     long countByMetadata_PhashNotNull();
 
     @Cacheable("dvidsCountPhashNotNullByAccount")
-    @Query("select count(*) from #{#entityName} m join m.metadata md where md.phash is not null and m.unit in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where md.phash is not null and m.unit in ?1")
     long countByMetadata_PhashNotNull(Set<String> units);
 
     // FIND
@@ -119,13 +119,13 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
     @Query("select m from #{#entityName} m where m.ignored = true and m.unit in ?1")
     Page<T> findByIgnoredTrue(Set<String> units, Pageable page);
 
-    @Query("select m from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.unit in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.unit in ?1")
     List<T> findDuplicateInCommons(Set<String> units);
 
-    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1")
     Page<T> findMissingInCommonsByType(Set<DvidsMediaType> types, Pageable page);
 
-    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
     Page<T> findMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units, Pageable page);
 
     @Override
@@ -146,23 +146,23 @@ public interface DvidsMediaRepository<T extends DvidsMedia>
         return findMissingInCommonsByTypeAndUnit(DvidsMediaType.videos(), units, page);
     }
 
-    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
     List<T> findMissingInCommonsByUnit(Set<String> units);
 
-    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
     Page<T> findMissingInCommonsByUnit(Set<String> units, Pageable page);
 
-    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
     List<T> findUploadedToCommons(Set<String> units);
 
-    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
     Page<T> findUploadedToCommons(Set<String> units, Pageable page);
 
     @Override
     @Cacheable("dvidsFindByPhashNotNull")
     List<MediaProjection<DvidsMediaTypedId>> findByMetadata_PhashNotNull();
 
-    @Query("select m from #{#entityName} m join m.metadata md where md.phash is not null and m.unit in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where md.phash is not null and m.unit in ?1")
     Page<T> findByMetadata_PhashNotNull(Set<String> units, Pageable page);
 
     // SAVE

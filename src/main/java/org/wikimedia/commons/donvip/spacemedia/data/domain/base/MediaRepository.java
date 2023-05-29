@@ -52,7 +52,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return number of files not yet uploaded to Wikimedia Commons
      */
-    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     long countMissingInCommons();
 
     /**
@@ -74,7 +74,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return files not yet uploaded to Wikimedia Commons
      */
-    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     List<T> findMissingInCommons();
 
     /**
@@ -84,7 +84,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return files not yet uploaded to Wikimedia Commons
      */
-    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     Page<T> findMissingInCommons(Pageable page);
 
     /**
@@ -110,7 +110,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return number of files already uploaded to Wikimedia Commons
      */
-    @Query("select count(*) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames)")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames)")
     long countUploadedToCommons();
 
     /**
@@ -118,7 +118,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return files already uploaded to Wikimedia Commons
      */
-    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames)")
     List<T> findUploadedToCommons();
 
     /**
@@ -128,10 +128,10 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
      *
      * @return files already uploaded to Wikimedia Commons
      */
-    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames)")
     Page<T> findUploadedToCommons(Pageable page);
 
-    @Query("select m from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2")
     List<T> findDuplicateInCommons();
 
     List<T> findByMetadata_AssetUrl(URL imageUrl);

@@ -44,7 +44,7 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia, String
     long countByIgnoredTrueAndMission(String mission);
 
     @Cacheable("stsciCountMissing")
-    @Query("select count(*) from #{#entityName} m join m.metadata md where m.mission = ?1 and (m.ignored is null or m.ignored is false) and md.sha1 is not null and not exists elements (md.commonsFileNames)")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where m.mission = ?1 and (m.ignored is null or m.ignored is false) and md.sha1 is not null and not exists elements (md.commonsFileNames)")
     long countMissingInCommons(String mission);
 
     @Override
@@ -70,7 +70,7 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia, String
     }
 
     @Cacheable("stsciCountUploaded")
-    @Query("select count(*) from #{#entityName} m join m.metadata md where m.mission = ?1 and exists elements (md.commonsFileNames)")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where m.mission = ?1 and exists elements (md.commonsFileNames)")
     long countUploadedToCommons(String mission);
 
     @Cacheable("stsciCountPhashNotNullByMission")
@@ -86,10 +86,10 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia, String
 
     Page<StsciMedia> findByIgnoredTrueAndMission(String mission, Pageable page);
 
-    @Query("select m from #{#entityName} m join m.metadata md where m.mission = ?1 and (m.ignored is null or m.ignored is false) and md.sha1 is not null and not exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where m.mission = ?1 and (m.ignored is null or m.ignored is false) and md.sha1 is not null and not exists elements (md.commonsFileNames)")
     List<StsciMedia> findMissingInCommons(String mission);
 
-    @Query("select m from #{#entityName} m join m.metadata md where m.mission = ?1 and (m.ignored is null or m.ignored is false) and md.sha1 is not null and not exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where m.mission = ?1 and (m.ignored is null or m.ignored is false) and md.sha1 is not null and not exists elements (md.commonsFileNames)")
     Page<StsciMedia> findMissingInCommons(String mission, Pageable page);
 
     @Override
@@ -110,13 +110,13 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia, String
         return Page.empty();
     }
 
-    @Query("select m from #{#entityName} m join m.metadata md where m.mission = ?1 and exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where m.mission = ?1 and exists elements (md.commonsFileNames)")
     List<StsciMedia> findUploadedToCommons(String mission);
 
-    @Query("select m from #{#entityName} m join m.metadata md where m.mission = ?1 and exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where m.mission = ?1 and exists elements (md.commonsFileNames)")
     Page<StsciMedia> findUploadedToCommons(String mission, Pageable page);
 
-    @Query("select m from #{#entityName} m join m.metadata md where m.mission = ?1 and size (md.commonsFileNames) >= 2")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where m.mission = ?1 and size (md.commonsFileNames) >= 2")
     List<StsciMedia> findDuplicateInCommons(String mission);
 
     @Override

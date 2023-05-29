@@ -15,7 +15,7 @@ public interface DjangoplicityMediaRepository<T extends DjangoplicityMedia>
     // COUNT
 
     @Override
-    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     long countMissingImagesInCommons();
 
     @Override

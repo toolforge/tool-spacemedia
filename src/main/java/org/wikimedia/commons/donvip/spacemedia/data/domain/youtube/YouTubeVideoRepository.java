@@ -49,7 +49,7 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
     long countMissingInCommons();
 
     @Cacheable("youtubeCountMissingByChannel")
-    @Query("select count(*) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.channelId in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.channelId in ?1")
     long countMissingInCommons(Set<String> youtubeChannels);
 
     @Override
@@ -68,7 +68,7 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
     long countUploadedToCommons();
 
     @Cacheable("youtubeCountUploadedByChannel")
-    @Query("select count(*) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.channelId in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.channelId in ?1")
     long countUploadedToCommons(Set<String> youtubeChannels);
 
     // FIND
@@ -85,10 +85,10 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
     @Query("select m from #{#entityName} m where m.ignored = true and m.channelId in ?1")
     Page<YouTubeVideo> findByIgnoredTrue(Set<String> youtubeChannels, Pageable page);
 
-    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.channelId in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.channelId in ?1")
     List<YouTubeVideo> findMissingInCommons(Set<String> youtubeChannels);
 
-    @Query("select m from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.channelId in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.channelId in ?1")
     Page<YouTubeVideo> findMissingInCommons(Set<String> youtubeChannels, Pageable page);
 
     @Override
@@ -101,13 +101,13 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
         return findMissingInCommons(page);
     }
 
-    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.channelId in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.channelId in ?1")
     List<YouTubeVideo> findUploadedToCommons(Set<String> youtubeChannels);
 
-    @Query("select m from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.channelId in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.channelId in ?1")
     Page<YouTubeVideo> findUploadedToCommons(Set<String> youtubeChannels, Pageable page);
 
-    @Query("select m from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.channelId in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.channelId in ?1")
     List<YouTubeVideo> findDuplicateInCommons(Set<String> youtubeChannels);
 
     @Override
