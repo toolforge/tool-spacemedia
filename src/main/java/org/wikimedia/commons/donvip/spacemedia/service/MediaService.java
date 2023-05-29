@@ -129,7 +129,6 @@ public class MediaService {
             result = true;
         }
         if (findCommonsFiles(media.getMetadata(), media.getIdUsedInCommons(), includeByPerceptualHash)) {
-            metadataRepository.saveAll(media.getMetadata());
             result = true;
         }
         if (checkBlocklist && !Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
@@ -406,8 +405,7 @@ public class MediaService {
         if (sha1 != null && isEmpty(metadata.getCommonsFileNames())) {
             Set<String> files = commonsService.findFilesWithSha1(sha1);
             if (!files.isEmpty()) {
-                metadata.setCommonsFileNames(files);
-                return true;
+                return saveNewMetadataCommonsFileNames(metadata, files);
             }
         }
         return false;
@@ -438,13 +436,12 @@ public class MediaService {
         if (phash != null && isEmpty(metadata.getCommonsFileNames())) {
             List<String> sha1s = hashRepository.findSha1ByPhash(phash);
             if (excludeSelfSha1) {
-                sha1s.remove(metadata.getSha1());
+                sha1s.remove(CommonsService.base36Sha1(metadata.getSha1()));
             }
             if (!sha1s.isEmpty()) {
                 Set<String> files = commonsService.findFilesWithSha1(sha1s);
                 if (!files.isEmpty()) {
-                    metadata.setCommonsFileNames(files);
-                    return true;
+                    return saveNewMetadataCommonsFileNames(metadata, files);
                 }
             }
         }
@@ -473,11 +470,7 @@ public class MediaService {
     private boolean findCommonsFilesWithIdAndPhash(Collection<WikiPage> images, FileMetadata metadata) {
         List<String> filenames = findCommonsFilesWithIdAndPhashFiltered(images, metadata,
                 MediaService::filterBySameMimeAndLargerOrEqualSize);
-        if (!filenames.isEmpty()) {
-            metadata.setCommonsFileNames(new HashSet<>(filenames));
-            return true;
-        }
-        return false;
+        return !filenames.isEmpty() && saveNewMetadataCommonsFileNames(metadata, new HashSet<>(filenames));
     }
 
     private List<String> findCommonsFilesWithIdAndPhashFiltered(Collection<WikiPage> images, FileMetadata metadata,
@@ -566,7 +559,7 @@ public class MediaService {
                             }
                         }
                     } catch (IOException e) {
-                        LOGGER.error("Failed to get page content of " + link, e);
+                        LOGGER.error("Failed to get page content of {}", link, e);
                     }
                 }
                 pageRequest = page.nextPageable();
@@ -578,7 +571,13 @@ public class MediaService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public YouTubeVideo updateYouTubeCommonsFileName(YouTubeVideo video, String filename) {
-        video.getMetadata().get(0).setCommonsFileNames(new HashSet<>(Set.of(filename)));
+        saveNewMetadataCommonsFileNames(video.getUniqueMetadata(), new HashSet<>(Set.of(filename)));
         return youtubeRepository.save(video);
+    }
+
+    private boolean saveNewMetadataCommonsFileNames(FileMetadata metadata, Set<String> commonsFileNames) {
+        metadata.setCommonsFileNames(commonsFileNames);
+        metadataRepository.save(metadata);
+        return true;
     }
 }

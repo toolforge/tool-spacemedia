@@ -7,7 +7,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -242,19 +241,15 @@ public class NasaPhotojournalService
         return (Integer) doc.getFirstValue(key);
     }
 
-    private boolean detectFigures(NasaPhotojournalMedia media) throws IOException {
+    private boolean detectFigures(NasaPhotojournalMedia media) {
         String caption = media.getDescription();
         if (caption.contains("<img ")) {
             Matcher m = FIGURE_PATTERN.matcher(caption);
             if (m.matches()) {
                 String url = m.group(1);
-                try {
-                    if (!media.containsMetadata(url)) {
-                        addMetadata(media, url, null);
-                        return true;
-                    }
-                } catch (URISyntaxException e) {
-                    throw new IOException(e);
+                if (!media.containsMetadata(url)) {
+                    addMetadata(media, url, null);
+                    return true;
                 }
             }
         }

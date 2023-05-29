@@ -3,9 +3,11 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 import static javax.persistence.GenerationType.SEQUENCE;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
 
 import java.math.BigInteger;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Locale;
@@ -138,6 +140,12 @@ public class FileMetadata implements FileMetadataProjection {
 
     public void setReadableImage(Boolean readableImage) {
         this.readableImage = readableImage;
+    }
+
+    @Transient
+    @JsonIgnore
+    public URI getAssetUri() {
+        return urlToUriUnchecked(assetUrl);
     }
 
     public URL getAssetUrl() {
@@ -312,7 +320,9 @@ public class FileMetadata implements FileMetadataProjection {
     public String toString() {
         return "FileMetadata [" + (sha1 != null ? "sha1=" + sha1 + ", " : "")
                 + (phash != null ? "phash=" + phash + ", " : "")
+                + (dimensions != null ? "dimensions=" + dimensions + ", " : "")
                 + (readableImage != null ? "readableImage=" + readableImage + ", " : "")
-                + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "") + (size != null ? "size=" + size : "") + "]";
+                + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "") + (size != null ? "size=" + size + ", " : "")
+                + (commonsFileNames != null ? "commonsFileNames=" + commonsFileNames : "") + ']';
     }
 }

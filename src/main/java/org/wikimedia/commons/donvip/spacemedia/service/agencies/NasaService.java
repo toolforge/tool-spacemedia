@@ -397,7 +397,8 @@ public class NasaService
                 if (List.of("in the cupola", "in the Cupola", "inside the cupola", "inside the Cupola",
                         "inside the newly-installed cupola", "inside the seven window cupola",
                         "in the seven-windowed Cupola", "from the Cupola", "through the cupola",
-                        "inside the seven-windowed cupola", "out of the cupola").stream()
+                        "inside the seven-windowed cupola", "out of the cupola",
+                        "inside the International Space Station's \"window to the world").stream()
                         .anyMatch(description::contains)) {
                     result.add("Interior of Cupola (ISS module)");
                 }

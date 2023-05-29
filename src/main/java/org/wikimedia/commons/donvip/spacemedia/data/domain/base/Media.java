@@ -3,17 +3,17 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,6 +29,8 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -47,6 +49,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 @EntityListeners(MediaListener.class)
 @JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY, property = "class")
 public abstract class Media<ID, D extends Temporal> implements MediaProjection<ID> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Media.class);
 
     private static final Pattern ONLY_DIGITS = Pattern.compile("\\d+");
     private static final Pattern URI_LIKE = Pattern.compile("Https?\\-\\-.*", Pattern.CASE_INSENSITIVE);
@@ -93,14 +97,13 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         return getMetadata().add(metadata);
     }
 
-    public boolean containsMetadata(String assetUrl) throws MalformedURLException, URISyntaxException {
-        return containsMetadata(new URL(assetUrl));
+    public boolean containsMetadata(String assetUrl) {
+        return containsMetadata(newURL(assetUrl));
     }
 
-    public boolean containsMetadata(URL assetUrl) throws URISyntaxException {
-        URI uri = assetUrl.toURI();
-        return getMetadata().stream()
-                .anyMatch(m -> m.getAssetUrl() != null && uri.equals(urlToUriUnchecked(m.getAssetUrl())));
+    public boolean containsMetadata(URL assetUrl) {
+        URI uri = urlToUriUnchecked(assetUrl);
+        return getMetadata().stream().anyMatch(m -> m.getAssetUrl() != null && uri.equals(m.getAssetUri()));
     }
 
     public URL getThumbnailUrl() {
@@ -287,13 +290,18 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         setDescription(mediaFromApi.getDescription());
         setTitle(mediaFromApi.getTitle());
         if (isNotEmpty(mediaFromApi.getMetadata())) {
-            for (FileMetadata m : getMetadata()) {
-                if (mediaFromApi.getMetadata().stream().map(FileMetadata::getAssetUrl).noneMatch(m.getAssetUrl()::equals)) {
-                    getMetadata().remove(m);
+            for (Iterator<FileMetadata> it = getMetadata().iterator(); it.hasNext();) {
+                FileMetadata m = it.next();
+                if (mediaFromApi.getMetadata().stream().map(FileMetadata::getAssetUri)
+                        .noneMatch(m.getAssetUri()::equals)) {
+                    LOGGER.info("Remove database metadata not found anymore in API by asset URI: {}", m);
+                    it.remove();
                 }
             }
             for (FileMetadata apiMetadata : mediaFromApi.getMetadata()) {
-                if (getMetadata().stream().map(FileMetadata::getAssetUrl).noneMatch(apiMetadata.getAssetUrl()::equals)) {
+                if (getMetadata().stream().map(FileMetadata::getAssetUri)
+                        .noneMatch(apiMetadata.getAssetUri()::equals)) {
+                    LOGGER.info("Add API metadata not yet found in database by asset URI: {}", apiMetadata);
                     getMetadata().add(apiMetadata);
                 }
             }
