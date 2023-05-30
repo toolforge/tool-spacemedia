@@ -25,11 +25,6 @@ public class UsSpaceForceDvidsService extends AbstractAgencyDvidsService {
     }
 
     @Override
-    public void updateMedia() {
-        updateDvidsMedia();
-    }
-
-    @Override
     public String getName() {
         return "U.S. Space Force/Command (DVIDS)";
     }

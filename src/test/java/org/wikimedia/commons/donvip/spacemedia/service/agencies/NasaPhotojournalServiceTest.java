@@ -61,7 +61,7 @@ class NasaPhotojournalServiceTest extends AbstractAgencyServiceTest {
 
     @Test
     void testReadXml() throws Exception {
-        when(mediaService.updateMedia(any(), any(), anyBoolean(), anyBoolean(), anyBoolean(), any())).thenReturn(new MediaUpdateResult(true, null));
+        when(mediaService.updateMedia(any(), any(), anyBoolean(), any(), anyBoolean(), anyBoolean(), any())).thenReturn(new MediaUpdateResult(true, null));
         when(repository.save(any(NasaPhotojournalMedia.class))).thenAnswer(a -> a.getArgument(0, NasaPhotojournalMedia.class));
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
 

@@ -5,10 +5,12 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -28,13 +30,16 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.box.sdk.BoxAPIConnection;
 import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
 import com.box.sdk.BoxItem;
+import com.box.sdk.PublicSharedLinkAPIConnection;
 
 @Service
 public class BoxService {
@@ -42,6 +47,11 @@ public class BoxService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoxService.class);
 
     private static final String REDIRECT_URL = "https://spacemedia.toolforge.org";
+
+    private static final Set<String> IGNORED_FOLDERS = Set.of("__MACOSX");
+
+    @Autowired
+    private CommonsService commonsService;
 
     private BoxAPIConnection api;
 
@@ -113,28 +123,68 @@ public class BoxService {
         return post;
     }
 
-    public List<BoxFile.Info> getFiles(String sharedLink) {
-        LOGGER.info("Fetching files of shared folder {}", sharedLink);
-        BoxItem.Info itemInfo = BoxItem.getSharedItem(api, sharedLink);
-        if (itemInfo instanceof BoxFile.Info fileInfo) {
-            return List.of(fileInfo);
-        } else if (itemInfo instanceof BoxFolder.Info folderInfo) {
-            return getFiles(folderInfo, folderInfo.getName());
-        }
-        throw new IllegalArgumentException(Objects.toString(itemInfo));
+    public String getSharedLink(String app, String share) {
+        return "https://" + app + ".app.box.com/s/" + share;
     }
 
-    private static List<BoxFile.Info> getFiles(BoxFolder.Info parentFolderInfo, String path) {
+    public String getSharedLink(String app, String share, BoxItem.Info itemInfo) {
+        return getSharedLink(app, share, itemInfo.getType(), Long.parseLong(itemInfo.getID()));
+    }
+
+    public String getSharedLink(String app, String share, String type, long id) {
+        return getSharedLink(app, share) + '/' + type + '/' + id;
+    }
+
+    public String getThumbnailUrl(String app, long fileVersion, String share) {
+        return "https://" + app + ".app.box.com/representation/file_version_" + fileVersion
+                + "/thumb_1024.jpg?shared_name=" + share;
+    }
+
+    public BoxItem.Info getSharedItem(URL sharedLink) {
+        return getSharedItem(sharedLink.toExternalForm());
+    }
+
+    public BoxItem.Info getSharedItem(String sharedLink) {
+        return BoxItem.getSharedItem(api, sharedLink);
+    }
+
+    public BoxFile getSharedFile(String sharedLink, long fileId) {
+        return new BoxFile(new PublicSharedLinkAPIConnection(api, sharedLink), Long.toString(fileId));
+    }
+
+    public List<BoxFile.Info> getFiles(String app, String share) {
+        return getFiles(app, share, Function.identity());
+    }
+
+    public <T> List<T> getFiles(String app, String share, Function<BoxFile.Info, T> mapper) {
+        String sharedLink = getSharedLink(app, share);
+        LOGGER.info("Fetching files of shared folder {}", sharedLink);
+        BoxItem.Info itemInfo = getSharedItem(sharedLink);
+        if (itemInfo instanceof BoxFolder.Info folderInfo) {
+            return getFiles(folderInfo, folderInfo.getName(), mapper);
+        } else if (itemInfo instanceof BoxFile.Info fileInfo && isWantedFile(fileInfo)) {
+            return List.of(mapper.apply(fileInfo));
+        }
+        return List.of();
+    }
+
+    private <T> List<T> getFiles(BoxFolder.Info parentFolderInfo, String path,
+            Function<BoxFile.Info, T> mapper) {
         LOGGER.info("Fetching files of folder {} - {}", parentFolderInfo.getID(), path);
-        List<BoxFile.Info> result = new ArrayList<>();
-        for (BoxItem.Info itemInfo : parentFolderInfo.getResource()) {
-            if (itemInfo instanceof BoxFile.Info fileInfo) {
-                result.add(fileInfo);
-            } else if (itemInfo instanceof BoxFolder.Info folderInfo && !"__MACOSX".equals(folderInfo.getName())) {
-                result.addAll(getFiles(folderInfo, path + " > " + folderInfo.getName()));
+        List<T> result = new ArrayList<>();
+        for (BoxItem.Info itemInfo : parentFolderInfo.getResource().getChildren(BoxItem.ALL_FIELDS)) {
+            if (itemInfo instanceof BoxFolder.Info folderInfo
+                    && !IGNORED_FOLDERS.contains(folderInfo.getName())) {
+                result.addAll(getFiles(folderInfo, path + " > " + folderInfo.getName(), mapper));
+            } else if (itemInfo instanceof BoxFile.Info fileInfo && isWantedFile(fileInfo)) {
+                result.add(mapper.apply(fileInfo));
             }
         }
         return result;
+    }
+
+    private boolean isWantedFile(BoxFile.Info fileInfo) {
+        return "mp4".equals(fileInfo.getExtension()) || commonsService.isPermittedFileExt(fileInfo.getExtension());
     }
 
     private static class BoxRedirectStrategy extends LaxRedirectStrategy {

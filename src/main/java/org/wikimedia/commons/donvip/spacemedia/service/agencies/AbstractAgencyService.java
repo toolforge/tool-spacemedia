@@ -86,6 +86,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateR
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
+import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
 import org.wikimedia.commons.donvip.spacemedia.service.mastodon.MastodonService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
@@ -616,30 +617,31 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final int doUpload(T media, FileMetadata metadata, boolean checkUnicity, Collection<FileMetadata> uploaded,
             boolean isManual) throws IOException, UploadException {
-        if (metadata != null && metadata.getAssetUrl() != null && new UploadContext<>(media, metadata, getUploadMode(),
+        boolean mediaLooksOk = metadata != null && metadata.getAssetUrl() != null;
+        if (mediaLooksOk && new UploadContext<>(media, metadata, getUploadMode(),
                 minYearUploadAuto, this::isPermittedFileType, isManual).shouldUpload()) {
             checkUploadPreconditions(media, metadata, checkUnicity);
             List<String> smallerFiles = mediaService.findSmallerCommonsFilesWithIdAndPhash(media, metadata);
+            URL downloadUrl = getUrlResolver().resolveDownloadUrl(media, metadata);
             if (!smallerFiles.isEmpty()) {
                 LOGGER.info(
                         "Found existing smaller files with same id and perceptual hash on Commons, replacing them: {}",
                         smallerFiles);
                 for (String smallerFile : smallerFiles) {
-                    commonsService.uploadExistingFile(smallerFile, metadata.getAssetUrl(), metadata.getSha1());
+                    commonsService.uploadExistingFile(smallerFile, downloadUrl, metadata.getSha1());
                 }
                 metadata.setCommonsFileNames(new HashSet<>(smallerFiles));
             } else {
                 Pair<String, Map<String, String>> codeAndLegends = getWikiCode(media, metadata);
                 String uploadedFilename = commonsService.uploadNewFile(codeAndLegends.getLeft(),
-                        media.getUploadTitle(metadata), metadata.getFileExtension(), metadata.getAssetUrl(),
-                        metadata.getSha1());
+                        media.getUploadTitle(metadata), metadata.getFileExtension(), downloadUrl, metadata.getSha1());
                 metadata.setCommonsFileNames(new HashSet<>(Set.of(uploadedFilename)));
                 editStructuredDataContent(uploadedFilename, codeAndLegends.getRight(), media, metadata);
             }
             uploaded.add(metadataRepository.save(metadata));
             return 1;
         } else {
-            if (metadata != null && metadata.getAssetUrl() != null) {
+            if (mediaLooksOk) {
                 LOGGER.info("Upload not done for {} / {}. Upload mode: {}. Ignored: {}. Permitted file type: {}",
                         media.getId(), metadata, getUploadMode(), media.isIgnored(), isPermittedFileType(metadata));
             }
@@ -1009,7 +1011,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
         MediaUpdateResult ur = mediaService.updateMedia(media, getStringsToRemove(media),
-                forceUpdate, checkBlocklist(), includeByPerceptualHash(), null);
+                forceUpdate, getUrlResolver(), checkBlocklist(), includeByPerceptualHash(), null);
         boolean result = ur.getResult();
         if (media.isIgnored() != Boolean.TRUE) {
             if (media.getDescription() != null) {
@@ -1073,14 +1075,18 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected boolean isPermittedFileType(FileMetadata metadata) {
-        return metadata.getAssetUrl() != null
-                && commonsService.isPermittedFileType(metadata.getAssetUrl().toExternalForm());
+        return commonsService.isPermittedFileExt(metadata.getExtension())
+                || (metadata.getAssetUrl() != null && commonsService.isPermittedFileUrl(metadata.getAssetUrl()));
     }
 
     protected boolean shouldUploadAuto(T media, boolean isManual) {
         return media.getMetadata().stream().anyMatch(
                 metadata -> new UploadContext<>(media, metadata, getUploadMode(), minYearUploadAuto,
                         this::isPermittedFileType, isManual).shouldUploadAuto());
+    }
+
+    protected UrlResolver<T> getUrlResolver() {
+        return (media, metadata) -> metadata.getAssetUrl();
     }
 
     protected FileMetadata addMetadata(T media, String assetUrl, ImageDimensions dims) {
@@ -1146,6 +1152,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected static SimpleEntry<String, String> e(String k, String v) {
         return new SimpleEntry<>(k, v);
+    }
+
+    protected static Object smartExceptionLog(Throwable e) {
+        return e.getCause() instanceof RuntimeException ? e : e.toString();
     }
 
     protected static final class UpdateFinishedException extends Exception {

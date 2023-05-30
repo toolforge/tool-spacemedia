@@ -73,6 +73,9 @@ public class FileMetadata implements FileMetadataProjection {
     @JsonProperty("asset_url")
     private URL assetUrl;
 
+    @Column(nullable = true, length = 4)
+    private String extension;
+
     /**
      * File size in bytes.
      */
@@ -156,6 +159,14 @@ public class FileMetadata implements FileMetadataProjection {
         this.assetUrl = assetUrl;
     }
 
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
+
     public Long getSize() {
         return size;
     }
@@ -197,7 +208,9 @@ public class FileMetadata implements FileMetadataProjection {
     @Transient
     @JsonIgnore
     public String getFileExtension() {
-        if (getAssetUrl() == null) {
+        if (getExtension() != null) {
+            return getExtension();
+        } else if (getAssetUrl() == null) {
             return null;
         }
         String url = getAssetUrl().toExternalForm();

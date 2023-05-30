@@ -113,18 +113,19 @@ public class MediaService {
         photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.photographers.csv"));
     }
 
-    public MediaUpdateResult updateMedia(Media<?, ?> media, Iterable<String> stringsToRemove, boolean forceUpdate)
-            throws IOException {
-        return updateMedia(media, stringsToRemove, forceUpdate, true, true, null);
+    public <M extends Media<?, ?>> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
+            boolean forceUpdate, UrlResolver<M> urlResolver) throws IOException {
+        return updateMedia(media, stringsToRemove, forceUpdate, urlResolver, true, true, null);
     }
 
-    public MediaUpdateResult updateMedia(Media<?, ?> media, Iterable<String> stringsToRemove, boolean forceUpdate,
-            boolean checkBlocklist, boolean includeByPerceptualHash, Path localPath) throws IOException {
+    public <M extends Media<?, ?>> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
+            boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist, boolean includeByPerceptualHash,
+            Path localPath) throws IOException {
         boolean result = false;
         if (cleanupDescription(media, stringsToRemove)) {
             result = true;
         }
-        MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, forceUpdate);
+        MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, urlResolver, forceUpdate);
         if (ur.getResult()) {
             result = true;
         }
@@ -176,11 +177,13 @@ public class MediaService {
         return photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith);
     }
 
-    public MediaUpdateResult updateReadableStateAndHashes(Media<?, ?> media, Path localPath, boolean forceUpdateOfHashes) {
+    public <M extends Media<?, ?>> MediaUpdateResult updateReadableStateAndHashes(M media, Path localPath,
+            UrlResolver<M> urlResolver, boolean forceUpdateOfHashes) {
         boolean result = false;
         Exception exception = null;
         for (FileMetadata metadata : media.getMetadata()) {
-            MediaUpdateResult ur = updateReadableStateAndHashes(media, metadata, localPath, forceUpdateOfHashes);
+            MediaUpdateResult ur = updateReadableStateAndHashes(media, metadata, localPath, urlResolver,
+                    forceUpdateOfHashes);
             if (ur.getResult()) {
                 result = true;
             }
@@ -210,13 +213,13 @@ public class MediaService {
         }
     }
 
-    private MediaUpdateResult updateReadableStateAndHashes(Media<?, ?> media, FileMetadata metadata, Path localPath,
-            boolean forceUpdateOfHashes) {
+    private <M extends Media<?, ?>> MediaUpdateResult updateReadableStateAndHashes(M media, FileMetadata metadata,
+            Path localPath, UrlResolver<M> urlResolver, boolean forceUpdateOfHashes) {
         boolean isImage = metadata.isImage();
         boolean result = false;
         BufferedImage bi = null;
         try {
-            URL assetUrl = metadata.getAssetUrl();
+            URL assetUrl = urlResolver.resolveDownloadUrl(media, metadata);
             if (isImage && shouldReadImage(assetUrl, metadata, forceUpdateOfHashes)) {
                 try {
                     Pair<BufferedImage, Long> pair = ImageUtils.readImage(assetUrl, false, true);
@@ -249,7 +252,7 @@ public class MediaService {
                 bi.flush();
                 bi = null;
             }
-            if (updateSha1(metadata, localPath, forceUpdateOfHashes)) {
+            if (updateSha1(media, metadata, localPath, urlResolver, forceUpdateOfHashes)) {
                 result = true;
             }
         } catch (RestClientException e) {
@@ -321,17 +324,19 @@ public class MediaService {
     /**
      * Computes the media SHA-1.
      *
+     * @param metadata media object
      * @param metadata media object metadata
      * @param localPath if set, use it instead of asset URL
+     * @param urlResolver URL download resolver
      * @param forceUpdate {@code true} to force update of an existing hash
      * @return {@code true} if media has been updated with computed SHA-1 and must be persisted
      * @throws IOException        in case of I/O error
      * @throws URISyntaxException if URL cannot be converted to URI
      */
-    public boolean updateSha1(FileMetadata metadata, Path localPath, boolean forceUpdate)
-            throws IOException, URISyntaxException {
+    public <M extends Media<?, ?>> boolean updateSha1(M media, FileMetadata metadata, Path localPath,
+            UrlResolver<M> urlResolver, boolean forceUpdate) throws IOException, URISyntaxException {
         if ((metadata.getSha1() == null || forceUpdate) && (metadata.getAssetUrl() != null || localPath != null)) {
-            metadata.setSha1(getSha1(localPath, metadata.getAssetUrl()));
+            metadata.setSha1(getSha1(localPath, urlResolver.resolveDownloadUrl(media, metadata)));
             updateHashes(metadata.getSha1(), metadata.getPhash());
             return true;
         }
@@ -365,7 +370,7 @@ public class MediaService {
      *         and must be persisted
      */
     public boolean updatePerceptualHash(FileMetadata metadata, BufferedImage image, boolean forceUpdate) {
-        if (image != null && metadata.getAssetUrl() != null && (metadata.getPhash() == null || forceUpdate)) {
+        if (image != null && (metadata.getPhash() == null || forceUpdate)) {
             try {
                 metadata.setPhash(HashHelper.encode(HashHelper.computePerceptualHash(image)));
             } catch (RuntimeException e) {

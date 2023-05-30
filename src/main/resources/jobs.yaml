@@ -150,7 +150,7 @@
   cpu: 1
   mem: 4Gi
   no-filelog: true
-  schedule: "45 15,21 * * *"
+  schedule: "45 15 * * *"
   emails: onfailure
 
 - name: webb-nasa
@@ -159,5 +159,5 @@
   cpu: 1
   mem: 4Gi
   no-filelog: true
-  schedule: "45 16,22 * * *"
+  schedule: "45 16 * * *"
   emails: onfailure

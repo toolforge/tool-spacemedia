@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.URL;
@@ -123,9 +124,9 @@ class CommonsServiceTest {
     }
 
     @Test
-    void testIsPermittedFileType() {
-        assertTrue(service.isPermittedFileType("https://www.kari.re.kr/image/kari_image_down.do?idx=79"));
-        assertTrue(service.isPermittedFileType("https://photojournal.jpl.nasa.gov/archive/PIA25257.gif"));
+    void testIsPermittedFileUrl() {
+        assertTrue(service.isPermittedFileUrl(newURL("https://www.kari.re.kr/image/kari_image_down.do?idx=79")));
+        assertTrue(service.isPermittedFileUrl(newURL("https://photojournal.jpl.nasa.gov/archive/PIA25257.gif")));
     }
 
     @ParameterizedTest

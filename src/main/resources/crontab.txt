@@ -4,5 +4,6 @@
 0 3 * * * /bin/sh /data/project/spacemedia/run.sh djangoplicity eso
 0 4 * * * /bin/sh /data/project/spacemedia/run.sh djangoplicity noirlab
 0 5 * * * /bin/sh /data/project/spacemedia/run.sh web
+0 21 * * * /bin/sh /data/project/spacemedia/run.sh box nasa-box
 0 22 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-photojournal
 0 23 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-sdo

@@ -786,17 +786,22 @@ public class CommonsService {
                 .replace("â€™", "’").replace("http---", "").replace("https---", "").trim();
     }
 
-    public boolean isPermittedFileType(String url) {
-        String lowerCaseUrl = url.toLowerCase(ENGLISH);
-        return !REMOTE_FILE_URL.matcher(url).matches()
+    public boolean isPermittedFileExt(String ext) {
+        return ext != null && permittedFileTypes.contains(ext);
+    }
+
+    public boolean isPermittedFileUrl(URL url) {
+        String lowerCaseUrl = url.toExternalForm().toLowerCase(ENGLISH);
+        return !REMOTE_FILE_URL.matcher(lowerCaseUrl).matches()
                 || permittedFileTypes.stream().anyMatch(type -> lowerCaseUrl.endsWith("." + type));
     }
 
     private synchronized String doUpload(String wikiCode, String filename, String ext, URL url, String sha1,
             boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error,
             boolean uploadByUrl) throws IOException, UploadException {
-        if (!isPermittedFileType(url.toExternalForm())) {
-            throw new UploadException(url + " does not match any supported file type: " + permittedFileTypes);
+        if (!isPermittedFileExt(ext) && !isPermittedFileUrl(url)) {
+            throw new UploadException("Neither extension " + ext + " nor URL " + url
+                    + " match any supported file type: " + permittedFileTypes);
         }
         String filenameExt = requireNonNull(filename, "filename");
         if (isNotBlank(ext) && !filenameExt.endsWith('.' + ext)) {

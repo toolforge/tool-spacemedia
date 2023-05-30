@@ -183,7 +183,8 @@ public abstract class AbstractAgencyDvidsService
         throw new IllegalArgumentException(media.toString());
     }
 
-    protected void updateDvidsMedia() {
+    @Override
+    public void updateMedia() {
         LocalDateTime start = startUpdateMedia();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
@@ -289,10 +290,6 @@ public abstract class AbstractAgencyDvidsService
                 idsKnownToDvidsApi);
     }
 
-    private static Object smartExceptionLog(Throwable e) {
-        return e.getCause() instanceof RuntimeException ? e : e.toString();
-    }
-
     private DvidsMedia getMediaFromApi(RestTemplate rest, String id, String unit) {
         DvidsMedia media = Optional.ofNullable(
                 rest.getForObject(assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)), ApiAssetResponse.class))
@@ -368,10 +365,7 @@ public abstract class AbstractAgencyDvidsService
             media = apiFetcher.get();
             save = true;
         }
-        MediaUpdateResult update = processDvidsMediaUpdate(media, false);
-        if (update.getResult()) {
-            save = true;
-        }
+        save |= processDvidsMediaUpdate(media, false).getResult();
         int uploadCount = 0;
         if (shouldUploadAuto(media, false)) {
             Triple<DvidsMedia, Collection<FileMetadata>, Integer> upload = upload(media, true, false);

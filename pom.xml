@@ -364,6 +364,16 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>job-box</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyBoxUpdateJobApplication</mainClass>
+							<outputDirectory>${project.build.directory}/job-box</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
 						<id>job-custom</id>
 						<goals>
 							<goal>repackage</goal>

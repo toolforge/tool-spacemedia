@@ -418,7 +418,8 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
         for (FlickrMedia media : medias) {
             try {
                 Pair<FlickrMedia, Integer> result = processor.processFlickrMedia(media, flickrAccount,
-                        () -> getStringsToRemove(media), this::shouldUploadAuto, this::uploadWrapped);
+                        () -> getStringsToRemove(media), this::shouldUploadAuto, this::uploadWrapped,
+                        getUrlResolver());
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }

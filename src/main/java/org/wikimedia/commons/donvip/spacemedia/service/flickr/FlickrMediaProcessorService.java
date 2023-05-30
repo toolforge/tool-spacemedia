@@ -34,6 +34,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaTyp
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
@@ -79,8 +80,8 @@ public class FlickrMediaProcessorService {
     @Transactional
     public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
             Supplier<Collection<String>> stringsToRemove, BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
-            Function<FlickrMedia, Triple<FlickrMedia, Collection<FileMetadata>, Integer>> uploader)
-            throws IOException {
+            Function<FlickrMedia, Triple<FlickrMedia, Collection<FileMetadata>, Integer>> uploader,
+            UrlResolver<FlickrMedia> urlResolver) throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
         final Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
@@ -138,7 +139,7 @@ public class FlickrMediaProcessorService {
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb);
         savePhotoSets = false;
         save = false;
-        if (mediaService.updateMedia(media, stringsToRemove.get(), false).getResult()) {
+        if (mediaService.updateMedia(media, stringsToRemove.get(), false, urlResolver).getResult()) {
             save = true;
         }
         int uploadCount = 0;

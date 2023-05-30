@@ -43,5 +43,7 @@ build/
 /pom.xml.releaseBackup
 /release.propertie
 
+/.temp*.txt
+
 cache/
 files/

@@ -198,8 +198,8 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
         } else {
             save = true;
         }
-        Path path = video.getMetadata().get(0).getSha1() == null ? downloadVideo(video) : null;
-        if (mediaService.updateMedia(video, getStringsToRemove(video), false, true,
+        Path path = video.getUniqueMetadata().getSha1() == null ? downloadVideo(video) : null;
+        if (mediaService.updateMedia(video, getStringsToRemove(video), false, getUrlResolver(), true,
                 includeByPerceptualHash(), path).getResult()) {
             save = true;
         }
@@ -214,7 +214,7 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
 
     private Path downloadVideo(YouTubeVideo video) {
         try {
-            String url = video.getMetadata().get(0).getAssetUrl().toExternalForm();
+            String url = video.getUniqueMetadata().getAssetUrl().toExternalForm();
             String[] output = execOutput(List.of(
                 "youtube-dl", "--no-progress", "--id", "--write-auto-sub", "--convert-subs", "srt", url),
                 30, TimeUnit.MINUTES).split("\n");
@@ -234,7 +234,7 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
     @Override
     protected final int doUpload(YouTubeVideo video, boolean checkUnicity, Collection<FileMetadata> uploaded,
             boolean isManual) throws IOException {
-        FileMetadata metadata = video.getMetadata().get(0);
+        FileMetadata metadata = video.getUniqueMetadata();
         throw new UnsupportedOperationException("<h2>Spacemedia is not able to upload YouTube videos by itself.</h2>\n"
                 + "<p>Please go to <a href=\"https://video2commons.toolforge.org/\">video2commons</a> and upload the <b>"
                 + video.getId()

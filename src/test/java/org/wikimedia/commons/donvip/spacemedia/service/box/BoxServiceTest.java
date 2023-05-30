@@ -27,8 +27,7 @@ class BoxServiceTest {
 
     @Test
     void testGetFiles() {
-        assertTrue(service.getFiles("https://nasa-external-ocomm.app.box.com/s/onrtmdvofqluv5ei5kfu5u1pf8v4xqtl")
-                .size() > 1000);
+        assertTrue(service.getFiles("nasa-external-ocomm", "onrtmdvofqluv5ei5kfu5u1pf8v4xqtl").size() > 1000);
     }
 
     @Configuration

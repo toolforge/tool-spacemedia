@@ -75,7 +75,7 @@ class NasaAsterServiceTest extends AbstractAgencyServiceTest {
     private NasaAsterMedia basicChecks(String id, int size) throws MalformedURLException, IOException {
         NasaAsterMedia media = new NasaAsterMedia();
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
-        when(commonsService.isPermittedFileType(any())).thenReturn(true);
+        when(commonsService.isPermittedFileUrl(any())).thenReturn(true);
 
         service.fillMediaWithHtml(Jsoup.parse(new File("src/test/resources/nasa/aster/" + id + ".html")), media);
 
