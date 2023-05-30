@@ -177,7 +177,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         // https://developer.twitter.com/en/docs/twitter-api/v1/media/upload-media/uploading-media/media-best-practices
         // attach up to 4 photos
         return determineAtMost(4, uploadedMedia.stream().filter(x -> x.isReadableImage() == Boolean.TRUE
-                && x.getPhash() != null & x.getMime() != null && x.getMime().startsWith("image/")
+                && x.getPhash() != null && x.getMime() != null && x.getMime().startsWith("image/")
                 && !"image/gif".equals(x.getMime())).toList());
     }
 
@@ -209,12 +209,28 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
 
     protected <M> M postMedia(MediaUploadContext muc, BiFunction<MediaUploadContext, byte[], M> poster)
             throws IOException, URISyntaxException {
+        try {
+            return postMedia(muc, poster, 10);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
+        }
+    }
+
+    private <M> M postMedia(MediaUploadContext muc, BiFunction<MediaUploadContext, byte[], M> poster, int retryCount)
+            throws IOException, URISyntaxException, InterruptedException {
         LOGGER.info("Uploading media for file {} resolved to URL {}", muc.filename, muc.url);
         try (CloseableHttpClient httpclient = HttpClients.custom().setUserAgent(commonsService.getUserAgent()).build();
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(muc.url.toURI()));
                 InputStream in = response.getEntity().getContent()) {
             if (response.getStatusLine().getStatusCode() >= 400) {
-                throw new IOException(muc.url.toURI().toString() + " -> " + response.getStatusLine().toString());
+                String message = muc.url.toURI().toString() + " -> " + response.getStatusLine().toString();
+                if (retryCount > 0) {
+                    LOGGER.warn("{}, {} retry attempts remaining", message, retryCount);
+                    Thread.sleep(100);
+                    return postMedia(muc, poster, retryCount - 1);
+                }
+                throw new IOException(message);
             }
             return poster.apply(muc, in.readAllBytes());
         }
