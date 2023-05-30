@@ -186,6 +186,36 @@
 			<artifactId>twittered</artifactId>
 			<version>2.22</version>
 		</dependency>
+		<!-- Box - https://github.com/box/box-java-sdk#vulnerabilities-in-bouncycastle-libraries -->
+		<dependency>
+			<groupId>com.box</groupId>
+			<artifactId>box-java-sdk</artifactId>
+			<version>4.1.1</version>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcpkix-jdk15on</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.70</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>1.70</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- Web -->
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>webjars-locator</artifactId>
@@ -206,6 +236,7 @@
 			<artifactId>datatables</artifactId>
 			<version>1.13.2</version>
 		</dependency>
+		<!-- Test -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
