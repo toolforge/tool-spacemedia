@@ -85,6 +85,8 @@ class StsciServiceTest {
         assertEquals("Abell 370", media.getObjectName());
         assertEquals("hubble", media.getMission());
         assertEquals(Set.of("Gravitational Lensing", "Supernovae", "Galaxy Clusters"), media.getKeywords());
+        assertEquals("SCIENCE: NASA, ESA, STScI, Wenlei Chen (UMN), Patrick Kelly (UMN), Hubble Frontier Fields",
+                media.getCredits());
     }
 
     @Test
@@ -111,6 +113,7 @@ class StsciServiceTest {
         assertEquals("WASP-39 b", media.getObjectName());
         assertEquals("webb", media.getMission());
         assertEquals(Set.of("Exoplanets"), media.getKeywords());
+        assertEquals("ILLUSTRATION: NASA, ESA, CSA, Joseph Olmsted (STScI)", media.getCredits());
     }
 
     @Test
@@ -134,6 +137,35 @@ class StsciServiceTest {
         assertEquals("IC 2631", media.getObjectName());
         assertEquals("webb", media.getMission());
         assertEquals(Set.of("Nebulas", "Reflection Nebulas", "Star Forming Regions"), media.getKeywords());
+        assertEquals("IMAGE: ESO", media.getCredits());
+    }
+
+    @Test
+    void testReadHtmlWebbNewCreditsFormat() throws Exception {
+        String urlLink = "https://webbtelescope.org/contents/media/images/2023/112/01GYJ7H5VSDMPRWX0R0Z6R87EC";
+        StsciMedia media = service.getImageDetailsByScrapping("2023/112/01GYJ7H5VSDMPRWX0R0Z6R87EC", urlLink,
+                new URL(urlLink), html("nasawebb/2023_112_01GYJ7H5VSDMPRWX0R0Z6R87EC.html"));
+        assertNotNull(media);
+        assertEquals("2023/112/01GYJ7H5VSDMPRWX0R0Z6R87EC", media.getId());
+        assertEquals("Enceladus Plume (Webb [NIRSpec] and Cassini Image)", media.getTitle());
+        assertEquals(
+                "An image from NASA’s James Webb Space Telescope’s NIRSpec (Near-Infrared Spectrograph) shows a water vapor plume jetting from the southern pole of Saturn’s moon Enceladus, extending out more than 20 times the size of the moon itself. The inset, an image from the Cassini orbiter, emphasizes how small Enceladus appears in the Webb image compared to the water plume.\n"
+                        + "Webb is allowing researchers, for the first time, to directly see how this plume feeds the water supply for the entire system of Saturn and its rings. By analyzing the Webb data, astronomers have determined roughly 30 percent of the water stays within this torus, a fuzzy donut of water that is co-located with Saturn’s “E-ring,” and the other 70 percent escapes to supply the rest of the Saturnian system with water.\n"
+                        + "Enceladus, an ocean world about four percent the size of Earth, just 313 miles across, is one of the most exciting scientific targets in our solar system in the search for life beyond Earth. A global reservoir of salty water sits below the moon’s icy outer crust, and geyser-like volcanoes spew jets of ice particles, water vapor, and organic chemicals out of crevices in the moon’s surface informally called ‘tiger stripes.’\n"
+                        + "NIRSpec was built for the European Space Agency (ESA) by a consortium of European companies led by Airbus Defence and Space (ADS) with NASA’s Goddard Space Flight Centre providing its detector and micro-shutter subsystems.",
+                media.getDescription());
+        assertEquals("2023-05-30T11:00-04:00[America/New_York]", media.getDate().toString());
+        assertEquals("https://stsci-opo.org/STScI-01GYJ8KNFKX79X3WFF880Z7XQF.tif",
+                media.getMetadata().get(0).getAssetUrl().toExternalForm());
+        assertEquals("https://stsci-opo.org/STScI-01GYJ8KXBB9GYG58KF9V7WRSGT.png",
+                media.getThumbnailUrl().toExternalForm());
+        assertEquals("2023-112", media.getNewsId());
+        assertNull(media.getExposureDate());
+        assertEquals("Enceladus", media.getObjectName());
+        assertEquals("webb", media.getMission());
+        assertEquals(Set.of("Moons", "Saturn", "Solar System"), media.getKeywords());
+        assertEquals("Image: NASA, ESA, CSA, Geronimo Villanueva (NASA-GSFC) Image Processing: Alyssa Pagan (STScI)",
+                media.getCredits());
     }
 
     @Configuration

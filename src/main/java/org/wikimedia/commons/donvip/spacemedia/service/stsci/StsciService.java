@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -73,8 +74,20 @@ public class StsciService {
         result.setId(id);
         result.setMission(getMission(url.getHost()));
         result.setTitle(main.getElementsByTag("h1").first().text());
+        // First attempt
         result.setCredits(
                 md8.getElementsByTag("h3").select(":contains(Credits)").first().nextElementSibling().ownText().trim());
+        if (StringUtils.isBlank(result.getCredits())) {
+            // Second attempt with another possible horrible format
+            // https://webbtelescope.org/contents/media/images/2023/112/01GYJ7H5VSDMPRWX0R0Z6R87EC
+            StringBuilder sb = new StringBuilder();
+            md8.getElementsByTag("h4").forEach(h4 -> sb.append(h4.text()).append(h4.text().endsWith(":") ? " " : ": ")
+                    .append(h4.nextSibling().outerHtml()));
+            result.setCredits(sb.toString().replace("  ", " ").trim());
+        }
+        if (StringUtils.isBlank(result.getCredits())) {
+            LOGGER.warn("Unable to find credits for {}", urlLink);
+        }
         result.setDescription(md8.getElementsByTag("p").eachText().stream().filter(s -> !s.equals(result.getCredits()))
                 .collect(joining("\n")));
         List<StsciImageFiles> files = new ArrayList<>();
