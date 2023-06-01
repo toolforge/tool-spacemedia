@@ -129,16 +129,20 @@ public class MediaService {
             Path localPath) throws IOException {
         boolean result = false;
         if (cleanupDescription(media, stringsToRemove)) {
+            LOGGER.debug("Description has been cleaned up for {}", media);
             result = true;
         }
         MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, urlResolver, forceUpdate);
         if (ur.getResult()) {
+            LOGGER.debug("Readable state and/or hashes have been updated for {}", media);
             result = true;
         }
         if (findCommonsFiles(media.getMetadata(), media.getIdUsedInCommons(), includeByPerceptualHash)) {
+            LOGGER.debug("Commons files have been updated for {}", media);
             result = true;
         }
         if (checkBlocklist && !Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
+            LOGGER.debug("Blocklist has been trigerred for {}", media);
             result = true;
         }
         return new MediaUpdateResult(result, ur.getException());
@@ -233,25 +237,30 @@ public class MediaService {
                     if (bi != null) {
                         if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
                             metadata.setReadableImage(Boolean.TRUE);
+                            LOGGER.debug("Readable state has been updated to {} for {}", Boolean.TRUE, media);
                             result = true;
                         }
                         if (bi.getWidth() > 0 && bi.getHeight() > 0 && !metadata.hasValidDimensions()) {
                             metadata.setImageDimensions(new ImageDimensions(bi.getWidth(), bi.getHeight()));
+                            LOGGER.debug("Image dimensions have been updated for {}", media);
                             result = true;
                         }
                     }
                     Long contentLength = pair.getRight();
                     if (contentLength > 0 && metadata.getSize() == null) {
                         metadata.setSize(contentLength);
+                        LOGGER.debug("Size has been updated for {}", media);
                         result = true;
                     }
                 } catch (IOException | ImageDecodingException e) {
                     result = ignoreMedia(media, "Unreadable media", e);
                     metadata.setReadableImage(Boolean.FALSE);
+                    LOGGER.debug("Readable state has been updated to {} for {}", Boolean.FALSE, media);
                 }
             }
             if (isImage && Boolean.TRUE.equals(metadata.isReadableImage())
                     && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
+                LOGGER.debug("Perceptual hash has been updated for {}", media);
                 result = true;
             }
             if (bi != null) {
@@ -259,6 +268,7 @@ public class MediaService {
                 bi = null;
             }
             if (updateSha1(media, metadata, localPath, urlResolver, forceUpdateOfHashes)) {
+                LOGGER.debug("SHA1 hash has been updated for {}", media);
                 result = true;
             }
         } catch (RestClientException e) {
@@ -273,6 +283,7 @@ public class MediaService {
             }
         }
         if (result) {
+            LOGGER.info("Saving {}", metadata);
             metadataRepository.save(metadata);
         }
         return new MediaUpdateResult(result, null);
