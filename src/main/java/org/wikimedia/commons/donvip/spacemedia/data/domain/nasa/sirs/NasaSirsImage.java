@@ -13,14 +13,14 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-public class NasaSirsImage extends Media<String, LocalDate> implements WithKeywords {
+public class NasaSirsImage extends SingleFileMedia<String, LocalDate> implements WithKeywords {
 
     @Id
     @Column(name = "nasa_id", nullable = false, length = 60)

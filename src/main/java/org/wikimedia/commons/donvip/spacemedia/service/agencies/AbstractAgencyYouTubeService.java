@@ -198,7 +198,7 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
         } else {
             save = true;
         }
-        Path path = video.getUniqueMetadata().getSha1() == null ? downloadVideo(video) : null;
+        Path path = !video.getUniqueMetadata().hasSha1() ? downloadVideo(video) : null;
         if (mediaService.updateMedia(video, getStringsToRemove(video), false, getUrlResolver(), true,
                 includeByPerceptualHash(), path).getResult()) {
             save = true;

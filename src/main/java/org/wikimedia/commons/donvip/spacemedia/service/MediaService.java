@@ -102,6 +102,12 @@ public class MediaService {
     @Value("${update.fullres.images}")
     private boolean updateFullResImages;
 
+    @Value("${ignored.phash}")
+    private Set<String> ignoredPhash;
+
+    @Value("${ignored.sha1}")
+    private Set<String> ignoredSha1;
+
     private Set<String> blockListIgnoredTerms;
     private Set<String> copyrightsBlocklist;
     private Set<String> photographersBlocklist;
@@ -275,7 +281,7 @@ public class MediaService {
     private static boolean shouldReadImage(URL assetUrl, FileMetadata metadata, boolean forceUpdateOfHashes) {
         return assetUrl != null
                 && (metadata.isReadableImage() == null || (Boolean.TRUE.equals(metadata.isReadableImage())
-                        && (metadata.getPhash() == null || metadata.getSha1() == null || !metadata.hasValidDimensions()
+                        && (!metadata.hasPhash() || !metadata.hasSha1() || !metadata.hasValidDimensions()
                                 || forceUpdateOfHashes)));
     }
 
@@ -335,7 +341,7 @@ public class MediaService {
      */
     public <M extends Media<?, ?>> boolean updateSha1(M media, FileMetadata metadata, Path localPath,
             UrlResolver<M> urlResolver, boolean forceUpdate) throws IOException, URISyntaxException {
-        if ((metadata.getSha1() == null || forceUpdate) && (metadata.getAssetUrl() != null || localPath != null)) {
+        if ((!metadata.hasSha1() || forceUpdate) && (metadata.getAssetUrl() != null || localPath != null)) {
             metadata.setSha1(getSha1(localPath, urlResolver.resolveDownloadUrl(media, metadata)));
             updateHashes(metadata.getSha1(), metadata.getPhash());
             return true;
@@ -370,7 +376,7 @@ public class MediaService {
      *         and must be persisted
      */
     public boolean updatePerceptualHash(FileMetadata metadata, BufferedImage image, boolean forceUpdate) {
-        if (image != null && (metadata.getPhash() == null || forceUpdate)) {
+        if (image != null && (!metadata.hasPhash() || forceUpdate)) {
             try {
                 metadata.setPhash(HashHelper.encode(HashHelper.computePerceptualHash(image)));
             } catch (RuntimeException e) {
@@ -406,9 +412,8 @@ public class MediaService {
     }
 
     private boolean findCommonsFilesWithSha1(FileMetadata metadata) throws IOException {
-        String sha1 = metadata.getSha1();
-        if (sha1 != null && isEmpty(metadata.getCommonsFileNames())) {
-            Set<String> files = commonsService.findFilesWithSha1(sha1);
+        if (shouldSearchBySha1(metadata)) {
+            Set<String> files = commonsService.findFilesWithSha1(metadata.getSha1());
             if (!files.isEmpty()) {
                 return saveNewMetadataCommonsFileNames(metadata, files);
             }
@@ -437,9 +442,8 @@ public class MediaService {
     }
 
     private boolean findCommonsFilesWithPhash(FileMetadata metadata, boolean excludeSelfSha1) throws IOException {
-        String phash = metadata.getPhash();
-        if (phash != null && isEmpty(metadata.getCommonsFileNames())) {
-            List<String> sha1s = hashRepository.findSha1ByPhash(phash);
+        if (shouldSearchByPhash(metadata)) {
+            List<String> sha1s = hashRepository.findSha1ByPhash(metadata.getPhash());
             if (excludeSelfSha1) {
                 sha1s.remove(CommonsService.base36Sha1(metadata.getSha1()));
             }
@@ -481,7 +485,7 @@ public class MediaService {
     private List<String> findCommonsFilesWithIdAndPhashFiltered(Collection<WikiPage> images, FileMetadata metadata,
             BiPredicate<FileMetadata, ImageInfo> filter) {
         List<String> filenames = new ArrayList<>();
-        if (metadata.getPhash() != null && isEmpty(metadata.getCommonsFileNames())) {
+        if (shouldSearchByPhash(metadata)) {
             for (WikiPage image : images.stream().filter(i -> filter.test(metadata, i.getImageInfo()[0])).toList()) {
                 String filename = image.getTitle().replace("File:", "").replace(' ', '_');
                 String sha1base36 = CommonsService.base36Sha1(image.getImageInfo()[0].getSha1());
@@ -501,6 +505,16 @@ public class MediaService {
             }
         }
         return filenames;
+    }
+
+    private boolean shouldSearchByPhash(FileMetadata metadata) {
+        return metadata.hasPhash() && !ignoredPhash.contains(metadata.getPhash())
+                && isEmpty(metadata.getCommonsFileNames());
+    }
+
+    private boolean shouldSearchBySha1(FileMetadata metadata) {
+        return metadata.hasSha1() && !ignoredSha1.contains(metadata.getSha1())
+                && isEmpty(metadata.getCommonsFileNames());
     }
 
     private static boolean filterBySameMimeAndLargerOrEqualSize(FileMetadata metadata, ImageInfo imageInfo) {

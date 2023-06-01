@@ -98,7 +98,7 @@ public class NasaSirsService
         // SIRS doesn"t work anymore so make sure we're still able to handle existing files
         for (NasaSirsImage image : repository.findMissingInCommons()) {
             if (!processedImages.contains(image.getId())) {
-                for (NasaSirsImage dupe : repository.findByMetadata_Sha1(image.getMetadata().get(0).getSha1())) {
+                for (NasaSirsImage dupe : repository.findByMetadata_Sha1(image.getUniqueMetadata().getSha1())) {
                     if (!dupe.getId().equals(image.getId())) {
                         processedImages.add(dupe.getId());
                         LOGGER.warn("Deleting {} SIRS image (duplicate of {})", dupe.getId(), image.getId());

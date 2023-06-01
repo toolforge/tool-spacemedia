@@ -954,12 +954,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected void checkUploadPreconditions(T media, FileMetadata metadata, boolean checkUnicity) throws IOException {
-        String sha1 = metadata.getSha1();
-        if (sha1 == null) {
+        if (!metadata.hasSha1()) {
             throw new ImageUploadForbiddenException(media + " SHA-1 has not been computed.");
         }
         // Forbid upload of duplicate medias for a single repo, they may have different descriptions
-        if (checkUnicity && repository.countByMetadata_Sha1(sha1) > 1) {
+        if (checkUnicity && repository.countByMetadata_Sha1(metadata.getSha1()) > 1) {
             throw new ImageUploadForbiddenException(media + " is present several times.");
         }
         // Double-check for duplicates before upload!

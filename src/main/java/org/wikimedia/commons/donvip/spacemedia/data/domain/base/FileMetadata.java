@@ -113,6 +113,12 @@ public class FileMetadata implements FileMetadataProjection {
         this.sha1 = sha1;
     }
 
+    @Transient
+    @JsonIgnore
+    public boolean hasSha1() {
+        return sha1 != null;
+    }
+
     @Override
     public String getPhash() {
         return phash;
@@ -120,6 +126,12 @@ public class FileMetadata implements FileMetadataProjection {
 
     public void setPhash(String phash) {
         this.phash = phash;
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean hasPhash() {
+        return phash != null;
     }
 
     @Transient

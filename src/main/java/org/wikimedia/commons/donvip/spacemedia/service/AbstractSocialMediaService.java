@@ -177,7 +177,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         // https://developer.twitter.com/en/docs/twitter-api/v1/media/upload-media/uploading-media/media-best-practices
         // attach up to 4 photos
         return determineAtMost(4, uploadedMedia.stream().filter(x -> x.isReadableImage() == Boolean.TRUE
-                && x.getPhash() != null && x.getMime() != null && x.getMime().startsWith("image/")
+                && x.hasPhash() && x.getMime() != null && x.getMime().startsWith("image/")
                 && !"image/gif".equals(x.getMime())).toList());
     }
 
