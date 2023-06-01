@@ -11,6 +11,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -95,7 +96,8 @@ public abstract class AbstractAgencyBoxService
         int count = 0;
         LocalDateTime start = LocalDateTime.now();
 
-        for (BoxMedia media : boxService.getFiles(app, share, fileInfo -> toBoxMedia(app, share, fileInfo))) {
+        for (BoxMedia media : boxService.getFiles(app, share, fileInfo -> toBoxMedia(app, share, fileInfo),
+                Comparator.comparing(BoxMedia::getDate))) {
             try {
                 Pair<BoxMedia, Integer> result = processBoxMedia(media);
                 if (result.getValue() > 0) {

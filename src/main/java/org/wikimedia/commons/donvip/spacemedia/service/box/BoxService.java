@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -167,15 +168,15 @@ public class BoxService {
     }
 
     public List<BoxFile.Info> getFiles(String app, String share) {
-        return getFiles(app, share, Function.identity());
+        return getFiles(app, share, Function.identity(), Comparator.comparing(BoxFile.Info::getCreatedAt));
     }
 
-    public <T> List<T> getFiles(String app, String share, Function<BoxFile.Info, T> mapper) {
+    public <T> List<T> getFiles(String app, String share, Function<BoxFile.Info, T> mapper, Comparator<T> comparator) {
         String sharedLink = getSharedLink(app, share);
         LOGGER.info("Fetching files of shared folder {}", sharedLink);
         BoxItem.Info itemInfo = getSharedItem(sharedLink);
         if (itemInfo instanceof BoxFolder.Info folderInfo) {
-            return getFiles(folderInfo, folderInfo.getName(), mapper);
+            return getFiles(folderInfo, folderInfo.getName(), mapper).stream().sorted(comparator.reversed()).toList();
         } else if (itemInfo instanceof BoxFile.Info fileInfo && isWantedFile(fileInfo)) {
             return List.of(mapper.apply(fileInfo));
         }
