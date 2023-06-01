@@ -37,7 +37,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class FileMetadata implements FileMetadataProjection {
 
     private static final Set<String> AUDIO_EXTENSIONS = Set.of("wav", "mp3", "flac", "midi");
-    private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "tiff", "png", "webp", "xcf", "gif", "svg");
+    private static final Set<String> IMAGE_EXTENSIONS = Set.of("bmp", "jpg", "tiff", "png", "webp", "xcf", "gif",
+            "svg");
     private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg");
 
     @Id
@@ -268,7 +269,7 @@ public class FileMetadata implements FileMetadataProjection {
             return "image/vnd.djvu";
         case "jpg":
             return "image/jpeg";
-        case "gif", "png", "tiff", "webp":
+        case "bmp", "gif", "png", "tiff", "webp":
             return "image/" + ext;
         case "svg":
             return "image/svg+xml";

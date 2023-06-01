@@ -245,7 +245,7 @@ public class MediaService {
                         metadata.setSize(contentLength);
                         result = true;
                     }
-                } catch (IOException | URISyntaxException | ImageDecodingException e) {
+                } catch (IOException | ImageDecodingException e) {
                     result = ignoreMedia(media, "Unreadable media", e);
                     metadata.setReadableImage(Boolean.FALSE);
                 }

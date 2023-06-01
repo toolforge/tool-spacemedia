@@ -1246,7 +1246,7 @@ public class CommonsService {
             int pageIndex) {
         displayUsedMemory();
         Page<CommonsImageProjection> result = imageRepository.findByMinorMimeInAndTimestampBetween(
-                Set.of("gif", "jpeg", "png", "tiff", "webp"),
+                Set.of("gif", "jpeg", "png", "tiff", "webp", "svg"),
                 startingTimestamp, endingTimestamp, PageRequest.of(pageIndex, 1000, order, "timestamp"));
         displayUsedMemory();
         return result;
@@ -1271,7 +1271,7 @@ public class CommonsService {
                     remote.putHashAssociation(hash);
                 }
                 return hash;
-            } catch (IOException | URISyntaxException | ImageDecodingException | RuntimeException e) {
+            } catch (IOException | ImageDecodingException | RuntimeException e) {
                 LOGGER.error("Failed to compute/save hash of {}: {}", name, e.toString());
             } finally {
                 if (bi != null) {

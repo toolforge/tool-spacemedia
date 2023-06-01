@@ -96,6 +96,10 @@ public final class Utils {
         return file.substring(file.lastIndexOf('/') + 1, file.lastIndexOf('.'));
     }
 
+    public static Pair<Path, Long> downloadFile(URI uri, String fileName) throws IOException {
+        return downloadFile(uri.toURL(), fileName);
+    }
+
     public static Pair<Path, Long> downloadFile(URL url, String fileName) throws IOException {
         Path output = Files.createDirectories(Path.of("files")).resolve(fileName);
         Long size = 0L;

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,7 +39,7 @@ public class ImageUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageUtils.class);
 
-    private static final Set<String> IMAGE_EXTENSIONS = Set.of("bmp", "gif", "jpe", "jpg", "jpeg", "png", "tif",
+    private static final Set<String> IMAGE_EXTENSIONS = Set.of("bmp", "gif", "jpe", "jpg", "jpeg", "png", "svg", "tif",
             "tiff");
 
     private ImageUtils() {
@@ -125,8 +124,12 @@ public class ImageUtils {
     }
 
     public static Pair<BufferedImage, Long> readImage(URL url, boolean readMetadata, boolean log)
-            throws IOException, URISyntaxException, ImageDecodingException {
-        URI uri = Utils.urlToUri(url);
+            throws IOException, ImageDecodingException {
+        return readImage(Utils.urlToUriUnchecked(url), readMetadata, log);
+    }
+
+    public static Pair<BufferedImage, Long> readImage(URI uri, boolean readMetadata, boolean log)
+            throws IOException, ImageDecodingException {
         if (log) {
             LOGGER.info("Reading image {}", uri);
         }
@@ -146,7 +149,7 @@ public class ImageUtils {
             if (ok) {
                 return Pair.of(readImage(in, readMetadata), contentLength);
             } else if ("webp".equals(extension)) {
-                return Pair.of(readWebp(url, uri, readMetadata), contentLength);
+                return Pair.of(readWebp(uri, readMetadata), contentLength);
             } else {
                 throw new ImageDecodingException(
                         "Unsupported format: " + extension + " / headers:" + response.getAllHeaders());
@@ -154,9 +157,9 @@ public class ImageUtils {
         }
     }
 
-    private static BufferedImage readWebp(URL url, URI uri, boolean readMetadata)
+    private static BufferedImage readWebp(URI uri, boolean readMetadata)
             throws IOException, ImageDecodingException {
-        Path file = Utils.downloadFile(url, uri.getPath().replace('/', '_')).getKey();
+        Path file = Utils.downloadFile(uri, uri.getPath().replace('/', '_')).getKey();
         try {
             Path pngFile = Path.of(file.toString().replace(".webp", ".png"));
             Utils.execOutput(List.of("dwebp", file.toString(), "-o", pngFile.toString()), 1, TimeUnit.MINUTES);
