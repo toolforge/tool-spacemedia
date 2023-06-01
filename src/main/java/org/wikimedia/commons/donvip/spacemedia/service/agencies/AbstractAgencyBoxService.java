@@ -5,6 +5,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -70,10 +71,12 @@ public abstract class AbstractAgencyBoxService
 
     @Override
     protected UrlResolver<BoxMedia> getUrlResolver() {
-        return (media, metadata) -> boxService
-                .getSharedFile(boxService.getSharedLink(media.getId().getApp(), media.getId().getShare()),
-                        media.getId().getId())
+        return (media, metadata) -> boxService.getSharedFile(getSharedLink(media.getId()), media.getId().getId())
                 .getDownloadURL();
+    }
+
+    private String getSharedLink(BoxMediaId id) {
+        return boxService.getSharedLink(id.getApp(), id.getShare());
     }
 
     @Override
@@ -96,8 +99,11 @@ public abstract class AbstractAgencyBoxService
         int count = 0;
         LocalDateTime start = LocalDateTime.now();
 
-        for (BoxMedia media : boxService.getFiles(app, share, fileInfo -> toBoxMedia(app, share, fileInfo),
-                Comparator.comparing(BoxMedia::getDate))) {
+        List<BoxMedia> files = boxService.getFiles(app, share, fileInfo -> toBoxMedia(app, share, fileInfo),
+                Comparator.comparing(BoxMedia::getDate));
+        LOGGER.info("Found {} files in {}", files.size(), Duration.between(start, LocalDateTime.now()));
+
+        for (BoxMedia media : files) {
             try {
                 Pair<BoxMedia, Integer> result = processBoxMedia(media);
                 if (result.getValue() > 0) {
@@ -143,7 +149,7 @@ public abstract class AbstractAgencyBoxService
             media = mediaFromApi;
             save = true;
         }
-        save |= doCommonUpdate(media, false).getResult();
+        save |= doCommonUpdate(media);
         int uploadCount = 0;
         if (shouldUploadAuto(media, false)) {
             Triple<BoxMedia, Collection<FileMetadata>, Integer> upload = upload(media, true, false);
@@ -169,7 +175,7 @@ public abstract class AbstractAgencyBoxService
 
     @Override
     protected final String getAuthor(BoxMedia media) throws MalformedURLException {
-        return boxService.getSharedItem(media.getUniqueMetadata().getAssetUrl()).getCreatedBy().getName();
+        return boxService.getSharedItem(getSharedLink(media.getId())).getCreatedBy().getName();
     }
 
     @Override

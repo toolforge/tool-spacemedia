@@ -6,7 +6,6 @@ import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -194,9 +193,7 @@ public class MediaService {
         for (FileMetadata metadata : media.getMetadata()) {
             MediaUpdateResult ur = updateReadableStateAndHashes(media, metadata, localPath, urlResolver,
                     forceUpdateOfHashes);
-            if (ur.getResult()) {
-                result = true;
-            }
+            result |= ur.getResult();
             if (ur.getException() != null) {
                 exception = ur.getException();
             }
@@ -274,7 +271,7 @@ public class MediaService {
         } catch (RestClientException e) {
             LOGGER.error("Error while computing hashes for {}: {}", media, e.getMessage());
             return new MediaUpdateResult(result, e);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             LOGGER.error("Error while computing hashes for {}", media, e);
             return new MediaUpdateResult(result, e);
         } finally {
@@ -348,10 +345,9 @@ public class MediaService {
      * @param forceUpdate {@code true} to force update of an existing hash
      * @return {@code true} if media has been updated with computed SHA-1 and must be persisted
      * @throws IOException        in case of I/O error
-     * @throws URISyntaxException if URL cannot be converted to URI
      */
     public <M extends Media<?, ?>> boolean updateSha1(M media, FileMetadata metadata, Path localPath,
-            UrlResolver<M> urlResolver, boolean forceUpdate) throws IOException, URISyntaxException {
+            UrlResolver<M> urlResolver, boolean forceUpdate) throws IOException {
         if ((!metadata.hasSha1() || forceUpdate) && (metadata.getAssetUrl() != null || localPath != null)) {
             metadata.setSha1(getSha1(localPath, urlResolver.resolveDownloadUrl(media, metadata)));
             updateHashes(metadata.getSha1(), metadata.getPhash());
@@ -360,7 +356,7 @@ public class MediaService {
         return false;
     }
 
-    private static String getSha1(Path localPath, URL url) throws IOException, URISyntaxException {
+    private static String getSha1(Path localPath, URL url) throws IOException {
         if (localPath != null) {
             return HashHelper.computeSha1(localPath);
         } else {

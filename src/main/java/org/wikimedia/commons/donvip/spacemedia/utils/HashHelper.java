@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -17,6 +16,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -25,6 +26,8 @@ import dev.brachtendorf.jimagehash.hashAlgorithms.HashingAlgorithm;
 import dev.brachtendorf.jimagehash.hashAlgorithms.PerceptiveHash;
 
 public final class HashHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HashHelper.class);
 
     private static final int PHASH_RADIX = 36;
 
@@ -44,8 +47,8 @@ public final class HashHelper {
         }
     }
 
-    public static String computeSha1(URL httpUrl) throws IOException, URISyntaxException {
-        URI uri = Utils.urlToUri(httpUrl);
+    public static String computeSha1(URL httpUrl) throws IOException {
+        URI uri = Utils.urlToUriUnchecked(httpUrl);
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
                 InputStream in = response.getEntity().getContent()) {
@@ -60,7 +63,9 @@ public final class HashHelper {
                 }
                 throw new IOException(uri + " => " + statusText);
             }
-            return DigestUtils.sha1Hex(in);
+            String result = DigestUtils.sha1Hex(in);
+            LOGGER.debug("SHA1 for {} => {}", uri, result);
+            return result;
         }
     }
 
