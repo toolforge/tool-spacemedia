@@ -363,7 +363,9 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         RuntimeData runtimeData = getRuntimeData();
         LocalDateTime end = LocalDateTime.now();
         runtimeData.setLastUpdateEnd(end);
-        runtimeData.setLastUpdateDuration(Duration.between(start, end));
+        Duration lastUpdateDuration = Duration.between(start, end);
+        runtimeData.setLastUpdateDuration(lastUpdateDuration);
+        runtimeData.setLastUpdateDurationMin(lastUpdateDuration.toMinutes());
         runtimeData.setDoNotFetchEarlierThan(newDoNotFetchEarlierThan);
         LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 runtimeDataRepository.save(runtimeData).getLastUpdateDuration());

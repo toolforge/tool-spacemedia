@@ -26,6 +26,9 @@ public class RuntimeData {
     private Duration lastUpdateDuration;
 
     @Column(nullable = true)
+    private Long lastUpdateDurationMin;
+
+    @Column(nullable = true)
     private String lastTimestamp;
 
     /**
@@ -74,6 +77,14 @@ public class RuntimeData {
         this.lastUpdateDuration = lastUpdateDuration;
     }
 
+    public Long getLastUpdateDurationMin() {
+        return lastUpdateDurationMin;
+    }
+
+    public void setLastUpdateDurationMin(Long lastUpdateDurationMin) {
+        this.lastUpdateDurationMin = lastUpdateDurationMin;
+    }
+
     public String getLastTimestamp() {
         return lastTimestamp;
     }
@@ -92,8 +103,8 @@ public class RuntimeData {
 
     @Override
     public int hashCode() {
-        return Objects.hash(agencyId, lastUpdateDuration, lastUpdateEnd, lastUpdateStart, lastTimestamp,
-                doNotFetchEarlierThan);
+        return Objects.hash(agencyId, lastUpdateDuration, lastUpdateDurationMin, lastUpdateEnd, lastUpdateStart,
+                lastTimestamp, doNotFetchEarlierThan);
     }
 
     @Override
@@ -104,6 +115,7 @@ public class RuntimeData {
             return false;
         RuntimeData other = (RuntimeData) obj;
         return Objects.equals(agencyId, other.agencyId) && Objects.equals(lastUpdateDuration, other.lastUpdateDuration)
+                && Objects.equals(lastUpdateDurationMin, other.lastUpdateDurationMin)
                 && Objects.equals(lastUpdateEnd, other.lastUpdateEnd)
                 && Objects.equals(lastUpdateStart, other.lastUpdateStart)
                 && Objects.equals(lastTimestamp, other.lastTimestamp)
@@ -116,6 +128,7 @@ public class RuntimeData {
                 + (lastUpdateStart != null ? "lastUpdateStart=" + lastUpdateStart + ", " : "")
                 + (lastUpdateEnd != null ? "lastUpdateEnd=" + lastUpdateEnd + ", " : "")
                 + (lastUpdateDuration != null ? "lastUpdateDuration=" + lastUpdateDuration + ", " : "")
+                + (lastUpdateDurationMin != null ? "lastUpdateDurationMin=" + lastUpdateDurationMin + ", " : "")
                 + (lastTimestamp != null ? "lastTimestamp=" + lastTimestamp + ", " : "")
                 + (doNotFetchEarlierThan != null ? "doNotFetchEarlierThan=" + doNotFetchEarlierThan : "") + "]";
     }
