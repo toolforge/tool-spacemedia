@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.logging.Level;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -40,6 +43,8 @@ import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
 import com.box.sdk.BoxItem;
 import com.box.sdk.PublicSharedLinkAPIConnection;
+
+import okhttp3.OkHttpClient;
 
 @Service
 public class BoxService {
@@ -108,6 +113,15 @@ public class BoxService {
             }
         } else {
             LOGGER.warn("Incomplete Box credentials configuration => Box API will not be available");
+        }
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        if (LOGGER.isDebugEnabled()) {
+            java.util.logging.Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINER);
+        } else if (LOGGER.isTraceEnabled()) {
+            java.util.logging.Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINEST);
         }
     }
 
