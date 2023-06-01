@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
   <!-- HEAD fragment -->
   <head th:fragment="common_header(title,links)">
 
@@ -23,7 +23,7 @@
   </head>
   <body>
     <!-- NAVBAR fragment -->
-	<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-light bg-light">
+	<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark">
 	  <a class="navbar-brand" th:href="@{/}">
 	    <img th:src="@{/iconfinder_EARTH_1715795.svg}" width="30" height="30" class="d-inline-block align-top">
 	    Spacemedia
