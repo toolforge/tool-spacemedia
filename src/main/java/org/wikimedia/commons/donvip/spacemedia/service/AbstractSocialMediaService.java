@@ -154,13 +154,16 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             sb.append(" from " + accounts.stream().sorted().collect(joining(" ")));
         }
         if (imgCount + vidCount > 1) {
-            sb.append("\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
-                    + "&user=" + commonsAccount + "&ilshowall=1&offset="
-                    + timestampFormatter
-                            .format(timestampFormatter.parse(
-                                    imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
-                                            .map(FileMetadata::getSha1).map(CommonsService::base36Sha1).toList()),
-                                    LocalDateTime::from).plusSeconds(1)));
+            String maxTimestamp = imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
+                    .map(FileMetadata::getSha1).map(CommonsService::base36Sha1).toList());
+            if (maxTimestamp != null) {
+                sb.append("\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
+                        + "&user=" + commonsAccount + "&ilshowall=1&offset=" + timestampFormatter
+                                .format(timestampFormatter.parse(maxTimestamp, LocalDateTime::from).plusSeconds(1)));
+            } else {
+                LOGGER.error(
+                        "No timestamp found! Is there replag right now? Check commonswiki.{analytics,web}.db.svc.wikimedia.cloud at https://replag.toolforge.org/");
+            }
         } else {
             try {
                 sb.append("\n\n▶️ https://commons.wikimedia.org/wiki/File:"
