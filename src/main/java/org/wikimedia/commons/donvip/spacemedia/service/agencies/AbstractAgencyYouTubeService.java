@@ -6,7 +6,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.execOutput;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
@@ -45,7 +43,6 @@ import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.ThumbnailDetails;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoContentDetails;
-import com.google.api.services.youtube.model.VideoFileDetailsVideoStream;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.VideoSnippet;
 
@@ -120,11 +117,7 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
             } catch (HttpClientErrorException e) {
                 LOGGER.error("HttpClientError while fetching YouTube videos from channel {}: {}", channelId, e.getMessage());
                 if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                    try {
-                        processYouTubeVideos(youtubeRepository.findAll(Set.of(channelId)));
-                    } catch (MalformedURLException ex) {
-                        LOGGER.error("Error", ex);
-                    }
+                    processYouTubeVideos(youtubeRepository.findAll(Set.of(channelId)));
                 }
             } catch (IOException | RuntimeException e) {
                 LOGGER.error("Error while fetching YouTube videos from channel " + channelId, e);
@@ -144,17 +137,8 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
     private YouTubeVideo toYouTubeVideo(Video ytVideo) {
         YouTubeVideo video = new YouTubeVideo();
         video.setId(ytVideo.getId());
-        addMetadata(video, newURL("https://www.youtube.com/watch?v=" + video.getId()),
-                getDimensions(ytVideo.getFileDetails().getVideoStreams()));
+        addMetadata(video, newURL("https://www.youtube.com/watch?v=" + video.getId()), null);
         return fillVideoSnippetAndDetails(video, ytVideo);
-    }
-
-    private static ImageDimensions getDimensions(List<VideoFileDetailsVideoStream> videos) {
-        Optional<Long> maxWidth = videos.stream().map(VideoFileDetailsVideoStream::getWidthPixels).max(Long::compare);
-        Optional<Long> maxHeigth = videos.stream().map(VideoFileDetailsVideoStream::getHeightPixels).max(Long::compare);
-        return maxWidth.isPresent() && maxHeigth.isPresent()
-                ? new ImageDimensions(maxWidth.get().intValue(), maxHeigth.get().intValue())
-                : null;
     }
 
     private static YouTubeVideo fillVideoSnippetAndDetails(YouTubeVideo video, Video ytVideo) {
@@ -178,7 +162,7 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
                 : null;
     }
 
-    private List<YouTubeVideo> processYouTubeVideos(Iterable<YouTubeVideo> videos) throws MalformedURLException {
+    private List<YouTubeVideo> processYouTubeVideos(Iterable<YouTubeVideo> videos) {
         List<YouTubeVideo> result = new ArrayList<>();
         for (YouTubeVideo video : videos) {
             try {
