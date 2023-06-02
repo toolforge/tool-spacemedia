@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,18 +165,23 @@ public class NasaSdoService
         if (imagesInDatabase < expectedCount) {
             String browseUrl = String.join("/", BASE_URL_IMG, browse, dateStringPath);
             LOGGER.info("Fetching {} ({}<{})", browseUrl, imagesInDatabase, expectedCount);
-            List<String> files = Jsoup.connect(browseUrl).header("Accept", "text/html").timeout(30_000).get()
-                    .getElementsByTag("a").stream()
-                    .map(e -> e.attr("href")).filter(href -> href.contains("_" + dimensions.getWidth() + "_")).sorted()
-                    .toList();
-            for (NasaSdoDataType dataType : NasaSdoDataType.values()) {
-                Optional<String> opt = files.stream().filter(i -> i.endsWith(dataType.name() + '.' + ext)).findFirst();
-                if (opt.isPresent()) {
-                    String firstFile = opt.get();
-                    updateMedia(firstFile.replace("." + ext, ""), dateTimeExtractor.apply(firstFile), dimensions,
-                            newURL(browseUrl + '/' + firstFile), mediaType, dataType, uploadedMedia);
-                    ongoingUpdateMedia(start, count + localCount++);
+            try {
+                List<String> files = Jsoup.connect(browseUrl).header("Accept", "text/html").timeout(30_000).get()
+                        .getElementsByTag("a").stream().map(e -> e.attr("href"))
+                        .filter(href -> href.contains("_" + dimensions.getWidth() + "_")).sorted().toList();
+                for (NasaSdoDataType dataType : NasaSdoDataType.values()) {
+                    Optional<String> opt = files.stream().filter(i -> i.endsWith(dataType.name() + '.' + ext))
+                            .findFirst();
+                    if (opt.isPresent()) {
+                        String firstFile = opt.get();
+                        updateMedia(firstFile.replace("." + ext, ""), dateTimeExtractor.apply(firstFile), dimensions,
+                                newURL(browseUrl + '/' + firstFile), mediaType, dataType, uploadedMedia);
+                        ongoingUpdateMedia(start, count + localCount++);
+                    }
                 }
+            } catch (HttpStatusException e) {
+                // https://sdo.gsfc.nasa.gov/assets/img/browse/2016/12/25/ => HTTP 404
+                LOGGER.error(e.getMessage(), e);
             }
         }
         return localCount;
