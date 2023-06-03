@@ -221,8 +221,8 @@ public class NasaPhotojournalService
         media.setCredit((String) doc.getFirstValue("credit"));
         media.setLegend((String) doc.getFirstValue("alt-tag"));
         ImageDimensions dims = new ImageDimensions(getInt(doc, "x-dim"), getInt(doc, "y-dim"));
-        addMetadata(media, (String) doc.getFirstValue("full-res-jpeg"), dims);
-        addMetadata(media, (String) doc.getFirstValue("full-res-tiff"), dims);
+        addMetadata(media, (String) doc.getFirstValue("full-res-jpeg"), m -> m.setImageDimensions(dims));
+        addMetadata(media, (String) doc.getFirstValue("full-res-tiff"), m -> m.setImageDimensions(dims));
         Collection<Object> keywords = doc.getFieldValues("keywords");
         if (keywords != null) {
             media.setKeywords(keywords.stream().map(String.class::cast).collect(toSet()));

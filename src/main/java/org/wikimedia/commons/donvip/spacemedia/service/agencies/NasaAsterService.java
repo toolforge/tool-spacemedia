@@ -321,19 +321,19 @@ public class NasaAsterService
         for (int i = 2; i < tables.size(); i++) {
             Element table = tables.get(i);
             String meta = table.getElementsByTag("td").get(1).text();
-            Matcher m = RESOLUTION.matcher(meta);
-            if (m.matches()) {
+            Matcher mr = RESOLUTION.matcher(meta);
+            if (mr.matches()) {
                 FileMetadata metadata = addMetadata(image,
                         table.getElementsByTag("a").first().attr("href").replace("http://", "https://"),
-                        new ImageDimensions(Integer.valueOf(numval(m.group(1))), Integer.valueOf(numval(m.group(2)))));
-                m = SIZE.matcher(meta);
-                if (m.matches()) {
-                    String unit = m.groupCount() >= 2 ? m.group(2) : null;
+                        md -> md.setImageDimensions(new ImageDimensions(intval(mr.group(1)), intval(mr.group(2)))));
+                Matcher ms = SIZE.matcher(meta);
+                if (ms.matches()) {
+                    String unit = ms.groupCount() >= 2 ? ms.group(2) : null;
                     Long size = "MB".equals(unit) ? 1024 * 1024 : "KB".equals(unit) ? 1024L : 1L;
-                    if (m.group(1).contains(".")) {
-                        size = (long) (size * Double.valueOf(m.group(1)));
+                    if (ms.group(1).contains(".")) {
+                        size = (long) (size * Double.valueOf(ms.group(1)));
                     } else {
-                        size *= Long.valueOf(numval(m.group(1)));
+                        size *= Long.valueOf(numval(ms.group(1)));
                     }
                     metadata.setSize(size);
                 } else {
@@ -343,6 +343,10 @@ public class NasaAsterService
                 throw new IllegalStateException("No resolution found: " + meta);
             }
         }
+    }
+
+    private static Integer intval(String s) {
+        return Integer.valueOf(numval(s));
     }
 
     private static String numval(String s) {

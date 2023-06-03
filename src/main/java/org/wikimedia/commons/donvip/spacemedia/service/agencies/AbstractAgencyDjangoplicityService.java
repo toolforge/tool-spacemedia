@@ -253,7 +253,7 @@ public abstract class AbstractAgencyDjangoplicityService
                     || (assetUrlLink.contains(".jp") && !assetUrlLink.contains("/wallpaper")
                             && !assetUrlLink.contains("/publication"))) {
                 addMetadata(media, buildAssetUrl(assetUrlLink, url),
-                        assetUrlLink.contains("/original/") ? dimensions : null);
+                        m -> m.setImageDimensions(assetUrlLink.contains("/original/") ? dimensions : null));
             }
         }
         return media;

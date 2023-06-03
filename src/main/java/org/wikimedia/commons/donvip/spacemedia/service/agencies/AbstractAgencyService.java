@@ -65,7 +65,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Problem;
@@ -1105,18 +1104,23 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return (media, metadata) -> metadata.getAssetUrl();
     }
 
-    protected FileMetadata addMetadata(T media, String assetUrl, ImageDimensions dims) {
-        return addMetadata(media, newURL(assetUrl), dims);
+    protected FileMetadata addMetadata(T media, String assetUrl, Consumer<FileMetadata> consumer) {
+        return addMetadata(media, newURL(assetUrl), consumer);
     }
 
-    protected FileMetadata addMetadata(T media, URL assetUrl, ImageDimensions dims) {
+    protected FileMetadata addMetadata(T media, URL assetUrl, Consumer<FileMetadata> consumer) {
         FileMetadata fm = metadataRepository.findByAssetUrl(assetUrl)
-                .orElseGet(() -> metadataRepository.save(new FileMetadata(assetUrl)));
-        if (dims != null) {
-            fm.setImageDimensions(dims);
-        }
+                .orElseGet(() -> metadataRepository.save(newFileMetadata(assetUrl, consumer)));
         media.addMetadata(fm);
         return fm;
+    }
+
+    protected static FileMetadata newFileMetadata(URL assetUrl, Consumer<FileMetadata> consumer) {
+        FileMetadata metadata = new FileMetadata(assetUrl);
+        if (consumer != null) {
+            consumer.accept(metadata);
+        }
+        return metadata;
     }
 
     protected static void addOtherField(StringBuilder sb, String name, Collection<?> values, Map<String, String> catMapping) {
