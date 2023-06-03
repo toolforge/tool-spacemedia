@@ -109,6 +109,12 @@ public class NasaSdoService
         result.put("P4082", Pair.of(media.getInstrument().getQid(), null)); // Taken with SDO instrument
         Optional.ofNullable(media.getAiaKeywords()).map(NasaSdoAiaKeywords::getExpTime) // Exposure time in seconds
                 .ifPresent(exp -> result.put("P6757", Pair.of(exp.toString(), null)));
+        result.put("P31", Pair.of(switch (media.getDataType()) {
+        case _HMID -> "Q5297355"; // dopplergram
+        case _HMIB, _HMIBC -> "Q115801008"; // magnetogram
+        case _HMII, _HMIIC, _HMIIF -> "Q119021644"; // intensitygram
+        default -> "Q125191"; // photograph
+        }, null));
         return result;
     }
 
