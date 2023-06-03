@@ -19,14 +19,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.noirlab.NOIRLabMediaRepository;
 
 @SpringJUnitConfig(NOIRLabServiceTest.TestConfig.class)
 class NOIRLabServiceTest extends AbstractAgencyServiceTest {
 
     @MockBean
-    private NOIRLabMediaRepository repository;
+    private DjangoplicityMediaRepository repository;
 
     @Autowired
     private NOIRLabService service;
@@ -66,7 +66,7 @@ class NOIRLabServiceTest extends AbstractAgencyServiceTest {
 
         @Bean
         @Autowired
-        public NOIRLabService service(NOIRLabMediaRepository repository,
+        public NOIRLabService service(DjangoplicityMediaRepository repository,
                 @Value("${noirlab.search.link}") String searchLink) {
             return new NOIRLabService(repository, searchLink);
         }

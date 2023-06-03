@@ -19,14 +19,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMediaRepository;
 
 @SpringJUnitConfig(IauServiceTest.TestConfig.class)
 class IauServiceTest extends AbstractAgencyServiceTest {
 
     @MockBean
-    private IauMediaRepository repository;
+    private DjangoplicityMediaRepository repository;
 
     @Autowired
     private IauService service;
@@ -53,7 +53,8 @@ class IauServiceTest extends AbstractAgencyServiceTest {
 
         @Bean
         @Autowired
-        public IauService service(IauMediaRepository repository, @Value("${iau.search.link}") String searchLink) {
+        public IauService service(DjangoplicityMediaRepository repository,
+                @Value("${iau.search.link}") String searchLink) {
             return new IauService(repository, searchLink);
         }
     }

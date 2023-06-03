@@ -18,15 +18,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMediaRepository;
 
 @SpringJUnitConfig(WebbEsaServiceTest.TestConfig.class)
 class WebbEsaServiceTest extends AbstractAgencyServiceTest {
 
     @MockBean
-    private WebbEsaMediaRepository repository;
+    private DjangoplicityMediaRepository repository;
 
     @Autowired
     private WebbEsaService service;
@@ -34,10 +34,10 @@ class WebbEsaServiceTest extends AbstractAgencyServiceTest {
     @Test
     void testReadHtml() throws Exception {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
-        WebbEsaMedia media = service.newMediaFromHtml(html("esawebb/WLMb.html"),
+        DjangoplicityMedia media = service.newMediaFromHtml(html("esawebb/WLMb.html"),
                 new URL("https://esawebb.org/images/WLMb/"), "WLMb", null);
         assertNotNull(media);
-        assertEquals("WLMb", media.getId());
+        assertEquals("WLMb", media.getId().getId());
         assertEquals("Dwarf Galaxy WLM", media.getTitle());
         assertEquals(
                 "This image shows a portion of the dwarf galaxy Wolf–Lundmark–Melotte (WLM) captured by the NASA/ESA/CSA James Webb Space Telescope’s <a href=\"https://esawebb.org/about/instruments/nircam-niriss/\">Near-Infrared Camera</a>. The image demonstrates Webb’s remarkable ability to resolve faint stars outside the Milky Way.&nbsp;This observation was taken as part of Webb’s Early Release Science (ERS) program&nbsp;<a href=\"https://www.stsci.edu/jwst/science-execution/program-information.html?id=1334\">1334</a>, focused on resolved stellar populations. The dwarf galaxy WLM was selected for this program as its gas is similar to that which made up galaxies in the early Universe and it is relatively nearby, meaning that Webb can differentiate between its individual stars.&nbsp;Learn more about Webb’s research of the dwarf galaxy WLM <a href=\"https://blogs.nasa.gov/webb/2022/11/09/beneath-the-night-sky-in-a-galaxy-not-too-far-away\">here</a>.The galaxy lies roughly 3 million light-years away.This image includes 0.9-micron light shown in blue, 1.5-micron in cyan, 2.5-micron in yellow, and 4.3-micron in red (filters F090W, F150W, F250M, and F430M).&nbsp;<em>Note: This image highlights Webb’s science in progress, which has not yet been through the peer-review process.</em><em>[Image Description: This image shows a wide field view of countless stars and dozens of galaxies in clear detail.]</em>",
@@ -67,7 +67,7 @@ class WebbEsaServiceTest extends AbstractAgencyServiceTest {
 
         @Bean
         @Autowired
-        public WebbEsaService service(WebbEsaMediaRepository repository,
+        public WebbEsaService service(DjangoplicityMediaRepository repository,
                 @Value("${webb.esa.search.link}") String searchLink) {
             return new WebbEsaService(repository, searchLink);
         }

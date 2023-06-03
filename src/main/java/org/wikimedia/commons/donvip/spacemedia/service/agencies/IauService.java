@@ -17,11 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityFrontPageItem;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.iau.IauMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 
 @Service
-public class IauService extends AbstractDjangoplicityService<IauMedia> {
+public class IauService extends AbstractAgencyDjangoplicityService {
 
     private static final String IAU_BASE_URL = "https://www.iau.org";
 
@@ -35,18 +35,8 @@ public class IauService extends AbstractDjangoplicityService<IauMedia> {
             .compile(IAU_BASE_PUBLIC_URL + "([a-z]+/)" + IAU_IMAGES_PATH + ".*");
 
     @Autowired
-    public IauService(IauMediaRepository repository, @Value("${iau.search.link}") String searchLink) {
-        super(repository, "iau", searchLink, IauMedia.class);
-    }
-
-    @Override
-    protected Class<IauMedia> getMediaClass() {
-        return IauMedia.class;
-    }
-
-    @Override
-    public void updateMedia() throws IOException {
-        doUpdateMedia();
+    public IauService(DjangoplicityMediaRepository repository, @Value("${iau.search.link}") String searchLink) {
+        super(repository, "iau", searchLink);
     }
 
     @Override
@@ -99,19 +89,19 @@ public class IauService extends AbstractDjangoplicityService<IauMedia> {
     }
 
     @Override
-    public Set<String> findLicenceTemplates(IauMedia media) {
+    public Set<String> findLicenceTemplates(DjangoplicityMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
         result.add("IAU");
         return result;
     }
 
     @Override
-    public URL getSourceUrl(IauMedia media) {
+    public URL getSourceUrl(DjangoplicityMedia media) {
         return newURL(IAU_BASE_PUBLIC_URL + IAU_IMAGES_PATH + media.getId());
     }
 
     @Override
-    public final String getSource(IauMedia media) {
+    public final String getSource(DjangoplicityMedia media) {
         return "{{IAU-source|" + media.getId() + '|' + media.getId() + "}}";
     }
 
@@ -126,7 +116,7 @@ public class IauService extends AbstractDjangoplicityService<IauMedia> {
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(IauMedia uploadedMedia) {
+    protected Set<String> getTwitterAccounts(DjangoplicityMedia uploadedMedia) {
         return Set.of("@IAU_org");
     }
 }

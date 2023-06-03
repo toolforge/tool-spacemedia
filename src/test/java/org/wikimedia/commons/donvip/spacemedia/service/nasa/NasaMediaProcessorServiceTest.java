@@ -22,7 +22,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.web.client.RestTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 

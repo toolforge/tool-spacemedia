@@ -21,7 +21,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
  * Service harvesting images from NASA JWST website.
  */
 @Service
-public class WebbNasaService extends AbstractStsciService {
+public class WebbNasaService extends AbstractAgencyStsciService {
 
     private Map<String, String> webbCategories;
 

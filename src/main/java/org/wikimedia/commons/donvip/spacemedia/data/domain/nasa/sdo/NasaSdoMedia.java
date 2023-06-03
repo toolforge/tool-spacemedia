@@ -13,7 +13,7 @@ import javax.persistence.Id;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity

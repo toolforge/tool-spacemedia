@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -13,15 +12,15 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.webb.WebbEsaMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 /**
  * Service harvesting images from ESA JWST website.
  */
 @Service
-public class WebbEsaService extends AbstractDjangoplicityService<WebbEsaMedia> {
+public class WebbEsaService extends AbstractAgencyDjangoplicityService {
 
     private static final String BASE_PUBLIC_URL = "https://esawebb.org/";
 
@@ -31,19 +30,9 @@ public class WebbEsaService extends AbstractDjangoplicityService<WebbEsaMedia> {
             .compile(BASE_PUBLIC_URL + "([a-z]+/)" + IMAGES_PATH + ".*");
 
     @Autowired
-    public WebbEsaService(WebbEsaMediaRepository repository,
+    public WebbEsaService(DjangoplicityMediaRepository repository,
             @Value("${webb.esa.search.link}") String searchLink) {
-        super(repository, "webb.esa", searchLink, WebbEsaMedia.class);
-    }
-
-    @Override
-    protected Class<WebbEsaMedia> getMediaClass() {
-        return WebbEsaMedia.class;
-    }
-
-    @Override
-    public void updateMedia() throws IOException {
-        doUpdateMedia();
+        super(repository, "webb.esa", searchLink);
     }
 
     @Override
@@ -52,14 +41,14 @@ public class WebbEsaService extends AbstractDjangoplicityService<WebbEsaMedia> {
     }
 
     @Override
-    public Set<String> findLicenceTemplates(WebbEsaMedia media) {
+    public Set<String> findLicenceTemplates(DjangoplicityMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
         result.add("ESA-Webb|" + media.getCredit());
         return result;
     }
 
     @Override
-    public URL getSourceUrl(WebbEsaMedia media) {
+    public URL getSourceUrl(DjangoplicityMedia media) {
         return newURL(BASE_PUBLIC_URL + IMAGES_PATH + media.getId());
     }
 
@@ -89,12 +78,12 @@ public class WebbEsaService extends AbstractDjangoplicityService<WebbEsaMedia> {
     }
 
     @Override
-    protected Set<String> getEmojis(WebbEsaMedia uploadedMedia) {
+    protected Set<String> getEmojis(DjangoplicityMedia uploadedMedia) {
         return Set.of(Emojis.STARS);
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(WebbEsaMedia uploadedMedia) {
+    protected Set<String> getTwitterAccounts(DjangoplicityMedia uploadedMedia) {
         return Set.of("@ESA_Webb");
     }
 }

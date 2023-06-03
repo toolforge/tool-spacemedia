@@ -45,7 +45,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
             oAuthService = new ServiceBuilder(clientId).apiSecret(clientSecret).build(api);
             oAuthAccessToken = new OAuth2AccessToken(accessToken);
         } catch (IllegalArgumentException e) {
-            LOGGER.error("Unable to setup Mastodon API: {}", e.getMessage(), e);
+            LOGGER.error("Unable to setup Mastodon API: {}", e.getMessage());
         }
     }
 

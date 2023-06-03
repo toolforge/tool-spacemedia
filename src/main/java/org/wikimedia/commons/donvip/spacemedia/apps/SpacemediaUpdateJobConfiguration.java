@@ -18,7 +18,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 @Configuration
 @Import(SpacemediaCommonConfiguration.class)
 @ComponentScan(basePackages = { "org.wikimedia.commons.donvip.spacemedia.data",
-        "org.wikimedia.commons.donvip.spacemedia.service.nasa",
         "org.wikimedia.commons.donvip.spacemedia.service.wikimedia" }, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".+Test.*"))
 public class SpacemediaUpdateJobConfiguration {
 

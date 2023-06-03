@@ -14,7 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 
 public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, String, LocalDateTime> {
 

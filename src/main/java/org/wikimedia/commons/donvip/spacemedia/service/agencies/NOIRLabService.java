@@ -18,12 +18,11 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.noirlab.NOIRLabMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.noirlab.NOIRLabMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 
 @Service
-public class NOIRLabService extends AbstractDjangoplicityService<NOIRLabMedia> {
+public class NOIRLabService extends AbstractAgencyDjangoplicityService {
 
     private static final String BASE_URL = "https://noirlab.edu";
 
@@ -66,8 +65,8 @@ public class NOIRLabService extends AbstractDjangoplicityService<NOIRLabMedia> {
     private DateTimeFormatter dateTimeFormatter6;
 
     @Autowired
-    public NOIRLabService(NOIRLabMediaRepository repository, @Value("${noirlab.search.link}") String searchLink) {
-        super(repository, "noirlab", searchLink, NOIRLabMedia.class);
+    public NOIRLabService(DjangoplicityMediaRepository repository, @Value("${noirlab.search.link}") String searchLink) {
+        super(repository, "noirlab", searchLink);
     }
 
     @Override
@@ -119,29 +118,19 @@ public class NOIRLabService extends AbstractDjangoplicityService<NOIRLabMedia> {
     }
 
     @Override
-    protected Class<NOIRLabMedia> getMediaClass() {
-        return NOIRLabMedia.class;
-    }
-
-    @Override
-    public void updateMedia() throws IOException, UploadException {
-        doUpdateMedia();
-    }
-
-    @Override
     public String getName() {
         return "NOIRLab";
     }
 
     @Override
-    public Set<String> findLicenceTemplates(NOIRLabMedia media) {
+    public Set<String> findLicenceTemplates(DjangoplicityMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
         result.add("NOIRLab");
         return result;
     }
 
     @Override
-    public URL getSourceUrl(NOIRLabMedia media) {
+    public URL getSourceUrl(DjangoplicityMedia media) {
         return newURL(BASE_PUBLIC_URL + IMAGES_PATH + media.getId());
     }
 
@@ -156,7 +145,7 @@ public class NOIRLabService extends AbstractDjangoplicityService<NOIRLabMedia> {
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(NOIRLabMedia uploadedMedia) {
+    protected Set<String> getTwitterAccounts(DjangoplicityMedia uploadedMedia) {
         return Set.of("@NOIRLabAstro");
     }
 

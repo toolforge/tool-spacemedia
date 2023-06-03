@@ -1,10 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.webmil;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
-public class WebMilMedia extends Media<String, LocalDateTime> {
+public class WebMilMedia extends Media<String, ZonedDateTime> {
 
     @Override
     public String getId() {
@@ -19,13 +19,13 @@ public class WebMilMedia extends Media<String, LocalDateTime> {
     }
 
     @Override
-    public LocalDateTime getDate() {
+    public ZonedDateTime getDate() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public void setDate(LocalDateTime date) {
+    public void setDate(ZonedDateTime date) {
         // TODO Auto-generated method stub
 
     }

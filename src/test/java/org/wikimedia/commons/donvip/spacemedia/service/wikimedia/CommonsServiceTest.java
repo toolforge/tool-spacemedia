@@ -40,8 +40,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImageRepos
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRestrictionsRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociationRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsServiceTest.TestConfig;
 

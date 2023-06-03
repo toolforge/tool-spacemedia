@@ -16,7 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrService;
 

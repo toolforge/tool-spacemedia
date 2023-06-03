@@ -21,7 +21,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
  * Service harvesting images from NASA Hubble website.
  */
 @Service
-public class HubbleNasaService extends AbstractStsciService {
+public class HubbleNasaService extends AbstractAgencyStsciService {
 
     private Map<String, String> hubbleCategories;
 

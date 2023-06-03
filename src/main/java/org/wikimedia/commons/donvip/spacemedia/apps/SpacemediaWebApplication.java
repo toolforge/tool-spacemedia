@@ -9,7 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.DomainDbConfiguration;
 
 import com.twelvemonkeys.servlet.image.IIOProviderContextListener;
 
@@ -21,6 +23,8 @@ import com.twelvemonkeys.servlet.image.IIOProviderContextListener;
 @ComponentScan(basePackages = { "org.wikimedia.commons.donvip.spacemedia.controller",
         "org.wikimedia.commons.donvip.spacemedia.data",
         "org.wikimedia.commons.donvip.spacemedia.service" }, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".+Test.*"))
+@EnableJpaRepositories(entityManagerFactoryRef = "domainEntityManagerFactory", transactionManagerRef = "domainTransactionManager", basePackageClasses = {
+        DomainDbConfiguration.class })
 public class SpacemediaWebApplication {
 
     public static void main(String[] args) {

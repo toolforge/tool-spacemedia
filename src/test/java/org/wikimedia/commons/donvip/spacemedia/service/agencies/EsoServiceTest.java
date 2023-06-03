@@ -19,14 +19,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.eso.EsoMediaRepository;
 
 @SpringJUnitConfig(EsoServiceTest.TestConfig.class)
 class EsoServiceTest extends AbstractAgencyServiceTest {
 
     @MockBean
-    private EsoMediaRepository repository;
+    private DjangoplicityMediaRepository repository;
 
     @Autowired
     private EsoService service;
@@ -53,7 +53,8 @@ class EsoServiceTest extends AbstractAgencyServiceTest {
 
         @Bean
         @Autowired
-        public EsoService service(EsoMediaRepository repository, @Value("${eso.search.link}") String searchLink) {
+        public EsoService service(DjangoplicityMediaRepository repository,
+                @Value("${eso.search.link}") String searchLink) {
             return new EsoService(repository, searchLink);
         }
     }

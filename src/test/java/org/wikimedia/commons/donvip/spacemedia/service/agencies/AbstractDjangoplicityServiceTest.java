@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -23,9 +22,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractDjangoplicityServiceTest.TestConfig.TestAbstractDjangoplicityService;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractDjangoplicityServiceTest.TestConfig.TestDjangoplicityMedia;
 
 @SpringJUnitConfig(AbstractDjangoplicityServiceTest.TestConfig.class)
 class AbstractDjangoplicityServiceTest extends AbstractAgencyServiceTest {
@@ -34,11 +31,11 @@ class AbstractDjangoplicityServiceTest extends AbstractAgencyServiceTest {
     private TestAbstractDjangoplicityService service;
 
     @MockBean
-    private DjangoplicityMediaRepository<TestDjangoplicityMedia> repo;
+    private DjangoplicityMediaRepository repo;
 
     @Test
     void testGetStatements() throws MalformedURLException {
-        TestDjangoplicityMedia media = new TestDjangoplicityMedia();
+        DjangoplicityMedia media = new DjangoplicityMedia();
         media.setDate(LocalDateTime.of(2022, 12, 19, 6, 0));
         media.setName("[KAG2008] globule 13");
         FileMetadata metadata = new FileMetadata();
@@ -59,15 +56,10 @@ class AbstractDjangoplicityServiceTest extends AbstractAgencyServiceTest {
     @Import(AbstractAgencyServiceTest.DefaultAgencyTestConfig.class)
     public static class TestConfig {
 
-        static class TestDjangoplicityMedia extends DjangoplicityMedia {
+        static class TestAbstractDjangoplicityService extends AbstractAgencyDjangoplicityService {
 
-        }
-
-        static class TestAbstractDjangoplicityService extends AbstractDjangoplicityService<TestDjangoplicityMedia> {
-
-            protected TestAbstractDjangoplicityService(
-                    DjangoplicityMediaRepository<TestDjangoplicityMedia> repository) {
-                super(repository, "", "", TestDjangoplicityMedia.class);
+            protected TestAbstractDjangoplicityService(DjangoplicityMediaRepository repository) {
+                super(repository, "", "");
             }
 
             @Override
@@ -76,11 +68,7 @@ class AbstractDjangoplicityServiceTest extends AbstractAgencyServiceTest {
             }
 
             @Override
-            public void updateMedia() throws IOException, UploadException {
-            }
-
-            @Override
-            public URL getSourceUrl(TestDjangoplicityMedia media) {
+            public URL getSourceUrl(DjangoplicityMedia media) {
                 return newURL("https://esahubble.org/images/potw2251a/");
             }
 
@@ -93,15 +81,10 @@ class AbstractDjangoplicityServiceTest extends AbstractAgencyServiceTest {
             protected String getCopyrightLink() {
                 return null;
             }
-
-            @Override
-            protected Class<TestDjangoplicityMedia> getMediaClass() {
-                return TestDjangoplicityMedia.class;
-            }
         }
 
         @Bean
-        public TestAbstractDjangoplicityService service(DjangoplicityMediaRepository<TestDjangoplicityMedia> repo) {
+        public TestAbstractDjangoplicityService service(DjangoplicityMediaRepository repo) {
             return new TestAbstractDjangoplicityService(repo);
         }
     }

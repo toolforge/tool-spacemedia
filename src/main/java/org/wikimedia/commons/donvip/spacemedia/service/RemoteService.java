@@ -12,7 +12,7 @@ import org.springframework.web.client.HttpServerErrorException.BadGateway;
 import org.springframework.web.client.HttpServerErrorException.ServiceUnavailable;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
 @Service

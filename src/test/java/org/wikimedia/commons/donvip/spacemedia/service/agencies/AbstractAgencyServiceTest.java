@@ -22,11 +22,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.TestPropertySource;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.ProblemRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ProblemRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
@@ -97,7 +97,7 @@ public abstract class AbstractAgencyServiceTest {
             DjangoplicityMediaType imageType, String date, ImageDimensions dimensions, String name, Set<String> types,
             Set<String> categories, String credit, List<String> assetUrls, String title, String description,
             Set<String> telescopes) {
-        assertEquals(id, media.getId());
+        assertEquals(id, media.getId().getId());
         assertEquals(imageType, media.getImageType());
         assertEquals(date, media.getDate().toString());
         assertEquals(dimensions, media.getMetadata().get(0).getImageDimensions());

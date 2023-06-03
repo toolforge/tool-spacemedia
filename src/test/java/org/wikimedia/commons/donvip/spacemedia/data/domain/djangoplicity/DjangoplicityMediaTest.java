@@ -9,9 +9,7 @@ class DjangoplicityMediaTest {
 
     @Test
     void testGetters() {
-        DjangoplicityMedia m = new DjangoplicityMedia() {
-
-        };
+        DjangoplicityMedia m = new DjangoplicityMedia();
         assertFalse(m.isAudio());
         assertTrue(m.isImage());
         assertFalse(m.isVideo());

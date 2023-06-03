@@ -8,23 +8,27 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
-import javax.persistence.MappedSuperclass;
 
+import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@MappedSuperclass
-public abstract class DjangoplicityMedia extends Media<String, LocalDateTime> {
+@Entity
+public class DjangoplicityMedia extends Media<DjangoplicityMediaId, LocalDateTime> {
 
     @Id
-    @Column(length = 127)
-    private String id;
+    @Embedded
+    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = DjangoplicityMediaIdBridge.class))
+    private DjangoplicityMediaId id;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true, length = 16)
@@ -96,12 +100,12 @@ public abstract class DjangoplicityMedia extends Media<String, LocalDateTime> {
     private String credit;
 
     @Override
-    public String getId() {
+    public DjangoplicityMediaId getId() {
         return id;
     }
 
     @Override
-    public void setId(String id) {
+    public void setId(DjangoplicityMediaId id) {
         this.id = id;
     }
 

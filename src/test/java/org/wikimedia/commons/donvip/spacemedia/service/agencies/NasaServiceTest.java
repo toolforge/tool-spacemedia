@@ -28,12 +28,12 @@ import org.wikidata.wdtk.datamodel.implementation.ValueSnakImpl;
 import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.PropertyIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaAudioRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImage;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImageRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaAudioRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaImage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaImageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 
 @SpringJUnitConfig(NasaServiceTest.TestConfig.class)

@@ -20,8 +20,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaImage;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaImage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

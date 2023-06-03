@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjection;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TweetRequest.TweetMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
@@ -61,7 +61,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
             twitterClient = new TwitterClient(TwitterCredentials.builder().accessToken(accessToken)
                     .accessTokenSecret(accessSecret).apiKey(consumerToken).apiSecretKey(consumerSecret).build());
         } catch (IllegalArgumentException e) {
-            LOGGER.error("Unable to setup Twitter API: {}", e.getMessage(), e);
+            LOGGER.error("Unable to setup Twitter API: {}", e.getMessage());
         }
     }
 

@@ -37,6 +37,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeApiService;
+import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeMediaProcessor;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.youtube.model.SearchListResponse;
@@ -55,8 +56,12 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
 
     @Autowired
     protected YouTubeVideoRepository youtubeRepository;
+
     @Autowired
     private YouTubeApiService youtubeService;
+
+    @Autowired
+    private YouTubeMediaProcessor mediaProcessor;
 
     protected final Set<String> youtubeChannels;
 
@@ -246,8 +251,7 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
         List<String> categories = new ArrayList<>();
         categories.add("Spacemedia files (review needed)");
         categories.addAll(getAgencyCategories());
-        mediaService.syncYouTubeVideos(
-                youtubeRepository.findMissingInCommons(youtubeChannels), categories);
+        mediaProcessor.syncYouTubeVideos(youtubeRepository.findMissingInCommons(youtubeChannels), categories);
     }
 
     protected abstract List<String> getAgencyCategories();

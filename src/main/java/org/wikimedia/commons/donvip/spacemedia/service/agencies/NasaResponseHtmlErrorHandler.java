@@ -14,7 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaResponse;
 
 public class NasaResponseHtmlErrorHandler implements HttpMessageConverter<NasaResponse> {
 

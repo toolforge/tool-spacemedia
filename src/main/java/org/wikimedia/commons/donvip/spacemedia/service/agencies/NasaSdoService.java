@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoAiaKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoDataType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoMedia;

@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociation;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.HashAssociationRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.RuntimeDataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociation;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociationRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 
 @RestController
 public class HashController {

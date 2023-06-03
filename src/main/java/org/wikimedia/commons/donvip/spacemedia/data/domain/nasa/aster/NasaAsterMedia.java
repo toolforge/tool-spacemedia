@@ -17,7 +17,7 @@ import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 

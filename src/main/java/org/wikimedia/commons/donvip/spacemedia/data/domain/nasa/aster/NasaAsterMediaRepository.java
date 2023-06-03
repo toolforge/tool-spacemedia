@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 
 public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia, String, LocalDate> {
 
