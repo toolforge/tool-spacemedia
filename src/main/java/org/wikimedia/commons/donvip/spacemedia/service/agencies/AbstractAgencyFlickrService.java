@@ -14,7 +14,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,8 +28,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -263,24 +260,10 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
             replace(result, "Spacemedia files uploaded by " + commonsService.getAccount(),
                     "Spacemedia Flickr files uploaded by " + commonsService.getAccount());
         }
-        useMapping(result, media, media.getPhotosets(), flickrPhotoSets, FlickrPhotoSet::getTitle);
-        useMapping(result, media, media.getTags(), flickrTags, Function.identity());
+        mediaService.useMapping(result, media.getPathAlias(), media.getPhotosets(), flickrPhotoSets,
+                FlickrPhotoSet::getTitle);
+        mediaService.useMapping(result, media.getPathAlias(), media.getTags(), flickrTags, Function.identity());
         return result;
-    }
-
-    static <T> void useMapping(Set<String> result, FlickrMedia media, Set<T> items,
-            Map<String, Map<String, String>> flickrMappings, Function<T, String> keyFunction) {
-        if (CollectionUtils.isNotEmpty(items)) {
-            Map<String, String> mapping = flickrMappings.get(media.getPathAlias());
-            if (MapUtils.isNotEmpty(mapping)) {
-                for (T item : items) {
-                    String cats = mapping.get(keyFunction.apply(item));
-                    if (StringUtils.isNotBlank(cats)) {
-                        Arrays.stream(cats.split(";")).map(String::trim).forEach(result::add);
-                    }
-                }
-            }
-        }
     }
 
     @Override

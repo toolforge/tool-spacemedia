@@ -64,7 +64,7 @@
 		          </div>
 		        </td>
 		        <td th:if="'uploaded' != ${tab}"><ul>
-		          <li th:each="category : ${agency.findCategories(media, media.metadata, false)}">
+		          <li th:each="category : ${agency.findCategories(media, media.metadata)}">
 		            <a th:text="${category}"
 		               th:href="@{https://commons.wikimedia.org/wiki/Category:{t}(t=${category})}"></a>
 		          </li></ul>

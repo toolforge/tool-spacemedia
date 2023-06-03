@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -18,9 +19,12 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -280,7 +284,7 @@ public class MediaService {
 
     public static boolean cleanupDescription(Media<?, ?> media, Iterable<String> stringsToRemove) {
         boolean result = false;
-        if (StringUtils.isNotBlank(media.getDescription())) {
+        if (isNotBlank(media.getDescription())) {
             if (stringsToRemove != null) {
                 for (String toRemove : stringsToRemove) {
                     if (media.getDescription().contains(toRemove)) {
@@ -508,5 +512,20 @@ public class MediaService {
         metadata.setCommonsFileNames(commonsFileNames);
         metadataRepository.save(metadata);
         return true;
+    }
+
+    public <T> void useMapping(Set<String> result, String key, Set<T> items,
+            Map<String, Map<String, String>> mappings, Function<T, String> keyFunction) {
+        if (CollectionUtils.isNotEmpty(items)) {
+            Map<String, String> mapping = mappings.get(key);
+            if (MapUtils.isNotEmpty(mapping)) {
+                for (T item : items) {
+                    String cats = mapping.get(keyFunction.apply(item));
+                    if (isNotBlank(cats)) {
+                        Arrays.stream(cats.split(";")).map(String::trim).forEach(result::add);
+                    }
+                }
+            }
+        }
     }
 }

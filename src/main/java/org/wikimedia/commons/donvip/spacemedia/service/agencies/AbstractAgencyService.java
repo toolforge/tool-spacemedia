@@ -906,10 +906,22 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     /**
+     * Returns the list of Wikimedia Commons categories to apply to the given media,
+     * without hidden ones.
+     *
+     * @param media    the media for which category names are wanted
+     * @param metadata metadata of media being uploaded
+     * @return the list of Wikimedia Commons categories to apply to {@code media}
+     */
+    public final Set<String> findCategories(T media, FileMetadata metadata) {
+        return findCategories(media, metadata, false);
+    }
+
+    /**
      * Returns the list of Wikimedia Commons categories to apply to the given media.
      *
-     * @param media the media for which category names are wanted
-     * @param metadata metadata of media being uploaded
+     * @param media         the media for which category names are wanted
+     * @param metadata      metadata of media being uploaded
      * @param includeHidden {@code true} if hidden categories are wanted
      * @return the list of Wikimedia Commons categories to apply to {@code media}
      */

@@ -3,6 +3,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doCallRealMethod;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -125,6 +127,8 @@ class IndividualsFlickrServiceTest extends AbstractAgencyServiceTest {
         }
         FileMetadata metadata = new FileMetadata(assetUrl);
 
+        doCallRealMethod().when(mediaService).useMapping(any(), any(), any(), any(), any());
+
         Map<String, Pair<Object, Map<String, Object>>> statements = service.getStatements(media, metadata);
 
         Set<String> checkedProperties = new TreeSet<>();
@@ -152,6 +156,8 @@ class IndividualsFlickrServiceTest extends AbstractAgencyServiceTest {
         media.setTags(Set.of("mastcam", "curiosity", "mars", "msl", "rover"));
         media.addPhotoSet(new FlickrPhotoSet(72157651662785382L, "MSL/Curiosity"));
         media.addPhotoSet(new FlickrPhotoSet(72157713530464366L, "Hourly Cosmos"));
+
+        doCallRealMethod().when(mediaService).useMapping(any(), any(), any(), any(), any());
 
         assertEquals(Set.of("Photos by the Curiosity rover Mastcam"), service.findCategories(media, null, false));
         assertEquals(Set.of("Photos by the Curiosity rover Mastcam", "Files from Kevin Gill Flickr stream",
