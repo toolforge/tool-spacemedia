@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +15,6 @@ import java.nio.file.Path;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public final class HashHelper {
     public static String computeSha1(URL httpUrl) throws IOException {
         URI uri = Utils.urlToUriUnchecked(httpUrl);
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
+                CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
                 InputStream in = response.getEntity().getContent()) {
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != HttpStatus.SC_OK) {

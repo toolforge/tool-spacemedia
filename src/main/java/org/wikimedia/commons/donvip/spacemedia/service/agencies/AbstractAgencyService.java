@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -49,7 +50,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
@@ -857,7 +857,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                     try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableAutomaticRetries()
                             .disableRedirectHandling().build();
                             CloseableHttpResponse response = httpclient
-                                    .execute(new HttpGet(url.replace("http://", "https://")))) {
+                                    .execute(newHttpGet(url.replace("http://", "https://")))) {
                         Header location = response.getFirstHeader("Location");
                         if (location != null) {
                             return location.getValue().replace("&feature=youtu.be", "");

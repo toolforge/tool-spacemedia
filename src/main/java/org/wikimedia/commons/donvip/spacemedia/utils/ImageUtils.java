@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +28,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -135,7 +136,7 @@ public class ImageUtils {
         }
         String extension = Utils.findExtension(uri.toString());
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(new HttpGet(uri));
+                CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
                 InputStream in = response.getEntity().getContent()) {
             boolean ok = IMAGE_EXTENSIONS.contains(extension);
             if (!ok) {

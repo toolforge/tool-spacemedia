@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.box;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +24,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.ProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -75,7 +75,7 @@ public class BoxService {
             try (CloseableHttpClient httpclient = HttpClientBuilder.create()
                     .setRedirectStrategy(new BoxRedirectStrategy()).build()) {
                 // STEP 1 - Request login page
-                try (CloseableHttpResponse response1 = httpclient.execute(new HttpGet(authURL));
+                try (CloseableHttpResponse response1 = httpclient.execute(newHttpGet(authURL));
                         InputStream in1 = response1.getEntity().getContent()) {
                     if (response1.getStatusLine().getStatusCode() >= 400) {
                         throw new IOException(response1.getStatusLine().toString());

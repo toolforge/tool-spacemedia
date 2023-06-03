@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 import static java.util.stream.Collectors.joining;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.timestampFormatter;
 import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.similarityScore;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -24,7 +25,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.util.TriConsumer;
@@ -224,7 +224,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             throws IOException, URISyntaxException, InterruptedException {
         LOGGER.info("Uploading media for file {} resolved to URL {}", muc.filename, muc.url);
         try (CloseableHttpClient httpclient = HttpClients.custom().setUserAgent(commonsService.getUserAgent()).build();
-                CloseableHttpResponse response = httpclient.execute(new HttpGet(muc.url.toURI()));
+                CloseableHttpResponse response = httpclient.execute(newHttpGet(muc.url.toURI()));
                 InputStream in = response.getEntity().getContent()) {
             if (response.getStatusLine().getStatusCode() >= 400) {
                 String message = muc.url.toURI().toString() + " -> " + response.getStatusLine().toString();

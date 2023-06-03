@@ -34,6 +34,8 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
@@ -85,6 +87,20 @@ public final class Utils {
             uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), null);
         }
         return new URI(uri.toASCIIString());
+    }
+
+    public static HttpGet newHttpGet(String uri) {
+        return newHttpGet(URI.create(uri));
+    }
+
+    public static HttpGet newHttpGet(URI uri) {
+        HttpGet request = new HttpGet(uri);
+        RequestConfig.Builder requestConfig = RequestConfig.custom();
+        requestConfig.setConnectTimeout(30 * 1000);
+        requestConfig.setConnectionRequestTimeout(30 * 1000);
+        requestConfig.setSocketTimeout(30 * 1000);
+        request.setConfig(requestConfig.build());
+        return request;
     }
 
     public static String findExtension(String path) {
