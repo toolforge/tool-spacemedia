@@ -558,9 +558,10 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final T saveMediaOrCheckRemote(boolean save, T media) {
         if (save) {
-            return saveMedia(media);
+            T savedMedia = saveMedia(media);
+            checkRemoteMedia(savedMedia);
+            return savedMedia;
         } else {
-            checkRemoteMedia(media);
             return media;
         }
     }
