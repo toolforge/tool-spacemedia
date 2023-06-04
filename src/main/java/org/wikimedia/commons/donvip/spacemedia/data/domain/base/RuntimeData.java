@@ -29,6 +29,12 @@ public class RuntimeData {
     private Long lastUpdateDurationMin;
 
     @Column(nullable = true)
+    private Long lastUpdateDurationWithUploadsMin;
+
+    @Column(nullable = true)
+    private Long lastUpdateDurationWithoutUploadsMin;
+
+    @Column(nullable = true)
     private String lastTimestamp;
 
     /**
@@ -83,6 +89,22 @@ public class RuntimeData {
 
     public void setLastUpdateDurationMin(Long lastUpdateDurationMin) {
         this.lastUpdateDurationMin = lastUpdateDurationMin;
+    }
+
+    public Long getLastUpdateDurationWithUploadsMin() {
+        return lastUpdateDurationWithUploadsMin;
+    }
+
+    public void setLastUpdateDurationWithUploadsMin(Long lastUpdateDurationWithUploadsMin) {
+        this.lastUpdateDurationWithUploadsMin = lastUpdateDurationWithUploadsMin;
+    }
+
+    public Long getLastUpdateDurationWithoutUpdatesMin() {
+        return lastUpdateDurationWithoutUploadsMin;
+    }
+
+    public void setLastUpdateDurationWithoutUploadsMin(Long lastUpdateDurationWithoutUploadsMin) {
+        this.lastUpdateDurationWithoutUploadsMin = lastUpdateDurationWithoutUploadsMin;
     }
 
     public String getLastTimestamp() {

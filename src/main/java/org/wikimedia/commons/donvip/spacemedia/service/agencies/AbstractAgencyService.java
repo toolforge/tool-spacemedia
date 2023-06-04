@@ -365,6 +365,11 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         Duration lastUpdateDuration = Duration.between(start, end);
         runtimeData.setLastUpdateDuration(lastUpdateDuration);
         runtimeData.setLastUpdateDurationMin(lastUpdateDuration.toMinutes());
+        if (uploadedMetadata.isEmpty()) {
+            runtimeData.setLastUpdateDurationWithoutUploadsMin(lastUpdateDuration.toMinutes());
+        } else {
+            runtimeData.setLastUpdateDurationWithUploadsMin(lastUpdateDuration.toMinutes());
+        }
         runtimeData.setDoNotFetchEarlierThan(newDoNotFetchEarlierThan);
         LOGGER.info("{} medias update completed: {} medias in {}", getName(), count,
                 runtimeDataRepository.save(runtimeData).getLastUpdateDuration());
