@@ -263,7 +263,7 @@ public abstract class AbstractAgencyDjangoplicityService
     protected DjangoplicityMedia refresh(DjangoplicityMedia media) throws IOException {
         URL url = getSourceUrl(media);
         try {
-            return media.copyDataFrom(fetchMedia(url, media.getId().getId(), url.toExternalForm()));
+            return media.copyDataFrom(fetchMedia(url, media.getIdUsedInAgency(), url.toExternalForm()));
         } catch (ReflectiveOperationException e) {
             throw new IOException(e);
         }

@@ -97,12 +97,12 @@ public class IauService extends AbstractAgencyDjangoplicityService {
 
     @Override
     public URL getSourceUrl(DjangoplicityMedia media) {
-        return newURL(IAU_BASE_PUBLIC_URL + IAU_IMAGES_PATH + media.getId());
+        return newURL(IAU_BASE_PUBLIC_URL + IAU_IMAGES_PATH + media.getIdUsedInAgency());
     }
 
     @Override
     public final String getSource(DjangoplicityMedia media) {
-        return "{{IAU-source|" + media.getId() + '|' + media.getId() + "}}";
+        return "{{IAU-source|" + media.getIdUsedInAgency() + '|' + media.getIdUsedInAgency() + "}}";
     }
 
     @Override

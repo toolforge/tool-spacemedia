@@ -60,7 +60,7 @@ public class HubbleEsaService extends AbstractAgencyDjangoplicityService {
 
     @Override
     public URL getSourceUrl(DjangoplicityMedia media) {
-        return newURL(HUB_BASE_PUBLIC_URL + HUB_IMAGES_PATH + media.getId());
+        return newURL(HUB_BASE_PUBLIC_URL + HUB_IMAGES_PATH + media.getIdUsedInAgency());
     }
 
     @Override

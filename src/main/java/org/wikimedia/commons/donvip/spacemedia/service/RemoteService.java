@@ -51,7 +51,7 @@ public class RemoteService {
 
     public void saveMedia(String agencyId, Media<?, ?> media) {
         restTemplate.put(
-                String.join("/", restAgencyEndpoint(agencyId), "media", media.getId().toString()), media);
+                String.join("/", restAgencyEndpoint(agencyId), "media", media.getIdUsedInAgency()), media);
     }
 
     public <T extends Media<?, ?>> T getMedia(String agencyId, String mediaId, Class<T> mediaClass) {

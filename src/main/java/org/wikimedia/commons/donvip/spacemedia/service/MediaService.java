@@ -509,6 +509,8 @@ public class MediaService {
     }
 
     public boolean saveNewMetadataCommonsFileNames(FileMetadata metadata, Set<String> commonsFileNames) {
+        LOGGER.info("Saving new commons filenames {} for {} from {}", commonsFileNames, metadata,
+                new Exception().getStackTrace()[1].getMethodName());
         metadata.setCommonsFileNames(commonsFileNames);
         metadataRepository.save(metadata);
         return true;

@@ -49,7 +49,7 @@ public class WebbEsaService extends AbstractAgencyDjangoplicityService {
 
     @Override
     public URL getSourceUrl(DjangoplicityMedia media) {
-        return newURL(BASE_PUBLIC_URL + IMAGES_PATH + media.getId());
+        return newURL(BASE_PUBLIC_URL + IMAGES_PATH + media.getIdUsedInAgency());
     }
 
     @Override

@@ -128,7 +128,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     protected String getUploadId() {
-        return CommonsService.normalizeFilename(getId().toString());
+        return CommonsService.normalizeFilename(getIdUsedInAgency());
     }
 
     protected static String getFirstSentence(String desc) {
@@ -186,12 +186,21 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     public abstract void setId(ID id);
 
     /**
+     * Returns the identifier usually used in agency.
+     *
+     * @return the identifier usually used in agency
+     */
+    public String getIdUsedInAgency() {
+        return getId().toString();
+    }
+
+    /**
      * Returns the identifier usually used in Commons.
      *
      * @return the identifier usually used in Commons
      */
     public String getIdUsedInCommons() {
-        return getId().toString();
+        return getIdUsedInAgency();
     }
 
     public abstract D getDate();

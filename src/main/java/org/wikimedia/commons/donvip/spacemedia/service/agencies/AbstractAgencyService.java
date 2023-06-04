@@ -386,7 +386,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     protected final void postSocialMedia(Collection<? extends T> uploadedMedia, Collection<FileMetadata> uploadedMetadata) {
         if (!uploadedMedia.isEmpty()) {
             LOGGER.info("Uploaded media: {} ({})", uploadedMedia.size(),
-                    uploadedMedia.stream().map(Media::getId).toList());
+                    uploadedMedia.stream().map(Media::getIdUsedInAgency).toList());
             socialMediaServices.forEach(socialMedia -> {
                 try {
                     Set<String> accounts = getSocialMediaAccounts(socialMedia, uploadedMedia);

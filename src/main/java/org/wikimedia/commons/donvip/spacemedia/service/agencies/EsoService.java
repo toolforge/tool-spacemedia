@@ -43,12 +43,12 @@ public class EsoService extends AbstractAgencyDjangoplicityService {
 
     @Override
     public URL getSourceUrl(DjangoplicityMedia media) {
-        return newURL(ESO_BASE_PUBLIC_URL + ESO_IMAGES_PATH + media.getId());
+        return newURL(ESO_BASE_PUBLIC_URL + ESO_IMAGES_PATH + media.getIdUsedInAgency());
     }
 
     @Override
     public final String getSource(DjangoplicityMedia media) {
-        return "{{ESO-source|" + media.getId() + '|' + media.getId() + "}}";
+        return "{{ESO-source|" + media.getIdUsedInAgency() + '|' + media.getIdUsedInAgency() + "}}";
     }
 
     @Override

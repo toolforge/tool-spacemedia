@@ -267,9 +267,11 @@ public class FileMetadata implements FileMetadataProjection {
         switch (ext) {
         case "djvu":
             return "image/vnd.djvu";
-        case "jpg":
+        case "jpg", "jpeg":
             return "image/jpeg";
-        case "bmp", "gif", "png", "tiff", "webp":
+        case "tif", "tiff":
+            return "image/tiff";
+        case "bmp", "gif", "png", "webp":
             return "image/" + ext;
         case "svg":
             return "image/svg+xml";
