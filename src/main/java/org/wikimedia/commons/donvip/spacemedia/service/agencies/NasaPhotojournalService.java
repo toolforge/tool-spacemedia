@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
 import static java.lang.Double.parseDouble;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
@@ -28,7 +30,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -293,7 +294,8 @@ public class NasaPhotojournalService
                 .append(lang).append("|1=").append(CommonsService.formatWikiCode(desc))
                 .append("}}\n| credit= ").append(media.getCredit());
         getUploadDate(media).ifPresent(s -> sb.append("\n| addition_date = ").append(toIso8601(s)));
-        getCreationDate(media).ifPresent(s -> sb.append("\n| creation_date = ").append(s));
+        sb.append("\n| creation_date = ");
+        getCreationDate(media).ifPresent(sb::append);
         if (globes.contains(media.getTarget())) {
             sb.append("\n| globe= ").append(media.getTarget());
         }
@@ -359,7 +361,7 @@ public class NasaPhotojournalService
             Map<String, String> map = mappings.get(value.replace('\n', ' ').trim());
             if (map != null) {
                 String cat = map.get("Commons categories");
-                if (StringUtils.isBlank(cat)) {
+                if (isBlank(cat)) {
                     LOGGER.warn("No category found for NASA {} {}", type, value);
                 } else {
                     return Optional.of(cat);
@@ -402,7 +404,9 @@ public class NasaPhotojournalService
     @Override
     protected Map<String, String> getLegends(NasaPhotojournalMedia media, Map<String, String> descriptions) {
         Map<String, String> result = new TreeMap<>(super.getLegends(media, descriptions));
-        result.put("en", media.getLegend());
+        if (isNotBlank(media.getLegend())) {
+            result.put("en", media.getLegend());
+        }
         return result;
     }
 
@@ -427,7 +431,7 @@ public class NasaPhotojournalService
     protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaPhotojournalMedia media,
             FileMetadata metadata) {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
-        wikidataStatementMapping(media.getInstrument(), nasaInstruments, "P4082", result); // Taken with instrment
+        wikidataStatementMapping(media.getInstrument(), nasaInstruments, "P4082", result); // Taken with instrument
         wikidataStatementMapping(media.getSpacecraft(), nasaMissions, "P170", result); // Created by mission
         return result;
     }

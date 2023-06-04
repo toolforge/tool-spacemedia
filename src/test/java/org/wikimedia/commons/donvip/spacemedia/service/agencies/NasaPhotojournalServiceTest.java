@@ -97,6 +97,10 @@ class NasaPhotojournalServiceTest extends AbstractAgencyServiceTest {
         Map<String, Pair<Object, Map<String, Object>>> statements = service.getStatements(media, jpeg);
         assertEquals(Pair.of("Q1108979", null), statements.get("P4082"));
         assertEquals(Pair.of("Q207164", null), statements.get("P170"));
+
+        assertEquals(
+                "<p><center>[[File:Kasei Valles (PIA25927).png|120px]]<br><b>Context image</b></center></p><p>Today's VIS image shows a portion of Kasei Valles. Kasei Valles is one of the largest outflow channel systems on Mars, in places up to 482 km (300 miles) wide and 1580 km (982 miles) long. For comparison, the Grand Canyon in Arizona is is only 29 km (18 miles) at its widest and only 446 km (277 miles) long. Kasei Valles flows eastward through Lunae Planum and empties into Chryse Planitia.</p><p>Orbit Number: 93928 Latitude: 25.9137 Longitude: 289.462 Instrument: VIS Captured: 2023-02-16 08:13</p><p>Please see the <a href=\"https://themis.asu.edu/terms\" target=\"_new\">THEMIS Data Citation Note</a> for details on crediting THEMIS images.</p><p>NASA's Jet Propulsion Laboratory manages the 2001 Mars Odyssey mission for NASA's Science Mission Directorate, Washington, D.C. The Thermal Emission Imaging System (THEMIS) was developed by Arizona State University, Tempe, in collaboration with Raytheon Santa Barbara Remote Sensing. The THEMIS investigation is led by Dr. Philip Christensen at Arizona State University. Lockheed Martin Astronautics, Denver, is the prime contractor for the Odyssey project, and developed and built the orbiter. Mission operations are conducted jointly from Lockheed Martin and from JPL, a division of the California Institute of Technology in Pasadena.</p>",
+                service.getDescription(media));
     }
 
     private static QueryResponse solrResponse(String id) throws IOException {

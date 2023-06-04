@@ -849,7 +849,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
             return media.getTitle();
         } else {
             // Resolve url shortener/redirect blocked in spam disallow list
-            return PATTERN_SHORT.matcher(description).replaceAll(match -> {
+            String result = PATTERN_SHORT.matcher(description).replaceAll(match -> {
                 String group = match.group();
                 try {
                     String url = group.startsWith("http") ? group : "https://" + group;
@@ -867,6 +867,13 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
                 }
                 return group;
             }).replace("http://", "https://");
+            for (FileMetadata metadata : media.getMetadata()) {
+                result = result.replaceAll(
+                        "<a href=\"" + metadata.getAssetUrl() + "\"><img src=\"[^\"]+\" alt=\"[^\"]*\"></a>",
+                        "[[File:" + CommonsService.normalizeFilename(media.getUploadTitle(metadata)) + '.'
+                                + metadata.getFileExtension() + "|120px]]");
+            }
+            return result;
         }
     }
 
