@@ -213,11 +213,11 @@ public class EsaService extends AbstractAgencyService<EsaMedia, Integer, LocalDa
             if (media.getMetadata().isEmpty()) {
                 return Triple.of(Optional.empty(), emptyList(), 0);
             }
+            if (!isCopyrightOk(media)) {
+                problem(media.getUrl(), "Invalid copyright: " + media.getCopyright());
+                return Triple.of(Optional.empty(), emptyList(), 0);
+            }
             save = true;
-        }
-        if (!isCopyrightOk(media)) {
-            problem(media.getUrl(), "Invalid copyright: " + media.getCopyright());
-            return Triple.of(Optional.empty(), emptyList(), 0);
         }
         int uploadCount = 0;
         List<FileMetadata> uploadedMetadata = new ArrayList<>();
