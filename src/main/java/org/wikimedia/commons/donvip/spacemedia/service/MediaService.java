@@ -324,7 +324,7 @@ public class MediaService {
             UrlResolver<M> urlResolver, boolean forceUpdate) throws IOException {
         if ((!metadata.hasSha1() || forceUpdate) && (metadata.getAssetUrl() != null || localPath != null)) {
             metadata.setSha1(getSha1(localPath, urlResolver.resolveDownloadUrl(media, metadata)));
-            updateHashes(metadata.getSha1(), metadata.getPhash());
+            updateHashes(metadata.getSha1(), metadata.getPhash(), metadata.getMime());
             return true;
         }
         return false;
@@ -338,11 +338,11 @@ public class MediaService {
         }
     }
 
-    private void updateHashes(String sha1, String phash) {
+    private void updateHashes(String sha1, String phash, String mime) {
         if (sha1 != null) {
             String sha1base36 = CommonsService.base36Sha1(sha1);
             if (!hashRepository.existsById(sha1base36)) {
-                hashRepository.save(new HashAssociation(sha1base36, phash));
+                hashRepository.save(new HashAssociation(sha1base36, phash, mime));
             }
         }
     }
@@ -363,7 +363,7 @@ public class MediaService {
             } catch (RuntimeException e) {
                 LOGGER.error("Failed to update perceptual hash for {}", metadata, e);
             }
-            updateHashes(metadata.getSha1(), metadata.getPhash());
+            updateHashes(metadata.getSha1(), metadata.getPhash(), metadata.getMime());
             return true;
         }
         return false;
@@ -424,7 +424,7 @@ public class MediaService {
 
     private boolean findCommonsFilesWithPhash(FileMetadata metadata, boolean excludeSelfSha1) throws IOException {
         if (shouldSearchByPhash(metadata)) {
-            List<String> sha1s = hashRepository.findSha1ByPhash(metadata.getPhash());
+            List<String> sha1s = hashRepository.findSha1ByPhashAndMime(metadata.getPhash(), metadata.getMime());
             if (excludeSelfSha1) {
                 sha1s.remove(CommonsService.base36Sha1(metadata.getSha1()));
             }
@@ -472,7 +472,8 @@ public class MediaService {
                 String sha1base36 = CommonsService.base36Sha1(image.getImageInfo()[0].getSha1());
                 Optional<HashAssociation> hash = hashRepository.findById(sha1base36);
                 if (hash.isEmpty()) {
-                    hash = Optional.ofNullable(commonsService.computeAndSaveHash(sha1base36, filename));
+                    hash = Optional.ofNullable(commonsService.computeAndSaveHash(sha1base36, filename,
+                            FileMetadata.getMime(filename.substring(filename.lastIndexOf('.') + 1))));
                 }
                 double score = HashHelper.similarityScore(metadata.getPhash(),
                         hash.orElseThrow(() -> new IllegalStateException("No hash for " + sha1base36)).getPhash());
@@ -509,8 +510,7 @@ public class MediaService {
     }
 
     public boolean saveNewMetadataCommonsFileNames(FileMetadata metadata, Set<String> commonsFileNames) {
-        LOGGER.info("Saving new commons filenames {} for {} from {}", commonsFileNames, metadata,
-                new Exception().getStackTrace()[1].getMethodName());
+        LOGGER.info("Saving new commons filenames {} for {}", commonsFileNames, metadata);
         metadata.setCommonsFileNames(commonsFileNames);
         metadataRepository.save(metadata);
         return true;

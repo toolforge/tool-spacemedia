@@ -1253,10 +1253,11 @@ public class CommonsService {
     }
 
     private int computeAndSaveHash(CommonsImageProjection image) {
-        return computeAndSaveHash(image.getSha1(), image.getName()) != null ? 1 : 0;
+        return computeAndSaveHash(image.getSha1(), image.getName(),
+                image.getMajorMime() + "/" + image.getMinorMime()) != null ? 1 : 0;
     }
 
-    public HashAssociation computeAndSaveHash(String sha1, String name) {
+    public HashAssociation computeAndSaveHash(String sha1, String name, String mime) {
         if (!hashRepository.existsById(sha1)) {
             BufferedImage bi = null;
             try {
@@ -1266,7 +1267,7 @@ public class CommonsService {
                     throw new IOException("Failed to read image from " + url);
                 }
                 HashAssociation hash = hashRepository.save(
-                        new HashAssociation(sha1, HashHelper.encode(HashHelper.computePerceptualHash(bi))));
+                        new HashAssociation(sha1, HashHelper.encode(HashHelper.computePerceptualHash(bi)), mime));
                 if (hashMode == ExecutionMode.REMOTE) {
                     remote.putHashAssociation(hash);
                 }
@@ -1278,6 +1279,12 @@ public class CommonsService {
                     bi.flush();
                 }
             }
+        } else {
+            // Temporary migration code
+            hashRepository.findBySha1AndMimeIsNull(sha1).ifPresent(hash -> {
+                hash.setMime(mime);
+                hashRepository.save(hash);
+            });
         }
         return null;
     }

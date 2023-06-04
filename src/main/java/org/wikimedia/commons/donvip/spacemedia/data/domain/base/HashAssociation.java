@@ -9,7 +9,7 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 
 @Entity
-@Table(indexes = { @Index(columnList = "phash") })
+@Table(indexes = { @Index(columnList = "phash"), @Index(columnList = "phash,mime"), @Index(columnList = "sha1,mime") })
 public class HashAssociation {
 
     /**
@@ -25,6 +25,12 @@ public class HashAssociation {
     @Column(nullable = true, columnDefinition = "VARCHAR(52)", length = 52)
     private String phash;
 
+    /**
+     * MIME type.
+     */
+    @Column(nullable = true, columnDefinition = "VARCHAR(16)", length = 16)
+    private String mime;
+
     public HashAssociation() {
         // Default constructor
     }
@@ -34,10 +40,12 @@ public class HashAssociation {
      *
      * @param sha1  base 36 SHA-1
      * @param phash perceptual hash
+     * @param mime  MIME type
      */
-    public HashAssociation(String sha1, String phash) {
+    public HashAssociation(String sha1, String phash, String mime) {
         this.sha1 = sha1;
         this.phash = phash;
+        this.mime = mime;
     }
 
     /**
@@ -66,6 +74,14 @@ public class HashAssociation {
         this.phash = phash;
     }
 
+    public String getMime() {
+        return mime;
+    }
+
+    public void setMime(String mime) {
+        this.mime = mime;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(sha1);
@@ -84,6 +100,6 @@ public class HashAssociation {
     @Override
     public String toString() {
         return "HashAssociation [" + (sha1 != null ? "sha1=" + sha1 + ", " : "")
-                + (phash != null ? "phash=" + phash : "") + "]";
+                + (phash != null ? "phash=" + phash : "") + (mime != null ? "mime=" + mime : "") + "]";
     }
 }

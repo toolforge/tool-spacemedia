@@ -17,15 +17,19 @@ public class CommonsImageProjection {
     private final int width;
     private final int height;
     private final CommonsMediaType mediaType;
+    private final CommonsMajorMime majorMime;
+    private final String minorMime;
 
     public CommonsImageProjection(String name, String sha1, String timestamp, int width, int height,
-            CommonsMediaType mediaType) {
+            CommonsMediaType mediaType, CommonsMajorMime majorMime, String minorMime) {
         this.name = name;
         this.sha1 = sha1;
         this.timestamp = timestamp;
         this.width = width;
         this.height = height;
         this.mediaType = mediaType;
+        this.majorMime = majorMime;
+        this.minorMime = minorMime;
     }
 
     public String getName() {
@@ -52,9 +56,17 @@ public class CommonsImageProjection {
         return mediaType;
     }
 
+    public CommonsMajorMime getMajorMime() {
+        return majorMime;
+    }
+
+    public String getMinorMime() {
+        return minorMime;
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(name, sha1, timestamp, width, height, mediaType);
+        return Objects.hash(name, sha1, timestamp, width, height, mediaType, majorMime, minorMime);
     }
 
     @Override
@@ -66,7 +78,8 @@ public class CommonsImageProjection {
         CommonsImageProjection other = (CommonsImageProjection) obj;
         return Objects.equals(name, other.name) && Objects.equals(sha1, other.sha1)
                 && Objects.equals(timestamp, other.timestamp) && width == other.width && height == other.height
-                && mediaType == other.mediaType;
+                && mediaType == other.mediaType && majorMime == other.majorMime
+                && Objects.equals(minorMime, other.minorMime);
     }
 
     @Override
@@ -74,7 +87,7 @@ public class CommonsImageProjection {
         return "CommonsImageProjection [" + (name != null ? "name=" + name + ", " : "")
                 + (sha1 != null ? "sha1=" + sha1 + ", " : "")
                 + (timestamp != null ? "timestamp=" + timestamp + ", " : "") + "width=" + width + ", height=" + height
-                + ", mediaType=" + mediaType
+                + ", mediaType=" + mediaType + ", majorMime=" + majorMime + ", minorMime=" + minorMime
                 + ']';
     }
 }

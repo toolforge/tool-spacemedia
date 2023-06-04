@@ -263,7 +263,10 @@ public class FileMetadata implements FileMetadataProjection {
     @Transient
     @JsonIgnore
     public String getMime() {
-        String ext = getFileExtension();
+        return getMime(getFileExtension());
+    }
+
+    public static String getMime(String ext) {
         switch (ext) {
         case "djvu":
             return "image/vnd.djvu";
