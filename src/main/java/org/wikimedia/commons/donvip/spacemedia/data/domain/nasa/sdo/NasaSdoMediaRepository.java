@@ -4,6 +4,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -77,6 +78,19 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
         return countByMediaTypeAndDimensionsAndDate(mediaType.ordinal(), dim.getWidth(), dim.getHeight(), date);
     }
 
+    @Query(value = """
+            select count(*)
+            from nasa_sdo_media
+            where media_type = ?1 and data_type in ?2 and DATE(date) = ?3 and fsn is null
+            """, nativeQuery = true)
+    long countByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(NasaMediaType mediaType,
+            Collection<NasaSdoDataType> dataTypes, LocalDate date);
+
+    default boolean existsByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(NasaMediaType mediaType,
+            Collection<NasaSdoDataType> dataTypes, LocalDate date) {
+        return countByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(mediaType, dataTypes, date) > 0;
+    }
+
     // FIND
 
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
@@ -95,6 +109,20 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
     @Override
     @Cacheable("nasaSdoFindByPhashNotNull")
     List<MediaProjection<String>> findByMetadata_PhashNotNull();
+
+    @Query(value = """
+            select *
+            from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
+            on (nasa_sdo_media.id = nasa_sdo_media_metadata.nasa_sdo_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
+            where media_type = ?1 and width = ?2 and height = ?3 and DATE(date) = ?4 and fsn is null
+            """, nativeQuery = true)
+    List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDateAndFsnIsNull(NasaMediaType mediaType, int width,
+            int height, LocalDate date);
+
+    default List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDateAndFsnIsNull(NasaMediaType mediaType,
+            ImageDimensions dim, LocalDate date) {
+        return findByMediaTypeAndDimensionsAndDateAndFsnIsNull(mediaType, dim.getWidth(), dim.getHeight(), date);
+    }
 
     // SAVE
 

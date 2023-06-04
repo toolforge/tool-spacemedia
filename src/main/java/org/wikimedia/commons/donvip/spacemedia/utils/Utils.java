@@ -93,6 +93,10 @@ public final class Utils {
         return newHttpGet(URI.create(uri));
     }
 
+    public static HttpGet newHttpGet(URL url) {
+        return newHttpGet(urlToUriUnchecked(url));
+    }
+
     public static HttpGet newHttpGet(URI uri) {
         HttpGet request = new HttpGet(uri);
         RequestConfig.Builder requestConfig = RequestConfig.custom();

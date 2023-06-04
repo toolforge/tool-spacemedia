@@ -32,15 +32,11 @@ public class NasaSdoMedia extends SingleFileMedia<String, LocalDateTime> {
     private NasaMediaType mediaType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 3)
-    private NasaSdoInstrument instrument;
-
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 6)
     private NasaSdoDataType dataType;
 
     @Embedded
-    private NasaSdoAiaKeywords aiaKeywords = new NasaSdoAiaKeywords();
+    private NasaSdoKeywords keywords = new NasaSdoKeywords();
 
     @Override
     public String getId() {
@@ -70,14 +66,6 @@ public class NasaSdoMedia extends SingleFileMedia<String, LocalDateTime> {
         this.mediaType = mediaType;
     }
 
-    public NasaSdoInstrument getInstrument() {
-        return instrument;
-    }
-
-    public void setInstrument(NasaSdoInstrument instrument) {
-        this.instrument = instrument;
-    }
-
     public NasaSdoDataType getDataType() {
         return dataType;
     }
@@ -86,12 +74,12 @@ public class NasaSdoMedia extends SingleFileMedia<String, LocalDateTime> {
         this.dataType = dataType;
     }
 
-    public NasaSdoAiaKeywords getAiaKeywords() {
-        return aiaKeywords;
+    public NasaSdoKeywords getKeywords() {
+        return keywords;
     }
 
-    public void setAiaKeywords(NasaSdoAiaKeywords keywords) {
-        this.aiaKeywords = keywords;
+    public void setKeywords(NasaSdoKeywords keywords) {
+        this.keywords = keywords;
     }
 
     @Override
@@ -106,31 +94,28 @@ public class NasaSdoMedia extends SingleFileMedia<String, LocalDateTime> {
 
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
-        return String.format("SDO_%s (%s)", CommonsService.normalizeFilename(title), instrument.name());
+        return String.format("SDO_%s (%s)", CommonsService.normalizeFilename(title), dataType.getInstrument().name());
     }
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(dataType, date, id, instrument, mediaType, aiaKeywords);
+        return 31 * super.hashCode() + Objects.hash(dataType, date, id, mediaType, keywords);
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
+        if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaSdoMedia other = (NasaSdoMedia) obj;
-        return dataType == other.dataType && instrument == other.instrument && mediaType == other.mediaType
-                && Objects.equals(date, other.date)
-                && Objects.equals(id, other.id) && Objects.equals(aiaKeywords, other.aiaKeywords);
+        return dataType == other.dataType && mediaType == other.mediaType && Objects.equals(date, other.date)
+                && Objects.equals(id, other.id) && Objects.equals(keywords, other.keywords);
     }
 
     @Override
     public String toString() {
-        return "NasaSdoMedia [id=" + id + ", date=" + date + ", mediaType=" + mediaType + ", instrument=" + instrument
-                + ", dataType=" + dataType + ']';
+        return "NasaSdoMedia [id=" + id + ", date=" + date + ", mediaType=" + mediaType + ", dataType=" + dataType
+                + ']';
     }
 }
