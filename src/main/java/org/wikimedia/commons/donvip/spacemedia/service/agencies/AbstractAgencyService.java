@@ -902,7 +902,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected Optional<String> getOtherVersions(T media, FileMetadata metadata) {
         StringBuilder sb = new StringBuilder();
-        media.getMetadata().stream().filter(m -> m != metadata && m.getAssetUrl() != null)
+        media.getMetadata().stream().distinct().filter(m -> m != metadata && m.getAssetUrl() != null)
                 .forEach(m -> sb.append(media.getFirstCommonsFileNameOrUploadTitle(m)).append('|')
                         .append(m.getFileExtension().toUpperCase(Locale.ENGLISH)).append(" version\n"));
         String result = sb.toString();
