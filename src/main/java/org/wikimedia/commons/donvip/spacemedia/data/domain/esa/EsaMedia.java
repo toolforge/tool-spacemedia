@@ -10,6 +10,8 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
@@ -17,6 +19,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
+@Table(indexes = { @Index(columnList = "url") })
 public class EsaMedia extends Media<Integer, LocalDateTime> implements WithKeywords {
 
     @Id
