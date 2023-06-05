@@ -536,7 +536,7 @@ public class EsaService extends AbstractAgencyService<EsaMedia, Integer, LocalDa
 
     @Override
     protected EsaMedia refresh(EsaMedia media) throws IOException {
-        throw new UnsupportedOperationException(); // TODO
+        return media.copyDataFrom(fetchMedia(media.getUrl()));
     }
 
     static String getCopernicusTemplate(String text) {

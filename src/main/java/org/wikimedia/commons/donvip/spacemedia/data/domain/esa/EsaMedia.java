@@ -185,4 +185,16 @@ public class EsaMedia extends Media<Integer, LocalDateTime> implements WithKeywo
     public boolean isVideo() {
         return false;
     }
+
+    public EsaMedia copyDataFrom(EsaMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        this.url = mediaFromApi.url;
+        this.date = mediaFromApi.date;
+        this.copyright = mediaFromApi.copyright;
+        this.activity = mediaFromApi.activity;
+        this.mission = mediaFromApi.mission;
+        this.people = mediaFromApi.people;
+        this.action = mediaFromApi.action;
+        return this;
+    }
 }

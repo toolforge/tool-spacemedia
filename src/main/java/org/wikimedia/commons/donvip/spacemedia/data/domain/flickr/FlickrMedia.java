@@ -302,7 +302,6 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
         this.media = mediaFromApi.media;
         this.mediaStatus = mediaFromApi.mediaStatus;
         // Do not override pathAlias !
-        this.getUniqueMetadata().setAssetUrl(mediaFromApi.getUniqueMetadata().getAssetUrl());
         return this;
     }
 }
