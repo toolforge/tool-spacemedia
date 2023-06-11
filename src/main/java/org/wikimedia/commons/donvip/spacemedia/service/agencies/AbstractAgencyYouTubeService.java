@@ -98,38 +98,45 @@ public abstract class AbstractAgencyYouTubeService extends AbstractAgencyService
         LocalDateTime start = startUpdateMedia();
         int count = 0;
         for (String channelId : youtubeChannels) {
-            try {
-                LOGGER.info("Fetching YouTube videos from channel '{}'...", channelId);
-                List<YouTubeVideo> freeVideos = new ArrayList<>();
-                String pageToken = null;
-                do {
-                    SearchListResponse list = youtubeService.searchCreativeCommonsVideos(channelId, pageToken);
-                    pageToken = list.getNextPageToken();
-                    List<YouTubeVideo> videos = processYouTubeVideos(buildYouTubeVideoList(list, youtubeService.listVideos(list)));
-                    count += videos.size();
-                    freeVideos.addAll(videos);
-                } while (pageToken != null);
-                if (!freeVideos.isEmpty()) {
-                    Set<YouTubeVideo> noLongerFreeVideos = youtubeRepository.findAll(Set.of(channelId));
-                    noLongerFreeVideos.removeAll(freeVideos);
-                    if (!noLongerFreeVideos.isEmpty()) {
-                        LOGGER.warn("Deleting {} videos no longer-free for channel {}: {}",
-                                noLongerFreeVideos.size(), channelId, noLongerFreeVideos);
-                        youtubeRepository.deleteAll(noLongerFreeVideos);
-                        count += noLongerFreeVideos.size();
-                    }
-                }
-            } catch (HttpClientErrorException e) {
-                LOGGER.error("HttpClientError while fetching YouTube videos from channel {}: {}", channelId, e.getMessage());
-                if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                    processYouTubeVideos(youtubeRepository.findAll(Set.of(channelId)));
-                }
-            } catch (IOException | RuntimeException e) {
-                LOGGER.error("Error while fetching YouTube videos from channel " + channelId, e);
-            }
+            count += updateYouTubeVideos(channelId);
         }
         syncYouTubeVideos();
         endUpdateMedia(count, emptyList(), emptyList(), start);
+    }
+
+    private int updateYouTubeVideos(String channelId) {
+        int count = 0;
+        try {
+            LOGGER.info("Fetching YouTube videos from channel '{}'...", channelId);
+            List<YouTubeVideo> freeVideos = new ArrayList<>();
+            String pageToken = null;
+            do {
+                SearchListResponse list = youtubeService.searchCreativeCommonsVideos(channelId, pageToken);
+                pageToken = list.getNextPageToken();
+                List<YouTubeVideo> videos = processYouTubeVideos(buildYouTubeVideoList(list, youtubeService.listVideos(list)));
+                count += videos.size();
+                freeVideos.addAll(videos);
+            } while (pageToken != null);
+            LOGGER.info("Processed {} free videos for channel {}", count, channelId);
+            if (!freeVideos.isEmpty()) {
+                Set<YouTubeVideo> noLongerFreeVideos = youtubeRepository.findByChannelIdAndIdNotIn(channelId,
+                        freeVideos.stream().map(YouTubeVideo::getId).toList());
+                if (!noLongerFreeVideos.isEmpty()) {
+                    LOGGER.warn("Deleting {} videos no longer-free for channel {}: {}",
+                            noLongerFreeVideos.size(), channelId, noLongerFreeVideos);
+                    youtubeRepository.deleteAll(noLongerFreeVideos);
+                    count += noLongerFreeVideos.size();
+                }
+            }
+        } catch (HttpClientErrorException e) {
+            LOGGER.error("HttpClientError while fetching YouTube videos from channel {}: {}", channelId, e.getMessage());
+            if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                processYouTubeVideos(youtubeRepository.findByChannelId(channelId));
+            }
+        } catch (IOException | RuntimeException e) {
+            LOGGER.error("Error while fetching YouTube videos from channel " + channelId, e);
+        }
+        return count;
     }
 
     private List<YouTubeVideo> buildYouTubeVideoList(SearchListResponse searchList, VideoListResponse videoList) {

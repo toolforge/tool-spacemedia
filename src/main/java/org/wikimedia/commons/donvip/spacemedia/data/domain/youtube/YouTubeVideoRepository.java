@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.youtube;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -73,11 +74,9 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, St
 
     // FIND
 
-    @Query("select m from #{#entityName} m where m.channelId in ?1")
-    Set<YouTubeVideo> findAll(Set<String> youtubeChannels);
+    Set<YouTubeVideo> findByChannelId(String youtubeChannel);
 
-    @Query("select m from #{#entityName} m where m.channelId in ?1")
-    Page<YouTubeVideo> findAll(Set<String> youtubeChannels, Pageable page);
+    Set<YouTubeVideo> findByChannelIdAndIdNotIn(String youtubeChannel, Collection<String> ids);
 
     @Query("select m from #{#entityName} m where m.ignored = true and m.channelId in ?1")
     List<YouTubeVideo> findByIgnoredTrue(Set<String> youtubeChannels);
