@@ -33,9 +33,12 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KariService.class);
 
+    private KariMediaRepository kariRepository;
+
     @Autowired
     public KariService(KariMediaRepository repository) {
         super(repository, "kari");
+        this.kariRepository = repository;
     }
 
     @Value("${kari.view.link}")
@@ -113,7 +116,7 @@ public class KariService extends AbstractAgencyService<KariMedia, Integer, Local
         LocalDateTime start = startUpdateMedia();
         int consecutiveFailures = 0;
         int count = 0;
-        int id = 1;
+        int id = kariRepository.findMaxId().orElse(1);
         while (consecutiveFailures < maxFailures) {
             boolean save = false;
             String viewUrl = getViewUrl(id);

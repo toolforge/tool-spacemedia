@@ -4,11 +4,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
@@ -58,6 +60,9 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer,
     long countUploadedToCommons();
 
     // FIND
+
+    @Query("select max(id) from #{#entityName}")
+    Optional<Integer> findMaxId();
 
     @Override
     default Page<KariMedia> findMissingImagesInCommons(Pageable page) {
