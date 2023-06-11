@@ -17,7 +17,7 @@ class ImageUtilsTest {
      */
     @ParameterizedTest
     @CsvSource(delimiter = ',', value = {
-            "https://upload.wikimedia.org/wikipedia/commons/3/33/2-michel-okujava.webp,112,147",
+            "https://upload.wikimedia.org/wikipedia/commons/d/d2/Epichlorhydrin_vzorec.webp,656,334",
             "https://upload.wikimedia.org/wikipedia/commons/7/78/Empty_200x1.jpg,200,1",
             "https://upload.wikimedia.org/wikipedia/commons/e/e2/Artemis_program_%28original_with_wordmark%29.svg,200,185" })
     void testReadImage(URL url, int width, int height) throws Exception {
