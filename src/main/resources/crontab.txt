@@ -1,9 +1,28 @@
-0 0 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa
-0 1 * * * /bin/sh /data/project/spacemedia/run.sh flickr nasa-flickr
-0 2 * * * /bin/sh /data/project/spacemedia/run.sh custom esa
-0 3 * * * /bin/sh /data/project/spacemedia/run.sh djangoplicity eso
-0 4 * * * /bin/sh /data/project/spacemedia/run.sh djangoplicity noirlab
-0 5 * * * /bin/sh /data/project/spacemedia/run.sh web
-0 21 * * * /bin/sh /data/project/spacemedia/run.sh box nasa-box
-0 22 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-photojournal
-0 23 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-sdo
+# No (more) free content
+ 0  0 * * * /bin/sh /data/project/spacemedia/run.sh youtube arianespace
+ 5  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr dlr-flickr
+10  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr esa-flickr
+15  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr potential-flickr
+20  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr spacex-flickr
+25  0 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-sirs
+30  0 * * * /bin/sh /data/project/spacemedia/run.sh custom kari
+# Real ones
+ 0  1 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa
+ 0  2 * * * /bin/sh /data/project/spacemedia/run.sh flickr nasa-flickr
+ 0  3 * * * /bin/sh /data/project/spacemedia/run.sh box nasa-box
+ 0  4 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-photojournal
+ 0  5 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-aster
+15  5 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-sdo
+ 0  6 * * * /bin/sh /data/project/spacemedia/run.sh custom esa
+ 0  7 * * * /bin/sh /data/project/spacemedia/run.sh djangoplicity iau
+15  7 * * * /bin/sh /data/project/spacemedia/run.sh djangoplicity eso
+ 0  8 * * * /bin/sh /data/project/spacemedia/run.sh djangoplicity noirlab
+ 0  9 * * * /bin/sh /data/project/spacemedia/run.sh djangoplicity hubble-esa
+30  9 * * * /bin/sh /data/project/spacemedia/run.sh stsci hubble-nasa
+ 0 10 * * * /bin/sh /data/project/spacemedia/run.sh djangoplicity webb-esa
+30 10 * * * /bin/sh /data/project/spacemedia/run.sh stsci webb-nasa
+ 0 11 * * * /bin/sh /data/project/spacemedia/run.sh flickr individuals-flickr
+10 11 * * * /bin/sh /data/project/spacemedia/run.sh flickr ussf-flickr
+20 11 * * * /bin/sh /data/project/spacemedia/run.sh dvids ussf-dvids
+# Hashes
+ 0 12 * * * /bin/sh /data/project/spacemedia/run.sh web

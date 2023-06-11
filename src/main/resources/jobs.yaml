@@ -1,22 +1,22 @@
 # https://wikitech.wikimedia.org/wiki/Help:Toolforge/Jobs_framework
 ---
-- name: arianespace
-  image: tf-jdk17
-  command: ./run.sh youtube arianespace
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "40 0 * * *"
-  emails: onfailure
+#- name: arianespace
+#  image: tf-jdk17
+#  command: ./run.sh youtube arianespace
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "40 0 * * *"
+#  emails: onfailure
 
-- name: dlr-flickr
-  image: tf-jdk17
-  command: ./run.sh flickr dlr-flickr
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 0 * * *"
-  emails: onfailure
+#- name: dlr-flickr
+#  image: tf-jdk17
+#  command: ./run.sh flickr dlr-flickr
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 0 * * *"
+#  emails: onfailure
 
 #- name: esa
 #  image: tf-jdk17
@@ -27,14 +27,14 @@
 #  schedule: "45 1,17 * * *"
 #  emails: onfailure
 
-- name: esa-flickr
-  image: tf-jdk17
-  command: ./run.sh flickr esa-flickr
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 2 * * *"
-  emails: onfailure
+#- name: esa-flickr
+#  image: tf-jdk17
+#  command: ./run.sh flickr esa-flickr
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 2 * * *"
+#  emails: onfailure
 
 #- name: eso
 #  image: tf-jdk17
@@ -45,95 +45,95 @@
 #  schedule: "45 3 * * *"
 #  emails: onfailure
 
-- name: hubble-esa
-  image: tf-jdk17
-  command: ./run.sh djangoplicity hubble-esa
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 4 * * *"
-  emails: onfailure
+#- name: hubble-esa
+#  image: tf-jdk17
+#  command: ./run.sh djangoplicity hubble-esa
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 4 * * *"
+#  emails: onfailure
 
-- name: hubble-nasa
-  image: tf-jdk17
-  command: ./run.sh stsci hubble-nasa
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 5 * * *"
-  emails: onfailure
+#- name: hubble-nasa
+#  image: tf-jdk17
+#  command: ./run.sh stsci hubble-nasa
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 5 * * *"
+#  emails: onfailure
 
-- name: iau
-  image: tf-jdk17
-  command: ./run.sh djangoplicity iau
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 6 * * *"
-  emails: onfailure
+#- name: iau
+#  image: tf-jdk17
+#  command: ./run.sh djangoplicity iau
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 6 * * *"
+#  emails: onfailure
 
-- name: kari
-  image: tf-jdk17
-  command: ./run.sh custom kari
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 7 * * *"
-  emails: onfailure
+#- name: kari
+#  image: tf-jdk17
+#  command: ./run.sh custom kari
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 7 * * *"
+#  emails: onfailure
 
-- name: nasa
-  image: tf-jdk17
-  command: ./run.sh custom nasa-aster
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 8 * * *"
-  emails: onfailure
+#- name: nasa-aster
+#  image: tf-jdk17
+#  command: ./run.sh custom nasa-aster
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 8 * * *"
+#  emails: onfailure
 
-- name: nasa-sirs
-  image: tf-jdk17
-  command: ./run.sh custom nasa-sirs
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "35 10 * * *"
-  emails: onfailure
+#- name: nasa-sirs
+#  image: tf-jdk17
+#  command: ./run.sh custom nasa-sirs
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "35 10 * * *"
+#  emails: onfailure
 
-- name: spacex-flickr
-  image: tf-jdk17
-  command: ./run.sh flickr spacex-flickr
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "40 10 * * *"
-  emails: onfailure
+#- name: spacex-flickr
+#  image: tf-jdk17
+#  command: ./run.sh flickr spacex-flickr
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "40 10 * * *"
+#  emails: onfailure
 
-- name: ussf-flickr
-  image: tf-jdk17
-  command: ./run.sh flickr ussf-flickr
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "40 11 * * *"
-  emails: onfailure
+#- name: ussf-flickr
+#  image: tf-jdk17
+#  command: ./run.sh flickr ussf-flickr
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "40 11 * * *"
+#  emails: onfailure
 
-- name: ussf-dvids
-  image: tf-jdk17
-  command: ./run.sh dvids ussf-dvids
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 11,20 * * *"
-  emails: onfailure
+#- name: ussf-dvids
+#  image: tf-jdk17
+#  command: ./run.sh dvids ussf-dvids
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 11,20 * * *"
+#  emails: onfailure
 
-- name: individuals-flickr
-  image: tf-jdk17
-  command: ./run.sh flickr individuals-flickr
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 12 * * *"
-  emails: onfailure
+#- name: individuals-flickr
+#  image: tf-jdk17
+#  command: ./run.sh flickr individuals-flickr
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 12 * * *"
+#  emails: onfailure
 
 #- name: noirlab
 #  image: tf-jdk17
@@ -144,20 +144,20 @@
 #  schedule: "45 13 * * *"
 #  emails: onfailure
 
-- name: webb-esa
-  image: tf-jdk17
-  command: ./run.sh djangoplicity webb-esa
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 15 * * *"
-  emails: onfailure
+#- name: webb-esa
+#  image: tf-jdk17
+#  command: ./run.sh djangoplicity webb-esa
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 15 * * *"
+#  emails: onfailure
 
-- name: webb-nasa
-  image: tf-jdk17
-  command: ./run.sh stsci webb-nasa
-  cpu: 1
-  mem: 4Gi
-  no-filelog: true
-  schedule: "45 16 * * *"
-  emails: onfailure
+#- name: webb-nasa
+#  image: tf-jdk17
+#  command: ./run.sh stsci webb-nasa
+#  cpu: 1
+#  mem: 4Gi
+#  no-filelog: true
+#  schedule: "45 16 * * *"
+#  emails: onfailure
