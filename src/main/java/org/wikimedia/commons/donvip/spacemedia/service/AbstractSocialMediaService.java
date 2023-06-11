@@ -230,11 +230,12 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
                 String message = muc.url.toURI().toString() + " -> " + response.getStatusLine().toString();
                 if (retryCount > 0) {
                     LOGGER.warn("{}, {} retry attempts remaining", message, retryCount);
-                    Thread.sleep(100);
+                    Thread.sleep(500);
                     return postMedia(muc, poster, retryCount - 1);
                 }
                 throw new IOException(message);
             }
+            Thread.sleep(100);
             return poster.apply(muc, in.readAllBytes());
         }
     }
