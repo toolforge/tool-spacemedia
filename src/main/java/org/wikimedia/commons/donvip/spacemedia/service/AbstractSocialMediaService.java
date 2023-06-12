@@ -192,8 +192,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
                 result.add(img);
             } else {
                 // Include at most three other images different enough
-                if (result.stream()
-                        .noneMatch(x -> similarityScore(x.getPhash(), img.getPhash()) <= perceptualThreshold)) {
+                if (result.stream().noneMatch(x -> sameImages(x, img))) {
                     result.add(img);
                 }
                 if (result.size() == max) {
@@ -201,7 +200,18 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
                 }
             }
         }
-        return result;
+        // Replace TIFF by JPEG/PNG version when possible, as thumb server sucks
+        return result.stream().map(x -> {
+            if ("image/tiff".equals(x.getMime())) {
+                return imgs.stream().filter(o -> !"image/tiff".equals(o.getMime()) && sameImages(o, x)).findAny()
+                        .orElse(x);
+            }
+            return x;
+        }).toList();
+    }
+
+    boolean sameImages(FileMetadata a, FileMetadata b) {
+        return similarityScore(a.getPhash(), b.getPhash()) <= perceptualThreshold;
     }
 
     protected static URL getImageUrl(URL url, int width, String fileName) {
