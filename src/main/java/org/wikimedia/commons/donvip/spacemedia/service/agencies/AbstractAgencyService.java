@@ -343,13 +343,23 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
     }
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, LocalDateTime start) {
+        endUpdateMedia(count, uploadedMedia, start, true);
+    }
+
+    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, LocalDateTime start,
+            boolean postTweet) {
         endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(m -> m.getMetadata().stream()).toList(),
-                start);
+                start, postTweet);
     }
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
             LocalDateTime start) {
-        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, LocalDate.now().minusDays(2), true);
+        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, true);
+    }
+
+    protected final void endUpdateMedia(int count, Collection<T> uploadedMedia,
+            Collection<FileMetadata> uploadedMetadata, LocalDateTime start, boolean postTweet) {
+        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, LocalDate.now().minusDays(2), postTweet);
     }
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<FileMetadata> uploadedMetadata,

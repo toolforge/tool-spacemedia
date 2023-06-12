@@ -324,7 +324,7 @@ public class NasaService
         }
         endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(m -> m.getMetadata().stream()).toList(),
                 start, LocalDate.now().minusYears(1), // NASA sometimes post old images dating a few months back
-                false /* not mature enough to assume a public tweet yet */);
+                false /* tweets already posted - one by NASA center */);
     }
 
     @Override

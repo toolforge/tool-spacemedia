@@ -330,8 +330,11 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
                         flickrService.findFreePhotos(flickrAccount, minUploadDate));
                 LOGGER.info("Found {} free Flickr media for account '{}'", freePictures.size(), flickrAccount);
                 Pair<Integer, Collection<FlickrMedia>> result = processFlickrMedia(freePictures, flickrAccount);
-                uploadedMedia.addAll(result.getRight());
+                Collection<FlickrMedia> localUploadedImages = result.getRight();
+                uploadedMedia.addAll(localUploadedImages);
                 count += result.getLeft();
+                postSocialMedia(localUploadedImages,
+                        localUploadedImages.stream().flatMap(m -> m.getMetadata().stream()).toList());
                 if (minUploadDate == null) {
                     // Only delete pictures not found in complete updates
                     Set<FlickrMedia> noLongerFreePictures = flickrRepository.findNotIn(Set.of(flickrAccount),
@@ -344,7 +347,7 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
                 LOGGER.error("Error while fetching Flickr media from account {}", flickrAccount, e);
             }
         }
-        endUpdateMedia(count, uploadedMedia, start);
+        endUpdateMedia(count, uploadedMedia, start, false /* tweets already posted - one by Flickr account */);
     }
 
     private int updateNoLongerFreeFlickrMedia(String flickrAccount, Set<FlickrMedia> pictures)
