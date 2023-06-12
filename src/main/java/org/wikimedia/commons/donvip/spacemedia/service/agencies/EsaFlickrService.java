@@ -38,11 +38,6 @@ public class EsaFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    public void updateMedia() {
-        updateFlickrMedia();
-    }
-
-    @Override
     public String getName() {
         return "ESA (Flickr)";
     }

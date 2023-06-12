@@ -21,11 +21,6 @@ public class UsSpaceForceFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    public void updateMedia() {
-        updateFlickrMedia();
-    }
-
-    @Override
     public String getName() {
         return "U.S. Space Force/Command (Flickr)";
     }

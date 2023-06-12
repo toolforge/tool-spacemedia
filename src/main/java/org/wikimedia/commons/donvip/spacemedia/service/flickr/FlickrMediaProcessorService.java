@@ -138,10 +138,7 @@ public class FlickrMediaProcessorService {
         }
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb);
         savePhotoSets = false;
-        save = false;
-        if (mediaService.updateMedia(media, stringsToRemove.get(), false, urlResolver).getResult()) {
-            save = true;
-        }
+        save = mediaService.updateMedia(media, stringsToRemove.get(), false, urlResolver).getResult();
         int uploadCount = 0;
         if (shouldUploadAuto.test(media, false) && (videosEnabled || !media.isVideo())) {
             Triple<FlickrMedia, Collection<FileMetadata>, Integer> upload = uploader.apply(media);

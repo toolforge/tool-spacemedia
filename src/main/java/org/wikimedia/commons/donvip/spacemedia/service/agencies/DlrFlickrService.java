@@ -24,11 +24,6 @@ public class DlrFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    public void updateMedia() {
-        updateFlickrMedia();
-    }
-
-    @Override
     public Set<String> findCategories(FlickrMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {

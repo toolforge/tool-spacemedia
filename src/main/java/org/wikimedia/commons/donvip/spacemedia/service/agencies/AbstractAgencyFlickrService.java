@@ -318,7 +318,8 @@ public abstract class AbstractAgencyFlickrService extends AbstractAgencyService<
         return newURL(getUserPhotosUrl(media).toExternalForm() + "/" + media.getId());
     }
 
-    protected void updateFlickrMedia() {
+    @Override
+    public void updateMedia() {
         LocalDateTime start = startUpdateMedia();
         List<FlickrMedia> uploadedMedia = new ArrayList<>();
         LocalDate minUploadDate = getRuntimeData().getDoNotFetchEarlierThan();

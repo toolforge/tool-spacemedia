@@ -18,11 +18,6 @@ public class PotentialFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    public void updateMedia() {
-        updateFlickrMedia();
-    }
-
-    @Override
     public String getName() {
         return "Potential Flickr accounts";
     }

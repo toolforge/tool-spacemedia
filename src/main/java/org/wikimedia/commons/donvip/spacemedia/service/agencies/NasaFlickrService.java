@@ -47,11 +47,6 @@ public class NasaFlickrService extends AbstractAgencyFlickrService {
     }
 
     @Override
-    public void updateMedia() {
-        updateFlickrMedia();
-    }
-
-    @Override
     public String getName() {
         return "NASA (Flickr)";
     }

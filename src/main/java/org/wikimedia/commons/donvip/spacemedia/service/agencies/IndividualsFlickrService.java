@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.agencies;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -38,11 +36,6 @@ public class IndividualsFlickrService extends AbstractAgencyFlickrService {
     @Override
     public String getName() {
         return "Individuals (Flickr)";
-    }
-
-    @Override
-    public void updateMedia() throws IOException, UploadException {
-        updateFlickrMedia();
     }
 
     @Override
