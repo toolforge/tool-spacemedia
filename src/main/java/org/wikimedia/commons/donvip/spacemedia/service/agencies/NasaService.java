@@ -379,6 +379,11 @@ public class NasaService
     }
 
     @Override
+    protected String getTakenLocation(NasaMedia media) {
+        return ISS_PATTERN.matcher(media.getId()).matches() ? "ISS" : "";
+    }
+
+    @Override
     public Set<String> findCategories(NasaMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         result.addAll(media.getKeywords().stream().map(nasaKeywords::get).filter(Objects::nonNull).toList());

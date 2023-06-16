@@ -824,9 +824,14 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
 
     protected final Optional<String> getCreationWikiDate(T media) {
         return getCreationDate(media).map(d -> String.format(
-                "{{Taken %s|%s}}", d instanceof LocalDate || d instanceof LocalDateTime || d instanceof ZonedDateTime
+                "{{Taken %s|%s|location=%s}}",
+                d instanceof LocalDate || d instanceof LocalDateTime || d instanceof ZonedDateTime
                         || d instanceof Instant ? "on" : "in",
-                toIso8601(d)));
+                toIso8601(d), getTakenLocation(media)));
+    }
+
+    protected String getTakenLocation(T media) {
+        return "";
     }
 
     protected final Optional<String> getUploadWikiDate(T media) {
