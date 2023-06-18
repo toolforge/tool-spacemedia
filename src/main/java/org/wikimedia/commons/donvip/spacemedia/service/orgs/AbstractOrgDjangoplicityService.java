@@ -261,7 +261,7 @@ public abstract class AbstractOrgDjangoplicityService
 
     @Override
     protected DjangoplicityMedia refresh(DjangoplicityMedia media) throws IOException {
-        URL url = getSourceUrl(media);
+        URL url = getSourceUrl(media, null);
         try {
             return media.copyDataFrom(fetchMedia(url, media.getIdUsedInOrg(), url.toExternalForm()));
         } catch (ReflectiveOperationException e) {

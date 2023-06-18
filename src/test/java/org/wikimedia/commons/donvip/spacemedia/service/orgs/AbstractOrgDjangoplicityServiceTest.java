@@ -68,7 +68,7 @@ class AbstractOrgDjangoplicityServiceTest extends AbstractOrgServiceTest {
             }
 
             @Override
-            public URL getSourceUrl(DjangoplicityMedia media) {
+            public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata) {
                 return newURL("https://esahubble.org/images/potw2251a/");
             }
 

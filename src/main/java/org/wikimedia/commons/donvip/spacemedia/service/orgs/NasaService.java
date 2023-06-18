@@ -333,7 +333,7 @@ public class NasaService
     }
 
     @Override
-    public URL getSourceUrl(NasaMedia media) {
+    public URL getSourceUrl(NasaMedia media, FileMetadata metadata) {
         return newURL(detailsLink.replace("<id>", media.getId()));
     }
 
@@ -374,7 +374,7 @@ public class NasaService
     }
 
     @Override
-    protected String getSource(NasaMedia media) {
+    protected String getSource(NasaMedia media, FileMetadata metadata) {
         return "{{NASA-image|id=" + media.getId() + "|center=" + media.getCenter() + "}}";
     }
 

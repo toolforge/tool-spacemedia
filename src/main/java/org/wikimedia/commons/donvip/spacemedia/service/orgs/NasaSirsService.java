@@ -76,7 +76,7 @@ public class NasaSirsService
     }
 
     @Override
-    public URL getSourceUrl(NasaSirsImage media) {
+    public URL getSourceUrl(NasaSirsImage media, FileMetadata metadata) {
         return newURL(detailsUrl.replace("<id>", media.getId()));
     }
 
@@ -212,9 +212,8 @@ public class NasaSirsService
     }
 
     @Override
-    protected String getSource(NasaSirsImage media) {
-        return super.getSource(media)
-                + " ([" + media.getMetadata().get(0).getAssetUrl() + " direct link])\n"
+    protected String getSource(NasaSirsImage media, FileMetadata metadata) {
+        return super.getSource(media, metadata) + " ([" + metadata.getAssetUrl() + " direct link])\n"
                 + "{{NASA-image|id=" + media.getId() + "|center=SSC}}";
     }
 

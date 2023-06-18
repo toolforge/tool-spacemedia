@@ -461,7 +461,7 @@ public abstract class AbstractOrgDvidsService
     }
 
     @Override
-    public final URL getSourceUrl(DvidsMedia media) {
+    public final URL getSourceUrl(DvidsMedia media, FileMetadata metadata) {
         try {
             return mediaUrl.expand(Map.of("type", media.getId().getType(), "id", media.getId().getId())).toURL();
         } catch (MalformedURLException e) {
@@ -470,8 +470,8 @@ public abstract class AbstractOrgDvidsService
     }
 
     @Override
-    protected final String getSource(DvidsMedia media) {
-        URL sourceUrl = getSourceUrl(media);
+    protected final String getSource(DvidsMedia media, FileMetadata metadata) {
+        URL sourceUrl = getSourceUrl(media, metadata);
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), sourceUrl);
         return t != null ? "{{" + t.getVirinTemplate() + "}}" : sourceUrl.toExternalForm();
     }
@@ -516,7 +516,7 @@ public abstract class AbstractOrgDvidsService
         StringBuilder sb = new StringBuilder("{{milim\n| description = ")
                 .append("{{").append(lang).append("|1=").append(CommonsService.formatWikiCode(desc)).append("}}");
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
-        sb.append("\n| source = ").append(getSource(media))
+        sb.append("\n| source = ").append(getSource(media, metadata))
           .append("\n| author = ").append(getAuthor(media));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
         Optional.ofNullable(media.getLocation()).ifPresent(l -> sb.append("\n| location = ").append(l));

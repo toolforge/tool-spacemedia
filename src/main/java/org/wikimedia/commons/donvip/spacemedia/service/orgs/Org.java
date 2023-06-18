@@ -106,7 +106,12 @@ public interface Org<T extends Media<ID, D>, ID, D extends Temporal> {
 
     Pair<String, Map<String, String>> getWikiCode(T media, FileMetadata metadata);
 
-    URL getSourceUrl(T media);
+    default URL getSourceUrl(T media) {
+        // Used in web app
+        return getSourceUrl(media, media.getMetadata().get(0));
+    }
+
+    URL getSourceUrl(T media, FileMetadata metadata);
 
     List<T> searchMedia(String q);
 

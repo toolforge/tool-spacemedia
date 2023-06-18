@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -42,12 +43,12 @@ public class EsoService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
-    public URL getSourceUrl(DjangoplicityMedia media) {
+    public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata) {
         return newURL(ESO_BASE_PUBLIC_URL + ESO_IMAGES_PATH + media.getIdUsedInOrg());
     }
 
     @Override
-    public final String getSource(DjangoplicityMedia media) {
+    public final String getSource(DjangoplicityMedia media, FileMetadata metadata) {
         return "{{ESO-source|" + media.getIdUsedInOrg() + '|' + media.getIdUsedInOrg() + "}}";
     }
 

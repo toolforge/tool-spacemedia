@@ -678,7 +678,8 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
     protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, FileMetadata metadata) {
         Map<String, Pair<Object, Map<String, Object>>> result = new TreeMap<>();
         // Source: file available on the internet
-        result.put("P7482", Pair.of("Q74228490", new TreeMap<>(Map.of("P973", getSourceUrl(media).toExternalForm(),
+        result.put("P7482", Pair.of("Q74228490", new TreeMap<>(Map.of("P973",
+                getSourceUrl(media, metadata).toExternalForm(),
                 "P2699", metadata.getAssetUrl().toExternalForm()))));
         // Licences
         Set<String> licences = findLicenceTemplates(media);
@@ -795,7 +796,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
             descriptions.put("en", englishDescription);
         }
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
-        sb.append("\n| source = ").append(getSource(media))
+        sb.append("\n| source = ").append(getSource(media, metadata))
           .append("\n| author = ").append(CommonsService.formatWikiCode(getAuthor(media)));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
         appendWikiOtherVersions(sb, media, metadata, "other versions");
@@ -897,8 +898,8 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         }
     }
 
-    protected String getSource(T media) {
-        return wikiLink(getSourceUrl(media), media.getTitle());
+    protected String getSource(T media, FileMetadata metadata) {
+        return wikiLink(getSourceUrl(media, metadata), media.getTitle());
     }
 
     protected abstract String getAuthor(T media) throws MalformedURLException;

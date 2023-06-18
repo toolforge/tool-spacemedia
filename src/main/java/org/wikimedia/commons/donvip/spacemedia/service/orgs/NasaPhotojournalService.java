@@ -276,7 +276,7 @@ public class NasaPhotojournalService
     }
 
     @Override
-    public URL getSourceUrl(NasaPhotojournalMedia media) {
+    public URL getSourceUrl(NasaPhotojournalMedia media, FileMetadata metadata) {
         return newURL("https://photojournal.jpl.nasa.gov/catalog/" + media.getId());
     }
 

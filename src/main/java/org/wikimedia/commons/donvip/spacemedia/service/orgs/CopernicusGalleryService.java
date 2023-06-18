@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.CopernicusGalleryMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.CopernicusGalleryMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -48,7 +49,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
     }
 
     @Override
-    public URL getSourceUrl(CopernicusGalleryMedia media) {
+    public URL getSourceUrl(CopernicusGalleryMedia media, FileMetadata metadata) {
         return newURL(BASE_URL + "/en/media/image-day-gallery/" + media.getId());
     }
 

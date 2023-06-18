@@ -181,8 +181,8 @@ public abstract class AbstractOrgBoxService
     }
 
     @Override
-    public final URL getSourceUrl(BoxMedia media) {
-        return media.getUniqueMetadata().getAssetUrl();
+    public final URL getSourceUrl(BoxMedia media, FileMetadata metadata) {
+        return metadata.getAssetUrl();
     }
 
     @Override

@@ -130,7 +130,7 @@ public class NasaAsterService
     }
 
     @Override
-    public URL getSourceUrl(NasaAsterMedia media) {
+    public URL getSourceUrl(NasaAsterMedia media, FileMetadata metadata) {
         return newURL(detailsUrl.replace("<id>", media.getId()));
     }
 
@@ -203,9 +203,8 @@ public class NasaAsterService
     }
 
     @Override
-    protected String getSource(NasaAsterMedia media) {
-        return super.getSource(media)
-                + " ([" + media.getMetadata().get(0).getAssetUrl() + " direct link])\n"
+    protected String getSource(NasaAsterMedia media, FileMetadata metadata) {
+        return super.getSource(media, metadata) + " ([" + metadata.getAssetUrl() + " direct link])\n"
                 + "{{NASA-image|id=" + media.getId() + "|center=JPL}}";
     }
 

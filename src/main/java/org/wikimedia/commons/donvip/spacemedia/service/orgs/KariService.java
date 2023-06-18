@@ -81,12 +81,12 @@ public class KariService extends AbstractOrgService<KariMedia, Integer, LocalDat
     }
 
     @Override
-    public final URL getSourceUrl(KariMedia media) {
+    public final URL getSourceUrl(KariMedia media, FileMetadata metadata) {
         return newURL(getViewUrl(media.getId()));
     }
 
     @Override
-    public final String getSource(KariMedia media) {
+    public final String getSource(KariMedia media, FileMetadata metadata) {
         return "{{KARI-source|" + media.getId() + "|" + media.getKariId() + "}}";
     }
 

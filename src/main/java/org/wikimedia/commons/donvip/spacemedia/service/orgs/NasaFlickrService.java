@@ -57,8 +57,8 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
-    protected String getSource(FlickrMedia media) {
-        String result = super.getSource(media);
+    protected String getSource(FlickrMedia media, FileMetadata metadata) {
+        String result = super.getSource(media, metadata);
         String nasaId = getNasaId(media);
         if (nasaId != null) {
             result += "\n{{NASA-image|id=" + nasaId + "|center=" + center(media) + "}}";

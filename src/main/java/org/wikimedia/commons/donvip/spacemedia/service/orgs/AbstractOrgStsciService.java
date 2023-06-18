@@ -201,7 +201,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     }
 
     @Override
-    public final URL getSourceUrl(StsciMedia media) {
+    public final URL getSourceUrl(StsciMedia media, FileMetadata metadata) {
         return newURL(getImageDetailsLink(media.getId()));
     }
 

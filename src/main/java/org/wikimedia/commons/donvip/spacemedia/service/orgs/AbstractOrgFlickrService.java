@@ -214,7 +214,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
-    public final URL getSourceUrl(FlickrMedia media) {
+    public final URL getSourceUrl(FlickrMedia media, FileMetadata metadata) {
         return getPhotoUrl(media);
     }
 
@@ -275,7 +275,8 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             LOGGER.warn("Non-free Flickr licence for media {}: {}", media.getId(), e.getMessage());
         }
         result.add("Flickrreview");
-        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media));
+        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(),
+                getSourceUrl(media, media.getUniqueMetadata()));
         if (t != null) {
             result.add(t.getVirinTemplate());
             if (StringUtils.isNotBlank(t.getPdTemplate())) {

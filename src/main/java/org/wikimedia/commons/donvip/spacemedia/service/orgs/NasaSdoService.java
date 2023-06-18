@@ -97,11 +97,8 @@ public class NasaSdoService
     }
 
     @Override
-    public URL getSourceUrl(NasaSdoMedia media) {
-        if (media.isVideo()) {
-            return newURL(BASE_URL + "/data/dailymov/movie.php?q=" + media.getId());
-        }
-        return media.getMetadata().get(0).getAssetUrl();
+    public URL getSourceUrl(NasaSdoMedia media, FileMetadata metadata) {
+        return metadata.getAssetUrl();
     }
 
     @Override
