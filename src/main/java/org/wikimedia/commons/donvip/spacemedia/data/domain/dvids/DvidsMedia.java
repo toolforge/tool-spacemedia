@@ -331,7 +331,6 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, Zone
     public DvidsMedia copyDataFrom(DvidsMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         setBranch(mediaFromApi.getBranch());
-        setDate(mediaFromApi.getDate());
         setDatePublished(mediaFromApi.getDatePublished());
         setCategory(mediaFromApi.getCategory());
         setKeywords(mediaFromApi.getKeywords());

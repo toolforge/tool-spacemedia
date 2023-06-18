@@ -16,8 +16,8 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
@@ -191,7 +191,6 @@ public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeyw
     public StsciMedia copyDataFrom(StsciMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         this.credits = mediaFromApi.credits;
-        this.date = mediaFromApi.date;
         this.exposureDate = mediaFromApi.exposureDate;
         this.keywords = mediaFromApi.keywords;
         this.mission = mediaFromApi.mission;

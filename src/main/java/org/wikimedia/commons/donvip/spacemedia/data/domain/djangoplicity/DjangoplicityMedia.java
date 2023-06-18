@@ -291,7 +291,6 @@ public class DjangoplicityMedia extends Media<DjangoplicityMediaId, LocalDateTim
         this.categories = mediaFromApi.categories;
         this.constellation = mediaFromApi.constellation;
         this.credit = mediaFromApi.credit;
-        this.date = mediaFromApi.date;
         this.distance = mediaFromApi.distance;
         this.fieldOfView = mediaFromApi.fieldOfView;
         this.imageType = mediaFromApi.imageType;

@@ -189,7 +189,6 @@ public class EsaMedia extends Media<Integer, LocalDateTime> implements WithKeywo
     public EsaMedia copyDataFrom(EsaMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         this.url = mediaFromApi.url;
-        this.date = mediaFromApi.date;
         this.copyright = mediaFromApi.copyright;
         this.activity = mediaFromApi.activity;
         this.mission = mediaFromApi.mission;

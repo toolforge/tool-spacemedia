@@ -189,7 +189,6 @@ public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implemen
     public NasaPhotojournalMedia copyDataFrom(NasaPhotojournalMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         setNasaId(mediaFromApi.getNasaId());
-        setDate(mediaFromApi.getDate());
         setTarget(mediaFromApi.getTarget());
         setMission(mediaFromApi.getMission());
         setSpacecraft(mediaFromApi.getSpacecraft());

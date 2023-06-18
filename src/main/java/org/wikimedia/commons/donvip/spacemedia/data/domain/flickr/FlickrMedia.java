@@ -290,7 +290,6 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
     public FlickrMedia copyDataFrom(FlickrMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         this.license = mediaFromApi.license;
-        this.date = mediaFromApi.date;
         this.lastUpdate = mediaFromApi.lastUpdate;
         this.dateTaken = mediaFromApi.dateTaken;
         this.dateTakenGranularity = mediaFromApi.dateTakenGranularity;

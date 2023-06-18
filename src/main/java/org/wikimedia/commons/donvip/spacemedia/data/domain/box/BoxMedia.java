@@ -77,7 +77,6 @@ public class BoxMedia extends SingleFileMedia<BoxMediaId, ZonedDateTime> {
     public BoxMedia copyDataFrom(BoxMedia other) {
         super.copyDataFrom(other);
         this.contentCreationDate = other.contentCreationDate;
-        this.date = other.date;
         this.creator = other.creator;
         return this;
     }

@@ -121,7 +121,6 @@ public class KariMedia extends SingleFileMedia<Integer, LocalDate> {
     public KariMedia copyDataFrom(KariMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         this.kariId = mediaFromApi.kariId;
-        this.date = mediaFromApi.date;
         return this;
     }
 }
