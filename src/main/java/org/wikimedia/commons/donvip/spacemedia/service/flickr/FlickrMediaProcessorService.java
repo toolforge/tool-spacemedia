@@ -94,17 +94,6 @@ public class FlickrMediaProcessorService {
             media = mediaInRepo;
         } else {
             save = true;
-            if (isEmpty(media.getPhotosets())) {
-                try {
-                    Set<FlickrPhotoSet> sets = getPhotoSets(media, flickrAccount);
-                    if (isNotEmpty(sets)) {
-                        sets.forEach(media::addPhotoSet);
-                        savePhotoSets = true;
-                    }
-                } catch (FlickrException e) {
-                    LOGGER.error("Failed to retrieve photosets of image " + media.getId(), e);
-                }
-            }
             if (StringUtils.isEmpty(media.getPathAlias())) {
                 media.setPathAlias(flickrAccount);
             }
@@ -116,6 +105,18 @@ public class FlickrMediaProcessorService {
                 }
             } catch (IllegalArgumentException e) {
                 LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());
+            }
+        }
+        if (isEmpty(media.getPhotosets())) {
+            try {
+                Set<FlickrPhotoSet> sets = getPhotoSets(media, flickrAccount);
+                if (isNotEmpty(sets)) {
+                    sets.forEach(media::addPhotoSet);
+                    savePhotoSets = true;
+                    save = true;
+                }
+            } catch (FlickrException e) {
+                LOGGER.error("Failed to retrieve photosets of image " + media.getId(), e);
             }
         }
         try {

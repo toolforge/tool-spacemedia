@@ -228,12 +228,12 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
     }
 
     public void addPhotoSet(FlickrPhotoSet photoset) {
-        this.photosets.add(photoset);
+        getPhotosets().add(photoset);
         photoset.getMembers().add(this);
     }
 
     public void removePhotoSet(FlickrPhotoSet photoset) {
-        this.photosets.remove(photoset);
+        getPhotosets().remove(photoset);
         photoset.getMembers().remove(this);
     }
 
