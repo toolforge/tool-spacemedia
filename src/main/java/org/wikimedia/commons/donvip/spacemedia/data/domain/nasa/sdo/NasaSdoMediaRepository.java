@@ -83,12 +83,13 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
             from nasa_sdo_media
             where media_type = ?1 and data_type in ?2 and DATE(date) = ?3 and fsn is null
             """, nativeQuery = true)
-    long countByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(NasaMediaType mediaType,
-            Collection<NasaSdoDataType> dataTypes, LocalDate date);
+    long countByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(int mediaType, Collection<String> dataTypes,
+            LocalDate date);
 
     default boolean existsByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(NasaMediaType mediaType,
             Collection<NasaSdoDataType> dataTypes, LocalDate date) {
-        return countByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(mediaType, dataTypes, date) > 0;
+        return countByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(mediaType.ordinal(),
+                dataTypes.stream().map(NasaSdoDataType::name).toList(), date) > 0;
     }
 
     // FIND
@@ -116,12 +117,13 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
             on (nasa_sdo_media.id = nasa_sdo_media_metadata.nasa_sdo_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
             where media_type = ?1 and width = ?2 and height = ?3 and DATE(date) = ?4 and fsn is null
             """, nativeQuery = true)
-    List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDateAndFsnIsNull(NasaMediaType mediaType, int width,
+    List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDateAndFsnIsNull(int mediaType, int width,
             int height, LocalDate date);
 
     default List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDateAndFsnIsNull(NasaMediaType mediaType,
             ImageDimensions dim, LocalDate date) {
-        return findByMediaTypeAndDimensionsAndDateAndFsnIsNull(mediaType, dim.getWidth(), dim.getHeight(), date);
+        return findByMediaTypeAndDimensionsAndDateAndFsnIsNull(mediaType.ordinal(), dim.getWidth(), dim.getHeight(),
+                date);
     }
 
     // SAVE
