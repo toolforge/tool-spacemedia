@@ -299,7 +299,7 @@ public class NasaSdoService
                 for (String uploadFileName : media.getUniqueMetadata().getCommonsFileNames()) {
                     LOGGER.info("Updating SDC keywords for {} : {}", media, uploadFileName);
                     try {
-                        commonsService.editStructuredDataContent(uploadFileName, null, statements);
+                        commonsService.editStructuredDataContent(uploadFileName.replace('_', ' '), null, statements);
                     } catch (IOException | MediaWikiApiErrorException e) {
                         LOGGER.error("Failed to update SDC keywords: {}", e.getMessage(), e);
                     }
