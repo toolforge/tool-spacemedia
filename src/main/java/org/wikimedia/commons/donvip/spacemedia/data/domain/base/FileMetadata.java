@@ -282,6 +282,8 @@ public class FileMetadata implements FileMetadataProjection {
             return "image/x-xcf";
         case "midi", "flac", "wav":
             return "audio/" + ext;
+        case "ogv":
+            return "video/ogg";
         case "webm":
             return "video/" + ext;
         case "pdf":

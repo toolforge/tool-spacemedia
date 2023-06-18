@@ -125,7 +125,7 @@ public class NasaSdoService
         case _HMID -> "Q5297355"; // dopplergram
         case _HMIB, _HMIBC -> "Q115801008"; // magnetogram
         case _HMII, _HMIIC, _HMIIF -> "Q119021644"; // intensitygram
-        default -> "Q125191"; // photograph
+        default -> metadata.isVideo() ? "Q98069877" : "Q125191"; // video or photograph
         }, null));
         result.put("P170", Pair.of("Q382494", null)); // Created by SDO
         result.put("P180", Pair.of("Q525", null)); // Depicts the Sun

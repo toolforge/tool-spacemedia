@@ -691,7 +691,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
                     .map(Entry::getValue).distinct().forEach(l -> result.put("P275", Pair.of(l, null)));
         }
         // MIME type
-        result.put("P1163", Pair.of(metadata.getMime(), null));
+        ofNullable(metadata.getMime()).ifPresent(mime -> result.put("P1163", Pair.of(mime, null)));
         // Hashes
         ofNullable(metadata.getSha1()).ifPresent(h -> result.put("P4092", Pair.of(h, Map.of("P459", "Q13414952"))));
         ofNullable(metadata.getPhash()).ifPresent(h -> result.put("P9310", Pair.of(h, Map.of("P459", "Q118189277"))));
@@ -709,6 +709,10 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         // File size
         if (metadata.getSize() != null) {
             result.put("P3575", Pair.of(Pair.of(metadata.getSize(), "Q8799"), null));
+        }
+        // Video
+        if (metadata.isVideo()) {
+            result.put("P31", Pair.of("Q98069877", null));
         }
         // Dimensions
         if (metadata.getImageDimensions() != null) {
