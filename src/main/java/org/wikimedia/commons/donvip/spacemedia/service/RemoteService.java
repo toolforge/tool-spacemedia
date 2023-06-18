@@ -49,25 +49,25 @@ public class RemoteService {
         } while (!ok);
     }
 
-    public void saveMedia(String agencyId, Media<?, ?> media) {
+    public void saveMedia(String orgId, Media<?, ?> media) {
         restTemplate.put(
-                String.join("/", restAgencyEndpoint(agencyId), "media", media.getIdUsedInAgency()), media);
+                String.join("/", restOrgEndpoint(orgId), "media", media.getIdUsedInOrg()), media);
     }
 
-    public <T extends Media<?, ?>> T getMedia(String agencyId, String mediaId, Class<T> mediaClass) {
+    public <T extends Media<?, ?>> T getMedia(String orgId, String mediaId, Class<T> mediaClass) {
         try {
             return restTemplate.getForObject(
-                    String.join("/", restAgencyEndpoint(agencyId), "media", mediaId), mediaClass);
+                    String.join("/", restOrgEndpoint(orgId), "media", mediaId), mediaClass);
         } catch (NotFound e) {
             return null;
         }
     }
 
-    public void evictCaches(String agencyId) {
-        restTemplate.getForObject(restAgencyEndpoint(agencyId) + "/evictcaches", String.class);
+    public void evictCaches(String orgId) {
+        restTemplate.getForObject(restOrgEndpoint(orgId) + "/evictcaches", String.class);
     }
 
-    private String restAgencyEndpoint(String agencyId) {
-        return String.join("/", remoteApplication.toString(), agencyId, "rest");
+    private String restOrgEndpoint(String orgId) {
+        return String.join("/", remoteApplication.toString(), orgId, "rest");
     }
 }

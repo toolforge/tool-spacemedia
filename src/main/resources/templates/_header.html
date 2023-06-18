@@ -45,7 +45,7 @@
 	          Sources
 	        </a>
 	        <ul class="dropdown-menu">
-	          <li th:each="agency : ${agencies}"><a class="dropdown-item" th:text="${agency.name}" th:href="@{/{id}(id=${agency.id})}"></a></li>
+	          <li th:each="org : ${orgs}"><a class="dropdown-item" th:text="${org.name}" th:href="@{/{id}(id=${org.id})}"></a></li>
 	        </ul>
 	      </li>
 	      <li class="nav-item">
@@ -55,7 +55,7 @@
 	        <a class="nav-link" href="https://gitlab.wikimedia.org/toolforge-repos/spacemedia/">Repository</a>
 	      </li>
 	    </ul>
-	    <form class="form-inline my-2 my-lg-0" th:action="@{/{id}/search(id=${agency.id})}" th:object="${search}" th:if="${agency != null and search != null}">
+	    <form class="form-inline my-2 my-lg-0" th:action="@{/{id}/search(id=${org.id})}" th:object="${search}" th:if="${org != null and search != null}">
 	      <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" th:field="*{q}">
 	      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
 	    </form>

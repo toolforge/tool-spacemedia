@@ -11,14 +11,14 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 public interface ProblemRepository extends PagingAndSortingRepository<Problem, Integer> {
 
-    List<Problem> findByAgency(String agencyId);
+    List<Problem> findByOrg(String orgId);
 
-    Page<Problem> findByAgency(String agencyId, Pageable page);
+    Page<Problem> findByOrg(String orgId, Pageable page);
 
-    long countByAgency(String agencyId);
+    long countByOrg(String orgId);
 
     @Modifying
-    int deleteByAgency(String agencyId);
+    int deleteByOrg(String orgId);
 
-    Optional<Problem> findByAgencyAndProblematicUrl(String agencyId, URL problematicUrl);
+    Optional<Problem> findByOrgAndProblematicUrl(String orgId, URL problematicUrl);
 }

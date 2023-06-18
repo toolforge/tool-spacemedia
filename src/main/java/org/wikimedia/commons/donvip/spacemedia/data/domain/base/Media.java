@@ -128,7 +128,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     protected String getUploadId() {
-        return CommonsService.normalizeFilename(getIdUsedInAgency());
+        return CommonsService.normalizeFilename(getIdUsedInOrg());
     }
 
     protected static String getFirstSentence(String desc) {
@@ -186,11 +186,11 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     public abstract void setId(ID id);
 
     /**
-     * Returns the identifier usually used in agency.
+     * Returns the identifier usually used in org.
      *
-     * @return the identifier usually used in agency
+     * @return the identifier usually used in org
      */
-    public String getIdUsedInAgency() {
+    public String getIdUsedInOrg() {
         return getId().toString();
     }
 
@@ -200,7 +200,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return the identifier usually used in Commons
      */
     public String getIdUsedInCommons() {
-        return getIdUsedInAgency();
+        return getIdUsedInOrg();
     }
 
     public abstract D getDate();
@@ -293,7 +293,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     /**
      * Copies data that could have been updated after the initial API call.
      *
-     * @param mediaFromApi updated media from agency API
+     * @param mediaFromApi updated media from org API
      */
     public final void copyDataFrom(Media<ID, D> mediaFromApi) {
         setDescription(mediaFromApi.getDescription());

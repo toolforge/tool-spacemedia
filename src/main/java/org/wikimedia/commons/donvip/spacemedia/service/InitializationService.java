@@ -11,7 +11,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 
 @Service
 public class InitializationService implements ApplicationRunner {
@@ -25,7 +25,7 @@ public class InitializationService implements ApplicationRunner {
     private StatsService statsService;
 
     @Autowired
-    private List<AbstractAgencyService<?, ?, ?>> agencies;
+    private List<AbstractOrgService<?, ?, ?>> orgs;
 
     @Autowired
     private FileMetadataRepository metadataRepo;
@@ -62,7 +62,7 @@ public class InitializationService implements ApplicationRunner {
 
     @Transactional
     public int resetIgnored() {
-        return agencies.stream().mapToInt(AbstractAgencyService::resetIgnored).sum();
+        return orgs.stream().mapToInt(AbstractOrgService::resetIgnored).sum();
     }
 
     @Transactional
@@ -77,6 +77,6 @@ public class InitializationService implements ApplicationRunner {
 
     @Transactional
     public int resetProblems() {
-        return agencies.stream().mapToInt(AbstractAgencyService::resetProblems).sum();
+        return orgs.stream().mapToInt(AbstractOrgService::resetProblems).sum();
     }
 }

@@ -469,7 +469,7 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyBoxUpdateJobApplication</mainClass>
+									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgBoxUpdateJobApplication</mainClass>
 									<outputDirectory>${project.build.directory}/job-box</outputDirectory>
 								</configuration>
 							</execution>
@@ -479,7 +479,7 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyUpdateJobApplication</mainClass>
+									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgUpdateJobApplication</mainClass>
 									<outputDirectory>${project.build.directory}/job-custom</outputDirectory>
 								</configuration>
 							</execution>
@@ -489,7 +489,7 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyDvidsUpdateJobApplication</mainClass>
+									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgDvidsUpdateJobApplication</mainClass>
 									<outputDirectory>${project.build.directory}/job-dvids</outputDirectory>
 								</configuration>
 							</execution>
@@ -499,7 +499,7 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyDjangoplicityUpdateJobApplication</mainClass>
+									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgDjangoplicityUpdateJobApplication</mainClass>
 									<outputDirectory>${project.build.directory}/job-djangoplicity</outputDirectory>
 								</configuration>
 							</execution>
@@ -509,7 +509,7 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyFlickrUpdateJobApplication</mainClass>
+									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgFlickrUpdateJobApplication</mainClass>
 									<outputDirectory>${project.build.directory}/job-flickr</outputDirectory>
 								</configuration>
 							</execution>
@@ -519,7 +519,7 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyStsciUpdateJobApplication</mainClass>
+									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgStsciUpdateJobApplication</mainClass>
 									<outputDirectory>${project.build.directory}/job-stsci</outputDirectory>
 								</configuration>
 							</execution>
@@ -529,7 +529,7 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaAgencyYoutubeUpdateJobApplication</mainClass>
+									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgYoutubeUpdateJobApplication</mainClass>
 									<outputDirectory>${project.build.directory}/job-youtube</outputDirectory>
 								</configuration>
 							</execution>

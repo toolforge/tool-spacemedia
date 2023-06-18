@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
+  <head th:replace="_header :: common_header(~{::title},~{})">
+    <title th:text="Spacemedia + ' - ' + ${org.name} + ' - Stats'"></title>
+  </head>
+  <body>
+    <nav th:replace="_header :: navbar"></nav>
+    <div th:replace="_header :: scripts"></div>
+  </body>
+</html>

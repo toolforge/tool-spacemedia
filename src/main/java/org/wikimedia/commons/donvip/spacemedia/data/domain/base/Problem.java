@@ -20,10 +20,10 @@ public class Problem {
     private Integer id;
 
     /**
-     * Agency identifier.
+     * Org identifier.
      */
     @Column(nullable = false)
-    private String agency;
+    private String org;
 
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -44,21 +44,21 @@ public class Problem {
     }
 
     /**
-     * Returns the agency identifier.
+     * Returns the org identifier.
      *
-     * @return the agency identifier
+     * @return the org identifier
      */
-    public String getAgency() {
-        return agency;
+    public String getOrg() {
+        return org;
     }
 
     /**
-     * Sets the agency identifier.
+     * Sets the org identifier.
      *
-     * @param agency the agency identifier
+     * @param org the org identifier
      */
-    public void setAgency(String agency) {
-        this.agency = agency;
+    public void setOrg(String org) {
+        this.org = org;
     }
 
     public String getErrorMessage() {
@@ -97,7 +97,7 @@ public class Problem {
 
     @Override
     public String toString() {
-        return "Problem [" + (agency != null ? "agency=" + agency + ", " : "")
+        return "Problem [" + (org != null ? "org=" + org + ", " : "")
                 + (errorMessage != null ? "errorMessage=" + errorMessage + ", " : "")
                 + (problematicUrl != null ? "problematicUrl=" + problematicUrl : "") + "]";
     }

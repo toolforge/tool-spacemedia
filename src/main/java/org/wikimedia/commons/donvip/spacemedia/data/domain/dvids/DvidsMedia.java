@@ -143,7 +143,7 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, Zone
     }
 
     @Override
-    public String getIdUsedInAgency() {
+    public String getIdUsedInOrg() {
         return getId().getId().toString();
     }
 

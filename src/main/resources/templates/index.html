@@ -7,7 +7,7 @@
     <nav th:replace="_header :: navbar"></nav>
     <h2>Sources</h2>
 
-    <table id="agencies_table" class="table table-sm table-hover">
+    <table id="orgs_table" class="table table-sm table-hover">
       <thead class="thead-dark">
 	      <tr>
 	        <th>Name</th>
@@ -29,7 +29,7 @@
     function ahref(td, s, link) {
     	$(td).html("<a href='"+link+"'>"+s+"</a>");
     }
-    $('#agencies_table').DataTable({
+    $('#orgs_table').DataTable({
     	"info": false,
     	"paging": false,
     	"searching": false,
@@ -38,7 +38,7 @@
         	"dataSrc": ""
         },
         "columns": [
-            {"data": "agency", "fnCreatedCell": function (td, s, o, i, j) {
+            {"data": "org", "fnCreatedCell": function (td, s, o, i, j) {
             	ahref(td, s, alink(o));
             }},
             {"data": "total_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {

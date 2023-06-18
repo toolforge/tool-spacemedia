@@ -3,7 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.stsci;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyServiceTest.html;
+import static org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgServiceTest.html;
 
 import java.io.IOException;
 import java.net.URL;

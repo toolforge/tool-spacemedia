@@ -110,7 +110,7 @@ public class DjangoplicityMedia extends Media<DjangoplicityMediaId, LocalDateTim
     }
 
     @Override
-    public String getIdUsedInAgency() {
+    public String getIdUsedInOrg() {
         return getId().getId();
     }
 

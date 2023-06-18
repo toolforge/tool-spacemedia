@@ -14,7 +14,7 @@ public class RuntimeData {
 
     @Id
     @Column(nullable = false, length = 50)
-    private String agencyId;
+    private String orgId;
 
     @Column(nullable = true)
     private LocalDateTime lastUpdateStart;
@@ -47,16 +47,16 @@ public class RuntimeData {
         // No-arg constructor required by JPA
     }
 
-    public RuntimeData(String agencyId) {
-        this.agencyId = agencyId;
+    public RuntimeData(String orgId) {
+        this.orgId = orgId;
     }
 
-    public String getAgencyId() {
-        return agencyId;
+    public String getOrgId() {
+        return orgId;
     }
 
-    public void setAgencyId(String agencyId) {
-        this.agencyId = agencyId;
+    public void setOrgId(String orgId) {
+        this.orgId = orgId;
     }
 
     public LocalDateTime getLastUpdateStart() {
@@ -125,7 +125,7 @@ public class RuntimeData {
 
     @Override
     public int hashCode() {
-        return Objects.hash(agencyId, lastUpdateDuration, lastUpdateDurationMin, lastUpdateEnd, lastUpdateStart,
+        return Objects.hash(orgId, lastUpdateDuration, lastUpdateDurationMin, lastUpdateEnd, lastUpdateStart,
                 lastTimestamp, doNotFetchEarlierThan);
     }
 
@@ -136,7 +136,7 @@ public class RuntimeData {
         if (obj == null || getClass() != obj.getClass())
             return false;
         RuntimeData other = (RuntimeData) obj;
-        return Objects.equals(agencyId, other.agencyId) && Objects.equals(lastUpdateDuration, other.lastUpdateDuration)
+        return Objects.equals(orgId, other.orgId) && Objects.equals(lastUpdateDuration, other.lastUpdateDuration)
                 && Objects.equals(lastUpdateDurationMin, other.lastUpdateDurationMin)
                 && Objects.equals(lastUpdateEnd, other.lastUpdateEnd)
                 && Objects.equals(lastUpdateStart, other.lastUpdateStart)
@@ -146,7 +146,7 @@ public class RuntimeData {
 
     @Override
     public String toString() {
-        return "RuntimeData [agencyId=" + agencyId + ", "
+        return "RuntimeData [orgId=" + orgId + ", "
                 + (lastUpdateStart != null ? "lastUpdateStart=" + lastUpdateStart + ", " : "")
                 + (lastUpdateEnd != null ? "lastUpdateEnd=" + lastUpdateEnd + ", " : "")
                 + (lastUpdateDuration != null ? "lastUpdateDuration=" + lastUpdateDuration + ", " : "")

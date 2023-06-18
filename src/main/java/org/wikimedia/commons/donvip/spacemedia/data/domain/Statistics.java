@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Statistics implements Comparable<Statistics> {
-    private final String agency;
+    private final String org;
     private final String id;
     private final long totalMedia;
     private final long uploadedMedia;
@@ -15,15 +15,15 @@ public class Statistics implements Comparable<Statistics> {
     private final Long problemsCount;
     private List<Statistics> details;
 
-    public Statistics(String agency, String id, long totalMedia, long uploadedMedia, long ignoredMedia,
+    public Statistics(String org, String id, long totalMedia, long uploadedMedia, long ignoredMedia,
             long missingImages, long missingVideos, long hashedMedia, Long problemsCount) {
-        this(agency, id, totalMedia, uploadedMedia, ignoredMedia, missingImages, missingVideos, hashedMedia,
+        this(org, id, totalMedia, uploadedMedia, ignoredMedia, missingImages, missingVideos, hashedMedia,
                 problemsCount, null);
     }
 
-    public Statistics(String agency, String id, long totalMedia, long uploadedMedia, long ignoredMedia,
+    public Statistics(String org, String id, long totalMedia, long uploadedMedia, long ignoredMedia,
             long missingImages, long missingVideos, long hashedMedia, Long problemsCount, List<Statistics> details) {
-        this.agency = Objects.requireNonNull(agency);
+        this.org = Objects.requireNonNull(org);
         this.id = Objects.requireNonNull(id);
         this.totalMedia = totalMedia;
         this.uploadedMedia = uploadedMedia;
@@ -36,10 +36,10 @@ public class Statistics implements Comparable<Statistics> {
     }
 
     /**
-     * @return the agency
+     * @return the org
      */
-    public String getAgency() {
-        return agency;
+    public String getOrg() {
+        return org;
     }
 
     /**
@@ -108,6 +108,6 @@ public class Statistics implements Comparable<Statistics> {
 
     @Override
     public int compareTo(Statistics o) {
-        return agency.compareTo(o.agency);
+        return org.compareTo(o.org);
     }
 }

@@ -7,17 +7,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 
 @Controller
 public class WebAppController {
 
     @Autowired
-    private List<AbstractAgencyService<? extends Media<?, ?>, ?, ?>> agencies;
+    private List<AbstractOrgService<? extends Media<?, ?>, ?, ?>> orgs;
 
     @GetMapping("/")
     public String index(Model model) {
-        model.addAttribute("agencies", agencies.stream().sorted().toList());
+        model.addAttribute("orgs", orgs.stream().sorted().toList());
         return "index";
     }
 }

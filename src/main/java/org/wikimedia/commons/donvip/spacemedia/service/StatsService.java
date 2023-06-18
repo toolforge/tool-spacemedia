@@ -5,15 +5,15 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
-import org.wikimedia.commons.donvip.spacemedia.service.agencies.AbstractAgencyService;
+import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 
 @Service
 public class StatsService {
 
     @Autowired
-    private List<AbstractAgencyService<?, ?, ?>> agencies;
+    private List<AbstractOrgService<?, ?, ?>> orgs;
 
     public List<Statistics> getStats(boolean details) {
-        return agencies.parallelStream().map(a -> a.getStatistics(details)).sorted().toList();
+        return orgs.parallelStream().map(a -> a.getStatistics(details)).sorted().toList();
     }
 }
