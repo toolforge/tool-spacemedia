@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
@@ -42,6 +45,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoInstr
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
+import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
@@ -131,9 +136,14 @@ public class NasaSdoService
         result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
         result.put("P2808", Pair.of(Pair.of(dataType.getWavelength(), "Q81454"), null)); // Wavelength in ångström (Å)
         result.put("P4082", Pair.of(dataType.getInstrument().getQid(), null)); // Taken with SDO instrument
-        Optional.ofNullable(media.getKeywords()).map(NasaSdoKeywords::getExpTime) // Exposure time in seconds
-                .ifPresent(exp -> result.put("P6757", Pair.of(exp.toString(), null)));
+        addSdcKeywordsStatements(media.getKeywords(), result);
         return result;
+    }
+
+    private static void addSdcKeywordsStatements(NasaSdoKeywords keywords,
+            Map<String, Pair<Object, Map<String, Object>>> result) {
+        Optional.ofNullable(keywords).map(NasaSdoKeywords::getExpTime) // Exposure time in seconds
+                .ifPresent(exp -> result.put("P6757", Pair.of(Pair.of(exp, "Q11574"), null)));
     }
 
     @Override
@@ -151,6 +161,10 @@ public class NasaSdoService
             }
         }
         endUpdateMedia(count, uploadedMedia, start);
+    }
+
+    private static List<NasaSdoKeywords> fetchAiaKeywords(LocalDate date) throws IOException {
+        return fetchKeywords(AIA, date, AIA_DATE_TIME_FORMAT);
     }
 
     private static List<NasaSdoKeywords> fetchKeywords(NasaSdoInstrument instrument, LocalDate date,
@@ -213,8 +227,7 @@ public class NasaSdoService
     private int updateImages(String dateStringPath, LocalDate date, List<NasaSdoMedia> uploadedMedia,
             LocalDateTime start, int count) throws IOException, UploadException {
         List<NasaSdoKeywords> aiaKeywords = sdoRepository.existsByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(
-                NasaMediaType.image, NasaSdoDataType.values(AIA), date) ? fetchKeywords(AIA, date, AIA_DATE_TIME_FORMAT)
-                        : List.of();
+                NasaMediaType.image, NasaSdoDataType.values(AIA), date) ? fetchAiaKeywords(date) : List.of();
         // HMI keywords are not fetched as it is not clear how to match level 0 keywords
         // with HMI 15 minutes catalog
         return updateImagesOrVideos(dateStringPath, date, 4096, NasaMediaType.image, "browse", "jpg", aiaKeywords,
@@ -284,22 +297,38 @@ public class NasaSdoService
         if (isNotEmpty(aiaKeywords) || isNotEmpty(hmiKeywords)) {
             for (NasaSdoMedia media : sdoRepository.findByMediaTypeAndDimensionsAndDateAndFsnIsNull(mediaType, dims,
                     date)) {
-                NasaSdoDataType type = media.getDataType();
-                List<NasaSdoKeywords> keywords = AIA == type.getInstrument() ? aiaKeywords : hmiKeywords;
-                if (isNotEmpty(keywords)) {
-                    List<NasaSdoKeywords> matches = filterKeywords(keywords, type.getWavelength(), media.getDate());
-                    if (matches.isEmpty()) {
-                        LOGGER.warn("No keyword match found for {}", media);
-                    } else if (matches.size() > 1) {
-                        LOGGER.warn("Several keyword matches found for {} : {}", media, matches);
-                    } else {
-                        LOGGER.info("Found keyword match for {} : {}", media, matches);
-                        media.setKeywords(matches.get(0));
-                        saveMedia(media);
+                Map<String, Pair<Object, Map<String, Object>>> statements = updateKeywords(aiaKeywords, hmiKeywords,
+                        media);
+                for (String uploadFileName : media.getUniqueMetadata().getCommonsFileNames()) {
+                    LOGGER.info("Updating SDC keywords for {} : {}", media, uploadFileName);
+                    try {
+                        commonsService.editStructuredDataContent(uploadFileName, null, statements);
+                    } catch (IOException | MediaWikiApiErrorException e) {
+                        LOGGER.error("Failed to update SDC keywords: {}", e.getMessage(), e);
                     }
                 }
             }
         }
+    }
+
+    private Map<String, Pair<Object, Map<String, Object>>> updateKeywords(List<NasaSdoKeywords> aiaKeywords,
+            List<NasaSdoKeywords> hmiKeywords, NasaSdoMedia media) {
+        NasaSdoDataType type = media.getDataType();
+        Map<String, Pair<Object, Map<String, Object>>> statements = new TreeMap<>();
+        List<NasaSdoKeywords> keywords = AIA == type.getInstrument() ? aiaKeywords : hmiKeywords;
+        if (isNotEmpty(keywords)) {
+            List<NasaSdoKeywords> matches = filterKeywords(keywords, type.getWavelength(), media.getDate());
+            if (matches.isEmpty()) {
+                LOGGER.warn("No keyword match found for {}", media);
+            } else if (matches.size() > 1) {
+                LOGGER.warn("Several keyword matches found for {} : {}", media, matches);
+            } else {
+                LOGGER.info("Found keyword match for {} : {}", media, matches);
+                media.setKeywords(matches.get(0));
+                addSdcKeywordsStatements(saveMedia(media).getKeywords(), statements);
+            }
+        }
+        return statements;
     }
 
     private static List<NasaSdoKeywords> filterKeywords(List<NasaSdoKeywords> keywords, int wavelengt,
@@ -347,6 +376,27 @@ public class NasaSdoService
             media = saveMedia(media);
         }
         return media;
+    }
+
+    @Override
+    public NasaSdoMedia getById(String id) throws ImageNotFoundException {
+        return getMediaWithUpdatedKeywords(super.getById(id));
+    }
+
+    @Override
+    protected NasaSdoMedia findBySha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {
+        return getMediaWithUpdatedKeywords(super.findBySha1OrThrow(sha1, throwIfNotFound));
+    }
+
+    private NasaSdoMedia getMediaWithUpdatedKeywords(NasaSdoMedia media) {
+        try {
+            updateKeywords(media.getDataType().getInstrument() == NasaSdoInstrument.AIA
+                    ? fetchAiaKeywords(media.getDate().toLocalDate())
+                    : null, null, media); // HMI keywords not fetched, see other call
+            return media;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override

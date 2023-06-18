@@ -899,12 +899,16 @@ public class CommonsService {
         LOGGER.info("Editing SDC {} of {}...", entityId, filename);
         // Build update objects
         TermUpdateBuilder termUpdateBuilder = TermUpdateBuilder.create();
-        legends.forEach(
-                (code, legend) -> termUpdateBuilder.put(makeMonolingualTextValue(truncatedLabel(legend, 250), code)));
+        if (legends != null) {
+            legends.forEach((code, legend) -> termUpdateBuilder
+                    .put(makeMonolingualTextValue(truncatedLabel(legend, 250), code)));
+        }
         StatementUpdateBuilder statementUpdateBuilder = StatementUpdateBuilder.forStatementGroups(entityId,
                 doc.getStatementGroups());
-        statements.forEach(
+        if (statements != null) {
+            statements.forEach(
                 (prop, pair) -> statementUpdateBuilder.add(statement(entityId, prop, pair.getLeft(), pair.getValue())));
+        }
         // update SDC
         editor.editEntityDocument(MediaInfoUpdateBuilder.forEntityId(entityId).updateLabels(termUpdateBuilder.build())
                 .updateStatements(statementUpdateBuilder.build()).build(), false, "Adding SDC details", null);

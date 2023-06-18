@@ -515,7 +515,7 @@ public abstract class AbstractAgencyService<T extends Media<ID, D>, ID, D extend
         return result.get(0);
     }
 
-    protected final T findBySha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {
+    protected T findBySha1OrThrow(String sha1, boolean throwIfNotFound) throws TooManyResultsException {
         return findBySomeSha1OrThrow(sha1, repository::findByMetadata_Sha1, throwIfNotFound);
     }
 
