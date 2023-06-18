@@ -106,8 +106,9 @@ class EsaServiceTest extends AbstractOrgServiceTest {
                 "Erstellt mit modifizierten Copernicus Sentinel-Daten (2018), bearbeitet von EUMETSAT , CC BY-SA 3.0 IGO",
                 "IGEO, CSIC, UCM, DARES, Spanish research project RTC-2014-1922-5, Google Earth, contains modified Copernicus Sentinel data (2016), CC BY-SA 3.0 IGO",
                 "Modifizierte und von der ESA bearbeitete Copernicus-Sentinel-Daten (2017), CC BY-SA 3.0 IGO",
+                "Contains modified Copernicus Sentinel data [2022], processed by <a href=\"https://twitter.com/Pierre_Markuse\">Pierre Markuse</a>",
                 "USGS/contains modified Copernicus Sentinel data (2019), processed by ESA, CC BY-SA 3.0 IGO")) {
-            assertTrue(EsaService.COPERNICUS_CREDIT.matcher(credit).matches(), credit);
+            assertTrue(AbstractOrgService.COPERNICUS_CREDIT.matcher(credit).matches(), credit);
         }
     }
 

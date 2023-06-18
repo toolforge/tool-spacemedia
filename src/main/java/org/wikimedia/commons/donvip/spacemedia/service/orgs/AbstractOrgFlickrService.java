@@ -294,7 +294,6 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             if (description.contains("hoto by NASA") || description.contains("hoto/NASA")) {
                 result.add("PD-USGov-NASA");
             }
-            ofNullable(EsaService.getCopernicusTemplate(description)).ifPresent(result::add);
         }
         return result;
     }

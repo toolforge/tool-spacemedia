@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
@@ -110,6 +111,10 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
             .compile("(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{7}|youtu.be/[0-9a-zA-Z]{11}|flic.kr/p/[0-9a-zA-Z]{6})");
 
     private static final Set<String> PD_US = Set.of("PD-US", "PD-NASA", "PD-Hubble", "PD-Webb");
+
+    static final Pattern COPERNICUS_CREDIT = Pattern.compile(
+            ".*Copernicus[ -](?:Sentinel[ -])?dat(?:a|en)(?:/ESA)? [\\(\\[](2\\d{3}(?:[-–/]\\d{2,4})?)[\\)\\]].*",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private static final Map<String, String> LICENCES = Map.ofEntries(e("YouTube CC-BY", "Q14947546"),
             e("Cc-by-2.0", "Q19125117"), e("Cc-by-sa-2.0", "Q19068220"), e("Cc-zero", "Q6938433"),
@@ -985,7 +990,17 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
      * @return the list of licence templates to apply to {@code media}
      */
     public Set<String> findLicenceTemplates(T media) {
-        return new LinkedHashSet<>();
+        Set<String> result = new LinkedHashSet<>();
+        String description = media.getDescription();
+        if (description != null) {
+            ofNullable(getCopernicusTemplate(description)).ifPresent(result::add);
+        }
+        return result;
+    }
+
+    protected static String getCopernicusTemplate(String text) {
+        Matcher m = COPERNICUS_CREDIT.matcher(text);
+        return m.matches() ? "Attribution-Copernicus |year=" + m.group(1) : null;
     }
 
     protected final String wikiLink(URL url, String text) {

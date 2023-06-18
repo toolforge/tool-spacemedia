@@ -165,6 +165,19 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
                 service.findCategories(media, null, true));
     }
 
+    @Test
+    void testFindLicenceTemplates() {
+        FlickrMedia media = new FlickrMedia();
+        media.setId(52559137901L);
+        media.setTitle("Brunt Ice Shelf, Antarctica - 11 December 2022");
+        media.setDescription(
+                "Contains modified Copernicus Sentinel data [2022], processed by <a href=\"https://twitter.com/Pierre_Markuse\">Pierre Markuse</a>\r\n"
+                        + "\r\n" + "Brunt Ice Shelf, Antarctica - 11 December 2022\r\n" + "\r\n"
+                        + "Compare with 2016 image here <a href=\"https://flic.kr/p/2o5r23p\">flic.kr/p/2o5r23p</a>\r\n"
+                        + "\r\n" + "Image is about 129 kilometers wide");
+        assertEquals(Set.of("Flickrreview", "Attribution-Copernicus |year=2022"), service.findLicenceTemplates(media));
+    }
+
     @Configuration
     @Import(DefaultOrgTestConfig.class)
     static class TestConfig {

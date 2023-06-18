@@ -51,10 +51,6 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaService.class);
 
-    static final Pattern COPERNICUS_CREDIT = Pattern.compile(
-                    ".*Copernicus[ -](?:Sentinel[ -])?dat(?:a|en)(?:/ESA)? [\\(\\[](2\\d{3}(?:[-–/]\\d{2,4})?)[\\)\\]].*",
-                    Pattern.CASE_INSENSITIVE);
-
     static final List<Pattern> COPERNICUS_PROCESSED_BY = Arrays.asList(
             Pattern.compile(
                     ".*Copernicus.*data [\\(\\[]2\\d{3}(?:[-–/]\\d{2,4})?[\\)\\]] ?(?:/|,) ?(?:Processed by )?(.*)",
@@ -537,11 +533,6 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
     @Override
     protected EsaMedia refresh(EsaMedia media) throws IOException {
         return media.copyDataFrom(fetchMedia(media.getUrl()));
-    }
-
-    static String getCopernicusTemplate(String text) {
-        Matcher m = COPERNICUS_CREDIT.matcher(text);
-        return m.matches() ? "Attribution-Copernicus |year=" + m.group(1) : null;
     }
 
     static Optional<String> getCopernicusProcessedBy(String credit) {
