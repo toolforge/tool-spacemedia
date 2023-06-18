@@ -43,7 +43,7 @@ import com.box.sdk.BoxAPIConnection;
 import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
 import com.box.sdk.BoxItem;
-import com.box.sdk.PublicSharedLinkAPIConnection;
+import com.box.sdk.SharedLinkAPIConnection;
 
 import okhttp3.OkHttpClient;
 
@@ -164,7 +164,7 @@ public class BoxService {
     }
 
     public BoxFile getSharedFile(String sharedLink, long fileId) {
-        return new BoxFile(new PublicSharedLinkAPIConnection(api, sharedLink), Long.toString(fileId));
+        return new BoxFile(new SharedLinkAPIConnection(api, sharedLink), Long.toString(fileId));
     }
 
     public List<BoxFile.Info> getFiles(String app, String share) {
