@@ -972,6 +972,15 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         if (media.containsInTitleOrDescription("360 Panorama")) {
             result.add("360° panoramas");
         }
+        if (media.getTitle() != null) {
+            String[] words = media.getTitle().split(" ");
+            if (words.length >= 2) {
+                String firstTwoWords = words[0] + ' ' + words[1];
+                if (commonsService.existsCategory(firstTwoWords)) {
+                    result.add(firstTwoWords);
+                }
+            }
+        }
         if (includeHidden) {
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
         }

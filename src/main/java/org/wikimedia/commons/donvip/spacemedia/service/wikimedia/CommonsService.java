@@ -660,6 +660,12 @@ public class CommonsService {
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")
+    @Cacheable("existsCategory")
+    public boolean existsCategory(String category) {
+        return categoryRepository.findByTitle(sanitizeCategory(category)).isPresent();
+    }
+
+    @Transactional(transactionManager = "commonsTransactionManager")
     @Cacheable("subCategories")
     public Set<String> getSubCategories(String category) {
         return categoryLinkRepository

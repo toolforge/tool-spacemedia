@@ -407,6 +407,10 @@ public class NasaPhotojournalService
         if (isNotBlank(media.getLegend())) {
             result.put("en", media.getLegend());
         }
+        String legend = result.get("en");
+        if (legend != null && legend.startsWith("<") && legend.contains("Today's")) {
+            result.put("en", legend.substring(legend.indexOf("Today's")));
+        }
         return result;
     }
 
