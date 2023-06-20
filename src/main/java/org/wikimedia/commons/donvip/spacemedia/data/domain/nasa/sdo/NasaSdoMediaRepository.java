@@ -23,12 +23,12 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
     @CacheEvict(allEntries = true, cacheNames = {
             "nasaSdoCount", "nasaSdoCountIgnored", "nasaSdoCountMissing", "nasaSdoCountMissingImages",
             "nasaSdoCountMissingVideos", "nasaSdoCountUploaded", "nasaSdoFindByPhashNotNull" })
-    @interface CacheEvictNasaAsterAll {
+    @interface CacheEvictNasaSdoAll {
 
     }
 
     @Override
-    @CacheEvictNasaAsterAll
+    @CacheEvictNasaSdoAll
     default void evictCaches() {
 
     }
@@ -129,28 +129,28 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
     // SAVE
 
     @Override
-    @CacheEvictNasaAsterAll
+    @CacheEvictNasaSdoAll
     <S extends NasaSdoMedia> S save(S entity);
 
     @Override
-    @CacheEvictNasaAsterAll
+    @CacheEvictNasaSdoAll
     <S extends NasaSdoMedia> Iterable<S> saveAll(Iterable<S> entities);
 
     // DELETE
 
     @Override
-    @CacheEvictNasaAsterAll
+    @CacheEvictNasaSdoAll
     void deleteById(String id);
 
     @Override
-    @CacheEvictNasaAsterAll
+    @CacheEvictNasaSdoAll
     void delete(NasaSdoMedia entity);
 
     @Override
-    @CacheEvictNasaAsterAll
+    @CacheEvictNasaSdoAll
     void deleteAll(Iterable<? extends NasaSdoMedia> entities);
 
     @Override
-    @CacheEvictNasaAsterAll
+    @CacheEvictNasaSdoAll
     void deleteAll();
 }
