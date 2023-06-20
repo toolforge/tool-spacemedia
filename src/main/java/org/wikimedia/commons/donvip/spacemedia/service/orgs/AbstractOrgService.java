@@ -567,11 +567,15 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
                 && remoteService.getMedia(getId(), media.getId().toString(), media.getClass()) == null) {
             remoteService.saveMedia(getId(), media);
         } else if (executionMode == ExecutionMode.LOCAL) {
-            try {
-                remoteService.evictCaches(getId());
-            } catch (RestClientException e) {
-                LOGGER.warn("Remote instance returned: {}", e.getMessage());
-            }
+            evictRemoteCaches();
+        }
+    }
+
+    protected final void evictRemoteCaches() {
+        try {
+            remoteService.evictCaches(getId());
+        } catch (RestClientException e) {
+            LOGGER.warn("Remote instance returned: {}", e.getMessage());
         }
     }
 
@@ -661,6 +665,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
                 editStructuredDataContent(uploadedFilename, codeAndLegends.getRight(), media, metadata);
             }
             uploaded.add(metadataRepository.save(metadata));
+            evictRemoteCaches();
             return 1;
         } else {
             if (mediaLooksOk) {
