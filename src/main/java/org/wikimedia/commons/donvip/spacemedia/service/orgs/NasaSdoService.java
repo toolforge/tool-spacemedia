@@ -339,7 +339,7 @@ public class NasaSdoService
 
     private NasaSdoMedia updateMedia(String id, LocalDateTime date, ImageDimensions dimensions, URL url,
             NasaMediaType mediaType, NasaSdoDataType dataType, List<NasaSdoMedia> uploadedMedia)
-            throws IOException, UploadException {
+            throws IOException {
         boolean save = false;
         NasaSdoMedia media = null;
         Optional<NasaSdoMedia> imageInDb = repository.findById(id);
@@ -365,9 +365,13 @@ public class NasaSdoService
             save = true;
         }
         if (shouldUploadAuto(media, false)) {
-            media = saveMedia(upload(save ? saveMedia(media) : media, true, false).getLeft());
-            uploadedMedia.add(media);
-            save = false;
+            try {
+                media = saveMedia(upload(save ? saveMedia(media) : media, true, false).getLeft());
+                uploadedMedia.add(media);
+                save = false;
+            } catch (UploadException e) {
+                LOGGER.error("Unable to upload {}", media, e);
+            }
         }
         if (save) {
             media = saveMedia(media);
