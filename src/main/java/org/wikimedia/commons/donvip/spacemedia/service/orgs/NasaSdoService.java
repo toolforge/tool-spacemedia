@@ -222,7 +222,7 @@ public class NasaSdoService
 
     // First image of each day
     private int updateImages(String dateStringPath, LocalDate date, List<NasaSdoMedia> uploadedMedia,
-            LocalDateTime start, int count) throws IOException, UploadException {
+            LocalDateTime start, int count) throws IOException {
         List<NasaSdoKeywords> aiaKeywords = sdoRepository.existsByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(
                 NasaMediaType.image, NasaSdoDataType.values(AIA), date) ? fetchAiaKeywords(date) : List.of();
         // HMI keywords are not fetched as it is not clear how to match level 0 keywords
@@ -237,7 +237,7 @@ public class NasaSdoService
 
     // Daily movies
     private int updateVideos(String dateStringPath, LocalDate date, List<NasaSdoMedia> uploadedMedia,
-            LocalDateTime start, int count) throws IOException, UploadException {
+            LocalDateTime start, int count) throws IOException {
         // TODO other mpeg/mp4 videos at JSOC
         // http://jsoc.stanford.edu/HMI/hmiimage.html
         // http://jsoc.stanford.edu/data/hmi/images/2023/05/01/Ic_flat_2d.mpg
@@ -254,13 +254,13 @@ public class NasaSdoService
     private int updateImagesOrVideos(String dateStringPath, LocalDate date, int dim, NasaMediaType mediaType,
             String browse, String ext, List<NasaSdoKeywords> aiaKeywords, List<NasaSdoKeywords> hmiKeywords,
             List<NasaSdoMedia> uploadedMedia, LocalDateTime start, int count,
-            Function<String, LocalDateTime> dateTimeExtractor) throws IOException, UploadException {
+            Function<String, LocalDateTime> dateTimeExtractor) throws IOException {
         ImageDimensions dims = new ImageDimensions(dim, dim);
         int localCount = 0;
         if (mediaType == NasaMediaType.image && date.getDayOfMonth() == 1) {
             LOGGER.info("Current update date: {} ...", date);
         }
-        long imagesInDatabase = sdoRepository.countByMediaTypeAndDimensionsAndDate(mediaType, dims, date);
+        long imagesInDatabase = sdoRepository.countUploadedByMediaTypeAndDimensionsAndDate(mediaType, dims, date);
         int expectedCount = mediaType == NasaMediaType.video ? NasaSdoDataType.values().length - 1
                 : NasaSdoDataType.values().length;
         if (imagesInDatabase < expectedCount) {

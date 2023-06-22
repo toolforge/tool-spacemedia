@@ -71,11 +71,12 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
             from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
             on (nasa_sdo_media.id = nasa_sdo_media_metadata.nasa_sdo_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
             where media_type = ?1 and width = ?2 and height = ?3 and DATE(date) = ?4
+            and exists (select * from file_metadata_commons_file_names where file_metadata_commons_file_names.file_metadata_id = file_metadata.id)
             """, nativeQuery = true)
-    long countByMediaTypeAndDimensionsAndDate(int mediaType, int width, int height, LocalDate date);
+    long countUploadedByMediaTypeAndDimensionsAndDate(int mediaType, int width, int height, LocalDate date);
 
-    default long countByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, ImageDimensions dim, LocalDate date) {
-        return countByMediaTypeAndDimensionsAndDate(mediaType.ordinal(), dim.getWidth(), dim.getHeight(), date);
+    default long countUploadedByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, ImageDimensions dim, LocalDate date) {
+        return countUploadedByMediaTypeAndDimensionsAndDate(mediaType.ordinal(), dim.getWidth(), dim.getHeight(), date);
     }
 
     @Query(value = """
