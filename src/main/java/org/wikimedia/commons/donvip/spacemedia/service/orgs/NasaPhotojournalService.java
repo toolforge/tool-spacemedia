@@ -183,24 +183,24 @@ public class NasaPhotojournalService
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
             // To remove after all previous files have been correctly identified
-            if (detectFigures(media)) {
-                save = true;
-            }
+            save |= detectFigures(media);
         } else {
             media = solrDocumentToMedia(document);
             save = true;
         }
-        if (doCommonUpdate(media)) {
-            save = true;
-        }
+        save |= doCommonUpdate(media);
+        save |= ignoreNonFreeFiles(media);
         if (shouldUploadAuto(media, false)) {
             media = saveMedia(upload(save ? saveMedia(media) : media, true, false).getLeft());
             save = false;
         }
-        if (save) {
-            media = saveMedia(media);
-        }
-        return media;
+        return save ? saveMedia(media) : media;
+    }
+
+    private boolean ignoreNonFreeFiles(NasaPhotojournalMedia media) {
+        String credit = media.getCredit();
+        return !credit.contains("NASA") && !credit.contains("JPL") && !credit.contains("Jet Propulsion Laboratory")
+                && !credit.contains("USSF") && ignoreFile(media, "Non-free content");
     }
 
     private NasaPhotojournalMedia solrDocumentToMedia(SolrDocument doc) {
