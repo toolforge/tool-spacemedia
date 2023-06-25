@@ -1,12 +1,16 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.converter.ConvertWith;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -19,6 +23,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 
@@ -45,6 +51,21 @@ class EsoServiceTest extends AbstractOrgServiceTest {
                 new URL("https://www.eso.org/public/images/" + id + "/"), id, null), id, imageType, date,
                 new ImageDimensions(width, height), name, types, categories, credit, assetUrls, title, description,
                 telescopes);
+    }
+
+    @Test
+    void testFbResolution() throws IOException {
+        DjangoplicityMedia media = new DjangoplicityMedia();
+        media.setDate(LocalDateTime.now());
+        media.setCredit("ESO");
+        media.setId(new DjangoplicityMediaId("eso", "ann23006a"));
+        media.setTitle("Live streaming: How will the ELT explore the Universe?");
+        media.setDescription(
+                "Join us on 12 May, from 16:00 CEST, for a live streaming on <a href=\"https://fb.me/e/2JtKDmBbR\">Facebook</a> and <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a> on two of the instruments of <a href=\"https://elt.eso.org/\">ESO’s Extremely Large Telescope</a> (ELT): the Mid-infrared ELT Imager and Spectrograph (METIS) and Multi-AO Imaging Camera for Deep Observations (MICADO).During the event, we will premiere two mini-documentaries on the instruments, followed by a Q&amp;A session with the experts behind them. Participants can ask questions on Twitter using <a href=\"https://twitter.com/search?q=%23askESO&amp;src=typed_query&amp;f=live\">#askESO</a>, as well as live on <a href=\"https://fb.me/e/2JtKDmBbR\">Facebook</a> and <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a>. Click Going/Interested on <a href=\"https://fb.me/e/2JtKDmBbR\">Facebook</a> and Notify me on <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a>, respectively, to be prompted when the live show starts.");
+
+        assertEquals(
+                "Join us on 12 May, from 16:00 CEST, for a live streaming on <a href=\"https://www.facebook.com/event_invite/2JtKDmBbR/\">Facebook</a> and <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a> on two of the instruments of <a href=\"https://elt.eso.org/\">ESO’s Extremely Large Telescope</a> (ELT): the Mid-infrared ELT Imager and Spectrograph (METIS) and Multi-AO Imaging Camera for Deep Observations (MICADO).During the event, we will premiere two mini-documentaries on the instruments, followed by a Q&amp;A session with the experts behind them. Participants can ask questions on Twitter using <a href=\"https://twitter.com/search?q=%23askESO&amp;src=typed_query&amp;f=live\">#askESO</a>, as well as live on <a href=\"https://www.facebook.com/event_invite/2JtKDmBbR/\">Facebook</a> and <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a>. Click Going/Interested on <a href=\"https://www.facebook.com/event_invite/2JtKDmBbR/\">Facebook</a> and Notify me on <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a>, respectively, to be prompted when the live show starts.",
+                service.getWikiFileDesc(media, null).getRight().get("en"));
     }
 
     @Configuration

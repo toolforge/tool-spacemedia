@@ -108,7 +108,8 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgService.class);
 
     private static final Pattern PATTERN_SHORT = Pattern
-            .compile("(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{7}|youtu.be/[0-9a-zA-Z]{11}|flic.kr/p/[0-9a-zA-Z]{6})");
+            .compile(
+                    "(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{7}|youtu.be/[0-9a-zA-Z]{11}|flic.kr/p/[0-9a-zA-Z]{6}|fb.me/e/[0-9a-zA-Z]{9})");
 
     private static final Set<String> PD_US = Set.of("PD-US", "PD-NASA", "PD-Hubble", "PD-Webb");
 
