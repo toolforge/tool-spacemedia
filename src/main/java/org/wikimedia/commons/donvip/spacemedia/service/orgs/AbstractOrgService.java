@@ -972,19 +972,30 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         if (media.containsInTitleOrDescription("360 Panorama")) {
             result.add("360° panoramas");
         }
-        if (media.getTitle() != null) {
-            String[] words = media.getTitle().split(" ");
-            if (words.length >= 2) {
-                String firstTwoWords = words[0] + ' ' + words[1];
-                if (commonsService.existsCategory(firstTwoWords)) {
-                    result.add(firstTwoWords);
-                }
-            }
-        }
+        findCategoryFromTitle(media.getTitle()).ifPresent(result::add);
         if (includeHidden) {
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
         }
         return result;
+    }
+
+    private Optional<String> findCategoryFromTitle(String title) {
+        if (title != null) {
+            String[] words = title.split(" ");
+            if (words.length >= 2) {
+                for (int n = words.length; n >= 2; n--) {
+                    String firstWords = String.join(" ", Arrays.copyOfRange(words, 0, n));
+                    if (commonsService.existsCategory(firstWords)) {
+                        return Optional.of(firstWords);
+                    }
+                    String firstWordsWithoutComma = firstWords.replace(",", "");
+                    if (commonsService.existsCategory(firstWordsWithoutComma)) {
+                        return Optional.of(firstWordsWithoutComma);
+                    }
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /**
