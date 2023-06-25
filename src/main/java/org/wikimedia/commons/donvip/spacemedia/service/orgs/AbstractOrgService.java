@@ -368,7 +368,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia,
             Collection<FileMetadata> uploadedMetadata, LocalDateTime start, boolean postTweet) {
-        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, LocalDate.now().minusDays(2), postTweet);
+        endUpdateMedia(count, uploadedMedia, uploadedMetadata, start, LocalDate.now().minusDays(7), postTweet);
     }
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
