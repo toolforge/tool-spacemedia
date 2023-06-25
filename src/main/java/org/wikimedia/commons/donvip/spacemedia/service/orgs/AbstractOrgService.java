@@ -111,6 +111,9 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
             .compile(
                     "(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{7}|youtu.be/[0-9a-zA-Z]{11}|flic.kr/p/[0-9a-zA-Z]{6}|fb.me/e/[0-9a-zA-Z]{9})");
 
+    private static final Pattern PATTERN_TWITTER_SEARCH = Pattern
+            .compile("<a href=\"https://twitter.com/search?[^\"]+\">([^<]*)</a>");
+
     private static final Set<String> PD_US = Set.of("PD-US", "PD-NASA", "PD-Hubble", "PD-Webb");
 
     static final Pattern COPERNICUS_CREDIT = Pattern.compile(
@@ -903,6 +906,8 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
                 }
                 return group;
             }).replace("http://", "https://");
+            // Remove twitter hashtags search links, bloked in spam disallow list
+            result = PATTERN_TWITTER_SEARCH.matcher(result).replaceAll(match -> match.group(1));
             for (FileMetadata metadata : media.getMetadata()) {
                 result = result.replaceAll(
                         "<a href=\"" + metadata.getAssetUrl() + "\"><img src=\"[^\"]+\" alt=\"[^\"]*\"></a>",
