@@ -11,12 +11,12 @@ class StsciMediaTest {
         StsciMedia media = new StsciMedia();
 
         media.setId("1993/22/117-Image");
-        assertEquals("1993-22-117", media.getUploadId());
+        assertEquals("1993-22-117", media.getUploadId(null));
 
         media.setId("4636-Image");
-        assertEquals("4636", media.getUploadId());
+        assertEquals("4636", media.getUploadId(null));
 
         media.setId("2022/036/01G9HYYGC4MGATEMJ88R4HE6QV");
-        assertEquals("2022-036", media.getUploadId());
+        assertEquals("2022-036", media.getUploadId(null));
     }
 }

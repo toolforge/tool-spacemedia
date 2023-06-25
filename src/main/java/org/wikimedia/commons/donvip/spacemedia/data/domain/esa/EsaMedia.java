@@ -168,7 +168,7 @@ public class EsaMedia extends Media<Integer, LocalDateTime> implements WithKeywo
 
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
-        return CommonsService.normalizeFilename(title) + " ESA" + getUploadId();
+        return CommonsService.normalizeFilename(title) + " ESA" + getUploadId(fileMetadata);
     }
 
     @Override

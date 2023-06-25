@@ -68,7 +68,7 @@ public class NasaPhotojournalService
             ".*<a href=\"(https?://[^\"]+\\.mov)\".*");
 
     static final Pattern FIGURE_PATTERN = Pattern.compile(
-            ".*<a href=\"(https?://[^\"]+/figures/[^\"]+\\.png)\".*");
+            ".*<a href=\"(https?://[^\"]+/figures/[^\"]+\\.(?:jpg|png))\".*");
 
     static final Pattern ACQ_PATTERN = Pattern.compile(
             ".*acquired ((?:January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, [1-2]\\d{3}).*");

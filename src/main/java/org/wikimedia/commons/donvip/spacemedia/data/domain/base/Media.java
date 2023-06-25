@@ -116,7 +116,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     public String getUploadTitle(FileMetadata fileMetadata) {
         // Upload title must not exceed mediawiki limit (240 characters, filename-toolong API error)
-        String id = getUploadId();
+        String id = getUploadId(fileMetadata);
         String s = CommonsService.normalizeFilename(title);
         if (id.equals(s)) {
             return isTitleBlacklisted(s)
@@ -127,7 +127,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         }
     }
 
-    protected String getUploadId() {
+    protected String getUploadId(FileMetadata fileMetadata) {
         return CommonsService.normalizeFilename(getIdUsedInOrg());
     }
 

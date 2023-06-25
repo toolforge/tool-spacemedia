@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -13,12 +14,15 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
 @Indexed
 public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implements WithKeywords {
+
+    private static final Pattern FIGURE = Pattern.compile("PIA\\d+_fig.\\..+");
 
     @Id
     @Column(name = "pia_id", nullable = false, length = 10)
@@ -159,6 +163,12 @@ public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implemen
 
     public void setLegend(String legend) {
         this.legend = legend;
+    }
+
+    @Override
+    protected String getUploadId(FileMetadata fileMetadata) {
+        String file = fileMetadata.getAssetUrl().getFile();
+        return FIGURE.matcher(file).matches() ? file.substring(0, file.indexOf('.')) : super.getUploadId(fileMetadata);
     }
 
     @Override

@@ -183,8 +183,8 @@ public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeyw
     }
 
     @Override
-    protected String getUploadId() {
-        String uid = super.getUploadId().replace("-Image", "");
+    protected String getUploadId(FileMetadata fileMetadata) {
+        String uid = super.getUploadId(fileMetadata).replace("-Image", "");
         return HORRIBLE_ID_FORMAT.matcher(uid).matches() ? uid.substring(0, uid.lastIndexOf('-')) : uid;
     }
 
