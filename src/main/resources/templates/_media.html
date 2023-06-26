@@ -11,10 +11,6 @@
 	       th:href="@{/{id}/uploaded(id=${org.id})}" th:text="'Uploaded (' + ${org.countUploadedMedia()} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
-	    <a th:class="'nav-link' + ('hashes' == ${tab} ? ' active' : '') + (${org.countPerceptualHashes()} == 0 ? ' disabled': '')"
-	       th:href="@{/{id}/hashes(id=${org.id})}" th:text="'Hashes (' + ${org.countPerceptualHashes()} + ')'"></a>
-	  </li>
-	  <li class="nav-item">
 	    <a th:class="'nav-link' + ('missing/images' == ${tab} ? ' active' : '') + (${org.countMissingImages()} == 0 ? ' disabled': '')"
 	       th:href="@{/{id}/missing/images(id=${org.id})}" th:text="'Images to upload (' + ${org.countMissingImages()} + ')'"></a>
 	  </li>

@@ -18,8 +18,6 @@
 		        <th>Date</th>
 		        <th>Description</th>
 		        <th th:if="'missing' != ${tab} and 'missing/images' != ${tab} and 'missing/videos' != ${tab}">Commons</th>
-		        <th th:if="'ignored' != ${tab}">Templates</th>
-		        <th th:if="'uploaded' != ${tab}">Categories</th>
 		        <th th:if="'ignored' == ${tab}">Reason</th>
 		      <tr>
 	      </thead>
@@ -56,18 +54,6 @@
 		          <div th:each="file : ${media.allCommonsFileNames}">
 		            <a th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a><br>
 		          </div>
-		        </td>
-		        <td th:if="'ignored' != ${tab}">
-		          <div th:each="template : ${org.findLicenceTemplates(media)}">
-		            <a th:text="${template}"
-		               th:href="@{https://commons.wikimedia.org/wiki/Template:{t}(t=${template.split('\|')[0].trim()})}"></a>
-		          </div>
-		        </td>
-		        <td th:if="'uploaded' != ${tab}"><ul>
-		          <li th:each="category : ${org.findCategories(media, media.metadata)}">
-		            <a th:text="${category}"
-		               th:href="@{https://commons.wikimedia.org/wiki/Category:{t}(t=${category})}"></a>
-		          </li></ul>
 		        </td>
 		        <td th:if="'ignored' == ${tab}">
 		          <a th:text="${media.ignoredReason}"></a>
