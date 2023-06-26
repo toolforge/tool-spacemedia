@@ -985,7 +985,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         return result;
     }
 
-    private Optional<String> findCategoryFromTitle(String title) {
+    protected Optional<String> findCategoryFromTitle(String title) {
         if (title != null) {
             String[] words = title.split(" ");
             if (words.length >= 2) {

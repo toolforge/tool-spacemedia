@@ -408,8 +408,13 @@ public class NasaPhotojournalService
             result.put("en", media.getLegend());
         }
         String legend = result.get("en");
-        if (legend != null && legend.startsWith("<") && legend.contains("Today's")) {
-            result.put("en", legend.substring(legend.indexOf("Today's")));
+        if (legend != null && legend.startsWith("<")) {
+            if (legend.contains("Today's")) {
+                result.put("en", legend = legend.substring(legend.indexOf("Today's")));
+            }
+            if (legend.contains("This VIS ")) {
+                result.put("en", legend = legend.substring(legend.indexOf("This VIS ")));
+            }
         }
         return result;
     }
