@@ -939,8 +939,9 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
     protected Optional<String> getOtherVersions(T media, FileMetadata metadata) {
         StringBuilder sb = new StringBuilder();
         media.getMetadata().stream().distinct().filter(m -> m != metadata && m.getAssetUrl() != null)
-                .forEach(m -> sb.append(media.getFirstCommonsFileNameOrUploadTitle(m)).append('|')
-                        .append(m.getFileExtension().toUpperCase(Locale.ENGLISH)).append(" version\n"));
+                .map(m -> media.getFirstCommonsFileNameOrUploadTitle(m) + '|'
+                        + m.getFileExtension().toUpperCase(Locale.ENGLISH) + " version\n")
+                .distinct().forEach(sb::append);
         String result = sb.toString();
         return result.isEmpty() ? Optional.empty() : Optional.of(result.trim());
     }
