@@ -682,10 +682,11 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     protected void editStructuredDataContent(String uploadedFilename, Map<String, String> legends, T media,
             FileMetadata metadata) {
+        Map<String, Pair<Object, Map<String, Object>>> statements = getStatements(media, metadata);
         try {
-            commonsService.editStructuredDataContent(uploadedFilename, legends, getStatements(media, metadata));
+            commonsService.editStructuredDataContent(uploadedFilename, legends, statements);
         } catch (MediaWikiApiErrorException | IOException | RuntimeException e) {
-            LOGGER.error("Unable to add SDC data", e);
+            LOGGER.error("Unable to add SDC data: {}", statements, e);
         }
     }
 
