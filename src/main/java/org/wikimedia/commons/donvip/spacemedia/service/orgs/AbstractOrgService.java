@@ -756,7 +756,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     protected final void wikidataStatementMapping(String value, Map<String, Map<String, String>> csvMapping,
             String property, Map<String, Pair<Object, Map<String, Object>>> result) {
-        ofNullable(value).map(csvMapping::get).map(m -> m.get("Wikidata"))
+        ofNullable(value).map(csvMapping::get).map(m -> m.get("Wikidata")).filter(Objects::nonNull)
                 .ifPresent(m -> result.put(property, Pair.of(m, null)));
     }
 
