@@ -22,7 +22,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 @Indexed
 public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implements WithKeywords {
 
-    private static final Pattern FIGURE = Pattern.compile("PIA\\d+_fig.\\..+");
+    private static final Pattern FIGURE = Pattern.compile("PIA\\d+_fig[^\\.]+\\..+", Pattern.CASE_INSENSITIVE);
 
     @Id
     @Column(name = "pia_id", nullable = false, length = 10)
@@ -166,9 +166,14 @@ public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implemen
     }
 
     @Override
-    protected String getUploadId(FileMetadata fileMetadata) {
+    public String getUploadId(FileMetadata fileMetadata) {
         String file = fileMetadata.getAssetUrl().getFile();
-        return FIGURE.matcher(file).matches() ? file.substring(0, file.indexOf('.')) : super.getUploadId(fileMetadata);
+        if (file.contains("/")) {
+            file = file.substring(file.lastIndexOf('/') + 1);
+        }
+        return FIGURE.matcher(file).matches()
+                ? file.substring(0, file.indexOf('.')).replace("_fullres", "").replace("_FIG", "_fig")
+                : super.getUploadId(fileMetadata);
     }
 
     @Override

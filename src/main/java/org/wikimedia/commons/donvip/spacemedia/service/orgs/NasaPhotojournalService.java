@@ -68,7 +68,7 @@ public class NasaPhotojournalService
             ".*<a href=\"(https?://[^\"]+\\.mov)\".*");
 
     static final Pattern FIGURE_PATTERN = Pattern.compile(
-            ".*<a href=\"(https?://[^\"]+/figures/[^\"]+\\.(?:jpg|png))\".*");
+            "<a href=\"(https?://[^\"]+/(?:figures|archive)/[^\"]+\\.(?:jpg|png|tiff))\"");
 
     static final Pattern ACQ_PATTERN = Pattern.compile(
             ".*acquired ((?:January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, [1-2]\\d{3}).*");
@@ -245,18 +245,19 @@ public class NasaPhotojournalService
     }
 
     private boolean detectFigures(NasaPhotojournalMedia media) {
+        boolean result = false;
         String caption = media.getDescription();
         if (caption.contains("<img ")) {
             Matcher m = FIGURE_PATTERN.matcher(caption);
-            if (m.matches()) {
+            while (m.find()) {
                 String url = m.group(1);
                 if (!media.containsMetadata(url)) {
                     addMetadata(media, url, null);
-                    return true;
+                    result = true;
                 }
             }
         }
-        return false;
+        return result;
     }
 
     private void sanityChecks(SolrDocument doc) {
