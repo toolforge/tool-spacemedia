@@ -197,7 +197,7 @@ public abstract class AbstractOrgDjangoplicityService
 
     private DjangoplicityMedia fetchMedia(URL url, String id, String imgUrlLink)
             throws ReflectiveOperationException, IOException {
-        LOGGER.info(imgUrlLink);
+        LOGGER.info("Fetching djangoplicity media from {}", imgUrlLink);
         Document html = Jsoup.connect(imgUrlLink).timeout(60_000).get();
         return newMediaFromHtml(html, url, id, imgUrlLink);
     }
@@ -552,6 +552,8 @@ public abstract class AbstractOrgDjangoplicityService
                         }
                     } catch (UploadException | ImageUploadForbiddenException e) {
                         LOGGER.error("Upload error when processing {}", url, e);
+                    } catch (HttpStatusException e) {
+                        LOGGER.error("Fetch error when processing {}", url, e);
                     }
                 }
             } catch (HttpStatusException | UpdateFinishedException e) {
