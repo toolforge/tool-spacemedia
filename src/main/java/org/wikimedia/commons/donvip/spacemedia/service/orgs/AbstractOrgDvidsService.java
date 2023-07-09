@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
@@ -21,13 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,26 +43,12 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudio;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudioRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsCredit;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsCreditRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsGraphic;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsGraphicRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImage;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaTypedId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsNews;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsNewsRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsPublication;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsPublicationRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsVideo;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsVideoRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsWebcast;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsWebcastRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiAssetResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiPageInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResponse;
@@ -73,6 +58,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
+import org.wikimedia.commons.donvip.spacemedia.service.dvids.DvidsMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
@@ -85,8 +71,6 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 public abstract class AbstractOrgDvidsService
         extends AbstractOrgService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
 
-    private static final String OLD_DVIDS_CDN = "https://cdn.dvidshub.net/";
-
     private static final Pattern US_MEDIA_BY = Pattern
             .compile(".*\\((U\\.S\\. .+ (?:photo|graphic|video) by )[^\\)]+\\)", Pattern.DOTALL);
 
@@ -97,35 +81,11 @@ public abstract class AbstractOrgDvidsService
     protected static final Map<String, String> KEYWORDS_CATS = loadCsvMapping(
             AbstractOrgDvidsService.class, "dvids.keywords.csv");
 
-    private static final Set<Class<? extends DvidsMedia>> MEDIA_WITH_CATEGORIES = Set.of(DvidsVideo.class,
-            DvidsNews.class, DvidsAudio.class);
-
     @Autowired
-    private DvidsAudioRepository audioRepository;
-
-    @Autowired
-    private DvidsImageRepository imageRepository;
-
-    @Autowired
-    private DvidsGraphicRepository graphicRepository;
-
-    @Autowired
-    private DvidsVideoRepository videoRepository;
-
-    @Autowired
-    private DvidsNewsRepository newsRepository;
-
-    @Autowired
-    private DvidsPublicationRepository publiRepository;
-
-    @Autowired
-    private DvidsWebcastRepository webcastRepository;
+    private DvidsMediaProcessorService dvidsProcessor;
 
     @Autowired
     private DvidsMediaRepository<DvidsMedia> mediaRepository;
-
-    @Autowired
-    private DvidsCreditRepository creditRepository;
 
     @Value("${dvids.api.key}")
     private String apiKey;
@@ -168,19 +128,6 @@ public abstract class AbstractOrgDvidsService
     @Override
     protected final DvidsMediaTypedId getMediaId(String id) {
         return new DvidsMediaTypedId(id);
-    }
-
-    private DvidsMedia save(DvidsMedia media) {
-        switch (media.getMediaType()) {
-        case image: return imageRepository.save((DvidsImage) media);
-        case graphic: return graphicRepository.save((DvidsGraphic) media);
-        case video: return videoRepository.save((DvidsVideo) media);
-        case audio: return audioRepository.save((DvidsAudio) media);
-        case news: return newsRepository.save((DvidsNews) media);
-        case publication_issue: return publiRepository.save((DvidsPublication) media);
-        case webcast: return webcastRepository.save((DvidsWebcast) media);
-        }
-        throw new IllegalArgumentException(media.toString());
     }
 
     @Override
@@ -269,8 +216,11 @@ public abstract class AbstractOrgDvidsService
         for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted().toList()) {
             try {
                 idsKnownToDvidsApi.add(id);
-                Pair<DvidsMedia, Integer> result = processDvidsMedia(
-                        mediaRepository.findById(new DvidsMediaTypedId(id)), () -> getMediaFromApi(rest, id, unit));
+                Pair<DvidsMedia, Integer> result = dvidsProcessor.processDvidsMedia(
+                        () -> mediaRepository.findById(new DvidsMediaTypedId(id)),
+                        () -> getMediaFromApi(rest, id, unit),
+                        media -> processDvidsMediaUpdate(media, false).getResult(), this::shouldUploadAuto,
+                        this::uploadWrapped);
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }
@@ -354,68 +304,23 @@ public abstract class AbstractOrgDvidsService
         return response;
     }
 
-    private Pair<DvidsMedia, Integer> processDvidsMedia(Optional<DvidsMedia> mediaInDb, Supplier<DvidsMedia> apiFetcher)
-            throws IOException, UploadException {
-        DvidsMedia media = null;
-        boolean save = false;
-        if (mediaInDb.isPresent()) {
-            media = mediaInDb.get();
-            save = updateCategoryAndCdnUrls(media, apiFetcher);
-        } else {
-            media = apiFetcher.get();
-            save = true;
-        }
-        save |= processDvidsMediaUpdate(media, false).getResult();
-        int uploadCount = 0;
-        if (shouldUploadAuto(media, false)) {
-            Triple<DvidsMedia, Collection<FileMetadata>, Integer> upload = upload(media, true, false);
-            uploadCount = upload.getRight();
-            media = upload.getLeft();
-            save = true;
-        }
-        if (save) {
-            if (isNotEmpty(media.getCredit())) {
-                creditRepository.saveAll(media.getCredit());
+    private MediaUpdateResult processDvidsMediaUpdate(DvidsMedia media, boolean forceUpdate) {
+        try {
+            MediaUpdateResult commonUpdate = doCommonUpdate(media, forceUpdate);
+            boolean save = commonUpdate.getResult();
+            if (!Boolean.TRUE.equals(media.isIgnored())) {
+                if (ignoredCategories.contains(media.getCategory())) {
+                    save = ignoreFile(media, "Ignored category: " + media.getCategory());
+                } else if (findLicenceTemplates(media).isEmpty()) {
+                    // DVIDS media with VIRIN "O". we can assume it implies a courtesy photo
+                    // https://www.dvidshub.net/image/3322521/45th-sw-supports-successful-atlas-v-oa-7-launch
+                    save = ignoreFile(media, "No template found (VIRIN O): " + media.getVirin());
+                }
             }
-            save(media);
+            return new MediaUpdateResult(save, commonUpdate.getException());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        return Pair.of(media, uploadCount);
-    }
-
-    private MediaUpdateResult processDvidsMediaUpdate(DvidsMedia media, boolean forceUpdate) throws IOException {
-        MediaUpdateResult commonUpdate = doCommonUpdate(media, forceUpdate);
-        boolean save = commonUpdate.getResult();
-        if (!Boolean.TRUE.equals(media.isIgnored())) {
-            if (ignoredCategories.contains(media.getCategory())) {
-                save = ignoreFile(media, "Ignored category: " + media.getCategory());
-            } else if (findLicenceTemplates(media).isEmpty()) {
-                // DVIDS media with VIRIN "O". we can assume it implies a courtesy photo
-                // https://www.dvidshub.net/image/3322521/45th-sw-supports-successful-atlas-v-oa-7-launch
-                save = ignoreFile(media, "No template found (VIRIN O): " + media.getVirin());
-            }
-        }
-        return new MediaUpdateResult(save, commonUpdate.getException());
-    }
-
-    protected boolean updateCategoryAndCdnUrls(DvidsMedia media, Supplier<DvidsMedia> apiFetcher) {
-        // DVIDS changed its CDN around 2021/2022. Example:
-        // old: https://cdn.dvidshub.net/media/photos/2104/6622429.jpg
-        // new: https://d34w7g4gy10iej.cloudfront.net/photos/2104/6622429.jpg
-        if ((MEDIA_WITH_CATEGORIES.contains(media.getClass()) && media.getCategory() == null)
-                || media.getMetadata().get(0).getAssetUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
-                || media.getThumbnailUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
-                || (media instanceof DvidsVideo videoMedia
-                        && videoMedia.getImage().toExternalForm().startsWith(OLD_DVIDS_CDN))) {
-            DvidsMedia mediaFromApi = apiFetcher.get();
-            media.setCategory(mediaFromApi.getCategory());
-            media.getMetadata().get(0).setAssetUrl(mediaFromApi.getMetadata().get(0).getAssetUrl());
-            media.setThumbnailUrl(mediaFromApi.getThumbnailUrl());
-            if (media instanceof DvidsVideo videoMedia && mediaFromApi instanceof DvidsVideo videoMediaFromApi) {
-                videoMedia.setImage(videoMediaFromApi.getImage());
-            }
-            return true;
-        }
-        return false;
     }
 
     @Override

@@ -617,6 +617,15 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         return saveMedia(upload(findBySha1OrThrow(sha1, true), true, isManual).getLeft());
     }
 
+    protected final Triple<T, Collection<FileMetadata>, Integer> uploadWrapped(T media) {
+        try {
+            return upload(media, true, false);
+        } catch (UploadException e) {
+            LOGGER.error("Failed to upload {}", media, e);
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public Triple<T, Collection<FileMetadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
             throws UploadException {

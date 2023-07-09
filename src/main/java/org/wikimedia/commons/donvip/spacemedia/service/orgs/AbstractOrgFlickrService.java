@@ -30,7 +30,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
-import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -416,15 +414,6 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             }
         }
         return Pair.of(count, uploadedMedia);
-    }
-
-    protected final Triple<FlickrMedia, Collection<FileMetadata>, Integer> uploadWrapped(FlickrMedia media) {
-        try {
-            return upload(media, true, false);
-        } catch (UploadException e) {
-            LOGGER.error("Failed to upload {}", media, e);
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
