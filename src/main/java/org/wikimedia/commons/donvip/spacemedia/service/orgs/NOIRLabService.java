@@ -36,8 +36,11 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
     private static final Pattern PATTERN_LOCALIZED_URL = Pattern
             .compile(BASE_PUBLIC_URL + "([a-z]+/)" + IMAGES_PATH + ".*");
 
-    @Value("${noirlab.date.pattern}")
-    private String datePattern;
+    @Value("${noirlab.date.pattern1}")
+    private String datePattern1;
+
+    @Value("${noirlab.date.pattern2}")
+    private String datePattern2;
 
     @Value("${noirlab.datetime.pattern1}")
     private String dateTimePattern1;
@@ -57,7 +60,8 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
     @Value("${noirlab.datetime.pattern6}")
     private String dateTimePattern6;
 
-    private DateTimeFormatter dateFormatter;
+    private DateTimeFormatter dateFormatter1;
+    private DateTimeFormatter dateFormatter2;
     private DateTimeFormatter dateTimeFormatter1;
     private DateTimeFormatter dateTimeFormatter2;
     private DateTimeFormatter dateTimeFormatter3;
@@ -74,7 +78,8 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
     @PostConstruct
     void init() throws IOException {
         super.init();
-        dateFormatter = DateTimeFormatter.ofPattern(datePattern, Locale.ENGLISH);
+        dateFormatter1 = DateTimeFormatter.ofPattern(datePattern1, Locale.ENGLISH);
+        dateFormatter2 = DateTimeFormatter.ofPattern(datePattern2, Locale.ENGLISH);
         // Why CA ? Because only english locale that accepts "a.m." as AM/PM marker
         // https://www.unicode.org/cldr/cldr-aux/charts/33/by_type/date_&_time.gregorian.html#72c7f54616968b69
         dateTimeFormatter1 = DateTimeFormatter.ofPattern(dateTimePattern1, new Locale("en", "CA"));
@@ -86,7 +91,8 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
-    protected LocalDateTime parseDateTime(String text) {
+    protected LocalDateTime parseDateTime(String dateTimeText) {
+        String text = dateTimeText.replace("Sept.", "Sep.");
         try {
             return super.parseDateTime(text);
         } catch (DateTimeParseException e0) {
@@ -108,7 +114,11 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
                                 try {
                                     return LocalDateTime.parse(text, dateTimeFormatter6);
                                 } catch (DateTimeParseException e6) {
-                                    return LocalDate.parse(text, dateFormatter).atStartOfDay();
+                                    try {
+                                        return LocalDate.parse(text, dateFormatter1).atStartOfDay();
+                                    } catch (DateTimeParseException e7) {
+                                        return LocalDate.parse(text, dateFormatter2).atStartOfDay();
+                                    }
                                 }
                             }
                         }

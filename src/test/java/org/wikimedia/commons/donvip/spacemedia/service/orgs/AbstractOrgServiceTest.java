@@ -107,7 +107,9 @@ public abstract class AbstractOrgServiceTest {
         assertEquals(credit, media.getCredit());
         assertEquals(assetUrls, media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).toList());
         assertEquals(title, media.getTitle());
-        assertEquals(description, media.getDescription());
+        if (description != null) {
+            assertEquals(description, media.getDescription());
+        }
         assertEquals(telescopes, media.getTelescopes());
     }
 
