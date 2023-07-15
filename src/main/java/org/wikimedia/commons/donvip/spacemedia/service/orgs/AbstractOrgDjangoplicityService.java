@@ -68,6 +68,8 @@ import io.micrometer.core.instrument.util.StringUtils;
 public abstract class AbstractOrgDjangoplicityService
         extends AbstractOrgService<DjangoplicityMedia, DjangoplicityMediaId, LocalDateTime> {
 
+    private static final String IDENTIFIABLE_PERSON = "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgDjangoplicityService.class);
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+) x (\\d+) px");
@@ -167,17 +169,27 @@ public abstract class AbstractOrgDjangoplicityService
                 return Triple.of(Optional.empty(), emptyList(), 0);
             }
             if (media.getCategories() != null && Boolean.TRUE != media.isIgnored()) {
-                // Try to detect pictures of identifiable people, as per ESO conditions
+                // Try to detect pictures of identifiable people, as per ESO/IAU conditions
                 if (media.getCategories().size() == 1 && media.getCategories().iterator().next().contains("People")
                         && media.getTypes() != null
                         && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
-                    ignoreFile(media,
-                            "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.");
+                    ignoreFile(media, IDENTIFIABLE_PERSON);
                 } else if (media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
                     ignoreFile(media, "Forbidden category.");
                 }
             }
             save = true;
+        }
+        Collection<String> forbiddenWordsInTitleOrDescription = getForbiddenWordsInTitleOrDescription();
+        if (Boolean.TRUE != media.isIgnored() && !forbiddenWordsInTitleOrDescription.isEmpty()
+                && (media.getTitle() != null || media.getDescription() != null)) {
+            for (String forbiddenWord : forbiddenWordsInTitleOrDescription) {
+                if ((media.getTitle() != null && media.getTitle().contains(forbiddenWord))
+                        || (media.getDescription() != null && media.getDescription().contains(forbiddenWord))) {
+                    save = ignoreFile(media, "Forbidden keyword: " + forbiddenWord + ". " + IDENTIFIABLE_PERSON);
+                    break;
+                }
+            }
         }
         if (doCommonUpdate(media)) {
             save = true;
@@ -270,6 +282,10 @@ public abstract class AbstractOrgDjangoplicityService
     }
 
     protected Collection<String> getForbiddenCategories() {
+        return Collections.emptyList();
+    }
+
+    protected Collection<String> getForbiddenWordsInTitleOrDescription() {
         return Collections.emptyList();
     }
 

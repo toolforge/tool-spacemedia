@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,6 +83,11 @@ public class IauService extends AbstractOrgDjangoplicityService {
         // which shall remain protected and may not be used or reproduced without prior
         // and individual written consent of the IAU.
         return Arrays.asList("IAU Logos");
+    }
+
+    @Override
+    protected Collection<String> getForbiddenWordsInTitleOrDescription() {
+        return List.of("Cosmology Prize");
     }
 
     @Override
