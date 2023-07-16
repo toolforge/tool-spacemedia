@@ -36,6 +36,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjecti
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
@@ -139,7 +140,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     }
 
     protected String createStatusText(Set<String> emojis, Set<String> accounts, long imgCount, long vidCount,
-            Collection<FileMetadata> uploadedMetadata) {
+            Collection<? extends Media<?, ?>> uploadedMedia, Collection<FileMetadata> uploadedMetadata) {
         StringBuilder sb = new StringBuilder(emojis.stream().sorted().collect(joining()));
         if (imgCount > 0) {
             sb.append(String.format(" %d new picture%s", imgCount, imgCount > 1 ? "s" : ""));
@@ -152,6 +153,14 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         }
         if (!accounts.isEmpty()) {
             sb.append(" from " + accounts.stream().sorted().collect(joining(" ")));
+        }
+        uploadedMedia.stream().map(Media::getTitle).filter(x -> x != null && x.length() > 3).distinct().sorted()
+                .limit(5).forEach(title -> sb.append("\n« ").append(title).append(" »"));
+        List<String> keywords = uploadedMedia.stream().filter(WithKeywords.class::isInstance)
+                .flatMap(x -> ((WithKeywords) x).getKeywords().stream()).distinct().sorted().limit(10).toList();
+        if (!keywords.isEmpty()) {
+            sb.append("\n\n");
+            keywords.forEach(kw -> sb.append('#').append(kw).append(' '));
         }
         if (imgCount + vidCount > 1) {
             String maxTimestamp = imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()

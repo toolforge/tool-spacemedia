@@ -115,7 +115,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
             Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
         return postRequest(V2_TWEET, "application/json", new TweetRequest(createTweetMedia(uploadedMetadata),
                         createStatusText(emojis, accounts, uploadedMedia.stream().filter(Media::isImage).count(),
-                        uploadedMedia.stream().filter(Media::isVideo).count(), uploadedMetadata)));
+                        uploadedMedia.stream().filter(Media::isVideo).count(), uploadedMedia, uploadedMetadata)));
     }
 
     private TweetMedia createTweetMedia(Collection<FileMetadata> uploadedMetadata) {
