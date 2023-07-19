@@ -105,6 +105,7 @@ import org.wikidata.wdtk.wikibaseapi.OAuthApiConnection;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataEditor;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategory;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
@@ -663,6 +664,13 @@ public class CommonsService {
     @Cacheable("existsCategory")
     public boolean existsCategory(String category) {
         return categoryRepository.findByTitle(sanitizeCategory(category)).isPresent();
+    }
+
+    @Transactional(transactionManager = "commonsTransactionManager")
+    @Cacheable("existsCategoryPage")
+    public boolean existsCategoryPage(String category) {
+        return categoryRepository.findByTitle(sanitizeCategory(category)).map(CommonsCategory::getTitle)
+                .map(pageRepository::findByCategoryTitle).isPresent();
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")

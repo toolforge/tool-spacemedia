@@ -1002,11 +1002,11 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
             if (words.length >= 2) {
                 for (int n = words.length; n >= 2; n--) {
                     String firstWords = String.join(" ", Arrays.copyOfRange(words, 0, n));
-                    if (commonsService.existsCategory(firstWords)) {
+                    if (commonsService.existsCategoryPage(firstWords)) {
                         return Optional.of(firstWords);
                     }
                     String firstWordsWithoutComma = firstWords.replace(",", "");
-                    if (commonsService.existsCategory(firstWordsWithoutComma)) {
+                    if (commonsService.existsCategoryPage(firstWordsWithoutComma)) {
                         return Optional.of(firstWordsWithoutComma);
                     }
                 }
