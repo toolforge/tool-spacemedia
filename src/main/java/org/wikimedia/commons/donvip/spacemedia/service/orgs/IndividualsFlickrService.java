@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -56,17 +58,13 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
                 result.add("Photos by the Curiosity rover Mastcam");
             } else if (result.contains("Photos by the Perseverance rover")) {
                 if (titleLc.contains("mastcam")) {
-                    result.remove("Photos by the Perseverance rover");
-                    result.add("Photos by the Perseverance rover Mastcams");
+                    replace(result, "Photos by the Perseverance rover", "Photos by the Perseverance rover Mastcams");
                 } else if (titleLc.contains("navleft") || titleLc.contains("navright")) {
-                    result.remove("Photos by the Perseverance rover");
-                    result.add("Photos by the Perseverance rover Navcams");
+                    replace(result, "Photos by the Perseverance rover", "Photos by the Perseverance rover Navcams");
                 } else if (titleLc.contains("supercam")) {
-                    result.remove("Photos by the Perseverance rover");
-                    result.add("Photos by the Perseverance rover SuperCam");
+                    replace(result, "Photos by the Perseverance rover", "Photos by the Perseverance rover SuperCam");
                 } else if (titleLc.contains("watson")) {
-                    result.remove("Photos by the Perseverance rover");
-                    result.add("Photos by WATSON");
+                    replace(result, "Photos by the Perseverance rover", "Photos by WATSON");
                 }
             }
             break;

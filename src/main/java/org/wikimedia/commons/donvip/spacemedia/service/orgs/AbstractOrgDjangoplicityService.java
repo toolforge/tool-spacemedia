@@ -184,8 +184,7 @@ public abstract class AbstractOrgDjangoplicityService
         if (Boolean.TRUE != media.isIgnored() && !forbiddenWordsInTitleOrDescription.isEmpty()
                 && (media.getTitle() != null || media.getDescription() != null)) {
             for (String forbiddenWord : forbiddenWordsInTitleOrDescription) {
-                if ((media.getTitle() != null && media.getTitle().contains(forbiddenWord))
-                        || (media.getDescription() != null && media.getDescription().contains(forbiddenWord))) {
+                if (media.containsInTitleOrDescription(forbiddenWord)) {
                     save = ignoreFile(media, "Forbidden keyword: " + forbiddenWord + ". " + IDENTIFIABLE_PERSON);
                     break;
                 }
