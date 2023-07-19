@@ -580,7 +580,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
         fillSet(result, uploadedMedia.getActivity(),
                 Map.of("Human Spaceflight", "@esaspaceflight", "Observing the Earth", "@ESA_EO", "Operations",
                         "@esaoperations", "Photo Archive (ESA Publications)", "@ESA_History", "Space Science",
-                        "@esascience", "Technology", "@esa_tech"));
+                        "@esascience", "Technology", "@esa_tech", "Space Transportation", "@ESA_transport"));
         if (result.isEmpty()) {
             result.add("@esa");
         }
