@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.net.URL;
@@ -163,5 +164,20 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
     @Override
     protected String mainDivClass() {
         return "col-md-9 left-column";
+    }
+
+    @Override
+    public Set<String> findCategories(DjangoplicityMedia media, FileMetadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        if (result.contains("Gemini Observatory")) {
+            boolean north = media.containsInTitleOrDescription("Gemini North");
+            boolean south = media.containsInTitleOrDescription("Gemini South");
+            if (north && !south) {
+                replace(result, "Gemini Observatory", "Gemini North Observatory");
+            } else if (south && !north) {
+                replace(result, "Gemini Observatory", "Gemini South Observatory");
+            }
+        }
+        return result;
     }
 }
