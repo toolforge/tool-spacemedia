@@ -131,12 +131,7 @@ public abstract class AbstractOrgBoxService
         media.setCreator(fileInfo.getCreatedBy().getName());
         media.setThumbnailUrl(
                 newURL(boxService.getThumbnailUrl(app, Long.parseLong(fileInfo.getVersion().getVersionID()), share)));
-        FileMetadata metadata = addMetadata(media, boxService.getSharedLink(app, share, fileInfo),
-                m -> fillMetadata(m, fileInfo));
-        if (metadata.getExtension() == null && fileInfo.getExtension() != null) {
-            // Temporary: fix existing data
-            metadataRepository.save(fillMetadata(metadata, fileInfo));
-        }
+        addMetadata(media, boxService.getSharedLink(app, share, fileInfo), m -> fillMetadata(m, fileInfo));
         return media;
     }
 
