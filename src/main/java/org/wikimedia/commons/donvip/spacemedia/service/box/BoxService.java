@@ -199,7 +199,8 @@ public class BoxService {
     }
 
     private boolean isWantedFile(BoxFile.Info fileInfo) {
-        return "mp4".equals(fileInfo.getExtension()) || commonsService.isPermittedFileExt(fileInfo.getExtension());
+        return fileInfo.getSize() > 0 && ("mp4".equals(fileInfo.getExtension())
+                || commonsService.isPermittedFileExt(fileInfo.getExtension()));
     }
 
     private static class BoxRedirectStrategy extends LaxRedirectStrategy {
