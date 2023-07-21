@@ -84,7 +84,8 @@ public class BoxMedia extends SingleFileMedia<BoxMediaId, ZonedDateTime> {
     @Override
     protected String getUploadTitle() {
         int idx = title.lastIndexOf('.');
-        return CommonsService.normalizeFilename(idx > -1 ? title.substring(0, idx) : title);
+        String result = CommonsService.normalizeFilename(idx > -1 ? title.substring(0, idx) : title);
+        return result.replace("IMG_", "").matches("[\\p{Alnum}_]+") ? id.getApp() + ' ' + result : result;
     }
 
     public BoxMedia copyDataFrom(BoxMedia other) {
