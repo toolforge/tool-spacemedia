@@ -34,6 +34,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
 import org.wikimedia.commons.donvip.spacemedia.service.box.BoxService;
 
+import com.box.sdk.BoxAPIResponseException;
 import com.box.sdk.BoxFile;
 
 /**
@@ -74,8 +75,17 @@ public abstract class AbstractOrgBoxService
 
     @Override
     protected UrlResolver<BoxMedia> getUrlResolver() {
-        return (media, metadata) -> boxService.getSharedFile(getSharedLink(media.getId()), media.getId().getId())
-                .getDownloadURL();
+        return (media, metadata) -> {
+            try {
+                return boxService.getSharedFile(getSharedLink(media.getId()), media.getId().getId()).getDownloadURL();
+            } catch (BoxAPIResponseException e) {
+                if (e.getResponseCode() == 404) {
+                    LOGGER.warn("Deleting image as no longer found: {}", e.getMessage());
+                    deleteMedia(media, e);
+                }
+                throw e;
+            }
+        };
     }
 
     private String getSharedLink(BoxMediaId id) {
