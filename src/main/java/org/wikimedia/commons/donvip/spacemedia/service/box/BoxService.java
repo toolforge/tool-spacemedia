@@ -199,7 +199,7 @@ public class BoxService {
     }
 
     private boolean isWantedFile(BoxFile.Info fileInfo) {
-        return fileInfo.getSize() > 0 && ("mp4".equals(fileInfo.getExtension())
+        return fileInfo.getSize() > 0 && !fileInfo.getName().startsWith("._") && ("mp4".equals(fileInfo.getExtension())
                 || commonsService.isPermittedFileExt(fileInfo.getExtension()));
     }
 
