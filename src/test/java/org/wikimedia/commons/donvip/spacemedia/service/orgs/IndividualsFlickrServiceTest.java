@@ -168,6 +168,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     @Test
     void testFindLicenceTemplates() {
         FlickrMedia media = new FlickrMedia();
+        media.setLicense(4);
         media.setId(52559137901L);
         media.setTitle("Brunt Ice Shelf, Antarctica - 11 December 2022");
         media.setDescription(
@@ -175,7 +176,8 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
                         + "\r\n" + "Brunt Ice Shelf, Antarctica - 11 December 2022\r\n" + "\r\n"
                         + "Compare with 2016 image here <a href=\"https://flic.kr/p/2o5r23p\">flic.kr/p/2o5r23p</a>\r\n"
                         + "\r\n" + "Image is about 129 kilometers wide");
-        assertEquals(Set.of("Flickrreview", "Attribution-Copernicus |year=2022"), service.findLicenceTemplates(media));
+        assertEquals(Set.of("Flickrreview", "Attribution-Copernicus |year=2022", "Cc-by-2.0"),
+                service.findLicenceTemplates(media));
     }
 
     @Configuration

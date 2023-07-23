@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -28,9 +28,9 @@ public class UsSpaceForceFlickrService extends AbstractOrgFlickrService {
     @Override
     public Set<String> findLicenceTemplates(FlickrMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
-        if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.United_States_Government_Work
+        if (FlickrLicense.of(media.getLicense()) == FlickrLicense.United_States_Government_Work
                 || (media.getDescription() != null && media.getDescription().contains("Air Force photo"))) {
-            result.remove(FlickrFreeLicense.United_States_Government_Work.getWikiTemplate());
+            result.remove(FlickrLicense.United_States_Government_Work.getWikiTemplate());
             result.add("PD-USGov-Military-Air Force");
         }
         return result;

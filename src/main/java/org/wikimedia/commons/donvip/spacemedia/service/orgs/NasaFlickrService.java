@@ -52,6 +52,16 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    protected boolean includeAllLicences() {
+        return true; // A lot of NASA employees seem not aware their work is public domain :(
+    }
+
+    @Override
+    protected String getNonFreeLicenceTemplate(FlickrMedia media) {
+        return "PD-USGov-NASA";
+    }
+
+    @Override
     protected Collection<String> getStringsToRemove(FlickrMedia media) {
         return STRINGS_TO_REMOVE;
     }

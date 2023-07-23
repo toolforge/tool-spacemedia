@@ -38,7 +38,7 @@ import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaType;
@@ -268,9 +268,11 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     public Set<String> findLicenceTemplates(FlickrMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
         try {
-            result.add(FlickrFreeLicense.of(media.getLicense()).getWikiTemplate());
+            FlickrLicense license = FlickrLicense.of(media.getLicense());
+            result.add(license.getWikiTemplate()
+                    + (license.isFree() ? "" : "|1={{tl|" + getNonFreeLicenceTemplate(media) + "}}"));
         } catch (IllegalArgumentException e) {
-            LOGGER.warn("Non-free Flickr licence for media {}: {}", media.getId(), e.getMessage());
+            LOGGER.warn("Unknown Flickr licence for media {}: {}", media.getId(), e.getMessage());
         }
         result.add("Flickrreview");
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(),
@@ -316,6 +318,15 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         return newURL(getUserPhotosUrl(media).toExternalForm() + "/" + media.getId());
     }
 
+    protected boolean includeAllLicences() {
+        return false;
+    }
+
+    protected String getNonFreeLicenceTemplate(FlickrMedia media) {
+        throw new UnsupportedOperationException(
+                "getNonFreeLicenceTemplate needs to be overriden if includeAllLicences is set to true");
+    }
+
     @Override
     public void updateMedia() {
         LocalDateTime start = startUpdateMedia();
@@ -326,7 +337,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             try {
                 LOGGER.info("Fetching Flickr media from account '{}'...", flickrAccount);
                 List<FlickrMedia> freePictures = buildFlickrMediaList(
-                        flickrService.findFreePhotos(flickrAccount, minUploadDate));
+                        flickrService.searchPhotos(flickrAccount, minUploadDate, includeAllLicences()));
                 LOGGER.info("Found {} free Flickr media for account '{}'", freePictures.size(), flickrAccount);
                 Pair<Integer, Collection<FlickrMedia>> result = processFlickrMedia(freePictures, flickrAccount);
                 Collection<FlickrMedia> localUploadedImages = result.getRight();

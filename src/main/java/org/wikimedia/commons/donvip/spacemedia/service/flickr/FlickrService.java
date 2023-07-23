@@ -21,7 +21,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
@@ -81,7 +81,11 @@ public class FlickrService {
         return result;
     }
 
-    public List<Photo> findFreePhotos(String userId, LocalDate minUploadDate) throws FlickrException {
+    public List<Photo> searchFreePhotos(String userId, LocalDate minUploadDate) throws FlickrException {
+        return searchPhotos(userId, minUploadDate, false);
+    }
+
+    public List<Photo> searchPhotos(String userId, LocalDate minUploadDate, boolean includeAll) throws FlickrException {
         List<Photo> result = new ArrayList<>();
         SearchParameters params = new SearchParameters();
         params.setUserId(Objects.requireNonNull(userId));
@@ -91,7 +95,8 @@ public class FlickrService {
         }
         // Multi-license search does not work
         // https://www.flickr.com/groups/51035612836@N01/discuss/72157665503298714/72157667263924940
-        for (int license : Arrays.stream(FlickrFreeLicense.values()).map(FlickrFreeLicense::getCode).toList()) {
+        for (int license : Arrays.stream(FlickrLicense.values()).filter(l -> includeAll || l.isFree())
+                .map(FlickrLicense::getCode).toList()) {
             PhotoList<Photo> photos;
             params.setLicense(Integer.toString(license));
             int page = 1;

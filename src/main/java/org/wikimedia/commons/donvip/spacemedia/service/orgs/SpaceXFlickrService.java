@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -32,8 +32,8 @@ public class SpaceXFlickrService extends AbstractOrgFlickrService {
     public Set<String> findLicenceTemplates(FlickrMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
         try {
-            if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Dedication_CC0) {
-                result.remove(FlickrFreeLicense.Public_Domain_Dedication_CC0.getWikiTemplate());
+            if (FlickrLicense.of(media.getLicense()) == FlickrLicense.Public_Domain_Dedication_CC0) {
+                result.remove(FlickrLicense.Public_Domain_Dedication_CC0.getWikiTemplate());
                 result.add("Cc-zero-SpaceX");
             }
         } catch (IllegalArgumentException e) {

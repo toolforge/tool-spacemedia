@@ -5,8 +5,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +18,13 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 @Service
 public class IndividualsFlickrService extends AbstractOrgFlickrService {
 
-    private static final Map<String, List<String>> STRINGS_TO_REMOVE = Map.of("pierre_markuse", List.of(
+    private static final List<String> STRINGS_TO_REMOVE = List.of(
             "Follow me on Twitter:",
             "<a href=\"https://twitter.com/Pierre_Markuse\" rel=\"nofollow\">twitter.com/Pierre_Markuse</a>",
             "Do you want to support this collection of satellite images? Any donation, no matter how small, would be appreciated. <a href=\"https://www.paypal.com/paypalme/PierreMarkuse\">PayPal me!</a>",
-            "Follow me on <a href=\"https://twitter.com/Pierre_Markuse\">Twitter!</a> and <a href=\"https://mastodon.world/@pierre_markuse\">Mastodon!</a>"),
-            "192271236@N03",
-            List.of("Feel free to share, giving the appropriate credit and providing a link to the original image or tweet: <a href=\"https://creativecommons.org/licenses/by/3.0/\">creativecommons.org/licenses/by/3.0/</a>",
-                    "Feel free to share, giving the appropriate credit and providing a link to the original image or tweet <a href=\"https://creativecommons.org/licenses/by/3.0/\">creativecommons.org/licenses/by/3.0/</a>"));
+            "Follow me on <a href=\"https://twitter.com/Pierre_Markuse\">Twitter!</a> and <a href=\"https://mastodon.world/@pierre_markuse\">Mastodon!</a>",
+            "Feel free to share, giving the appropriate credit and providing a link to the original image or tweet: <a href=\"https://creativecommons.org/licenses/by/3.0/\">creativecommons.org/licenses/by/3.0/</a>",
+            "Feel free to share, giving the appropriate credit and providing a link to the original image or tweet <a href=\"https://creativecommons.org/licenses/by/3.0/\">creativecommons.org/licenses/by/3.0/</a>");
 
     @Autowired
     public IndividualsFlickrService(FlickrMediaRepository repository,
@@ -42,7 +39,7 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
 
     @Override
     protected Collection<String> getStringsToRemove(FlickrMedia media) {
-        return Optional.ofNullable(STRINGS_TO_REMOVE.get(media.getPathAlias())).orElse(List.of());
+        return STRINGS_TO_REMOVE;
     }
 
     @Override

@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrFreeLicense;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaType;
@@ -98,13 +98,16 @@ public class FlickrMediaProcessorService {
                 media.setPathAlias(flickrAccount);
             }
             try {
-                if (FlickrFreeLicense.of(media.getLicense()) == FlickrFreeLicense.Public_Domain_Mark
+                FlickrLicense license = FlickrLicense.of(media.getLicense());
+                if (license == FlickrLicense.Public_Domain_Mark
                         && !Boolean.TRUE.equals(media.isIgnored())
                         && !UnitedStates.isClearPublicDomain(media.getDescription())) {
                     MediaService.ignoreMedia(media, "Public Domain Mark is not a legal license");
+                } else if (!license.isFree()) {
+                    LOGGER.debug("Non-free Flickr licence for media {}: {}", media, license);
                 }
             } catch (IllegalArgumentException e) {
-                LOGGER.debug("Non-free Flickr licence for media {}: {}", media, e.getMessage());
+                LOGGER.debug("Unknown Flickr licence for media {}: {}", media, e.getMessage());
             }
         }
         if (isEmpty(media.getPhotosets())) {
@@ -192,7 +195,14 @@ public class FlickrMediaProcessorService {
         LOGGER.warn("Flickr license has changed for picture {} of {} from {} to {}",
                 media.getId(), flickrAccount, mediaInRepo.getLicense(), media.getLicense());
         try {
-            if (FlickrFreeLicense.of(media.getLicense()) != null && mediaInRepo.isIgnored()
+            FlickrLicense license = FlickrLicense.of(media.getLicense());
+            if (!license.isFree() && Boolean.TRUE != mediaInRepo.isIgnored()) {
+                String message = String.format("Flickr license for picture %d of %s is no longer free!", media.getId(),
+                        flickrAccount);
+                mediaInRepo.setIgnored(Boolean.TRUE);
+                mediaInRepo.setIgnoredReason(message);
+                LOGGER.warn(message);
+            } else if (license.isFree() && Boolean.TRUE == mediaInRepo.isIgnored()
                     && mediaInRepo.getIgnoredReason() != null
                     && mediaInRepo.getIgnoredReason().endsWith("is no longer free!")) {
                 LOGGER.info("Flickr license for picture {} of {} is free again!", media.getId(), flickrAccount);
@@ -200,7 +210,7 @@ public class FlickrMediaProcessorService {
                 mediaInRepo.setIgnoredReason(null);
             }
         } catch (IllegalArgumentException e) {
-            String message = String.format("Flickr license for picture %d of %s is no longer free!",
+            String message = String.format("Flickr license for picture %d of %s is unknown!",
                     media.getId(), flickrAccount);
             mediaInRepo.setIgnored(Boolean.TRUE);
             mediaInRepo.setIgnoredReason(message);
