@@ -9,6 +9,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +52,11 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
     @Override
     public URL getSourceUrl(CopernicusGalleryMedia media, FileMetadata metadata) {
         return newURL(BASE_URL + "/en/media/image-day-gallery/" + media.getId());
+    }
+
+    @Override
+    protected Optional<Temporal> getUploadDate(CopernicusGalleryMedia media) {
+        return Optional.of(media.getDate());
     }
 
     @Override
