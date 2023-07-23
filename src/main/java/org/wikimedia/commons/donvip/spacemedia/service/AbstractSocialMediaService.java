@@ -154,14 +154,8 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         if (!accounts.isEmpty()) {
             sb.append(" from " + accounts.stream().sorted().collect(joining(" ")));
         }
-        uploadedMedia.stream().map(Media::getTitle).filter(x -> x != null && x.length() > 3).distinct().sorted()
-                .limit(5).forEach(title -> sb.append("\n« ").append(title).append(" »"));
-        List<String> keywords = uploadedMedia.stream().filter(WithKeywords.class::isInstance)
-                .flatMap(x -> ((WithKeywords) x).getKeywords().stream()).distinct().sorted().limit(10).toList();
-        if (!keywords.isEmpty()) {
-            sb.append("\n\n");
-            keywords.forEach(kw -> sb.append('#').append(kw).append(' '));
-        }
+        appendTitles(uploadedMedia, sb);
+        appendKeywords(uploadedMedia, sb);
         if (imgCount + vidCount > 1) {
             String maxTimestamp = imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
                     .map(FileMetadata::getSha1).map(CommonsService::base36Sha1).toList());
@@ -183,6 +177,22 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             }
         }
         return sb.toString().strip();
+    }
+
+    private static void appendTitles(Collection<? extends Media<?, ?>> uploadedMedia, StringBuilder sb) {
+        uploadedMedia.stream().map(Media::getTitle).filter(x -> x != null && x.length() > 3)
+                .map(x -> x.replace(" (annotated)", "").replace(" (labeled)", "")).distinct().sorted()
+                .limit(5).forEach(title -> sb.append("\n« ").append(title).append(" »"));
+    }
+
+    private static void appendKeywords(Collection<? extends Media<?, ?>> uploadedMedia, StringBuilder sb) {
+        List<String> keywords = uploadedMedia.stream().filter(WithKeywords.class::isInstance)
+                .flatMap(x -> ((WithKeywords) x).getKeywords().stream()).map(kw -> kw.replace(" ", "")).distinct()
+                .sorted().limit(10).toList();
+        if (!keywords.isEmpty()) {
+            sb.append("\n\n");
+            keywords.forEach(kw -> sb.append('#').append(kw).append(' '));
+        }
     }
 
     protected Collection<FileMetadata> determineMediaToUploadToSocialMedia(Collection<FileMetadata> uploadedMedia) {
