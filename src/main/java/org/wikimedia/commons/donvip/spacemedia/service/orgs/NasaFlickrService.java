@@ -30,12 +30,15 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
             "<b><a href=\"http://www.nasa.gov/audience/formedia/features/MP_Photo_Guidelines.html\">NASA image use policy.</a></b>",
             "<b><a href=\"http://www.nasa.gov/audience/formedia/features/MP_Photo_Guidelines.html\" rel=\"nofollow\">NASA image use policy.</a></b>",
             "<b><a href=\"http://www.nasa.gov/centers/goddard/home/index.html\" rel=\"nofollow\">NASA Goddard Space Flight Center</a></b> enables NASA’s mission through four scientific endeavors: Earth Science, Heliophysics, Solar System Exploration, and Astrophysics. Goddard plays a leading role in NASA’s accomplishments by contributing compelling scientific knowledge to advance the Org’s mission.",
+            "<b><a href=\"https://www.nasa.gov/centers/goddard/home/index.html\">NASA Goddard Space Flight Center</a></b> is home to the nation's largest organization of combined scientists, engineers and technologists that build spacecraft, instruments and new technology to study the Earth, the sun, our solar system, and the universe.",
             "<b><a href=\"http://www.nasa.gov/centers/goddard/home/index.html\">NASA Goddard Space Flight Center</a></b> enables NASA’s mission through four scientific endeavors: Earth Science, Heliophysics, Solar System Exploration, and Astrophysics. Goddard plays a leading role in NASA’s accomplishments by contributing compelling scientific knowledge to advance the Org’s mission.",
             "<b>Find us on <a href=\"http://instagrid.me/nasagoddard/?vm=grid\" rel=\"nofollow\">Instagram</a></b>",
+            "<b>Find us on <a href=\"http://instagrid.me/nasagoddard/?vm=grid\">Instagram</a></b>",
             "<b>Find us on <a href=\"http://www.instagram.com/nasagoddard/?vm=grid\">Instagram</a></b>",
             "<b>Find us on <a href=\"https://twitter.com/NASAHubble\">Twitter</a>, <a href=\"https://instagram.com/nasahubble?utm_medium=copy_link\">Instagram</a>, <a href=\"https://www.facebook.com/NASAHubble\">Facebook</a> and <a href=\"https://www.youtube.com/playlist?list=PL3E861DC9F9A8F2E9\"> YouTube</a></b>",
             "<b>Follow us on <a href=\"http://twitter.com/NASA_GoddardPix\" rel=\"nofollow\">Twitter</a></b>",
             "<b>Follow us on <a href=\"http://twitter.com/NASAGoddardPix\">Twitter</a></b>",
+            "<b>Join us on <a href=\"https://www.facebook.com/pages/Greenbelt-MD/NASA-Goddard/395013845897?ref=tsd\">Facebook]</a></b>",
             "<b>Like us on <a href=\"http://www.facebook.com/pages/Greenbelt-MD/NASA-Goddard/395013845897?ref=tsd\">Facebook</a></b>",
             "<b>Like us on <a href=\"http://www.facebook.com/pages/Greenbelt-MD/NASA-Goddard/395013845897?ref=tsd\" rel=\"nofollow\">Facebook</a></b>"
             );
