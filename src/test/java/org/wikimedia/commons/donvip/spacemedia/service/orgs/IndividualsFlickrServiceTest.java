@@ -168,6 +168,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     @Test
     void testFindLicenceTemplates() {
         FlickrMedia media = new FlickrMedia();
+        media.setPathAlias("pierre_markuse");
         media.setLicense(4);
         media.setId(52559137901L);
         media.setTitle("Brunt Ice Shelf, Antarctica - 11 December 2022");

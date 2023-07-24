@@ -339,7 +339,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             try {
                 LOGGER.info("Fetching Flickr media from account '{}'...", flickrAccount);
                 List<FlickrMedia> freePictures = buildFlickrMediaList(
-                        flickrService.searchPhotos(flickrAccount, minUploadDate, includeAllLicences()));
+                        flickrService.searchPhotos(flickrAccount, minUploadDate, includeAllLicences()), flickrAccount);
                 LOGGER.info("Found {} free Flickr media for account '{}'", freePictures.size(), flickrAccount);
                 Pair<Integer, Collection<FlickrMedia>> result = processFlickrMedia(freePictures, flickrAccount);
                 Collection<FlickrMedia> localUploadedImages = result.getRight();
@@ -355,21 +355,21 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
                         count += updateNoLongerFreeFlickrMedia(flickrAccount, noLongerFreePictures);
                     }
                 }
-            } catch (FlickrException | MalformedURLException | RuntimeException e) {
+            } catch (FlickrException | RuntimeException e) {
                 LOGGER.error("Error while fetching Flickr media from account {}", flickrAccount, e);
             }
         }
         endUpdateMedia(count, uploadedMedia, start, false /* tweets already posted - one by Flickr account */);
     }
 
-    private int updateNoLongerFreeFlickrMedia(String flickrAccount, Set<FlickrMedia> pictures)
-            throws MalformedURLException {
+    private int updateNoLongerFreeFlickrMedia(String flickrAccount, Set<FlickrMedia> pictures) {
         int count = 0;
         LOGGER.info("Checking {} Flickr images no longer free for account '{}'...", pictures.size(), flickrAccount);
         for (FlickrMedia picture : pictures) {
             try {
                 count += processFlickrMedia(
-                        buildFlickrMediaList(List.of(flickrService.findPhoto(picture.getId().toString()))),
+                        buildFlickrMediaList(List.of(flickrService.findPhoto(picture.getId().toString())),
+                                flickrAccount),
                         flickrAccount).getLeft();
             } catch (FlickrException e) {
                 if (e.getErrorMessage() != null) {
@@ -392,14 +392,14 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         return count;
     }
 
-    private List<FlickrMedia> buildFlickrMediaList(List<Photo> photos) {
-        return photos.stream().map(this::photoToFlickrMedia).toList();
+    private List<FlickrMedia> buildFlickrMediaList(List<Photo> photos, String flickrAccount) {
+        return photos.stream().map(x -> photoToFlickrMedia(x, flickrAccount)).toList();
     }
 
-    private FlickrMedia photoToFlickrMedia(Photo p) {
+    private FlickrMedia photoToFlickrMedia(Photo p, String flickrAccount) {
         return flickrRepository.findById(Long.parseLong(p.getId())).orElseGet(() -> {
             try {
-                FlickrMedia media = mapPhoto(p);
+                FlickrMedia media = mapPhoto(p, flickrAccount);
                 metadataRepository.save(media.getUniqueMetadata());
                 return flickrRepository.save(media);
             } catch (FlickrException e) {
@@ -432,13 +432,14 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     @Override
     protected final FlickrMedia refresh(FlickrMedia media) throws IOException {
         try {
-            return media.copyDataFrom(mapPhoto(flickrService.findPhoto(media.getId().toString())));
+            return media
+                    .copyDataFrom(mapPhoto(flickrService.findPhoto(media.getId().toString()), media.getPathAlias()));
         } catch (FlickrException e) {
             throw new IOException(e);
         }
     }
 
-    private static FlickrMedia mapPhoto(Photo p) throws FlickrException {
+    private static FlickrMedia mapPhoto(Photo p, String flickrAccount) throws FlickrException {
         FlickrMedia m = new FlickrMedia();
         ofNullable(p.getGeoData()).ifPresent(geo -> {
             m.setLatitude(geo.getLatitude());
@@ -457,7 +458,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         FileMetadata md = m.getUniqueMetadata();
         md.setAssetUrl(newURL(p.getOriginalUrl()));
         md.setImageDimensions(new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight()));
-        m.setPathAlias(p.getPathAlias());
+        m.setPathAlias(StringUtils.isEmpty(p.getPathAlias()) ? flickrAccount : p.getPathAlias());
         m.setTags(p.getTags().stream().map(Tag::getValue).collect(toSet()));
         m.setThumbnailUrl(newURL(p.getThumbnailUrl()));
         m.setTitle(p.getTitle());

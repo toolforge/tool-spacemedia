@@ -94,9 +94,6 @@ public class FlickrMediaProcessorService {
             media = mediaInRepo;
         } else {
             save = true;
-            if (StringUtils.isEmpty(media.getPathAlias())) {
-                media.setPathAlias(flickrAccount);
-            }
             try {
                 FlickrLicense license = FlickrLicense.of(media.getLicense());
                 if (license == FlickrLicense.Public_Domain_Mark
@@ -109,6 +106,10 @@ public class FlickrMediaProcessorService {
             } catch (IllegalArgumentException e) {
                 LOGGER.debug("Unknown Flickr licence for media {}: {}", media, e.getMessage());
             }
+        }
+        if (StringUtils.isEmpty(media.getPathAlias())) {
+            media.setPathAlias(flickrAccount);
+            save = true;
         }
         if (isEmpty(media.getPhotosets())) {
             try {
