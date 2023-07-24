@@ -273,10 +273,13 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             FlickrLicense license = FlickrLicense.of(media.getLicense());
             result.add(license.getWikiTemplate()
                     + (license.isFree() ? "" : "|1={{tl|" + getNonFreeLicenceTemplate(media) + "}}"));
+            if (license.isFree()) {
+                result.add("Flickrreview"); // Normal case
+            }
         } catch (IllegalArgumentException e) {
             LOGGER.warn("Unknown Flickr licence for media {}: {}", media.getId(), e.getMessage());
+            result.add("Flickrreview"); // Strange case
         }
-        result.add("Flickrreview");
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(),
                 getSourceUrl(media, media.getUniqueMetadata()));
         if (t != null) {
