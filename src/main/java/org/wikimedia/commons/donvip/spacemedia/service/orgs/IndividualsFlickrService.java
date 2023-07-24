@@ -43,6 +43,19 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    public Set<String> findLicenceTemplates(FlickrMedia media) {
+        Set<String> result = super.findLicenceTemplates(media);
+        switch (media.getPathAlias()) {
+        case "harrystrangerphotography", "194849271@N04":
+            if (media.getDescription().toLowerCase(Locale.ENGLISH).contains("usgs")) {
+                replace(result, "Flickr-public domain mark", "PD-USGov-USGS");
+            }
+            break;
+        }
+        return result;
+    }
+
+    @Override
     public Set<String> findCategories(FlickrMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         String titleLc = media.getTitle().toLowerCase(Locale.ENGLISH);
