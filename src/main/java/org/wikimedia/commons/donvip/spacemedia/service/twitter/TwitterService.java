@@ -28,6 +28,7 @@ import com.github.scribejava.core.model.OAuth1AccessToken;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth10aService;
+import com.twitter.twittertext.TwitterTextParser;
 
 import io.github.redouane59.twitter.TwitterClient;
 import io.github.redouane59.twitter.dto.tweet.MediaCategory;
@@ -113,9 +114,25 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
     @Override
     protected OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
             Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
-        return postRequest(V2_TWEET, "application/json", new TweetRequest(createTweetMedia(uploadedMetadata),
-                        createStatusText(emojis, accounts, uploadedMedia.stream().filter(Media::isImage).count(),
-                        uploadedMedia.stream().filter(Media::isVideo).count(), uploadedMedia, uploadedMetadata)));
+        final long imagesCount = uploadedMedia.stream().filter(Media::isImage).count();
+        final long videosCount = uploadedMedia.stream().filter(Media::isVideo).count();
+        int maxTitles = 5;
+        int maxKeywords = 10;
+        String text = createStatusText(emojis, accounts, imagesCount, videosCount, uploadedMedia, uploadedMetadata,
+                maxTitles, maxKeywords);
+        while (!isTweetValid(text) && maxTitles > 1) {
+            text = createStatusText(emojis, accounts, imagesCount, videosCount, uploadedMedia, uploadedMetadata,
+                    --maxTitles, maxKeywords);
+        }
+        while (!isTweetValid(text) && maxKeywords > 1) {
+            text = createStatusText(emojis, accounts, imagesCount, videosCount, uploadedMedia, uploadedMetadata,
+                    maxTitles, --maxKeywords);
+        }
+        return postRequest(V2_TWEET, "application/json", new TweetRequest(createTweetMedia(uploadedMetadata), text));
+    }
+
+    private static boolean isTweetValid(String text) {
+        return TwitterTextParser.parseTweet(text).isValid;
     }
 
     private TweetMedia createTweetMedia(Collection<FileMetadata> uploadedMetadata) {

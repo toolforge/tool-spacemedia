@@ -140,7 +140,8 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     }
 
     protected String createStatusText(Set<String> emojis, Set<String> accounts, long imgCount, long vidCount,
-            Collection<? extends Media<?, ?>> uploadedMedia, Collection<FileMetadata> uploadedMetadata) {
+            Collection<? extends Media<?, ?>> uploadedMedia, Collection<FileMetadata> uploadedMetadata, int maxTitles,
+            int maxKeywords) {
         StringBuilder sb = new StringBuilder(emojis.stream().sorted().collect(joining()));
         if (imgCount > 0) {
             sb.append(String.format(" %d new picture%s", imgCount, imgCount > 1 ? "s" : ""));
@@ -154,8 +155,8 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         if (!accounts.isEmpty()) {
             sb.append(" from " + accounts.stream().sorted().collect(joining(" ")));
         }
-        appendTitles(uploadedMedia, sb);
-        appendKeywords(uploadedMedia, sb);
+        appendTitles(uploadedMedia, sb, maxTitles);
+        appendKeywords(uploadedMedia, sb, maxKeywords);
         if (imgCount + vidCount > 1) {
             String maxTimestamp = imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
                     .map(FileMetadata::getSha1).map(CommonsService::base36Sha1).toList());
@@ -179,16 +180,16 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         return sb.toString().strip();
     }
 
-    private static void appendTitles(Collection<? extends Media<?, ?>> uploadedMedia, StringBuilder sb) {
+    private static void appendTitles(Collection<? extends Media<?, ?>> uploadedMedia, StringBuilder sb, int max) {
         uploadedMedia.stream().map(Media::getTitle).filter(x -> x != null && x.length() > 3)
                 .map(x -> x.replace(" (annotated)", "").replace(" (labeled)", "")).distinct().sorted()
-                .limit(5).forEach(title -> sb.append("\n« ").append(title).append(" »"));
+                .limit(max).forEach(title -> sb.append("\n« ").append(title).append(" »"));
     }
 
-    private static void appendKeywords(Collection<? extends Media<?, ?>> uploadedMedia, StringBuilder sb) {
+    private static void appendKeywords(Collection<? extends Media<?, ?>> uploadedMedia, StringBuilder sb, int max) {
         List<String> keywords = uploadedMedia.stream().filter(WithKeywords.class::isInstance)
                 .flatMap(x -> ((WithKeywords) x).getKeywords().stream()).map(kw -> kw.replace(" ", "")).distinct()
-                .sorted().limit(10).toList();
+                .sorted().limit(max).toList();
         if (!keywords.isEmpty()) {
             sb.append("\n\n");
             keywords.forEach(kw -> sb.append('#').append(kw).append(' '));

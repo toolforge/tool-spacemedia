@@ -86,7 +86,8 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
         return postRequest(api.getStatusUrl(), "application/json",
                 new StatusRequest(
                         createStatusText(emojis, accounts, uploadedMedia.stream().filter(Media::isImage).count(),
-                                uploadedMedia.stream().filter(Media::isVideo).count(), uploadedMedia, uploadedMetadata),
+                                uploadedMedia.stream().filter(Media::isVideo).count(), uploadedMedia, uploadedMetadata,
+                                5, 10),
                         postMedia(uploadedMetadata)));
     }
 
