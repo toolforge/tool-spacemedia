@@ -228,12 +228,14 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
 
     @Override
     protected final String getAuthor(FlickrMedia media) throws MalformedURLException {
+        URL userPhotosUrl = getUserPhotosUrl(media);
         try {
-            User user = flickrService.findUser(getUserPhotosUrl(media));
+            User user = flickrService.findUser(userPhotosUrl);
             URL profileUrl = flickrService.findUserProfileUrl(user.getId());
             return wikiLink(profileUrl, user.getUsername());
         } catch (FlickrException e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(
+                    String.format("Unable to retrieve Flickr author for %s with url %s", media, userPhotosUrl), e);
         }
     }
 
