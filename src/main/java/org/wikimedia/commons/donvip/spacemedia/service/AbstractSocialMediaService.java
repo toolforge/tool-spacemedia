@@ -183,7 +183,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     private static void appendTitles(Collection<? extends Media<?, ?>> uploadedMedia, StringBuilder sb, int max) {
         uploadedMedia.stream().map(Media::getTitle).filter(x -> x != null && x.length() > 3)
                 .map(x -> x.replace(" (annotated)", "").replace(" (labeled)", "")).distinct().sorted()
-                .limit(max).forEach(title -> sb.append("\n« ").append(title).append(" »"));
+                .limit(max).forEach(title -> sb.append("\n- ").append(title));
     }
 
     private static void appendKeywords(Collection<? extends Media<?, ?>> uploadedMedia, StringBuilder sb, int max) {
