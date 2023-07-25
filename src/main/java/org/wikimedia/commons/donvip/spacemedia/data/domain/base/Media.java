@@ -1,8 +1,11 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
+import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
+import static org.apache.commons.lang3.StringUtils.stripAccents;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
 
@@ -118,13 +121,22 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         // Upload title must not exceed mediawiki limit (240 characters, filename-toolong API error)
         String id = getUploadId(fileMetadata);
         String s = getUploadTitle();
-        if (id.equals(s)) {
+        if (strippedLower(id).equals(strippedLower(s))) {
             return isTitleBlacklisted(s)
                     ? getUploadTitle(CommonsService.normalizeFilename(getFirstSentence(description)), id)
                     : s.substring(0, Math.min(234, s.length()));
         } else {
             return getUploadTitle(s, id);
         }
+    }
+
+    private static String strippedLower(String s) {
+        return deleteWhitespace((" " + stripAccents(s)).toLowerCase(ENGLISH).replace(" a ", " ").replace(" as ", " ")
+                .replace(" at ", " ").replace(" by ", " ").replace(" for ", " ").replace(" from ", " ")
+                .replace(" in ", " ").replace(" is ", " ").replace(" of ", " ").replace(" on ", " ")
+                .replace(" the ", " ").replace(" to ", " ").replace("-", "").replace("_", "").replace("'", "")
+                .replace(",", "").replace(".", "").replace("“", "").replace("(", "").replace(")", "").replace(":", "")
+                .replace("’", ""));
     }
 
     protected String getUploadTitle() {
