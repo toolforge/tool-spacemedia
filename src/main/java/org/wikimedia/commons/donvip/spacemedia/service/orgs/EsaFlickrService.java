@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -51,7 +52,7 @@ public class EsaFlickrService extends AbstractOrgFlickrService {
         // Try to find any ESA mission or people in the description and title.
         // Filters in the description search to minimize false positives such as Herschel, Galileo...
         String titleLc = media.getTitle().toLowerCase(Locale.ENGLISH);
-        String descriptionLc = media.getDescription().toLowerCase(Locale.ENGLISH);
+        String descriptionLc = Optional.ofNullable(media.getDescription()).orElse("").toLowerCase(Locale.ENGLISH);
         for (Map<String, String> mapping : Arrays.asList(esaMissions, esaPeople)) {
             for (Entry<String, String> entry : mapping.entrySet()) {
                 String key = entry.getKey();
