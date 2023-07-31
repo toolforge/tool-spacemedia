@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
@@ -159,7 +160,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         appendKeywords(uploadedMedia, sb, maxKeywords);
         if (imgCount + vidCount > 1) {
             String maxTimestamp = imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
-                    .map(FileMetadata::getSha1).map(CommonsService::base36Sha1).toList());
+                    .map(FileMetadata::getSha1).filter(Objects::nonNull).map(CommonsService::base36Sha1).toList());
             if (maxTimestamp != null) {
                 sb.append("\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
                         + "&user=" + commonsAccount + "&ilshowall=1&offset=" + timestampFormatter
