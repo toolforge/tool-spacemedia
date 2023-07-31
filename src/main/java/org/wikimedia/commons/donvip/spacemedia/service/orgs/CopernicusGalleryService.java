@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.CopernicusGalleryMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.CopernicusGalleryMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -84,19 +85,19 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
         } else if (media.containsInTitleOrDescription("floods") || media.containsInTitleOrDescription("flooding")) {
             result.add("Photos of floods by Sentinel satellites");
         }
-        if (media.containsInTitleOrDescription("Sentinel-1")) {
-            result.add("Sentinel-1 images");
-        }
-        if (media.containsInTitleOrDescription("Sentinel-2")) {
-            result.add("Sentinel-2 images");
-        }
-        if (media.containsInTitleOrDescription("Sentinel-3")) {
-            result.add("Sentinel-3 images");
-        }
-        if (media.containsInTitleOrDescription("Sentinel-5P")) {
-            result.add("Sentinel-5P images");
-        }
+        findCategoriesForSentinel(media, "Sentinel-1", result);
+        findCategoriesForSentinel(media, "Sentinel-2", result);
+        findCategoriesForSentinel(media, "Sentinel-3", result);
+        findCategoriesForSentinel(media, "Sentinel-5P", result);
+        findCategoriesForSentinel(media, "Sentinel-6", result);
         return result;
+    }
+
+    private void findCategoriesForSentinel(Media<?, ?> media, String sentinel, Set<String> result) {
+        if (media.containsInTitleOrDescription(sentinel)) {
+            result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by " + sentinel,
+                    sentinel + " images"));
+        }
     }
 
     @Override

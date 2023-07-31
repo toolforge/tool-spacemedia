@@ -410,6 +410,10 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
             if (StringUtils.isNotBlank(cats)) {
                 Arrays.stream(cats.split(";")).forEach(result::add);
             }
+            if (mission.matches("Sentinel-\\d.?")) {
+                result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by " + mission,
+                        mission + " images"));
+            }
         }
         if (media.getPeople() != null) {
             String cats = esaPeople.get(media.getPeople());

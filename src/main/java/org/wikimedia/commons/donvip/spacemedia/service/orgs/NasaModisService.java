@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
@@ -145,6 +146,9 @@ public class NasaModisService
     @Override
     public Set<String> findCategories(NasaModisMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
+        String whichModis = terraOrAqua(media, () -> "Terra (satellite) MODIS", () -> "Aqua (satellite) MODIS");
+        result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by the " + whichModis,
+                "Photos by the " + whichModis));
         return result;
     }
 
@@ -157,11 +161,9 @@ public class NasaModisService
     @Override
     public Set<String> findInformationTemplates(NasaModisMedia media) {
         Set<String> result = super.findInformationTemplates(media);
-        if ("Terra".equals(media.getSatellite())) {
-            result.add("NASA Photojournal/attribution|class=Terra|mission=Terra|name=Terra|credit=MODIS");
-        } else if ("Aqua".equals(media.getSatellite())) {
-            result.add("NASA Photojournal/attribution|class=Aqua|mission=Aqua|name=Aqua|credit=MODIS");
-        }
+        terraOrAqua(media,
+                () -> result.add("NASA Photojournal/attribution|class=Terra|mission=Terra|name=Terra|credit=MODIS"),
+                () -> result.add("NASA Photojournal/attribution|class=Aqua|mission=Aqua|name=Aqua|credit=MODIS"));
         return result;
     }
 
@@ -176,15 +178,22 @@ public class NasaModisService
     protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaModisMedia media,
             FileMetadata metadata) {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
-        if ("Terra".equals(media.getSatellite())) {
-            result.put("P170", Pair.of("Q584697", null)); // Created by Terra
-        } else if ("Aqua".equals(media.getSatellite())) {
-            result.put("P170", Pair.of("Q17397", null)); // Created by Aqua
-        }
+        terraOrAqua(media,
+                () -> result.put("P170", Pair.of("Q584697", null)),
+                () -> result.put("P170", Pair.of("Q17397", null))); // Created by Terra or Aqua
         result.put("P1071", Pair.of("Q663611", null)); // Created in low earth orbit
         result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
         result.put("P4082", Pair.of("Q676840", null)); // Taken with MODIS instrument
         return result;
+    }
+
+    private static <T> T terraOrAqua(NasaModisMedia media, Supplier<T> terra, Supplier<T> aqua) {
+        if ("Terra".equals(media.getSatellite())) {
+            return terra.get();
+        } else if ("Aqua".equals(media.getSatellite())) {
+            return aqua.get();
+        }
+        return null;
     }
 
     @Override
@@ -220,7 +229,7 @@ public class NasaModisService
         if ("-".equals(h5)) {
             throw new UpdateFinishedException("Done");
         }
-        image.setTitle(h5.substring(h5.indexOf('-') + 1));
+        image.setTitle(h5.substring(h5.indexOf('-') + 1).strip());
         // Image at top is used as thumbnail
         String thumb = div.getElementsByTag("img").first().attr("src").replace("http://", "https://");
         if (!thumb.startsWith("https://")) {

@@ -37,8 +37,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -162,6 +164,8 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
     @SuppressWarnings("unused")
     private Set<String> ignoredCommonTerms;
 
+    private Set<String> satellitePicturesCategories;
+
     @Value("${courtesy.ok}")
     private Set<String> courtesyOk;
 
@@ -189,6 +193,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
     @PostConstruct
     void init() throws IOException {
         ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/search.ignored.terms.csv"));
+        satellitePicturesCategories = CsvHelper.loadSet(getClass().getResource("/satellite.pictures.categories.txt"));
         categoriesStatements = loadCsvMapping("categories.statements.csv");
         uploadMode = UploadMode.valueOf(
                 env.getProperty(id + ".upload", String.class, UploadMode.DISABLED.name())
@@ -1004,7 +1009,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     protected Optional<String> findCategoryFromTitle(String title) {
         if (title != null) {
-            String[] words = title.split(" ");
+            String[] words = title.strip().split(" ");
             if (words.length >= 2) {
                 for (int n = words.length; n >= 2; n--) {
                     String firstWords = String.join(" ", Arrays.copyOfRange(words, 0, n));
@@ -1019,6 +1024,34 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
             }
         }
         return Optional.empty();
+    }
+
+    protected Set<String> findCategoriesForEarthObservationImage(Media<?, ?> image, UnaryOperator<String> categorizer,
+            String defaultCat) {
+        Set<String> result = new TreeSet<>();
+        for (String targetOrSubject : satellitePicturesCategories) {
+            if (image.containsInTitleOrDescription(targetOrSubject)) {
+                String cat = categorizer.apply(targetOrSubject);
+                if (commonsService.existsCategoryPage(cat)) {
+                    result.add(cat);
+                } else {
+                    String theCat = categorizer.apply("the " + targetOrSubject);
+                    if (commonsService.existsCategoryPage(theCat)) {
+                        result.add(theCat);
+                    } else {
+                        String cats = categorizer.apply(targetOrSubject + "s");
+                        if (commonsService.existsCategoryPage(cats)) {
+                            result.add(cats);
+                        }
+                    }
+                }
+            }
+        }
+        if (result.isEmpty()) {
+            result.add(defaultCat);
+        }
+        result.add(image.getYear() + " satellite pictures");
+        return result;
     }
 
     /**

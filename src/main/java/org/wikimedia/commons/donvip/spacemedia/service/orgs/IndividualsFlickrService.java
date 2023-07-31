@@ -89,6 +89,12 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
             } else if (media.getTags().contains("sentinel") && media.getTags().contains("flood")) {
                 result.add("Photos of floods by Sentinel satellites");
             }
+            for (String sentinel : new String[] { "Sentinel-1", "Sentinel-2", "Sentinel-3" }) {
+                if (result.contains(sentinel + " images")) {
+                    result.addAll(findCategoriesForEarthObservationImage(media,
+                            x -> "Photos of " + x + " by " + sentinel, sentinel + " images"));
+                }
+            }
             break;
         }
         if (includeHidden) {
