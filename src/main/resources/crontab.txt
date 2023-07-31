@@ -12,6 +12,7 @@
  0  3 * * * /bin/sh /data/project/spacemedia/run.sh box nasa-box
  0  4 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-photojournal
  0  5 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-aster
+ 5  5 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-modis
 15  5 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-sdo
  0  6 * * * /bin/sh /data/project/spacemedia/run.sh custom esa
  0  7 * * * /bin/sh /data/project/spacemedia/run.sh djangoplicity iau

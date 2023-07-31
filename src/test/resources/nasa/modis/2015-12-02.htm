@@ -1,0 +1,418 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="format-detection" content="telephone=no">
+<title>MODIS Web</title>
+<!-- SET: FAVICON -->
+
+<!-- END: FAVICON -->
+
+<!-- SET: STYLESHEET -->
+<link href="../css/style.css" rel="stylesheet" type="text/css" media="all">
+<link href="../css/responsive.css" rel="stylesheet" type="text/css" media="all">
+<!-- END: STYLESHEET -->
+	<META name="orgcode" content="614" />
+	<META name="description" content="The Moderate Resolution Imaging Spectroradiometer website that houses all central information on the MODIS project" />
+	<META name="rno" content="shannell.c.frazier">
+	<META name="content-owner" content="Brandon.F.Maccherone.1" />
+	<META name="webmaster" content="Brandon.F.Maccherone.1" />	<meta name="keywords" content="NASA, Earth Science, Space Science, Technology" /> 
+<!-- SET: SCRIPTS -->
+ <!-- <script src="/includes/javascripts/prototype.js" type="text/javascript"></script>
+ <script src="/includes/javascripts/scriptaculous.js" type="text/javascript"></script> -->
+ <script language="javascript" id="_fed_an_ua_tag" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NASA&subagency=GSFC&dclink=true"></script>
+ <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.js"></script>
+	<script type="text/javascript">
+	$(document).ready(function() {
+     $('.menu_icon').click(function(){
+   		$('.nav').slideToggle(); 
+   	});
+   $('#data').click(function(){
+   		$('.mobile .menu').slideToggle('slow'); 
+		//speed:1000
+   });
+   
+   (function(cash) {
+  var $window = $(window),
+   $html = $('html');
+  function resize() {
+   if ($window.width() < 599) {
+    return $html.addClass('mobile');
+   }
+   $html.removeClass('mobile');
+  }
+  $window
+   .resize(resize)
+   .trigger('resize');
+ })(jQuery);
+ 
+ $('.nav ul li .menu_in ul li').click(function(){
+   		$('.mobile .menu').slideUp('slow'); 
+		//speed:1000
+   });
+   
+ 
+ 
+   }); 
+    </script>
+<!-- END: SCRIPTS -->
+
+<!--[if lt IE 9]>
+ <script type="text/javascript">
+  document.createElement("header");
+  document.createElement("nav");
+  document.createElement("section");
+  document.createElement("article");
+  document.createElement("aside");
+  document.createElement("footer");
+ </script>
+ 
+ <![endif] -->
+ <!--[if IE 7]>
+<style type="text/css">
+.nav_main{ width:1200px;}
+.header_in_logo	{right:-1000px;}
+</style>
+ <![endif]--> <script>
+	function openwindow(){
+		window.open("http://visibleearth.nasa.gov/view_set.php?categoryId=2251&order=newest&sequence=vis", "_blank", "height=600,innerHeight=500,width=800,innerWidth=500,resizable,scrollbars,toolbar");
+	}
+
+	$(document).ready(function() {
+  		$("#cf7_controls").on('click', 'span', function() {
+    			$("#cf7 img").removeClass("opaque");
+
+    			var newImage = $(this).index();
+
+    			$("#cf7 img").eq(newImage).addClass("opaque");
+
+    			$("#cf7_controls span").removeClass("selected");
+    			$(this).addClass("selected");
+  		});
+	});
+	
+</script>
+<style>
+#cf3 {
+  position:relative;
+  height:659px;
+  width:600px;
+  margin:0 auto;
+}
+
+#cf3 img {
+  position:absolute;
+  left:0;
+  -webkit-transition: opacity 1s ease-in-out;
+  -moz-transition: opacity 1s ease-in-out;
+  -o-transition: opacity 1s ease-in-out;
+  transition: opacity 1s ease-in-out;
+}
+
+@keyframes cf3FadeInOut {
+  0% {
+  opacity:1;
+}
+45% {
+opacity:1;
+}
+55% {
+opacity:0;
+}
+100% {
+opacity:0;
+}
+}
+
+#cf3 img.top {
+animation-name: cf3FadeInOut;
+animation-timing-function: ease-in-out;
+animation-iteration-count: infinite;
+animation-duration: 5s;
+animation-direction: alternate;
+}
+p#cf7_controls {
+  text-align:center;
+}
+#cf7_controls span {
+  padding-right:2em;
+  cursor:pointer;
+}
+#cf7 {
+  position:relative;
+  height:480px;
+  width:600px;
+  margin:0 auto 10px;
+}
+#cf7 img {
+  position:absolute;
+  left:0;
+  -webkit-transition: opacity 1s ease-in-out;
+  -moz-transition: opacity 1s ease-in-out;
+  -o-transition: opacity 1s ease-in-out;
+  transition: opacity 1s ease-in-out;
+  opacity:0;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: alpha(opacity=0);
+}
+
+#cf7 img.opaque {
+  opacity:1;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+  filter: alpha(opacity=1);
+}
+.selected {font-weight:600;}
+</style>
+
+</head>
+
+<body>
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v6.0"></script>
+<!-- wrapper starts -->
+<div class="wrapper">
+	<div class="container_in">
+            <!-- Header Starts -->
+            <!-- Header ends -->
+            <div class="banner">
+                <div class="upper">
+                <div class="header"> 
+            	<div class="header_in">
+                		<a href="http://www.nasa.gov" title="Link To NASA website"><div class="nasaLogoLink"></div></a>
+                        <a href="http://modis.gsfc.nasa.gov/"><div class="modisHeaderLink"></div></a>
+                        
+                </div>
+            </div>
+            	<div class="nav_main">
+                <div class="menu_icon"><img src="../images/menu.png" width="33" height="24" alt="menu"></div>
+                	<div class="nav">
+                    	<ul>
+                        	 <li><a href="http://modis.gsfc.nasa.gov/about/" id="about">About</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/" id="data">Data</a>
+                            <div class="menu">
+                              <div class="menu_in">
+                        	
+                            <ul>
+                            
+                            <b><li><a name="level1" style="font-weight:bold;"><u>Level 1</u></a></li></b>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod01.php">Raw Radiances</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod02.php">Calibrated Radiances</a></li>
+                            <li class="option"><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod03.php">Geolocation Fields</a></li>
+                            
+                           	<B><li><a name="atmos" style="font-weight:bold;"><u>Atmosphere Products</u></a></li></B>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod04.php">Aerosol Product</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod05.php">Total Precipitable Water</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod06.php">Cloud Product</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod07.php">Atmospheric Profiles</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/modATML2.php">Atmosphere Joint Product</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod08.php">Atmosphere Gridded Product</a></li>
+                            <li class="option"><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod35.php">Cloud Mask</a></li>
+                            </ul>
+                            
+                            <ul>
+                            <b><li><a name="land" style="font-weight:bold;"><u>Land Products</u></a></li></b>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod09.php">Surface Reflectance</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod11.php">Land Surface Temperature</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod12.php">Land Cover Products</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod13.php">Vegetation Indices(NDVI &amp; EVI)</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod14.php">Thermal Anomalies/Fires</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod15.php">FPAR / (LAI)</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod16.php">Evapotranspiration</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod17.php">Gross Primary Productivity</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod43.php">BRDF / Albedo </a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod44.php">Vegetation Continuous Fields</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod44w.php">Water Mask</a></li>
+                            <li class="option"><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod45.php">Burned Area Product</a></li>
+                            </ul>
+                            <ul>
+                           	<b><li><a name="cryos" style="font-weight:bold;"><u>Cryosphere Products</u></a></li></b>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod10.php">Snow Cover</a></li>
+                            
+                            <li class="option"><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod29.php">Sea Ice &amp; Ice Surface Temperature</a></li>
+                            <b><li><a name="ocean" style="font-weight:bold;"><u>Ocean Products</u></a></li></b>                       
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/mod28.php">Sea Surface Temperature</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/Rrs.php">Remote Sensing Reflectance</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/chlor_a.php">Chlorophyll-a   Concentration</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/kd_490.php">Diffuse Attenuation at 490 nm</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/poc.php">Particulate Organic Carbon</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/pic.php">Particulate Inorganic Carbon</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/nflh.php">Normalized Fluorescence Line Height (FLH)</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/data/dataprod/ipar.php">Instantaneous Photosynthetically   Available Radiation</a></li>
+                            <li class="option"><a href="http://modis.gsfc.nasa.gov/data/dataprod/par.php">Daily Mean Photosynthetically Available Radiation</a></li>
+                           	</ul>
+                          		
+                                                                
+                              
+                           <!-- <ul>
+                                <li><a href="#"><h5>TOOLS Header2</h5></a></li>
+                            	<li><a href="#">Option 1 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 2 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 3 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 4 - Lorem ipsum lorem ipusm</a></li>
+                                <li class="option"><a href="#">Option 5 - Lorem ipsum lorem ipusm</a></li>
+                                
+								<li><a href="#">Option 1 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 2 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 3 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 4 - Lorem ipsum lorem ipusm</a></li>
+                                <li class="option"><a href="#">Option 5 - Lorem ipsum lorem ipusm</a></li>
+                                                                
+                                <li><a href="#">Option 1 - Lorem ipsum lorem ipusm</a></li>
+                            </ul>
+                            <ul class="last">
+                                <li><a href="#"><h5>TOOLS Header3</h5></a></li>
+                            	<li><a href="#">Option 1 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 2 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 3 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 4 - Lorem ipsum lorem ipusm</a></li>
+                                <li class="option"><a href="#">Option 5 - Lorem ipsum lorem ipusm</a></li>
+                                
+								<li><a href="#">Option 1 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 2 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 3 - Lorem ipsum lorem ipusm</a></li>
+                                <li><a href="#">Option 4 - Lorem ipsum lorem ipusm</a></li>
+                                <li class="option"><a href="#">Option 5 - Lorem ipsum lorem ipusm</a></li>
+                                                                
+                                <li><a href="#">Option 1 - Lorem ipsum lorem ipusm</a></li>
+                            </ul>
+                            -->
+                            <div class="clear"></div>
+                            </div></div></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/tools/">Tools</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/sci_team/" id="sciTeam">Science Team</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/gallery/" id="images">Images</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/news/" id="news">News</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/related/" id="related">Related Sites</a></li>  
+                            <li><a href="http://modis.gsfc.nasa.gov/modarch/" id="modarch">MODARCH</a></li>
+                                                            
+</ul>                        <div class="clear"></div>
+                    </div>
+                </div>	
+                </div>
+                <img src="../images/inner_banner.png" width="1202" height="103" alt="banner_bg">
+            </div>
+            <!-- maincontent Starts -->
+            <div class="inner_container">
+            	
+            	<div class="secondary_lft">
+                	<div class="secondary_lft_in">
+                    	<h5>Images</h5>
+                        <ul>
+                        	<li><a href="http://modis.gsfc.nasa.gov/gallery/">Image Gallery</a></li>
+                            <li><a href="http://modis.gsfc.nasa.gov/gallery/showall.php" class="active">Image of the Day</a></li>
+                            
+                             <li style="line-height:15px"><a href="http://modis.gsfc.nasa.gov//gallery/individual.php?db_date=2023-07-31" style="font-size:small;padding-left:5px;">July 31, 2023</a></li><li style="line-height:15px"><a href="http://modis.gsfc.nasa.gov//gallery/individual.php?db_date=2023-07-30" style="font-size:small;padding-left:5px;">July 30, 2023</a></li><li style="line-height:15px"><a href="http://modis.gsfc.nasa.gov//gallery/individual.php?db_date=2023-07-29" style="font-size:small;padding-left:5px;">July 29, 2023</a></li><li style="line-height:15px"><a href="http://modis.gsfc.nasa.gov//gallery/individual.php?db_date=2023-07-28" style="font-size:small;padding-left:5px;">July 28, 2023</a></li><li style="line-height:15px"><a href="http://modis.gsfc.nasa.gov//gallery/individual.php?db_date=2023-07-27" style="font-size:small;padding-left:5px;">July 27, 2023</a></li><li style="line-height:15px"><a href="http://modis.gsfc.nasa.gov//gallery/individual.php?db_date=2023-07-26" style="font-size:small;padding-left:5px;">July 26, 2023</a></li><li style="line-height:15px"><a href="http://modis.gsfc.nasa.gov//gallery/individual.php?db_date=2023-07-25" style="font-size:small;padding-left:5px;">July 25, 2023</a></li>										
+                        </ul>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="imagenary">
+                    	<ul>
+                        	<li><a href="#"><img src="../images/imagenary_img1.jpg" width="249" height="299" alt="imagenary_img1"></a></li>
+                            <li><a href="#"><img src="../images/imagenary_img2.jpg" width="249" height="299" alt="imagenary_img2"></a></li>
+                            
+                             
+                              
+                        </ul>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <div class="secondary_rt">
+                	<div class="secondary_rt_in">
+                    	<ul>
+                        	<li><a href="../">Home >></a></li>  
+                            <li><a href="showall.php">Images >></a></li>
+                            <li><a href="#">Kerguelen Island, South Indian Ocean </a>
+							</li>
+                           
+                        </ul>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="option">
+                    	
+                        <h5>
+						
+						<b>December 2, 2015 - Kerguelen Island, South Indian Ocean</b>						<div class="title_in">
+	
+                    	</h5>
+						
+                      <p>
+                        <div class="bannerIOTD">
+				<img src = "http://modis.gsfc.nasa.gov/gallery/images/image12022015_main.jpg" alt='Kerguelen Island, South Indian Ocean'>                        </div>
+                      </p>
+                          	<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                        
+							<div class="fb-share-button" data-href="https://modis.gsfc.nasa.gov/gallery/individual.php?db_date=2020-02-11" data-layout="button" data-size="small" style="top:-4px;"><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://modis.gsfc.nasa.gov/gallery/individual.php?db_date=2015-12-02&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">Share</a></div>
+						
+						<p>
+                        <p>
+The Kerguelen Islands are a group of remote, windswept islands which lie in the southern Indian Ocean roughly equidistantly between Africa, Australia, and Antarctica.   The center island, Grande Terre, has an area of 2,577 sq. mi. (6,675 sq. km.), making it a little smaller than the Greek island of Crete and a little larger than the state of Delaware (USA).   Almost 300 smaller islands and islets surround the main island. </p>
+<p>
+The climate of the island features incessant, howling winds and rain or snow nearly every day throughout the year.  The wind is a feature of sitting at about 49 degrees South, which places Kerguelen in the path of the "Furious Fifties", a belt of westerly winds that whip around the Southern Hemisphere.   The frigid temperatures nurture multiple glaciers which are scattered across the island.   The largest, Cook Glacier, can be seen as a bright white cap of ice on the southwest section of the island.  Mount Ross, one of the youngest volcanic peaks on the island, can be seen covered with snow in the southeast section of the island.  </p>
+<p> 
+The Moderate Resolution Imaging Spectroradiometer (MODIS) aboard NASA's Aqua satellite captured this true-color image on November 21, 2015.  The main features of the landscape, particularly the glacial ice, volcanoes and the steep fjords along the coastlines, are easily seen from space on this unusually cloud-free spring day.  Greenish colors tint the waters near the Kerguelen Island, marking areas where phytoplankton are blooming.  </p>
+                        </p>
+                       
+			<p>
+			
+						</p>                        
+                        
+                        <p>
+   	                    <b>Image Facts<br>
+   	                    </b> 
+                         Satellite: 
+						 <a href="http://aqua.nasa.gov">Aqua</a>                    	
+                       	<br />
+                        Date Acquired:  11/21/2015                      
+                        <br />
+                        Resolutions: 
+                         <a href="http://modis.gsfc.nasa.gov/gallery/images/image12022015_1km.jpg" class="standardlinks">1km ( B)</a>, <a href="http://modis.gsfc.nasa.gov/gallery/images/image12022015_500m.jpg" class="standardlinks">500m (32.4 KB)</a>, <a href="http://modis.gsfc.nasa.gov/gallery/images/image12022015_250m.jpg" class="standardlinks">250m (81 KB)</a>                                 <br />
+                                 Bands Used: 1,4,3                                 
+                                 <br />
+                                 Image Credit: 
+                                 				
+												Jeff Schmaltz, <a href="http://rapidfire.sci.gsfc.nasa.gov" target="_blank" class="standardlinks">MODIS Land Rapid Response Team, NASA GSFC</a> 
+                                                   
+                        </p>                        
+						
+                  <p>&nbsp;</p>
+                  <p align="justify">&nbsp;</p>
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <!-- aincontent ends -->
+            <!-- footer starts -->
+            <div class="footer footer2">
+                <div class="footer_in">
+            	<div class="footer_lft">
+            	  <p id="footercol1">Web Curator: 
+                   <SCRIPT TYPE="text/javascript">
+						emailE=('brandon.f.mac' + 'cherone@nas' + 'a.gov')	
+						emailName =('Brandon Maccherone')
+						document.write( '<a href="mailto:' + emailE + '" style="color:#FFF;">' + emailName + '</a>' )
+					</SCRIPT>
+                 	<br />
+                  	NASA Official: 
+                    <SCRIPT TYPE="text/javascript">
+						emailE=('shannell.c.' + 'frazier@nas' + 'a.gov')
+						emailName =('Shannell Frazier')	
+						document.write( '<a href="mailto:' + emailE + '" style="color:#FFF;">' + emailName + '</a>' )
+					</SCRIPT>
+                    
+                    </p>
+</div>
+                <div class="footer_mdl">
+                		<a href="http://www.nasa.gov"><img src="http://modis.gsfc.nasa.gov/images/nasalogo.png" width="75" height="62" alt="ft_logo"></a>
+                </div>
+                <div class="footer_lft footer_rt last">
+                  <p><a href="http://www.nasa.gov/about/highlights/HP_Privacy.html"  style="color:#FFF;"><br />Privacy Policy and Important Notices</a></p>
+</div>
+                <div class="clear"></div>
+                </div>
+                </div>
+<!-- footer ends --> </div>   
+</div>
+<!-- wrapper ends -->
+</body>
+</html>

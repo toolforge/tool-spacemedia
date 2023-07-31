@@ -185,7 +185,7 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatL
 
     @Override
     public String toString() {
-        return "NasaSdoMedia [id=" + id + ", date=" + date + ", publicationDate=" + publicationDate + ", latitude="
+        return "NasaAsterMedia [id=" + id + ", date=" + date + ", publicationDate=" + publicationDate + ", latitude="
                 + latitude + ", longitude=" + longitude + ", longName=" + longName
                 + ", category=" + category + ", icon=" + icon + ", mediaType=" + mediaType + ']';
     }
