@@ -353,6 +353,8 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return {@code true} if the given string is included in title or description
      */
     public boolean containsInTitleOrDescription(String string) {
-        return (title != null && title.contains(string)) || (description != null && description.contains(string));
+        String lc = string.toLowerCase(ENGLISH);
+        return (title != null && title.toLowerCase(ENGLISH).contains(lc))
+                || (description != null && description.toLowerCase(ENGLISH).contains(lc));
     }
 }

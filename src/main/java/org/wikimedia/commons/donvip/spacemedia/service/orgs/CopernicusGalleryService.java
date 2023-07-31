@@ -70,6 +70,36 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
     }
 
     @Override
+    public Set<String> findCategories(CopernicusGalleryMedia media, FileMetadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        if (media.containsInTitleOrDescription("fires") || media.containsInTitleOrDescription("burn scars")
+                || media.containsInTitleOrDescription("wildfire")
+                || media.containsInTitleOrDescription("forest fire")) {
+            result.add("Photos of wildfires by Sentinel satellites");
+        } else if (media.containsInTitleOrDescription("Phytoplankton")
+                || media.containsInTitleOrDescription("algal bloom")) {
+            result.add("Satellite pictures of algal blooms");
+        } else if (media.containsInTitleOrDescription("hurricane")) {
+            result.add("Satellite pictures of hurricanes");
+        } else if (media.containsInTitleOrDescription("floods") || media.containsInTitleOrDescription("flooding")) {
+            result.add("Photos of floods by Sentinel satellites");
+        }
+        if (media.containsInTitleOrDescription("Sentinel-1")) {
+            result.add("Sentinel-1 images");
+        }
+        if (media.containsInTitleOrDescription("Sentinel-2")) {
+            result.add("Sentinel-2 images");
+        }
+        if (media.containsInTitleOrDescription("Sentinel-3")) {
+            result.add("Sentinel-3 images");
+        }
+        if (media.containsInTitleOrDescription("Sentinel-5P")) {
+            result.add("Sentinel-5P images");
+        }
+        return result;
+    }
+
+    @Override
     protected boolean checkBlocklist() {
         return false;
     }

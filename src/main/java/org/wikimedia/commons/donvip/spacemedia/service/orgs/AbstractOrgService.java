@@ -988,6 +988,12 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         Set<String> result = new HashSet<>();
         if (media.containsInTitleOrDescription("360 Panorama")) {
             result.add("360° panoramas");
+        } else if (media.containsInTitleOrDescription("Land Surface Temperature")) {
+            result.add("Land surface temperature maps");
+        } else if (media.containsInTitleOrDescription("Sea Surface Temperature")) {
+            result.add("Sea surface temperature maps");
+        } else if (media.containsInTitleOrDescription("Tropospheric Nitrogen Dioxide")) {
+            result.add("Nitrogen dioxide maps");
         }
         findCategoryFromTitle(media.getTitle()).ifPresent(result::add);
         if (includeHidden) {
