@@ -75,7 +75,7 @@ public class FlickrMediaProcessorService {
 
     public boolean isBadVideoEntry(FlickrMedia media) throws URISyntaxException {
         return FlickrMediaType.video == media.getMedia()
-                && !getVideoUrl(media).toURI().equals(media.getMetadata().get(0).getAssetUrl().toURI());
+                && !getVideoUrl(media).toURI().equals(media.getUniqueMetadata().getAssetUrl().toURI());
     }
 
     @Transactional
@@ -110,6 +110,7 @@ public class FlickrMediaProcessorService {
         }
         if (StringUtils.isEmpty(media.getPathAlias())) {
             media.setPathAlias(flickrAccount);
+            LOGGER.warn("Saving media {} to set path_alias to {}", media, flickrAccount);
             save = true;
         }
         if (isEmpty(media.getPhotosets())) {
@@ -117,6 +118,7 @@ public class FlickrMediaProcessorService {
                 Set<FlickrPhotoSet> sets = getPhotoSets(media, flickrAccount);
                 if (isNotEmpty(sets)) {
                     sets.forEach(media::addPhotoSet);
+                    LOGGER.info("Saving media {} to add photosets {}", media, sets);
                     savePhotoSets = true;
                     save = true;
                 }
@@ -171,6 +173,7 @@ public class FlickrMediaProcessorService {
     }
 
     private boolean handleBadVideo(FlickrMedia media) {
+        LOGGER.warn("Handling bad video {}", media);
         FileMetadata metadata = media.getUniqueMetadata();
         metadata.setCommonsFileNames(null);
         metadata.setSha1(null);

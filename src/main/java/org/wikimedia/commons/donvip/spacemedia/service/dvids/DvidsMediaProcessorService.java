@@ -106,13 +106,13 @@ public class DvidsMediaProcessorService {
         // old: https://cdn.dvidshub.net/media/photos/2104/6622429.jpg
         // new: https://d34w7g4gy10iej.cloudfront.net/photos/2104/6622429.jpg
         if ((MEDIA_WITH_CATEGORIES.contains(media.getClass()) && media.getCategory() == null)
-                || media.getMetadata().get(0).getAssetUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
+                || media.getUniqueMetadata().getAssetUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
                 || media.getThumbnailUrl().toExternalForm().startsWith(OLD_DVIDS_CDN)
                 || (media instanceof DvidsVideo videoMedia
                         && videoMedia.getImage().toExternalForm().startsWith(OLD_DVIDS_CDN))) {
             DvidsMedia mediaFromApi = apiFetcher.get();
             media.setCategory(mediaFromApi.getCategory());
-            media.getMetadata().get(0).setAssetUrl(mediaFromApi.getMetadata().get(0).getAssetUrl());
+            media.getUniqueMetadata().setAssetUrl(mediaFromApi.getUniqueMetadata().getAssetUrl());
             media.setThumbnailUrl(mediaFromApi.getThumbnailUrl());
             if (media instanceof DvidsVideo videoMedia && mediaFromApi instanceof DvidsVideo videoMediaFromApi) {
                 videoMedia.setImage(videoMediaFromApi.getImage());

@@ -207,7 +207,7 @@ public class NasaMediaProcessorService {
         if (doCommonUpdate.test(media)) {
             save = true;
         }
-        FileMetadata metadata = media.getMetadata().get(0);
+        FileMetadata metadata = media.getUniqueMetadata();
         if (metadata != null && metadata.getExif() == null) {
             try {
                 ExifMetadata exifMetadata = readExifMetadata(restExif, media.getId());

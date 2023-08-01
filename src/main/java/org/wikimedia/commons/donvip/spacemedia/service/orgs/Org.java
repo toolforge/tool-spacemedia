@@ -108,7 +108,7 @@ public interface Org<T extends Media<ID, D>, ID, D extends Temporal> {
 
     default URL getSourceUrl(T media) {
         // Used in web app
-        return getSourceUrl(media, media.getMetadata().get(0));
+        return getSourceUrl(media, media.getMetadata().iterator().next());
     }
 
     URL getSourceUrl(T media, FileMetadata metadata);

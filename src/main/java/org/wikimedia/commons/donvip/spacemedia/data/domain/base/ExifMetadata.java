@@ -489,4 +489,9 @@ public class ExifMetadata {
                 .filter(StringUtils::isNotBlank)
                 .distinct();
     }
+
+    @Override
+    public String toString() {
+        return "ExifMetadata [id=" + id + "]";
+    }
 }

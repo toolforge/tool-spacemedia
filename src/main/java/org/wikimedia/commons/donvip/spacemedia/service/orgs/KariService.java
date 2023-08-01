@@ -210,7 +210,7 @@ public class KariService extends AbstractOrgService<KariMedia, Integer, LocalDat
         if (StringUtils.isBlank(media.getDescription())) {
             problem(view, "Empty description");
         }
-        FileMetadata metadata = media.getMetadata().get(0);
+        FileMetadata metadata = media.getUniqueMetadata();
         if (metadata.getAssetUrl() != null) {
             String mediaUrl = metadata.getAssetUrl().toExternalForm();
             if (StringUtils.isBlank(mediaUrl) || "https://www.kari.re.kr".equals(mediaUrl)) {

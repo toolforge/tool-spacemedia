@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -59,7 +59,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     private static final Pattern URI_LIKE = Pattern.compile("Https?\\-\\-.*", Pattern.CASE_INSENSITIVE);
 
     @ManyToMany(fetch = FetchType.EAGER)
-    private List<FileMetadata> metadata = new ArrayList<>();
+    private Set<FileMetadata> metadata = new LinkedHashSet<>();
 
     @Column(nullable = true, length = 380)
     @JsonProperty("thumbnail_url")
@@ -88,11 +88,11 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     protected LocalDateTime lastUpdate;
 
     @Override
-    public List<FileMetadata> getMetadata() {
+    public Set<FileMetadata> getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(List<FileMetadata> metadata) {
+    public void setMetadata(Set<FileMetadata> metadata) {
         this.metadata = metadata;
     }
 
@@ -328,7 +328,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
                 if (getMetadata().stream().map(FileMetadata::getAssetUri)
                         .noneMatch(apiMetadata.getAssetUri()::equals)) {
                     LOGGER.info("Add API metadata not yet found in database by asset URI: {}", apiMetadata);
-                    getMetadata().add(apiMetadata);
+                    addMetadata(apiMetadata);
                 }
             }
         }

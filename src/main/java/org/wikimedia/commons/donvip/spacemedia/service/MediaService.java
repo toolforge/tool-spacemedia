@@ -102,22 +102,22 @@ public class MediaService {
             Path localPath) throws IOException {
         boolean result = false;
         if (cleanupDescription(media, stringsToRemove)) {
-            LOGGER.debug("Description has been cleaned up for {}", media);
+            LOGGER.info("Description has been cleaned up for {}", media);
             result = true;
         }
         MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, urlResolver, forceUpdate);
         if (ur.getResult()) {
-            LOGGER.debug("Readable state and/or hashes have been updated for {}", media);
+            LOGGER.info("Readable state and/or hashes have been updated for {}", media);
             result = true;
         }
         for (String idUsedInCommons : media.getIdUsedInCommons()) {
             if (findCommonsFiles(media.getMetadata(), idUsedInCommons, includeByPerceptualHash)) {
-                LOGGER.debug("Commons files have been updated for {}", media);
+                LOGGER.info("Commons files have been updated for {}", media);
                 result = true;
             }
         }
         if (checkBlocklist && !Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
-            LOGGER.debug("Blocklist has been trigerred for {}", media);
+            LOGGER.info("Blocklist has been trigerred for {}", media);
             result = true;
         }
         return new MediaUpdateResult(result, ur.getException());
@@ -173,6 +173,9 @@ public class MediaService {
             if (ur.getException() != null) {
                 exception = ur.getException();
             }
+            if (ur.getResult()) {
+                LOGGER.info("Readable state and/or hashes have been updated for {}", metadata);
+            }
         }
         // T230284 - Processing full-res images can lead to OOM errors
         return new MediaUpdateResult(result, exception);
@@ -210,30 +213,30 @@ public class MediaService {
                     if (bi != null) {
                         if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
                             metadata.setReadableImage(Boolean.TRUE);
-                            LOGGER.debug("Readable state has been updated to {} for {}", Boolean.TRUE, media);
+                            LOGGER.info("Readable state has been updated to {} for {}", Boolean.TRUE, media);
                             result = true;
                         }
                         if (bi.getWidth() > 0 && bi.getHeight() > 0 && !metadata.hasValidDimensions()) {
                             metadata.setImageDimensions(new ImageDimensions(bi.getWidth(), bi.getHeight()));
-                            LOGGER.debug("Image dimensions have been updated for {}", media);
+                            LOGGER.info("Image dimensions have been updated for {}", media);
                             result = true;
                         }
                     }
                     Long contentLength = pair.getRight();
                     if (contentLength > 0 && metadata.getSize() == null) {
                         metadata.setSize(contentLength);
-                        LOGGER.debug("Size has been updated for {}", media);
+                        LOGGER.info("Size has been updated for {}", media);
                         result = true;
                     }
                 } catch (IOException | ImageDecodingException e) {
                     result = ignoreMedia(media, "Unreadable media", e);
                     metadata.setReadableImage(Boolean.FALSE);
-                    LOGGER.debug("Readable state has been updated to {} for {}", Boolean.FALSE, media);
+                    LOGGER.info("Readable state has been updated to {} for {}", Boolean.FALSE, media);
                 }
             }
             if (isImage && Boolean.TRUE.equals(metadata.isReadableImage())
                     && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
-                LOGGER.debug("Perceptual hash has been updated for {}", media);
+                LOGGER.info("Perceptual hash has been updated for {}", media);
                 result = true;
             }
             if (bi != null) {
@@ -241,7 +244,7 @@ public class MediaService {
                 bi = null;
             }
             if (updateSha1(media, metadata, localPath, urlResolver, forceUpdateOfHashes)) {
-                LOGGER.debug("SHA1 hash has been updated for {}", media);
+                LOGGER.info("SHA1 hash has been updated for {}", media);
                 result = true;
             }
         } catch (RestClientException e) {
@@ -371,7 +374,7 @@ public class MediaService {
         return false;
     }
 
-    public boolean findCommonsFiles(List<FileMetadata> metadata, String idUsedInCommons,
+    public boolean findCommonsFiles(Collection<FileMetadata> metadata, String idUsedInCommons,
             boolean includeByPerceptualHash) throws IOException {
         return findCommonsFilesWithSha1(metadata) || (includeByPerceptualHash
                 && (findCommonsFilesWithPhash(metadata, true)
@@ -386,7 +389,7 @@ public class MediaService {
      *         Wikimedia Commons files and must be persisted
      * @throws IOException in case of I/O error
      */
-    public boolean findCommonsFilesWithSha1(List<FileMetadata> metadatas) throws IOException {
+    public boolean findCommonsFilesWithSha1(Collection<FileMetadata> metadatas) throws IOException {
         boolean result = false;
         for (FileMetadata metadata : metadatas) {
             result |= findCommonsFilesWithSha1(metadata);
@@ -414,7 +417,8 @@ public class MediaService {
      *         Wikimedia Commons files and must be persisted
      * @throws IOException in case of I/O error
      */
-    public boolean findCommonsFilesWithPhash(List<FileMetadata> metadatas, boolean excludeSelfSha1) throws IOException {
+    public boolean findCommonsFilesWithPhash(Collection<FileMetadata> metadatas, boolean excludeSelfSha1)
+            throws IOException {
         boolean result = false;
         for (FileMetadata metadata : metadatas) {
             if (findCommonsFilesWithPhash(metadata, excludeSelfSha1)) {
@@ -440,7 +444,7 @@ public class MediaService {
         return false;
     }
 
-    public boolean findCommonsFilesWithIdAndPhash(List<FileMetadata> metadatas, String idUsedInCommons)
+    public boolean findCommonsFilesWithIdAndPhash(Collection<FileMetadata> metadatas, String idUsedInCommons)
             throws IOException {
         boolean result = false;
         Collection<WikiPage> images = commonsService.searchImages(idUsedInCommons);

@@ -333,7 +333,7 @@ public class FileMetadata implements FileMetadataProjection {
 
     @Override
     public int hashCode() {
-        return Objects.hash(phash, sha1, readableImage, assetUrl, size, commonsFileNames, exif, dimensions);
+        return Objects.hash(phash, sha1, readableImage, assetUrl, size, commonsFileNames, exif, dimensions, extension);
     }
 
     @Override
@@ -346,16 +346,18 @@ public class FileMetadata implements FileMetadataProjection {
         return size == other.size && Objects.equals(phash, other.phash) && Objects.equals(sha1, other.sha1)
                 && Objects.equals(readableImage, other.readableImage) && Objects.equals(assetUrl, other.assetUrl)
                 && Objects.equals(commonsFileNames, other.commonsFileNames) && Objects.equals(exif, other.exif)
-                && Objects.equals(dimensions, other.dimensions);
+                && Objects.equals(dimensions, other.dimensions) && Objects.equals(extension, other.extension);
     }
 
     @Override
     public String toString() {
-        return "FileMetadata [" + (sha1 != null ? "sha1=" + sha1 + ", " : "")
+        return "FileMetadata [id=" + id + ", " + (sha1 != null ? "sha1=" + sha1 + ", " : "")
                 + (phash != null ? "phash=" + phash + ", " : "")
                 + (dimensions != null ? "dimensions=" + dimensions + ", " : "")
+                + (extension != null ? "extension=" + extension + ", " : "")
                 + (readableImage != null ? "readableImage=" + readableImage + ", " : "")
                 + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "") + (size != null ? "size=" + size + ", " : "")
+                + (exif != null ? "exif=" + exif + ", " : "")
                 + (commonsFileNames != null ? "commonsFileNames=" + commonsFileNames : "") + ']';
     }
 }

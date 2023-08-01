@@ -350,7 +350,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
                 uploadedMedia.addAll(localUploadedImages);
                 count += result.getLeft();
                 postSocialMedia(localUploadedImages,
-                        localUploadedImages.stream().flatMap(m -> m.getMetadata().stream()).toList());
+                        localUploadedImages.stream().map(m -> m.getUniqueMetadata()).toList());
                 if (minUploadDate == null) {
                     // Only delete pictures not found in complete updates
                     Set<FlickrMedia> noLongerFreePictures = flickrRepository.findNotIn(Set.of(flickrAccount),

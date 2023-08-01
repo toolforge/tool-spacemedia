@@ -153,7 +153,7 @@ public class NasaSirsService
                             }
                             media.setKeywords(NasaMediaProcessorService.normalizeKeywords(singleton(values.get(4))));
                             media.setThumbnailUrl(newURL(url.getProtocol(), url.getHost(), values.get(5)));
-                            media.getMetadata().get(0)
+                            media.getUniqueMetadata()
                                     .setAssetUrl(newURL(url.getProtocol(), url.getHost(), values.get(6)));
                             media.setDescription(values.get(7));
                             save = true;

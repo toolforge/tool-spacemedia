@@ -105,7 +105,7 @@ class StsciServiceTest {
                 media.getDescription());
         assertEquals("2022-11-22T11:00-05:00[America/New_York]", media.getDate().toString());
         assertEquals("https://stsci-opo.org/STScI-01GJ3Q3PRF2VG9DNG7J5YX1N44.jpg",
-                media.getMetadata().get(0).getAssetUrl().toExternalForm());
+                media.getMetadata().iterator().next().getAssetUrl().toExternalForm());
         assertEquals("https://stsci-opo.org/STScI-01GJ3Q46VFXMCFM4WZANYCC4MR.jpg",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals("2022-060", media.getNewsId());
@@ -129,7 +129,7 @@ class StsciServiceTest {
                 media.getDescription());
         assertEquals("2018-03-09T10:00-05:00[America/New_York]", media.getDate().toString());
         assertEquals("https://stsci-opo.org/STScI-01EVT0Y2KZAV2YF3ARK6X2PT7S.jpg",
-                media.getMetadata().get(0).getAssetUrl().toExternalForm());
+                media.getMetadata().iterator().next().getAssetUrl().toExternalForm());
         assertEquals("https://stsci-opo.org/STScI-01EVT0Y2KZAV2YF3ARK6X2PT7S.jpg",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals("2018-14", media.getNewsId());
@@ -156,7 +156,7 @@ class StsciServiceTest {
                 media.getDescription());
         assertEquals("2023-05-30T11:00-04:00[America/New_York]", media.getDate().toString());
         assertEquals("https://stsci-opo.org/STScI-01GYJ8KNFKX79X3WFF880Z7XQF.tif",
-                media.getMetadata().get(0).getAssetUrl().toExternalForm());
+                media.getMetadata().iterator().next().getAssetUrl().toExternalForm());
         assertEquals("https://stsci-opo.org/STScI-01GYJ8KXBB9GYG58KF9V7WRSGT.png",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals("2023-112", media.getNewsId());

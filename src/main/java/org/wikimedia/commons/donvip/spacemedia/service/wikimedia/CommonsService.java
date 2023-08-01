@@ -396,7 +396,7 @@ public class CommonsService {
     public Set<String> findFilesWithSha1(Collection<String> sha1s) throws IOException {
         // See https://www.mediawiki.org/wiki/Manual:Image_table#img_sha1
         // The SHA-1 hash of the file contents in base 36 format, zero-padded to 31 characters
-        Set<String> sha1base36 = sha1s.stream()
+        Set<String> sha1base36 = sha1s.stream().distinct()
                 .map(sha1 -> sha1.length() == 31 ? sha1 : base36Sha1(sha1))
                 .collect(toSet());
         Set<String> files = imageRepository.findBySha1InOrderByTimestamp(sha1base36).stream()

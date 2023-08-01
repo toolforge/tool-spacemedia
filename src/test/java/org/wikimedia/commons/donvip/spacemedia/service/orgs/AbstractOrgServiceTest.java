@@ -100,7 +100,7 @@ public abstract class AbstractOrgServiceTest {
         assertEquals(id, media.getId().getId());
         assertEquals(imageType, media.getImageType());
         assertEquals(date, media.getDate().toString());
-        assertEquals(dimensions, media.getMetadata().get(0).getImageDimensions());
+        assertEquals(dimensions, media.getMetadata().iterator().next().getImageDimensions());
         assertEquals(name, media.getName());
         assertEquals(types, media.getTypes());
         assertEquals(categories, media.getCategories());

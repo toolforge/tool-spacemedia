@@ -80,6 +80,9 @@ public final class Utils {
     }
 
     public static URI urlToUri(URL url) throws URISyntaxException {
+        if (url == null) {
+            return null;
+        }
         URI uri = null;
         try {
             uri = url.toURI();

@@ -81,7 +81,7 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
                 "https://photojournal.jpl.nasa.gov/figures/PIA25927_fig1.png"),
                 media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).toList());
 
-        FileMetadata jpeg = media.getMetadata().get(0);
+        FileMetadata jpeg = media.getMetadata().iterator().next();
         assertEquals(
                 Optional.of("Kasei Valles (PIA25927).tiff|TIFF version\nKasei Valles (PIA25927_fig1).png|PNG version"),
                 service.getOtherVersions(media, jpeg));

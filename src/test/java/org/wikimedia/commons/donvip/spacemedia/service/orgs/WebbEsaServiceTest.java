@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
@@ -46,8 +47,9 @@ class WebbEsaServiceTest extends AbstractOrgServiceTest {
         assertEquals("NASA, ESA, CSA, STScI, and K. McQuinn (Rutgers University), A. Pagan (STScI).",
                 media.getCredit());
         assertEquals("2022-11-09T17:00", media.getDate().toString());
-        assertEquals(4134, media.getMetadata().get(0).getImageDimensions().getHeight());
-        assertEquals(4134, media.getMetadata().get(0).getImageDimensions().getWidth());
+        ImageDimensions dims = media.getMetadata().iterator().next().getImageDimensions();
+        assertEquals(4134, dims.getHeight());
+        assertEquals(4134, dims.getWidth());
         assertEquals("Cetus", media.getConstellation());
         assertEquals("[PGU2007] cep35", media.getName());
         assertEquals(DjangoplicityMediaType.Observation, media.getImageType());

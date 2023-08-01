@@ -451,7 +451,7 @@ public abstract class AbstractOrgDvidsService
     @Override
     public Set<String> findLicenceTemplates(DvidsMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
-        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getMetadata().get(0).getAssetUrl());
+        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getUniqueMetadata().getAssetUrl());
         if (t != null && StringUtils.isNotBlank(t.getPdTemplate())) {
             result.add(t.getPdTemplate());
         }
