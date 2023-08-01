@@ -155,7 +155,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         return idxDotInDesc > 0 ? desc.substring(0, idxDotInDesc) : desc;
     }
 
-    private static String getUploadTitle(String s, String id) {
+    protected static String getUploadTitle(String s, String id) {
         return new StringBuilder(s.substring(0, Math.min(234 - id.length() - 3, s.length()))).append(" (").append(id)
                 .append(')').toString();
     }

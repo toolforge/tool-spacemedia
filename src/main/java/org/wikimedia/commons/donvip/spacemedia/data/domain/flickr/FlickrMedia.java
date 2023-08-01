@@ -267,7 +267,7 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
                 return albumTitle + " (" + getId() + ")";
             }
         }
-        return super.getUploadTitle(fileMetadata);
+        return getUploadTitle(getUploadTitle(), getUserDefinedId().orElseGet(() -> getUploadId(fileMetadata)));
     }
 
     @Override
