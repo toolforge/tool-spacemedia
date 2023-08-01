@@ -14,7 +14,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository.CacheEvictDvidsAll;
 
 public interface DjangoplicityMediaRepository
         extends MediaRepository<DjangoplicityMedia, DjangoplicityMediaId, LocalDateTime> {
@@ -173,7 +172,7 @@ public interface DjangoplicityMediaRepository
     // UPDATE
 
     @Modifying
-    @CacheEvictDvidsAll
+    @CacheEvictDjangoAll
     @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true and m.id.website = ?1")
     int resetIgnored(String website);
 }
