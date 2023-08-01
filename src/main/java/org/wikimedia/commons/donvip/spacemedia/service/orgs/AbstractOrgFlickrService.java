@@ -44,6 +44,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
+import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -381,6 +382,9 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
                         String id = m.group(1);
                         LOGGER.warn("Flickr image {} has been deleted for account '{}'", id, flickrAccount);
                         processor.deleteFlickrMedia(id);
+                        if (executionMode == ExecutionMode.LOCAL) {
+                            evictRemoteCaches();
+                        }
                         count++;
                     } else {
                         LOGGER.error("Error while processing non-free Flickr image " + picture.getId()
@@ -400,11 +404,11 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     private FlickrMedia photoToFlickrMedia(Photo p, String flickrAccount) {
-        return flickrRepository.findById(Long.parseLong(p.getId())).orElseGet(() -> {
+        return repository.findById(Long.parseLong(p.getId())).orElseGet(() -> {
             try {
                 FlickrMedia media = mapPhoto(p, flickrAccount);
                 metadataRepository.save(media.getUniqueMetadata());
-                return flickrRepository.save(media);
+                return saveMedia(media);
             } catch (FlickrException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -420,7 +424,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             try {
                 Pair<FlickrMedia, Integer> result = processor.processFlickrMedia(media, flickrAccount,
                         () -> getStringsToRemove(media), this::shouldUploadAuto, this::uploadWrapped,
-                        getUrlResolver());
+                        getUrlResolver(), this::saveMedia);
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }

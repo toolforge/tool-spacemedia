@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import javax.annotation.PostConstruct;
 
@@ -81,7 +82,7 @@ public class FlickrMediaProcessorService {
     public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
             Supplier<Collection<String>> stringsToRemove, BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<FileMetadata>, Integer>> uploader,
-            UrlResolver<FlickrMedia> urlResolver) throws IOException {
+            UrlResolver<FlickrMedia> urlResolver, UnaryOperator<FlickrMedia> saver) throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
         final Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
@@ -141,7 +142,7 @@ public class FlickrMediaProcessorService {
                 }
             }
         }
-        media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb);
+        media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb, saver);
         savePhotoSets = false;
         save = mediaService.updateMedia(media, stringsToRemove.get(), false, urlResolver).getResult();
         int uploadCount = 0;
@@ -151,14 +152,14 @@ public class FlickrMediaProcessorService {
             uploadCount = upload.getRight();
             save = true;
         }
-        return Pair.of(saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb), uploadCount);
+        return Pair.of(saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb, saver), uploadCount);
     }
 
     private FlickrMedia saveMediaAndPhotosetsIfNeeded(FlickrMedia media, boolean save, boolean savePhotoSets,
-            boolean wasPresent) {
+            boolean wasPresent, UnaryOperator<FlickrMedia> saver) {
         if (save) {
             LOGGER.info("Saving {}", media);
-            media = flickrRepository.save(media);
+            media = saver.apply(media);
         }
         if (savePhotoSets) {
             if (wasPresent) {

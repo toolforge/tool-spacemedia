@@ -170,7 +170,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
     private Set<String> courtesyOk;
 
     @Value("${execution.mode}")
-    private ExecutionMode executionMode;
+    protected ExecutionMode executionMode;
 
     @Value("${upload.auto.min.year}")
     private int minYearUploadAuto;
