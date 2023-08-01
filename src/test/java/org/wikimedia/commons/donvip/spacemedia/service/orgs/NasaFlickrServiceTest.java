@@ -47,7 +47,6 @@ class NasaFlickrServiceTest extends AbstractOrgServiceTest {
         media.addMetadata(
                 new FileMetadata("https://live.staticflickr.com/65535/52867079337_932f992c50_o_d.jpg"));
 
-        assertEquals("NHQ202305030019", service.getNasaId(media));
         assertEquals(
                 "[https://www.flickr.com/photos/nasahqphoto/52867079337 Czech Republic Artemis Accords Signing (NHQ202305030019)]\n"
                         + "{{NASA-image|id=NHQ202305030019|center=HQ}}",

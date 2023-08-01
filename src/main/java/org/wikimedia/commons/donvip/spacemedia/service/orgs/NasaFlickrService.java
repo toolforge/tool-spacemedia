@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +15,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 
 @Service
 public class NasaFlickrService extends AbstractOrgFlickrService {
-
-    private static final Pattern NHQ = Pattern.compile(".+\\((NHQ\\d{12})\\)");
 
     private static final List<String> STRINGS_TO_REMOVE = List.of(
             "<a href=\"http://instagram.com/NASAWebbTelescp\" rel=\"nofollow\">Follow us on Instagram</a>",
@@ -72,24 +68,12 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
     @Override
     protected String getSource(FlickrMedia media, FileMetadata metadata) {
         String result = super.getSource(media, metadata);
-        String nasaId = getNasaId(media);
+        // Extract a NASA id we could search on images.nasa.gov
+        String nasaId = media.getUserDefinedId().orElse(null);
         if (nasaId != null) {
             result += "\n{{NASA-image|id=" + nasaId + "|center=" + center(media) + "}}";
         }
         return result;
-    }
-
-    /**
-     * Extract a NASA id we could search on images.nasa.gov
-     */
-    protected String getNasaId(FlickrMedia media) {
-        if ("nasahqphoto".equals(media.getPathAlias())) {
-            Matcher m = NHQ.matcher(media.getTitle());
-            if (m.matches()) {
-                return m.group(1);
-            }
-        }
-        return null;
     }
 
     private static String center(FlickrMedia media) {

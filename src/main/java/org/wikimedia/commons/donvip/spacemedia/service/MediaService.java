@@ -110,9 +110,11 @@ public class MediaService {
             LOGGER.debug("Readable state and/or hashes have been updated for {}", media);
             result = true;
         }
-        if (findCommonsFiles(media.getMetadata(), media.getIdUsedInCommons(), includeByPerceptualHash)) {
-            LOGGER.debug("Commons files have been updated for {}", media);
-            result = true;
+        for (String idUsedInCommons : media.getIdUsedInCommons()) {
+            if (findCommonsFiles(media.getMetadata(), idUsedInCommons, includeByPerceptualHash)) {
+                LOGGER.debug("Commons files have been updated for {}", media);
+                result = true;
+            }
         }
         if (checkBlocklist && !Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
             LOGGER.debug("Blocklist has been trigerred for {}", media);
@@ -453,8 +455,12 @@ public class MediaService {
     }
 
     public List<String> findSmallerCommonsFilesWithIdAndPhash(Media<?, ?> media, FileMetadata metadata) throws IOException {
-        return findCommonsFilesWithIdAndPhashFiltered(commonsService.searchImages(media.getIdUsedInCommons()), metadata,
-                MediaService::filterBySameMimeAndSmallerSize);
+        List<String> result = new ArrayList<>();
+        for (String idUsedInCommons : media.getIdUsedInCommons()) {
+            result.addAll(findCommonsFilesWithIdAndPhashFiltered(commonsService.searchImages(idUsedInCommons), metadata,
+                    MediaService::filterBySameMimeAndSmallerSize));
+        }
+        return result;
     }
 
     private boolean findCommonsFilesWithIdAndPhash(Collection<WikiPage> images, FileMetadata metadata) {

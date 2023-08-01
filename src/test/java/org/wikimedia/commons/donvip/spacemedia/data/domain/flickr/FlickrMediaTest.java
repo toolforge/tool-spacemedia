@@ -2,7 +2,11 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class FlickrMediaTest {
 
@@ -20,5 +24,14 @@ class FlickrMediaTest {
                         + "Vollständiger Artikel unter <a href=\"http://www.dlr.de/dlr/desktopdefault.aspx/tabid-10081/151_read-17505/\" rel=\"nofollow\">www.dlr.de/dlr/desktopdefault.aspx/tabid-10081/151_read-17505/</a>\r\n"
                         + "\r\n" + "Fotos: DLR / Maasewerd CC-BY 3.0");
         assertEquals("Flugversuche mit dem A320 ATRA (26635829145)", media.getUploadTitle(null));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "NHQ202305030019,Czech Republic Artemis Accords Signing (NHQ202305030019)",
+            "GRC-2023-C-03833,GRC-2023-C-03833" })
+    void testGetUserDefinedId(String expectedId, String title) {
+        FlickrMedia media = new FlickrMedia();
+        media.setTitle(title);
+        assertEquals(Optional.of(expectedId), media.getUserDefinedId());
     }
 }

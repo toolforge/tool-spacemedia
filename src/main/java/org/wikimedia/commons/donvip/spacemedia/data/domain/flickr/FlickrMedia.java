@@ -1,9 +1,14 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -33,6 +38,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Indexed
 public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements WithLatLon, WithKeywords {
+
+    private static final Pattern USER_ID = Pattern.compile(".*(NHQ\\d{12}|GRC-\\d{4}-[A-Z]-\\d{5}).*");
 
     @Id
     @Column(nullable = false)
@@ -235,6 +242,20 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
     public void removePhotoSet(FlickrPhotoSet photoset) {
         getPhotosets().remove(photoset);
         photoset.getMembers().remove(this);
+    }
+
+    @Override
+    public List<String> getIdUsedInCommons() {
+        List<String> result = new ArrayList<>(super.getIdUsedInCommons());
+        getUserDefinedId().ifPresent(result::add);
+        return result;
+    }
+
+    @Transient
+    @JsonIgnore
+    public Optional<String> getUserDefinedId() {
+        Matcher m = USER_ID.matcher(getTitle());
+        return m.matches() ? Optional.of(m.group(1)) : Optional.empty();
     }
 
     @Override

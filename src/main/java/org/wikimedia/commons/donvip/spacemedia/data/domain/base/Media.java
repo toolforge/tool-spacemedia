@@ -211,12 +211,12 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     /**
-     * Returns the identifier usually used in Commons.
+     * Returns the identifiers usually used in Commons.
      *
-     * @return the identifier usually used in Commons
+     * @return the identifiers usually used in Commons
      */
-    public String getIdUsedInCommons() {
-        return getIdUsedInOrg();
+    public List<String> getIdUsedInCommons() {
+        return List.of(getIdUsedInOrg());
     }
 
     public abstract D getDate();
