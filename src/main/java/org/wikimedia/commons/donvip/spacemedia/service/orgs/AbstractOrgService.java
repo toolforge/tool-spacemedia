@@ -215,6 +215,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     @Override
     public void evictCaches() {
+        LOGGER.info("Evicting caches of {}...", getId());
         repository.evictCaches();
     }
 
