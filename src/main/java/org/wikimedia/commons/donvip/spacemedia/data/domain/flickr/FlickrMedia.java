@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,6 +39,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Indexed
 public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements WithLatLon, WithKeywords {
+
+    private static final String STATICFLICKR_COM = ".staticflickr.com";
 
     private static final Pattern USER_ID = Pattern.compile(".*(NHQ\\d{12}|GRC-\\d{4}-[A-Z]-\\d{5}).*");
 
@@ -306,6 +309,13 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
     @Override
     public boolean isVideo() {
         return media == FlickrMediaType.video;
+    }
+
+    @Override
+    protected boolean areSameUris(URI a, URI b) {
+        return super.areSameUris(a, b)
+                || (a.getHost().endsWith(STATICFLICKR_COM) && b.getHost().endsWith(STATICFLICKR_COM)
+                        && a.getPath().equals(b.getPath()));
     }
 
     public FlickrMedia copyDataFrom(FlickrMedia mediaFromApi) {

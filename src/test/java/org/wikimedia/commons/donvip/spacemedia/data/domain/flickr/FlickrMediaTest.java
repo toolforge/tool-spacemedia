@@ -1,7 +1,11 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -33,5 +37,16 @@ class FlickrMediaTest {
         FlickrMedia media = new FlickrMedia();
         media.setTitle(title);
         assertEquals(Optional.of(expectedId), media.getUserDefinedId());
+    }
+
+    @Test
+    void testAreSameUris() throws URISyntaxException {
+        FlickrMedia media = new FlickrMedia();
+        assertTrue(media.areSameUris(new URI("https://live.staticflickr.com/2481/3578880072_1f2efcf80c_o.jpg"),
+                new URI("https://farm3.staticflickr.com/2481/3578880072_1f2efcf80c_o.jpg")));
+        assertTrue(media.areSameUris(new URI("https://farm4.staticflickr.com/2481/3578880072_1f2efcf80c_o.jpg"),
+                new URI("https://farm3.staticflickr.com/2481/3578880072_1f2efcf80c_o.jpg")));
+        assertFalse(media.areSameUris(new URI("https://live.staticflickr.com/2481/3578880072_1f2efcf80c_o.jpg"),
+                new URI("https://live.staticflickr.com/2481/3578880072_1f2efcf80c_m.jpg")));
     }
 }

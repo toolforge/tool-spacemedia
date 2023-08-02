@@ -319,19 +319,23 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
             for (Iterator<FileMetadata> it = getMetadata().iterator(); it.hasNext();) {
                 FileMetadata m = it.next();
                 if (mediaFromApi.getMetadata().stream().map(FileMetadata::getAssetUri)
-                        .noneMatch(m.getAssetUri()::equals)) {
+                        .noneMatch(x -> areSameUris(x, m.getAssetUri()))) {
                     LOGGER.info("Remove database metadata not found anymore in API by asset URI: {}", m);
                     it.remove();
                 }
             }
             for (FileMetadata apiMetadata : mediaFromApi.getMetadata()) {
                 if (getMetadata().stream().map(FileMetadata::getAssetUri)
-                        .noneMatch(apiMetadata.getAssetUri()::equals)) {
+                        .noneMatch(x -> areSameUris(x, apiMetadata.getAssetUri()))) {
                     LOGGER.info("Add API metadata not yet found in database by asset URI: {}", apiMetadata);
                     addMetadata(apiMetadata);
                 }
             }
         }
+    }
+
+    protected boolean areSameUris(URI a, URI b) {
+        return a.equals(b);
     }
 
     /**
