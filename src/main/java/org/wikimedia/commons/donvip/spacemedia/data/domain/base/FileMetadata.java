@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
@@ -86,7 +87,7 @@ public class FileMetadata implements FileMetadataProjection {
     @Embedded
     private ImageDimensions dimensions;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "exif_id", referencedColumnName = "id")
     private ExifMetadata exif;
 
