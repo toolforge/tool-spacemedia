@@ -477,7 +477,9 @@ public class MediaService {
             BiPredicate<FileMetadata, ImageInfo> filter) {
         List<String> filenames = new ArrayList<>();
         if (shouldSearchByPhash(metadata)) {
-            for (WikiPage image : images.stream().filter(i -> filter.test(metadata, i.getImageInfo()[0])).toList()) {
+            List<WikiPage> list = images.stream().filter(i -> filter.test(metadata, i.getImageInfo()[0])).toList();
+            LOGGER.debug("Searching match by id/phash for {} => filtered to {}", images, list);
+            for (WikiPage image : list) {
                 String filename = image.getTitle().replace("File:", "").replace(' ', '_');
                 String sha1base36 = CommonsService.base36Sha1(image.getImageInfo()[0].getSha1());
                 Optional<HashAssociation> hash = hashRepository.findById(sha1base36);
@@ -490,9 +492,8 @@ public class MediaService {
                 if (score <= perceptualThresholdIdenticalId) {
                     LOGGER.info("Found match ({}) between {} and {}", score, metadata, image);
                     filenames.add(filename);
-                } else if (hash.isPresent() && LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("No match between {} and {} / {} -> {}", metadata, image, hash,
-                            HashHelper.similarityScore(metadata.getPhash(), hash.get().getPhash()));
+                } else if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("No match between {} and {} / {} -> {}", metadata, image, hash, score);
                 }
             }
         }
