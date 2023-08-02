@@ -47,7 +47,8 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
         Set<String> result = super.findLicenceTemplates(media);
         switch (media.getPathAlias()) {
         case "harrystrangerphotography", "194849271@N04":
-            if (media.getDescription().toLowerCase(Locale.ENGLISH).contains("usgs")) {
+            if ((media.getDescription() != null && media.getDescription().toLowerCase(Locale.ENGLISH).contains("usgs"))
+                    || media.getPhotosets().stream().anyMatch(s -> s.getTitle().startsWith("KH-"))) {
                 replace(result, "Flickr-public domain mark", "PD-USGov-USGS");
             }
             break;
