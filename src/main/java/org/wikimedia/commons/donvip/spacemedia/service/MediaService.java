@@ -469,7 +469,7 @@ public class MediaService {
 
     private boolean findCommonsFilesWithIdAndPhash(Collection<WikiPage> images, FileMetadata metadata) {
         List<String> filenames = findCommonsFilesWithIdAndPhashFiltered(images, metadata,
-                MediaService::filterBySameMimeAndLargerOrEqualSize);
+                MediaService::filterBySameMimeAndLargerOrEqualSizeOrLargerOrEqualDimensions);
         return !filenames.isEmpty() && saveNewMetadataCommonsFileNames(metadata, new HashSet<>(filenames));
     }
 
@@ -510,9 +510,15 @@ public class MediaService {
                 && isEmpty(metadata.getCommonsFileNames());
     }
 
-    private static boolean filterBySameMimeAndLargerOrEqualSize(FileMetadata metadata, ImageInfo imageInfo) {
+    private static boolean filterBySameMimeAndLargerOrEqualSizeOrLargerOrEqualDimensions(FileMetadata metadata,
+            ImageInfo imageInfo) {
         return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.getSize() != null
-                && metadata.getSize() <= imageInfo.getSize();
+                && (metadata.getSize() <= imageInfo.getSize()
+                        || areLargerOrEqualDimensions(metadata.getImageDimensions(), imageInfo));
+    }
+
+    private static boolean areLargerOrEqualDimensions(ImageDimensions dims, ImageInfo imageInfo) {
+        return dims.getWidth() <= imageInfo.getWidth() && dims.getHeight() <= imageInfo.getHeight();
     }
 
     private static boolean filterBySameMimeAndSmallerSize(FileMetadata metadata, ImageInfo imageInfo) {
