@@ -206,7 +206,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
             media = mediaInRepo.get();
         } else {
             media = fetchMedia(url);
-            if (media.getMetadata().isEmpty()) {
+            if (!media.hasMetadata()) {
                 return Triple.of(Optional.empty(), emptyList(), 0);
             }
             if (!isCopyrightOk(media)) {
@@ -293,7 +293,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
     }
 
     private void checkAssetUrlCorrectness(EsaMedia media) {
-        if (media.getMetadata().stream().filter(m -> m.getAssetUrl() != null).count() < 2) {
+        if (media.getMetadataStream().filter(m -> m.getAssetUrl() != null).count() < 2) {
             problem(media.getUrl(), "Image without two asset URLs");
         }
     }

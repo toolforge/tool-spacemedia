@@ -1,9 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import static java.util.Locale.ENGLISH;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
 import static org.apache.commons.lang3.StringUtils.stripAccents;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -15,13 +15,14 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
@@ -96,8 +97,30 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         this.metadata = metadata;
     }
 
+    @Transient
+    @JsonIgnore
+    public Stream<FileMetadata> getMetadataStream() {
+        return getMetadata().stream();
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean hasMetadata() {
+        return !getMetadata().isEmpty();
+    }
+
+    @Transient
+    @JsonIgnore
+    public int getMetadataCount() {
+        return getMetadata().size();
+    }
+
     public boolean addMetadata(FileMetadata metadata) {
         return getMetadata().add(metadata);
+    }
+
+    public boolean addAllMetadata(Collection<FileMetadata> metadata) {
+        return getMetadata().addAll(metadata);
     }
 
     public boolean containsMetadata(String assetUrl) {
@@ -106,7 +129,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     public boolean containsMetadata(URL assetUrl) {
         URI uri = urlToUriUnchecked(assetUrl);
-        return getMetadata().stream().anyMatch(m -> m.getAssetUrl() != null && uri.equals(m.getAssetUri()));
+        return getMetadataStream().anyMatch(m -> m.getAssetUrl() != null && uri.equals(m.getAssetUri()));
     }
 
     public URL getThumbnailUrl() {
@@ -179,8 +202,8 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     @Transient
     @JsonIgnore
     public Set<String> getAllCommonsFileNames() {
-        return getMetadata().stream()
-                .flatMap(m -> Optional.ofNullable(m.getCommonsFileNames()).orElse(Set.of()).stream()).collect(toSet());
+        return getMetadataStream()
+                .flatMap(m -> ofNullable(m.getCommonsFileNames()).orElse(Set.of()).stream()).collect(toSet());
     }
 
     public Boolean isIgnored() {
@@ -244,7 +267,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     public List<String> getAssetsToUpload() {
-        return getMetadata().stream().filter(FileMetadata::shouldUpload).map(FileMetadata::getSha1).toList();
+        return getMetadataStream().filter(FileMetadata::shouldUpload).map(FileMetadata::getSha1).toList();
     }
 
     public LocalDateTime getLastUpdate() {
@@ -261,7 +284,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return {@code true} if this media is an audio
      */
     public boolean isAudio() {
-        return getMetadata().stream().anyMatch(FileMetadata::isAudio);
+        return getMetadataStream().anyMatch(FileMetadata::isAudio);
     }
 
     /**
@@ -270,7 +293,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return {@code true} if this media is an image
      */
     public boolean isImage() {
-        return getMetadata().stream().anyMatch(FileMetadata::isImage);
+        return getMetadataStream().anyMatch(FileMetadata::isImage);
     }
 
     /**
@@ -279,7 +302,7 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return {@code true} if this media is a video
      */
     public boolean isVideo() {
-        return getMetadata().stream().anyMatch(FileMetadata::isVideo);
+        return getMetadataStream().anyMatch(FileMetadata::isVideo);
     }
 
     /**
@@ -288,8 +311,8 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      * @return the preview URL to display in UI. Thumbnail if available, otherwise asset.
      */
     public final URL getPreviewUrl() {
-        return Optional.ofNullable(getThumbnailUrl()).orElse(
-                getMetadata().stream().map(FileMetadata::getAssetUrl).filter(Objects::nonNull).findFirst().orElse(null));
+        return ofNullable(getThumbnailUrl()).orElse(
+                getMetadataStream().map(FileMetadata::getAssetUrl).filter(Objects::nonNull).findFirst().orElse(null));
     }
 
     /**
@@ -315,17 +338,17 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         setDescription(mediaFromApi.getDescription());
         setTitle(mediaFromApi.getTitle());
         setDate(mediaFromApi.getDate());
-        if (isNotEmpty(mediaFromApi.getMetadata())) {
+        if (mediaFromApi.hasMetadata()) {
             for (Iterator<FileMetadata> it = getMetadata().iterator(); it.hasNext();) {
                 FileMetadata m = it.next();
-                if (mediaFromApi.getMetadata().stream().map(FileMetadata::getAssetUri)
+                if (mediaFromApi.getMetadataStream().map(FileMetadata::getAssetUri)
                         .noneMatch(x -> areSameUris(x, m.getAssetUri()))) {
                     LOGGER.info("Remove database metadata not found anymore in API by asset URI: {}", m);
                     it.remove();
                 }
             }
             for (FileMetadata apiMetadata : mediaFromApi.getMetadata()) {
-                if (getMetadata().stream().map(FileMetadata::getAssetUri)
+                if (getMetadataStream().map(FileMetadata::getAssetUri)
                         .noneMatch(x -> areSameUris(x, apiMetadata.getAssetUri()))) {
                     LOGGER.info("Add API metadata not yet found in database by asset URI: {}", apiMetadata);
                     addMetadata(apiMetadata);

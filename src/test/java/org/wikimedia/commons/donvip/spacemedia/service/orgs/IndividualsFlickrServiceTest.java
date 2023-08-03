@@ -116,6 +116,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     void testGetStatements(String pathAlias, int license, LocalDateTime datePosted, LocalDateTime dateTaken,
             URL assetUrl, String title, String albums, String expectedStatements) throws MalformedURLException {
         FlickrMedia media = new FlickrMedia();
+        media.addMetadata(new FileMetadata());
         media.setPathAlias(pathAlias);
         media.setLicense(license);
         media.setTitle(title);
@@ -168,6 +169,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     @Test
     void testFindLicenceTemplates() {
         FlickrMedia media = new FlickrMedia();
+        media.addMetadata(new FileMetadata());
         media.setPathAlias("pierre_markuse");
         media.setLicense(4);
         media.setId(52559137901L);

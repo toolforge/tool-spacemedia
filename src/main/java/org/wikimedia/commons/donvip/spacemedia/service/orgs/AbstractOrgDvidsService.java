@@ -43,6 +43,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsCredit;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
@@ -157,7 +158,7 @@ public abstract class AbstractOrgDvidsService
             // Only delete pictures not found in complete updates
             deleteOldDvidsMedia(idsKnownToDvidsApi);
         }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(m -> m.getMetadata().stream()).toList(),
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(Media::getMetadataStream).toList(),
                 start, LocalDate.now().minusYears(1), true);
     }
 

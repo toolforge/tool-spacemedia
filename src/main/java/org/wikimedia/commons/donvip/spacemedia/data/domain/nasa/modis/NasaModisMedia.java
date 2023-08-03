@@ -105,7 +105,7 @@ public class NasaModisMedia extends SingleFileMedia<String, LocalDate> {
 
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
-        return (getMetadata().size() < 2 ? CommonsService.normalizeFilename(title)
+        return (getMetadataCount() < 2 ? CommonsService.normalizeFilename(title)
                 : Utils.getFilename(fileMetadata.getAssetUrl())) + " (MODIS)";
     }
 

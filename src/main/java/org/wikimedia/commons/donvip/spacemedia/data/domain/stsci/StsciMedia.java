@@ -173,7 +173,7 @@ public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeyw
 
     @Override
     public boolean isImage() {
-        return getMetadata().stream().map(FileMetadata::getAssetUrl)
+        return getMetadataStream().map(FileMetadata::getAssetUrl)
                 .anyMatch(url -> url != null && !url.toExternalForm().toLowerCase(Locale.ENGLISH).endsWith(".pdf"));
     }
 

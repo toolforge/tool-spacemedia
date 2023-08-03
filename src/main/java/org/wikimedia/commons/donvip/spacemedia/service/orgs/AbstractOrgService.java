@@ -363,8 +363,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, LocalDateTime start,
             boolean postTweet) {
-        endUpdateMedia(count, uploadedMedia,
-                uploadedMedia.stream().flatMap(m -> m.getMetadata().stream()).toList(),
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(Media::getMetadataStream).toList(),
                 start, postTweet);
     }
 
@@ -955,7 +954,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     protected Optional<String> getOtherVersions(T media, FileMetadata metadata) {
         StringBuilder sb = new StringBuilder();
-        media.getMetadata().stream().filter(m -> m != metadata && m.getAssetUrl() != null)
+        media.getMetadataStream().filter(m -> m != metadata && m.getAssetUrl() != null)
                 .map(m -> media.getFirstCommonsFileNameOrUploadTitle(m) + '|'
                         + m.getFileExtension().toUpperCase(Locale.ENGLISH) + " version\n")
                 .distinct().forEach(sb::append);
@@ -1228,7 +1227,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
     }
 
     protected boolean shouldUploadAuto(T media, boolean isManual) {
-        return media.getMetadata().stream().anyMatch(
+        return media.getMetadataStream().anyMatch(
                 metadata -> new UploadContext<>(media, metadata, getUploadMode(), minYearUploadAuto,
                         this::isPermittedFileType, isManual).shouldUploadAuto());
     }

@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -128,7 +127,7 @@ public class StsciService {
         return result;
     }
 
-    private static void fillMetadata(StsciMedia result, List<StsciImageFiles> files) throws MalformedURLException {
+    private static void fillMetadata(StsciMedia result, List<StsciImageFiles> files) {
         Map<String, FileMetadata> metadataByExtension = new HashMap<>();
         for (StsciImageFiles imageFile : files) {
             String fileUrl = imageFile.getFileUrl();
@@ -142,7 +141,7 @@ public class StsciService {
                 }
             }
         }
-        result.getMetadata().addAll(metadataByExtension.values());
+        result.addAllMetadata(metadataByExtension.values());
         files.stream().filter(f -> !f.getFileUrl().endsWith(".pdf"))
                 .min(Comparator.comparingInt(StsciImageFiles::getFileSize)).map(StsciImageFiles::getFileUrl)
                 .ifPresent(min -> result.setThumbnailUrl(toUrl(min)));

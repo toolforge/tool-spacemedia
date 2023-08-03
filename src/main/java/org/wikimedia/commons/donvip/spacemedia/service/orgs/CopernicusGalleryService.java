@@ -135,8 +135,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
                 }
             }
         } while (loop);
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(m -> m.getMetadata().stream()).toList(),
-                start);
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(Media::getMetadataStream).toList(), start);
     }
 
     private CopernicusGalleryMedia updateImage(String id, ZonedDateTime date,

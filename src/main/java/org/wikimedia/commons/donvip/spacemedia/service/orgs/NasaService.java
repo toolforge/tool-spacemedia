@@ -44,6 +44,7 @@ import org.springframework.web.client.RestTemplate;
 import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaAudioRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaImage;
@@ -269,7 +270,7 @@ public class NasaService
                 ongoingUpdateMedia(start, count);
                 uploadedImages.addAll(localUploadedImages);
                 postSocialMedia(localUploadedImages,
-                        localUploadedImages.stream().flatMap(m -> m.getMetadata().stream()).toList());
+                        localUploadedImages.stream().flatMap(Media::getMetadataStream).toList());
             }
         }
         // Ancient years have a lot less photos: simple search for all centers
@@ -322,7 +323,7 @@ public class NasaService
             count += videos.getLeft();
             uploadedMedia.addAll(videos.getRight());
         }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(m -> m.getMetadata().stream()).toList(),
+        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(Media::getMetadataStream).toList(),
                 start, LocalDate.now().minusYears(1), // NASA sometimes post old images dating a few months back
                 false /* tweets already posted - one by NASA center */);
     }
