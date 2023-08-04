@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -240,6 +241,12 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      */
     public List<String> getIdUsedInCommons() {
         return List.of(getIdUsedInOrg());
+    }
+
+    public List<String> getSearchTermsInCommons() {
+        List<String> result = new ArrayList<>(getIdUsedInCommons());
+        ofNullable(getDescription()).ifPresent(result::add);
+        return result;
     }
 
     public abstract D getDate();

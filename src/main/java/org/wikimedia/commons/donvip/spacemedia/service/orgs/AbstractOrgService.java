@@ -1108,12 +1108,11 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         if (isNotEmpty(metadata.getCommonsFileNames())) {
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
-        for (String idUsedInCommons : media.getIdUsedInCommons()) {
-            if (mediaService.findCommonsFiles(List.of(metadata), idUsedInCommons, includeByPerceptualHash())) {
-                metadata = metadataRepository.save(metadata);
-                throw new ImageUploadForbiddenException(
-                        media + " is already on Commons: " + metadata.getCommonsFileNames());
-            }
+        if (mediaService.findCommonsFiles(List.of(metadata), media.getSearchTermsInCommons(),
+                includeByPerceptualHash())) {
+            metadata = metadataRepository.save(metadata);
+            throw new ImageUploadForbiddenException(
+                    media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
         if (findLicenceTemplates(media).isEmpty()) {
             throw new ImageUploadForbiddenException(media + " has no template, so may be not free");

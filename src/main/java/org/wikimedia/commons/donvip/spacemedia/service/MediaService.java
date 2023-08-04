@@ -110,11 +110,9 @@ public class MediaService {
             LOGGER.info("Readable state and/or hashes have been updated for {}", media);
             result = true;
         }
-        for (String idUsedInCommons : media.getIdUsedInCommons()) {
-            if (findCommonsFiles(media.getMetadata(), idUsedInCommons, includeByPerceptualHash)) {
-                LOGGER.info("Commons files have been updated for {}", media);
-                result = true;
-            }
+        if (findCommonsFiles(media.getMetadata(), media.getSearchTermsInCommons(), includeByPerceptualHash)) {
+            LOGGER.info("Commons files have been updated for {}", media);
+            result = true;
         }
         if (checkBlocklist && !Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
             LOGGER.info("Blocklist has been trigerred for {}", media);
@@ -374,11 +372,11 @@ public class MediaService {
         return false;
     }
 
-    public boolean findCommonsFiles(Collection<FileMetadata> metadata, String idUsedInCommons,
+    public boolean findCommonsFiles(Collection<FileMetadata> metadata, Collection<String> searchTermsInCommons,
             boolean includeByPerceptualHash) throws IOException {
         return findCommonsFilesWithSha1(metadata) || (includeByPerceptualHash
                 && (findCommonsFilesWithPhash(metadata, true)
-                        || findCommonsFilesWithIdAndPhash(metadata, idUsedInCommons)));
+                        || findCommonsFilesWithTextAndPhash(metadata, searchTermsInCommons)));
     }
 
     /**
@@ -444,14 +442,18 @@ public class MediaService {
         return false;
     }
 
-    public boolean findCommonsFilesWithIdAndPhash(Collection<FileMetadata> metadatas, String idUsedInCommons)
+    public boolean findCommonsFilesWithTextAndPhash(Collection<FileMetadata> metadatas, Collection<String> texts)
             throws IOException {
         boolean result = false;
-        Collection<WikiPage> images = commonsService.searchImages(idUsedInCommons);
-        if (!images.isEmpty()) {
-            for (FileMetadata metadata : metadatas) {
-                if (findCommonsFilesWithIdAndPhash(images, metadata)) {
-                    result = true;
+        for (String text : texts) {
+            if (StringUtils.isNotBlank(text)) {
+                Collection<WikiPage> images = commonsService.searchImages(text.strip());
+                if (!images.isEmpty()) {
+                    for (FileMetadata metadata : metadatas) {
+                        if (findCommonsFilesWithIdAndPhash(images, metadata)) {
+                            result = true;
+                        }
+                    }
                 }
             }
         }
