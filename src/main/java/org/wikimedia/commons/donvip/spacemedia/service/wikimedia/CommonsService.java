@@ -457,10 +457,13 @@ public class CommonsService {
     }
 
     public Collection<WikiPage> searchImages(String text) throws IOException {
+        // Search is limited to 300 characters
+        // (cirrussearch-query-too-long-with-exemptions)
         SearchQueryResponse response = apiHttpGet(
                 List.of("?action=query", "generator=search", "gsrlimit=10", "gsroffset=0", "gsrinfo=totalhits",
                         "gsrsearch=filetype%3Abitmap|drawing-fileres%3A0%20"
-                                + URLEncoder.encode(text, StandardCharsets.UTF_8),
+                                + URLEncoder.encode(text.length() > 266 ? text.substring(0, 266) : text,
+                                        StandardCharsets.UTF_8),
                         "prop=info|imageinfo|entityterms", "inprop=url", "gsrnamespace=6", "iiprop=url|size|mime|sha1")
                         .stream().collect(joining("&")),
                 SearchQueryResponse.class);
