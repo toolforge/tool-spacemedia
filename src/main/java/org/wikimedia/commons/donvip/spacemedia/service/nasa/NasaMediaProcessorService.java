@@ -197,6 +197,8 @@ public class NasaMediaProcessorService {
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
         } else {
+            findOriginalMedia(rest, href).map(FileMetadata::new).map(metadataRepository::save)
+                    .ifPresent(media::addMetadata);
             save = processMediaFromApi(rest, media, href, problem);
         }
         if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && img.getPhotographer() != null
@@ -235,17 +237,10 @@ public class NasaMediaProcessorService {
 
     public boolean processMediaFromApi(RestTemplate rest, NasaMedia media, URL href,
             BiConsumer<URL, Throwable> problem) throws URISyntaxException {
-        FileMetadata metadata = media.getUniqueMetadata();
-        if (metadata.getAssetUrl() != null && !metadataRepository.existsByAssetUrl(metadata.getAssetUrl())) {
-            metadata = metadataRepository.save(metadata);
-        }
         // API is supposed to send us keywords in a proper JSON array, but not always
         Set<String> normalizedKeywords = normalizeKeywords(media.getKeywords());
         if (!Objects.equals(normalizedKeywords, media.getKeywords())) {
             media.setKeywords(normalizedKeywords);
-        }
-        if (metadata.getAssetUrl() == null) {
-            findOriginalMedia(rest, href).ifPresent(metadata::setAssetUrl);
         }
         if (media.getThumbnailUrl() == null) {
             findThumbnailMedia(rest, href).ifPresent(media::setThumbnailUrl);
