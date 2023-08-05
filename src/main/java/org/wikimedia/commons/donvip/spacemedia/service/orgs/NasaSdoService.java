@@ -347,17 +347,16 @@ public class NasaSdoService
             media = imageInDb.get();
         } else {
             media = new NasaSdoMedia();
-            FileMetadata metadata = media.getUniqueMetadata();
+            FileMetadata metadata = new FileMetadata(url);
             media.setId(id);
             media.setTitle(id);
             media.setDate(date);
             media.setDataType(dataType);
-            metadata.setAssetUrl(url);
             if (dimensions.getWidth() == 4096) {
                 media.setThumbnailUrl(newURL(url.toExternalForm().replace("_4096_", "_1024_")));
             }
             metadata.setImageDimensions(dimensions);
-            metadataRepository.save(metadata);
+            media.addMetadata(metadataRepository.save(metadata));
             media.setMediaType(mediaType);
             save = true;
         }
