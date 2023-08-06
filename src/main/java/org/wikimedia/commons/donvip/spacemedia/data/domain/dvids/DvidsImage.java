@@ -22,12 +22,12 @@ public class DvidsImage extends DvidsMedia {
 
     @Transient
     public URL getImage() {
-        return getUniqueMetadata().getAssetUrl();
+        return hasMetadata() ? getUniqueMetadata().getAssetUrl() : null;
     }
 
     @Transient
     public void setImage(URL imageUrl) {
-        getUniqueMetadata().setAssetUrl(imageUrl);
+        setAssetUrl(imageUrl);
     }
 
     public DvidsAspectRatio getAspectRatio() {

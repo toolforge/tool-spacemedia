@@ -342,4 +342,12 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, Zone
         setVirin(mediaFromApi.getVirin());
         return this;
     }
+
+    protected void setAssetUrl(URL assetUrl) {
+        if (hasMetadata()) {
+            getUniqueMetadata().setAssetUrl(assetUrl);
+        } else {
+            addMetadata(new FileMetadata(assetUrl));
+        }
+    }
 }
