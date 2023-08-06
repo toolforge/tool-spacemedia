@@ -44,7 +44,9 @@ public class ExifMetadata {
     @JsonProperty("File:MIMEType")
     private String fileMimeType;
 
+    @Lob
     @JsonProperty("EXIF:Artist")
+    @Column(columnDefinition = "TEXT")
     private String exifArtist;
 
     @JsonProperty("EXIF:Copyright")
