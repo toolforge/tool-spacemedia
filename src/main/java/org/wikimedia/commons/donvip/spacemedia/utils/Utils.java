@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,6 +43,7 @@ import org.jsoup.parser.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
@@ -253,12 +255,14 @@ public final class Utils {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
+    public static RestTemplate restTemplateSupportingAll(Charset charset) {
+        return new RestTemplate(List.of(new StringHttpMessageConverter(charset)));
+    }
+
     public static RestTemplate restTemplateSupportingAll(ObjectMapper jackson) {
-        RestTemplate restTemplate = new RestTemplate();
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(jackson);
         converter.setSupportedMediaTypes(List.of(MediaType.ALL));
-        restTemplate.setMessageConverters(List.of(converter));
-        return restTemplate;
+        return new RestTemplate(List.of(converter));
     }
 
     public static <T> boolean replace(Collection<T> collection, T oldValue, T newValue) {

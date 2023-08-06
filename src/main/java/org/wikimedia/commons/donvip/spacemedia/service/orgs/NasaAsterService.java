@@ -6,6 +6,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.restTemplateSu
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -154,7 +155,9 @@ public class NasaAsterService
         LocalDateTime start = startUpdateMedia();
         List<NasaAsterMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
-        for (AsterItem item : restTemplateSupportingAll(jackson).getForObject(galleryUrl, AsterItem[].class)) {
+        for (AsterItem item : jackson.readValue(
+                restTemplateSupportingAll(Charset.forName("Windows-1252")).getForObject(galleryUrl, String.class),
+                AsterItem[].class)) {
             try {
                 updateImage(item, uploadedMedia);
             } catch (IOException | UploadException | RuntimeException e) {
