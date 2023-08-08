@@ -209,20 +209,24 @@ public class NasaMediaProcessorService {
         if (doCommonUpdate.test(media)) {
             save = true;
         }
-        FileMetadata metadata = media.getUniqueMetadata();
-        if (metadata != null && metadata.getExif() == null) {
-            try {
-                ExifMetadata exifMetadata = readExifMetadata(restExif, media.getId());
-                if (exifMetadata != null) {
-                    metadata.setExif(exifRepository.save(exifMetadata));
-                    save = true;
+        if (media.hasMetadata()) {
+            FileMetadata metadata = media.getUniqueMetadata();
+            if (metadata.getExif() == null) {
+                try {
+                    ExifMetadata exifMetadata = readExifMetadata(restExif, media.getId());
+                    if (exifMetadata != null) {
+                        metadata.setExif(exifRepository.save(exifMetadata));
+                        save = true;
+                    }
+                } catch (HttpClientErrorException.Forbidden e) {
+                    // NHQ202211160205-2 always return http 403
+                    LOGGER.error("Unable to retrieve EXIF metadata for {}: {}", media.getId(), e.getMessage());
+                } catch (Exception e) {
+                    LOGGER.error("Unable to retrieve EXIF metadata for {}", media.getId(), e);
                 }
-            } catch (HttpClientErrorException.Forbidden e) {
-                // NHQ202211160205-2 always return http 403
-                LOGGER.error("Unable to retrieve EXIF metadata for {}: {}", media.getId(), e.getMessage());
-            } catch (Exception e) {
-                LOGGER.error("Unable to retrieve EXIF metadata for {}", media.getId(), e);
             }
+        } else {
+            LOGGER.warn("Media without metadata: {}", media);
         }
         int uploadCount = 0;
         if (shouldUploadAuto.test(media, false)) {
