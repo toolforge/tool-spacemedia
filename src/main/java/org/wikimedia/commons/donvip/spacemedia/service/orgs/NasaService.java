@@ -159,6 +159,13 @@ public class NasaService
         return result;
     }
 
+    @Override
+    protected boolean ignoreExifMetadata() {
+        // NASA has its own REST API to retrieve file metadata.
+        // Much faster than reading EXIF from image itself
+        return true;
+    }
+
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType,
             LocalDate doNotFetchEarlierThan) {
         return doUpdateMedia(mediaType,

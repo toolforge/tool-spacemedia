@@ -5,23 +5,18 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -34,7 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 
-import com.fasterxml.jackson.datatype.jdk8.WrappedIOException;
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Metadata;
 
 public class ImageUtils {
 
@@ -68,41 +65,7 @@ public class ImageUtils {
      * @throws IllegalArgumentException if <code>stream</code> is <code>null</code>.
      * @throws IOException              if an error occurs during reading.
      */
-    public static BufferedImage readImage(ImageInputStream stream, boolean readMetadata) throws IOException {
-        return doReadImageOrMetadata(stream, readMetadata, reader -> {
-            try {
-                return reader.read(0, reader.getDefaultReadParam());
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
-    }
-
-    public static Map<String, String> readImageMetadata(ImageInputStream stream) throws IOException {
-        return doReadImageOrMetadata(stream, false, reader -> {
-            try {
-                Map<String, String> result = new TreeMap<>();
-                IIOMetadata metadata = reader.getStreamMetadata();
-                if (metadata != null) {
-                    LOGGER.info("Stream: {}", metadata);
-                    // TODO
-                }
-                for (int index = 0; index < reader.getNumImages(true); index++) {
-                    metadata = reader.getImageMetadata(index);
-                    if (metadata != null) {
-                        LOGGER.info("Image {}: {}", index, metadata);
-                        // TODO
-                    }
-                }
-                return result;
-            } catch (IOException e) {
-                throw new WrappedIOException(e);
-            }
-        });
-    }
-
-    private static <T> T doReadImageOrMetadata(ImageInputStream stream, boolean readMetadata, Function<ImageReader, T> function)
-            throws IOException {
+    static BufferedImage readImage(ImageInputStream stream, boolean readMetadata) throws IOException {
         Iterator<ImageReader> iter = ImageIO.getImageReaders(stream);
         if (!iter.hasNext()) {
             LOGGER.warn("No image reader found");
@@ -115,9 +78,7 @@ public class ImageUtils {
         }
         reader.setInput(stream, true, !readMetadata);
         try {
-            return function.apply(reader);
-        } catch (WrappedIOException e) {
-            throw e.getCause();
+            return reader.read(0, reader.getDefaultReadParam());
         } finally {
             reader.dispose();
             stream.close();
@@ -184,6 +145,21 @@ public class ImageUtils {
             return readImage(ImageIO.createImageInputStream(in), readMetadata);
         } catch (IOException | RuntimeException e) {
             throw new ImageDecodingException(e);
+        }
+    }
+
+    public static Metadata readImageMetadata(URL url) throws IOException {
+        return readImageMetadata(Utils.urlToUriUnchecked(url));
+    }
+
+    public static Metadata readImageMetadata(URI uri) throws IOException {
+        LOGGER.info("Reading EXIF metadata for {}...", uri);
+        try (CloseableHttpClient httpclient = HttpClients.createDefault();
+                CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
+                InputStream in = response.getEntity().getContent()) {
+            return ImageMetadataReader.readMetadata(in);
+        } catch (ImageProcessingException e) {
+            throw new IOException(e);
         }
     }
 }

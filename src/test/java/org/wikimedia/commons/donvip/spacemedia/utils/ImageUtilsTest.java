@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -29,12 +28,5 @@ class ImageUtilsTest {
         } finally {
             bi.flush();
         }
-    }
-
-    @Test
-    void testReadImageMetadata() throws Exception {
-        // ImageUtils.readImageMetadata(new
-        // URL("https://images-assets.nasa.gov/image/P22-003-22/P22-003-22~orig.jpg"));
-        // TODO
     }
 }

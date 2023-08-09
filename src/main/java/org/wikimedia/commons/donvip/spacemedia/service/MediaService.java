@@ -35,6 +35,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.ImageInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.WikiPage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociation;
@@ -66,6 +68,9 @@ public class MediaService {
     @Autowired
     private FileMetadataRepository metadataRepository;
 
+    @Autowired
+    private ExifMetadataRepository exifRepository;
+
     @Value("${perceptual.threshold}")
     private double perceptualThreshold;
 
@@ -94,18 +99,19 @@ public class MediaService {
 
     public <M extends Media<?, ?>> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
             boolean forceUpdate, UrlResolver<M> urlResolver) throws IOException {
-        return updateMedia(media, stringsToRemove, forceUpdate, urlResolver, true, true, null);
+        return updateMedia(media, stringsToRemove, forceUpdate, urlResolver, true, true, false, null);
     }
 
     public <M extends Media<?, ?>> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
             boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist, boolean includeByPerceptualHash,
-            Path localPath) throws IOException {
+            boolean ignoreExifMetadata, Path localPath) throws IOException {
         boolean result = false;
         if (cleanupDescription(media, stringsToRemove)) {
             LOGGER.info("Description has been cleaned up for {}", media);
             result = true;
         }
-        MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, urlResolver, forceUpdate);
+        MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, urlResolver, forceUpdate,
+                ignoreExifMetadata);
         if (ur.getResult()) {
             LOGGER.info("Readable state and/or hashes have been updated for {}", media);
             result = true;
@@ -161,12 +167,12 @@ public class MediaService {
     }
 
     public <M extends Media<?, ?>> MediaUpdateResult updateReadableStateAndHashes(M media, Path localPath,
-            UrlResolver<M> urlResolver, boolean forceUpdateOfHashes) {
+            UrlResolver<M> urlResolver, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
         boolean result = false;
         Exception exception = null;
         for (FileMetadata metadata : media.getMetadata()) {
             MediaUpdateResult ur = updateReadableStateAndHashes(media, metadata, localPath, urlResolver,
-                    forceUpdateOfHashes);
+                    forceUpdateOfHashes, ignoreExifMetadata);
             result |= ur.getResult();
             if (ur.getException() != null) {
                 exception = ur.getException();
@@ -198,7 +204,7 @@ public class MediaService {
     }
 
     private <M extends Media<?, ?>> MediaUpdateResult updateReadableStateAndHashes(M media, FileMetadata metadata,
-            Path localPath, UrlResolver<M> urlResolver, boolean forceUpdateOfHashes) {
+            Path localPath, UrlResolver<M> urlResolver, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
         boolean isImage = metadata.isImage();
         boolean result = false;
         BufferedImage bi = null;
@@ -234,7 +240,7 @@ public class MediaService {
             }
             if (isImage && Boolean.TRUE.equals(metadata.isReadableImage())
                     && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
-                LOGGER.info("Perceptual hash has been updated for {}", media);
+                LOGGER.info("Perceptual hash has been updated for {}", metadata);
                 result = true;
             }
             if (bi != null) {
@@ -242,7 +248,11 @@ public class MediaService {
                 bi = null;
             }
             if (updateSha1(media, metadata, localPath, urlResolver, forceUpdateOfHashes)) {
-                LOGGER.info("SHA1 hash has been updated for {}", media);
+                LOGGER.info("SHA1 hash has been updated for {}", metadata);
+                result = true;
+            }
+            if (isImage && !ignoreExifMetadata && updateExifMetadata(metadata)) {
+                LOGGER.info("EXIF metadata has been updated for {}", metadata);
                 result = true;
             }
         } catch (RestClientException e) {
@@ -310,6 +320,15 @@ public class MediaService {
             }
         }
         return result;
+    }
+
+    public boolean updateExifMetadata(FileMetadata metadata) throws IOException {
+        if (metadata.getExif() == null) {
+            metadata.setExif(
+                    exifRepository.save(ExifMetadata.of(ImageUtils.readImageMetadata(metadata.getAssetUri()))));
+            return true;
+        }
+        return false;
     }
 
     /**

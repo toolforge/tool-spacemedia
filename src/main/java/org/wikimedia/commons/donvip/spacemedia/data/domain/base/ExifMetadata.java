@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
+import static java.util.Optional.ofNullable;
 import static javax.persistence.GenerationType.SEQUENCE;
 
 import java.net.URL;
@@ -14,7 +15,17 @@ import javax.persistence.Lob;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wikimedia.commons.donvip.spacemedia.utils.StringArrayAsStringDeserializer;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifDirectoryBase;
+import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.file.FileTypeDirectory;
+import com.drew.metadata.iptc.IptcDescriptor;
+import com.drew.metadata.iptc.IptcDirectory;
+import com.drew.metadata.photoshop.PhotoshopDirectory;
+import com.drew.metadata.xmp.XmpDirectory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -495,5 +506,60 @@ public class ExifMetadata {
     @Override
     public String toString() {
         return "ExifMetadata [id=" + id + "]";
+    }
+
+    public static ExifMetadata of(Metadata metadata) {
+        ExifMetadata result = new ExifMetadata();
+
+        ofNullable(metadata.getFirstDirectoryOfType(FileTypeDirectory.class)).ifPresent(file -> {
+            result.setFileFileType(file.getDescription(FileTypeDirectory.TAG_DETECTED_FILE_TYPE_NAME));
+            result.setFileFileTypeExtension(file.getDescription(FileTypeDirectory.TAG_EXPECTED_FILE_NAME_EXTENSION));
+            result.setFileMimeType(file.getDescription(FileTypeDirectory.TAG_DETECTED_FILE_MIME_TYPE));
+        });
+
+        ofNullable(metadata.getFirstDirectoryOfType(ExifIFD0Directory.class)).ifPresent(ifd0 -> {
+            result.setExifArtist(ifd0.getDescription(ExifDirectoryBase.TAG_ARTIST));
+            result.setExifCopyright(ifd0.getDescription(ExifDirectoryBase.TAG_COPYRIGHT));
+            ofNullable(ifd0.getInteger(ExifDirectoryBase.TAG_EXIF_IMAGE_HEIGHT))
+                    .ifPresent(result::setExifExifImageHeight);
+            ofNullable(ifd0.getInteger(ExifDirectoryBase.TAG_EXIF_IMAGE_WIDTH))
+                    .ifPresent(result::setExifExifImageWidth);
+            result.setExifImageDescription(ifd0.getDescription(ExifDirectoryBase.TAG_IMAGE_DESCRIPTION));
+            ofNullable(ifd0.getInteger(ExifDirectoryBase.TAG_IMAGE_HEIGHT)).ifPresent(result::setExifImageHeight);
+            ofNullable(ifd0.getInteger(ExifDirectoryBase.TAG_IMAGE_WIDTH)).ifPresent(result::setExifImageWidth);
+        });
+
+        ofNullable(metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class)).ifPresent(subifd -> {
+            result.setExifLensSerialNumber(subifd.getDescription(ExifDirectoryBase.TAG_LENS_SERIAL_NUMBER));
+            result.setExifSerialNumber(subifd.getDescription(ExifDirectoryBase.TAG_BODY_SERIAL_NUMBER));
+        });
+
+        ofNullable(metadata.getFirstDirectoryOfType(IptcDirectory.class)).map(IptcDescriptor::new).ifPresent(iptc -> {
+            result.setIptcByLine(iptc.getByLineDescription());
+            result.setIptcCaptionAbstract(iptc.getCaptionDescription());
+            result.setIptcCopyrightNotice(iptc.getCopyrightNoticeDescription());
+            result.setIptcObjectName(iptc.getObjectNameDescription());
+            result.setIptcWriterEditor(iptc.getWriterDescription());
+        });
+
+        ofNullable(metadata.getFirstDirectoryOfType(PhotoshopDirectory.class))
+                .ifPresent(ps -> ofNullable(ps.getDescription(PhotoshopDirectory.TAG_URL)).map(Utils::newURL)
+                        .ifPresent(result::setPhotoshopUrl));
+
+        ofNullable(metadata.getFirstDirectoryOfType(XmpDirectory.class)).map(XmpDirectory::getXmpProperties)
+                .ifPresent(xmp -> {
+                    result.setXmpCaptionWriter(xmp.get("photoshop:CaptionWriter"));
+                    result.setXmpDescription(xmp.get("dc:description[1]"));
+                    result.setXmpFormat(xmp.get("dc:format"));
+                    result.setXmpLensSerialNumber(xmp.get("aux:LensSerialNumber"));
+                    result.setXmpOriginalDocumentID(xmp.get("xmpMM:OriginalDocumentID"));
+                    result.setXmpRights(xmp.get("dc:rights[1]"));
+                    result.setXmpSerialNumber(xmp.get("aux:SerialNumber"));
+                    result.setXmpTitle(xmp.get("dc:title[1]"));
+                    ofNullable(xmp.get("xmpRights:WebStatement")).map(Utils::newURL)
+                            .ifPresent(result::setXmpWebStatement);
+        });
+
+        return result;
     }
 }

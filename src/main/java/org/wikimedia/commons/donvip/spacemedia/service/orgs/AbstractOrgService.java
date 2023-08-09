@@ -1155,7 +1155,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
         MediaUpdateResult ur = mediaService.updateMedia(media, getStringsToRemove(media),
-                forceUpdate, getUrlResolver(), checkBlocklist(), includeByPerceptualHash(), null);
+                forceUpdate, getUrlResolver(), checkBlocklist(), includeByPerceptualHash(), ignoreExifMetadata(), null);
         boolean result = ur.getResult();
         if (media.isIgnored() != Boolean.TRUE) {
             if (media.getDescription() != null) {
@@ -1181,6 +1181,10 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     protected boolean includeByPerceptualHash() {
         return true;
+    }
+
+    protected boolean ignoreExifMetadata() {
+        return false;
     }
 
     protected final boolean doCommonUpdate(T media) throws IOException {
