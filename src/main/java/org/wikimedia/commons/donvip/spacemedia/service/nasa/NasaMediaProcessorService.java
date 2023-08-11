@@ -197,13 +197,11 @@ public class NasaMediaProcessorService {
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
         } else {
-            findOriginalMedia(rest, href).map(FileMetadata::new).map(metadataRepository::save)
-                    .ifPresent(media::addMetadata);
-            save = processMediaFromApi(rest, media, href, problem);
+            save = processMediaFromApi(rest, media, href, problem, true);
         }
-        if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && img.getPhotographer() != null
-                && mediaService.isPhotographerBlocklisted(img.getPhotographer())) {
-            ignoreMedia(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer());
+        if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && isPhotographerBLocklisted(img)) {
+            ignoreMedia(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer() + " / "
+                    + img.getSecondaryCreator());
             save = true;
         }
         if (doCommonUpdate.test(media)) {
@@ -240,7 +238,9 @@ public class NasaMediaProcessorService {
     }
 
     public boolean processMediaFromApi(RestTemplate rest, NasaMedia media, URL href,
-            BiConsumer<URL, Throwable> problem) throws URISyntaxException {
+            BiConsumer<URL, Throwable> problem, boolean saveMetadata) throws URISyntaxException {
+        findOriginalMedia(rest, href).map(FileMetadata::new).map(x -> saveMetadata ? metadataRepository.save(x) : x)
+                .ifPresent(media::addMetadata);
         // API is supposed to send us keywords in a proper JSON array, but not always
         Set<String> normalizedKeywords = normalizeKeywords(media.getKeywords());
         if (!Objects.equals(normalizedKeywords, media.getKeywords())) {
@@ -266,6 +266,12 @@ public class NasaMediaProcessorService {
             }
         }
         return true;
+    }
+
+    private boolean isPhotographerBLocklisted(NasaImage img) {
+        return (img.getPhotographer() != null && mediaService.isPhotographerBlocklisted(img.getPhotographer()))
+                || (img.getSecondaryCreator() != null
+                        && mediaService.isPhotographerBlocklisted(img.getSecondaryCreator()));
     }
 
     ExifMetadata readExifMetadata(RestTemplate restExif, String id)

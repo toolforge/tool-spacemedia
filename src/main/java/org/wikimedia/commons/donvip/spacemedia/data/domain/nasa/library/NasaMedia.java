@@ -42,6 +42,9 @@ public abstract class NasaMedia extends SingleFileMedia<String, ZonedDateTime> i
     @Column(length = 20)
     private String center;
 
+    @Column(length = 200, nullable = true)
+    private String location;
+
     @JsonProperty("date_created")
     @Column(name = "date_created")
     private ZonedDateTime date;
@@ -71,6 +74,14 @@ public abstract class NasaMedia extends SingleFileMedia<String, ZonedDateTime> i
 
     public void setCenter(String center) {
         this.center = center;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     @Override
@@ -116,7 +127,7 @@ public abstract class NasaMedia extends SingleFileMedia<String, ZonedDateTime> i
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(center, date, description, keywords, mediaType, id, title);
+                + Objects.hash(center, location, date, description, keywords, mediaType, id, title);
     }
 
     @Override
@@ -126,7 +137,7 @@ public abstract class NasaMedia extends SingleFileMedia<String, ZonedDateTime> i
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaMedia other = (NasaMedia) obj;
-        return Objects.equals(center, other.center)
+        return Objects.equals(center, other.center) && Objects.equals(location, other.location)
                 && Objects.equals(date, other.date) && Objects.equals(description, other.description)
                 && Objects.equals(keywords, other.keywords) && mediaType == other.mediaType
                 && Objects.equals(id, other.id) && Objects.equals(title, other.title);
@@ -136,7 +147,7 @@ public abstract class NasaMedia extends SingleFileMedia<String, ZonedDateTime> i
     public String toString() {
         return "NasaMedia [" + (id != null ? "nasaId=" + id + ", " : "")
                 + (title != null ? "title=" + title + ", " : "") + (center != null ? "center=" + center + ", " : "")
-                + (date != null ? "date=" + date + ", " : "")
+                + (date != null ? "date=" + date + ", " : "") + (location != null ? "location=" + location + ", " : "")
                 + (mediaType != null ? "mediaType=" + mediaType + ", " : "")
                 + (getAssetUrl() != null ? "assetUrl=" + getAssetUrl() + ", " : "")
                 + (getMetadata() != null ? "metadata=" + getMetadata() : "") + "]";
@@ -160,6 +171,7 @@ public abstract class NasaMedia extends SingleFileMedia<String, ZonedDateTime> i
     public NasaMedia copyDataFrom(NasaMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         setCenter(mediaFromApi.getCenter());
+        setLocation(mediaFromApi.getLocation());
         setMediaType(mediaFromApi.getMediaType());
         setKeywords(mediaFromApi.getKeywords());
         return this;

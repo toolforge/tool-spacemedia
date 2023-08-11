@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static java.util.Collections.singleton;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -31,7 +32,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
@@ -355,8 +355,13 @@ public class NasaService
         String center = media.getCenter().toLowerCase(Locale.ENGLISH);
         URL homePage = env.getProperty("nasa." + center + ".home.page", URL.class);
         String name = env.getProperty("nasa." + center + ".name", String.class);
-        if (media instanceof NasaImage image && StringUtils.isNotBlank(image.getPhotographer())) {
-            name += " / " + image.getPhotographer();
+        if (media instanceof NasaImage image) {
+            if (isNotBlank(image.getPhotographer())) {
+                name += " / " + image.getPhotographer();
+            }
+            if (isNotBlank(image.getSecondaryCreator())) {
+                name += " / " + image.getSecondaryCreator();
+            }
         }
         return wikiLink(homePage, name);
     }
@@ -473,8 +478,8 @@ public class NasaService
                 if (data.size() == 1) {
                     try {
                         NasaMedia mediaFromApi = data.get(0);
-                        processor.processMediaFromApi(rest, mediaFromApi, item.getHref(), this::problem);
-                        if (mediaFromApi.getAssetUrl() != null) {
+                        processor.processMediaFromApi(rest, mediaFromApi, item.getHref(), this::problem, false);
+                        if (mediaFromApi.hasMetadata() && mediaFromApi.getAssetUrl() != null) {
                             LOGGER.info("Copying up-to-date data from {}", mediaFromApi);
                             return media.copyDataFrom(mediaFromApi);
                         }
