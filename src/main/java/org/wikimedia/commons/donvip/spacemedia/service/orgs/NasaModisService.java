@@ -74,6 +74,11 @@ public class NasaModisService
     }
 
     @Override
+    protected boolean isSatellitePicture(NasaModisMedia media, FileMetadata metadata) {
+        return true;
+    }
+
+    @Override
     public URL getSourceUrl(NasaModisMedia media, FileMetadata metadata) {
         return newURL(detailsUrl.replace("<date>", media.getPublicationDate().toString()));
     }

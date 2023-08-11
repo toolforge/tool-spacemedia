@@ -198,6 +198,11 @@ public class NasaAsterService
     }
 
     @Override
+    protected boolean isSatellitePicture(NasaAsterMedia media, FileMetadata metadata) {
+        return true;
+    }
+
+    @Override
     public Set<String> findCategories(NasaAsterMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         String continent = geometry.getContinent(media.getLatitude(), media.getLongitude());

@@ -106,6 +106,11 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
     }
 
     @Override
+    protected boolean isSatellitePicture(CopernicusGalleryMedia media, FileMetadata metadata) {
+        return true;
+    }
+
+    @Override
     public void updateMedia() throws IOException, UploadException {
         int i = 0;
         int count = 0;

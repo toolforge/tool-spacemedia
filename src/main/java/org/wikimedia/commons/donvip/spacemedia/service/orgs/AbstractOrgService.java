@@ -970,6 +970,10 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         return Optional.empty();
     }
 
+    protected boolean isSatellitePicture(T media, FileMetadata metadata) {
+        return false;
+    }
+
     /**
      * Returns the list of Wikimedia Commons categories to apply to the given media,
      * without hidden ones.
@@ -1001,7 +1005,14 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         } else if (media.containsInTitleOrDescription("Tropospheric Nitrogen Dioxide")) {
             result.add("Nitrogen dioxide maps");
         }
-        findCategoryFromTitle(media.getTitle()).ifPresent(result::add);
+        findCategoryFromTitle(media.getTitle()).ifPresent(title -> {
+            if (isSatellitePicture(media, metadata)) {
+                findCategoryForEarthObservationTargetOrSubject(x -> "Satellite pictures of " + x, title)
+                        .ifPresentOrElse(result::add, () -> result.add(title));
+            } else {
+                result.add(title);
+            }
+        });
         if (includeHidden) {
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
         }
@@ -1032,20 +1043,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         Set<String> result = new TreeSet<>();
         for (String targetOrSubject : satellitePicturesCategories) {
             if (image.containsInTitleOrDescription(targetOrSubject)) {
-                String cat = categorizer.apply(targetOrSubject);
-                if (commonsService.existsCategoryPage(cat)) {
-                    result.add(cat);
-                } else {
-                    String theCat = categorizer.apply("the " + targetOrSubject);
-                    if (commonsService.existsCategoryPage(theCat)) {
-                        result.add(theCat);
-                    } else {
-                        String cats = categorizer.apply(targetOrSubject + "s");
-                        if (commonsService.existsCategoryPage(cats)) {
-                            result.add(cats);
-                        }
-                    }
-                }
+                findCategoryForEarthObservationTargetOrSubject(categorizer, targetOrSubject).ifPresent(result::add);
             }
         }
         if (result.isEmpty()) {
@@ -1053,6 +1051,25 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         }
         result.add(image.getYear() + " satellite pictures");
         return result;
+    }
+
+    private Optional<String> findCategoryForEarthObservationTargetOrSubject(UnaryOperator<String> categorizer,
+            String targetOrSubject) {
+        String cat = categorizer.apply(targetOrSubject);
+        if (commonsService.existsCategoryPage(cat)) {
+            return Optional.of(cat);
+        } else {
+            String theCat = categorizer.apply("the " + targetOrSubject);
+            if (commonsService.existsCategoryPage(theCat)) {
+                return Optional.of(theCat);
+            } else {
+                String cats = categorizer.apply(targetOrSubject + "s");
+                if (commonsService.existsCategoryPage(cats)) {
+                    return Optional.of(cats);
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /**
