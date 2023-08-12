@@ -765,16 +765,22 @@ public class CommonsService {
 
     protected Set<String> mapCategoriesByDate(Set<String> cats, Temporal date) {
         String inMonthYear = " in " + CAT_MONTH_YEAR.format(date);
-        String inYear = " in " + CAT_YEAR.format(date);
+        String inYear1 = " in " + CAT_YEAR.format(date);
+        String inYear2 = " (" + CAT_YEAR.format(date) + ')';
         return cats.parallelStream().map(c -> {
             try {
                 return self.getCategoryPage(c + inMonthYear).getTitle();
-            } catch (CategoryNotFoundException | CategoryPageNotFoundException e) {
-                LOGGER.trace(e.getMessage(), e);
+            } catch (CategoryNotFoundException | CategoryPageNotFoundException e1) {
+                LOGGER.trace(e1.getMessage(), e1);
                 try {
-                    return self.getCategoryPage(c + inYear).getTitle();
-                } catch (CategoryNotFoundException | CategoryPageNotFoundException ex) {
-                    LOGGER.trace(ex.getMessage(), ex);
+                    return self.getCategoryPage(c + inYear1).getTitle();
+                } catch (CategoryNotFoundException | CategoryPageNotFoundException e2) {
+                    LOGGER.trace(e2.getMessage(), e2);
+                    try {
+                        return self.getCategoryPage(c + inYear2).getTitle();
+                    } catch (CategoryNotFoundException | CategoryPageNotFoundException e3) {
+                        LOGGER.trace(e3.getMessage(), e3);
+                    }
                 }
                 return c;
             }
