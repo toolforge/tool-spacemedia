@@ -140,7 +140,7 @@ public class ExifMetadata {
     private String xmpTitle;
 
     @JsonProperty("XMP:WebStatement")
-    private URL xmpWebStatement;
+    private String xmpWebStatement;
 
     @JsonProperty("Composite:Megapixels")
     private Float compositeMegaPixels;
@@ -411,11 +411,11 @@ public class ExifMetadata {
         this.xmpTitle = xmpTitle;
     }
 
-    public URL getXmpWebStatement() {
+    public String getXmpWebStatement() {
         return xmpWebStatement;
     }
 
-    public void setXmpWebStatement(URL xmpWebStatement) {
+    public void setXmpWebStatement(String xmpWebStatement) {
         this.xmpWebStatement = xmpWebStatement;
     }
 
@@ -556,8 +556,7 @@ public class ExifMetadata {
                     result.setXmpRights(xmp.get("dc:rights[1]"));
                     result.setXmpSerialNumber(xmp.get("aux:SerialNumber"));
                     result.setXmpTitle(xmp.get("dc:title[1]"));
-                    ofNullable(xmp.get("xmpRights:WebStatement")).map(Utils::newURL)
-                            .ifPresent(result::setXmpWebStatement);
+                    ofNullable(xmp.get("xmpRights:WebStatement")).ifPresent(result::setXmpWebStatement);
         });
 
         return result;

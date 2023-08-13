@@ -72,7 +72,7 @@ class ExifMetadataTest {
         assertEquals("Copyright © 2022 Lockheed Martin Corporation", metadata.getXmpRights());
         assertEquals("122055003806", metadata.getXmpSerialNumber());
         assertEquals("X-59 - Various Angles in Test Fixture", metadata.getXmpTitle());
-        assertEquals(new URL("http://www.lockheedmartin.com/us/contact/licensing-information.html"),
+        assertEquals("http://www.lockheedmartin.com/us/contact/licensing-information.html",
                 metadata.getXmpWebStatement());
     }
 }
