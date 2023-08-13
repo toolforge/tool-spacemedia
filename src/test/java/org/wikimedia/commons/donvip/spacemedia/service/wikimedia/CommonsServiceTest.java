@@ -200,6 +200,14 @@ Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a hr
         assertFalse(service.searchImages("NHQ202112250006").isEmpty());
     }
 
+    @Test
+    void testCleanupTextToSearch() {
+        assertEquals(
+                "NASA astronaut and Expedition 66 Flight Engineer Raja Chari wears virtual reality goggles inside the International Space Station's Columbus laboratory module. Chari was participating in the GRASP human research experiment that tests how astronauts perceive up and",
+                CommonsService.cleanupTextToSearch(
+                "NASA astronaut and Expedition 66 Flight Engineer Raja Chari wears virtual reality goggles inside the International Space Station's Columbus laboratory module. Chari was participating in the GRASP human research experiment that tests how astronauts perceive up and down movements and grip and manipulate objects in microgravity."));
+    }
+
     private void mockCategoryLinks() {
         CommonsPage page = new CommonsPage();
         page.setTitle("Combined_Space_Operations_Center");

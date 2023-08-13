@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.time.temporal.TemporalQueries.localDate;
@@ -32,7 +33,6 @@ import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -186,6 +186,8 @@ public class CommonsService {
      * Minimal delay between successive uploads, in seconds.
      */
     private static final int DELAY = 5;
+
+    private static final int MAX_LEN_SEARCH = 266;
 
     @Autowired
     private CommonsImageRepository imageRepository;
@@ -456,14 +458,26 @@ public class CommonsService {
         return query != null ? query.getFilearchive() : Collections.emptyList();
     }
 
+    static String cleanupTextToSearch(String text) {
+        if (text.length() > MAX_LEN_SEARCH) {
+            int idx = text.lastIndexOf(' ', MAX_LEN_SEARCH);
+            if (idx > -1) {
+                return text.substring(0, idx);
+            } else {
+                LOGGER.warn("Very long text without space character: {}", text);
+                return text.substring(0, MAX_LEN_SEARCH);
+            }
+        }
+        return text;
+    }
+
     public Collection<WikiPage> searchImages(String text) throws IOException {
         // Search is limited to 300 characters
         // (cirrussearch-query-too-long-with-exemptions)
         SearchQueryResponse response = apiHttpGet(
                 List.of("?action=query", "generator=search", "gsrlimit=10", "gsroffset=0", "gsrinfo=totalhits",
                         "gsrsearch=filetype%3Abitmap|drawing-fileres%3A0%20"
-                                + URLEncoder.encode(text.length() > 266 ? text.substring(0, 266) : text,
-                                        StandardCharsets.UTF_8),
+                                + URLEncoder.encode(cleanupTextToSearch(text), UTF_8),
                         "prop=info|imageinfo|entityterms", "inprop=url", "gsrnamespace=6", "iiprop=url|size|mime|sha1")
                         .stream().collect(joining("&")),
                 SearchQueryResponse.class);
@@ -502,7 +516,7 @@ public class CommonsService {
             Map<String, String> params, BodyPartPayload bodyPartPayload, boolean retryOnTimeout) throws IOException {
         LOGGER.debug("{} {} {}", verb, url, params);
         OAuthRequest request = new OAuthRequest(verb, url);
-        request.setCharset(StandardCharsets.UTF_8.name());
+        request.setCharset(UTF_8.name());
         headers.forEach(request::addHeader);
         if (bodyPartPayload != null) {
             request.initMultipartPayload();
