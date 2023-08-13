@@ -539,7 +539,7 @@ public class MediaService {
     }
 
     private static boolean areLargerOrEqualDimensions(ImageDimensions dims, ImageInfo imageInfo) {
-        return dims.getWidth() <= imageInfo.getWidth() && dims.getHeight() <= imageInfo.getHeight();
+        return dims != null && dims.getWidth() <= imageInfo.getWidth() && dims.getHeight() <= imageInfo.getHeight();
     }
 
     private static boolean filterBySameMimeAndSmallerSize(FileMetadata metadata, ImageInfo imageInfo) {
