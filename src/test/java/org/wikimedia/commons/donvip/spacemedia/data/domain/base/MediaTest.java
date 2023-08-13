@@ -62,6 +62,10 @@ class MediaTest {
                 "Ein Kolbenkernprobenehmer (piston corer) hängt am Seil neben der Bordwand_ Gleich wird er in 1300 mm Tiefe hinabgelassen, um viele Meter in das weiche Sediment auf dem Meeresboden einzudringen und einen entsprechend lang (25254739045)",
                 media.getUploadTitle(null));
         assertEquals(234, media.getUploadTitle(null).length());
+
+        media.setId("NHQ202304210018");
+        media.setTitle("NASA Leadership Meets with UK Space Agency (NHQ202304210018)");
+        assertEquals("NASA Leadership Meets with UK Space Agency (NHQ202304210018)", media.getUploadTitle(null));
     }
 
     @Test

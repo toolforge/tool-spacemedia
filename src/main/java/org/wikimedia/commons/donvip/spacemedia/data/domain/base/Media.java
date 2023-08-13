@@ -180,8 +180,9 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     protected static String getUploadTitle(String s, String id) {
-        return new StringBuilder(s.substring(0, Math.min(234 - id.length() - 3, s.length()))).append(" (").append(id)
-                .append(')').toString();
+        String firstPart = s.substring(0, Math.min(234 - id.length() - 3, s.length()));
+        return firstPart.contains(id) ? firstPart
+                : new StringBuilder(firstPart).append(" (").append(id).append(')').toString();
     }
 
     public String getTitle() {
