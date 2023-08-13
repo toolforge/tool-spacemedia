@@ -71,5 +71,11 @@ class MediaTest {
         media.setId(id);
         media.setDescription(description);
         assertEquals(List.of(id, description), media.getSearchTermsInCommons());
+
+        id = "iss066e079006";
+        description = "NASA astronaut and Expedition 66 Flight Engineer Raja Chari wears virtual reality goggles inside the International Space Station's Columbus laboratory module. Chari was participating in the GRASP human research experiment that tests how astronauts perceive up and down movements and grip and manipulate objects in microgravity.";
+        media.setId(id);
+        media.setDescription("iss066e079006 (Nov. 22, 2021) --- " + description);
+        assertEquals(List.of(id, description), media.getSearchTermsInCommons());
     }
 }

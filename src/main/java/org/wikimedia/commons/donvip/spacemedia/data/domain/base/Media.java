@@ -245,7 +245,8 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
 
     public List<String> getSearchTermsInCommons() {
         List<String> result = new ArrayList<>(getIdUsedInCommons());
-        ofNullable(getDescription()).ifPresent(result::add);
+        ofNullable(getDescription()).map(x -> x.contains(" --- ") ? x.substring(x.indexOf(" --- ") + 5) : x)
+                .ifPresent(result::add);
         return result;
     }
 
