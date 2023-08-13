@@ -12,6 +12,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -108,6 +109,22 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
     @Override
     protected boolean isSatellitePicture(CopernicusGalleryMedia media, FileMetadata metadata) {
         return true;
+    }
+
+    @Override
+    protected Map<String, String> getLegends(CopernicusGalleryMedia media, Map<String, String> descriptions) {
+        // Copernicus usually don't describe the picture in the first sentence.
+        String enDesc = descriptions.get("en");
+        if (enDesc != null) {
+            int idxSentinel = enDesc.indexOf("Sentinel-");
+            if (idxSentinel > -1) {
+                int idxStart = enDesc.lastIndexOf('.', idxSentinel) + 1;
+                int idxEnd = enDesc.indexOf('.', idxSentinel);
+                descriptions.put("en",
+                        (idxEnd > -1 ? enDesc.substring(idxStart, idxEnd + 1) : enDesc.substring(idxStart)).trim());
+            }
+        }
+        return descriptions;
     }
 
     @Override
