@@ -157,10 +157,10 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     private static String strippedLower(String s) {
         return deleteWhitespace((" " + stripAccents(s)).toLowerCase(ENGLISH).replace(" a ", " ").replace(" as ", " ")
                 .replace(" at ", " ").replace(" by ", " ").replace(" for ", " ").replace(" from ", " ")
-                .replace(" in ", " ").replace(" is ", " ").replace(" of ", " ").replace(" on ", " ")
-                .replace(" the ", " ").replace(" to ", " ").replace(" with ", " ").replace("-", "").replace("_", "")
-                .replace("'", "").replace(",", "").replace(".", "").replace("“", "").replace("(", "").replace(")", "")
-                .replace(":", "").replace("’", "").replace("–", "").replace("(", "").replace(")", ""));
+                .replace(" in ", " ").replace(" is ", " ").replace(" of ", " ").replace(" off ", " ")
+                .replace(" on ", " ").replace(" the ", " ").replace(" to ", " ").replace(" with ", " ").replace("-", "")
+                .replace("_", "").replace("'", "").replace(",", "").replace(".", "").replace("“", "").replace("(", "")
+                .replace(")", "").replace(":", "").replace("’", "").replace("–", ""));
     }
 
     protected String getUploadTitle() {
