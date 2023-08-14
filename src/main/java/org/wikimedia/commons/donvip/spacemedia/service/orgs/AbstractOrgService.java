@@ -818,6 +818,22 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         return descriptions;
     }
 
+    protected Map<String, String> replaceLegendByCorrectSentence(String lang, String text,
+            Map<String, String> descriptions) {
+        // For services that usually don't describe the picture in the first sentence.
+        String enDesc = descriptions.get(lang);
+        if (enDesc != null) {
+            int idxText = enDesc.indexOf(text);
+            if (idxText > -1) {
+                int idxStart = enDesc.lastIndexOf('.', idxText) + 1;
+                int idxEnd = enDesc.indexOf('.', idxText);
+                descriptions.put(lang,
+                        (idxEnd > -1 ? enDesc.substring(idxStart, idxEnd + 1) : enDesc.substring(idxStart)).trim());
+            }
+        }
+        return descriptions;
+    }
+
     protected Pair<String, Map<String, String>> getWikiFileDesc(T media, FileMetadata metadata) throws IOException {
         String language = getLanguage(media);
         String description = getDescription(media);

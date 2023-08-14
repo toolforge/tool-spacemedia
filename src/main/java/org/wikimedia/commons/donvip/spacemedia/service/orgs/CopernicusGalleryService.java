@@ -113,18 +113,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
 
     @Override
     protected Map<String, String> getLegends(CopernicusGalleryMedia media, Map<String, String> descriptions) {
-        // Copernicus usually don't describe the picture in the first sentence.
-        String enDesc = descriptions.get("en");
-        if (enDesc != null) {
-            int idxSentinel = enDesc.indexOf("Sentinel-");
-            if (idxSentinel > -1) {
-                int idxStart = enDesc.lastIndexOf('.', idxSentinel) + 1;
-                int idxEnd = enDesc.indexOf('.', idxSentinel);
-                descriptions.put("en",
-                        (idxEnd > -1 ? enDesc.substring(idxStart, idxEnd + 1) : enDesc.substring(idxStart)).trim());
-            }
-        }
-        return descriptions;
+        return replaceLegendByCorrectSentence("en", "Sentinel-", descriptions);
     }
 
     @Override

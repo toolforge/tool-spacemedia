@@ -79,6 +79,11 @@ public class NasaModisService
     }
 
     @Override
+    protected Map<String, String> getLegends(NasaModisMedia media, Map<String, String> descriptions) {
+        return replaceLegendByCorrectSentence("en", "Moderate Resolution Imaging Spectroradiometer", descriptions);
+    }
+
+    @Override
     public URL getSourceUrl(NasaModisMedia media, FileMetadata metadata) {
         return newURL(detailsUrl.replace("<date>", media.getPublicationDate().toString()));
     }
