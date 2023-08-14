@@ -821,9 +821,9 @@ public class CommonsService {
     public static String normalizeFilename(String filename) {
         // replace forbidden chars, see https://www.mediawiki.org/wiki/Manual:$wgIllegalFileChars
         // check filename doesn't end with a dot, see MediaWiki:Titleblacklist-custom-space
-        String result = filename.replace('/', '-').replace(':', '-').replace('\\', '-').replace('.', '_')
-                .replace("&amp;", "&").replace("â€™", "’").replace("http---", "").replace("https---", "").trim();
-        return result.endsWith(".") ? result.substring(0, result.length() - 1) : result;
+        return (filename.endsWith(".") ? filename.substring(0, filename.length() - 1) : filename).replace('/', '-')
+                .replace(':', '-').replace('\\', '-').replace('.', '_').replace("&amp;", "&").replace("â€™", "’")
+                .replace("http---", "").replace("https---", "").trim();
     }
 
     public boolean isPermittedFileExt(String ext) {

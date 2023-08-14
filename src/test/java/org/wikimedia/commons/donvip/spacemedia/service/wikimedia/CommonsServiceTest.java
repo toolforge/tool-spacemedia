@@ -208,6 +208,13 @@ Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a hr
                 "NASA astronaut and Expedition 66 Flight Engineer Raja Chari wears virtual reality goggles inside the International Space Station's Columbus laboratory module. Chari was participating in the GRASP human research experiment that tests how astronauts perceive up and down movements and grip and manipulate objects in microgravity."));
     }
 
+    @Test
+    void testNormalizeFilename() {
+        assertEquals("Air quality in South America heavily degraded by the increasing number of fires in Brazil",
+                CommonsService.normalizeFilename(
+                "Air quality in South America heavily degraded by the increasing number of fires in Brazil."));
+    }
+
     private void mockCategoryLinks() {
         CommonsPage page = new CommonsPage();
         page.setTitle("Combined_Space_Operations_Center");
