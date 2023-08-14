@@ -214,7 +214,8 @@ public class WikidataService {
                   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
                 }
                 LIMIT 2
-                """.replace("$name", name).replace("$namingProperty", namingProperty).replace("$natureQid", natureQid);
+                """.replace("$name", name.replace("\"", "")).replace("$namingProperty", namingProperty)
+                .replace("$natureQid", natureQid);
     }
 
     private static String getNamedObjectQuery(String natureQid, String namingProperty, String name, String lang) {
@@ -228,7 +229,7 @@ public class WikidataService {
                   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
                 }
                 LIMIT 2
-                """.replace("$lang", lang).replace("$name", name).replace("$namingProperty", namingProperty)
-                .replace("$natureQid", natureQid);
+                """.replace("$lang", lang).replace("$name", name.replace("\"", ""))
+                .replace("$namingProperty", namingProperty).replace("$natureQid", natureQid);
     }
 }
