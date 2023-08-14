@@ -58,7 +58,28 @@
             {"data": "problem_count", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
             	ahref(td, s, alink(o, "/problems"));
             }}
-        ]
+        ],
+        "rowCallback": function( row, data ) {
+            if (data.missing_images == 0 && data.missing_videos == 0) {
+                $('td:eq(0)', row).css('background-color', 'Green');
+            } else if (data.missing_images > "20") {
+                $('td:eq(0)', row).css('background-color', 'Red');
+            } else {
+                $('td:eq(0)', row).css('background-color', 'Orange');
+            }
+            if (data.missing_images == 0) {
+                $('td:eq(3)', row).css('background-color', 'Green');
+            } else if (data.missing_images <= "20") {
+                $('td:eq(3)', row).css('background-color', 'Orange');
+            } else {
+                $('td:eq(3)', row).css('background-color', 'Red');
+            }
+            if (data.missing_videos == 0) {
+                $('td:eq(4)', row).css('background-color', 'Green');
+            } else {
+                $('td:eq(4)', row).css('background-color', 'Orange');
+            }
+        }
     });
 	</script>
   </body>
