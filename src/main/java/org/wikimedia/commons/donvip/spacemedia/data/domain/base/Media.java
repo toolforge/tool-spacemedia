@@ -1,5 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
+import static java.time.temporal.ChronoField.YEAR;
 import static java.util.Locale.ENGLISH;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
@@ -11,9 +14,9 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchec
 
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
-import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -251,12 +254,18 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         return result;
     }
 
+    public LocalDate getLocalDate() {
+        D date = getDate();
+        return date instanceof LocalDate localDate ? localDate
+                : LocalDate.of(date.get(YEAR), date.get(MONTH_OF_YEAR), date.get(DAY_OF_MONTH));
+    }
+
     public abstract D getDate();
 
     public abstract void setDate(D date);
 
     public Year getYear() {
-        return Year.of(getDate().get(ChronoField.YEAR));
+        return Year.of(getDate().get(YEAR));
     }
 
     @Override

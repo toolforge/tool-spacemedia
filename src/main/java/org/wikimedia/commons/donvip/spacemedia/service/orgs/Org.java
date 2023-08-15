@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.List;
@@ -92,6 +93,10 @@ public interface Org<T extends Media<ID, D>, ID, D extends Temporal> {
     T uploadAndSaveBySha1(String sha1, boolean isManual) throws UploadException, TooManyResultsException;
 
     T uploadAndSaveById(String id, boolean isManual) throws UploadException, TooManyResultsException;
+
+    List<T> uploadAndSaveByDate(LocalDate date, boolean isManual) throws UploadException;
+
+    List<T> uploadAndSaveByTitle(String title, boolean isManual) throws UploadException;
 
     Triple<T, Collection<FileMetadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
             throws UploadException;

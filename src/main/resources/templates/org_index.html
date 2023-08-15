@@ -33,7 +33,7 @@
                     <img width="24" height="24" th:alt="'refresh ' + ${media.idUsedInOrg}" th:src="@{/Gtk-refresh.svg}">
                   </a>
                   <a th:href="@{/{id}/rest/uploadmedia/{mid}(id=${org.id},mid=${media.idUsedInOrg})}" target="_blank" th:if="${org.uploadEnabled}">
-                    <img width="24" height="24" th:alt="'upload ' + ${media.idUsedInOrg}" th:src="@{/Wlm-icon-upload-black.svg}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.idUsedInOrg}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
 		          <div th:if="'missing' == ${tab} or 'missing/images' == ${tab} or 'missing/videos' == ${tab}" th:each="asset : ${media.assetsToUpload}">
 		          	<a th:href="@{/{id}/rest/wiki/{sha1}(id=${org.id},sha1=${asset})}" target="_blank">
@@ -47,16 +47,25 @@
 		          	</a>
 		          </div>
 		        </td>
-		        <td th:text="${media.title}"></td>
-		        <td th:text="${media.date}"></td>
-		        <td th:utext="${media.description}"></td>
+		        <td>
+		          <a th:text="${media.title}"></a>
+                  <a th:href="@{/{id}/rest/uploadbytitle/{title}(id=${org.id},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and ('missing' == ${tab} or 'missing/images' == ${tab} or 'missing/videos' == ${tab})">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.title}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  </a>
+		        </td>
+		        <td>
+		          <a th:text="${media.localDate}"></a>
+                  <a th:href="@{/{id}/rest/uploadbydate/{date}(id=${org.id},date=${media.localDate})}" target="_blank" th:if="${org.uploadEnabled} and ('missing' == ${tab} or 'missing/images' == ${tab} or 'missing/videos' == ${tab})">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.localDate}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  </a>
+		        </td>
+		        <td th:utext="${#strings.abbreviate(media.description,2000)}"></td>
 		        <td th:if="'missing' != ${tab} and 'missing/images' != ${tab} and 'missing/videos' != ${tab}">
 		          <div th:each="file : ${media.allCommonsFileNames}">
 		            <a th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a><br>
 		          </div>
 		        </td>
-		        <td th:if="'ignored' == ${tab}">
-		          <a th:text="${media.ignoredReason}"></a>
+		        <td th:if="'ignored' == ${tab}" th:text="${media.ignoredReason}">
 		        </td>
 		      </tr>
 	      </tbody>

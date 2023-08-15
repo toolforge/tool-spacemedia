@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.temporal.Temporal;
 import java.util.List;
 
@@ -143,6 +144,12 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
     Page<T> findByMetadata_PhashNotNull(Pageable page);
 
     List<T> findByMetadata_Sha1(String sha1);
+
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and DATE(m.date) = ?1 and not exists elements (md.commonsFileNames)")
+    List<T> findMissingByDate(LocalDate date);
+
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and m.title = ?1 and not exists elements (md.commonsFileNames)")
+    List<T> findMissingByTitle(String title);
 
     List<T> findByIgnoredTrue();
 

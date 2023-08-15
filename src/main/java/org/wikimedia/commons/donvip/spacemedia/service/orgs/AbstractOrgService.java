@@ -623,6 +623,28 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         return saveMedia(upload(findBySha1OrThrow(sha1, true), true, isManual).getLeft());
     }
 
+    @Override
+    public List<T> uploadAndSaveByDate(LocalDate date, boolean isManual) throws UploadException {
+        return uploadAndSaveMedias(repository.findMissingByDate(date), isManual);
+    }
+
+    @Override
+    public List<T> uploadAndSaveByTitle(String title, boolean isManual) throws UploadException {
+        return uploadAndSaveMedias(repository.findMissingByTitle(title), isManual);
+    }
+
+    private List<T> uploadAndSaveMedias(List<T> medias, boolean isManual) {
+        List<T> result = new ArrayList<>();
+        for (T media : medias) {
+            try {
+                result.add(saveMedia(upload(media, false, isManual).getLeft()));
+            } catch (UploadException e) {
+                LOGGER.error("Failed to upload {}", media, e);
+            }
+        }
+        return result;
+    }
+
     protected final Triple<T, Collection<FileMetadata>, Integer> uploadWrapped(T media) {
         try {
             return upload(media, true, false);

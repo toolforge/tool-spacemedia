@@ -5,6 +5,7 @@ import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDe
 import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDefaults.SORT;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -125,6 +127,17 @@ public abstract class OrgRestController<T extends Media<ID, D>, ID, D extends Te
     @GetMapping("/upload/{sha1}")
     public final T upload(@PathVariable String sha1) throws UploadException, TooManyResultsException {
         return service.uploadAndSaveBySha1(sha1, true);
+    }
+
+    @GetMapping("/uploadbydate/{date}")
+    public final List<T> uploadByDate(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date)
+            throws UploadException {
+        return service.uploadAndSaveByDate(date, true);
+    }
+
+    @GetMapping("/uploadbytitle/{title}")
+    public final List<T> uploadByTitle(@PathVariable String title) throws UploadException {
+        return service.uploadAndSaveByTitle(title, true);
     }
 
     @GetMapping("/uploadmedia/**")
