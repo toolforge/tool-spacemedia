@@ -406,9 +406,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     private FlickrMedia photoToFlickrMedia(Photo p, String flickrAccount) {
         return repository.findById(Long.parseLong(p.getId())).orElseGet(() -> {
             try {
-                FlickrMedia media = mapPhoto(p, flickrAccount);
-                metadataRepository.save(media.getUniqueMetadata());
-                return saveMedia(media);
+                return saveMedia(mapPhoto(p, flickrAccount, true));
             } catch (FlickrException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -439,14 +437,14 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     @Override
     protected final FlickrMedia refresh(FlickrMedia media) throws IOException {
         try {
-            return media
-                    .copyDataFrom(mapPhoto(flickrService.findPhoto(media.getId().toString()), media.getPathAlias()));
+            return media.copyDataFrom(
+                    mapPhoto(flickrService.findPhoto(media.getId().toString()), media.getPathAlias(), false));
         } catch (FlickrException e) {
             throw new IOException(e);
         }
     }
 
-    private static FlickrMedia mapPhoto(Photo p, String flickrAccount) throws FlickrException {
+    private FlickrMedia mapPhoto(Photo p, String flickrAccount, boolean saveMetadata) throws FlickrException {
         FlickrMedia m = new FlickrMedia();
         ofNullable(p.getGeoData()).ifPresent(geo -> {
             m.setLatitude(geo.getLatitude());
@@ -462,9 +460,9 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         m.setMedia(FlickrMediaType.valueOf(p.getMedia()));
         m.setMediaStatus(p.getMediaStatus());
         m.setOriginalFormat(p.getOriginalFormat());
-        FileMetadata md = m.getUniqueMetadata();
-        md.setAssetUrl(newURL(p.getOriginalUrl()));
+        FileMetadata md = new FileMetadata(newURL(p.getOriginalUrl()));
         md.setImageDimensions(new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight()));
+        m.addMetadata(saveMetadata ? metadataRepository.save(md) : md);
         m.setPathAlias(StringUtils.isEmpty(p.getPathAlias()) ? flickrAccount : p.getPathAlias());
         m.setTags(p.getTags().stream().map(Tag::getValue).collect(toSet()));
         m.setThumbnailUrl(newURL(p.getThumbnailUrl()));
