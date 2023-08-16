@@ -6,7 +6,8 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
@@ -36,7 +37,7 @@ class AbstractOrgDjangoplicityServiceTest extends AbstractOrgServiceTest {
     @Test
     void testGetStatements() throws MalformedURLException {
         DjangoplicityMedia media = new DjangoplicityMedia();
-        media.setDate(LocalDateTime.of(2022, 12, 19, 6, 0));
+        media.setPublicationDateTime(ZonedDateTime.of(2022, 12, 19, 6, 0, 0, 0, ZoneId.of("UTC")));
         media.setName("[KAG2008] globule 13");
         FileMetadata metadata = new FileMetadata();
         metadata.setImageDimensions(new ImageDimensions(3977, 3878));
@@ -48,7 +49,7 @@ class AbstractOrgDjangoplicityServiceTest extends AbstractOrgServiceTest {
                 .thenReturn(Optional.of(Pair.of("Q86709121", null)));
 
         assertEquals(
-                "{P1163=(image/tiff,null), P180=(Q86709121,null), P2048=((3878,Q355198),null), P2049=((3977,Q355198),null), P4092=(dde6dbb2424a7a21608302f8cad9a5b3bcccb589,{P459=Q13414952}), P571=(2022-12-19T06:00,null), P6216=(Q50423863,null), P7482=(Q74228490,{P2699=https://esahubble.org/media/archives/images/original/potw2251a.tif, P973=https://esahubble.org/images/potw2251a/}), P9310=(57edtmbje3hvtfycdzpni9fyfal1ujv80pnmwmgwaw0h1p9nzq,{P459=Q118189277})}",
+                "{P1163=(image/tiff,null), P180=(Q86709121,null), P2048=((3878,Q355198),null), P2049=((3977,Q355198),null), P4092=(dde6dbb2424a7a21608302f8cad9a5b3bcccb589,{P459=Q13414952}), P571=(2022,null), P577=(2022-12-19T06:00Z[UTC],null), P6216=(Q50423863,null), P7482=(Q74228490,{P2699=https://esahubble.org/media/archives/images/original/potw2251a.tif, P973=https://esahubble.org/images/potw2251a/}), P9310=(57edtmbje3hvtfycdzpni9fyfal1ujv80pnmwmgwaw0h1p9nzq,{P459=Q118189277})}",
                 service.getStatements(media, metadata).toString());
     }
 

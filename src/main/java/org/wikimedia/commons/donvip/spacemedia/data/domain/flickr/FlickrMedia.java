@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +39,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements WithLatLon, WithKeywords {
+public class FlickrMedia extends SingleFileMedia<Long> implements WithLatLon, WithKeywords {
 
     private static final String STATICFLICKR_COM = ".staticflickr.com";
 
@@ -51,15 +52,8 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
     @Column(nullable = false)
     private int license;
 
-    @JsonProperty("dateupload")
-    @Column(name = "date_upload", nullable = false)
-    private LocalDateTime date;
-
     @JsonProperty("lastupdate")
     private LocalDateTime lastUpdate;
-
-    @JsonProperty("datetaken")
-    private LocalDateTime dateTaken;
 
     @JsonProperty("datetakengranularity")
     private int dateTakenGranularity;
@@ -111,13 +105,27 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
     }
 
     @Override
-    public LocalDateTime getDate() {
-        return date;
+    @JsonProperty("datetaken")
+    public ZonedDateTime getCreationDateTime() {
+        return super.getCreationDateTime();
     }
 
     @Override
-    public void setDate(LocalDateTime date) {
-        this.date = date;
+    @JsonProperty("datetaken")
+    public void setCreationDateTime(ZonedDateTime creationDateTime) {
+        super.setCreationDateTime(creationDateTime);
+    }
+
+    @Override
+    @JsonProperty("dateupload")
+    public ZonedDateTime getPublicationDateTime() {
+        return super.getPublicationDateTime();
+    }
+
+    @Override
+    @JsonProperty("dateupload")
+    public void setPublicationDateTime(ZonedDateTime publicationDateTime) {
+        super.setPublicationDateTime(publicationDateTime);
     }
 
     @Override
@@ -128,14 +136,6 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
     @Override
     public void setLastUpdate(LocalDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
-    }
-
-    public LocalDateTime getDateTaken() {
-        return dateTaken;
-    }
-
-    public void setDateTaken(LocalDateTime dateTaken) {
-        this.dateTaken = dateTaken;
     }
 
     public int getDateTakenGranularity() {
@@ -291,8 +291,7 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
     @Override
     public String toString() {
         return "FlickrMedia [" + (id != null ? "id=" + id + ", " : "") + (title != null ? "title=" + title + ", " : "")
-                + "license=" + license + ", " + (date != null ? "date=" + date + ", " : "")
-                + (pathAlias != null ? "pathAlias=" + pathAlias + ", " : "")
+                + "license=" + license + ", " + (pathAlias != null ? "pathAlias=" + pathAlias + ", " : "")
                 + "metadata=" + getMetadata() + "]";
     }
 
@@ -322,7 +321,6 @@ public class FlickrMedia extends SingleFileMedia<Long, LocalDateTime> implements
         super.copyDataFrom(mediaFromApi);
         this.license = mediaFromApi.license;
         this.lastUpdate = mediaFromApi.lastUpdate;
-        this.dateTaken = mediaFromApi.dateTaken;
         this.dateTakenGranularity = mediaFromApi.dateTakenGranularity;
         this.tags = mediaFromApi.tags;
         this.originalFormat = mediaFromApi.originalFormat;

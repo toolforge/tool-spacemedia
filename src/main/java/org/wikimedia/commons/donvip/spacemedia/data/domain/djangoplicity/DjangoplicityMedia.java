@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +22,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
-public class DjangoplicityMedia extends Media<DjangoplicityMediaId, LocalDateTime> {
+public class DjangoplicityMedia extends Media<DjangoplicityMediaId> {
 
     @Id
     @Embedded
@@ -38,9 +37,6 @@ public class DjangoplicityMedia extends Media<DjangoplicityMediaId, LocalDateTim
     @Column(nullable = true, length = 16)
     @JsonProperty("image_type")
     private DjangoplicityMediaType imageType;
-
-    @Column(name = "release_date", nullable = false)
-    private LocalDateTime date;
 
     @Column(nullable = true, length = 127)
     @ElementCollection(fetch = FetchType.EAGER)
@@ -128,16 +124,6 @@ public class DjangoplicityMedia extends Media<DjangoplicityMediaId, LocalDateTim
 
     public void setImageType(DjangoplicityMediaType imageType) {
         this.imageType = imageType;
-    }
-
-    @Override
-    public LocalDateTime getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(LocalDateTime date) {
-        this.date = date;
     }
 
     public String getName() {
@@ -257,7 +243,6 @@ public class DjangoplicityMedia extends Media<DjangoplicityMediaId, LocalDateTim
         return getClass().getSimpleName() + " [" + (id != null ? "id=" + id + ", " : "")
                 + (licence != null ? "licence=" + licence + ", " : "")
                 + (imageType != null ? "imageType=" + imageType + ", " : "")
-                + (date != null ? "date=" + date + ", " : "")
                 + (name != null ? "name=" + name + ", " : "")
                 + (isNotEmpty(types) ? "types=" + types + ", " : "")
                 + (isNotEmpty(categories) ? "categories=" + categories + ", " : "")

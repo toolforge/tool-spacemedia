@@ -9,7 +9,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,7 +46,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateTime> {
+public class EsaService extends AbstractOrgService<EsaMedia, Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaService.class);
 
@@ -132,9 +131,8 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
 
     private void processHeader(EsaMedia image, Element element) {
         image.setTitle(element.getElementsByClass("heading").get(0).text());
-        image.setDate(LocalDate.parse(
-                element.getElementsByClass("meta").get(0).getElementsByTag("span").get(0).text(), dateFormatter)
-                .atStartOfDay());
+        image.setPublicationDate(LocalDate.parse(
+                element.getElementsByClass("meta").get(0).getElementsByTag("span").get(0).text(), dateFormatter));
     }
 
     private void processShare(EsaMedia image, Element element) {
@@ -379,11 +377,6 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
     }
 
     @Override
-    protected Optional<Temporal> getUploadDate(EsaMedia media) {
-        return Optional.ofNullable(media.getDate());
-    }
-
-    @Override
     protected Optional<String> getOtherFields(EsaMedia media) {
         StringBuilder sb = new StringBuilder();
         addOtherField(sb, "Action", media.getAction());
@@ -435,7 +428,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
         return result;
     }
 
-    public static void enrichEsaCategories(Set<String> categories, Media<?, ?> media, String author) {
+    public static void enrichEsaCategories(Set<String> categories, Media<?> media, String author) {
         if (media.getDescription() != null) {
             enrichEnvisat(categories, media, author);
             enrichExoMars(categories, media, author);
@@ -443,7 +436,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
         }
     }
 
-    private static void enrichEnvisat(Set<String> categories, Media<?, ?> media, String author) {
+    private static void enrichEnvisat(Set<String> categories, Media<?> media, String author) {
         String descLc = media.getDescription().toLowerCase(Locale.ENGLISH);
         String titleLc = media.getTitle().toLowerCase(Locale.ENGLISH);
         if (categories.contains("Envisat") &&
@@ -467,7 +460,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
         }
     }
 
-    private static void enrichExoMars(Set<String> categories, Media<?, ?> media, String author) {
+    private static void enrichExoMars(Set<String> categories, Media<?> media, String author) {
         if (author != null && author.startsWith("ESA/Roscosmos/CaSSIS")) {
             categories.remove("ExoMars");
             categories.remove("ExoMars 2016");
@@ -475,7 +468,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer, LocalDateT
         }
     }
 
-    private static void enrichMarsExpress(Set<String> categories, Media<?, ?> media, String author) {
+    private static void enrichMarsExpress(Set<String> categories, Media<?> media, String author) {
         if ((categories.contains("Mars Express") || categories.contains("Photos by Mars Express"))
                 && (media.getDescription().contains("ESA/DLR/FU Berlin") || author.contains("ESA/DLR/FU Berlin"))) {
             categories.remove("Mars Express");

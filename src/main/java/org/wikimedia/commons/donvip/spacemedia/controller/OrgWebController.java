@@ -4,7 +4,6 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDefaults.SIZE;
 import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDefaults.SORT;
 
-import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,19 +26,18 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Pagination;
  *
  * @param <T>  the media type the repository manages
  * @param <ID> the type of the id of the entity the repository manages
- * @param <D>  the media date type
  */
-public class OrgWebController<T extends Media<ID, D>, ID, D extends Temporal> {
+public class OrgWebController<T extends Media<ID>, ID> {
 
     @Autowired
-    private List<AbstractOrgService<? extends Media<?, ?>, ?, ?>> orgs;
+    private List<AbstractOrgService<? extends Media<?>, ?>> orgs;
 
     @Autowired
     private SearchService searchService;
 
-    protected final Org<T, ID, D> service;
+    protected final Org<T, ID> service;
 
-    public OrgWebController(AbstractOrgService<T, ID, D> service) {
+    public OrgWebController(AbstractOrgService<T, ID> service) {
         this.service = Objects.requireNonNull(service);
     }
 

@@ -70,7 +70,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
     }
 
     @Override
-    public void postStatus(Collection<? extends Media<?, ?>> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
+    public void postStatus(Collection<? extends Media<?>> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
             Set<String> emojis, Set<String> accounts) throws IOException {
         callApi(buildStatusRequest(uploadedMedia, uploadedMetadata, emojis, accounts), Status.class);
     }
@@ -81,7 +81,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
     }
 
     @Override
-    protected OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
+    protected OAuthRequest buildStatusRequest(Collection<? extends Media<?>> uploadedMedia,
             Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
         return postRequest(api.getStatusUrl(), "application/json",
                 new StatusRequest(

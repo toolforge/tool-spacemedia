@@ -12,9 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -56,8 +54,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Service
-public class NasaPhotojournalService
-        extends AbstractOrgService<NasaPhotojournalMedia, String, ZonedDateTime> {
+public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournalMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaPhotojournalService.class);
 
@@ -184,6 +181,7 @@ public class NasaPhotojournalService
             media = mediaInRepo.get();
             // To remove after all previous files have been correctly identified
             save |= detectFigures(media);
+            save |= detectCreationDate(media);
         } else {
             media = solrDocumentToMedia(document);
             save = true;
@@ -210,7 +208,7 @@ public class NasaPhotojournalService
         media.setDescription(caption);
         media.setId((String) doc.getFirstValue("id"));
         media.setNasaId((String) doc.getFirstValue("nasa-id"));
-        media.setDate(((Date) doc.getFirstValue("publication-date")).toInstant().atZone(ZoneOffset.UTC));
+        media.setPublicationDateTime(((Date) doc.getFirstValue("publication-date")).toInstant().atZone(ZoneOffset.UTC));
         media.setTarget((String) doc.getFirstValue("target"));
         media.setMission((String) doc.getFirstValue("mission"));
         media.setSpacecraft((String) doc.getFirstValue("spacecraft"));
@@ -237,6 +235,7 @@ public class NasaPhotojournalService
             }
         }
         detectFigures(media);
+        detectCreationDate(media);
         return media;
     }
 
@@ -244,7 +243,7 @@ public class NasaPhotojournalService
         return (Integer) doc.getFirstValue(key);
     }
 
-    private boolean detectFigures(NasaPhotojournalMedia media) {
+    boolean detectFigures(NasaPhotojournalMedia media) {
         boolean result = false;
         String caption = media.getDescription();
         if (caption.contains("<img ")) {
@@ -255,6 +254,18 @@ public class NasaPhotojournalService
                     addMetadata(media, url, null);
                     result = true;
                 }
+            }
+        }
+        return result;
+    }
+
+    static boolean detectCreationDate(NasaPhotojournalMedia media) {
+        boolean result = false;
+        if (media.getCreationDate() == null) {
+            Matcher m = ACQ_PATTERN.matcher(media.getDescription());
+            if (m.matches()) {
+                media.setCreationDate(ACQ_DATE_FORMAT.parse(m.group(1), LocalDate::from));
+                result = true;
             }
         }
         return result;
@@ -317,17 +328,6 @@ public class NasaPhotojournalService
                         parseDouble(m.group(1)) * ("north".equalsIgnoreCase(m.group(2)) ? 1 : -1),
                         parseDouble(m.group(3)) * ("east".equalsIgnoreCase(m.group(4)) ? 1 : -1)))
                 : Optional.empty();
-    }
-
-    @Override
-    protected final Optional<Temporal> getCreationDate(NasaPhotojournalMedia media) {
-        Matcher m = ACQ_PATTERN.matcher(media.getDescription());
-        return m.matches() ? Optional.of(ACQ_DATE_FORMAT.parse(m.group(1), LocalDate::from)) : Optional.empty();
-    }
-
-    @Override
-    protected final Optional<Temporal> getUploadDate(NasaPhotojournalMedia media) {
-        return Optional.of(media.getDate());
     }
 
     @Override

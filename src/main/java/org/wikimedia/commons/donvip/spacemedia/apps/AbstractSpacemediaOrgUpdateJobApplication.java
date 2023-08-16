@@ -25,7 +25,7 @@ abstract class AbstractSpacemediaOrgUpdateJobApplication implements ApplicationL
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpacemediaOrgUpdateJobApplication.class);
 
     @Autowired
-    private Org<?, ?, ?> org;
+    private Org<?, ?> org;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {

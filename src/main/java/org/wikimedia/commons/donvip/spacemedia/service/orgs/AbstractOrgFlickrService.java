@@ -4,7 +4,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.toLocalDateTime;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.toZonedDateTime;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -12,7 +12,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,7 +54,7 @@ import com.flickr4java.flickr.people.User;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.tags.Tag;
 
-public abstract class AbstractOrgFlickrService extends AbstractOrgService<FlickrMedia, Long, LocalDateTime> {
+public abstract class AbstractOrgFlickrService extends AbstractOrgService<FlickrMedia, Long> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgFlickrService.class);
     private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"(\\d+)\" not found \\(invalid ID\\)");
@@ -215,16 +214,6 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     @Override
     public final URL getSourceUrl(FlickrMedia media, FileMetadata metadata) {
         return getPhotoUrl(media);
-    }
-
-    @Override
-    protected final Optional<Temporal> getCreationDate(FlickrMedia media) {
-        return ofNullable(media.getDateTaken());
-    }
-
-    @Override
-    protected final Optional<Temporal> getUploadDate(FlickrMedia media) {
-        return Optional.of(media.getDate());
     }
 
     @Override
@@ -451,8 +440,8 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             m.setLongitude(geo.getLongitude());
             m.setAccuracy(geo.getAccuracy());
         });
-        m.setDate(toLocalDateTime(p.getDatePosted()));
-        m.setDateTaken(toLocalDateTime(p.getDateTaken()));
+        m.setPublicationDateTime(toZonedDateTime(p.getDatePosted()));
+        m.setCreationDateTime(toZonedDateTime(p.getDateTaken()));
         ofNullable(p.getTakenGranularity()).ifPresent(granu -> m.setDateTakenGranularity(Integer.parseInt(granu)));
         m.setDescription(p.getDescription());
         m.setId(Long.valueOf(p.getId()));

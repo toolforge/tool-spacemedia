@@ -45,7 +45,7 @@ class HubbleEsaServiceTest extends AbstractOrgServiceTest {
                 media.getDescription());
         assertEquals(Set.of("Galaxies"), media.getCategories());
         assertEquals("ESA/Hubble & NASA, H. Ebeling", media.getCredit());
-        assertEquals("2023-05-08T06:00", media.getDate().toString());
+        assertEquals("2023-05-08T06:00", media.getPublicationDateTime().toLocalDateTime().toString());
         ImageDimensions dims = media.getMetadata().iterator().next().getImageDimensions();
         assertEquals(2389, dims.getHeight());
         assertEquals(2839, dims.getWidth());

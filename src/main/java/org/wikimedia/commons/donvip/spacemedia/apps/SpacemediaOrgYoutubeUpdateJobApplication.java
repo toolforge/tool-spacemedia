@@ -26,11 +26,11 @@ public class SpacemediaOrgYoutubeUpdateJobApplication extends AbstractSpacemedia
     }
 
     @Bean
-    public Org<?, ?, ?> org(@Value("${org}") String org,
+    public Org<?, ?> org(@Value("${org}") String org,
             @Value("${youtube.channels}") Set<String> youtubeChannels,
             @Autowired YouTubeVideoRepository repository,
             ApplicationContext context) throws ReflectiveOperationException {
-        return (Org<?, ?, ?>) Class.forName(org).getConstructor(YouTubeVideoRepository.class, Set.class)
+        return (Org<?, ?>) Class.forName(org).getConstructor(YouTubeVideoRepository.class, Set.class)
                 .newInstance(repository, youtubeChannels);
     }
 }

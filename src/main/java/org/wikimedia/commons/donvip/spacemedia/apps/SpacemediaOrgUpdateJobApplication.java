@@ -22,12 +22,12 @@ public class SpacemediaOrgUpdateJobApplication extends AbstractSpacemediaOrgUpda
     }
 
     @Bean
-    public Org<?, ?, ?> org(@Value("${org}") String org,
+    public Org<?, ?> org(@Value("${org}") String org,
             @Value("${repositoryClass}") String repositoryClass, @Value("${repositoryName:}") String repositoryName,
             ApplicationContext context) throws ReflectiveOperationException {
         Class<?> repoClass = Class.forName(repositoryClass);
-        return (Org<?, ?, ?>) Class.forName(org).getConstructor(repoClass)
-                .newInstance((MediaRepository<?, ?, ?>) (repositoryName.isBlank() ? context.getBean(repoClass)
+        return (Org<?, ?>) Class.forName(org).getConstructor(repoClass)
+                .newInstance((MediaRepository<?, ?>) (repositoryName.isBlank() ? context.getBean(repoClass)
                         : context.getBean(repositoryName, repoClass)));
     }
 }

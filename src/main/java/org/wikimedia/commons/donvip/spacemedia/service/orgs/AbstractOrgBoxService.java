@@ -10,7 +10,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -41,7 +40,7 @@ import com.box.sdk.BoxFile;
  * Service fetching images from box.com
  */
 public abstract class AbstractOrgBoxService
-        extends AbstractOrgService<BoxMedia, BoxMediaId, ZonedDateTime> {
+        extends AbstractOrgService<BoxMedia, BoxMediaId> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgBoxService.class);
 
@@ -113,7 +112,7 @@ public abstract class AbstractOrgBoxService
         LocalDateTime start = LocalDateTime.now();
 
         List<BoxMedia> files = boxService.getFiles(app, share, fileInfo -> toBoxMedia(app, share, fileInfo),
-                Comparator.comparing(BoxMedia::getDate));
+                Comparator.comparing(BoxMedia::getPublicationDateTime));
         LOGGER.info("Found {} files in {}", files.size(), Duration.between(start, LocalDateTime.now()));
 
         for (BoxMedia media : files) {
@@ -134,8 +133,8 @@ public abstract class AbstractOrgBoxService
     private BoxMedia toBoxMedia(String app, String share, BoxFile.Info fileInfo) {
         BoxMedia media = new BoxMedia(app, share, Long.parseLong(fileInfo.getID()));
         Optional.ofNullable(fileInfo.getContentCreatedAt()).map(AbstractOrgBoxService::toZonedDateTime)
-                .ifPresent(media::setContentCreationDate);
-        media.setDate(toZonedDateTime(fileInfo.getCreatedAt()));
+                .ifPresent(media::setCreationDateTime);
+        media.setPublicationDateTime(toZonedDateTime(fileInfo.getCreatedAt()));
         media.setTitle(fileInfo.getName());
         media.setDescription(fileInfo.getDescription());
         media.setCreator(fileInfo.getCreatedBy().getName());
@@ -193,16 +192,6 @@ public abstract class AbstractOrgBoxService
     @Override
     protected final String getAuthor(BoxMedia media) throws MalformedURLException {
         return boxService.getSharedItem(getSharedLink(media.getId())).getCreatedBy().getName();
-    }
-
-    @Override
-    protected final Optional<Temporal> getCreationDate(BoxMedia media) {
-        return Optional.ofNullable(media.getContentCreationDate());
-    }
-
-    @Override
-    protected final Optional<Temporal> getUploadDate(BoxMedia media) {
-        return Optional.of(media.getDate());
     }
 
     private static Set<String> shares(Set<String> appShares) {

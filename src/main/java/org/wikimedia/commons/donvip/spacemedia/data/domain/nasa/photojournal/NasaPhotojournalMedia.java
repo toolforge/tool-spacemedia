@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal;
 
-import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -20,7 +19,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
 @Indexed
-public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implements WithKeywords {
+public class NasaPhotojournalMedia extends Media<String> implements WithKeywords {
 
     private static final Pattern FIGURE = Pattern.compile("PIA\\d+_fig[^\\.]+\\..+", Pattern.CASE_INSENSITIVE);
 
@@ -30,9 +29,6 @@ public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implemen
 
     @Column(name = "nasa_id", nullable = true, length = 48)
     private String nasaId;
-
-    @Column(name = "photo_date", nullable = false)
-    private ZonedDateTime date;
 
     @Column(name = "target", nullable = true, length = 50)
     private String target;
@@ -79,16 +75,6 @@ public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implemen
 
     public void setNasaId(String nasaId) {
         this.nasaId = nasaId;
-    }
-
-    @Override
-    public ZonedDateTime getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(ZonedDateTime date) {
-        this.date = date;
     }
 
     public String getTarget() {
@@ -193,7 +179,7 @@ public class NasaPhotojournalMedia extends Media<String, ZonedDateTime> implemen
 
     @Override
     public String toString() {
-        return "NasaPhotojournalMedia [id=" + piaId + ", date=" + date + ", nasaId=" + nasaId + ", "
+        return "NasaPhotojournalMedia [id=" + piaId + ", nasaId=" + nasaId + ", "
                 + (target != null ? "target=" + target + ", " : "")
                 + (mission != null ? "mission=" + mission + ", " : "")
                 + (spacecraft != null ? "spacecraft=" + spacecraft + ", " : "")

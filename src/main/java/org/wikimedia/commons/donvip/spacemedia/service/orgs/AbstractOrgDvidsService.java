@@ -10,8 +10,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,7 +68,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
  */
 @Service
 public abstract class AbstractOrgDvidsService
-        extends AbstractOrgService<DvidsMedia, DvidsMediaTypedId, ZonedDateTime> {
+        extends AbstractOrgService<DvidsMedia, DvidsMediaTypedId> {
 
     private static final Pattern US_MEDIA_BY = Pattern
             .compile(".*\\((U\\.S\\. .+ (?:photo|graphic|video) by )[^\\)]+\\)", Pattern.DOTALL);
@@ -405,16 +403,6 @@ public abstract class AbstractOrgDvidsService
     }
 
     @Override
-    protected final Optional<Temporal> getCreationDate(DvidsMedia media) {
-        return Optional.of(media.getDate());
-    }
-
-    @Override
-    protected final Optional<Temporal> getUploadDate(DvidsMedia media) {
-        return Optional.of(media.getDatePublished());
-    }
-
-    @Override
     protected final Pair<String, Map<String, String>> getWikiFileDesc(DvidsMedia media, FileMetadata metadata)
             throws MalformedURLException {
         String lang = getLanguage(media);
@@ -427,7 +415,8 @@ public abstract class AbstractOrgDvidsService
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
         Optional.ofNullable(media.getLocation()).ifPresent(l -> sb.append("\n| location = ").append(l));
         sb.append("\n| virin = ").append(media.getVirin());
-        Optional.ofNullable(media.getDatePublished()).ifPresent(p -> sb.append("\n| dateposted = ").append(toIso8601(p)));
+        Optional.ofNullable(media.getPublicationDateTime())
+                .ifPresent(p -> sb.append("\n| dateposted = ").append(toIso8601(p)));
         Optional.ofNullable(media.getRating()).ifPresent(r -> sb.append("\n| stars = ").append(r.intValue()));
         getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| other versions = ").append(s));
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));

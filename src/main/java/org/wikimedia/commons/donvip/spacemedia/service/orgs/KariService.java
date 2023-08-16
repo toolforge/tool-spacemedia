@@ -8,7 +8,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.Temporal;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,7 +28,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateR
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class KariService extends AbstractOrgService<KariMedia, Integer, LocalDate> {
+public class KariService extends AbstractOrgService<KariMedia, Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KariService.class);
 
@@ -68,16 +67,6 @@ public class KariService extends AbstractOrgService<KariMedia, Integer, LocalDat
     @Override
     protected Class<KariMedia> getMediaClass() {
         return KariMedia.class;
-    }
-
-    @Override
-    protected Optional<Temporal> getCreationDate(KariMedia media) {
-        return Optional.ofNullable(media.getCreationDate());
-    }
-
-    @Override
-    protected Optional<Temporal> getUploadDate(KariMedia media) {
-        return Optional.ofNullable(media.getDate());
     }
 
     @Override
@@ -235,7 +224,7 @@ public class KariService extends AbstractOrgService<KariMedia, Integer, LocalDat
         media.setId(id);
         media.setKariId(lis.get(0).getElementsByClass("txt").get(0).text());
         media.setTitle(title);
-        media.setDate(LocalDate.parse(div.getElementsByClass("infor").get(0).getElementsByTag("li")
+        media.setPublicationDate(LocalDate.parse(div.getElementsByClass("infor").get(0).getElementsByTag("li")
                 .get(0).getElementsByClass("txt").get(0).text()));
         media.setDescription(div.getElementsByClass("photo_txt").get(0).text());
         String href = infos.getElementsByTag("a").attr("href");

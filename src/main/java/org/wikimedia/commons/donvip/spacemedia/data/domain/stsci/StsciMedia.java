@@ -1,7 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.stsci;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
@@ -22,7 +20,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
 @Indexed
-public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeywords {
+public class StsciMedia extends Media<String> implements WithKeywords {
 
     private static final Pattern HORRIBLE_ID_FORMAT = Pattern.compile("\\d{4}-\\d{3}-[A-Z0-9]{26}");
 
@@ -32,12 +30,6 @@ public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeyw
 
     @Column(length = 9)
     private String newsId;
-
-    @Column(name = "release_date", nullable = false)
-    private ZonedDateTime date;
-
-    @Column(name = "exposure_date", nullable = true)
-    private LocalDate exposureDate;
 
     @Lob
     @Column(columnDefinition = "TEXT")
@@ -79,24 +71,6 @@ public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeyw
 
     public void setNewsId(String newsId) {
         this.newsId = newsId;
-    }
-
-    @Override
-    public ZonedDateTime getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(ZonedDateTime date) {
-        this.date = date;
-    }
-
-    public LocalDate getExposureDate() {
-        return exposureDate;
-    }
-
-    public void setExposureDate(LocalDate exposureDate) {
-        this.exposureDate = exposureDate;
     }
 
     public String getCredits() {
@@ -144,7 +118,7 @@ public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeyw
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(credits, date, id, mission, newsId, keywords, objectName, constellation);
+                + Objects.hash(credits, id, mission, newsId, keywords, objectName, constellation);
     }
 
     @Override
@@ -154,7 +128,7 @@ public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeyw
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         StsciMedia other = (StsciMedia) obj;
-        return Objects.equals(credits, other.credits) && Objects.equals(date, other.date)
+        return Objects.equals(credits, other.credits)
                 && Objects.equals(id, other.id) && Objects.equals(mission, other.mission)
                 && Objects.equals(newsId, other.newsId) && Objects.equals(keywords, other.keywords)
                 && Objects.equals(objectName, other.objectName) && Objects.equals(constellation, other.constellation);
@@ -162,7 +136,7 @@ public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeyw
 
     @Override
     public String toString() {
-        return "StsciMedia [id=" + id + ", newsId=" + newsId + ", date=" + date + ", objectName=" + objectName
+        return "StsciMedia [id=" + id + ", newsId=" + newsId + ", objectName=" + objectName
                 + ", constellation=" + constellation + ", mission=" + mission + ']';
     }
 
@@ -191,7 +165,6 @@ public class StsciMedia extends Media<String, ZonedDateTime> implements WithKeyw
     public StsciMedia copyDataFrom(StsciMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         this.credits = mediaFromApi.credits;
-        this.exposureDate = mediaFromApi.exposureDate;
         this.keywords = mediaFromApi.keywords;
         this.mission = mediaFromApi.mission;
         this.newsId = mediaFromApi.newsId;

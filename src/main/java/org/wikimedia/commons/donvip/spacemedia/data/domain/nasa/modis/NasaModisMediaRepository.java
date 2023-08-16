@@ -14,7 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface NasaModisMediaRepository extends MediaRepository<NasaModisMedia, String, LocalDate> {
+public interface NasaModisMediaRepository extends MediaRepository<NasaModisMedia, String> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {

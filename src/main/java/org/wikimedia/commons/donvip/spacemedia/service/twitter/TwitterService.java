@@ -87,7 +87,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
     }
 
     @Override
-    public void postStatus(Collection<? extends Media<?, ?>> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
+    public void postStatus(Collection<? extends Media<?>> uploadedMedia, Collection<FileMetadata> uploadedMetadata,
             Set<String> emojis, Set<String> accounts) throws IOException {
         OAuthRequest request = buildStatusRequest(uploadedMedia, uploadedMetadata, emojis, accounts);
         try {
@@ -112,7 +112,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
     }
 
     @Override
-    protected OAuthRequest buildStatusRequest(Collection<? extends Media<?, ?>> uploadedMedia,
+    protected OAuthRequest buildStatusRequest(Collection<? extends Media<?>> uploadedMedia,
             Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
         final long imagesCount = uploadedMedia.stream().filter(Media::isImage).count();
         final long videosCount = uploadedMedia.stream().filter(Media::isVideo).count();

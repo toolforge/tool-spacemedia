@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -12,8 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface CopernicusGalleryMediaRepository
-        extends MediaRepository<CopernicusGalleryMedia, String, ZonedDateTime> {
+public interface CopernicusGalleryMediaRepository extends MediaRepository<CopernicusGalleryMedia, String> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "copGalCount", "copGalCountIgnored", "copGalCountMissing",

@@ -99,7 +99,7 @@ public abstract class AbstractOrgServiceTest {
             Set<String> telescopes) {
         assertEquals(id, media.getId().getId());
         assertEquals(imageType, media.getImageType());
-        assertEquals(date, media.getDate().toString());
+        assertEquals(date, media.getPublicationDateTime().toLocalDateTime().toString());
         assertEquals(dimensions, media.getMetadata().iterator().next().getImageDimensions());
         assertEquals(name, media.getName());
         assertEquals(types, media.getTypes());

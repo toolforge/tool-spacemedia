@@ -73,7 +73,7 @@ class StsciServiceTest {
                 "Through a phenomenon called gravitational lensing, three different moments in a far-off supernova explosion were captured in a single snapshot by NASA's Hubble Space Telescope. The light from the supernova, which was located behind the galaxy cluster Abell 370, was multiply lensed by the cluster's immense gravity. This light took three different paths through the cosmic lens of the massive cluster. The three paths were three different lengths and affected to different degrees by the slowing of time and curvature of space due to the cluster, so when the light arrived at Hubble (on the same day in December 2010), the supernova appeared at three different stages of evolution.\n"
                         + "The left panel shows the portion of Abell 370 where the multiple images of the supernova appeared. Panel A, a composite of Hubble observations from 2011 to 2016, shows the locations of the multiply imaged host galaxy after the supernova faded. Panel B, a Hubble picture from December 2010, shows the three images of the host galaxy and the supernova at different phases in its evolution. Panel C, which subtracts the image in Panel B from that in Panel A, shows three different faces of the evolving supernova. Using a similar image subtraction process for multiple filters of data, Panel D shows the different colors of the cooling supernova at three different stages in its evolution.",
                 media.getDescription());
-        assertEquals("2022-11-09T11:00-05:00[America/New_York]", media.getDate().toString());
+        assertEquals("2022-11-09T11:00-05:00[America/New_York]", media.getPublicationDateTime().toString());
         assertEquals(
                 List.of("https://stsci-opo.org/STScI-01GGT9RV3H6JVMQWEM3WKJGZVW.tif",
                         "https://stsci-opo.org/STScI-01GGT9R6NXMYV39JGQF1TCH3V8.png"),
@@ -81,7 +81,7 @@ class StsciServiceTest {
         assertEquals("https://stsci-opo.org/STScI-01GGT9TZJC2031623AM72RSVY8.png",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals("2022-054", media.getNewsId());
-        assertNull(media.getExposureDate());
+        assertNull(media.getCreationDate());
         assertEquals("Abell 370", media.getObjectName());
         assertEquals("hubble", media.getMission());
         assertEquals(Set.of("Gravitational Lensing", "Supernovae", "Galaxy Clusters"), media.getKeywords());
@@ -103,13 +103,13 @@ class StsciServiceTest {
                         + "NASA’s James Webb Space Telescope’s exquisitely sensitive instruments have provided a profile of WASP-39 b’s atmospheric constituents and identified a plethora of contents, including water, sulfur dioxide, carbon monoxide, sodium and potassium.\n"
                         + "This illustration is based on indirect transit observations from Webb as well as other space- and ground-based telescopes. Webb has not captured a direct image of this planet.",
                 media.getDescription());
-        assertEquals("2022-11-22T11:00-05:00[America/New_York]", media.getDate().toString());
+        assertEquals("2022-11-22T11:00-05:00[America/New_York]", media.getPublicationDateTime().toString());
         assertEquals("https://stsci-opo.org/STScI-01GJ3Q3PRF2VG9DNG7J5YX1N44.jpg",
                 media.getMetadata().iterator().next().getAssetUrl().toExternalForm());
         assertEquals("https://stsci-opo.org/STScI-01GJ3Q46VFXMCFM4WZANYCC4MR.jpg",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals("2022-060", media.getNewsId());
-        assertNull(media.getExposureDate());
+        assertNull(media.getCreationDate());
         assertEquals("WASP-39 b", media.getObjectName());
         assertEquals("webb", media.getMission());
         assertEquals(Set.of("Exoplanets"), media.getKeywords());
@@ -127,13 +127,13 @@ class StsciServiceTest {
         assertEquals(
                 "An image from the European Southern Observatory shows blue light from a newborn star lights up the reflection nebula IC 2631. This nebula is part of the Chamaeleon star-forming region, which Webb will study to learn more about the formation of water and other cosmic ices.",
                 media.getDescription());
-        assertEquals("2018-03-09T10:00-05:00[America/New_York]", media.getDate().toString());
+        assertEquals("2018-03-09T10:00-05:00[America/New_York]", media.getPublicationDateTime().toString());
         assertEquals("https://stsci-opo.org/STScI-01EVT0Y2KZAV2YF3ARK6X2PT7S.jpg",
                 media.getMetadata().iterator().next().getAssetUrl().toExternalForm());
         assertEquals("https://stsci-opo.org/STScI-01EVT0Y2KZAV2YF3ARK6X2PT7S.jpg",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals("2018-14", media.getNewsId());
-        assertNull(media.getExposureDate());
+        assertNull(media.getCreationDate());
         assertEquals("IC 2631", media.getObjectName());
         assertEquals("webb", media.getMission());
         assertEquals(Set.of("Nebulas", "Reflection Nebulas", "Star Forming Regions"), media.getKeywords());
@@ -154,13 +154,13 @@ class StsciServiceTest {
                         + "Enceladus, an ocean world about four percent the size of Earth, just 313 miles across, is one of the most exciting scientific targets in our solar system in the search for life beyond Earth. A global reservoir of salty water sits below the moon’s icy outer crust, and geyser-like volcanoes spew jets of ice particles, water vapor, and organic chemicals out of crevices in the moon’s surface informally called ‘tiger stripes.’\n"
                         + "NIRSpec was built for the European Space Agency (ESA) by a consortium of European companies led by Airbus Defence and Space (ADS) with NASA’s Goddard Space Flight Centre providing its detector and micro-shutter subsystems.",
                 media.getDescription());
-        assertEquals("2023-05-30T11:00-04:00[America/New_York]", media.getDate().toString());
+        assertEquals("2023-05-30T11:00-04:00[America/New_York]", media.getPublicationDateTime().toString());
         assertEquals("https://stsci-opo.org/STScI-01GYJ8KNFKX79X3WFF880Z7XQF.tif",
                 media.getMetadata().iterator().next().getAssetUrl().toExternalForm());
         assertEquals("https://stsci-opo.org/STScI-01GYJ8KXBB9GYG58KF9V7WRSGT.png",
                 media.getThumbnailUrl().toExternalForm());
         assertEquals("2023-112", media.getNewsId());
-        assertNull(media.getExposureDate());
+        assertNull(media.getCreationDate());
         assertEquals("Enceladus", media.getObjectName());
         assertEquals("webb", media.getMission());
         assertEquals(Set.of("Moons", "Saturn", "Solar System"), media.getKeywords());

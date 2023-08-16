@@ -9,9 +9,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -66,7 +66,7 @@ import io.micrometer.core.instrument.util.StringUtils;
  * @param <T> Type of media
  */
 public abstract class AbstractOrgDjangoplicityService
-        extends AbstractOrgService<DjangoplicityMedia, DjangoplicityMediaId, LocalDateTime> {
+        extends AbstractOrgService<DjangoplicityMedia, DjangoplicityMediaId> {
 
     private static final String IDENTIFIABLE_PERSON = "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.";
 
@@ -160,8 +160,10 @@ public abstract class AbstractOrgDjangoplicityService
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
             LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
-            if (doNotFetchEarlierThan != null && media.getDate().isBefore(doNotFetchEarlierThan.atStartOfDay())) {
-                throw new UpdateFinishedException(media.getDate().toString());
+            if (doNotFetchEarlierThan != null
+                    && media.getPublicationDateTime()
+                            .isBefore(doNotFetchEarlierThan.atStartOfDay(ZoneId.systemDefault()))) {
+                throw new UpdateFinishedException(media.getPublicationDateTime().toString());
             }
         } else {
             media = fetchMedia(url, id, imgUrlLink);
@@ -401,7 +403,7 @@ public abstract class AbstractOrgDjangoplicityService
             media.setImageType(DjangoplicityMediaType.valueOf(text));
             break;
         case "Release date:":
-            media.setDate(parseDateTime(text));
+            media.setPublicationDateTime(parseDateTime(text).atZone(ZoneId.systemDefault()));
             break;
         case "Size:":
             Matcher m = SIZE_PATTERN.matcher(text);
@@ -580,11 +582,6 @@ public abstract class AbstractOrgDjangoplicityService
             }
         }
         endUpdateMedia(count, uploadedMedia, uploadedMetadata, start);
-    }
-
-    @Override
-    protected final Optional<Temporal> getUploadDate(DjangoplicityMedia media) {
-        return Optional.of(media.getDate());
     }
 
     @Override

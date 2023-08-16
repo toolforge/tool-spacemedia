@@ -5,8 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDate;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -37,7 +35,7 @@ class OrgRestControllerTest {
     private AsyncOrgUpdaterService async;
 
     @MockBean
-    private AbstractOrgService<Media<String, LocalDate>, String, LocalDate> service;
+    private AbstractOrgService<Media<String>, String> service;
 
     @Test
     void testExtractId() {
@@ -80,19 +78,16 @@ class OrgRestControllerTest {
 
         @Bean
         @Autowired
-        public TestOrgRestController controller(
-                AbstractOrgService<Media<String, LocalDate>, String, LocalDate> service) {
+        public TestOrgRestController controller(AbstractOrgService<Media<String>, String> service) {
             return new TestOrgRestController(service);
         }
     }
 
     @RestController
     @RequestMapping(path = "snoopy/rest")
-    static class TestOrgRestController
-            extends OrgRestController<Media<String, LocalDate>, String, LocalDate> {
+    static class TestOrgRestController extends OrgRestController<Media<String>, String> {
 
-        public TestOrgRestController(
-                AbstractOrgService<Media<String, LocalDate>, String, LocalDate> service) {
+        public TestOrgRestController(AbstractOrgService<Media<String>, String> service) {
             super(service);
         }
     }

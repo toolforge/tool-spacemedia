@@ -20,6 +20,7 @@ import java.security.cert.CertificateFactory;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.Collection;
@@ -251,8 +252,8 @@ public final class Utils {
         return Duration.between(start, end).truncatedTo(ChronoUnit.SECONDS);
     }
 
-    public static LocalDateTime toLocalDateTime(Date date) {
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    public static ZonedDateTime toZonedDateTime(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault());
     }
 
     public static RestTemplate restTemplateSupportingAll(Charset charset) {

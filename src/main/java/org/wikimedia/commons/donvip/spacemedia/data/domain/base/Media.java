@@ -1,8 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
-import static java.time.temporal.ChronoField.DAY_OF_MONTH;
-import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
-import static java.time.temporal.ChronoField.YEAR;
 import static java.util.Locale.ENGLISH;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
@@ -17,6 +14,8 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,12 +50,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
  * Base class of all media.
  *
  * @param <ID> the identifier type
- * @param <D>  the media date type
  */
 @MappedSuperclass
 @EntityListeners(MediaListener.class)
 @JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY, property = "class")
-public abstract class Media<ID, D extends Temporal> implements MediaProjection<ID> {
+public abstract class Media<ID> implements MediaProjection<ID> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Media.class);
 
@@ -79,6 +77,18 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     @Column(nullable = true, columnDefinition = "MEDIUMTEXT")
     @FullTextField
     protected String description;
+
+    @Column(nullable = true)
+    protected LocalDate creationDate;
+
+    @Column(nullable = true)
+    protected ZonedDateTime creationDateTime;
+
+    @Column(nullable = false)
+    protected LocalDate publicationDate;
+
+    @Column(nullable = true)
+    protected ZonedDateTime publicationDateTime;
 
     @Column(nullable = true)
     protected Boolean ignored;
@@ -204,6 +214,44 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
         this.description = description;
     }
 
+    public LocalDate getCreationDate() {
+        return getLocalDate(creationDate, creationDateTime);
+    }
+
+    public void setCreationDate(LocalDate creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public ZonedDateTime getCreationDateTime() {
+        return creationDateTime;
+    }
+
+    public void setCreationDateTime(ZonedDateTime creationDateTime) {
+        this.creationDateTime = creationDateTime;
+        setCreationDate(creationDateTime != null ? creationDateTime.toLocalDate() : null);
+    }
+
+    public LocalDate getPublicationDate() {
+        return getLocalDate(publicationDate, publicationDateTime);
+    }
+
+    public void setPublicationDate(LocalDate publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public ZonedDateTime getPublicationDateTime() {
+        return publicationDateTime;
+    }
+
+    public void setPublicationDateTime(ZonedDateTime publicationDateTime) {
+        this.publicationDateTime = publicationDateTime;
+        setPublicationDate(publicationDateTime != null ? publicationDateTime.toLocalDate() : null);
+    }
+
+    private static LocalDate getLocalDate(LocalDate localDate, ZonedDateTime zonedDateTime) {
+        return localDate != null ? localDate : zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
+    }
+
     @Transient
     @JsonIgnore
     public Set<String> getAllCommonsFileNames() {
@@ -255,17 +303,19 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
     }
 
     public LocalDate getLocalDate() {
-        D date = getDate();
-        return date instanceof LocalDate localDate ? localDate
-                : LocalDate.of(date.get(YEAR), date.get(MONTH_OF_YEAR), date.get(DAY_OF_MONTH));
+        Temporal t = getBestTemporal();
+        return t instanceof LocalDate ld ? ld : t instanceof ZonedDateTime zdt ? zdt.toLocalDate() : null;
     }
 
-    public abstract D getDate();
-
-    public abstract void setDate(D date);
+    public Temporal getBestTemporal() {
+        return Stream
+                .<Temporal>of(getCreationDateTime(), getCreationDate(), getPublicationDateTime(), getPublicationDate())
+                .filter(Objects::nonNull).findFirst()
+                .orElseThrow(() -> new IllegalStateException("No best temporal found for " + this));
+    }
 
     public Year getYear() {
-        return Year.of(getDate().get(YEAR));
+        return Year.of(getBestTemporal().get(ChronoField.YEAR));
     }
 
     @Override
@@ -279,9 +329,8 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        Media<?, ?> other = (Media<?, ?>) obj;
-        return Objects.equals(title, other.title)
-                && Objects.equals(metadata, other.metadata);
+        Media<?> other = (Media<?>) obj;
+        return Objects.equals(title, other.title) && Objects.equals(metadata, other.metadata);
     }
 
     public List<String> getAssetsToUpload() {
@@ -352,10 +401,13 @@ public abstract class Media<ID, D extends Temporal> implements MediaProjection<I
      *
      * @param mediaFromApi updated media from org API
      */
-    public final void copyDataFrom(Media<ID, D> mediaFromApi) {
+    public final void copyDataFrom(Media<ID> mediaFromApi) {
         setDescription(mediaFromApi.getDescription());
         setTitle(mediaFromApi.getTitle());
-        setDate(mediaFromApi.getDate());
+        setCreationDate(mediaFromApi.getCreationDate());
+        setCreationDateTime(mediaFromApi.getCreationDateTime());
+        setPublicationDate(mediaFromApi.getPublicationDate());
+        setPublicationDateTime(mediaFromApi.getPublicationDateTime());
         if (mediaFromApi.hasMetadata()) {
             for (Iterator<FileMetadata> it = getMetadata().iterator(); it.hasNext();) {
                 FileMetadata m = it.next();

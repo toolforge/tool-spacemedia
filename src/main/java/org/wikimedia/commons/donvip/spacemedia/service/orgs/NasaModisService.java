@@ -10,7 +10,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -36,8 +35,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class NasaModisService
-        extends AbstractOrgService<NasaModisMedia, String, LocalDate> {
+public class NasaModisService extends AbstractOrgService<NasaModisMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaModisService.class);
 
@@ -91,16 +89,6 @@ public class NasaModisService
     @Override
     protected String getAuthor(NasaModisMedia media) {
         return media.getCredit();
-    }
-
-    @Override
-    protected Optional<Temporal> getCreationDate(NasaModisMedia media) {
-        return Optional.ofNullable(media.getDate());
-    }
-
-    @Override
-    protected final Optional<Temporal> getUploadDate(NasaModisMedia media) {
-        return Optional.of(media.getPublicationDate());
     }
 
     @Override
@@ -255,7 +243,7 @@ public class NasaModisService
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("metadata"))) {
             String cleanFact = fact.replace("</b> ", "").replace("\n", "").strip();
             extractFact(cleanFact, "Satellite:", image::setSatellite);
-            extractFact(cleanFact, "Date Acquired:", x -> image.setDate(LocalDate.parse(x, dateFormatter)));
+            extractFact(cleanFact, "Date Acquired:", x -> image.setCreationDate(LocalDate.parse(x, dateFormatter)));
             extractFact(cleanFact, "Bands Used:", image::setBands);
             extractFact(cleanFact, "Image Credit:", image::setCredit);
         }

@@ -14,8 +14,6 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -64,8 +62,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class NasaService
-        extends AbstractOrgService<NasaMedia, String, ZonedDateTime> {
+public class NasaService extends AbstractOrgService<NasaMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaService.class);
 
@@ -147,6 +144,10 @@ public class NasaService
     @Override
     public NasaMedia saveMedia(NasaMedia media) {
         LOGGER.info("Saving {}", media);
+        if (media.getPublicationDateTime() == null) {
+            // Not real, but the API doesn't provide the publication date, and we need it
+            media.setPublicationDateTime(media.getCreationDateTime());
+        }
         NasaMedia result = switch (media.getMediaType()) {
         case image -> imageRepository.save((NasaImage) media);
         case video -> videoRepository.save((NasaVideo) media);
@@ -343,11 +344,6 @@ public class NasaService
     @Override
     public URL getSourceUrl(NasaMedia media, FileMetadata metadata) {
         return newURL(detailsLink.replace("<id>", media.getId()));
-    }
-
-    @Override
-    protected Optional<Temporal> getCreationDate(NasaMedia media) {
-        return Optional.ofNullable(media.getDate());
     }
 
     @Override

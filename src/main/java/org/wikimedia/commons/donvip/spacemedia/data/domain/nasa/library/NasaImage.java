@@ -42,7 +42,6 @@ public class NasaImage extends NasaMedia {
                 + (getId() != null ? "nasaId=" + getId() + ", " : "")
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")
                 + (getCenter() != null ? "center=" + getCenter() + ", " : "")
-                + (getDate() != null ? "date=" + getDate() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() + ", " : "")
                 + (photographer != null ? "photographer=" + photographer : "")
                 + (secondaryCreator != null ? "secondaryCreator=" + secondaryCreator : "") + ']';

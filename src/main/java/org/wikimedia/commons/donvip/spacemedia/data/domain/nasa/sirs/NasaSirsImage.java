@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs;
 
-import java.time.LocalDate;
 import java.time.Year;
 import java.util.HashSet;
 import java.util.Objects;
@@ -20,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-public class NasaSirsImage extends SingleFileMedia<String, LocalDate> implements WithKeywords {
+public class NasaSirsImage extends SingleFileMedia<String> implements WithKeywords {
 
     @Id
     @Column(name = "nasa_id", nullable = false, length = 60)
@@ -29,9 +28,6 @@ public class NasaSirsImage extends SingleFileMedia<String, LocalDate> implements
 
     @Column(nullable = false)
     private String category;
-
-    @Column(name = "photo_date", nullable = true)
-    private LocalDate date;
 
     @Column(name = "photo_year", nullable = false)
     private Year year;
@@ -59,16 +55,6 @@ public class NasaSirsImage extends SingleFileMedia<String, LocalDate> implements
     }
 
     @Override
-    public LocalDate getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
-    @Override
     public Year getYear() {
         return year;
     }
@@ -92,7 +78,6 @@ public class NasaSirsImage extends SingleFileMedia<String, LocalDate> implements
         return "NasaSirsImage [" + (id != null ? "id=" + id + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (category != null ? "category=" + category + ", " : "")
-                + (date != null ? "photoDate=" + date + ", " : "")
                 + (year != null ? "photoYear=" + year + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (keywords != null ? "keywords=" + keywords + ", " : "")

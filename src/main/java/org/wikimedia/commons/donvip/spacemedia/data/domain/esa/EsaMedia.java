@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.esa;
 
 import java.net.URL;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,15 +19,13 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Table(indexes = { @Index(columnList = "url") })
-public class EsaMedia extends Media<Integer, LocalDateTime> implements WithKeywords {
+public class EsaMedia extends Media<Integer> implements WithKeywords {
 
     @Id
     @Column(nullable = false)
     private Integer id;
     @Column(nullable = false, unique = true, length = 200)
     private URL url;
-    @Column(name = "released", nullable = false)
-    private LocalDateTime date;
     @Column(nullable = false, length = 300)
     private String copyright;
     @Column(length = 64)
@@ -54,16 +51,6 @@ public class EsaMedia extends Media<Integer, LocalDateTime> implements WithKeywo
 
     public void setUrl(URL url) {
         this.url = url;
-    }
-
-    @Override
-    public LocalDateTime getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(LocalDateTime date) {
-        this.date = date;
     }
 
     public String getCopyright() {
@@ -154,7 +141,6 @@ public class EsaMedia extends Media<Integer, LocalDateTime> implements WithKeywo
     public String toString() {
         return "EsaMedia [id=" + id + ", " + (url != null ? "url=" + url + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
-                + (date != null ? "released=" + date + ", " : "")
                 + (copyright != null ? "copyright=" + copyright + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (activity != null ? "activity=" + activity + ", " : "")

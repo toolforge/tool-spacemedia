@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -93,7 +92,7 @@ class MediaServiceTest {
                 media.getDescription());
     }
 
-    private static class TestMedia extends Media<String, LocalDate> {
+    private static class TestMedia extends Media<String> {
 
         @Override
         public String getId() {
@@ -102,15 +101,6 @@ class MediaServiceTest {
 
         @Override
         public void setId(String id) {
-        }
-
-        @Override
-        public LocalDate getDate() {
-            return null;
-        }
-
-        @Override
-        public void setDate(LocalDate date) {
         }
     }
 

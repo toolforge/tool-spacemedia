@@ -57,6 +57,7 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
         NasaPhotojournalMedia media = new NasaPhotojournalMedia();
         media.setDescription(
                 "The image was acquired June 17, 2013, covers an area of 9.2 by 10.2 km, and is located at 57.1 degrees north, 7.3 degrees west.");
+        NasaPhotojournalService.detectCreationDate(media);
         assertEquals(LocalDate.of(2013, 6, 17), service.getCreationDate(media).get());
     }
 
@@ -65,7 +66,7 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
         NasaPhotojournalMedia media = readXml("PIA25927");
 
         assertEquals("JPL-20230509-PIA25927-ODYSSEY", media.getNasaId());
-        assertEquals("2023-05-09T13:19:04Z", media.getDate().toString());
+        assertEquals("2023-05-09T13:19:04Z", media.getPublicationDateTime().toString());
         assertEquals("Mars", media.getTarget());
         assertEquals("2001 Mars Odyssey", media.getMission());
         assertEquals("2001 Mars Odyssey", media.getSpacecraft());

@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -56,7 +56,7 @@ class EsoServiceTest extends AbstractOrgServiceTest {
     @Test
     void testFbResolution() throws IOException {
         DjangoplicityMedia media = new DjangoplicityMedia();
-        media.setDate(LocalDateTime.now());
+        media.setPublicationDateTime(ZonedDateTime.now());
         media.setCredit("ESO");
         media.setId(new DjangoplicityMediaId("eso", "ann23006a"));
         media.setTitle("Live streaming: How will the ELT explore the Universe?");

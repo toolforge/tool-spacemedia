@@ -9,7 +9,7 @@ public class MediaListener {
 
     @PrePersist
     @PreUpdate
-    public void methodExecuteBeforeSave(Media<?, ?> media) {
+    public void methodExecuteBeforeSave(Media<?> media) {
         media.setLastUpdate(LocalDateTime.now());
     }
 }

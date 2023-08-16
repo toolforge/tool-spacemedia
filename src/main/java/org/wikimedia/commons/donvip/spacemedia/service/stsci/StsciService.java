@@ -104,7 +104,7 @@ public class StsciService {
         findTd(tds, "Constellation").ifPresent(result::setConstellation);
         findTd(tds, "Exposure Dates").ifPresent(dates -> {
             try {
-                result.setExposureDate(LocalDate.parse(dates, exposureDateformatter));
+                result.setCreationDate(LocalDate.parse(dates, exposureDateformatter));
             } catch (DateTimeParseException e) {
                 LOGGER.debug(dates, e);
             }
@@ -114,7 +114,7 @@ public class StsciService {
         if (elems.size() == 1) {
             String date = elems.get(0).parent().ownText().trim();
             try {
-                result.setDate(ZonedDateTime.parse(date, StsciService.releaseDateformatter));
+                result.setPublicationDateTime(ZonedDateTime.parse(date, StsciService.releaseDateformatter));
             } catch (DateTimeParseException e) {
                 LOGGER.debug(date, e);
             }

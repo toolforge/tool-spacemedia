@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.box;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -15,7 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface BoxMediaRepository extends MediaRepository<BoxMedia, BoxMediaId, ZonedDateTime> {
+public interface BoxMediaRepository extends MediaRepository<BoxMedia, BoxMediaId> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "boxCount", "boxCountByShare", "boxCountIgnored",

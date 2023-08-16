@@ -9,6 +9,8 @@ import static org.mockito.Mockito.doCallRealMethod;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -120,8 +122,8 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
         media.setPathAlias(pathAlias);
         media.setLicense(license);
         media.setTitle(title);
-        media.setDate(datePosted);
-        media.setDateTaken(dateTaken);
+        media.setPublicationDateTime(datePosted.atZone(ZoneId.of("UTC")));
+        media.setCreationDateTime(dateTaken.atZone(ZoneId.of("UTC")));
         for (String album : albums.split(",")) {
             String[] kv = album.split("=");
             media.getPhotosets().add(new FlickrPhotoSet(Long.valueOf(kv[0]), kv[1]));
@@ -138,7 +140,11 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
             String[] kv = expectedStatement.split("=");
             Pair<Object, Map<String, Object>> statement = statements.get(kv[0]);
             assertNotNull(statement, expectedStatement);
-            assertEquals(kv[1], Objects.toString(statement.getKey()));
+            if (statement.getKey() instanceof ZonedDateTime date) {
+                assertEquals(kv[1] + "Z[UTC]", Objects.toString(statement.getKey()));
+            } else {
+                assertEquals(kv[1], Objects.toString(statement.getKey()));
+            }
             checkedProperties.add(kv[0]);
         }
 

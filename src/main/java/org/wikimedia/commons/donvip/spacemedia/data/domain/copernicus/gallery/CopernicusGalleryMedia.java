@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery;
 
-import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -16,13 +15,10 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
-public class CopernicusGalleryMedia extends SingleFileMedia<String, ZonedDateTime> implements WithKeywords {
+public class CopernicusGalleryMedia extends SingleFileMedia<String> implements WithKeywords {
 
     @Id
     private String id;
-
-    @Column(nullable = false)
-    private ZonedDateTime date;
 
     @Lob
     @Column(name = "credit", nullable = false, columnDefinition = "TEXT")
@@ -43,16 +39,6 @@ public class CopernicusGalleryMedia extends SingleFileMedia<String, ZonedDateTim
     @Override
     public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public ZonedDateTime getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(ZonedDateTime date) {
-        this.date = date;
     }
 
     @Override
@@ -88,7 +74,7 @@ public class CopernicusGalleryMedia extends SingleFileMedia<String, ZonedDateTim
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(date, id, credit, location, keywords);
+        return 31 * super.hashCode() + Objects.hash(id, credit, location, keywords);
     }
 
     @Override
@@ -98,7 +84,7 @@ public class CopernicusGalleryMedia extends SingleFileMedia<String, ZonedDateTim
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         CopernicusGalleryMedia other = (CopernicusGalleryMedia) obj;
-        return Objects.equals(date, other.date) && Objects.equals(id, other.id)
+        return Objects.equals(id, other.id)
                 && Objects.equals(credit, other.credit)
                 && Objects.equals(location, other.location)
                 && Objects.equals(keywords, other.keywords);
@@ -106,7 +92,7 @@ public class CopernicusGalleryMedia extends SingleFileMedia<String, ZonedDateTim
 
     @Override
     public String toString() {
-        return "CopernicusGalleryMedia [id=" + id + ", date=" + date + ", title=" + title + "]";
+        return "CopernicusGalleryMedia [id=" + id + ", title=" + title + "]";
     }
 
     public CopernicusGalleryMedia copyDataFrom(CopernicusGalleryMedia mediaFromApi) {

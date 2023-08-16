@@ -1,10 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.webmil;
 
-import java.time.ZonedDateTime;
-
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
-public class WebMilMedia extends Media<String, ZonedDateTime> {
+public class WebMilMedia extends Media<String> {
 
     @Override
     public String getId() {
@@ -14,18 +12,6 @@ public class WebMilMedia extends Media<String, ZonedDateTime> {
 
     @Override
     public void setId(String id) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public ZonedDateTime getDate() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void setDate(ZonedDateTime date) {
         // TODO Auto-generated method stub
 
     }

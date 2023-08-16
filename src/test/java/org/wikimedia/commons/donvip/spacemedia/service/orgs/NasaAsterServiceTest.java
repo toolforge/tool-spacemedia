@@ -82,11 +82,11 @@ class NasaAsterServiceTest extends AbstractOrgServiceTest {
         assertFalse(media.getTitle().isEmpty());
         assertNotNull(media.getThumbnailUrl());
         assertFalse(media.getDescription().isEmpty());
-        assertNotNull(media.getDate());
-        assertNotNull(media.getPublicationDate());
+        assertNotNull(media.getCreationDate());
+        assertNotNull(media.getPublicationDateTime());
         assertTrue(media.getYear().getValue() >= 1999);
         assertTrue(media.getYear().getValue() <= LocalDate.now().getYear());
-        assertTrue(media.getYear().getValue() <= media.getPublicationDate().getYear());
+        assertTrue(media.getYear().getValue() <= media.getPublicationDateTime().getYear());
         assertEquals(size, media.getMetadata().size());
 
         Set<String> uploadTitles = new TreeSet<>();

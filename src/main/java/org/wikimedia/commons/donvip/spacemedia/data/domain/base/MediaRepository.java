@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.temporal.Temporal;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -17,10 +16,9 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  *
  * @param <T>  the media type the repository manages
  * @param <ID> the identifier type of the entity the repository manages
- * @param <D>  the media date type
  */
 @NoRepositoryBean
-public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
+public interface MediaRepository<T extends Media<ID>, ID>
         extends PagingAndSortingRepository<T, ID> {
 
     void evictCaches();
@@ -145,7 +143,7 @@ public interface MediaRepository<T extends Media<ID, D>, ID, D extends Temporal>
 
     List<T> findByMetadata_Sha1(String sha1);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and DATE(m.date) = ?1 and not exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and (m.creationDate = ?1 or m.publicationDate = ?1) and not exists elements (md.commonsFileNames)")
     List<T> findMissingByDate(LocalDate date);
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and m.title = ?1 and not exists elements (md.commonsFileNames)")

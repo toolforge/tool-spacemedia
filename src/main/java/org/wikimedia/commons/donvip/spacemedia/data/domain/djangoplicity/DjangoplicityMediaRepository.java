@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -15,8 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface DjangoplicityMediaRepository
-        extends MediaRepository<DjangoplicityMedia, DjangoplicityMediaId, LocalDateTime> {
+public interface DjangoplicityMediaRepository extends MediaRepository<DjangoplicityMedia, DjangoplicityMediaId> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "djangoCount", "djangoCountByWebsite", "djangoCountIgnoredByWebsite",

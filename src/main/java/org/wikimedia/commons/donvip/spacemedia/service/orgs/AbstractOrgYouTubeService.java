@@ -11,9 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.temporal.Temporal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,7 +46,7 @@ import com.google.api.services.youtube.model.VideoContentDetails;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.VideoSnippet;
 
-public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTubeVideo, String, Instant> {
+public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTubeVideo, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgYouTubeService.class);
 
@@ -78,11 +77,6 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     @Override
     public URL getSourceUrl(YouTubeVideo video, FileMetadata metadata) {
         return metadata.getAssetUrl();
-    }
-
-    @Override
-    protected final Optional<Temporal> getUploadDate(YouTubeVideo video) {
-        return Optional.of(video.getDate());
     }
 
     @Override
@@ -157,7 +151,8 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         VideoSnippet snippet = ytVideo.getSnippet();
         ofNullable(snippet.getChannelId()).ifPresent(video::setChannelId);
         ofNullable(snippet.getChannelTitle()).ifPresent(video::setChannelTitle);
-        ofNullable(snippet.getPublishedAt()).map(DateTime::toStringRfc3339).map(Instant::parse).ifPresent(video::setDate);
+        ofNullable(snippet.getPublishedAt()).map(DateTime::toStringRfc3339).map(ZonedDateTime::parse)
+                .ifPresent(video::setPublicationDateTime);
         ofNullable(snippet.getDescription()).ifPresent(video::setDescription);
         ofNullable(getBestThumbnailUrl(snippet.getThumbnails())).ifPresent(video::setThumbnailUrl);
         ofNullable(snippet.getTitle()).ifPresent(video::setTitle);

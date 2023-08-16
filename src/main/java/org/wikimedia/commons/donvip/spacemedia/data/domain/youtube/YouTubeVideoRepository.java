@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.youtube;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -15,7 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, String, Instant> {
+public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo, String> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "youtubeCount", "youtubeCountByChannel",

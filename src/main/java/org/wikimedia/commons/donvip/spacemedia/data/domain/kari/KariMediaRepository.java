@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.kari;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface KariMediaRepository extends MediaRepository<KariMedia, Integer, LocalDate> {
+public interface KariMediaRepository extends MediaRepository<KariMedia, Integer> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {

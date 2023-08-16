@@ -53,7 +53,7 @@ class NasaModisServiceTest extends AbstractOrgServiceTest {
         assertFalse(media.getTitle().isEmpty());
         assertNotNull(media.getThumbnailUrl());
         assertFalse(media.getDescription().isEmpty());
-        assertNotNull(media.getDate());
+        assertNotNull(media.getCreationDate());
         assertNotNull(media.getPublicationDate());
         assertTrue(media.getYear().getValue() >= 1999);
         assertTrue(media.getYear().getValue() <= LocalDate.now().getYear());

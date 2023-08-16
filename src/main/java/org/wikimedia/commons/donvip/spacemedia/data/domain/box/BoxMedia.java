@@ -1,7 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.box;
 
-import java.time.ZonedDateTime;
-
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -16,18 +14,12 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Indexed
-public class BoxMedia extends SingleFileMedia<BoxMediaId, ZonedDateTime> {
+public class BoxMedia extends SingleFileMedia<BoxMediaId> {
 
     @Id
     @Embedded
     @DocumentId(identifierBridge = @IdentifierBridgeRef(type = BoxMediaIdBridge.class))
     private BoxMediaId id;
-
-    @Column(nullable = true)
-    private ZonedDateTime contentCreationDate;
-
-    @Column(nullable = false)
-    private ZonedDateTime date;
 
     @Column(nullable = true)
     private String creator;
@@ -48,24 +40,6 @@ public class BoxMedia extends SingleFileMedia<BoxMediaId, ZonedDateTime> {
     @Override
     public void setId(BoxMediaId id) {
         this.id = id;
-    }
-
-    public ZonedDateTime getContentCreationDate() {
-        return contentCreationDate;
-    }
-
-    public void setContentCreationDate(ZonedDateTime contentCreationDate) {
-        this.contentCreationDate = contentCreationDate;
-    }
-
-    @Override
-    public ZonedDateTime getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(ZonedDateTime creationDate) {
-        this.date = creationDate;
     }
 
     public String getCreator() {
@@ -90,7 +64,6 @@ public class BoxMedia extends SingleFileMedia<BoxMediaId, ZonedDateTime> {
 
     public BoxMedia copyDataFrom(BoxMedia other) {
         super.copyDataFrom(other);
-        this.contentCreationDate = other.contentCreationDate;
         this.creator = other.creator;
         return this;
     }
@@ -98,8 +71,7 @@ public class BoxMedia extends SingleFileMedia<BoxMediaId, ZonedDateTime> {
     @Override
     public String toString() {
         return "BoxMedia [" + (id != null ? "id=" + id + ", " : "")
-                + (contentCreationDate != null ? "contentCreationDate=" + contentCreationDate + ", " : "")
-                + (date != null ? "date=" + date + ", " : "") + (creator != null ? "creator=" + creator + ", " : "")
+                + (creator != null ? "creator=" + creator + ", " : "")
                 + (title != null ? "title=" + title + ", " : "") + "metadata=" + getMetadata() + ']';
     }
 }

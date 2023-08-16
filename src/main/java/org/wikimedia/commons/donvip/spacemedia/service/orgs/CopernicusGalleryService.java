@@ -9,7 +9,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.Co
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 @Service
-public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalleryMedia, String, ZonedDateTime> {
+public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalleryMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CopernicusGalleryService.class);
 
@@ -54,11 +53,6 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
     @Override
     public URL getSourceUrl(CopernicusGalleryMedia media, FileMetadata metadata) {
         return newURL(BASE_URL + "/en/media/image-day-gallery/" + media.getId());
-    }
-
-    @Override
-    protected Optional<Temporal> getUploadDate(CopernicusGalleryMedia media) {
-        return Optional.of(media.getDate());
     }
 
     @Override
@@ -94,7 +88,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
         return result;
     }
 
-    private void findCategoriesForSentinel(Media<?, ?> media, String sentinel, Set<String> result) {
+    private void findCategoriesForSentinel(Media<?> media, String sentinel, Set<String> result) {
         if (media.containsInTitleOrDescription(sentinel)) {
             result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by " + sentinel,
                     sentinel + " images"));
@@ -177,7 +171,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
     private CopernicusGalleryMedia fetchMedia(String id, ZonedDateTime date) throws IOException {
         CopernicusGalleryMedia media = new CopernicusGalleryMedia();
         media.setId(id);
-        media.setDate(date);
+        media.setPublicationDateTime(date);
         String url = BASE_URL + "/en/media/image-day-gallery/" + id;
         LOGGER.info("GET {}", url);
         boolean ok = false;

@@ -1,8 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.modis;
 
-import java.time.LocalDate;
-import java.time.Year;
-import java.time.temporal.ChronoField;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -17,20 +14,11 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Entity
 @Indexed
-public class NasaModisMedia extends SingleFileMedia<String, LocalDate> {
+public class NasaModisMedia extends SingleFileMedia<String> {
 
     @Id
     @Column(nullable = false, length = 32)
     private String id;
-
-    /**
-     * Acquisition date
-     */
-    @Column(nullable = true)
-    private LocalDate date;
-
-    @Column(nullable = false)
-    private LocalDate publicationDate;
 
     @Column(nullable = false, length = 8)
     private String satellite;
@@ -49,24 +37,6 @@ public class NasaModisMedia extends SingleFileMedia<String, LocalDate> {
     @Override
     public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public LocalDate getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
-    public LocalDate getPublicationDate() {
-        return publicationDate;
-    }
-
-    public void setPublicationDate(LocalDate publicationDate) {
-        this.publicationDate = publicationDate;
     }
 
     public String getSatellite() {
@@ -110,13 +80,8 @@ public class NasaModisMedia extends SingleFileMedia<String, LocalDate> {
     }
 
     @Override
-    public Year getYear() {
-        return Year.of(getDate() != null ? getDate().get(ChronoField.YEAR) : getPublicationDate().getYear());
-    }
-
-    @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(id, date, publicationDate, satellite, bands, credit);
+        return 31 * super.hashCode() + Objects.hash(id, satellite, bands, credit);
     }
 
     @Override
@@ -126,14 +91,13 @@ public class NasaModisMedia extends SingleFileMedia<String, LocalDate> {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaModisMedia other = (NasaModisMedia) obj;
-        return Objects.equals(date, other.date) && Objects.equals(publicationDate, other.publicationDate)
-                && Objects.equals(id, other.id) && Objects.equals(satellite, other.satellite)
+        return Objects.equals(id, other.id) && Objects.equals(satellite, other.satellite)
                 && Objects.equals(bands, other.bands) && Objects.equals(credit, other.credit);
     }
 
     @Override
     public String toString() {
-        return "NasaModisMedia [id=" + id + ", date=" + date + ", publicationDate=" + publicationDate
+        return "NasaModisMedia [id=" + id
                 + ", satellite=" + satellite + ", bands=" + bands + ", credit=" + credit + ']';
     }
 }

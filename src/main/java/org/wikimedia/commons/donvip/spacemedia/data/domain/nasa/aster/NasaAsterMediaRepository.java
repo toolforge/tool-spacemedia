@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -14,7 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 
-public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia, String, LocalDate> {
+public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia, String> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {

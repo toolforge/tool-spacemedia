@@ -26,8 +26,6 @@ public class DvidsAudio extends DvidsMedia {
         return "DvidsAudio ["
                 + (getId() != null ? "id=" + getId() + ", " : "")
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")
-                + (getDatePublished() != null ? "datePublished=" + getDatePublished() + ", " : "")
-                + (getDate() != null ? "date=" + getDate() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() : "") + "]";
     }
 

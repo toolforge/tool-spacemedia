@@ -2,14 +2,13 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 class MediaTest {
 
-    private final Media<String, LocalDate> media = new Media<>() {
+    private final Media<String> media = new Media<>() {
 
         private String id;
 
@@ -21,15 +20,6 @@ class MediaTest {
         @Override
         public void setId(String id) {
             this.id = id;
-        }
-
-        @Override
-        public LocalDate getDate() {
-            return null;
-        }
-
-        @Override
-        public void setDate(LocalDate date) {
         }
 
         @Override

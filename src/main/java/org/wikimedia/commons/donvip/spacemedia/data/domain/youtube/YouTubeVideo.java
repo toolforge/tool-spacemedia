@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.youtube;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -13,14 +12,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity(name = "YoutubeVideo")
-public class YouTubeVideo extends SingleFileMedia<String, Instant> {
+public class YouTubeVideo extends SingleFileMedia<String> {
 
     @Id
     @Column(nullable = false, length = 11)
     private String id;
-
-    @Column(nullable = false, name = "published_date")
-    private Instant date;
 
     @Column(nullable = false, length = 24)
     @JsonProperty("channel_id")
@@ -44,16 +40,6 @@ public class YouTubeVideo extends SingleFileMedia<String, Instant> {
     @Override
     public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public Instant getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(Instant publishedDate) {
-        this.date = publishedDate;
     }
 
     public String getChannelId() {
@@ -105,7 +91,7 @@ public class YouTubeVideo extends SingleFileMedia<String, Instant> {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(channelId, id, date);
+        return 31 * super.hashCode() + Objects.hash(channelId, id);
     }
 
     @Override
@@ -115,12 +101,11 @@ public class YouTubeVideo extends SingleFileMedia<String, Instant> {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         YouTubeVideo other = (YouTubeVideo) obj;
-        return Objects.equals(channelId, other.channelId) && Objects.equals(id, other.id)
-                && Objects.equals(date, other.date);
+        return Objects.equals(channelId, other.channelId) && Objects.equals(id, other.id);
     }
 
     @Override
     public String toString() {
-        return "YouTubeVideo [id=" + id + ", publishedDate=" + date + ", channelId=" + channelId + "]";
+        return "YouTubeVideo [id=" + id + ", channelId=" + channelId + "]";
     }
 }

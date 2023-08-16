@@ -7,9 +7,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,7 +34,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService
 /**
  * Service harvesting images from NASA Hubble / Jame Webb websites.
  */
-public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMedia, String, ZonedDateTime> {
+public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgStsciService.class);
 
@@ -125,9 +122,8 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
             LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
-            if (doNotFetchEarlierThan != null
-                    && media.getDate().isBefore(doNotFetchEarlierThan.atStartOfDay(ZoneId.systemDefault()))) {
-                throw new UpdateFinishedException(media.getDate().toString());
+            if (doNotFetchEarlierThan != null && media.getPublicationDate().isBefore(doNotFetchEarlierThan)) {
+                throw new UpdateFinishedException(media.getPublicationDate().toString());
             }
         } else {
             media = getMediaFromWebsite(id);
@@ -208,16 +204,6 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     @Override
     protected final String getAuthor(StsciMedia media) throws MalformedURLException {
         return media.getCredits();
-    }
-
-    @Override
-    protected final Optional<Temporal> getCreationDate(StsciMedia media) {
-        return Optional.ofNullable(media.getExposureDate());
-    }
-
-    @Override
-    protected final Optional<Temporal> getUploadDate(StsciMedia media) {
-        return Optional.of(media.getDate());
     }
 
     @Override

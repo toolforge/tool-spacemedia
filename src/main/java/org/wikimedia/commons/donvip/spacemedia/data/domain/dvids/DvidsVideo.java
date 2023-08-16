@@ -132,8 +132,6 @@ public class DvidsVideo extends DvidsMedia {
                 + (getId() != null ? "id=" + getId() + ", " : "")
                 + (getAspectRatio() != null ? "aspectRatio=" + getAspectRatio() + ", " : "")
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")
-                + (getDatePublished() != null ? "datePublished=" + getDatePublished() + ", " : "")
-                + (getDate() != null ? "date=" + getDate() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() : "") + "]";
     }
 

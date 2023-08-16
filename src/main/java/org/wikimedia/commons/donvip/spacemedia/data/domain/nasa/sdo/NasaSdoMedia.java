@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -18,14 +17,11 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Indexed
-public class NasaSdoMedia extends SingleFileMedia<String, LocalDateTime> {
+public class NasaSdoMedia extends SingleFileMedia<String> {
 
     @Id
     @Column(nullable = false, length = 32)
     private String id;
-
-    @Column(nullable = false)
-    private LocalDateTime date;
 
     @Enumerated(EnumType.ORDINAL)
     @Column(nullable = false, columnDefinition = "TINYINT default 0")
@@ -46,16 +42,6 @@ public class NasaSdoMedia extends SingleFileMedia<String, LocalDateTime> {
     @Override
     public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public LocalDateTime getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(LocalDateTime date) {
-        this.date = date;
     }
 
     public NasaMediaType getMediaType() {
@@ -99,7 +85,7 @@ public class NasaSdoMedia extends SingleFileMedia<String, LocalDateTime> {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(dataType, date, id, mediaType, keywords);
+        return 31 * super.hashCode() + Objects.hash(dataType, id, mediaType, keywords);
     }
 
     @Override
@@ -109,13 +95,12 @@ public class NasaSdoMedia extends SingleFileMedia<String, LocalDateTime> {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaSdoMedia other = (NasaSdoMedia) obj;
-        return dataType == other.dataType && mediaType == other.mediaType && Objects.equals(date, other.date)
+        return dataType == other.dataType && mediaType == other.mediaType
                 && Objects.equals(id, other.id) && Objects.equals(keywords, other.keywords);
     }
 
     @Override
     public String toString() {
-        return "NasaSdoMedia [id=" + id + ", date=" + date + ", mediaType=" + mediaType + ", dataType=" + dataType
-                + ']';
+        return "NasaSdoMedia [id=" + id + ", mediaType=" + mediaType + ", dataType=" + dataType + ']';
     }
 }

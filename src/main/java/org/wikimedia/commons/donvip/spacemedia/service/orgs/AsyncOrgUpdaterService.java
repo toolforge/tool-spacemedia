@@ -10,7 +10,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 public class AsyncOrgUpdaterService {
 
     @Async
-    public void updateMedia(Org<?, ?, ?> org) throws IOException, UploadException {
+    public void updateMedia(Org<?, ?> org) throws IOException, UploadException {
         org.updateMedia();
     }
 }

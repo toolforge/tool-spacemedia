@@ -26,11 +26,11 @@ public class SpacemediaOrgBoxUpdateJobApplication extends AbstractSpacemediaOrgU
     }
 
     @Bean
-    public Org<?, ?, ?> org(@Value("${org}") String org,
+    public Org<?, ?> org(@Value("${org}") String org,
             @Value("${box.app-shares}") Set<String> boxAppShares,
             @Autowired BoxMediaRepository repository,
             ApplicationContext context) throws ReflectiveOperationException {
-        return (Org<?, ?, ?>) Class.forName(org).getConstructor(BoxMediaRepository.class, Set.class)
+        return (Org<?, ?>) Class.forName(org).getConstructor(BoxMediaRepository.class, Set.class)
                 .newInstance(repository, boxAppShares);
     }
 }

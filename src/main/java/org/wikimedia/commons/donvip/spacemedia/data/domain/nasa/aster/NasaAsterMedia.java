@@ -1,9 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Year;
-import java.time.temporal.ChronoField;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -23,20 +19,11 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Entity
 @Indexed
-public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatLon {
+public class NasaAsterMedia extends Media<String> implements WithLatLon {
 
     @Id
     @Column(nullable = false, length = 32)
     private String id;
-
-    /**
-     * Acquisition date
-     */
-    @Column(nullable = true)
-    private LocalDate date;
-
-    @Column(nullable = false)
-    private LocalDateTime publicationDate;
 
     @Column(nullable = false)
     private double latitude;
@@ -65,24 +52,6 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatL
     @Override
     public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public LocalDate getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
-    public LocalDateTime getPublicationDate() {
-        return publicationDate;
-    }
-
-    public void setPublicationDate(LocalDateTime publicationDate) {
-        this.publicationDate = publicationDate;
     }
 
     @Override
@@ -160,14 +129,9 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatL
     }
 
     @Override
-    public Year getYear() {
-        return Year.of(getDate() != null ? getDate().get(ChronoField.YEAR) : getPublicationDate().getYear());
-    }
-
-    @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(id, date, publicationDate, latitude, longitude, longName, category, icon, mediaType);
+                + Objects.hash(id, latitude, longitude, longName, category, icon, mediaType);
     }
 
     @Override
@@ -177,15 +141,14 @@ public class NasaAsterMedia extends Media<String, LocalDate> implements WithLatL
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaAsterMedia other = (NasaAsterMedia) obj;
-        return Objects.equals(date, other.date) && Objects.equals(publicationDate, other.publicationDate)
-                && Objects.equals(id, other.id) && latitude == other.latitude && longitude == other.longitude
+        return Objects.equals(id, other.id) && latitude == other.latitude && longitude == other.longitude
                 && Objects.equals(longName, other.longName) && Objects.equals(category, other.category)
                 && Objects.equals(icon, other.icon) && mediaType == other.mediaType;
     }
 
     @Override
     public String toString() {
-        return "NasaAsterMedia [id=" + id + ", date=" + date + ", publicationDate=" + publicationDate + ", latitude="
+        return "NasaAsterMedia [id=" + id + ", latitude="
                 + latitude + ", longitude=" + longitude + ", longName=" + longName
                 + ", category=" + category + ", icon=" + icon + ", mediaType=" + mediaType + ']';
     }

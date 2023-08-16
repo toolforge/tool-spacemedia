@@ -9,8 +9,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -45,8 +46,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
-public class NasaAsterService
-        extends AbstractOrgService<NasaAsterMedia, String, LocalDate> {
+public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaAsterService.class);
 
@@ -138,16 +138,6 @@ public class NasaAsterService
     @Override
     protected String getAuthor(NasaAsterMedia media) {
         return "NASA/METI/AIST/Japan Space Systems, and U.S./Japan ASTER Science Team";
-    }
-
-    @Override
-    protected Optional<Temporal> getCreationDate(NasaAsterMedia media) {
-        return Optional.ofNullable(media.getDate());
-    }
-
-    @Override
-    protected final Optional<Temporal> getUploadDate(NasaAsterMedia media) {
-        return Optional.of(media.getPublicationDate());
     }
 
     @Override
@@ -293,7 +283,7 @@ public class NasaAsterService
         return null;
     }
 
-    static LocalDateTime extractPublicationDate(Document html) {
+    static ZonedDateTime extractPublicationDate(Document html) {
         String meta = html.getElementsByTag("tr").get(1).getElementsByTag("table").get(0).nextElementSibling()
                 .getElementsByTag("tr").first().nextElementSibling().nextElementSibling().getElementsByTag("tr").get(0)
                 .getElementsByTag("td").first().getElementsByTag("td").get(2).text();
@@ -302,8 +292,9 @@ public class NasaAsterService
             if (m.matches()) {
                 String text = m.group(1);
                 DateTimeFormatter format = e.getKey();
-                return format.toString().contains("Value(MinuteOfHour)") ? LocalDateTime.parse(text, format)
-                        : LocalDate.parse(text, format).atStartOfDay();
+                return format.toString().contains("Value(MinuteOfHour)")
+                        ? LocalDateTime.parse(text, format).atZone(ZoneId.systemDefault())
+                        : LocalDate.parse(text, format).atStartOfDay(ZoneId.systemDefault());
             }
         }
         throw new IllegalStateException("No publication date found: " + meta);
@@ -312,7 +303,7 @@ public class NasaAsterService
     void fillMediaWithHtml(Document html, NasaAsterMedia image) {
         Element bodyText = Objects.requireNonNull(html.getElementsByClass("BodyText").first(), "BodyText");
         Elements tables = bodyText.getElementsByTag("table");
-        image.setPublicationDate(extractPublicationDate(html));
+        image.setPublicationDateTime(extractPublicationDate(html));
         // Title
         image.setTitle(Objects.requireNonNull(bodyText.getElementsByTag("font").first(), "font").text());
         // Image at top is used as thumbnail
@@ -320,7 +311,7 @@ public class NasaAsterService
                 newURL(tables.get(0).getElementsByTag("img").first().attr("src").replace("http://", "https://")));
         // Description and acquisition date
         image.setDescription(tables.get(1).getElementsByTag("td").text());
-        image.setDate(extractAcquisitionDate(image));
+        image.setCreationDate(extractAcquisitionDate(image));
         // FIXME ASTER entries can be videos too
         // https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=fuji
         image.setMediaType(NasaMediaType.image);

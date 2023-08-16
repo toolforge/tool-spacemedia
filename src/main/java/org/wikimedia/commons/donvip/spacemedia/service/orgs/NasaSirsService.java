@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -34,8 +33,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 
 @Service
-public class NasaSirsService
-        extends AbstractOrgService<NasaSirsImage, String, LocalDate> {
+public class NasaSirsService extends AbstractOrgService<NasaSirsImage, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaSirsService.class);
 
@@ -83,11 +81,6 @@ public class NasaSirsService
     @Override
     protected String getAuthor(NasaSirsImage media) {
         return wikiLink(homePage, sscName);
-    }
-
-    @Override
-    protected Optional<Temporal> getCreationDate(NasaSirsImage media) {
-        return Optional.of(media.getDate() != null ? media.getDate() : media.getYear());
     }
 
     @Override
@@ -146,8 +139,8 @@ public class NasaSirsService
                             media.setTitle(values.get(0));
                             media.setCategory(values.get(1));
                             try {
-                                media.setDate(LocalDate.parse(values.get(3), usDateformatter));
-                                media.setYear(Year.of(media.getDate().getYear()));
+                                media.setPublicationDate(LocalDate.parse(values.get(3), usDateformatter));
+                                media.setYear(Year.of(media.getPublicationDate().getYear()));
                             } catch (DateTimeParseException e) {
                                 media.setYear(Year.parse(values.get(3)));
                             }

@@ -100,10 +100,9 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
  *
  * @param <T>  the media type the repository manages
  * @param <ID> the type of the id of the entity the repository manages
- * @param <D>  the media date type
  */
-public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends Temporal>
-        implements Comparable<AbstractOrgService<T, ID, D>>, Org<T, ID, D> {
+public abstract class AbstractOrgService<T extends Media<ID>, ID>
+        implements Comparable<AbstractOrgService<T, ID>>, Org<T, ID> {
 
     protected static final String EN = "en";
 
@@ -128,7 +127,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
             e("KOGL", "Q12584618"), e("NOIRLab", "Q20007257"), e("ESA-Hubble", "Q20007257"),
             e("ESA-Webb", "Q20007257"));
 
-    protected final MediaRepository<T, ID, D> repository;
+    protected final MediaRepository<T, ID> repository;
 
     private final String id;
 
@@ -185,7 +184,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     private UploadMode uploadMode;
 
-    protected AbstractOrgService(MediaRepository<T, ID, D> repository, String id) {
+    protected AbstractOrgService(MediaRepository<T, ID> repository, String id) {
         this.repository = Objects.requireNonNull(repository);
         this.id = Objects.requireNonNull(id);
     }
@@ -828,7 +827,8 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
                     .append(desc.getKey())
                     .append("\n=={{int:license-header}}==\n");
             findLicenceTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
-            commonsService.cleanupCategories(findCategories(media, metadata, true), media.getDate())
+            commonsService
+                    .cleanupCategories(findCategories(media, metadata, true), media.getBestTemporal())
                     .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
             return Pair.of(sb.toString(), getLegends(media, desc.getValue()));
         } catch (IOException e) {
@@ -978,12 +978,16 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
 
     protected abstract String getAuthor(T media) throws MalformedURLException;
 
-    protected Optional<Temporal> getCreationDate(T media) {
-        return Optional.empty();
+    protected final Optional<Temporal> getCreationDate(T media) {
+        return Optional.<Temporal>ofNullable(media.getCreationDateTime())
+                .or(() -> Optional.<Temporal>ofNullable(media.getCreationDate()))
+                .or(() -> Optional.<Temporal>ofNullable(media.getYear()));
     }
 
     protected Optional<Temporal> getUploadDate(T media) {
-        return Optional.empty();
+        return Optional.<Temporal>ofNullable(media.getPublicationDateTime())
+                .or(() -> Optional.<Temporal>ofNullable(media.getPublicationDate()))
+                .or(() -> Optional.<Temporal>ofNullable(media.getYear()));
     }
 
     protected Optional<String> getPermission(T media) {
@@ -1076,7 +1080,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
         return Optional.empty();
     }
 
-    protected Set<String> findCategoriesForEarthObservationImage(Media<?, ?> image, UnaryOperator<String> categorizer,
+    protected Set<String> findCategoriesForEarthObservationImage(Media<?> image, UnaryOperator<String> categorizer,
             String defaultCat) {
         Set<String> result = new TreeSet<>();
         for (String targetOrSubject : satellitePicturesCategories) {
@@ -1247,7 +1251,7 @@ public abstract class AbstractOrgService<T extends Media<ID, D>, ID, D extends T
     }
 
     @Override
-    public int compareTo(AbstractOrgService<T, ID, D> o) {
+    public int compareTo(AbstractOrgService<T, ID> o) {
         return getName().compareTo(o.getName());
     }
 

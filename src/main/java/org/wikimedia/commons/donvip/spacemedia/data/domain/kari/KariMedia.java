@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.kari;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-public class KariMedia extends SingleFileMedia<Integer, LocalDate> {
+public class KariMedia extends SingleFileMedia<Integer> {
 
     private static final Pattern ID_REGEX = Pattern.compile("P_[^_]*_([^_]*)_(\\d{2})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})",
             Pattern.CASE_INSENSITIVE);
@@ -29,8 +28,6 @@ public class KariMedia extends SingleFileMedia<Integer, LocalDate> {
 
     @JsonProperty("kari_id")
     private String kariId;
-
-    private LocalDate date;
 
     @Override
     public Integer getId() {
@@ -51,21 +48,12 @@ public class KariMedia extends SingleFileMedia<Integer, LocalDate> {
     }
 
     @Override
-    public LocalDate getDate() {
-        return date;
-    }
-
-    @Override
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
     @Transient
     public LocalDate getCreationDate() {
         Matcher m = ID_REGEX.matcher(kariId);
         if (m.matches()) {
             int year = 2000 + Integer.parseInt(m.group(2));
-            if (year > LocalDateTime.now().getYear()) {
+            if (year > LocalDate.now().getYear()) {
                 year -= 100;
             }
             return LocalDate.of(year, Integer.parseInt(m.group(3)), Integer.parseInt(m.group(4)));
@@ -83,7 +71,6 @@ public class KariMedia extends SingleFileMedia<Integer, LocalDate> {
     public String toString() {
         return "KariMedia [id=" + id + ", "
                 + (title != null ? "title=" + title + ", " : "") + (kariId != null ? "kariId=" + kariId + ", " : "")
-                + (date != null ? "date=" + date + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + "metadata=" + getMetadata() + "]";
     }

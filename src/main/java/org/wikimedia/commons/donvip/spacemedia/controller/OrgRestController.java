@@ -6,7 +6,6 @@ import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDe
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -39,16 +38,15 @@ import org.wikimedia.commons.donvip.spacemedia.service.orgs.Org;
  *
  * @param <T>  the media type the repository manages
  * @param <ID> the type of the id of the entity the repository manages
- * @param <D>  the media date type
  */
-public abstract class OrgRestController<T extends Media<ID, D>, ID, D extends Temporal> {
+public abstract class OrgRestController<T extends Media<ID>, ID> {
 
     @Autowired
     private AsyncOrgUpdaterService async;
 
-    protected final Org<T, ID, D> service;
+    protected final Org<T, ID> service;
 
-    protected OrgRestController(AbstractOrgService<T, ID, D> service) {
+    protected OrgRestController(AbstractOrgService<T, ID> service) {
         this.service = Objects.requireNonNull(service);
     }
 
@@ -130,7 +128,7 @@ public abstract class OrgRestController<T extends Media<ID, D>, ID, D extends Te
     }
 
     @GetMapping("/uploadbydate/{date}")
-    public final List<T> uploadByDate(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date)
+    public final List<T> uploadByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date)
             throws UploadException {
         return service.uploadAndSaveByDate(date, true);
     }

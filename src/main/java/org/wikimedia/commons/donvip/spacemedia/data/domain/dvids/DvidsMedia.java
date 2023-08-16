@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "id", visible = true)
 @JsonTypeIdResolver(value = DvidsMediaTypeIdResolver.class)
-public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, ZonedDateTime> implements WithKeywords {
+public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId> implements WithKeywords {
 
     /**
      * Specific document id to retrieve for search.
@@ -45,19 +45,6 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, Zone
     @Embedded
     @DocumentId(identifierBridge = @IdentifierBridgeRef(type = DvidsMediaTypedIdBridge.class))
     private DvidsMediaTypedId id;
-
-    /**
-     * Date media was acquired by shooter/producer. Date in ISO8601 format.
-     */
-    @Column(nullable = false)
-    private ZonedDateTime date;
-
-    /**
-     * Date/time item was published at DVIDS. Date in ISO8601 format.
-     */
-    @JsonProperty("date_published")
-    @Column(name = "date_published", nullable = false)
-    private ZonedDateTime datePublished;
 
     /**
      * Comma separated list of keywords.
@@ -152,22 +139,40 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, Zone
         return List.of(getIdUsedInOrg(), getVirin());
     }
 
+    /**
+     * Date media was acquired by shooter/producer. Date in ISO8601 format.
+     */
     @Override
-    public ZonedDateTime getDate() {
-        return date;
+    @JsonProperty("date")
+    public ZonedDateTime getCreationDateTime() {
+        return super.getCreationDateTime();
     }
 
+    /**
+     * Date media was acquired by shooter/producer. Date in ISO8601 format.
+     */
     @Override
-    public void setDate(ZonedDateTime date) {
-        this.date = date;
+    @JsonProperty("date")
+    public void setCreationDateTime(ZonedDateTime creationDateTime) {
+        super.setCreationDateTime(creationDateTime);
     }
 
-    public ZonedDateTime getDatePublished() {
-        return datePublished;
+    /**
+     * Date/time item was published at DVIDS. Date in ISO8601 format.
+     */
+    @Override
+    @JsonProperty("date_published")
+    public ZonedDateTime getPublicationDateTime() {
+        return super.getPublicationDateTime();
     }
 
-    public void setDatePublished(ZonedDateTime datePublished) {
-        this.datePublished = datePublished;
+    /**
+     * Date/time item was published at DVIDS. Date in ISO8601 format.
+     */
+    @Override
+    @JsonProperty("date_published")
+    public void setPublicationDateTime(ZonedDateTime publicationDateTime) {
+        super.setPublicationDateTime(publicationDateTime);
     }
 
     @Override
@@ -271,8 +276,7 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, Zone
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode()
-                + Objects.hash(date, datePublished, description, category, keywords, id, title);
+        return 31 * super.hashCode() + Objects.hash(description, category, keywords, id, title);
     }
 
     @Override
@@ -282,9 +286,8 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, Zone
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         DvidsMedia other = (DvidsMedia) obj;
-        return Objects.equals(date, other.date) && Objects.equals(description, other.description)
+        return Objects.equals(description, other.description)
                 && Objects.equals(branch, other.branch)
-                && Objects.equals(datePublished, other.datePublished)
                 && Objects.equals(category, other.category)
                 && Objects.equals(keywords, other.keywords)
                 && Objects.equals(id, other.id) && Objects.equals(title, other.title);
@@ -293,8 +296,7 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, Zone
     @Override
     public String toString() {
         return "DvidsMedia [" + (id != null ? "id=" + id + ", " : "")
-                + (title != null ? "title=" + title + ", " : "") + (datePublished != null ? "datePublished=" + datePublished + ", " : "")
-                + (date != null ? "date=" + date + ", " : "")
+                + (title != null ? "title=" + title + ", " : "")
                 + (category != null ? "category=" + category + ", " : "")
                 + (getMetadata() != null ? "metadata=" + getMetadata() : "") + "]";
     }
@@ -331,7 +333,6 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId, Zone
     public DvidsMedia copyDataFrom(DvidsMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         setBranch(mediaFromApi.getBranch());
-        setDatePublished(mediaFromApi.getDatePublished());
         setCategory(mediaFromApi.getCategory());
         setKeywords(mediaFromApi.getKeywords());
         setRating(mediaFromApi.getRating());

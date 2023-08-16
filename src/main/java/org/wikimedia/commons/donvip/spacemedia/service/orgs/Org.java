@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
-public interface Org<T extends Media<ID, D>, ID, D extends Temporal> {
+public interface Org<T extends Media<ID>, ID> {
 
     void evictCaches();
 

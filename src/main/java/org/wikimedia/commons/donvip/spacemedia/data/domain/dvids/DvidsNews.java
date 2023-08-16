@@ -13,8 +13,6 @@ public class DvidsNews extends DvidsMedia {
         return "DvidsNews ["
                 + (getId() != null ? "id=" + getId() + ", " : "")
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")
-                + (getDatePublished() != null ? "datePublished=" + getDatePublished() + ", " : "")
-                + (getDate() != null ? "date=" + getDate() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() : "") + "]";
     }
 }

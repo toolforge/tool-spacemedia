@@ -24,11 +24,11 @@ public class SpacemediaOrgStsciUpdateJobApplication extends AbstractSpacemediaOr
     }
 
     @Bean
-    public Org<?, ?, ?> org(@Value("${org}") String org, @Value("${search.link}") String searchLink,
+    public Org<?, ?> org(@Value("${org}") String org, @Value("${search.link}") String searchLink,
             @Value("${detail.link}") String detailLink, @Autowired StsciMediaRepository repository,
             ApplicationContext context)
             throws ReflectiveOperationException {
-        return (Org<?, ?, ?>) Class.forName(org)
+        return (Org<?, ?>) Class.forName(org)
                 .getConstructor(StsciMediaRepository.class, String.class, String.class)
                 .newInstance(repository, searchLink, detailLink);
     }
