@@ -130,12 +130,34 @@ public abstract class OrgRestController<T extends Media<ID>, ID> {
     @GetMapping("/uploadbydate/{date}")
     public final List<T> uploadByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date)
             throws UploadException {
-        return service.uploadAndSaveByDate(date, true);
+        return service.uploadAndSaveByDate(date, x -> true, true);
+    }
+
+    @GetMapping("/uploadimagesbydate/{date}")
+    public final List<T> uploadImagesByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date)
+            throws UploadException {
+        return service.uploadAndSaveByDate(date, Media::isImage, true);
+    }
+
+    @GetMapping("/uploadvideosbydate/{date}")
+    public final List<T> uploadVideosByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date)
+            throws UploadException {
+        return service.uploadAndSaveByDate(date, Media::isVideo, true);
     }
 
     @GetMapping("/uploadbytitle/{title}")
     public final List<T> uploadByTitle(@PathVariable String title) throws UploadException {
-        return service.uploadAndSaveByTitle(title, true);
+        return service.uploadAndSaveByTitle(title, x -> true, true);
+    }
+
+    @GetMapping("/uploadimagesbytitle/{title}")
+    public final List<T> uploadImagesByTitle(@PathVariable String title) throws UploadException {
+        return service.uploadAndSaveByTitle(title, Media::isImage, true);
+    }
+
+    @GetMapping("/uploadvideosbytitle/{title}")
+    public final List<T> uploadVideosByTitle(@PathVariable String title) throws UploadException {
+        return service.uploadAndSaveByTitle(title, Media::isVideo, true);
     }
 
     @GetMapping("/uploadmedia/**")

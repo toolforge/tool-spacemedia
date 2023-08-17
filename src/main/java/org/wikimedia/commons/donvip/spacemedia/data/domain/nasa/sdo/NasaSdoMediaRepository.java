@@ -5,6 +5,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -114,7 +115,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
             on (nasa_sdo_media.id = nasa_sdo_media_metadata.nasa_sdo_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
             where (ignored is null or ignored is false) and DATE(creation_date_time) = ?1 and not exists elements (md.commonsFileNames)
             """, nativeQuery = true)
-    List<NasaSdoMedia> findMissingByDate(LocalDate date);
+    Stream<NasaSdoMedia> findMissingByDate(LocalDate date);
 
     @Override
     @Cacheable("nasaSdoFindByPhashNotNull")

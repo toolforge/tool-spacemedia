@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -93,9 +94,9 @@ public interface Org<T extends Media<ID>, ID> {
 
     T uploadAndSaveById(String id, boolean isManual) throws UploadException, TooManyResultsException;
 
-    List<T> uploadAndSaveByDate(LocalDate date, boolean isManual) throws UploadException;
+    List<T> uploadAndSaveByDate(LocalDate date, Predicate<Media<?>> predicate, boolean isManual) throws UploadException;
 
-    List<T> uploadAndSaveByTitle(String title, boolean isManual) throws UploadException;
+    List<T> uploadAndSaveByTitle(String title, Predicate<Media<?>> predicate, boolean isManual) throws UploadException;
 
     Triple<T, Collection<FileMetadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
             throws UploadException;

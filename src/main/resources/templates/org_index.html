@@ -49,13 +49,25 @@
 		        </td>
 		        <td>
 		          <a th:text="${media.title}"></a>
-                  <a th:href="@{/{id}/rest/uploadbytitle/{title}(id=${org.id},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and ('missing' == ${tab} or 'missing/images' == ${tab} or 'missing/videos' == ${tab})">
+                  <a th:href="@{/{id}/rest/uploadbytitle/{title}(id=${org.id},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.title}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/uploadimagesbytitle/{title}(id=${org.id},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/images' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.title}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/uploadvideosbytitle/{title}(id=${org.id},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.title}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
 		        </td>
 		        <td>
 		          <a th:text="${media.localDate}"></a>
-                  <a th:href="@{/{id}/rest/uploadbydate/{date}(id=${org.id},date=${media.localDate})}" target="_blank" th:if="${org.uploadEnabled} and ('missing' == ${tab} or 'missing/images' == ${tab} or 'missing/videos' == ${tab})">
+                  <a th:href="@{/{id}/rest/uploadbydate/{date}(id=${org.id},date=${media.localDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.localDate}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/uploadimagesbydate/{date}(id=${org.id},date=${media.localDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/images' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.localDate}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/uploadvideosbydate/{date}(id=${org.id},date=${media.localDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.localDate}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
 		        </td>

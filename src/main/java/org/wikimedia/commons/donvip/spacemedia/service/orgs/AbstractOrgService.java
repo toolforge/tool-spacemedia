@@ -40,9 +40,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -623,25 +625,26 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
     }
 
     @Override
-    public List<T> uploadAndSaveByDate(LocalDate date, boolean isManual) throws UploadException {
-        return uploadAndSaveMedias(repository.findMissingByDate(date), isManual);
+    public List<T> uploadAndSaveByDate(LocalDate date, Predicate<Media<?>> predicate, boolean isManual)
+            throws UploadException {
+        return uploadAndSaveMedias(repository.findMissingByDate(date).filter(predicate), isManual);
     }
 
     @Override
-    public List<T> uploadAndSaveByTitle(String title, boolean isManual) throws UploadException {
-        return uploadAndSaveMedias(repository.findMissingByTitle(title), isManual);
+    public List<T> uploadAndSaveByTitle(String title, Predicate<Media<?>> predicate, boolean isManual)
+            throws UploadException {
+        return uploadAndSaveMedias(repository.findMissingByTitle(title).filter(predicate), isManual);
     }
 
-    private List<T> uploadAndSaveMedias(List<T> medias, boolean isManual) {
-        List<T> result = new ArrayList<>();
-        for (T media : medias) {
+    private List<T> uploadAndSaveMedias(Stream<T> medias, boolean isManual) {
+        return medias.map(media -> {
             try {
-                result.add(saveMedia(upload(media, false, isManual).getLeft()));
+                return saveMedia(upload(media, false, isManual).getLeft());
             } catch (UploadException e) {
                 LOGGER.error("Failed to upload {}", media, e);
+                return null;
             }
-        }
-        return result;
+        }).filter(Objects::nonNull).toList();
     }
 
     protected final Triple<T, Collection<FileMetadata>, Integer> uploadWrapped(T media) {
