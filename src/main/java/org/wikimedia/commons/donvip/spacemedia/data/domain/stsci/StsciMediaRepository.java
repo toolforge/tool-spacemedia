@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.stsci;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -10,7 +11,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface StsciMediaRepository extends MediaRepository<StsciMedia, String> {
@@ -19,7 +19,7 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia, String
     @CacheEvict(allEntries = true, cacheNames = {
             "stsciCount", "stsciCountIgnored", "stsciCountMissing", "stsciCountMissingImages",
             "stsciCountMissingImagesByMission", "stsciCountMissingVideos", "stsciCountMissingVideosByMission",
-            "stsciCountUploaded", "stsciFindByPhashNotNull" })
+            "stsciCountUploaded" })
     @interface CacheEvictStsciAll {
 
     }
@@ -109,6 +109,12 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia, String
         return Page.empty();
     }
 
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.mission = ?1 and (m.creationDate = ?2 or m.publicationDate = ?2)")
+    List<StsciMedia> findMissingInCommonsByDate(String mission, LocalDate date);
+
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.mission = ?1 and m.title = ?2")
+    List<StsciMedia> findMissingInCommonsByTitle(String mission, String title);
+
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where m.mission = ?1 and exists elements (md.commonsFileNames)")
     List<StsciMedia> findUploadedToCommons(String mission);
 
@@ -117,10 +123,6 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia, String
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where m.mission = ?1 and size (md.commonsFileNames) >= 2")
     List<StsciMedia> findDuplicateInCommons(String mission);
-
-    @Override
-    @Cacheable("stsciFindByPhashNotNull")
-    List<MediaProjection<String>> findByMetadata_PhashNotNull();
 
     Page<StsciMedia> findByMetadata_PhashNotNullAndMission(String mission, Pageable page);
 

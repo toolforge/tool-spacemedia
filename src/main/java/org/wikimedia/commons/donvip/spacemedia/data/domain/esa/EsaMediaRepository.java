@@ -3,14 +3,12 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.esa;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface EsaMediaRepository extends MediaRepository<EsaMedia, Integer> {
@@ -18,7 +16,7 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia, Integer> {
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "esaCount", "esaCountIgnored", "esaCountMissing", "esaCountMissingImages", "esaCountMissingVideos",
-            "esaCountUploaded", "esaFindByPhashNotNull" })
+            "esaCountUploaded" })
     @interface CacheEvictEsaAll {
 
     }
@@ -62,10 +60,6 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia, Integer> {
     // FIND
 
     Optional<EsaMedia> findByUrl(URL mediaUrl);
-
-    @Override
-    @Cacheable("esaFindByPhashNotNull")
-    List<MediaProjection<Integer>> findByMetadata_PhashNotNull();
 
     @Override
     default Page<EsaMedia> findMissingImagesInCommons(Pageable page) {

@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -145,10 +144,10 @@ public interface MediaRepository<T extends Media<ID>, ID>
     List<T> findByMetadata_Sha1(String sha1);
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and (m.creationDate = ?1 or m.publicationDate = ?1) and not exists elements (md.commonsFileNames)")
-    Stream<T> findMissingByDate(LocalDate date);
+    List<T> findMissingByDate(LocalDate date);
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and m.title = ?1 and not exists elements (md.commonsFileNames)")
-    Stream<T> findMissingByTitle(String title);
+    List<T> findMissingByTitle(String title);
 
     List<T> findByIgnoredTrue();
 

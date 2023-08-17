@@ -2,14 +2,12 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 
@@ -18,7 +16,7 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "nasaAsterCount", "nasaAsterCountIgnored", "nasaAsterCountMissing", "nasaAsterCountMissingImages",
-            "nasaAsterCountUploaded", "nasaAsterFindByPhashNotNull" })
+            "nasaAsterCountUploaded" })
     @interface CacheEvictNasaAsterAll {
 
     }
@@ -76,10 +74,6 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
     default Page<NasaAsterMedia> findMissingVideosInCommons(Pageable page) {
         return findMissingInCommonsByType(NasaMediaType.video, page);
     }
-
-    @Override
-    @Cacheable("nasaAsterFindByPhashNotNull")
-    List<MediaProjection<String>> findByMetadata_PhashNotNull();
 
     // SAVE
 

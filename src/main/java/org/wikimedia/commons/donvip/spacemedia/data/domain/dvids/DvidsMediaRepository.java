@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -11,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaRepository<T, DvidsMediaTypedId> {
@@ -20,8 +20,8 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     @CacheEvict(allEntries = true, cacheNames = { "dvidsCount", "dvidsCountByUnit", "dvidsCountIgnored", "dvidsCountIgnoredByUnit",
             "dvidsCountMissing", "dvidsCountMissingImages", "dvidsCountMissingVideos", "dvidsCountMissingImagesByUnit",
             "dvidsCountMissingVideosByUnit", "dvidsCountMissingByUnit", "dvidsCountMissingByType",
-            "dvidsCountUploaded", "dvidsCountUploadedByUnit",
-            "dvidsCountPhashNotNull", "dvidsCountPhashNotNullByAccount", "dvidsFindByPhashNotNull" })
+            "dvidsCountUploaded", "dvidsCountUploadedByUnit", "dvidsCountPhashNotNull",
+            "dvidsCountPhashNotNullByAccount" })
     @interface CacheEvictDvidsAll {
 
     }
@@ -150,15 +150,17 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
     Page<T> findMissingInCommonsByUnit(Set<String> units, Pageable page);
 
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1 and (m.creationDate = ?2 or m.publicationDate = ?2)")
+    List<T> findMissingInCommonsByDate(Set<String> units, LocalDate date);
+
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1 and m.title = ?2")
+    List<T> findMissingInCommonsByTitle(Set<String> units, String title);
+
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
     List<T> findUploadedToCommons(Set<String> units);
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
     Page<T> findUploadedToCommons(Set<String> units, Pageable page);
-
-    @Override
-    @Cacheable("dvidsFindByPhashNotNull")
-    List<MediaProjection<DvidsMediaTypedId>> findByMetadata_PhashNotNull();
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where md.phash is not null and m.unit in ?1")
     Page<T> findByMetadata_PhashNotNull(Set<String> units, Pageable page);

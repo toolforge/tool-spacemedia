@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -261,6 +262,16 @@ public abstract class AbstractOrgBoxService
     @Override
     public Page<BoxMedia> listMissingVideos(Pageable page) {
         return mediaRepository.findMissingVideosInCommons(shares(appShares), page);
+    }
+
+    @Override
+    public List<BoxMedia> listMissingMediaByDate(LocalDate date) {
+        return mediaRepository.findMissingInCommonsByShareAndDate(shares(appShares), date);
+    }
+
+    @Override
+    public List<BoxMedia> listMissingMediaByTitle(String title) {
+        return mediaRepository.findMissingInCommonsByShareAndTitle(shares(appShares), title);
     }
 
     @Override

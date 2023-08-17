@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.modis;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,7 +10,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface NasaModisMediaRepository extends MediaRepository<NasaModisMedia, String> {
@@ -19,7 +17,7 @@ public interface NasaModisMediaRepository extends MediaRepository<NasaModisMedia
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "nasaModisCount", "nasaModisCountIgnored", "nasaModisCountMissing", "nasaModisCountMissingImages",
-            "nasaModisCountUploaded", "nasaModisFindByPhashNotNull" })
+            "nasaModisCountUploaded" })
     @interface CacheEvictNasaModisAll {
 
     }
@@ -71,10 +69,6 @@ public interface NasaModisMediaRepository extends MediaRepository<NasaModisMedia
     default Page<NasaModisMedia> findMissingVideosInCommons(Pageable page) {
         return Page.empty();
     }
-
-    @Override
-    @Cacheable("nasaModisFindByPhashNotNull")
-    List<MediaProjection<String>> findByMetadata_PhashNotNull();
 
     // SAVE
 

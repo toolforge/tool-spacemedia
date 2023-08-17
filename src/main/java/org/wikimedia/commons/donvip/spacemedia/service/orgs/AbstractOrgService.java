@@ -286,6 +286,16 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
     }
 
     @Override
+    public List<T> listMissingMediaByDate(LocalDate date) {
+        return repository.findMissingByDate(date);
+    }
+
+    @Override
+    public List<T> listMissingMediaByTitle(String title) {
+        return repository.findMissingByTitle(title);
+    }
+
+    @Override
     public Page<T> listHashedMedia(Pageable page) {
         return repository.findByMetadata_PhashNotNull(page);
     }
@@ -627,13 +637,13 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
     @Override
     public List<T> uploadAndSaveByDate(LocalDate date, Predicate<Media<?>> predicate, boolean isManual)
             throws UploadException {
-        return uploadAndSaveMedias(repository.findMissingByDate(date).filter(predicate), isManual);
+        return uploadAndSaveMedias(listMissingMediaByDate(date).stream().filter(predicate), isManual);
     }
 
     @Override
     public List<T> uploadAndSaveByTitle(String title, Predicate<Media<?>> predicate, boolean isManual)
             throws UploadException {
-        return uploadAndSaveMedias(repository.findMissingByTitle(title).filter(predicate), isManual);
+        return uploadAndSaveMedias(listMissingMediaByTitle(title).stream().filter(predicate), isManual);
     }
 
     private List<T> uploadAndSaveMedias(Stream<T> medias, boolean isManual) {

@@ -5,7 +5,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 
@@ -22,7 +20,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "nasaSdoCount", "nasaSdoCountIgnored", "nasaSdoCountMissing", "nasaSdoCountMissingImages",
-            "nasaSdoCountMissingVideos", "nasaSdoCountUploaded", "nasaSdoFindByPhashNotNull" })
+            "nasaSdoCountMissingVideos", "nasaSdoCountUploaded" })
     @interface CacheEvictNasaSdoAll {
 
     }
@@ -115,11 +113,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
             on (nasa_sdo_media.id = nasa_sdo_media_metadata.nasa_sdo_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
             where (ignored is null or ignored is false) and DATE(creation_date_time) = ?1 and not exists elements (md.commonsFileNames)
             """, nativeQuery = true)
-    Stream<NasaSdoMedia> findMissingByDate(LocalDate date);
-
-    @Override
-    @Cacheable("nasaSdoFindByPhashNotNull")
-    List<MediaProjection<String>> findByMetadata_PhashNotNull();
+    List<NasaSdoMedia> findMissingByDate(LocalDate date);
 
     @Query(value = """
             select *

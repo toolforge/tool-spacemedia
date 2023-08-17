@@ -282,6 +282,16 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     }
 
     @Override
+    public List<StsciMedia> listMissingMediaByDate(LocalDate date) {
+        return stsciRepository.findMissingInCommonsByDate(mission, date);
+    }
+
+    @Override
+    public List<StsciMedia> listMissingMediaByTitle(String title) {
+        return stsciRepository.findMissingInCommonsByTitle(mission, title);
+    }
+
+    @Override
     public final Page<StsciMedia> listHashedMedia(Pageable page) {
         return stsciRepository.findByMetadata_PhashNotNullAndMission(mission, page);
     }

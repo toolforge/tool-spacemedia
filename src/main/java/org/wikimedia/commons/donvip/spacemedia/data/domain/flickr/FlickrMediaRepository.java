@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -11,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long> {
@@ -22,7 +22,7 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
             "flickrCountMissingByAccount", "flickrCountMissingByType", "flickrCountMissingByTypeAndAccount",
             "flickrCountMissingImages", "flickrCountMissingVideos", "flickrCountMissingImagesByAccount",
             "flickrCountMissingVideosByAccount", "flickrCountUploaded", "flickrCountUploadedByAccount",
-            "flickrCountPhashNotNull", "flickrCountPhashNotNullByAccount", "flickrFindByPhashNotNull" })
+            "flickrCountPhashNotNull", "flickrCountPhashNotNullByAccount" })
     @interface CacheEvictFlickrAll {
 
     }
@@ -148,6 +148,12 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
         return findMissingInCommons(FlickrMediaType.video, flickrAccounts, page);
     }
 
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.pathAlias in ?1 and (m.creationDate = ?2 or m.publicationDate = ?2)")
+    List<FlickrMedia> findMissingInCommonsByDate(Set<String> flickrAccounts, LocalDate date);
+
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.pathAlias in ?1 and m.title = ?2")
+    List<FlickrMedia> findMissingInCommonsByTitle(Set<String> flickrAccounts, String title);
+
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.pathAlias in ?1")
     List<FlickrMedia> findUploadedToCommons(Set<String> flickrAccounts);
 
@@ -156,10 +162,6 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.pathAlias in ?1")
     List<FlickrMedia> findDuplicateInCommons(Set<String> flickrAccounts);
-
-    @Override
-    @Cacheable("flickrFindByPhashNotNull")
-    List<MediaProjection<Long>> findByMetadata_PhashNotNull();
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where md.phash is not null and m.pathAlias in ?1")
     Page<FlickrMedia> findByMetadata_PhashNotNull(Set<String> flickrAccounts, Pageable page);

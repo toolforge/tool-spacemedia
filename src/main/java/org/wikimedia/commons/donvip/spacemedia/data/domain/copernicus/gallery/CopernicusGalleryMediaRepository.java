@@ -2,20 +2,18 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface CopernicusGalleryMediaRepository extends MediaRepository<CopernicusGalleryMedia, String> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "copGalCount", "copGalCountIgnored", "copGalCountMissing",
-            "copGalCountMissingImages", "copGalCountMissingVideos", "copGalCountUploaded", "copGalFindByPhashNotNull" })
+            "copGalCountMissingImages", "copGalCountMissingVideos", "copGalCountUploaded" })
     @interface CacheEvictCopernicusGalleryAll {
 
     }
@@ -57,10 +55,6 @@ public interface CopernicusGalleryMediaRepository extends MediaRepository<Copern
     long countUploadedToCommons();
 
     // FIND
-
-    @Override
-    @Cacheable("copGalFindByPhashNotNull")
-    List<MediaProjection<String>> findByMetadata_PhashNotNull();
 
     @Override
     default Page<CopernicusGalleryMedia> findMissingImagesInCommons(Pageable page) {

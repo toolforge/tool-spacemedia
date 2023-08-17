@@ -50,6 +50,10 @@ public interface Org<T extends Media<ID>, ID> {
 
     Page<T> listMissingVideos(Pageable page);
 
+    List<T> listMissingMediaByDate(LocalDate date);
+
+    List<T> listMissingMediaByTitle(String title);
+
     Page<T> listHashedMedia(Pageable page);
 
     List<T> listUploadedMedia();

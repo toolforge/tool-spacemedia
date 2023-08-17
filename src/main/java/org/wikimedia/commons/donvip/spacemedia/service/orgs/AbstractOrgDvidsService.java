@@ -536,6 +536,16 @@ public abstract class AbstractOrgDvidsService
     }
 
     @Override
+    public List<DvidsMedia> listMissingMediaByDate(LocalDate date) {
+        return mediaRepository.findMissingInCommonsByDate(units, date);
+    }
+
+    @Override
+    public List<DvidsMedia> listMissingMediaByTitle(String title) {
+        return mediaRepository.findMissingInCommonsByTitle(units, title);
+    }
+
+    @Override
     public final Page<DvidsMedia> listHashedMedia(Pageable page) {
         return mediaRepository.findByMetadata_PhashNotNull(units, page);
     }

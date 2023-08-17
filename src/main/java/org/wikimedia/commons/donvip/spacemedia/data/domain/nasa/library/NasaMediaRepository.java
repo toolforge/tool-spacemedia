@@ -10,7 +10,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepository<T, String> {
@@ -21,7 +20,7 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
             "nasaCountMissingByCenter", "nasaCountMissingImages", "nasaCountMissingImagesByCenter",
             "nasaCountMissingVideos", "nasaCountMissingVideosByCenter",
             "nasaCountUploaded", "nasaCountUploadedByCenter", "nasaCountPhashNotNull",
-            "nasaCountPhashNotNullByCenter", "nasaCenters", "nasaFindByPhashNotNull" })
+            "nasaCountPhashNotNullByCenter", "nasaCenters" })
     @interface CacheEvictNasaAll {
 
     }
@@ -134,10 +133,6 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.center = ?1")
     List<T> findUploadedToCommonsByCenter(String center);
-
-    @Override
-    @Cacheable("nasaFindByPhashNotNull")
-    List<MediaProjection<String>> findByMetadata_PhashNotNull();
 
     // SAVE
 

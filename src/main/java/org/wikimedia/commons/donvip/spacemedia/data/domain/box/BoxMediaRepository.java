@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.box;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -11,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface BoxMediaRepository extends MediaRepository<BoxMedia, BoxMediaId> {
@@ -20,8 +20,7 @@ public interface BoxMediaRepository extends MediaRepository<BoxMedia, BoxMediaId
     @CacheEvict(allEntries = true, cacheNames = { "boxCount", "boxCountByShare", "boxCountIgnored",
             "boxCountIgnoredByShare", "boxCountMissing", "boxCountMissingImages", "boxCountMissingVideos",
             "boxCountMissingImagesByShare", "boxCountMissingVideosByShare", "boxCountMissingByShare",
-            "boxCountUploaded", "boxCountUploadedByShare", "boxCountPhashNotNull", "boxCountPhashNotNullByShare",
-            "boxFindByPhashNotNull" })
+            "boxCountUploaded", "boxCountUploadedByShare", "boxCountPhashNotNull", "boxCountPhashNotNullByShare" })
     @interface CacheEvictBoxAll {
 
     }
@@ -129,15 +128,17 @@ public interface BoxMediaRepository extends MediaRepository<BoxMedia, BoxMediaId
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.share in ?1")
     Page<BoxMedia> findMissingInCommonsByShare(Set<String> shares, Pageable page);
 
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.share in ?1 and (m.creationDate = ?2 or m.publicationDate = ?2)")
+    List<BoxMedia> findMissingInCommonsByShareAndDate(Set<String> shares, LocalDate date);
+
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.share in ?1 and m.title = ?2")
+    List<BoxMedia> findMissingInCommonsByShareAndTitle(Set<String> shares, String title);
+
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.share in ?1")
     List<BoxMedia> findUploadedToCommons(Set<String> shares);
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.share in ?1")
     Page<BoxMedia> findUploadedToCommons(Set<String> shares, Pageable page);
-
-    @Override
-    @Cacheable("boxFindByPhashNotNull")
-    List<MediaProjection<BoxMediaId>> findByMetadata_PhashNotNull();
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.share in ?1")
     Page<BoxMedia> findByMetadata_PhashNotNull(Set<String> shares, Pageable page);

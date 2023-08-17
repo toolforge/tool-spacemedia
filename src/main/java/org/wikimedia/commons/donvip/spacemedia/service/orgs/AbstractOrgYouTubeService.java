@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -29,6 +30,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -125,7 +128,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         } catch (HttpClientErrorException e) {
             LOGGER.error("HttpClientError while fetching YouTube videos from channel {}: {}", channelId, e.getMessage());
             if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                processYouTubeVideos(youtubeRepository.findByChannelId(channelId));
+                processYouTubeVideos(youtubeRepository.findByChannelIdIn(Set.of(channelId)));
             }
         } catch (IOException | RuntimeException e) {
             LOGGER.error("Error while fetching YouTube videos from channel " + channelId, e);
@@ -275,5 +278,110 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         result.add("YouTube CC-BY |1= " + video.getChannelTitle());
         result.add("LicenseReview");
         return result;
+    }
+
+    @Override
+    public final long countAllMedia() {
+        return youtubeRepository.count(youtubeChannels);
+    }
+
+    @Override
+    public final long countIgnored() {
+        return youtubeRepository.countByIgnoredTrue(youtubeChannels);
+    }
+
+    @Override
+    public final long countMissingMedia() {
+        return youtubeRepository.countMissingInCommons(youtubeChannels);
+    }
+
+    @Override
+    public final long countMissingImages() {
+        return 0;
+    }
+
+    @Override
+    public final long countMissingVideos() {
+        return countMissingMedia();
+    }
+
+    @Override
+    public final long countPerceptualHashes() {
+        return youtubeRepository.countByMetadata_PhashNotNull(youtubeChannels);
+    }
+
+    @Override
+    public final long countUploadedMedia() {
+        return youtubeRepository.countUploadedToCommons(youtubeChannels);
+    }
+
+    @Override
+    public final Iterable<YouTubeVideo> listAllMedia() {
+        return youtubeRepository.findByChannelIdIn(youtubeChannels);
+    }
+
+    @Override
+    public final Page<YouTubeVideo> listAllMedia(Pageable page) {
+        return youtubeRepository.findByChannelIdIn(youtubeChannels, page);
+    }
+
+    @Override
+    public final List<YouTubeVideo> listIgnoredMedia() {
+        return youtubeRepository.findByIgnoredTrue(youtubeChannels);
+    }
+
+    @Override
+    public final Page<YouTubeVideo> listIgnoredMedia(Pageable page) {
+        return youtubeRepository.findByIgnoredTrue(youtubeChannels, page);
+    }
+
+    @Override
+    public final List<YouTubeVideo> listMissingMedia() {
+        return youtubeRepository.findMissingInCommons(youtubeChannels);
+    }
+
+    @Override
+    public final Page<YouTubeVideo> listMissingMedia(Pageable page) {
+        return youtubeRepository.findMissingInCommons(youtubeChannels, page);
+    }
+
+    @Override
+    public final Page<YouTubeVideo> listMissingImages(Pageable page) {
+        return Page.empty();
+    }
+
+    @Override
+    public final Page<YouTubeVideo> listMissingVideos(Pageable page) {
+        return listMissingMedia(page);
+    }
+
+    @Override
+    public List<YouTubeVideo> listMissingMediaByDate(LocalDate date) {
+        return youtubeRepository.findMissingInCommonsByDate(youtubeChannels, date);
+    }
+
+    @Override
+    public List<YouTubeVideo> listMissingMediaByTitle(String title) {
+        return youtubeRepository.findMissingInCommonsByTitle(youtubeChannels, title);
+    }
+
+    @Override
+    public final Page<YouTubeVideo> listHashedMedia(Pageable page) {
+        return youtubeRepository.findByMetadata_PhashNotNull(youtubeChannels, page);
+    }
+
+    @Override
+    public final List<YouTubeVideo> listUploadedMedia() {
+        return youtubeRepository.findUploadedToCommons(youtubeChannels);
+    }
+
+    @Override
+    public final Page<YouTubeVideo> listUploadedMedia(Pageable page) {
+        return youtubeRepository.findUploadedToCommons(youtubeChannels, page);
+    }
+
+    @Override
+    public final List<YouTubeVideo> listDuplicateMedia() {
+        return youtubeRepository.findDuplicateInCommons(youtubeChannels);
     }
 }

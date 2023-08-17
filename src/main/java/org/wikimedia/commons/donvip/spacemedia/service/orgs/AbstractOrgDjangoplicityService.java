@@ -713,6 +713,16 @@ public abstract class AbstractOrgDjangoplicityService
     }
 
     @Override
+    public List<DjangoplicityMedia> listMissingMediaByDate(LocalDate date) {
+        return djangoRepository.findMissingInCommonsByDate(getId(), date);
+    }
+
+    @Override
+    public List<DjangoplicityMedia> listMissingMediaByTitle(String title) {
+        return djangoRepository.findMissingInCommonsByTitle(getId(), title);
+    }
+
+    @Override
     public final Page<DjangoplicityMedia> listHashedMedia(Pageable page) {
         return djangoRepository.findByMetadata_PhashNotNull(getId(), page);
     }

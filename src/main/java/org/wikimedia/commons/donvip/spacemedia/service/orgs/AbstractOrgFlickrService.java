@@ -170,6 +170,16 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
+    public List<FlickrMedia> listMissingMediaByDate(LocalDate date) {
+        return flickrRepository.findMissingInCommonsByDate(flickrAccounts, date);
+    }
+
+    @Override
+    public List<FlickrMedia> listMissingMediaByTitle(String title) {
+        return flickrRepository.findMissingInCommonsByTitle(flickrAccounts, title);
+    }
+
+    @Override
     public final Page<FlickrMedia> listHashedMedia(Pageable page) {
         return flickrRepository.findByMetadata_PhashNotNull(flickrAccounts, page);
     }

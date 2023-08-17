@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.kari;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -10,15 +9,13 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
 public interface KariMediaRepository extends MediaRepository<KariMedia, Integer> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "kariCount", "kariCountIgnored", "kariCountMissing", "kariCountMissingImages", "kariCountUploaded",
-            "kariFindByPhashNotNull" })
+            "kariCount", "kariCountIgnored", "kariCountMissing", "kariCountMissingImages", "kariCountUploaded" })
     @interface CacheEvictKariAll {
 
     }
@@ -72,10 +69,6 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer>
     default Page<KariMedia> findMissingVideosInCommons(Pageable page) {
         return Page.empty();
     }
-
-    @Override
-    @Cacheable("kariFindByPhashNotNull")
-    List<MediaProjection<Integer>> findByMetadata_PhashNotNull();
 
     // SAVE
 
