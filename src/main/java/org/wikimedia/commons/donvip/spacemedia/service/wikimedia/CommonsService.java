@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -94,6 +95,7 @@ import org.wikidata.wdtk.datamodel.helpers.MediaInfoUpdateBuilder;
 import org.wikidata.wdtk.datamodel.helpers.StatementBuilder;
 import org.wikidata.wdtk.datamodel.helpers.StatementUpdateBuilder;
 import org.wikidata.wdtk.datamodel.helpers.TermUpdateBuilder;
+import org.wikidata.wdtk.datamodel.implementation.DataObjectFactoryImpl;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikidata.wdtk.datamodel.interfaces.MediaInfoDocument;
 import org.wikidata.wdtk.datamodel.interfaces.MediaInfoIdValue;
@@ -994,6 +996,9 @@ public class CommonsService {
                     TimeValue.CM_GREGORIAN_PRO);
         } else if (temporal instanceof Instant i) {
             return createDateValue(i.atZone(ZoneOffset.UTC));
+        } else if (temporal instanceof Year y) {
+            return new DataObjectFactoryImpl().getTimeValue(y.getValue(), (byte) 0, (byte) 0, (byte) 0, (byte) 0,
+                    (byte) 0, TimeValue.PREC_YEAR, 0, 0, 0, TimeValue.CM_GREGORIAN_PRO);
         }
         throw new UnsupportedOperationException(temporal.toString());
     }

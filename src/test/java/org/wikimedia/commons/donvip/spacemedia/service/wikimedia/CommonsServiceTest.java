@@ -10,6 +10,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.Optional;
 import java.util.Set;
 
@@ -213,6 +214,11 @@ Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a hr
         assertEquals("Air quality in South America heavily degraded by the increasing number of fires in Brazil",
                 CommonsService.normalizeFilename(
                 "Air quality in South America heavily degraded by the increasing number of fires in Brazil."));
+    }
+
+    @Test
+    void testCreateDateValue() {
+        assertNotNull(CommonsService.createDateValue(Year.of(2023)));
     }
 
     private void mockCategoryLinks() {
