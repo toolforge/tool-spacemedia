@@ -60,7 +60,7 @@ class NasaAsterServiceTest extends AbstractOrgServiceTest {
     @CsvSource({ "sark", "Madrid", "puys", "cumbrevieja", "hurricaneike", "EtnaSO2", "pakistanlake", "sangay2",
             "Hayman", "chernobyl", "Raikoke", "etnaeruption", "Sydney", "antikythera", "Singapore", "kizimen",
             "uzbekistan", "Eyjafyallajokull", "gdem", "surfire", "Anatahan", "zaca", "tibesti", "monument", "horn",
-            "topanga", "msh", "aceh", "Hawaii", "Isabel", "AspenFire" })
+            "topanga", "msh", "aceh", "Hawaii", "Isabel", "AspenFire", "Vegas" })
     void testParseHtmlOneImage(String id) throws Exception {
         basicChecks(id, 1);
     }

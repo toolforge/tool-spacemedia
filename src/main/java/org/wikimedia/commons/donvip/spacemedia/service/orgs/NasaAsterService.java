@@ -81,7 +81,8 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
             DateTimeFormatter.ofPattern("MMMMd, yyyy", Locale.ENGLISH),
             List.of(compile(".*(?:ASTER|acquired)(?: on)? ([A-Z][a-z]+\\d{1,2}, \\d{4}).*")),
             DateTimeFormatter.ofPattern("d MMMM, yyyy", Locale.ENGLISH),
-            List.of(compile(".*ASTER image was acquired (\\d{1,2} [A-Z][a-z]+, \\d{4}).*")),
+            List.of(compile(".*ASTER image was acquired (\\d{1,2} [A-Z][a-z]+, \\d{4}).*"),
+                    compile(".*acquired(?: by ASTER)?(?: on)? ([A-Z][a-z]+, \\d{4}).*")),
             DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH),
             List.of(compile(".*ASTER image (?:on|from) (\\d{1,2} [A-Z][a-z]+ \\d{4}).*"),
                     compile(".*acquired (?:on )?(\\d{1,2} [A-Za-z]+ \\d{4}).*")),
@@ -92,7 +93,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
 
     private static final Pattern SIZE = compile(".*Size: \\( ?([\\d,.]+)(?: (MB|KB|bytes))?\\).*");
 
-    private static final Pattern RESOLUTION = compile(".*Resolution \\( ([\\d,]+) x ([\\d,]+) \\).*");
+    private static final Pattern RESOLUTION = compile(".*Resolution \\( ([\\d,.]+) x ([\\d,.]+) \\).*");
 
     @Value("${nasa.aster.gallery.url}")
     private String galleryUrl;
@@ -274,6 +275,9 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
                     }
                     if (e.getKey().toString().contains("','' 'Value(YearOfEra,4") && !sb.toString().contains(",")) {
                         sb.append(", ").append(image.getPublicationDate().getYear());
+                    } else if (e.getKey().toString().startsWith("Value(DayOfMonth)") && sb.charAt(0) >= 'A'
+                            && sb.charAt(0) <= 'Z') {
+                        sb.insert(0, "1 ");
                     }
                     return LocalDate.parse(sb.toString(), e.getKey());
                 }
@@ -348,7 +352,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
     }
 
     private static String numval(String s) {
-        return s.replace(",", "");
+        return s.replace(",", "").replace(".", "");
     }
 
     static class AsterItem {
