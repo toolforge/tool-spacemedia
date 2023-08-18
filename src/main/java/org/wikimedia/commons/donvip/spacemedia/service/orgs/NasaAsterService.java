@@ -50,12 +50,12 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaAsterService.class);
 
-    private static final Map<DateTimeFormatter, Pattern> ADDED = Map.of(
+    private static final Map<DateTimeFormatter, Pattern> ADDED_PATTERNS = Map.of(
             DateTimeFormatter.ofPattern("M/d/yyyy h:m:s a", Locale.ENGLISH),
             compile(".*Added: (\\d{1,2}/\\d{1,2}/\\d{4} \\d{1,2}:\\d{1,2}:\\d{1,2} [AP]M)$"),
             DateTimeFormatter.ofPattern("M/d/yyyy", Locale.ENGLISH), compile(".*Added: (\\d{1,2}/\\d{1,2}/\\d{4})$"));
 
-    private static final Map<DateTimeFormatter, List<Pattern>> ACQUIRED = Map.of(
+    private static final Map<DateTimeFormatter, List<Pattern>> ACQUIRED_PATTERNS = Map.of(
             DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ENGLISH),
             List.of(
                     compile(".*(?:ASTER|acquired)(?: on)? (?:20 )?(?:[A-Z][a-z]+, )?([A-Z][a-z]+ \\d{1,2}, \\d{4}).*"),
@@ -264,7 +264,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
 
     static LocalDate extractAcquisitionDate(NasaAsterMedia image) {
         String text = image.getDescription();
-        for (Entry<DateTimeFormatter, List<Pattern>> e : ACQUIRED.entrySet()) {
+        for (Entry<DateTimeFormatter, List<Pattern>> e : ACQUIRED_PATTERNS.entrySet()) {
             for (Pattern p : e.getValue()) {
                 Matcher m = p.matcher(text);
                 if (m.matches()) {
@@ -291,7 +291,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
         String meta = html.getElementsByTag("tr").get(1).getElementsByTag("table").get(0).nextElementSibling()
                 .getElementsByTag("tr").first().nextElementSibling().nextElementSibling().getElementsByTag("tr").get(0)
                 .getElementsByTag("td").first().getElementsByTag("td").get(2).text();
-        for (Entry<DateTimeFormatter, Pattern> e : ADDED.entrySet()) {
+        for (Entry<DateTimeFormatter, Pattern> e : ADDED_PATTERNS.entrySet()) {
             Matcher m = e.getValue().matcher(meta);
             if (m.matches()) {
                 String text = m.group(1);
