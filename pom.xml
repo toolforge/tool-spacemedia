@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.wikimedia.commons.donvip</groupId>
 	<artifactId>spacemedia</artifactId>
 	<version>0.5.0-SNAPSHOT</version>
 	<name>spacemedia</name>
-	<description>Find free media released by space agencies missing in Wikimedia Commons</description>
+	<description>Find free media space-related missing in Wikimedia Commons</description>
 
 	<properties>
 		<java.version>17</java.version>
@@ -39,16 +41,23 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>aws-java-sdk-bom</artifactId>
+				<version>1.12.532</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
 				<groupId>org.eclipse.rdf4j</groupId>
 				<artifactId>rdf4j-bom</artifactId>
-				<version>4.3.4</version>
+				<version>4.3.5</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>32.1.1-jre</version>
+				<version>32.1.2-jre</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -223,9 +232,7 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.codehaus.sonar</groupId>
-					<artifactId>
-						sonar-packaging-maven-plugin
-					</artifactId>
+					<artifactId>sonar-packaging-maven-plugin</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -262,6 +269,11 @@
 			<artifactId>bcpkix-jdk15on</artifactId>
 			<version>1.70</version>
 			<scope>runtime</scope>
+		</dependency>
+		<!-- S3 -->
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
 		</dependency>
 		<!-- Web -->
 		<dependency>
@@ -314,8 +326,12 @@
 			<id>osgeo</id>
 			<name>OSGeo Release Repository</name>
 			<url>https://repo.osgeo.org/repository/release/</url>
-			<snapshots><enabled>false</enabled></snapshots>
-			<releases><enabled>true</enabled></releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
 		</repository>
 		<repository>
 			<id>geosolutions</id>
@@ -467,8 +483,10 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaWebApplication</mainClass>
-									<outputDirectory>${project.build.directory}/web</outputDirectory>
+									<mainClass>
+										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaWebApplication</mainClass>
+									<outputDirectory>
+										${project.build.directory}/web</outputDirectory>
 								</configuration>
 							</execution>
 						</executions>
@@ -491,8 +509,10 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgBoxUpdateJobApplication</mainClass>
-									<outputDirectory>${project.build.directory}/job-box</outputDirectory>
+									<mainClass>
+										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgBoxUpdateJobApplication</mainClass>
+									<outputDirectory>
+										${project.build.directory}/job-box</outputDirectory>
 								</configuration>
 							</execution>
 							<execution>
@@ -501,8 +521,10 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgUpdateJobApplication</mainClass>
-									<outputDirectory>${project.build.directory}/job-custom</outputDirectory>
+									<mainClass>
+										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgUpdateJobApplication</mainClass>
+									<outputDirectory>
+										${project.build.directory}/job-custom</outputDirectory>
 								</configuration>
 							</execution>
 							<execution>
@@ -511,8 +533,10 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgDvidsUpdateJobApplication</mainClass>
-									<outputDirectory>${project.build.directory}/job-dvids</outputDirectory>
+									<mainClass>
+										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgDvidsUpdateJobApplication</mainClass>
+									<outputDirectory>
+										${project.build.directory}/job-dvids</outputDirectory>
 								</configuration>
 							</execution>
 							<execution>
@@ -521,8 +545,10 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgDjangoplicityUpdateJobApplication</mainClass>
-									<outputDirectory>${project.build.directory}/job-djangoplicity</outputDirectory>
+									<mainClass>
+										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgDjangoplicityUpdateJobApplication</mainClass>
+									<outputDirectory>
+										${project.build.directory}/job-djangoplicity</outputDirectory>
 								</configuration>
 							</execution>
 							<execution>
@@ -531,8 +557,10 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgFlickrUpdateJobApplication</mainClass>
-									<outputDirectory>${project.build.directory}/job-flickr</outputDirectory>
+									<mainClass>
+										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgFlickrUpdateJobApplication</mainClass>
+									<outputDirectory>
+										${project.build.directory}/job-flickr</outputDirectory>
 								</configuration>
 							</execution>
 							<execution>
@@ -541,8 +569,10 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgStsciUpdateJobApplication</mainClass>
-									<outputDirectory>${project.build.directory}/job-stsci</outputDirectory>
+									<mainClass>
+										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgStsciUpdateJobApplication</mainClass>
+									<outputDirectory>
+										${project.build.directory}/job-stsci</outputDirectory>
 								</configuration>
 							</execution>
 							<execution>
@@ -551,8 +581,10 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgYoutubeUpdateJobApplication</mainClass>
-									<outputDirectory>${project.build.directory}/job-youtube</outputDirectory>
+									<mainClass>
+										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgYoutubeUpdateJobApplication</mainClass>
+									<outputDirectory>
+										${project.build.directory}/job-youtube</outputDirectory>
 								</configuration>
 							</execution>
 						</executions>
