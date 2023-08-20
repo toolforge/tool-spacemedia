@@ -87,7 +87,7 @@ public class FileMetadata implements FileMetadataProjection {
     @Embedded
     private ImageDimensions dimensions;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = { CascadeType.MERGE, CascadeType.REMOVE, CascadeType.REFRESH })
     @JoinColumn(name = "exif_id", referencedColumnName = "id")
     private ExifMetadata exif;
 
