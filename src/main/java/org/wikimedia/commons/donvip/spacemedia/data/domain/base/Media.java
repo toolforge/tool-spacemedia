@@ -59,6 +59,7 @@ public abstract class Media<ID> implements MediaProjection<ID> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Media.class);
 
     private static final Pattern ONLY_DIGITS = Pattern.compile("\\d+");
+    private static final Pattern IMG = Pattern.compile("IMG[-_]\\d+(-[A-Z]+)?");
     private static final Pattern URI_LIKE = Pattern.compile("Https?\\-\\-.*", Pattern.CASE_INSENSITIVE);
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -438,9 +439,9 @@ public abstract class Media<ID> implements MediaProjection<ID> {
      *
      * @return {@code true} if title is blacklisted by mediawiki
      */
-    public boolean isTitleBlacklisted(String title) {
+    public static boolean isTitleBlacklisted(String title) {
         return ONLY_DIGITS.matcher(title.replace(" ", "").replace("/", "").replace("_", "").replace("-", "")).matches()
-                || URI_LIKE.matcher(title).matches();
+                || URI_LIKE.matcher(title).matches() || IMG.matcher(title).matches();
     }
 
     /**

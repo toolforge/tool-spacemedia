@@ -993,14 +993,12 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
 
     protected final Optional<Temporal> getCreationDate(T media) {
         return Optional.<Temporal>ofNullable(media.getCreationDateTime())
-                .or(() -> Optional.<Temporal>ofNullable(media.getCreationDate()))
-                .or(() -> Optional.<Temporal>ofNullable(media.getYear()));
+                .or(() -> Optional.<Temporal>ofNullable(media.getCreationDate()));
     }
 
-    protected Optional<Temporal> getUploadDate(T media) {
+    protected final Optional<Temporal> getUploadDate(T media) {
         return Optional.<Temporal>ofNullable(media.getPublicationDateTime())
-                .or(() -> Optional.<Temporal>ofNullable(media.getPublicationDate()))
-                .or(() -> Optional.<Temporal>ofNullable(media.getYear()));
+                .or(() -> Optional.<Temporal>ofNullable(media.getPublicationDate()));
     }
 
     protected Optional<String> getPermission(T media) {

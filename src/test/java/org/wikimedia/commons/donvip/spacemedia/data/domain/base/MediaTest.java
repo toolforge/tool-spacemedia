@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -71,5 +72,10 @@ class MediaTest {
         media.setId(id);
         media.setDescription("iss066e079006 (Nov. 22, 2021) --- " + description);
         assertEquals(List.of(id, description), media.getSearchTermsInCommons());
+    }
+
+    @Test
+    void testIsTitleBlacklisted() {
+        assertTrue(Media.isTitleBlacklisted("IMG_5057-CC"));
     }
 }

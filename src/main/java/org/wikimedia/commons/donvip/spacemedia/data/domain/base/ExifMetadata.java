@@ -60,7 +60,9 @@ public class ExifMetadata {
     @Column(columnDefinition = "TEXT")
     private String exifArtist;
 
+    @Lob
     @JsonProperty("EXIF:Copyright")
+    @Column(columnDefinition = "TEXT")
     private String exifCopyright;
 
     @JsonProperty("EXIF:ExifImageHeight")
@@ -128,7 +130,9 @@ public class ExifMetadata {
     @JsonProperty("XMP:OriginalDocumentID")
     private String xmpOriginalDocumentID;
 
+    @Lob
     @JsonProperty("XMP:Rights")
+    @Column(columnDefinition = "TEXT")
     private String xmpRights;
 
     @JsonProperty("XMP:SerialNumber")
