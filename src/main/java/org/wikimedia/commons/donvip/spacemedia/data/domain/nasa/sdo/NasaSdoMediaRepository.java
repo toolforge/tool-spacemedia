@@ -106,15 +106,6 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
         return findMissingInCommonsByType(NasaMediaType.video, page);
     }
 
-    @Override
-    @Query(value = """
-            select *
-            from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
-            on (nasa_sdo_media.id = nasa_sdo_media_metadata.nasa_sdo_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
-            where (ignored is null or ignored is false) and DATE(creation_date_time) = ?1 and not exists elements (md.commonsFileNames)
-            """, nativeQuery = true)
-    List<NasaSdoMedia> findMissingByDate(LocalDate date);
-
     @Query(value = """
             select *
             from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
