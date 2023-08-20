@@ -928,8 +928,7 @@ public class CommonsService {
             throw new UploadException(apiResponse.toString());
         }
         if (!sha1.equalsIgnoreCase(upload.getImageInfo().getSha1())) {
-            throw new IllegalStateException(String.format(
-                    "SHA1 mismatch for %s ! Expected %s, got %s", url, sha1, upload.getImageInfo().getSha1()));
+            LOGGER.warn("SHA1 mismatch for {} ! Expected {}, got {}", url, sha1, upload.getImageInfo().getSha1());
         }
         return upload.getFilename();
     }
