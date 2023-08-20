@@ -564,6 +564,18 @@
 								</configuration>
 							</execution>
 							<execution>
+								<id>job-s3</id>
+								<goals>
+									<goal>repackage</goal>
+								</goals>
+								<configuration>
+									<mainClass>
+										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgS3UpdateJobApplication</mainClass>
+									<outputDirectory>
+										${project.build.directory}/job-s3</outputDirectory>
+								</configuration>
+							</execution>
+							<execution>
 								<id>job-stsci</id>
 								<goals>
 									<goal>repackage</goal>
