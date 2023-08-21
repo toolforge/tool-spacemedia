@@ -96,6 +96,11 @@ public class IauService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
+    protected boolean checkBlocklist() {
+        return true;
+    }
+
+    @Override
     public Set<String> findLicenceTemplates(DjangoplicityMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
         result.add("IAU");
