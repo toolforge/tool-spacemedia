@@ -771,7 +771,7 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
             result.put("P571", Pair.of(publicationDate, null));
         }
         // File size
-        if (metadata.getSize() != null) {
+        if (metadata.hasSize()) {
             result.put("P3575", Pair.of(Pair.of(metadata.getSize(), "Q8799"), null));
         }
         // Video

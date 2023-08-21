@@ -121,6 +121,12 @@ public class FileMetadata implements FileMetadataProjection {
         return sha1 != null;
     }
 
+    @Transient
+    @JsonIgnore
+    public boolean hasSize() {
+        return size != null;
+    }
+
     @Override
     public String getPhash() {
         return phash;

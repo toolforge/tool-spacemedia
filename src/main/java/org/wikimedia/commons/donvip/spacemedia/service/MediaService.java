@@ -227,7 +227,7 @@ public class MediaService {
                         }
                     }
                     Long contentLength = pair.getRight();
-                    if (contentLength > 0 && metadata.getSize() == null) {
+                    if (contentLength > 0 && !metadata.hasSize()) {
                         metadata.setSize(contentLength);
                         LOGGER.info("Size has been updated for {}", media);
                         result = true;
@@ -277,7 +277,7 @@ public class MediaService {
         return assetUrl != null
                 && (metadata.isReadableImage() == null || (Boolean.TRUE.equals(metadata.isReadableImage())
                         && (!metadata.hasPhash() || !metadata.hasSha1() || !metadata.hasValidDimensions()
-                                || forceUpdateOfHashes)));
+                                || !metadata.hasSize() || forceUpdateOfHashes)));
     }
 
     public static boolean ignoreMedia(Media<?> media, String reason) {
@@ -533,7 +533,7 @@ public class MediaService {
 
     private static boolean filterBySameMimeAndLargerOrEqualSizeOrLargerOrEqualDimensions(FileMetadata metadata,
             ImageInfo imageInfo) {
-        return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.getSize() != null
+        return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.hasSize()
                 && (metadata.getSize() <= imageInfo.getSize()
                         || areLargerOrEqualDimensions(metadata.getImageDimensions(), imageInfo));
     }
@@ -543,7 +543,7 @@ public class MediaService {
     }
 
     private static boolean filterBySameMimeAndSmallerSize(FileMetadata metadata, ImageInfo imageInfo) {
-        return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.getSize() != null
+        return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.hasSize()
                 && metadata.getSize() > imageInfo.getSize();
     }
 

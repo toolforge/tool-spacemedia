@@ -135,7 +135,7 @@ public class StsciService {
             String ext = fileUrl.substring(fileUrl.lastIndexOf('.') + 1);
             if (!"pdf".equals(ext)) {
                 FileMetadata metadata = metadataByExtension.computeIfAbsent(ext, x -> new FileMetadata());
-                if (metadata.getSize() == null || metadata.getSize() < fileSize) {
+                if (!metadata.hasSize() || metadata.getSize() < fileSize) {
                     metadata.setAssetUrl(toUrl(fileUrl));
                     metadata.setSize(fileSize);
                 }
