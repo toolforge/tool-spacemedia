@@ -246,7 +246,7 @@ public class DjangoplicityMedia extends Media<DjangoplicityMediaId> {
                 + (name != null ? "name=" + name + ", " : "")
                 + (isNotEmpty(types) ? "types=" + types + ", " : "")
                 + (isNotEmpty(categories) ? "categories=" + categories + ", " : "")
-                + (credit != null ? "credit=" + credit + ", " : "")
+                + (credit != null ? "credit=" + credit.replace('\n', ' ') + ", " : "")
                 + (getMetadata() != null ? "metadata=" + getMetadata() + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
