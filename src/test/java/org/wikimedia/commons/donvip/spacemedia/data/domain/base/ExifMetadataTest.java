@@ -55,7 +55,7 @@ class ExifMetadataTest {
         assertEquals("X-59 - Various Angles in Test Fixture", metadata.getIptcObjectName());
         assertEquals("Chris Hanoch", metadata.getIptcWriterEditor());
 
-        assertEquals(new URL("http://www.lockheedmartin.com/us/contact/licensing-information.html"),
+        assertEquals("http://www.lockheedmartin.com/us/contact/licensing-information.html",
                 metadata.getPhotoshopUrl());
 
         assertEquals("Chris Hanoch", metadata.getXmpCaptionWriter());

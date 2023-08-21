@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 import static java.util.Optional.ofNullable;
 import static javax.persistence.GenerationType.SEQUENCE;
 
-import java.net.URL;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -15,7 +14,6 @@ import javax.persistence.Lob;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wikimedia.commons.donvip.spacemedia.utils.StringArrayAsStringDeserializer;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifDirectoryBase;
@@ -109,7 +107,7 @@ public class ExifMetadata {
     private String iptcWriterEditor;
 
     @JsonProperty("Photoshop:URL")
-    private URL photoshopUrl;
+    private String photoshopUrl;
 
     @Lob
     @JsonProperty("XMP:CaptionWriter")
@@ -343,11 +341,11 @@ public class ExifMetadata {
         this.iptcWriterEditor = iptcWriterEditor;
     }
 
-    public URL getPhotoshopUrl() {
+    public String getPhotoshopUrl() {
         return photoshopUrl;
     }
 
-    public void setPhotoshopUrl(URL photoshopUrl) {
+    public void setPhotoshopUrl(String photoshopUrl) {
         this.photoshopUrl = photoshopUrl;
     }
 
@@ -547,7 +545,7 @@ public class ExifMetadata {
         });
 
         ofNullable(metadata.getFirstDirectoryOfType(PhotoshopDirectory.class))
-                .ifPresent(ps -> ofNullable(ps.getDescription(PhotoshopDirectory.TAG_URL)).map(Utils::newURL)
+                .ifPresent(ps -> ofNullable(ps.getDescription(PhotoshopDirectory.TAG_URL))
                         .ifPresent(result::setPhotoshopUrl));
 
         ofNullable(metadata.getFirstDirectoryOfType(XmpDirectory.class)).map(XmpDirectory::getXmpProperties)
