@@ -38,7 +38,6 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     public UmbraS3Service(S3MediaRepository repository,
             @Value("${umbra.s3.region}") Regions region,
             @Value("${umbra.s3.buckets}") Set<String> buckets) {
-        // http://umbra-open-data-catalog.s3-website.us-west-2.amazonaws.com
         super(repository, "umbra", region, buckets);
     }
 
@@ -53,6 +52,8 @@ public class UmbraS3Service extends AbstractOrgS3Service {
         String[] items = id.getObjectKey().split("/");
         if (items.length == 6) {
             media.setTitle(items[2] + " (" + items[4] + ')');
+        } else if (items.length == 9) {
+            media.setTitle(items[7] + " (" + items[8].replace(".tif", "") + ')');
         } else {
             LOGGER.error("Unrecognized object key: {}", id);
         }
@@ -80,12 +81,13 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     @Override
     public Set<String> findLicenceTemplates(S3Media media) {
         Set<String> result = super.findLicenceTemplates(media);
-        result.add("Cc-by-sa-4.0");
+        result.add("Cc-by-4.0");
         return result;
     }
 
     @Override
     protected String getAuthor(S3Media media) throws MalformedURLException {
+        // https://registry.opendata.aws/umbra-open-data/
         // https://umbra.space/terms-of-use
         return "Umbra Lab, Inc.";
     }
@@ -103,7 +105,9 @@ public class UmbraS3Service extends AbstractOrgS3Service {
         return Set.of("@umbraspace");
     }
 
-
+    /**
+     * Extended Umbra Metadata: https://docs.canopy.umbra.space/reference/get_schema
+     */
     @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class UmbraMetadata {
