@@ -184,6 +184,9 @@ public class CommonsService {
     private static final Pattern FILE_EXT_MISMATCH = Pattern.compile(
             "File extension \"\\.([a-z]+)\" does not match the detected MIME type of the file \\(image/([a-z]+)\\)\\.");
 
+    private static final Pattern KNOWN_LARGE_CATS = Pattern.compile(
+            "(\\d{4} births|Births in Philadelphia‎|Categories requiring permanent diffusion to zero|Categories which should only contain photographs|Churches by patron saint|Living people|Of \\(relation\\) \\(flat list\\)|Politicians of the United States by name)|Surnames");
+
     /**
      * Minimal delay between successive uploads, in seconds.
      */
@@ -702,6 +705,9 @@ public class CommonsService {
 
     @Cacheable("subCategoriesByDepth")
     public Set<String> getSubCategories(String category, int depth) {
+        if (KNOWN_LARGE_CATS.matcher(category).matches()) {
+            return Set.of();
+        }
         LocalDateTime start = now();
         LOGGER.debug("Fetching '{}' subcategories with depth {}...", category, depth);
         Set<String> subcats = self.getSubCategories(category);

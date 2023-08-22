@@ -100,6 +100,7 @@ class CommonsServiceTest {
         mockCategoryLinks();
         assertEquals(Set.of("Combined Space Operations Center"),
                 service.getSubCategories("Combined Force Space Component Command", 1));
+        assertTrue(service.getSubCategories("Living people").isEmpty());
     }
 
     @Test
