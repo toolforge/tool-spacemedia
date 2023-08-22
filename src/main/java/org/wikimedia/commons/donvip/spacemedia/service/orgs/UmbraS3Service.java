@@ -51,7 +51,11 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     protected S3Media enrichS3Media(S3Media media) throws IOException {
         S3MediaId id = media.getId();
         String[] items = id.getObjectKey().split("/");
-        media.setTitle(items[2] + " (" + items[4] + ')');
+        if (items.length == 6) {
+            media.setTitle(items[2] + " (" + items[4] + ')');
+        } else {
+            LOGGER.error("Unrecognized object key: {}", id);
+        }
         LOGGER.info("Enriching {}...", media);
         try (InputStream in = getS3Object(id.getBucketName(),
                 id.getObjectKey().replace("GEC.tif", "METADATA.json").replace(".tif", "_METADATA.json"))
