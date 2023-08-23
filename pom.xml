@@ -18,7 +18,7 @@
 		<sonar.organization>toolforge</sonar.organization>
 		<sonar.projectKey>tool-spacemedia</sonar.projectKey>
 
-		<batik.version>1.16</batik.version>
+		<batik.version>1.17</batik.version>
 		<flickr4java-version>3.0.8</flickr4java-version>
 		<springboot-version>2.7.14</springboot-version>
 		<scribejava-version>8.3.3</scribejava-version>
