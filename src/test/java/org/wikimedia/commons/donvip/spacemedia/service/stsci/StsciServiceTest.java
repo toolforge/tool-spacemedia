@@ -168,6 +168,29 @@ class StsciServiceTest {
                 media.getCredits());
     }
 
+    @Test
+    void testCreditsWithHtmlLink() throws Exception {
+        String urlLink = "https://hubblesite.org/contents/media/images/2020/07/4622-Image";
+        StsciMedia media = service.getImageDetailsByScrapping("2020/07/4622-Image", urlLink, new URL(urlLink),
+                html("nasahubble/2020_07_4622-Image.htm"));
+        assertEquals("2020/07/4622-Image", media.getId());
+        assertEquals("Illustration of Dwarf Nova System", media.getTitle());
+        assertEquals(
+                "This illustration shows a newly discovered dwarf nova system, in which a white dwarf star is pulling material off a brown dwarf companion. The material collects into an accretion disk until reaching a tipping point, causing it to suddenly increase in brightness. Using archival Kepler data, a team observed a previously unseen, and unexplained, gradual intensification followed by a super-outburst in which the system brightened by a factor of 1,600 over less than a day.",
+                media.getDescription());
+        assertEquals("2020-01-24T10:00-05:00[America/New_York]", media.getPublicationDateTime().toString());
+        assertEquals("https://stsci-opo.org/STScI-01EVSTVJQDGP1WERZF77WZ1D63.tif",
+                media.getMetadata().iterator().next().getAssetUrl().toExternalForm());
+        assertEquals("https://stsci-opo.org/STScI-01EVSTVMRN7WT62EYZ99T58FCK.png",
+                media.getThumbnailUrl().toExternalForm());
+        assertEquals("2020-07", media.getNewsId());
+        assertNull(media.getCreationDate());
+        assertNull(media.getObjectName());
+        assertEquals("hubble", media.getMission());
+        assertEquals(Set.of("Brown Dwarfs", "White Dwarfs", "Novae", "Stars"), media.getKeywords());
+        assertEquals("NASA and L. Hustak (STScI)", media.getCredits());
+    }
+
     @Configuration
     static class TestConfig {
 

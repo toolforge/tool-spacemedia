@@ -107,8 +107,8 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
-    public Set<String> findInformationTemplates(FlickrMedia media) {
-        Set<String> result = super.findInformationTemplates(media);
+    public Set<String> findAfterInformationTemplates(FlickrMedia media, FileMetadata metadata) {
+        Set<String> result = super.findAfterInformationTemplates(media, metadata);
         if ("uahirise-mars".equals(media.getPathAlias())) {
             result.add("NASA Photojournal/attribution|class=MRO|mission=MRO|name=MRO|credit=HiRISE");
         }

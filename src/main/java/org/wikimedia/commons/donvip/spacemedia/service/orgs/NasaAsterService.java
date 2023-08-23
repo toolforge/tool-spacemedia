@@ -208,8 +208,8 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
     }
 
     @Override
-    public Set<String> findInformationTemplates(NasaAsterMedia media) {
-        Set<String> result = super.findInformationTemplates(media);
+    public Set<String> findAfterInformationTemplates(NasaAsterMedia media, FileMetadata metadata) {
+        Set<String> result = super.findAfterInformationTemplates(media, metadata);
         result.add("NASA Photojournal/attribution|class=Terra|mission=Terra|name=Terra|credit=ASTER");
         return result;
     }

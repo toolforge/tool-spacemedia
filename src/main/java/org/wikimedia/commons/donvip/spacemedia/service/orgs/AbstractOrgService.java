@@ -70,6 +70,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Problem;
@@ -105,6 +106,8 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
  */
 public abstract class AbstractOrgService<T extends Media<ID>, ID>
         implements Comparable<AbstractOrgService<T, ID>>, Org<T, ID> {
+
+    private static final int HUNDRED_MP = 100_000_000;
 
     protected static final String EN = "en";
 
@@ -872,7 +875,9 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
     protected Pair<String, Map<String, String>> getWikiFileDesc(T media, FileMetadata metadata) throws IOException {
         String language = getLanguage(media);
         String description = getDescription(media);
-        StringBuilder sb = new StringBuilder("{{Information\n| description = ");
+        StringBuilder sb = new StringBuilder();
+        findBeforeInformationTemplates(media, metadata).forEach(t -> sb.append("{{").append(t).append("}}\n"));
+        sb.append("{{Information\n| description = ");
         Map<String, String> descriptions = new HashMap<>(Map.of(language, description));
         appendWikiDescriptionInLanguage(sb, language, description);
         if (!"en".equals(language)) {
@@ -891,7 +896,7 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
         if (media instanceof WithLatLon ll && (ll.getLatitude() != 0d || ll.getLongitude() != 0d)) {
             sb.append("{{Object location |1=" + ll.getLatitude() + " |2=" + ll.getLongitude() + "}}\n");
         }
-        findInformationTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
+        findAfterInformationTemplates(media, metadata).forEach(t -> sb.append("{{").append(t).append("}}\n"));
         return Pair.of(sb.toString(), descriptions);
     }
 
@@ -1126,12 +1131,32 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
     }
 
     /**
-     * Returns the list of licence templates to apply to the given media.
+     * Returns the list of information templates to apply to the given media, before
+     * the main one.
      *
-     * @param media the media for which licence template names are wanted
-     * @return the list of licence templates to apply to {@code media}
+     * @param media    the media for which information template names are wanted
+     * @param metadata the file metadata
+     * @return the list of information templates to apply to {@code media}
      */
-    public Set<String> findInformationTemplates(T media) {
+    public Set<String> findBeforeInformationTemplates(T media, FileMetadata metadata) {
+        Set<String> result = new LinkedHashSet<>();
+        Long size = metadata.getSize();
+        ImageDimensions dims = metadata.getImageDimensions();
+        if (size != null && size >= HUNDRED_MP || (dims != null && dims.getHeight() * dims.getWidth() >= HUNDRED_MP)) {
+            result.add("LargeImage");
+        }
+        return result;
+    }
+
+    /**
+     * Returns the list of information templates to apply to the given media, after
+     * the main one.
+     *
+     * @param media    the media for which information template names are wanted
+     * @param metadata the file metadata
+     * @return the list of information templates to apply to {@code media}
+     */
+    public Set<String> findAfterInformationTemplates(T media, FileMetadata metadata) {
         return new LinkedHashSet<>();
     }
 

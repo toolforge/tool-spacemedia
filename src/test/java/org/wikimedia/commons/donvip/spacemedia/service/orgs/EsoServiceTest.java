@@ -65,7 +65,7 @@ class EsoServiceTest extends AbstractOrgServiceTest {
 
         assertEquals(
                 "Join us on 12 May, from 16:00 CEST, for a live streaming on <a href=\"https://www.facebook.com/event_invite/2JtKDmBbR/\">Facebook</a> and <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a> on two of the instruments of <a href=\"https://elt.eso.org/\">ESO’s Extremely Large Telescope</a> (ELT): the Mid-infrared ELT Imager and Spectrograph (METIS) and Multi-AO Imaging Camera for Deep Observations (MICADO).During the event, we will premiere two mini-documentaries on the instruments, followed by a Q&amp;A session with the experts behind them. Participants can ask questions on Twitter using #askESO, as well as live on <a href=\"https://www.facebook.com/event_invite/2JtKDmBbR/\">Facebook</a> and <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a>. Click Going/Interested on <a href=\"https://www.facebook.com/event_invite/2JtKDmBbR/\">Facebook</a> and Notify me on <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a>, respectively, to be prompted when the live show starts.",
-                service.getWikiFileDesc(media, null).getRight().get("en"));
+                service.getWikiFileDesc(media, new FileMetadata()).getRight().get("en"));
     }
 
     @Configuration

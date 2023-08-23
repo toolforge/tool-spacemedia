@@ -38,6 +38,8 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgStsciService.class);
 
+    private static final Set<String> SHORT_CREDITS_OK = Set.of("A. Fujii");
+
     private final StsciMediaRepository stsciRepository;
     private final String searchEndpoint;
     private final String detailEndpoint;
@@ -125,6 +127,12 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
             if (doNotFetchEarlierThan != null && media.getPublicationDate().isBefore(doNotFetchEarlierThan)) {
                 throw new UpdateFinishedException(media.getPublicationDate().toString());
             }
+            String credits = media.getCredits();
+            // Fix corrupted files with short credits. Can be removed in the future
+            if (isShortCredits(credits) && !SHORT_CREDITS_OK.contains(credits)) {
+                media = refresh(media);
+                save = !isShortCredits(media.getCredits());
+            }
         } else {
             media = getMediaFromWebsite(id);
             save = true;
@@ -143,6 +151,10 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
             save = false;
         }
         return Triple.of(saveMediaOrCheckRemote(save, media), uploadedMetadata, uploadCount);
+    }
+
+    private static boolean isShortCredits(String credits) {
+        return StringUtils.length(credits) < 10;
     }
 
     private StsciMedia getMediaFromWebsite(String id) throws IOException {

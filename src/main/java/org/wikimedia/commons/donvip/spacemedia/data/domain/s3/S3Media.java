@@ -70,7 +70,7 @@ public class S3Media extends SingleFileMedia<S3MediaId> implements WithLatLon {
 
     @Override
     protected String getUploadId(FileMetadata fileMetadata) {
-        return getId().getObjectKey();
+        return getUploadTitle();
     }
 
     public S3Media copyDataFrom(S3Media other) {

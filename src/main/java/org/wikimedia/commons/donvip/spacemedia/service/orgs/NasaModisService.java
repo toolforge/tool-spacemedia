@@ -157,8 +157,8 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia, String>
     }
 
     @Override
-    public Set<String> findInformationTemplates(NasaModisMedia media) {
-        Set<String> result = super.findInformationTemplates(media);
+    public Set<String> findAfterInformationTemplates(NasaModisMedia media, FileMetadata metadata) {
+        Set<String> result = super.findAfterInformationTemplates(media, metadata);
         terraOrAqua(media,
                 () -> result.add("NASA Photojournal/attribution|class=Terra|mission=Terra|name=Terra|credit=MODIS"),
                 () -> result.add("NASA Photojournal/attribution|class=Aqua|mission=Aqua|name=Aqua|credit=MODIS"));

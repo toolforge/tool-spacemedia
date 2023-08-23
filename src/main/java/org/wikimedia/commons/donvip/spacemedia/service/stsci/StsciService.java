@@ -46,6 +46,9 @@ public class StsciService {
     private static final Pattern FILE_TYPE_SIZE = Pattern
             .compile("(?:JPE?G|PDF|PNG|TIFF?) \\((\\d+\\.\\d+) (KB|MB|GB)\\)");
 
+    private static final String CREDITS = "Credits";
+    private static final String KEYWORDS = "Keywords";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(StsciService.class);
 
     public String[] fetchImagesByScrapping(String urlLink) throws IOException {
@@ -74,8 +77,7 @@ public class StsciService {
         result.setMission(getMission(url.getHost()));
         result.setTitle(main.getElementsByTag("h1").first().text());
         // First attempt
-        result.setCredits(
-                md8.getElementsByTag("h3").select(":contains(Credits)").first().nextElementSibling().ownText().trim());
+        result.setCredits(extractCredits(md8));
         if (StringUtils.isBlank(result.getCredits())) {
             // Second attempt with another possible horrible format
             // https://webbtelescope.org/contents/media/images/2023/112/01GYJ7H5VSDMPRWX0R0Z6R87EC
@@ -125,6 +127,19 @@ public class StsciService {
         }
 
         return result;
+    }
+
+    private static String extractCredits(Element md8) {
+        String text = md8.getElementsByTag("h3").select(":contains(" + CREDITS + ")").first().parent().text();
+        text = text.substring(text.indexOf(CREDITS) + CREDITS.length()).trim();
+        int idx = text.indexOf(KEYWORDS);
+        if (idx > -1) {
+            text = text.substring(0, idx).trim();
+        }
+        if (text.startsWith("Image ") && !text.startsWith("Image Processing ")) {
+            text = text.replaceFirst("Image ", "Image: ");
+        }
+        return text.replace("Image Processing ", "Image Processing: ");
     }
 
     private static void fillMetadata(StsciMedia result, List<StsciImageFiles> files) {
