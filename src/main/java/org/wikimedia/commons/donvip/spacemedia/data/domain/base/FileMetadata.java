@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
@@ -101,6 +102,15 @@ public class FileMetadata implements FileMetadataProjection {
 
     public FileMetadata(URL assetUrl) {
         this.assetUrl = assetUrl;
+        String url = assetUrl.toExternalForm();
+        for (Set<String> exts : List.of(AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS)) {
+            for (String ext : exts) {
+                if (url.endsWith("." + ext)) {
+                    setExtension(ext);
+                    return;
+                }
+            }
+        }
     }
 
     public FileMetadata(String assetUrl) throws MalformedURLException {
