@@ -4,6 +4,8 @@ import static java.lang.Double.parseDouble;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.text.StringEscapeUtils.unescapeHtml4;
+import static org.apache.commons.text.StringEscapeUtils.unescapeXml;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
@@ -204,24 +206,24 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     private NasaPhotojournalMedia solrDocumentToMedia(SolrDocument doc) {
         sanityChecks(doc);
         NasaPhotojournalMedia media = new NasaPhotojournalMedia();
-        String caption = (String) doc.getFirstValue("original-caption");
+        String caption = getString(doc, "original-caption");
         media.setDescription(caption);
-        media.setId((String) doc.getFirstValue("id"));
-        media.setNasaId((String) doc.getFirstValue("nasa-id"));
+        media.setId(getString(doc, "id"));
+        media.setNasaId(getString(doc, "nasa-id"));
         media.setPublicationDateTime(((Date) doc.getFirstValue("publication-date")).toInstant().atZone(ZoneOffset.UTC));
-        media.setTarget((String) doc.getFirstValue("target"));
-        media.setMission((String) doc.getFirstValue("mission"));
-        media.setSpacecraft((String) doc.getFirstValue("spacecraft"));
-        media.setInstrument((String) doc.getFirstValue("instrument"));
-        media.setProducer((String) doc.getFirstValue("producer"));
-        media.setThumbnailUrl(newURL((String) doc.getFirstValue("browse-url")));
-        media.setTitle((String) doc.getFieldValue("image-title"));
+        media.setTarget(getString(doc, "target"));
+        media.setMission(getString(doc, "mission"));
+        media.setSpacecraft(getString(doc, "spacecraft"));
+        media.setInstrument(getString(doc, "instrument"));
+        media.setProducer(getString(doc, "producer"));
+        media.setThumbnailUrl(newURL(getString(doc, "browse-url")));
+        media.setTitle(getString(doc, "image-title"));
         media.setBig("YES".equals(doc.getFirstValue("big-flag")));
-        media.setCredit((String) doc.getFirstValue("credit"));
-        media.setLegend((String) doc.getFirstValue("alt-tag"));
+        media.setCredit(getString(doc, "credit"));
+        media.setLegend(getString(doc, "alt-tag"));
         ImageDimensions dims = new ImageDimensions(getInt(doc, "x-dim"), getInt(doc, "y-dim"));
-        addMetadata(media, (String) doc.getFirstValue("full-res-jpeg"), m -> m.setImageDimensions(dims));
-        addMetadata(media, (String) doc.getFirstValue("full-res-tiff"), m -> m.setImageDimensions(dims));
+        addMetadata(media, getString(doc, "full-res-jpeg"), m -> m.setImageDimensions(dims));
+        addMetadata(media, getString(doc, "full-res-tiff"), m -> m.setImageDimensions(dims));
         Collection<Object> keywords = doc.getFieldValues("keywords");
         if (keywords != null) {
             media.setKeywords(keywords.stream().map(String.class::cast).collect(toSet()));
@@ -237,6 +239,10 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         detectFigures(media);
         detectCreationDate(media);
         return media;
+    }
+
+    private static String getString(SolrDocument doc, String key) {
+        return unescapeHtml4(unescapeXml((String) doc.getFirstValue(key)));
     }
 
     private static Integer getInt(SolrDocument doc, String key) {

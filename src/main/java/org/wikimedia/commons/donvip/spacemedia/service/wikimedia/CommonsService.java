@@ -10,6 +10,8 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.text.StringEscapeUtils.unescapeHtml4;
+import static org.apache.commons.text.StringEscapeUtils.unescapeXml;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeGlobeCoordinatesValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeMonolingualTextValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeQuantityValue;
@@ -829,8 +831,9 @@ public class CommonsService {
     public static String normalizeFilename(String filename) {
         // replace forbidden chars, see https://www.mediawiki.org/wiki/Manual:$wgIllegalFileChars
         // check filename doesn't end with a dot, see MediaWiki:Titleblacklist-custom-space
-        return (filename.endsWith(".") ? filename.substring(0, filename.length() - 1) : filename).replace('/', '-')
-                .replace(':', '-').replace('\\', '-').replace('.', '_').replace("&amp;", "&").replace("â€™", "’")
+        return unescapeHtml4(
+                unescapeXml(filename.endsWith(".") ? filename.substring(0, filename.length() - 1) : filename))
+                .replace('/', '-').replace(':', '-').replace('\\', '-').replace('.', '_').replace("â€™", "’")
                 .replace("http---", "").replace("https---", "").trim();
     }
 

@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.text.StringEscapeUtils.unescapeXml;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -298,6 +299,11 @@ public class MediaService {
     public static boolean cleanupDescription(Media<?> media, Iterable<String> stringsToRemove) {
         boolean result = false;
         if (isNotBlank(media.getDescription())) {
+            String unescaped = unescapeXml(media.getDescription());
+            if (!unescaped.equals(media.getDescription())) {
+                media.setDescription(unescaped);
+                result = true;
+            }
             if (stringsToRemove != null) {
                 for (String toRemove : stringsToRemove) {
                     if (media.getDescription().contains(toRemove)) {
