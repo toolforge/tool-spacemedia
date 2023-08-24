@@ -110,6 +110,7 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
     private static final int HUNDRED_MP = 100_000_000;
 
     protected static final String EN = "en";
+    protected static final String ES = "es";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgService.class);
 
@@ -951,7 +952,7 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
      * @return the ISO 639 (alpha-2) language code for the title/description of {@code media}. English by default.
      */
     protected String getLanguage(T media) {
-        return EN;
+        return media instanceof WithKeywords kw && kw.getKeywords().contains("en Español") ? ES : EN;
     }
 
     protected String getDescription(T media) {
