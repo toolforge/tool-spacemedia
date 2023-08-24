@@ -107,7 +107,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 public abstract class AbstractOrgService<T extends Media<ID>, ID>
         implements Comparable<AbstractOrgService<T, ID>>, Org<T, ID> {
 
-    private static final int HUNDRED_MP = 100_000_000;
+    private static final int LOTS_OF_MP = 150_000_000;
 
     protected static final String EN = "en";
     protected static final String ES = "es";
@@ -1143,7 +1143,7 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
         Set<String> result = new LinkedHashSet<>();
         Long size = metadata.getSize();
         ImageDimensions dims = metadata.getImageDimensions();
-        if (size != null && size >= HUNDRED_MP || (dims != null && dims.getHeight() * dims.getWidth() >= HUNDRED_MP)) {
+        if (size != null && size >= LOTS_OF_MP || (dims != null && dims.getHeight() * dims.getWidth() >= LOTS_OF_MP)) {
             result.add("LargeImage");
         }
         return result;
