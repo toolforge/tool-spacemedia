@@ -10,7 +10,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
@@ -102,15 +101,7 @@ public class FileMetadata implements FileMetadataProjection {
 
     public FileMetadata(URL assetUrl) {
         this.assetUrl = assetUrl;
-        String url = assetUrl.toExternalForm();
-        for (Set<String> exts : List.of(AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS)) {
-            for (String ext : exts) {
-                if (url.endsWith("." + ext)) {
-                    setExtension(ext);
-                    return;
-                }
-            }
-        }
+        setExtension(getFileExtension(assetUrl.toExternalForm()));
     }
 
     public FileMetadata(String assetUrl) throws MalformedURLException {
@@ -243,8 +234,19 @@ public class FileMetadata implements FileMetadataProjection {
         } else if (getAssetUrl() == null) {
             return null;
         }
-        String url = getAssetUrl().toExternalForm();
-        String ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH);
+        return getFileExtension(getAssetUrl().toExternalForm());
+    }
+
+    private static String getFileExtension(String url) {
+        int idx = url.lastIndexOf('.');
+        if (idx < 0) {
+            return null;
+        }
+        String ext = url.substring(idx + 1).toLowerCase(Locale.ENGLISH);
+        int len = ext.length();
+        if (len < 3 || len > 4) {
+            return null;
+        }
         switch (ext) {
         case "apng":
             return "png";
