@@ -60,15 +60,15 @@
                   </a>
 		        </td>
 		        <td>
-		          <a th:text="${media.localDate}"></a>
-                  <a th:href="@{/{id}/rest/uploadbydate/{date}(id=${org.id},date=${media.localDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
-                    <img width="24" height="24" th:alt="'upload ' + ${media.localDate}" th:src="@{/Wlm-icon-upload-green.svg}">
+		          <a th:text="${media.publicationDate}"></a>
+                  <a th:href="@{/{id}/rest/uploadbydate/{date}(id=${org.id},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
-                  <a th:href="@{/{id}/rest/uploadimagesbydate/{date}(id=${org.id},date=${media.localDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/images' == ${tab}">
-                    <img width="24" height="24" th:alt="'upload ' + ${media.localDate}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  <a th:href="@{/{id}/rest/uploadimagesbydate/{date}(id=${org.id},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/images' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
-                  <a th:href="@{/{id}/rest/uploadvideosbydate/{date}(id=${org.id},date=${media.localDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
-                    <img width="24" height="24" th:alt="'upload ' + ${media.localDate}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  <a th:href="@{/{id}/rest/uploadvideosbydate/{date}(id=${org.id},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
 		        </td>
 		        <td th:utext="${#strings.abbreviate(media.description,2000)}"></td>

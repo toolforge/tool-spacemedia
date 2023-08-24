@@ -303,11 +303,6 @@ public abstract class Media<ID> implements MediaProjection<ID> {
         return result;
     }
 
-    public LocalDate getLocalDate() {
-        Temporal t = getBestTemporal();
-        return t instanceof LocalDate ld ? ld : t instanceof ZonedDateTime zdt ? zdt.toLocalDate() : null;
-    }
-
     public Temporal getBestTemporal() {
         return Stream
                 .<Temporal>of(getCreationDateTime(), getCreationDate(), getPublicationDateTime(), getPublicationDate())
