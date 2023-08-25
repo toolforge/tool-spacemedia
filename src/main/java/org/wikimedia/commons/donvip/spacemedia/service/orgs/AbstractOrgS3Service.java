@@ -109,7 +109,7 @@ public abstract class AbstractOrgS3Service
                     uploadedMedia.add(result.getKey());
                 }
                 ongoingUpdateMedia(start, bucket, count++);
-            } catch (UploadException | IOException e) {
+            } catch (UploadException | IOException | RuntimeException e) {
                 LOGGER.error(e.getMessage(), e);
             }
         }
