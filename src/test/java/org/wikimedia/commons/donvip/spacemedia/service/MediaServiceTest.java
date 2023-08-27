@@ -59,7 +59,7 @@ class MediaServiceTest {
     @Test
     void testCleanupDescription() {
         FlickrMedia media = new FlickrMedia();
-        media.setId(52840868995L);
+        media.setId("52840868995");
         media.setPathAlias("pierre_markuse");
         media.setDescription(
                 """

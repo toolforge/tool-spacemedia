@@ -14,7 +14,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long> {
+public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, String> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -110,7 +110,7 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
     Page<FlickrMedia> findAll(Set<String> flickrAccounts, Pageable page);
 
     @Query("select m from #{#entityName} m where m.pathAlias in ?1 and m.id not in ?2")
-    Set<FlickrMedia> findNotIn(Set<String> flickrAccounts, Set<Long> ids);
+    Set<FlickrMedia> findNotIn(Set<String> flickrAccounts, Set<String> ids);
 
     @Query("select m from #{#entityName} m where m.ignored = true and m.pathAlias in ?1")
     List<FlickrMedia> findByIgnoredTrue(Set<String> flickrAccounts);
@@ -180,7 +180,7 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia, Long
 
     @Override
     @CacheEvictFlickrAll
-    void deleteById(Long id);
+    void deleteById(String id);
 
     @Override
     @CacheEvictFlickrAll

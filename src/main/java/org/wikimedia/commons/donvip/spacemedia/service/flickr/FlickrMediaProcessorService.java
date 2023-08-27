@@ -227,7 +227,7 @@ public class FlickrMediaProcessorService {
 
     @Transactional
     public void deleteFlickrMedia(String id) {
-        flickrRepository.findById(Long.valueOf(id)).ifPresent(media -> {
+        flickrRepository.findById(id).ifPresent(media -> {
             LOGGER.warn("Deleteing {}", media);
             media.getPhotosets().forEach(ps -> {
                 if (ps.getMembers().remove(media)) {

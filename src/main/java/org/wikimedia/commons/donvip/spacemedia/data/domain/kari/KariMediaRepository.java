@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface KariMediaRepository extends MediaRepository<KariMedia, Integer> {
+public interface KariMediaRepository extends MediaRepository<KariMedia, String> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -58,7 +58,7 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer>
     // FIND
 
     @Query("select max(id) from #{#entityName}")
-    Optional<Integer> findMaxId();
+    Optional<String> findMaxId();
 
     @Override
     default Page<KariMedia> findMissingImagesInCommons(Pageable page) {
@@ -84,7 +84,7 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, Integer>
 
     @Override
     @CacheEvictKariAll
-    void deleteById(Integer id);
+    void deleteById(String id);
 
     @Override
     @CacheEvictKariAll

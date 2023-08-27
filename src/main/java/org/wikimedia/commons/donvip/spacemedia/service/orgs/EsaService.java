@@ -46,7 +46,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class EsaService extends AbstractOrgService<EsaMedia, Integer> {
+public class EsaService extends AbstractOrgService<EsaMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaService.class);
 
@@ -112,8 +112,8 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer> {
     }
 
     @Override
-    protected final Integer getMediaId(String id) {
-        return Integer.parseUnsignedInt(id);
+    protected final String getMediaId(String id) {
+        return id;
     }
 
     @Override
@@ -137,7 +137,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, Integer> {
 
     private void processShare(EsaMedia image, Element element) {
         String id = element.getElementsByClass("btn ezsr-star-rating-enabled").get(0).attr("id").replace("ezsr_", "");
-        image.setId(Integer.parseInt(id.substring(0, id.indexOf('_'))));
+        image.setId(id.substring(0, id.indexOf('_')));
     }
 
     private void processExtra(EsaMedia image, Element element) {

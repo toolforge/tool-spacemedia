@@ -19,11 +19,11 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Table(indexes = { @Index(columnList = "url") })
-public class EsaMedia extends Media<Integer> implements WithKeywords {
+public class EsaMedia extends Media<String> implements WithKeywords {
 
     @Id
     @Column(nullable = false)
-    private Integer id;
+    private String id;
     @Column(nullable = false, unique = true, length = 200)
     private URL url;
     @Column(nullable = false, length = 300)
@@ -62,12 +62,12 @@ public class EsaMedia extends Media<Integer> implements WithKeywords {
     }
 
     @Override
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
     @Override
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

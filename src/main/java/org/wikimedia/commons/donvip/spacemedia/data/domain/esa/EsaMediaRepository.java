@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface EsaMediaRepository extends MediaRepository<EsaMedia, Integer> {
+public interface EsaMediaRepository extends MediaRepository<EsaMedia, String> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -85,7 +85,7 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia, Integer> {
 
     @Override
     @CacheEvictEsaAll
-    void deleteById(Integer id);
+    void deleteById(String id);
 
     @Override
     @CacheEvictEsaAll

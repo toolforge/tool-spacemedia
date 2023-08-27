@@ -17,7 +17,7 @@ class FlickrMediaTest {
     @Test
     void testGetUploadTitle() {
         FlickrMedia media = new FlickrMedia();
-        media.setId(26635829145L);
+        media.setId("26635829145");
         FlickrPhotoSet photoset = new FlickrPhotoSet();
         photoset.setTitle("Flugversuche mit dem A320 ATRA");
         media.addPhotoSet(photoset);

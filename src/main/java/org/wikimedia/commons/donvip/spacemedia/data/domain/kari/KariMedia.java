@@ -17,25 +17,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-public class KariMedia extends SingleFileMedia<Integer> {
+public class KariMedia extends SingleFileMedia<String> {
 
     private static final Pattern ID_REGEX = Pattern.compile("P_[^_]*_([^_]*)_(\\d{2})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})",
             Pattern.CASE_INSENSITIVE);
 
     @Id
     @Column(nullable = false)
-    private Integer id;
+    private String id;
 
     @JsonProperty("kari_id")
     private String kariId;
 
     @Override
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
     @Override
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

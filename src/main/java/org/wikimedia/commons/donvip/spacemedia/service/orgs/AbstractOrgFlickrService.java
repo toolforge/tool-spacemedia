@@ -54,7 +54,7 @@ import com.flickr4java.flickr.people.User;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.tags.Tag;
 
-public abstract class AbstractOrgFlickrService extends AbstractOrgService<FlickrMedia, Long> {
+public abstract class AbstractOrgFlickrService extends AbstractOrgService<FlickrMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgFlickrService.class);
     private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"(\\d+)\" not found \\(invalid ID\\)");
@@ -403,7 +403,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     private FlickrMedia photoToFlickrMedia(Photo p, String flickrAccount) {
-        return repository.findById(Long.parseLong(p.getId())).orElseGet(() -> {
+        return repository.findById(p.getId()).orElseGet(() -> {
             try {
                 return saveMedia(mapPhoto(p, flickrAccount, true));
             } catch (FlickrException e) {
@@ -454,7 +454,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         m.setCreationDateTime(toZonedDateTime(p.getDateTaken()));
         ofNullable(p.getTakenGranularity()).ifPresent(granu -> m.setDateTakenGranularity(Integer.parseInt(granu)));
         m.setDescription(p.getDescription());
-        m.setId(Long.valueOf(p.getId()));
+        m.setId(p.getId());
         m.setLicense(Integer.parseInt(p.getLicense()));
         m.setMedia(FlickrMediaType.valueOf(p.getMedia()));
         m.setMediaStatus(p.getMediaStatus());
@@ -470,8 +470,8 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
-    protected final Long getMediaId(String id) {
-        return Long.parseLong(id);
+    protected final String getMediaId(String id) {
+        return id;
     }
 
     @Override

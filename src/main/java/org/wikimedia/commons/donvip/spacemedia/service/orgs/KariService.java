@@ -28,7 +28,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateR
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class KariService extends AbstractOrgService<KariMedia, Integer> {
+public class KariService extends AbstractOrgService<KariMedia, String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KariService.class);
 
@@ -50,8 +50,8 @@ public class KariService extends AbstractOrgService<KariMedia, Integer> {
     private int maxFailures;
 
     @Override
-    protected final Integer getMediaId(String id) {
-        return Integer.parseUnsignedInt(id);
+    protected final String getMediaId(String id) {
+        return id;
     }
 
     @Override
@@ -84,8 +84,8 @@ public class KariService extends AbstractOrgService<KariMedia, Integer> {
         return "{{Creator:KARI}}";
     }
 
-    private String getViewUrl(int id) {
-        return viewLink.replace("<id>", Integer.toString(id));
+    private String getViewUrl(String id) {
+        return viewLink.replace("<id>", id);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class KariService extends AbstractOrgService<KariMedia, Integer> {
         LocalDateTime start = startUpdateMedia();
         int consecutiveFailures = 0;
         int count = 0;
-        int id = kariRepository.findMaxId().orElse(1);
+        String id = kariRepository.findMaxId().orElse("1");
         while (consecutiveFailures < maxFailures) {
             boolean save = false;
             String viewUrl = getViewUrl(id);
@@ -130,7 +130,7 @@ public class KariService extends AbstractOrgService<KariMedia, Integer> {
                     LOGGER.error("Transaction error when saving {}", media, e);
                 }
             }
-            id++;
+            id = Integer.toString(Integer.valueOf(id) + 1);
         }
         endUpdateMedia(count, emptyList(), emptyList(), start);
     }
@@ -162,7 +162,7 @@ public class KariService extends AbstractOrgService<KariMedia, Integer> {
         }
     }
 
-    private KariUpdateResult fetchMedia(int id) {
+    private KariUpdateResult fetchMedia(String id) {
         String viewUrl = getViewUrl(id);
         URL view = newURL(viewUrl);
         KariMedia media = null;
@@ -219,7 +219,7 @@ public class KariService extends AbstractOrgService<KariMedia, Integer> {
         return saveMediaOrCheckRemote(save, media);
     }
 
-    private KariMedia buildMedia(int id, URL view, Element div, String title, Element infos, Elements lis) {
+    private KariMedia buildMedia(String id, URL view, Element div, String title, Element infos, Elements lis) {
         KariMedia media = new KariMedia();
         media.setId(id);
         media.setKariId(lis.get(0).getElementsByClass("txt").get(0).text());

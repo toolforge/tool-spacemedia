@@ -41,7 +41,7 @@ class NasaFlickrServiceTest extends AbstractOrgServiceTest {
     @Test
     void testGetNasaIdAndSource() throws MalformedURLException {
         FlickrMedia media = new FlickrMedia();
-        media.setId(52867079337L);
+        media.setId("52867079337");
         media.setPathAlias("nasahqphoto");
         media.setTitle("Czech Republic Artemis Accords Signing (NHQ202305030019)");
         media.addMetadata(

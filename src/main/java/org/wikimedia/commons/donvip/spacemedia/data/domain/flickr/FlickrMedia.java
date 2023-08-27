@@ -39,7 +39,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-public class FlickrMedia extends SingleFileMedia<Long> implements WithLatLon, WithKeywords {
+public class FlickrMedia extends SingleFileMedia<String> implements WithLatLon, WithKeywords {
 
     private static final String STATICFLICKR_COM = ".staticflickr.com";
 
@@ -47,7 +47,7 @@ public class FlickrMedia extends SingleFileMedia<Long> implements WithLatLon, Wi
 
     @Id
     @Column(nullable = false)
-    private Long id;
+    private String id;
 
     @Column(nullable = false)
     private int license;
@@ -87,12 +87,12 @@ public class FlickrMedia extends SingleFileMedia<Long> implements WithLatLon, Wi
     private Set<FlickrPhotoSet> photosets = new HashSet<>();
 
     @Override
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

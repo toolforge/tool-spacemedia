@@ -91,7 +91,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     @Test
     void testGetStringsToRemove() {
         FlickrMedia media = new FlickrMedia();
-        media.setId(52840868995L);
+        media.setId("52840868995");
         media.setPathAlias("pierre_markuse");
         media.setDescription(
                 """
@@ -156,7 +156,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     @Test
     void testFindCategories() {
         FlickrMedia media = new FlickrMedia();
-        media.setId(52935302219L);
+        media.setId("52935302219");
         media.setPathAlias("kevinmgill");
         media.setTitle("MSL - Sol 3841 - MastCam");
         media.setDescription("NASA/JPL-Caltech/MSSS/Kevin M. Gill");
@@ -178,7 +178,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
         media.addMetadata(new FileMetadata());
         media.setPathAlias("pierre_markuse");
         media.setLicense(4);
-        media.setId(52559137901L);
+        media.setId("52559137901");
         media.setTitle("Brunt Ice Shelf, Antarctica - 11 December 2022");
         media.setDescription(
                 "Contains modified Copernicus Sentinel data [2022], processed by <a href=\"https://twitter.com/Pierre_Markuse\">Pierre Markuse</a>\r\n"
