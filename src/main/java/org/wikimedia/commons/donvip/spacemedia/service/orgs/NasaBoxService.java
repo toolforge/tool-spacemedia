@@ -35,7 +35,7 @@ public class NasaBoxService extends AbstractOrgBoxService {
     @Override
     public Set<String> findCategories(BoxMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (ARTEMIS_SHARE.equals(media.getId().getShare())) {
+        if (isArtemis(media)) {
             result.add("Artemis program");
         }
         return result;
@@ -44,7 +44,7 @@ public class NasaBoxService extends AbstractOrgBoxService {
     @Override
     protected Set<String> getEmojis(BoxMedia uploadedMedia) {
         Set<String> result = super.getEmojis(uploadedMedia);
-        if (ARTEMIS_SHARE.equals(uploadedMedia.getId().getShare())) {
+        if (isArtemis(uploadedMedia)) {
             result.add(Emojis.ASTRONAUT);
             result.add(Emojis.MOON);
         }
@@ -54,9 +54,13 @@ public class NasaBoxService extends AbstractOrgBoxService {
     @Override
     protected Set<String> getTwitterAccounts(BoxMedia uploadedMedia) {
         Set<String> result = super.getTwitterAccounts(uploadedMedia);
-        if (ARTEMIS_SHARE.equals(uploadedMedia.getId().getShare())) {
+        if (isArtemis(uploadedMedia)) {
             result.add("@NASAArtemis");
         }
         return result;
+    }
+
+    private static final boolean isArtemis(BoxMedia media) {
+        return ARTEMIS_SHARE.equals(getShare(media.getId()));
     }
 }

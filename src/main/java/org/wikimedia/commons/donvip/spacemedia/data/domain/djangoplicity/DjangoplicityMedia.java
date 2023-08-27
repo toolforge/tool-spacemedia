@@ -17,17 +17,19 @@ import javax.persistence.Lob;
 
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaIdBridge;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
-public class DjangoplicityMedia extends Media<DjangoplicityMediaId> {
+public class DjangoplicityMedia extends Media<CompositeMediaId> {
 
     @Id
     @Embedded
-    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = DjangoplicityMediaIdBridge.class))
-    private DjangoplicityMediaId id;
+    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = CompositeMediaIdBridge.class))
+    private CompositeMediaId id;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true, length = 16)
@@ -96,18 +98,18 @@ public class DjangoplicityMedia extends Media<DjangoplicityMediaId> {
     private String credit;
 
     @Override
-    public DjangoplicityMediaId getId() {
+    public CompositeMediaId getId() {
         return id;
     }
 
     @Override
-    public void setId(DjangoplicityMediaId id) {
+    public void setId(CompositeMediaId id) {
         this.id = id;
     }
 
     @Override
     public String getIdUsedInOrg() {
-        return getId().getId();
+        return getId().getMediaId();
     }
 
     public DjangoplicityLicence getLicence() {

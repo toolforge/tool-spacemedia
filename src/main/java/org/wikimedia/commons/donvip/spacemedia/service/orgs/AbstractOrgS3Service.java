@@ -22,9 +22,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3MediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.s3.S3Service;
@@ -37,7 +37,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
  * Service fetching images from AWS S3
  */
 public abstract class AbstractOrgS3Service
-        extends AbstractOrgService<S3Media, S3MediaId> {
+        extends AbstractOrgService<S3Media, CompositeMediaId> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgS3Service.class);
 
@@ -67,16 +67,20 @@ public abstract class AbstractOrgS3Service
     }
 
     @Override
-    protected final S3MediaId getMediaId(String id) {
-        return new S3MediaId(id);
+    protected final CompositeMediaId getMediaId(String id) {
+        return new CompositeMediaId(id);
     }
 
-    protected final S3Object getS3Object(S3MediaId mediaId) {
-        return getS3Object(mediaId.getBucketName(), mediaId.getObjectKey());
+    protected final S3Object getS3Object(CompositeMediaId mediaId) {
+        return getS3Object(mediaId.getRepoId(), mediaId.getMediaId());
     }
 
     protected final S3Object getS3Object(String bucket, String key) {
         return s3.getObject(region, bucket, key);
+    }
+
+    protected final String getUrl(CompositeMediaId id) {
+        return "http://" + id.getRepoId() + ".s3.amazonaws.com/" + id.getMediaId();
     }
 
     @Override
@@ -120,7 +124,7 @@ public abstract class AbstractOrgS3Service
     private S3Media toS3Media(String bucket, S3ObjectSummary summary) {
         S3Media media = new S3Media(bucket, summary.getKey());
         media.setPublicationDateTime(toZonedDateTime(summary.getLastModified()));
-        addMetadata(media, media.getId().getUrl(), m -> fillMetadata(m, summary));
+        addMetadata(media, getUrl(media.getId()), m -> fillMetadata(m, summary));
         return media;
     }
 

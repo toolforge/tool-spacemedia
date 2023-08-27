@@ -97,7 +97,7 @@ public abstract class AbstractOrgServiceTest {
             DjangoplicityMediaType imageType, String date, ImageDimensions dimensions, String name, Set<String> types,
             Set<String> categories, String credit, List<String> assetUrls, String title, String description,
             Set<String> telescopes) {
-        assertEquals(id, media.getId().getId());
+        assertEquals(id, media.getId().getMediaId());
         assertEquals(imageType, media.getImageType());
         assertEquals(date, media.getPublicationDateTime().toLocalDateTime().toString());
         assertEquals(dimensions, media.getMetadata().iterator().next().getImageDimensions());

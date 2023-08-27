@@ -12,9 +12,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface DjangoplicityMediaRepository extends MediaRepository<DjangoplicityMedia, DjangoplicityMediaId> {
+public interface DjangoplicityMediaRepository extends MediaRepository<DjangoplicityMedia, CompositeMediaId> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "djangoCount", "djangoCountByWebsite", "djangoCountIgnoredByWebsite",
@@ -37,11 +38,11 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
     long count();
 
     @Cacheable("djangoCountByWebsite")
-    @Query("select count(*) from #{#entityName} m where m.id.website = ?1")
+    @Query("select count(*) from #{#entityName} m where m.id.repoId = ?1")
     long count(String website);
 
     @Cacheable("djangoCountIgnoredByWebsite")
-    @Query("select count(*) from #{#entityName} m where m.ignored = true and m.id.website = ?1")
+    @Query("select count(*) from #{#entityName} m where m.ignored = true and m.id.repoId = ?1")
     long countByIgnoredTrue(String website);
 
     @Override
@@ -50,7 +51,7 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
     long countMissingInCommons();
 
     @Cacheable("djangoCountMissingByWebsite")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.website = ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId = ?1")
     long countMissingInCommons(String website);
 
     @Override
@@ -71,7 +72,7 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
     long countUploadedToCommons();
 
     @Cacheable("djangoCountUploadedByWebsite")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.website = ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId = ?1")
     long countUploadedToCommons(String website);
 
     @Override
@@ -79,40 +80,40 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
     long countByMetadata_PhashNotNull();
 
     @Cacheable("djangoCountPhashNotNullByWebsite")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.website = ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.repoId = ?1")
     long countByMetadata_PhashNotNull(String website);
 
     // FIND
 
-    @Query("select m from #{#entityName} m where m.id.website = ?1")
+    @Query("select m from #{#entityName} m where m.id.repoId = ?1")
     Set<DjangoplicityMedia> findAll(String website);
 
-    @Query("select m from #{#entityName} m where m.id.website = ?1")
+    @Query("select m from #{#entityName} m where m.id.repoId = ?1")
     Page<DjangoplicityMedia> findAll(String website, Pageable page);
 
-    @Query("select m from #{#entityName} m where m.id.website = ?1 and m.id not in ?2")
-    Set<DjangoplicityMedia> findNotIn(String website, Set<DjangoplicityMediaId> ids);
+    @Query("select m from #{#entityName} m where m.id.repoId = ?1 and m.id not in ?2")
+    Set<DjangoplicityMedia> findNotIn(String website, Set<CompositeMediaId> ids);
 
-    @Query("select m from #{#entityName} m where m.ignored = true and m.id.website = ?1")
+    @Query("select m from #{#entityName} m where m.ignored = true and m.id.repoId = ?1")
     List<DjangoplicityMedia> findByIgnoredTrue(String website);
 
-    @Query("select m from #{#entityName} m where m.ignored = true and m.id.website = ?1")
+    @Query("select m from #{#entityName} m where m.ignored = true and m.id.repoId = ?1")
     Page<DjangoplicityMedia> findByIgnoredTrue(String website, Pageable page);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.website = ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId = ?1")
     List<DjangoplicityMedia> findMissingInCommons(String website);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.website = ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId = ?1")
     Page<DjangoplicityMedia> findMissingInCommons(String website, Pageable page);
 
     @Override
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     Page<DjangoplicityMedia> findMissingInCommons(Pageable page);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.website in ?1 and (m.creationDate = ?2 or m.publicationDate = ?2)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and (m.creationDate = ?2 or m.publicationDate = ?2)")
     List<DjangoplicityMedia> findMissingInCommonsByDate(String website, LocalDate date);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.website in ?1 and m.title = ?2")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and m.title = ?2")
     List<DjangoplicityMedia> findMissingInCommonsByTitle(String website, String title);
 
     @Override
@@ -129,16 +130,16 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
         return Page.empty();
     }
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.website = ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId = ?1")
     List<DjangoplicityMedia> findUploadedToCommons(String website);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.website = ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId = ?1")
     Page<DjangoplicityMedia> findUploadedToCommons(String website, Pageable page);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.id.website = ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.id.repoId = ?1")
     List<DjangoplicityMedia> findDuplicateInCommons(String website);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.website = ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.repoId = ?1")
     Page<DjangoplicityMedia> findByMetadata_PhashNotNull(String website, Pageable page);
 
     // SAVE
@@ -155,7 +156,7 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
 
     @Override
     @CacheEvictDjangoAll
-    void deleteById(DjangoplicityMediaId id);
+    void deleteById(CompositeMediaId id);
 
     @Override
     @CacheEvictDjangoAll
@@ -173,6 +174,6 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
 
     @Modifying
     @CacheEvictDjangoAll
-    @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true and m.id.website = ?1")
+    @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true and m.id.repoId = ?1")
     int resetIgnored(String website);
 }

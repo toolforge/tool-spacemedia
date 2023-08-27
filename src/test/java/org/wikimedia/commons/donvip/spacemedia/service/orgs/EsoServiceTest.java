@@ -21,10 +21,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 
@@ -58,7 +58,7 @@ class EsoServiceTest extends AbstractOrgServiceTest {
         DjangoplicityMedia media = new DjangoplicityMedia();
         media.setPublicationDateTime(ZonedDateTime.now());
         media.setCredit("ESO");
-        media.setId(new DjangoplicityMediaId("eso", "ann23006a"));
+        media.setId(new CompositeMediaId("eso", "ann23006a"));
         media.setTitle("Live streaming: How will the ELT explore the Universe?");
         media.setDescription(
                 "Join us on 12 May, from 16:00 CEST, for a live streaming on <a href=\"https://fb.me/e/2JtKDmBbR\">Facebook</a> and <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a> on two of the instruments of <a href=\"https://elt.eso.org/\">ESO’s Extremely Large Telescope</a> (ELT): the Mid-infrared ELT Imager and Spectrograph (METIS) and Multi-AO Imaging Camera for Deep Observations (MICADO).During the event, we will premiere two mini-documentaries on the instruments, followed by a Q&amp;A session with the experts behind them. Participants can ask questions on Twitter using <a href=\"https://twitter.com/search?q=%23askESO&amp;src=typed_query&amp;f=live\">#askESO</a>, as well as live on <a href=\"https://fb.me/e/2JtKDmBbR\">Facebook</a> and <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a>. Click Going/Interested on <a href=\"https://fb.me/e/2JtKDmBbR\">Facebook</a> and Notify me on <a href=\"https://www.youtube.com/watch?v=zgHFdokFyLU\">YouTube</a>, respectively, to be prompted when the live show starts.");

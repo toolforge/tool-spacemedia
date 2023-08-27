@@ -13,9 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3MediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.CapellaS3Service.StacMetadata.StacProperties;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -55,8 +55,8 @@ public class CapellaS3Service extends AbstractOrgS3Service {
 
     @Override
     protected S3Media enrichS3Media(S3Media media) throws IOException {
-        S3MediaId id = media.getId();
-        String[] items = id.getObjectKey().split("/");
+        CompositeMediaId id = media.getId();
+        String[] items = id.getMediaId().split("/");
         if (items.length == 6) {
             int year = Integer.parseInt(items[1]);
             int month = Integer.parseInt(items[2]);
@@ -74,7 +74,7 @@ public class CapellaS3Service extends AbstractOrgS3Service {
         } else {
             LOGGER.error("Unrecognized object key: {}", id);
         }
-        media.setThumbnailUrl(newURL(id.getUrl().replace(".tif", "_thumb.png")));
+        media.setThumbnailUrl(newURL(getUrl(id).replace(".tif", "_thumb.png")));
         return media;
     }
 

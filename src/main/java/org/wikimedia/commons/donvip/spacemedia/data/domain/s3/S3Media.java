@@ -8,18 +8,20 @@ import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBrid
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaIdBridge;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
 
 @Entity
 @Indexed
-public class S3Media extends SingleFileMedia<S3MediaId> implements WithLatLon {
+public class S3Media extends SingleFileMedia<CompositeMediaId> implements WithLatLon {
 
     @Id
     @Embedded
-    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = S3MediaIdBridge.class))
-    private S3MediaId id;
+    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = CompositeMediaIdBridge.class))
+    private CompositeMediaId id;
 
     private double latitude;
 
@@ -30,16 +32,16 @@ public class S3Media extends SingleFileMedia<S3MediaId> implements WithLatLon {
     }
 
     public S3Media(String bucketName, String key) {
-        setId(new S3MediaId(bucketName, key));
+        setId(new CompositeMediaId(bucketName, key));
     }
 
     @Override
-    public S3MediaId getId() {
+    public CompositeMediaId getId() {
         return id;
     }
 
     @Override
-    public void setId(S3MediaId id) {
+    public void setId(CompositeMediaId id) {
         this.id = id;
     }
 

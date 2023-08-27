@@ -163,8 +163,8 @@ public class BoxService {
         return BoxItem.getSharedItem(api, sharedLink);
     }
 
-    public BoxFile getSharedFile(String sharedLink, long fileId) {
-        return new BoxFile(new SharedLinkAPIConnection(api, sharedLink), Long.toString(fileId));
+    public BoxFile getSharedFile(String sharedLink, String fileId) {
+        return new BoxFile(new SharedLinkAPIConnection(api, sharedLink), fileId);
     }
 
     public List<BoxFile.Info> getFiles(String app, String share) {

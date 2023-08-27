@@ -8,18 +8,20 @@ import javax.persistence.Id;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaIdBridge;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Indexed
-public class BoxMedia extends SingleFileMedia<BoxMediaId> {
+public class BoxMedia extends SingleFileMedia<CompositeMediaId> {
 
     @Id
     @Embedded
-    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = BoxMediaIdBridge.class))
-    private BoxMediaId id;
+    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = CompositeMediaIdBridge.class))
+    private CompositeMediaId id;
 
     @Column(nullable = true)
     private String creator;
@@ -29,16 +31,16 @@ public class BoxMedia extends SingleFileMedia<BoxMediaId> {
     }
 
     public BoxMedia(String app, String share, long id) {
-        setId(new BoxMediaId(app, share, id));
+        setId(new CompositeMediaId(app + '/' + share, Long.toString(id)));
     }
 
     @Override
-    public BoxMediaId getId() {
+    public CompositeMediaId getId() {
         return id;
     }
 
     @Override
-    public void setId(BoxMediaId id) {
+    public void setId(CompositeMediaId id) {
         this.id = id;
     }
 
@@ -52,14 +54,15 @@ public class BoxMedia extends SingleFileMedia<BoxMediaId> {
 
     @Override
     protected String getUploadId(FileMetadata fileMetadata) {
-        return Long.toString(getId().getId());
+        return getId().getMediaId();
     }
 
     @Override
     protected String getUploadTitle() {
         int idx = title.lastIndexOf('.');
         String result = CommonsService.normalizeFilename(idx > -1 ? title.substring(0, idx) : title);
-        return result.replace("IMG_", "").matches("[\\p{Alnum}_]+") ? id.getApp() + ' ' + result : result;
+        return result.replace("IMG_", "").matches("[\\p{Alnum}_]+") ? id.getRepoId().split("/")[0] + ' ' + result
+                : result;
     }
 
     public BoxMedia copyDataFrom(BoxMedia other) {

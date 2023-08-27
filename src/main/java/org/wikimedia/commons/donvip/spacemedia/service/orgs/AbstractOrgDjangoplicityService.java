@@ -43,12 +43,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityLicence;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
@@ -66,7 +66,7 @@ import io.micrometer.core.instrument.util.StringUtils;
  * @param <T> Type of media
  */
 public abstract class AbstractOrgDjangoplicityService
-        extends AbstractOrgService<DjangoplicityMedia, DjangoplicityMediaId> {
+        extends AbstractOrgService<DjangoplicityMedia, CompositeMediaId> {
 
     private static final String IDENTIFIABLE_PERSON = "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.";
 
@@ -131,8 +131,8 @@ public abstract class AbstractOrgDjangoplicityService
     }
 
     @Override
-    protected final DjangoplicityMediaId getMediaId(String id) {
-        return new DjangoplicityMediaId(getId(), id);
+    protected final CompositeMediaId getMediaId(String id) {
+        return new CompositeMediaId(getId(), id);
     }
 
     private static void scrapingError(String url, String details) {
@@ -156,7 +156,7 @@ public abstract class AbstractOrgDjangoplicityService
         }
         DjangoplicityMedia media;
         boolean save = false;
-        Optional<DjangoplicityMedia> mediaInRepo = repository.findById(new DjangoplicityMediaId(getId(), id));
+        Optional<DjangoplicityMedia> mediaInRepo = repository.findById(new CompositeMediaId(getId(), id));
         if (mediaInRepo.isPresent()) {
             media = mediaInRepo.get();
             LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
@@ -231,7 +231,7 @@ public abstract class AbstractOrgDjangoplicityService
             scrapingError(imgUrlLink, h1s.toString());
         }
         DjangoplicityMedia media = new DjangoplicityMedia();
-        media.setId(new DjangoplicityMediaId(getId(), id));
+        media.setId(new CompositeMediaId(getId(), id));
         media.setTitle(h1s.get(0).html());
         // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
         media.setDescription(findDescription(div).toString());

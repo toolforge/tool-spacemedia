@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
-import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -26,9 +25,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.box.BoxMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.box.BoxMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.box.BoxMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
@@ -41,7 +40,7 @@ import com.box.sdk.BoxFile;
  * Service fetching images from box.com
  */
 public abstract class AbstractOrgBoxService
-        extends AbstractOrgService<BoxMedia, BoxMediaId> {
+        extends AbstractOrgService<BoxMedia, CompositeMediaId> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgBoxService.class);
 
@@ -69,15 +68,16 @@ public abstract class AbstractOrgBoxService
     }
 
     @Override
-    protected final BoxMediaId getMediaId(String id) {
-        return new BoxMediaId(id);
+    protected final CompositeMediaId getMediaId(String id) {
+        return new CompositeMediaId(id);
     }
 
     @Override
     protected UrlResolver<BoxMedia> getUrlResolver() {
         return (media, metadata) -> {
             try {
-                return boxService.getSharedFile(getSharedLink(media.getId()), media.getId().getId()).getDownloadURL();
+                return boxService.getSharedFile(getSharedLink(media.getId()), media.getId().getMediaId())
+                        .getDownloadURL();
             } catch (BoxAPIResponseException e) {
                 if (e.getResponseCode() == 404) {
                     LOGGER.warn("Deleting image as no longer found: {}", e.getMessage());
@@ -88,8 +88,16 @@ public abstract class AbstractOrgBoxService
         };
     }
 
-    private String getSharedLink(BoxMediaId id) {
-        return boxService.getSharedLink(id.getApp(), id.getShare());
+    private String getSharedLink(CompositeMediaId id) {
+        return boxService.getSharedLink(getApp(id), getShare(id));
+    }
+
+    protected static final String getApp(CompositeMediaId id) {
+        return id.getRepoId().split("/")[0];
+    }
+
+    protected static final String getShare(CompositeMediaId id) {
+        return id.getRepoId().split("/")[1];
     }
 
     @Override
@@ -195,112 +203,108 @@ public abstract class AbstractOrgBoxService
         return boxService.getSharedItem(getSharedLink(media.getId())).getCreatedBy().getName();
     }
 
-    private static Set<String> shares(Set<String> appShares) {
-        return appShares.stream().map(as -> as.split(":")[1]).collect(toSet());
-    }
-
     @Override
     public long countAllMedia() {
-        return mediaRepository.count(shares(appShares));
+        return mediaRepository.count(appShares);
     }
 
     @Override
     public long countIgnored() {
-        return mediaRepository.countByIgnoredTrue(shares(appShares));
+        return mediaRepository.countByIgnoredTrue(appShares);
     }
 
     @Override
     public long countMissingMedia() {
-        return mediaRepository.countMissingInCommonsByShare(shares(appShares));
+        return mediaRepository.countMissingInCommonsByShare(appShares);
     }
 
     @Override
     public long countMissingImages() {
-        return mediaRepository.countMissingImagesInCommons(shares(appShares));
+        return mediaRepository.countMissingImagesInCommons(appShares);
     }
 
     @Override
     public long countMissingVideos() {
-        return mediaRepository.countMissingVideosInCommons(shares(appShares));
+        return mediaRepository.countMissingVideosInCommons(appShares);
     }
 
     @Override
     public long countPerceptualHashes() {
-        return mediaRepository.countByMetadata_PhashNotNull(shares(appShares));
+        return mediaRepository.countByMetadata_PhashNotNull(appShares);
     }
 
     @Override
     public long countUploadedMedia() {
-        return mediaRepository.countUploadedToCommons(shares(appShares));
+        return mediaRepository.countUploadedToCommons(appShares);
     }
 
     @Override
     public Iterable<BoxMedia> listAllMedia() {
-        return mediaRepository.findAll(shares(appShares));
+        return mediaRepository.findAll(appShares);
     }
 
     @Override
     public Page<BoxMedia> listAllMedia(Pageable page) {
-        return mediaRepository.findAll(shares(appShares), page);
+        return mediaRepository.findAll(appShares, page);
     }
 
     @Override
     public List<BoxMedia> listMissingMedia() {
-        return mediaRepository.findMissingInCommonsByShare(shares(appShares));
+        return mediaRepository.findMissingInCommonsByShare(appShares);
     }
 
     @Override
     public Page<BoxMedia> listMissingMedia(Pageable page) {
-        return mediaRepository.findMissingInCommonsByShare(shares(appShares), page);
+        return mediaRepository.findMissingInCommonsByShare(appShares, page);
     }
 
     @Override
     public Page<BoxMedia> listMissingImages(Pageable page) {
-        return mediaRepository.findMissingImagesInCommons(shares(appShares), page);
+        return mediaRepository.findMissingImagesInCommons(appShares, page);
     }
 
     @Override
     public Page<BoxMedia> listMissingVideos(Pageable page) {
-        return mediaRepository.findMissingVideosInCommons(shares(appShares), page);
+        return mediaRepository.findMissingVideosInCommons(appShares, page);
     }
 
     @Override
     public List<BoxMedia> listMissingMediaByDate(LocalDate date) {
-        return mediaRepository.findMissingInCommonsByShareAndDate(shares(appShares), date);
+        return mediaRepository.findMissingInCommonsByShareAndDate(appShares, date);
     }
 
     @Override
     public List<BoxMedia> listMissingMediaByTitle(String title) {
-        return mediaRepository.findMissingInCommonsByShareAndTitle(shares(appShares), title);
+        return mediaRepository.findMissingInCommonsByShareAndTitle(appShares, title);
     }
 
     @Override
     public Page<BoxMedia> listHashedMedia(Pageable page) {
-        return mediaRepository.findByMetadata_PhashNotNull(shares(appShares), page);
+        return mediaRepository.findByMetadata_PhashNotNull(appShares, page);
     }
 
     @Override
     public List<BoxMedia> listUploadedMedia() {
-        return mediaRepository.findUploadedToCommons(shares(appShares));
+        return mediaRepository.findUploadedToCommons(appShares);
     }
 
     @Override
     public Page<BoxMedia> listUploadedMedia(Pageable page) {
-        return mediaRepository.findUploadedToCommons(shares(appShares), page);
+        return mediaRepository.findUploadedToCommons(appShares, page);
     }
 
     @Override
     public List<BoxMedia> listDuplicateMedia() {
-        return mediaRepository.findDuplicateInCommons(shares(appShares));
+        return mediaRepository.findDuplicateInCommons(appShares);
     }
 
     @Override
     public List<BoxMedia> listIgnoredMedia() {
-        return mediaRepository.findByIgnoredTrue(shares(appShares));
+        return mediaRepository.findByIgnoredTrue(appShares);
     }
 
     @Override
     public Page<BoxMedia> listIgnoredMedia(Pageable page) {
-        return mediaRepository.findByIgnoredTrue(shares(appShares), page);
+        return mediaRepository.findByIgnoredTrue(appShares, page);
     }
 }
