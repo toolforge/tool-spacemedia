@@ -95,6 +95,14 @@ public class NasaModisMedia extends SingleFileMedia<String> {
                 && Objects.equals(bands, other.bands) && Objects.equals(credit, other.credit);
     }
 
+    public NasaModisMedia copyDataFrom(NasaModisMedia other) {
+        super.copyDataFrom(other);
+        this.satellite = other.satellite;
+        this.bands = other.bands;
+        this.credit = other.credit;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "NasaModisMedia [id=" + id

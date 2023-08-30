@@ -196,7 +196,11 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia, String>
 
     @Override
     protected NasaModisMedia refresh(NasaModisMedia media) throws IOException {
-        throw new UnsupportedOperationException(); // TODO
+        try {
+            return media.copyDataFrom(fetchMedia(media.getPublicationDate()));
+        } catch (UpdateFinishedException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
@@ -215,8 +219,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia, String>
         image.setPublicationDate(date);
         String imgUrlLink = detailsUrl.replace("<date>", date.toString());
         LOGGER.info(imgUrlLink);
-        Document html = Jsoup.connect(imgUrlLink).timeout(10_000).get();
-        fillMediaWithHtml(html, image);
+        fillMediaWithHtml(Jsoup.connect(imgUrlLink).timeout(10_000).get(), image);
         return image;
     }
 

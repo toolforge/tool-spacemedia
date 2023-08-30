@@ -400,10 +400,10 @@ public abstract class Media<ID> implements MediaProjection<ID> {
     public final void copyDataFrom(Media<ID> mediaFromApi) {
         setDescription(mediaFromApi.getDescription());
         setTitle(mediaFromApi.getTitle());
-        setCreationDate(mediaFromApi.getCreationDate());
         setCreationDateTime(mediaFromApi.getCreationDateTime());
-        setPublicationDate(mediaFromApi.getPublicationDate());
+        setCreationDate(mediaFromApi.getCreationDate());
         setPublicationDateTime(mediaFromApi.getPublicationDateTime());
+        setPublicationDate(mediaFromApi.getPublicationDate());
         if (mediaFromApi.hasMetadata()) {
             for (Iterator<FileMetadata> it = getMetadata().iterator(); it.hasNext();) {
                 FileMetadata m = it.next();
