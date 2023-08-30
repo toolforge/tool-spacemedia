@@ -49,6 +49,7 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
         case "harrystrangerphotography", "194849271@N04":
             if ((media.getDescription() != null && media.getDescription().toLowerCase(Locale.ENGLISH).contains("usgs"))
                     || media.getPhotosets().stream().anyMatch(s -> s.getTitle().startsWith("KH-"))) {
+                result.add("PD-USGov-NRO");
                 replace(result, "Flickr-public domain mark", "PD-USGov-USGS");
             }
             break;
@@ -98,6 +99,12 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
             }
             break;
         }
+        if (result.contains("Photos of Jupiter system by spacecraft") && result.contains("Photos by JunoCam")) {
+            replace(result, "Photos of Jupiter system by spacecraft", "Photos of Jupiter system by JunoCam");
+        }
+        if (result.contains("Jupiter (planet)") && result.contains("Photos by JunoCam")) {
+            replace(result, "Jupiter (planet)", "Photos of Jupiter by JunoCam");
+        }
         if (includeHidden) {
             switch (media.getPathAlias()) {
             case "geckzilla":
@@ -115,6 +122,11 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
             }
         }
         return result;
+    }
+
+    @Override
+    protected boolean isSatellitePicture(FlickrMedia media, FileMetadata metadata) {
+        return Set.of("pierre_markuse", "harrystrangerphotography", "194849271@N04").contains(media.getPathAlias());
     }
 
     @Override
