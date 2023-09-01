@@ -7,21 +7,16 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Id;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Indexed
-public class NasaSdoMedia extends SingleFileMedia<String> {
-
-    @Id
-    @Column(nullable = false, length = 32)
-    private String id;
+public class NasaSdoMedia extends SingleFileMedia {
 
     @Enumerated(EnumType.ORDINAL)
     @Column(nullable = false, columnDefinition = "TINYINT default 0")
@@ -33,16 +28,6 @@ public class NasaSdoMedia extends SingleFileMedia<String> {
 
     @Embedded
     private NasaSdoKeywords keywords = new NasaSdoKeywords();
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public NasaMediaType getMediaType() {
         return mediaType;
@@ -85,7 +70,7 @@ public class NasaSdoMedia extends SingleFileMedia<String> {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(dataType, id, mediaType, keywords);
+        return 31 * super.hashCode() + Objects.hash(dataType, mediaType, keywords);
     }
 
     @Override
@@ -96,11 +81,11 @@ public class NasaSdoMedia extends SingleFileMedia<String> {
             return false;
         NasaSdoMedia other = (NasaSdoMedia) obj;
         return dataType == other.dataType && mediaType == other.mediaType
-                && Objects.equals(id, other.id) && Objects.equals(keywords, other.keywords);
+                && Objects.equals(keywords, other.keywords);
     }
 
     @Override
     public String toString() {
-        return "NasaSdoMedia [id=" + id + ", mediaType=" + mediaType + ", dataType=" + dataType + ']';
+        return "NasaSdoMedia [id=" + getId() + ", mediaType=" + mediaType + ", dataType=" + dataType + ']';
     }
 }

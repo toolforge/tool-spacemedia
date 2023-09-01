@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
@@ -46,7 +47,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class EsaService extends AbstractOrgService<EsaMedia, String> {
+public class EsaService extends AbstractOrgService<EsaMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsaService.class);
 
@@ -85,7 +86,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, String> {
 
     @Autowired
     public EsaService(EsaMediaRepository repository) {
-        super(repository, "esa");
+        super(repository, "esa", Set.of("esa"));
     }
 
     @Override
@@ -112,11 +113,6 @@ public class EsaService extends AbstractOrgService<EsaMedia, String> {
     }
 
     @Override
-    protected final String getMediaId(String id) {
-        return id;
-    }
-
-    @Override
     protected boolean checkBlocklist() {
         return false;
     }
@@ -137,7 +133,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, String> {
 
     private void processShare(EsaMedia image, Element element) {
         String id = element.getElementsByClass("btn ezsr-star-rating-enabled").get(0).attr("id").replace("ezsr_", "");
-        image.setId(id.substring(0, id.indexOf('_')));
+        image.setId(new CompositeMediaId("esa", id.substring(0, id.indexOf('_'))));
     }
 
     private void processExtra(EsaMedia image, Element element) {
@@ -428,7 +424,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, String> {
         return result;
     }
 
-    public static void enrichEsaCategories(Set<String> categories, Media<?> media, String author) {
+    public static void enrichEsaCategories(Set<String> categories, Media media, String author) {
         if (media.getDescription() != null) {
             enrichEnvisat(categories, media, author);
             enrichExoMars(categories, media, author);
@@ -436,7 +432,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, String> {
         }
     }
 
-    private static void enrichEnvisat(Set<String> categories, Media<?> media, String author) {
+    private static void enrichEnvisat(Set<String> categories, Media media, String author) {
         String descLc = media.getDescription().toLowerCase(Locale.ENGLISH);
         String titleLc = media.getTitle().toLowerCase(Locale.ENGLISH);
         if (categories.contains("Envisat") &&
@@ -460,7 +456,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, String> {
         }
     }
 
-    private static void enrichExoMars(Set<String> categories, Media<?> media, String author) {
+    private static void enrichExoMars(Set<String> categories, Media media, String author) {
         if (author != null && author.startsWith("ESA/Roscosmos/CaSSIS")) {
             categories.remove("ExoMars");
             categories.remove("ExoMars 2016");
@@ -468,7 +464,7 @@ public class EsaService extends AbstractOrgService<EsaMedia, String> {
         }
     }
 
-    private static void enrichMarsExpress(Set<String> categories, Media<?> media, String author) {
+    private static void enrichMarsExpress(Set<String> categories, Media media, String author) {
         if ((categories.contains("Mars Express") || categories.contains("Photos by Mars Express"))
                 && (media.getDescription().contains("ESA/DLR/FU Berlin") || author.contains("ESA/DLR/FU Berlin"))) {
             categories.remove("Mars Express");

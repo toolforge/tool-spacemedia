@@ -49,12 +49,12 @@ public class RemoteService {
         } while (!ok);
     }
 
-    public void saveMedia(String orgId, Media<?> media) {
+    public void saveMedia(String orgId, Media media) {
         restTemplate.put(
                 String.join("/", restOrgEndpoint(orgId), "media", media.getIdUsedInOrg()), media);
     }
 
-    public <T extends Media<?>> T getMedia(String orgId, String mediaId, Class<T> mediaClass) {
+    public <T extends Media> T getMedia(String orgId, String mediaId, Class<T> mediaClass) {
         try {
             return restTemplate.getForObject(
                     String.join("/", restOrgEndpoint(orgId), "media", mediaId), mediaClass);

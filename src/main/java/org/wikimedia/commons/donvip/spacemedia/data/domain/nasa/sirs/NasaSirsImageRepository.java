@@ -7,9 +7,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, String> {
+public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -80,7 +81,7 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage, 
 
     @Override
     @CacheEvictNasaSirsAll
-    void deleteById(String id);
+    void deleteById(CompositeMediaId id);
 
     @Override
     @CacheEvictNasaSirsAll

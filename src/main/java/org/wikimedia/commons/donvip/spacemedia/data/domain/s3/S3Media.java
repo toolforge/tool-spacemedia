@@ -5,13 +5,13 @@ import javax.persistence.Entity;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultSingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
 
 @Entity
 @Indexed
-public class S3Media extends DefaultSingleFileMedia implements WithLatLon {
+public class S3Media extends SingleFileMedia implements WithLatLon {
 
     private double latitude;
 

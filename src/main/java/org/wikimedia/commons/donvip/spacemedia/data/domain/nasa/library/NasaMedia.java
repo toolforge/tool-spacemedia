@@ -12,7 +12,6 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Transient;
@@ -32,14 +31,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = NasaImage.class, name = "image"),
     @JsonSubTypes.Type(value = NasaVideo.class, name = "video") }
 )
-public abstract class NasaMedia extends SingleFileMedia<String> implements WithKeywords {
+public abstract class NasaMedia extends SingleFileMedia implements WithKeywords {
 
-    @Id
-    @Column(name = "nasa_id", nullable = false, length = 170)
+    @Transient
     @JsonProperty("nasa_id")
-    private String id;
+    private String nasaId;
 
-    @Column(length = 20)
+    @Transient
+    @JsonProperty("center")
     private String center;
 
     @Column(length = 200, nullable = true)
@@ -54,20 +53,22 @@ public abstract class NasaMedia extends SingleFileMedia<String> implements WithK
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
 
-    @Override
-    public String getId() {
-        return id;
+    @Transient
+    public String getNasaId() {
+        return nasaId;
     }
 
-    @Override
-    public void setId(String nasaId) {
-        this.id = nasaId;
+    @Transient
+    public void setNasaId(String nasaId) {
+        this.nasaId = nasaId;
     }
 
+    @Transient
     public String getCenter() {
         return center;
     }
 
+    @Transient
     public void setCenter(String center) {
         this.center = center;
     }
@@ -124,8 +125,7 @@ public abstract class NasaMedia extends SingleFileMedia<String> implements WithK
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode()
-                + Objects.hash(center, location, description, keywords, mediaType, id, title);
+        return 31 * super.hashCode() + Objects.hash(location, description, keywords, mediaType, title);
     }
 
     @Override
@@ -135,16 +135,16 @@ public abstract class NasaMedia extends SingleFileMedia<String> implements WithK
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaMedia other = (NasaMedia) obj;
-        return Objects.equals(center, other.center) && Objects.equals(location, other.location)
+        return Objects.equals(location, other.location)
                 && Objects.equals(description, other.description)
                 && Objects.equals(keywords, other.keywords) && mediaType == other.mediaType
-                && Objects.equals(id, other.id) && Objects.equals(title, other.title);
+                && Objects.equals(title, other.title);
     }
 
     @Override
     public String toString() {
-        return "NasaMedia [" + (id != null ? "nasaId=" + id + ", " : "")
-                + (title != null ? "title=" + title + ", " : "") + (center != null ? "center=" + center + ", " : "")
+        return "NasaMedia [" + (getId() != null ? "id=" + getId() + ", " : "")
+                + (title != null ? "title=" + title + ", " : "")
                 + (location != null ? "location=" + location + ", " : "")
                 + (mediaType != null ? "mediaType=" + mediaType + ", " : "")
                 + (getAssetUrl() != null ? "assetUrl=" + getAssetUrl() + ", " : "")
@@ -168,7 +168,6 @@ public abstract class NasaMedia extends SingleFileMedia<String> implements WithK
 
     public NasaMedia copyDataFrom(NasaMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
-        setCenter(mediaFromApi.getCenter());
         setLocation(mediaFromApi.getLocation());
         setMediaType(mediaFromApi.getMediaType());
         setKeywords(mediaFromApi.getKeywords());

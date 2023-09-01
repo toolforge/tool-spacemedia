@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.apps;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -22,12 +24,14 @@ public class SpacemediaOrgUpdateJobApplication extends AbstractSpacemediaOrgUpda
     }
 
     @Bean
-    public Org<?, ?> org(@Value("${org}") String org,
+    public Org<?> org(@Value("${org}") String org,
             @Value("${repositoryClass}") String repositoryClass, @Value("${repositoryName:}") String repositoryName,
-            ApplicationContext context) throws ReflectiveOperationException {
+            @Value("${repoIds:}") Set<String> repoIds, ApplicationContext context) throws ReflectiveOperationException {
+        Class<?> orgClass = Class.forName(org);
         Class<?> repoClass = Class.forName(repositoryClass);
-        return (Org<?, ?>) Class.forName(org).getConstructor(repoClass)
-                .newInstance((MediaRepository<?, ?>) (repositoryName.isBlank() ? context.getBean(repoClass)
-                        : context.getBean(repositoryName, repoClass)));
+        MediaRepository<?> repo = (MediaRepository<?>) (repositoryName.isBlank() ? context.getBean(repoClass)
+                : context.getBean(repositoryName, repoClass));
+        return (Org<?>) (repoIds.isEmpty() ? orgClass.getConstructor(repoClass).newInstance(repo)
+                : orgClass.getConstructor(repoClass, Set.class).newInstance(repo, repoIds));
     }
 }

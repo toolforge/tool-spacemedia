@@ -7,11 +7,10 @@ import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface EsaMediaRepository extends MediaRepository<EsaMedia, String> {
+public interface EsaMediaRepository extends MediaRepository<EsaMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -61,16 +60,6 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia, String> {
 
     Optional<EsaMedia> findByUrl(URL mediaUrl);
 
-    @Override
-    default Page<EsaMedia> findMissingImagesInCommons(Pageable page) {
-        return findMissingInCommons(page);
-    }
-
-    @Override
-    default Page<EsaMedia> findMissingVideosInCommons(Pageable page) {
-        return Page.empty();
-    }
-
     // SAVE
 
     @Override
@@ -85,7 +74,7 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia, String> {
 
     @Override
     @CacheEvictEsaAll
-    void deleteById(String id);
+    void deleteById(CompositeMediaId id);
 
     @Override
     @CacheEvictEsaAll

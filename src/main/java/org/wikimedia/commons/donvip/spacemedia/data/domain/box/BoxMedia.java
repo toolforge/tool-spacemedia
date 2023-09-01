@@ -5,12 +5,12 @@ import javax.persistence.Entity;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultSingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Indexed
-public class BoxMedia extends DefaultSingleFileMedia {
+public class BoxMedia extends SingleFileMedia {
 
     @Column(nullable = true)
     private String creator;

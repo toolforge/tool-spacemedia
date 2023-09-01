@@ -71,7 +71,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
 
     public abstract void postStatus(String text) throws IOException;
 
-    public abstract void postStatus(Collection<? extends Media<?>> uploadedMedia,
+    public abstract void postStatus(Collection<? extends Media> uploadedMedia,
             Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException;
 
     protected abstract S getOAuthService();
@@ -88,7 +88,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
 
     protected abstract OAuthRequest buildStatusRequest(String text) throws IOException;
 
-    protected abstract OAuthRequest buildStatusRequest(Collection<? extends Media<?>> uploadedMedia,
+    protected abstract OAuthRequest buildStatusRequest(Collection<? extends Media> uploadedMedia,
             Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException;
 
     protected OAuthRequest postRequest(String endpoint, String contentType, Object payload)
@@ -141,7 +141,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     }
 
     protected String createStatusText(Set<String> emojis, Set<String> accounts, long imgCount, long vidCount,
-            Collection<? extends Media<?>> uploadedMedia, Collection<FileMetadata> uploadedMetadata, int maxTitles,
+            Collection<? extends Media> uploadedMedia, Collection<FileMetadata> uploadedMetadata, int maxTitles,
             int maxKeywords) {
         StringBuilder sb = new StringBuilder(emojis.stream().sorted().collect(joining()));
         if (imgCount > 0) {
@@ -181,13 +181,13 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         return sb.toString().strip();
     }
 
-    private static void appendTitles(Collection<? extends Media<?>> uploadedMedia, StringBuilder sb, int max) {
+    private static void appendTitles(Collection<? extends Media> uploadedMedia, StringBuilder sb, int max) {
         uploadedMedia.stream().map(Media::getTitle).filter(x -> x != null && x.length() > 3)
                 .map(x -> x.replace(" (annotated)", "").replace(" (labeled)", "")).distinct().sorted()
                 .limit(max).forEach(title -> sb.append("\n- ").append(title));
     }
 
-    private static void appendKeywords(Collection<? extends Media<?>> uploadedMedia, StringBuilder sb, int max) {
+    private static void appendKeywords(Collection<? extends Media> uploadedMedia, StringBuilder sb, int max) {
         List<String> keywords = uploadedMedia.stream().filter(WithKeywords.class::isInstance)
                 .flatMap(x -> ((WithKeywords) x).getKeywords().stream()).map(kw -> kw.replace(" ", "").replace("-", ""))
                 .distinct().sorted().limit(max).toList();

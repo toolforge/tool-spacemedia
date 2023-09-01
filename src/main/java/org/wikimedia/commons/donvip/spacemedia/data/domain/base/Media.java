@@ -28,13 +28,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
+import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
+import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,23 +48,25 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 /**
  * Base class of all media.
- *
- * @param <ID> the identifier type
  */
 @MappedSuperclass
 @EntityListeners(MediaListener.class)
-@JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY, property = "class")
-public abstract class Media<ID> implements MediaProjection<ID> {
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = As.PROPERTY, property = "class")
+public class Media implements MediaProjection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Media.class);
 
     private static final Pattern ONLY_DIGITS = Pattern.compile("\\d+");
     private static final Pattern IMG = Pattern.compile("IMG[-_]\\d+(-[A-Z]+)?");
     private static final Pattern URI_LIKE = Pattern.compile("Https?\\-\\-.*", Pattern.CASE_INSENSITIVE);
+
+    @Id
+    @Embedded
+    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = CompositeMediaIdBridge.class))
+    private CompositeMediaId id;
 
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<FileMetadata> metadata = new LinkedHashSet<>();
@@ -276,7 +282,14 @@ public abstract class Media<ID> implements MediaProjection<ID> {
         this.ignoredReason = ignoredReason;
     }
 
-    public abstract void setId(ID id);
+    @Override
+    public CompositeMediaId getId() {
+        return id;
+    }
+
+    public void setId(CompositeMediaId id) {
+        this.id = id;
+    }
 
     /**
      * Returns the identifier usually used in org.
@@ -284,7 +297,7 @@ public abstract class Media<ID> implements MediaProjection<ID> {
      * @return the identifier usually used in org
      */
     public String getIdUsedInOrg() {
-        return getId().toString();
+        return getId().getMediaId();
     }
 
     /**
@@ -325,7 +338,7 @@ public abstract class Media<ID> implements MediaProjection<ID> {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        Media<?> other = (Media<?>) obj;
+        Media other = (Media) obj;
         return Objects.equals(title, other.title) && Objects.equals(metadata, other.metadata);
     }
 
@@ -397,7 +410,7 @@ public abstract class Media<ID> implements MediaProjection<ID> {
      *
      * @param mediaFromApi updated media from org API
      */
-    public final void copyDataFrom(Media<ID> mediaFromApi) {
+    public final void copyDataFrom(Media mediaFromApi) {
         setDescription(mediaFromApi.getDescription());
         setTitle(mediaFromApi.getTitle());
         setCreationDateTime(mediaFromApi.getCreationDateTime());

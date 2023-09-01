@@ -10,23 +10,21 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Indexed
-public class StsciMedia extends Media<String> implements WithKeywords {
+public class StsciMedia extends Media implements WithKeywords {
 
     private static final Pattern HORRIBLE_ID_FORMAT = Pattern.compile("\\d{4}-\\d{3}-[A-Z0-9]{26}");
-
-    @Id
-    @Column(length = 35)
-    private String id;
 
     @Column(length = 9)
     private String newsId;
@@ -45,25 +43,8 @@ public class StsciMedia extends Media<String> implements WithKeywords {
     @Column(columnDefinition = "TEXT")
     private String credits;
 
-    /**
-     * Space Telescope or telescope website, the Image belongs to. It is usually
-     * 'hubble', 'webb', etc.
-     */
-    @Column(length = 10)
-    private String mission;
-
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getNewsId() {
         return newsId;
@@ -81,12 +62,10 @@ public class StsciMedia extends Media<String> implements WithKeywords {
         this.credits = credits;
     }
 
+    @Transient
+    @JsonIgnore
     public String getMission() {
-        return mission;
-    }
-
-    public void setMission(String mission) {
-        this.mission = mission;
+        return getId().getRepoId();
     }
 
     @Override
@@ -117,8 +96,7 @@ public class StsciMedia extends Media<String> implements WithKeywords {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode()
-                + Objects.hash(credits, id, mission, newsId, keywords, objectName, constellation);
+        return 31 * super.hashCode() + Objects.hash(credits, newsId, keywords, objectName, constellation);
     }
 
     @Override
@@ -129,15 +107,14 @@ public class StsciMedia extends Media<String> implements WithKeywords {
             return false;
         StsciMedia other = (StsciMedia) obj;
         return Objects.equals(credits, other.credits)
-                && Objects.equals(id, other.id) && Objects.equals(mission, other.mission)
                 && Objects.equals(newsId, other.newsId) && Objects.equals(keywords, other.keywords)
                 && Objects.equals(objectName, other.objectName) && Objects.equals(constellation, other.constellation);
     }
 
     @Override
     public String toString() {
-        return "StsciMedia [id=" + id + ", newsId=" + newsId + ", objectName=" + objectName
-                + ", constellation=" + constellation + ", mission=" + mission + ']';
+        return "StsciMedia [id=" + getId() + ", newsId=" + newsId + ", objectName=" + objectName
+                + ", constellation=" + constellation + ']';
     }
 
     @Override
@@ -166,7 +143,6 @@ public class StsciMedia extends Media<String> implements WithKeywords {
         super.copyDataFrom(mediaFromApi);
         this.credits = mediaFromApi.credits;
         this.keywords = mediaFromApi.keywords;
-        this.mission = mediaFromApi.mission;
         this.newsId = mediaFromApi.newsId;
         this.objectName = mediaFromApi.objectName;
         this.constellation = mediaFromApi.constellation;

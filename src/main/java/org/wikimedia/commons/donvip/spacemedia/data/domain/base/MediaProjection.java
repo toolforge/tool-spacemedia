@@ -2,14 +2,14 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import java.util.Set;
 
-public interface MediaProjection<ID> {
+public interface MediaProjection {
 
     /**
      * Returns the media identifier.
      *
      * @return the media identifier
      */
-    ID getId();
+    CompositeMediaId getId();
 
     /**
      * Returns the metadata.

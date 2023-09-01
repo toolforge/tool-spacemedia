@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -20,8 +19,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3Media;
@@ -36,23 +33,18 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 /**
  * Service fetching images from AWS S3
  */
-public abstract class AbstractOrgS3Service extends DefaultOrgService<S3Media> {
+public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgS3Service.class);
-
-    @Autowired
-    private S3MediaRepository mediaRepository;
 
     @Autowired
     private S3Service s3;
 
     private final Regions region;
-    private final Set<String> bucketNames;
 
     protected AbstractOrgS3Service(S3MediaRepository repository, String id, Regions region, Set<String> bucketNames) {
-        super(repository, id);
+        super(repository, id, bucketNames);
         this.region = region;
-        this.bucketNames = bucketNames;
     }
 
     @Override
@@ -82,7 +74,7 @@ public abstract class AbstractOrgS3Service extends DefaultOrgService<S3Media> {
         LocalDateTime start = startUpdateMedia();
         List<S3Media> uploadedMedia = new ArrayList<>();
         int count = 0;
-        for (String bucket : bucketNames) {
+        for (String bucket : getRepoIds()) {
             Pair<Integer, Collection<S3Media>> update = updateS3Media(region, bucket);
             uploadedMedia.addAll(update.getRight());
             count += update.getLeft();
@@ -137,7 +129,7 @@ public abstract class AbstractOrgS3Service extends DefaultOrgService<S3Media> {
     private Pair<S3Media, Integer> processS3Media(S3Media mediaFromApi) throws IOException, UploadException {
         S3Media media = null;
         boolean save = false;
-        Optional<S3Media> mediaInDb = mediaRepository.findById(mediaFromApi.getId());
+        Optional<S3Media> mediaInDb = repository.findById(mediaFromApi.getId());
         if (mediaInDb.isPresent()) {
             media = mediaInDb.get();
         } else {
@@ -166,110 +158,5 @@ public abstract class AbstractOrgS3Service extends DefaultOrgService<S3Media> {
     @Override
     public final URL getSourceUrl(S3Media media, FileMetadata metadata) {
         return metadata.getAssetUrl();
-    }
-
-    @Override
-    public long countAllMedia() {
-        return mediaRepository.count(bucketNames);
-    }
-
-    @Override
-    public long countIgnored() {
-        return mediaRepository.countByIgnoredTrue(bucketNames);
-    }
-
-    @Override
-    public long countMissingMedia() {
-        return mediaRepository.countMissingInCommonsByShare(bucketNames);
-    }
-
-    @Override
-    public long countMissingImages() {
-        return mediaRepository.countMissingImagesInCommons(bucketNames);
-    }
-
-    @Override
-    public long countMissingVideos() {
-        return mediaRepository.countMissingVideosInCommons(bucketNames);
-    }
-
-    @Override
-    public long countPerceptualHashes() {
-        return mediaRepository.countByMetadata_PhashNotNull(bucketNames);
-    }
-
-    @Override
-    public long countUploadedMedia() {
-        return mediaRepository.countUploadedToCommons(bucketNames);
-    }
-
-    @Override
-    public Iterable<S3Media> listAllMedia() {
-        return mediaRepository.findAll(bucketNames);
-    }
-
-    @Override
-    public Page<S3Media> listAllMedia(Pageable page) {
-        return mediaRepository.findAll(bucketNames, page);
-    }
-
-    @Override
-    public List<S3Media> listMissingMedia() {
-        return mediaRepository.findMissingInCommons(bucketNames);
-    }
-
-    @Override
-    public Page<S3Media> listMissingMedia(Pageable page) {
-        return mediaRepository.findMissingInCommons(bucketNames, page);
-    }
-
-    @Override
-    public Page<S3Media> listMissingImages(Pageable page) {
-        return mediaRepository.findMissingImagesInCommons(bucketNames, page);
-    }
-
-    @Override
-    public Page<S3Media> listMissingVideos(Pageable page) {
-        return mediaRepository.findMissingVideosInCommons(bucketNames, page);
-    }
-
-    @Override
-    public List<S3Media> listMissingMediaByDate(LocalDate date) {
-        return mediaRepository.findMissingInCommonsByDate(bucketNames, date);
-    }
-
-    @Override
-    public List<S3Media> listMissingMediaByTitle(String title) {
-        return mediaRepository.findMissingInCommonsByTitle(bucketNames, title);
-    }
-
-    @Override
-    public Page<S3Media> listHashedMedia(Pageable page) {
-        return mediaRepository.findByMetadata_PhashNotNull(bucketNames, page);
-    }
-
-    @Override
-    public List<S3Media> listUploadedMedia() {
-        return mediaRepository.findUploadedToCommons(bucketNames);
-    }
-
-    @Override
-    public Page<S3Media> listUploadedMedia(Pageable page) {
-        return mediaRepository.findUploadedToCommons(bucketNames, page);
-    }
-
-    @Override
-    public List<S3Media> listDuplicateMedia() {
-        return mediaRepository.findDuplicateInCommons(bucketNames);
-    }
-
-    @Override
-    public List<S3Media> listIgnoredMedia() {
-        return mediaRepository.findByIgnoredTrue(bucketNames);
-    }
-
-    @Override
-    public Page<S3Media> listIgnoredMedia(Pageable page) {
-        return mediaRepository.findByIgnoredTrue(bucketNames, page);
     }
 }

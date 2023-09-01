@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
@@ -33,7 +34,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 
 @Service
-public class NasaSirsService extends AbstractOrgService<NasaSirsImage, String> {
+public class NasaSirsService extends AbstractOrgService<NasaSirsImage> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaSirsService.class);
 
@@ -55,7 +56,7 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage, String> {
     private String sscName;
 
     public NasaSirsService(NasaSirsImageRepository repository) {
-        super(repository, "nasa.sirs");
+        super(repository, "nasa.sirs", Set.of("sirs"));
     }
 
     @Override
@@ -69,13 +70,8 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage, String> {
     }
 
     @Override
-    protected String getMediaId(String id) {
-        return id;
-    }
-
-    @Override
     public URL getSourceUrl(NasaSirsImage media, FileMetadata metadata) {
-        return newURL(detailsUrl.replace("<id>", media.getId()));
+        return newURL(detailsUrl.replace("<id>", media.getId().getMediaId()));
     }
 
     @Override
@@ -87,7 +83,7 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage, String> {
     public void updateMedia() throws IOException, UploadException {
         LocalDateTime start = startUpdateMedia();
         int count = updateFromSirs();
-        Set<String> processedImages = new HashSet<>();
+        Set<CompositeMediaId> processedImages = new HashSet<>();
         // SIRS doesn"t work anymore so make sure we're still able to handle existing files
         for (NasaSirsImage image : repository.findMissingInCommons()) {
             if (!processedImages.contains(image.getId())) {
@@ -120,9 +116,10 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage, String> {
                 List<String> imageLinks = loadImageLinks(category, page++);
                 loop = !imageLinks.isEmpty();
                 for (String imageLink : imageLinks) {
-                    String id = imageLink.substring(imageLink.lastIndexOf('=') + 1);
+                    CompositeMediaId id = new CompositeMediaId("sirs",
+                            imageLink.substring(imageLink.lastIndexOf('=') + 1));
                     URL url = newURL(imageLink);
-                    if ("$id\\\"".equals(id)) {
+                    if ("$id\\\"".equals(id.getMediaId())) {
                         problem(url, "invalid id");
                         return count;
                     }
@@ -207,7 +204,7 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage, String> {
     @Override
     protected String getSource(NasaSirsImage media, FileMetadata metadata) {
         return super.getSource(media, metadata) + " ([" + metadata.getAssetUrl() + " direct link])\n"
-                + "{{NASA-image|id=" + media.getId() + "|center=SSC}}";
+                + "{{NASA-image|id=" + media.getId().getMediaId() + "|center=SSC}}";
     }
 
     @Override

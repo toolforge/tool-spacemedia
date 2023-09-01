@@ -2,16 +2,15 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.kari;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface KariMediaRepository extends MediaRepository<KariMedia, String> {
+public interface KariMediaRepository extends MediaRepository<KariMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -57,9 +56,6 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, String> 
 
     // FIND
 
-    @Query("select max(id) from #{#entityName}")
-    Optional<String> findMaxId();
-
     @Override
     default Page<KariMedia> findMissingImagesInCommons(Pageable page) {
         return findMissingInCommons(page);
@@ -84,7 +80,7 @@ public interface KariMediaRepository extends MediaRepository<KariMedia, String> 
 
     @Override
     @CacheEvictKariAll
-    void deleteById(String id);
+    void deleteById(CompositeMediaId id);
 
     @Override
     @CacheEvictKariAll

@@ -2,37 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.webmil;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
-public class WebMilMedia extends Media<String> {
-
-    @Override
-    public String getId() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void setId(String id) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public boolean isAudio() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean isImage() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean isVideo() {
-        // TODO Auto-generated method stub
-        return false;
-    }
+public class WebMilMedia extends Media {
 
     // https://www.web.dma.mil/Our-Customers/#space-force-websites
 

@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
@@ -51,7 +52,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class NasaSdoService extends AbstractOrgService<NasaSdoMedia, String> {
+public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaSdoService.class);
 
@@ -67,7 +68,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia, String> {
     private NasaSdoMediaRepository sdoRepository;
 
     public NasaSdoService(NasaSdoMediaRepository repository) {
-        super(repository, "nasa.sdo");
+        super(repository, "nasa.sdo", Set.of("sdo"));
     }
 
     @Override
@@ -78,11 +79,6 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia, String> {
     @Override
     public String getName() {
         return "NASA (SDO)";
-    }
-
-    @Override
-    protected String getMediaId(String id) {
-        return id;
     }
 
     @Override
@@ -265,7 +261,8 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia, String> {
                             .findFirst();
                     if (opt.isPresent()) {
                         String firstFile = opt.get();
-                        updateMedia(firstFile.replace("." + ext, ""), dateTimeExtractor.apply(firstFile), dims,
+                        updateMedia(new CompositeMediaId("sdo", firstFile.replace("." + ext, "")),
+                                dateTimeExtractor.apply(firstFile), dims,
                                 newURL(browseUrl + '/' + firstFile), mediaType, dataType, uploadedMedia);
                         ongoingUpdateMedia(start, count + localCount++);
                     }
@@ -327,7 +324,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia, String> {
                 .toList();
     }
 
-    private NasaSdoMedia updateMedia(String id, ZonedDateTime date, ImageDimensions dimensions, URL url,
+    private NasaSdoMedia updateMedia(CompositeMediaId id, ZonedDateTime date, ImageDimensions dimensions, URL url,
             NasaMediaType mediaType, NasaSdoDataType dataType, List<NasaSdoMedia> uploadedMedia)
             throws IOException {
         boolean save = false;
@@ -339,7 +336,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia, String> {
             media = new NasaSdoMedia();
             FileMetadata metadata = new FileMetadata(url);
             media.setId(id);
-            media.setTitle(id);
+            media.setTitle(id.getMediaId());
             media.setCreationDateTime(date);
             media.setPublicationDateTime(date);
             media.setDataType(dataType);
@@ -404,7 +401,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia, String> {
             throws IOException {
         return Pair.of("{{NASA SDO|instrument=" + media.getDataType().getInstrument() + "|band="
                 + media.getDataType().name().replace("_", "") + "|type=" + metadata.getFileExtension() + "|id="
-                + media.getId() + "}}", Map.of());
+                + media.getId().getMediaId() + "}}", Map.of());
     }
 
     @Override

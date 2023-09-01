@@ -29,21 +29,21 @@ import net.bytebuddy.implementation.MethodCall;
 public class OrgControllerConfiguration {
 
     @Autowired
-    private List<AbstractOrgService<?, ?>> orgs;
+    private List<AbstractOrgService<?>> orgs;
 
     @Autowired
     private AbstractAutowireCapableBeanFactory factory;
 
     @PostConstruct
     void initOrgControllers() throws ReflectiveOperationException {
-        for (Org<?, ?> org : orgs) {
+        for (Org<?> org : orgs) {
             String orgName = org.getName().replace(" ", "").replace("(", "").replace(")", "");
             registerNewBean(org, orgName + "RestController", RestController.class, OrgRestController.class, "/rest");
             registerNewBean(org, orgName + "WebController", Controller.class, OrgWebController.class, "");
         }
     }
 
-    private void registerNewBean(Org<?, ?> org, String controllerName,
+    private void registerNewBean(Org<?> org, String controllerName,
             Class<? extends Annotation> annotationClass, Class<?> parentClass, String pathSuffix)
             throws ReflectiveOperationException {
         Object controller = new ByteBuddy().subclass(parentClass, ConstructorStrategy.Default.NO_CONSTRUCTORS)

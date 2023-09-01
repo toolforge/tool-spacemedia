@@ -28,6 +28,7 @@ import org.wikidata.wdtk.datamodel.implementation.ValueSnakImpl;
 import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.PropertyIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaAudioRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaImageRepository;
@@ -67,7 +68,7 @@ class NasaServiceTest extends AbstractOrgServiceTest {
     @Test
     void testIssCategories() throws IOException {
         NasaMedia media = new NasaImage();
-        media.setId("iss068e031231");
+        media.setId(new CompositeMediaId("", "iss068e031231"));
         media.setDescription(
                 "iss068e031231 (Dec. 20, 2022) --- Expedition 68 Flight Engineer Anna Kikina and International Space Station Commander Sergey Prokopyev, both from Roscosmos, are pictured working together inside the Zvezda service module.");
         ItemIdValueImpl s = new ItemIdValueImpl("Q112110246", "wikidata");
@@ -89,7 +90,7 @@ class NasaServiceTest extends AbstractOrgServiceTest {
     @Test
     void testUploadFileName() {
         NasaMedia media = new NasaImage();
-        media.setId("GSFC_20220415_PACE_036720");
+        media.setId(new CompositeMediaId("", "GSFC_20220415_PACE_036720"));
         media.setTitle(
                 "OCI Installed to Ground Support Equipment Application for Tilt or RotationThe Ocean Color Instrument (OCI) is installed onto the Ground Support Equipment Application for Tilt or Rotation (GAToR) made by Newton Engineering in a black out tent cleanroom. GAToR will allow engineers to tilt and rotate OCI in different orientations for further testing prior to integration onto the PACE (Plankton, Aerosol, Cloud, ocean Ecosystem) spacecraft.");
 
@@ -116,7 +117,7 @@ class NasaServiceTest extends AbstractOrgServiceTest {
         @Bean
         @Autowired
         public NasaService service(NasaMediaRepository<NasaMedia> repository) {
-            return new NasaService(repository);
+            return new NasaService(repository, Set.of("HQ"));
         }
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles({ "test", "job-nasa" })
+@ActiveProfiles({ "test", "job-esa" })
 @SpringBootTest(classes = SpacemediaOrgUpdateJobApplication.class)
 class SpacemediaOrgUpdateJobEsaApplicationTest {
 

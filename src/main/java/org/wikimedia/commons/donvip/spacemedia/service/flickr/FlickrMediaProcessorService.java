@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
@@ -70,7 +71,7 @@ public class FlickrMediaProcessorService {
     }
 
     public URL getVideoUrl(FlickrMedia media) {
-        return newURL(flickrVideoDownloadUrl.replace("<id>", media.getId().toString()));
+        return newURL(flickrVideoDownloadUrl.replace("<id>", media.getId().getMediaId()));
     }
 
     public boolean isBadVideoEntry(FlickrMedia media) throws URISyntaxException {
@@ -107,11 +108,6 @@ public class FlickrMediaProcessorService {
             } catch (IllegalArgumentException e) {
                 LOGGER.debug("Unknown Flickr licence for media {}: {}", media, e.getMessage());
             }
-        }
-        if (StringUtils.isEmpty(media.getPathAlias())) {
-            media.setPathAlias(flickrAccount);
-            LOGGER.warn("Saving media {} to set path_alias to {}", media, flickrAccount);
-            save = true;
         }
         if (isEmpty(media.getPhotosets())) {
             try {
@@ -182,7 +178,7 @@ public class FlickrMediaProcessorService {
     }
 
     private Set<FlickrPhotoSet> getPhotoSets(FlickrMedia media, String flickrAccount) throws FlickrException {
-        return flickrService.findPhotoSets(media.getId().toString()).stream()
+        return flickrService.findPhotoSets(media.getId().getMediaId()).stream()
                 .map(ps -> flickrPhotoSetRepository.findById(Long.valueOf(ps.getId()))
                         .orElseGet(() -> flickrPhotoSetRepository.save(mapPhotoSet(ps, flickrAccount))))
                 .collect(toSet());
@@ -226,7 +222,7 @@ public class FlickrMediaProcessorService {
     }
 
     @Transactional
-    public void deleteFlickrMedia(String id) {
+    public void deleteFlickrMedia(CompositeMediaId id) {
         flickrRepository.findById(id).ifPresent(media -> {
             LOGGER.warn("Deleteing {}", media);
             media.getPhotosets().forEach(ps -> {

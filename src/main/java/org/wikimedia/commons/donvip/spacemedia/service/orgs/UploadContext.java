@@ -10,7 +10,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
-public final class UploadContext<T extends Media<?>> {
+public final class UploadContext<T extends Media> {
     private final T media;
     private final FileMetadata metadata;
     private final UploadMode uploadMode;
@@ -43,7 +43,7 @@ public final class UploadContext<T extends Media<?>> {
                 && isPermittedFileType.test(metadata);
     }
 
-    public static boolean isForbiddenUpload(Media<?> media, boolean isManual) {
+    public static boolean isForbiddenUpload(Media media, boolean isManual) {
         return Boolean.TRUE.equals(media.isIgnored()) && (!isManual || StringUtils.isBlank(media.getIgnoredReason())
                 || !(media.getIgnoredReason().contains("block list")
                         || media.getIgnoredReason().contains("Photoset ignored")

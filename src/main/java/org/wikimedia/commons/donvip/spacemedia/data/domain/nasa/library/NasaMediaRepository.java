@@ -7,12 +7,11 @@ import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepository<T, String> {
+public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepository<T> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -37,34 +36,36 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Cacheable("nasaCount")
     long count();
 
+    @Override
     @Cacheable("nasaCountByCenter")
-    long countByCenter(String center);
+    long count(Set<String> centers);
 
     @Override
     @Cacheable("nasaCountPhashNotNull")
     long countByMetadata_PhashNotNull();
 
+    @Override
     @Cacheable("nasaCountPhashNotNullByCenter")
-    long countByMetadata_PhashNotNullAndCenter(String center);
+    long countByMetadata_PhashNotNull(Set<String> centers);
 
     @Override
     @Cacheable("nasaCountIgnored")
     long countByIgnoredTrue();
 
+    @Override
     @Cacheable("nasaCountIgnoredByCenter")
-    @Query("select count(*) from #{#entityName} m where m.ignored is true and m.center = ?1")
-    long countIgnoredByCenter(String center);
+    long countByIgnoredTrue(Set<String> centers);
 
     @Override
     @Cacheable("nasaCountMissing")
     long countMissingInCommons();
 
+    @Override
     @Cacheable("nasaCountMissingByCenter")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.center = ?1")
-    long countMissingInCommonsByCenter(String center);
+    long countMissingInCommons(Set<String> centers);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.mediaType = ?1 and m.center = ?2")
-    long countMissingInCommonsByTypeAndCenter(NasaMediaType type, String center);
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.mediaType = ?1 and m.id.repoId in ?2")
+    long countMissingInCommonsByTypeAndCenters(NasaMediaType type, Set<String> centers);
 
     @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
     long countMissingInCommons(NasaMediaType type);
@@ -75,9 +76,10 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
         return countMissingInCommons(NasaMediaType.image);
     }
 
+    @Override
     @Cacheable("nasaCountMissingImagesByCenter")
-    default long countMissingImagesInCommons(String center) {
-        return countMissingInCommonsByTypeAndCenter(NasaMediaType.image, center);
+    default long countMissingImagesInCommons(Set<String> centers) {
+        return countMissingInCommonsByTypeAndCenters(NasaMediaType.image, centers);
     }
 
     @Override
@@ -86,53 +88,25 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
         return countMissingInCommons(NasaMediaType.video);
     }
 
+    @Override
     @Cacheable("nasaCountMissingVideosByCenter")
-    default long countMissingVideosInCommons(String center) {
-        return countMissingInCommonsByTypeAndCenter(NasaMediaType.video, center);
+    default long countMissingVideosInCommons(Set<String> centers) {
+        return countMissingInCommonsByTypeAndCenters(NasaMediaType.video, centers);
     }
 
     @Override
     @Cacheable("nasaCountUploaded")
     long countUploadedToCommons();
 
+    @Override
     @Cacheable("nasaCountUploadedByCenter")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.center = ?1")
-    long countUploadedToCommonsByCenter(String center);
+    long countUploadedToCommons(Set<String> centers);
 
     // CUSTOM
 
     @Cacheable("nasaCenters")
-    @Query("select distinct(center) from #{#entityName}")
+    @Query("select distinct(id.repoId) from #{#entityName}")
     List<String> findCenters();
-
-    // FIND
-
-    List<T> findByCenter(String center);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.center = ?1")
-    List<T> findDuplicateInCommonsByCenter(String center);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.center = ?1")
-    List<T> findMissingInCommonsByCenter(String center);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
-    Page<T> findMissingInCommonsByType(NasaMediaType type, Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.center = ?1 and m.id not in ?2")
-    List<T> findMissingInCommonsByCenterNotIn(String center, Set<String> ids);
-
-    @Override
-    default Page<T> findMissingImagesInCommons(Pageable page) {
-        return findMissingInCommonsByType(NasaMediaType.image, page);
-    }
-
-    @Override
-    default Page<T> findMissingVideosInCommons(Pageable page) {
-        return findMissingInCommonsByType(NasaMediaType.video, page);
-    }
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.center = ?1")
-    List<T> findUploadedToCommonsByCenter(String center);
 
     // SAVE
 
@@ -148,7 +122,7 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     @Override
     @CacheEvictNasaAll
-    void deleteById(String id);
+    void deleteById(CompositeMediaId id);
 
     @Override
     @CacheEvictNasaAll

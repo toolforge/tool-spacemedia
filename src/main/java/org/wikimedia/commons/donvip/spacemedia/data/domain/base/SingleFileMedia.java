@@ -5,13 +5,8 @@ import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-/**
- * @deprecated use {@link DefaultSingleFileMedia instead}
- * @param <ID> ID type
- */
 @MappedSuperclass
-@Deprecated(forRemoval = true)
-public abstract class SingleFileMedia<ID> extends Media<ID> {
+public abstract class SingleFileMedia extends Media {
 
     @Transient
     @JsonIgnore

@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
@@ -56,7 +57,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Service
-public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournalMedia, String> {
+public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournalMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaPhotojournalService.class);
 
@@ -98,7 +99,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
 
     @Autowired
     public NasaPhotojournalService(NasaPhotojournalMediaRepository repository) {
-        super(repository, "nasa.photojournal");
+        super(repository, "nasa.photojournal", Set.of("photojournal"));
     }
 
     @Override
@@ -176,7 +177,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
 
     @Transactional
     public NasaPhotojournalMedia processMedia(String id, SolrDocument document) throws IOException, UploadException {
-        Optional<NasaPhotojournalMedia> mediaInRepo = repository.findById(id);
+        Optional<NasaPhotojournalMedia> mediaInRepo = repository.findById(new CompositeMediaId("photojournal", id));
         NasaPhotojournalMedia media;
         boolean save = false;
         if (mediaInRepo.isPresent()) {
@@ -208,7 +209,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         NasaPhotojournalMedia media = new NasaPhotojournalMedia();
         String caption = getString(doc, "original-caption");
         media.setDescription(caption);
-        media.setId(getString(doc, "id"));
+        media.setId(new CompositeMediaId("photojournal", getString(doc, "id")));
         media.setNasaId(getString(doc, "nasa-id"));
         media.setPublicationDateTime(((Date) doc.getFirstValue("publication-date")).toInstant().atZone(ZoneOffset.UTC));
         media.setTarget(getString(doc, "target"));
@@ -295,7 +296,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
 
     @Override
     public URL getSourceUrl(NasaPhotojournalMedia media, FileMetadata metadata) {
-        return newURL("https://photojournal.jpl.nasa.gov/catalog/" + media.getId());
+        return newURL("https://photojournal.jpl.nasa.gov/catalog/" + media.getId().getMediaId());
     }
 
     @Override
@@ -339,7 +340,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     @Override
     public Set<String> findCategories(NasaPhotojournalMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        result.add("NASA Photojournal entries from " + media.getYear() + '|' + media.getId());
+        result.add("NASA Photojournal entries from " + media.getYear() + '|' + media.getId().getMediaId());
         if (media.getKeywords().contains("anaglyph")) {
             result.add("Moon".equalsIgnoreCase(media.getTarget()) ? "Anaglyphs of the Moon" : "Anaglyphs");
         }
@@ -387,7 +388,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
 
     @Override
     protected NasaPhotojournalMedia refresh(NasaPhotojournalMedia media) throws IOException {
-        QueryResponse response = queryWithRetries(new SolrQuery(media.getId()));
+        QueryResponse response = queryWithRetries(new SolrQuery(media.getId().getMediaId()));
         return response != null && response.getResults().getNumFound() == 1
                 ? media.copyDataFrom(solrDocumentToMedia(response.getResults().get(0)))
                 : media;
@@ -401,11 +402,6 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     @Override
     protected Class<NasaPhotojournalMedia> getMediaClass() {
         return NasaPhotojournalMedia.class;
-    }
-
-    @Override
-    protected String getMediaId(String id) {
-        return id;
     }
 
     @Override

@@ -25,19 +25,18 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Pagination;
  * Superclass of orgs web controllers. Sub-classes are created dynamically.
  *
  * @param <T>  the media type the repository manages
- * @param <ID> the type of the id of the entity the repository manages
  */
-public class OrgWebController<T extends Media<ID>, ID> {
+public class OrgWebController<T extends Media> {
 
     @Autowired
-    private List<AbstractOrgService<? extends Media<?>, ?>> orgs;
+    private List<AbstractOrgService<? extends Media>> orgs;
 
     @Autowired
     private SearchService searchService;
 
-    protected final Org<T, ID> service;
+    protected final Org<T> service;
 
-    public OrgWebController(AbstractOrgService<T, ID> service) {
+    public OrgWebController(AbstractOrgService<T> service) {
         this.service = Objects.requireNonNull(service);
     }
 

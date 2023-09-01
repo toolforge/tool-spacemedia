@@ -13,12 +13,12 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
 
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
-public class DjangoplicityMedia extends DefaultMedia {
+public class DjangoplicityMedia extends Media {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true, length = 16)

@@ -21,9 +21,8 @@ import org.jsoup.HttpStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
@@ -34,13 +33,12 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService
 /**
  * Service harvesting images from NASA Hubble / Jame Webb websites.
  */
-public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMedia, String> {
+public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgStsciService.class);
 
     private static final Set<String> SHORT_CREDITS_OK = Set.of("A. Fujii");
 
-    private final StsciMediaRepository stsciRepository;
     private final String searchEndpoint;
     private final String detailEndpoint;
     private final String mission;
@@ -53,8 +51,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
 
     protected AbstractOrgStsciService(StsciMediaRepository repository, String mission, String searchEndpoint,
             String detailEndpoint) {
-        super(repository, mission + ".nasa");
-        this.stsciRepository = repository;
+        super(repository, mission + ".nasa", Set.of(mission));
         this.searchEndpoint = searchEndpoint;
         this.detailEndpoint = detailEndpoint;
         this.mission = mission;
@@ -63,11 +60,6 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     @Override
     protected final Class<StsciMedia> getMediaClass() {
         return StsciMedia.class;
-    }
-
-    @Override
-    protected final String getMediaId(String id) {
-        return id;
     }
 
     private String getImageDetailsLink(String imageId) {
@@ -93,7 +85,8 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
             if (loop) {
                 for (String imageId : response) {
                     try {
-                        Triple<StsciMedia, Collection<FileMetadata>, Integer> update = doUpdateMedia(imageId);
+                        Triple<StsciMedia, Collection<FileMetadata>, Integer> update = doUpdateMedia(
+                                new CompositeMediaId(mission, imageId));
                         if (update.getRight() > 0) {
                             uploadedMetadata.addAll(update.getMiddle());
                             uploadedMedia.add(update.getLeft());
@@ -116,7 +109,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
         endUpdateMedia(count, uploadedMedia, uploadedMetadata, start);
     }
 
-    private Triple<StsciMedia, Collection<FileMetadata>, Integer> doUpdateMedia(String id)
+    private Triple<StsciMedia, Collection<FileMetadata>, Integer> doUpdateMedia(CompositeMediaId id)
             throws IOException, UploadException, UpdateFinishedException {
         boolean save = false;
         StsciMedia media;
@@ -134,7 +127,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
                 save = !isShortCredits(media.getCredits());
             }
         } else {
-            media = getMediaFromWebsite(id);
+            media = getMediaFromWebsite(id.getMediaId());
             save = true;
         }
         if (doCommonUpdate(media)) {
@@ -163,7 +156,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
 
     @Override
     protected StsciMedia refresh(StsciMedia media) throws IOException {
-        return media.copyDataFrom(getMediaFromWebsite(media.getId()));
+        return media.copyDataFrom(getMediaFromWebsite(media.getId().getMediaId()));
     }
 
     @Override
@@ -195,22 +188,17 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     @Override
     public final Set<String> findLicenceTemplates(StsciMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
-        switch (media.getMission()) {
-        case "hubble":
-            result.add("PD-Hubble");
-            break;
-        case "webb":
-            result.add("PD-Webb");
-            break;
-        default:
-            throw new IllegalStateException("Unsupported mission: " + media.getMission());
-        }
+        result.add(switch(media.getMission()) {
+        case "hubble" -> "PD-Hubble";
+        case "webb" -> "PD-Webb";
+        default -> throw new IllegalStateException("Unsupported mission: " + media.getMission());
+        });
         return result;
     }
 
     @Override
     public final URL getSourceUrl(StsciMedia media, FileMetadata metadata) {
-        return newURL(getImageDetailsLink(media.getId()));
+        return newURL(getImageDetailsLink(media.getId().getMediaId()));
     }
 
     @Override
@@ -219,121 +207,16 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     }
 
     @Override
-    public final long countAllMedia() {
-        return stsciRepository.countByMission(mission);
-    }
-
-    @Override
-    public final long countIgnored() {
-        return stsciRepository.countByIgnoredTrueAndMission(mission);
-    }
-
-    @Override
-    public final long countMissingMedia() {
-        return stsciRepository.countMissingInCommons(mission);
-    }
-
-    @Override
-    public final long countMissingImages() {
-        return stsciRepository.countMissingImagesInCommons(mission);
-    }
-
-    @Override
-    public final long countMissingVideos() {
-        return stsciRepository.countMissingVideosInCommons(mission);
-    }
-
-    @Override
-    public final long countPerceptualHashes() {
-        return stsciRepository.countByMetadata_PhashNotNullAndMission(mission);
-    }
-
-    @Override
-    public final long countUploadedMedia() {
-        return stsciRepository.countUploadedToCommons(mission);
-    }
-
-    @Override
-    public final Iterable<StsciMedia> listAllMedia() {
-        return stsciRepository.findAllByMission(mission);
-    }
-
-    @Override
-    public final Page<StsciMedia> listAllMedia(Pageable page) {
-        return stsciRepository.findAllByMission(mission, page);
-    }
-
-    @Override
-    public final List<StsciMedia> listIgnoredMedia() {
-        return stsciRepository.findByIgnoredTrueAndMission(mission);
-    }
-
-    @Override
-    public final Page<StsciMedia> listIgnoredMedia(Pageable page) {
-        return stsciRepository.findByIgnoredTrueAndMission(mission, page);
-    }
-
-    @Override
-    public final List<StsciMedia> listMissingMedia() {
-        return stsciRepository.findMissingInCommons(mission);
-    }
-
-    @Override
-    public final Page<StsciMedia> listMissingMedia(Pageable page) {
-        return stsciRepository.findMissingInCommons(mission, page);
-    }
-
-    @Override
-    public final Page<StsciMedia> listMissingImages(Pageable page) {
-        return stsciRepository.findMissingImagesInCommons(mission, page);
-    }
-
-    @Override
-    public final Page<StsciMedia> listMissingVideos(Pageable page) {
-        return stsciRepository.findMissingVideosInCommons(mission, page);
-    }
-
-    @Override
-    public List<StsciMedia> listMissingMediaByDate(LocalDate date) {
-        return stsciRepository.findMissingInCommonsByDate(mission, date);
-    }
-
-    @Override
-    public List<StsciMedia> listMissingMediaByTitle(String title) {
-        return stsciRepository.findMissingInCommonsByTitle(mission, title);
-    }
-
-    @Override
-    public final Page<StsciMedia> listHashedMedia(Pageable page) {
-        return stsciRepository.findByMetadata_PhashNotNullAndMission(mission, page);
-    }
-
-    @Override
-    public final List<StsciMedia> listUploadedMedia() {
-        return stsciRepository.findUploadedToCommons(mission);
-    }
-
-    @Override
-    public final Page<StsciMedia> listUploadedMedia(Pageable page) {
-        return stsciRepository.findUploadedToCommons(mission, page);
-    }
-
-    @Override
-    public final List<StsciMedia> listDuplicateMedia() {
-        return stsciRepository.findDuplicateInCommons(mission);
-    }
-
-    @Override
     public Statistics getStatistics(boolean details) {
         Statistics stats = super.getStatistics(details);
         if (details) {
             stats.setDetails(List.of(new Statistics(mission, mission,
-                    stsciRepository.countByMission(mission),
-                    stsciRepository.countUploadedToCommons(mission),
-                    stsciRepository.countByIgnoredTrueAndMission(mission),
-                    stsciRepository.countMissingImagesInCommons(mission),
-                    stsciRepository.countMissingVideosInCommons(mission),
-                    stsciRepository.countByMetadata_PhashNotNullAndMission(mission), null)));
+                    repository.count(getRepoIds()),
+                    repository.countUploadedToCommons(getRepoIds()),
+                    repository.countByIgnoredTrue(getRepoIds()),
+                    repository.countMissingImagesInCommons(getRepoIds()),
+                    repository.countMissingVideosInCommons(getRepoIds()),
+                    repository.countByMetadata_PhashNotNull(getRepoIds()), null)));
         }
         return stats;
     }

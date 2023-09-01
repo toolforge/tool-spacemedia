@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
@@ -91,8 +92,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     @Test
     void testGetStringsToRemove() {
         FlickrMedia media = new FlickrMedia();
-        media.setId("52840868995");
-        media.setPathAlias("pierre_markuse");
+        media.setId(new CompositeMediaId("pierre_markuse", "52840868995"));
         media.setDescription(
                 """
                         Contains modified Copernicus Sentinel data [2023], processed by <a href="https://twitter.com/Pierre_Markuse">Pierre Markuse</a>
@@ -119,7 +119,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
             URL assetUrl, String title, String albums, String expectedStatements) throws MalformedURLException {
         FlickrMedia media = new FlickrMedia();
         media.addMetadata(new FileMetadata());
-        media.setPathAlias(pathAlias);
+        media.setId(new CompositeMediaId(pathAlias, ""));
         media.setLicense(license);
         media.setTitle(title);
         media.setPublicationDateTime(datePosted.atZone(ZoneId.of("UTC")));
@@ -156,8 +156,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     @Test
     void testFindCategories() {
         FlickrMedia media = new FlickrMedia();
-        media.setId("52935302219");
-        media.setPathAlias("kevinmgill");
+        media.setId(new CompositeMediaId("kevinmgill", "52935302219"));
         media.setTitle("MSL - Sol 3841 - MastCam");
         media.setDescription("NASA/JPL-Caltech/MSSS/Kevin M. Gill");
         media.setTags(Set.of("mastcam", "curiosity", "mars", "msl", "rover"));
@@ -176,9 +175,8 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     void testFindLicenceTemplates() {
         FlickrMedia media = new FlickrMedia();
         media.addMetadata(new FileMetadata());
-        media.setPathAlias("pierre_markuse");
         media.setLicense(4);
-        media.setId("52559137901");
+        media.setId(new CompositeMediaId("pierre_markuse", "52559137901"));
         media.setTitle("Brunt Ice Shelf, Antarctica - 11 December 2022");
         media.setDescription(
                 "Contains modified Copernicus Sentinel data [2022], processed by <a href=\"https://twitter.com/Pierre_Markuse\">Pierre Markuse</a>\r\n"

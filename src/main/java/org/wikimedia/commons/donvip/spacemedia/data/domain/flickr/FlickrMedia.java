@@ -6,7 +6,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -19,7 +18,6 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Transient;
 
@@ -39,15 +37,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-public class FlickrMedia extends SingleFileMedia<String> implements WithLatLon, WithKeywords {
+public class FlickrMedia extends SingleFileMedia implements WithLatLon, WithKeywords {
 
     private static final String STATICFLICKR_COM = ".staticflickr.com";
 
     private static final Pattern USER_ID = Pattern.compile(".*(NHQ\\d{12}|GRC-\\d{4}-[A-Z]-\\d{5}).*");
-
-    @Id
-    @Column(nullable = false)
-    private String id;
 
     @Column(nullable = false)
     private int license;
@@ -77,24 +71,10 @@ public class FlickrMedia extends SingleFileMedia<String> implements WithLatLon, 
     @JsonProperty("media_status")
     private String mediaStatus;
 
-    @Column(nullable = false)
-    @JsonProperty("pathalias")
-    private String pathAlias;
-
     @JsonIgnoreProperties({ "pathAlias", "members" })
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.REFRESH }, mappedBy = "members")
     private Set<FlickrPhotoSet> photosets = new HashSet<>();
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public int getLicense() {
         return license;
@@ -225,12 +205,10 @@ public class FlickrMedia extends SingleFileMedia<String> implements WithLatLon, 
         this.mediaStatus = mediaStatus;
     }
 
+    @Transient
+    @JsonIgnore
     public String getPathAlias() {
-        return pathAlias;
-    }
-
-    public void setPathAlias(String pathAlias) {
-        this.pathAlias = pathAlias;
+        return getId().getRepoId();
     }
 
     public Set<FlickrPhotoSet> getPhotosets() {
@@ -267,32 +245,17 @@ public class FlickrMedia extends SingleFileMedia<String> implements WithLatLon, 
                 && CollectionUtils.isNotEmpty(getPhotosets())) {
             String albumTitle = getPhotosets().iterator().next().getTitle();
             if (StringUtils.isNotBlank(albumTitle)) {
-                return albumTitle + " (" + getId() + ")";
+                return albumTitle + " (" + getId().getMediaId() + ")";
             }
         }
         return getUploadTitle(getUploadTitle(), getUserDefinedId().orElseGet(() -> getUploadId(fileMetadata)));
     }
 
     @Override
-    public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(id, pathAlias);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj) || getClass() != obj.getClass())
-            return false;
-        FlickrMedia other = (FlickrMedia) obj;
-        return Objects.equals(id, other.id) && Objects.equals(pathAlias, other.pathAlias);
-    }
-
-    @Override
     public String toString() {
-        return "FlickrMedia [" + (id != null ? "id=" + id + ", " : "") + (title != null ? "title=" + title + ", " : "")
-                + "license=" + license + ", " + (pathAlias != null ? "pathAlias=" + pathAlias + ", " : "")
-                + "metadata=" + getMetadata() + "]";
+        return "FlickrMedia [" + (getId() != null ? "id=" + getId() + ", " : "")
+                + (title != null ? "title=" + title + ", " : "")
+                + "license=" + license + ", " + "metadata=" + getMetadata() + "]";
     }
 
     @Override
@@ -329,7 +292,6 @@ public class FlickrMedia extends SingleFileMedia<String> implements WithLatLon, 
         this.accuracy = mediaFromApi.accuracy;
         this.media = mediaFromApi.media;
         this.mediaStatus = mediaFromApi.mediaStatus;
-        // Do not override pathAlias !
         return this;
     }
 }

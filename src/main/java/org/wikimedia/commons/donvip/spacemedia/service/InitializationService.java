@@ -25,7 +25,7 @@ public class InitializationService implements ApplicationRunner {
     private StatsService statsService;
 
     @Autowired
-    private List<AbstractOrgService<?, ?>> orgs;
+    private List<AbstractOrgService<?>> orgs;
 
     @Autowired
     private FileMetadataRepository metadataRepo;

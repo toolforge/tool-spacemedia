@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMediaRepository;
@@ -28,16 +29,13 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateR
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class KariService extends AbstractOrgService<KariMedia, String> {
+public class KariService extends AbstractOrgService<KariMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KariService.class);
 
-    private KariMediaRepository kariRepository;
-
     @Autowired
     public KariService(KariMediaRepository repository) {
-        super(repository, "kari");
-        this.kariRepository = repository;
+        super(repository, "kari", Set.of("kari"));
     }
 
     @Value("${kari.view.link}")
@@ -48,11 +46,6 @@ public class KariService extends AbstractOrgService<KariMedia, String> {
 
     @Value("${kari.max.failures:50}")
     private int maxFailures;
-
-    @Override
-    protected final String getMediaId(String id) {
-        return id;
-    }
 
     @Override
     public final String getName() {
@@ -71,12 +64,12 @@ public class KariService extends AbstractOrgService<KariMedia, String> {
 
     @Override
     public final URL getSourceUrl(KariMedia media, FileMetadata metadata) {
-        return newURL(getViewUrl(media.getId()));
+        return newURL(getViewUrl(media.getId().getMediaId()));
     }
 
     @Override
     public final String getSource(KariMedia media, FileMetadata metadata) {
-        return "{{KARI-source|" + media.getId() + "|" + media.getKariId() + "}}";
+        return "{{KARI-source|" + media.getId().getMediaId() + "|" + media.getKariId() + "}}";
     }
 
     @Override
@@ -105,12 +98,12 @@ public class KariService extends AbstractOrgService<KariMedia, String> {
         LocalDateTime start = startUpdateMedia();
         int consecutiveFailures = 0;
         int count = 0;
-        String id = kariRepository.findMaxId().orElse("1");
+        String id = repository.findMaxId().orElse("1");
         while (consecutiveFailures < maxFailures) {
             boolean save = false;
             String viewUrl = getViewUrl(id);
             URL view = newURL(viewUrl);
-            Optional<KariMedia> mediaInRepo = repository.findById(id);
+            Optional<KariMedia> mediaInRepo = repository.findById(new CompositeMediaId("kari", id));
             KariMedia media = mediaInRepo.orElse(null);
             if (media == null) {
                 KariUpdateResult result = fetchMedia(id);
@@ -221,7 +214,7 @@ public class KariService extends AbstractOrgService<KariMedia, String> {
 
     private KariMedia buildMedia(String id, URL view, Element div, String title, Element infos, Elements lis) {
         KariMedia media = new KariMedia();
-        media.setId(id);
+        media.setId(new CompositeMediaId("kari", id));
         media.setKariId(lis.get(0).getElementsByClass("txt").get(0).text());
         media.setTitle(title);
         media.setPublicationDate(LocalDate.parse(div.getElementsByClass("infor").get(0).getElementsByTag("li")
@@ -247,7 +240,7 @@ public class KariService extends AbstractOrgService<KariMedia, String> {
 
     @Override
     protected KariMedia refresh(KariMedia media) throws IOException {
-        KariMedia mediaFromApi = fetchMedia(media.getId()).getMedia();
+        KariMedia mediaFromApi = fetchMedia(media.getId().getMediaId()).getMedia();
         return mediaFromApi != null ? media.copyDataFrom(mediaFromApi) : null;
     }
 

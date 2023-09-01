@@ -5,11 +5,10 @@ import java.lang.annotation.RetentionPolicy;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface CopernicusGalleryMediaRepository extends MediaRepository<CopernicusGalleryMedia, String> {
+public interface CopernicusGalleryMediaRepository extends MediaRepository<CopernicusGalleryMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "copGalCount", "copGalCountIgnored", "copGalCountMissing",
@@ -54,18 +53,6 @@ public interface CopernicusGalleryMediaRepository extends MediaRepository<Copern
     @Cacheable("copGalCountUploaded")
     long countUploadedToCommons();
 
-    // FIND
-
-    @Override
-    default Page<CopernicusGalleryMedia> findMissingImagesInCommons(Pageable page) {
-        return findMissingInCommons(page);
-    }
-
-    @Override
-    default Page<CopernicusGalleryMedia> findMissingVideosInCommons(Pageable page) {
-        return Page.empty();
-    }
-
     // SAVE
 
     @Override
@@ -80,7 +67,7 @@ public interface CopernicusGalleryMediaRepository extends MediaRepository<Copern
 
     @Override
     @CacheEvictCopernicusGalleryAll
-    void deleteById(String id);
+    void deleteById(CompositeMediaId id);
 
     @Override
     @CacheEvictCopernicusGalleryAll

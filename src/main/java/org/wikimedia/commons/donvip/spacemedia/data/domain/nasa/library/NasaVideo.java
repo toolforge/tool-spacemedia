@@ -13,7 +13,6 @@ public class NasaVideo extends NasaMedia {
         return "NasaVideo ["
                 + (getId() != null ? "nasaId=" + getId() + ", " : "")
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")
-                + (getCenter() != null ? "center=" + getCenter() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() : "") + ']';
     }
 }

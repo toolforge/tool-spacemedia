@@ -28,10 +28,10 @@ public class SpacemediaOrgS3UpdateJobApplication extends AbstractSpacemediaOrgUp
     }
 
     @Bean
-    public Org<?, ?> org(@Value("${org}") String org, @Value("${s3.region}") Regions region,
+    public Org<?> org(@Value("${org}") String org, @Value("${s3.region}") Regions region,
             @Value("${s3.buckets}") Set<String> buckets, @Autowired S3MediaRepository repository,
             ApplicationContext context) throws ReflectiveOperationException {
-        return (Org<?, ?>) Class.forName(org).getConstructor(S3MediaRepository.class, Regions.class, Set.class)
+        return (Org<?>) Class.forName(org).getConstructor(S3MediaRepository.class, Regions.class, Set.class)
                 .newInstance(repository, region, buckets);
     }
 }

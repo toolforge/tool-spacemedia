@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -32,9 +31,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
@@ -54,7 +52,7 @@ import com.flickr4java.flickr.people.User;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.tags.Tag;
 
-public abstract class AbstractOrgFlickrService extends AbstractOrgService<FlickrMedia, String> {
+public abstract class AbstractOrgFlickrService extends AbstractOrgService<FlickrMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgFlickrService.class);
     private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"(\\d+)\" not found \\(invalid ID\\)");
@@ -66,13 +64,11 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     @Autowired
     protected FlickrMediaProcessorService processor;
 
-    protected final Set<String> flickrAccounts;
     protected final Map<String, Map<String, String>> flickrPhotoSets;
     protected final Map<String, Map<String, String>> flickrTags;
 
     protected AbstractOrgFlickrService(FlickrMediaRepository repository, String id, Set<String> flickrAccounts) {
-        super(repository, id);
-        this.flickrAccounts = Objects.requireNonNull(flickrAccounts);
+        super(repository, id, flickrAccounts);
         this.flickrPhotoSets = new HashMap<>();
         this.flickrTags = new HashMap<>();
     }
@@ -81,7 +77,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     @PostConstruct
     void init() throws IOException {
         super.init();
-        for (String account : flickrAccounts) {
+        for (String account : getRepoIds()) {
             ofNullable(loadCsvMapping("flickr/" + account + ".photosets.csv"))
                     .ifPresent(mapping -> flickrPhotoSets.put(account, mapping));
             ofNullable(loadCsvMapping("flickr/" + account + ".tags.csv"))
@@ -95,115 +91,10 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
-    public final long countAllMedia() {
-        return flickrRepository.count(flickrAccounts);
-    }
-
-    @Override
-    public final long countIgnored() {
-        return flickrRepository.countByIgnoredTrue(flickrAccounts);
-    }
-
-    @Override
-    public final long countMissingMedia() {
-        return flickrRepository.countMissingInCommons(flickrAccounts);
-    }
-
-    @Override
-    public final long countMissingImages() {
-        return flickrRepository.countMissingImagesInCommons(flickrAccounts);
-    }
-
-    @Override
-    public final long countMissingVideos() {
-        return flickrRepository.countMissingVideosInCommons(flickrAccounts);
-    }
-
-    @Override
-    public final long countPerceptualHashes() {
-        return flickrRepository.countByMetadata_PhashNotNull(flickrAccounts);
-    }
-
-    @Override
-    public final long countUploadedMedia() {
-        return flickrRepository.countUploadedToCommons(flickrAccounts);
-    }
-
-    @Override
-    public final Iterable<FlickrMedia> listAllMedia() {
-        return flickrRepository.findAll(flickrAccounts);
-    }
-
-    @Override
-    public final Page<FlickrMedia> listAllMedia(Pageable page) {
-        return flickrRepository.findAll(flickrAccounts, page);
-    }
-
-    @Override
-    public final List<FlickrMedia> listIgnoredMedia() {
-        return flickrRepository.findByIgnoredTrue(flickrAccounts);
-    }
-
-    @Override
-    public final Page<FlickrMedia> listIgnoredMedia(Pageable page) {
-        return flickrRepository.findByIgnoredTrue(flickrAccounts, page);
-    }
-
-    @Override
-    public final List<FlickrMedia> listMissingMedia() {
-        return flickrRepository.findMissingInCommons(flickrAccounts);
-    }
-
-    @Override
-    public final Page<FlickrMedia> listMissingMedia(Pageable page) {
-        return flickrRepository.findMissingInCommons(flickrAccounts, page);
-    }
-
-    @Override
-    public final Page<FlickrMedia> listMissingImages(Pageable page) {
-        return flickrRepository.findMissingImagesInCommons(flickrAccounts, page);
-    }
-
-    @Override
-    public final Page<FlickrMedia> listMissingVideos(Pageable page) {
-        return flickrRepository.findMissingVideosInCommons(flickrAccounts, page);
-    }
-
-    @Override
-    public List<FlickrMedia> listMissingMediaByDate(LocalDate date) {
-        return flickrRepository.findMissingInCommonsByDate(flickrAccounts, date);
-    }
-
-    @Override
-    public List<FlickrMedia> listMissingMediaByTitle(String title) {
-        return flickrRepository.findMissingInCommonsByTitle(flickrAccounts, title);
-    }
-
-    @Override
-    public final Page<FlickrMedia> listHashedMedia(Pageable page) {
-        return flickrRepository.findByMetadata_PhashNotNull(flickrAccounts, page);
-    }
-
-    @Override
-    public final List<FlickrMedia> listUploadedMedia() {
-        return flickrRepository.findUploadedToCommons(flickrAccounts);
-    }
-
-    @Override
-    public final Page<FlickrMedia> listUploadedMedia(Pageable page) {
-        return flickrRepository.findUploadedToCommons(flickrAccounts, page);
-    }
-
-    @Override
-    public final List<FlickrMedia> listDuplicateMedia() {
-        return flickrRepository.findDuplicateInCommons(flickrAccounts);
-    }
-
-    @Override
     public Statistics getStatistics(boolean details) {
         Statistics stats = super.getStatistics(details);
-        if (details && flickrAccounts.size() > 1) {
-            stats.setDetails(flickrAccounts.stream()
+        if (details && getRepoIds().size() > 1) {
+            stats.setDetails(getRepoIds().stream()
                     .map(this::getStatistics)
                     .sorted().toList());
         }
@@ -240,8 +131,8 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
-    protected final String getPageTile(FlickrMedia media) {
-        return super.getPageTile(media) + "(" + media.getId() + ")";
+    protected final String getPageTitle(FlickrMedia media) {
+        return super.getPageTitle(media) + "(" + media.getId().getMediaId() + ")";
     }
 
     @Override
@@ -320,7 +211,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     private static final URL getPhotoUrl(FlickrMedia media) {
-        return newURL(getUserPhotosUrl(media).toExternalForm() + "/" + media.getId());
+        return newURL(getUserPhotosUrl(media).toExternalForm() + '/' + media.getId().getMediaId());
     }
 
     protected boolean includeAllLicences() {
@@ -338,7 +229,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         List<FlickrMedia> uploadedMedia = new ArrayList<>();
         LocalDate minUploadDate = getRuntimeData().getDoNotFetchEarlierThan();
         int count = 0;
-        for (String flickrAccount : flickrAccounts) {
+        for (String flickrAccount : getRepoIds()) {
             try {
                 LOGGER.info("Fetching Flickr media from account '{}'...", flickrAccount);
                 List<FlickrMedia> freePictures = buildFlickrMediaList(
@@ -353,7 +244,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
                 if (minUploadDate == null) {
                     // Only delete pictures not found in complete updates
                     Set<FlickrMedia> noLongerFreePictures = flickrRepository.findNotIn(Set.of(flickrAccount),
-                            freePictures.stream().map(FlickrMedia::getId).collect(toSet()));
+                            freePictures.stream().map(m -> m.getId().getMediaId()).collect(toSet()));
                     if (!noLongerFreePictures.isEmpty()) {
                         count += updateNoLongerFreeFlickrMedia(flickrAccount, noLongerFreePictures);
                     }
@@ -371,7 +262,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         for (FlickrMedia picture : pictures) {
             try {
                 count += processFlickrMedia(
-                        buildFlickrMediaList(List.of(flickrService.findPhoto(picture.getId().toString())),
+                        buildFlickrMediaList(List.of(flickrService.findPhoto(picture.getId().getMediaId())),
                                 flickrAccount),
                         flickrAccount).getLeft();
             } catch (FlickrException e) {
@@ -380,7 +271,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
                     if (m.matches()) {
                         String id = m.group(1);
                         LOGGER.warn("Flickr image {} has been deleted for account '{}'", id, flickrAccount);
-                        processor.deleteFlickrMedia(id);
+                        processor.deleteFlickrMedia(new CompositeMediaId(flickrAccount, id));
                         if (executionMode == ExecutionMode.LOCAL) {
                             evictRemoteCaches();
                         }
@@ -403,7 +294,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     private FlickrMedia photoToFlickrMedia(Photo p, String flickrAccount) {
-        return repository.findById(p.getId()).orElseGet(() -> {
+        return repository.findById(new CompositeMediaId(getPathAlias(p, flickrAccount), p.getId())).orElseGet(() -> {
             try {
                 return saveMedia(mapPhoto(p, flickrAccount, true));
             } catch (FlickrException e) {
@@ -437,7 +328,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     protected final FlickrMedia refresh(FlickrMedia media) throws IOException {
         try {
             return media.copyDataFrom(
-                    mapPhoto(flickrService.findPhoto(media.getId().toString()), media.getPathAlias(), false));
+                    mapPhoto(flickrService.findPhoto(media.getId().getMediaId()), media.getPathAlias(), false));
         } catch (FlickrException e) {
             throw new IOException(e);
         }
@@ -454,7 +345,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         m.setCreationDateTime(toZonedDateTime(p.getDateTaken()));
         ofNullable(p.getTakenGranularity()).ifPresent(granu -> m.setDateTakenGranularity(Integer.parseInt(granu)));
         m.setDescription(p.getDescription());
-        m.setId(p.getId());
+        m.setId(new CompositeMediaId(getPathAlias(p, flickrAccount), p.getId()));
         m.setLicense(Integer.parseInt(p.getLicense()));
         m.setMedia(FlickrMediaType.valueOf(p.getMedia()));
         m.setMediaStatus(p.getMediaStatus());
@@ -462,20 +353,13 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         FileMetadata md = new FileMetadata(newURL(p.getOriginalUrl()));
         md.setImageDimensions(new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight()));
         m.addMetadata(saveMetadata ? metadataRepository.save(md) : md);
-        m.setPathAlias(StringUtils.isEmpty(p.getPathAlias()) ? flickrAccount : p.getPathAlias());
         m.setTags(p.getTags().stream().map(Tag::getValue).collect(toSet()));
         m.setThumbnailUrl(newURL(p.getThumbnailUrl()));
         m.setTitle(p.getTitle());
         return m;
     }
 
-    @Override
-    protected final String getMediaId(String id) {
-        return id;
-    }
-
-    @Override
-    protected final int doResetIgnored() {
-        return flickrRepository.resetIgnored(flickrAccounts);
+    private static String getPathAlias(Photo p, String flickrAccount) {
+        return StringUtils.isEmpty(p.getPathAlias()) ? flickrAccount : p.getPathAlias();
     }
 }

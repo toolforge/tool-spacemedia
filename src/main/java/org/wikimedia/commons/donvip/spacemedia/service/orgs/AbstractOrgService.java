@@ -68,6 +68,7 @@ import org.springframework.web.client.RestClientException;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
@@ -102,10 +103,9 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
  * Superclass of orgs services.
  *
  * @param <T>  the media type the repository manages
- * @param <ID> the type of the id of the entity the repository manages
  */
-public abstract class AbstractOrgService<T extends Media<ID>, ID>
-        implements Comparable<AbstractOrgService<T, ID>>, Org<T, ID> {
+public abstract class AbstractOrgService<T extends Media>
+        implements Comparable<AbstractOrgService<T>>, Org<T> {
 
     private static final int LOTS_OF_MP = 150_000_000;
 
@@ -133,9 +133,11 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
             e("KOGL", "Q12584618"), e("NOIRLab", "Q20007257"), e("ESA-Hubble", "Q20007257"),
             e("ESA-Webb", "Q20007257"));
 
-    protected final MediaRepository<T, ID> repository;
+    protected final MediaRepository<T> repository;
 
     private final String id;
+
+    private final Set<String> repoIds;
 
     @Autowired
     protected TransactionService transactionService;
@@ -190,9 +192,10 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
 
     private UploadMode uploadMode;
 
-    protected AbstractOrgService(MediaRepository<T, ID> repository, String id) {
+    protected AbstractOrgService(MediaRepository<T> repository, String id, Set<String> repoIds) {
         this.repository = Objects.requireNonNull(repository);
         this.id = Objects.requireNonNull(id);
+        this.repoIds = Objects.requireNonNull(repoIds);
     }
 
     @PostConstruct
@@ -226,107 +229,107 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
 
     @Override
     public long countAllMedia() {
-        return repository.count();
+        return repository.count(getRepoIds());
     }
 
     @Override
     public long countIgnored() {
-        return repository.countByIgnoredTrue();
+        return repository.countByIgnoredTrue(getRepoIds());
     }
 
     @Override
     public long countMissingMedia() {
-        return repository.countMissingInCommons();
+        return repository.countMissingInCommons(getRepoIds());
     }
 
     @Override
     public long countMissingImages() {
-        return repository.countMissingImagesInCommons();
+        return repository.countMissingImagesInCommons(getRepoIds());
     }
 
     @Override
     public long countMissingVideos() {
-        return repository.countMissingVideosInCommons();
+        return repository.countMissingVideosInCommons(getRepoIds());
     }
 
     @Override
     public long countPerceptualHashes() {
-        return repository.countByMetadata_PhashNotNull();
+        return repository.countByMetadata_PhashNotNull(getRepoIds());
     }
 
     @Override
     public long countUploadedMedia() {
-        return repository.countUploadedToCommons();
+        return repository.countUploadedToCommons(getRepoIds());
     }
 
     @Override
     public Iterable<T> listAllMedia() {
-        return repository.findAll();
+        return repository.findAll(getRepoIds());
     }
 
     @Override
     public Page<T> listAllMedia(Pageable page) {
-        return repository.findAll(page);
+        return repository.findAll(getRepoIds(), page);
     }
 
     @Override
     public List<T> listMissingMedia() {
-        return repository.findMissingInCommons();
+        return repository.findMissingInCommons(getRepoIds());
     }
 
     @Override
     public Page<T> listMissingMedia(Pageable page) {
-        return repository.findMissingInCommons(page);
+        return repository.findMissingInCommons(getRepoIds(), page);
     }
 
     @Override
     public Page<T> listMissingImages(Pageable page) {
-        return repository.findMissingImagesInCommons(page);
+        return repository.findMissingImagesInCommons(getRepoIds(), page);
     }
 
     @Override
     public Page<T> listMissingVideos(Pageable page) {
-        return repository.findMissingVideosInCommons(page);
+        return repository.findMissingVideosInCommons(getRepoIds(), page);
     }
 
     @Override
     public List<T> listMissingMediaByDate(LocalDate date) {
-        return repository.findMissingByDate(date);
+        return repository.findMissingInCommonsByDate(getRepoIds(), date);
     }
 
     @Override
     public List<T> listMissingMediaByTitle(String title) {
-        return repository.findMissingByTitle(title);
+        return repository.findMissingInCommonsByTitle(getRepoIds(), title);
     }
 
     @Override
     public Page<T> listHashedMedia(Pageable page) {
-        return repository.findByMetadata_PhashNotNull(page);
+        return repository.findByMetadata_PhashNotNull(getRepoIds(), page);
     }
 
     @Override
     public List<T> listUploadedMedia() {
-        return repository.findUploadedToCommons();
+        return repository.findUploadedToCommons(getRepoIds());
     }
 
     @Override
     public Page<T> listUploadedMedia(Pageable page) {
-        return repository.findUploadedToCommons(page);
+        return repository.findUploadedToCommons(getRepoIds(), page);
     }
 
     @Override
     public List<T> listDuplicateMedia() {
-        return repository.findDuplicateInCommons();
+        return repository.findDuplicateInCommons(getRepoIds());
     }
 
     @Override
     public List<T> listIgnoredMedia() {
-        return repository.findByIgnoredTrue();
+        return repository.findByIgnoredTrue(getRepoIds());
     }
 
     @Override
     public Page<T> listIgnoredMedia(Pageable page) {
-        return repository.findByIgnoredTrue(page);
+        return repository.findByIgnoredTrue(getRepoIds(), page);
     }
 
     @Override
@@ -349,6 +352,10 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
     @Override
     public String getId() {
         return id;
+    }
+
+    protected Set<String> getRepoIds() {
+        return repoIds;
     }
 
     protected final LocalDateTime startUpdateMedia() {
@@ -639,13 +646,13 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
     }
 
     @Override
-    public List<T> uploadAndSaveByDate(LocalDate date, Predicate<Media<?>> predicate, boolean isManual)
+    public List<T> uploadAndSaveByDate(LocalDate date, Predicate<Media> predicate, boolean isManual)
             throws UploadException {
         return uploadAndSaveMedias(listMissingMediaByDate(date).stream().filter(predicate), isManual);
     }
 
     @Override
-    public List<T> uploadAndSaveByTitle(String title, Predicate<Media<?>> predicate, boolean isManual)
+    public List<T> uploadAndSaveByTitle(String title, Predicate<Media> predicate, boolean isManual)
             throws UploadException {
         return uploadAndSaveMedias(listMissingMediaByTitle(title).stream().filter(predicate), isManual);
     }
@@ -820,14 +827,14 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
 
     protected final String getWikiHtmlPreview(T media, FileMetadata metadata) {
         try {
-            return commonsService.getWikiHtmlPreview(getWikiCode(media, metadata).getKey(), getPageTile(media),
+            return commonsService.getWikiHtmlPreview(getWikiCode(media, metadata).getKey(), getPageTitle(media),
                     metadata.getAssetUrl().toExternalForm());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    protected String getPageTile(T media) {
+    protected String getPageTitle(T media) {
         return media.getTitle();
     }
 
@@ -1097,7 +1104,7 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
         return Optional.empty();
     }
 
-    protected Set<String> findCategoriesForEarthObservationImage(Media<?> image, UnaryOperator<String> categorizer,
+    protected Set<String> findCategoriesForEarthObservationImage(Media image, UnaryOperator<String> categorizer,
             String defaultCat) {
         Set<String> result = new TreeSet<>();
         for (String targetOrSubject : satellitePicturesCategories) {
@@ -1223,7 +1230,9 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
      * @param id the string representation of a media identifier
      * @return the media identifier for the given string representation
      */
-    protected abstract ID getMediaId(String id);
+    protected final CompositeMediaId getMediaId(String id) {
+        return new CompositeMediaId(id);
+    }
 
     protected Class<? extends T> getTopTermsMediaClass() {
         return getMediaClass();
@@ -1233,7 +1242,7 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
         return loadCsvMapping(getClass(), filename);
     }
 
-    protected static final Map<String, String> loadCsvMapping(Class<?> klass, String filename) {
+    protected static Map<String, String> loadCsvMapping(Class<?> klass, String filename) {
         try {
             return CsvHelper.loadMap(klass.getResource("/mapping/" + filename));
         } catch (IOException e) {
@@ -1288,12 +1297,12 @@ public abstract class AbstractOrgService<T extends Media<ID>, ID>
     }
 
     @Override
-    public int compareTo(AbstractOrgService<T, ID> o) {
+    public int compareTo(AbstractOrgService<T> o) {
         return getName().compareTo(o.getName());
     }
 
-    protected int doResetIgnored() {
-        return repository.resetIgnored();
+    protected final int doResetIgnored() {
+        return repository.resetIgnored(getRepoIds());
     }
 
     protected int doResetProblems() {

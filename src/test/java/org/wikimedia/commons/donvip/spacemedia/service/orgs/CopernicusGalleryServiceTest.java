@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.CopernicusGalleryMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.CopernicusGalleryMediaRepository;
@@ -76,7 +77,7 @@ class CopernicusGalleryServiceTest extends AbstractOrgServiceTest {
         assumeTrue(HAS_DAY_MONTH.matcher(description).matches());
 
         CopernicusGalleryMedia media = new CopernicusGalleryMedia();
-        media.setId(id);
+        media.setId(new CompositeMediaId("copernicus-gallery", id));
         media.setDescription(description);
         media.setPublicationDate(LocalDate.now());
 

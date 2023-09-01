@@ -127,7 +127,7 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
         assertEquals(1, medias.size());
         NasaPhotojournalMedia media = medias.get(0);
         assertNotNull(media);
-        assertEquals(id, media.getId());
+        assertEquals(id, media.getId().getMediaId());
         return media;
     }
 

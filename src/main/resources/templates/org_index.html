@@ -29,11 +29,11 @@
 		            <img th:if="${media.video}" class="cornerimage" width="80px" src="/Antu_videoclip-amarok.svg" alt="" />
 		            <img th:if="${media.audio}" class="cornerimage" width="80px" src="/Antu_audio-volume-high.svg" alt="" />
 		          </a>
-                  <a th:href="@{/{id}/rest/refreshmedia/{mid}(id=${org.id},mid=${media.idUsedInOrg})}" target="_blank">
-                    <img width="24" height="24" th:alt="'refresh ' + ${media.idUsedInOrg}" th:src="@{/Gtk-refresh.svg}">
+                  <a th:href="@{/{id}/rest/refreshmedia/{mid}(id=${org.id},mid=${media.id})}" target="_blank">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.id}" th:src="@{/Gtk-refresh.svg}">
                   </a>
-                  <a th:href="@{/{id}/rest/uploadmedia/{mid}(id=${org.id},mid=${media.idUsedInOrg})}" target="_blank" th:if="${org.uploadEnabled}">
-                    <img width="24" height="24" th:alt="'upload ' + ${media.idUsedInOrg}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  <a th:href="@{/{id}/rest/uploadmedia/{mid}(id=${org.id},mid=${media.id})}" target="_blank" th:if="${org.uploadEnabled}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.id}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
 		          <div th:if="'missing' == ${tab} or 'missing/images' == ${tab} or 'missing/videos' == ${tab}" th:each="asset : ${media.assetsToUpload}">
 		          	<a th:href="@{/{id}/rest/wiki/{sha1}(id=${org.id},sha1=${asset})}" target="_blank">

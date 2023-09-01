@@ -11,11 +11,12 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 
-public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, String> {
+public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -67,7 +68,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
     @Query(value = """
             select count(*)
             from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
-            on (nasa_sdo_media.id = nasa_sdo_media_metadata.nasa_sdo_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
+            on (nasa_sdo_media.media_id = nasa_sdo_media_metadata.nasa_sdo_media_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
             where media_type = ?1 and width = ?2 and height = ?3 and DATE(creation_date_time) = ?4
             and exists (select * from file_metadata_commons_file_names where file_metadata_commons_file_names.file_metadata_id = file_metadata.id)
             """, nativeQuery = true)
@@ -109,7 +110,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
     @Query(value = """
             select *
             from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
-            on (nasa_sdo_media.id = nasa_sdo_media_metadata.nasa_sdo_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
+            on (nasa_sdo_media.media_id = nasa_sdo_media_metadata.nasa_sdo_media_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
             where media_type = ?1 and width = ?2 and height = ?3 and DATE(creation_date_time) = ?4 and fsn is null
             """, nativeQuery = true)
     List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDateAndFsnIsNull(int mediaType, int width,
@@ -135,7 +136,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia, St
 
     @Override
     @CacheEvictNasaSdoAll
-    void deleteById(String id);
+    void deleteById(CompositeMediaId id);
 
     @Override
     @CacheEvictNasaSdoAll

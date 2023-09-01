@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.execOutput;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -11,14 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -30,10 +29,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
@@ -49,7 +47,7 @@ import com.google.api.services.youtube.model.VideoContentDetails;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.VideoSnippet;
 
-public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTubeVideo, String> {
+public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTubeVideo> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgYouTubeService.class);
 
@@ -57,19 +55,13 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     private static final Pattern ALREADY_DL = Pattern.compile("\\[download\\] (\\S{11}\\.\\S{3,4}) has already been downloaded and merged");
 
     @Autowired
-    protected YouTubeVideoRepository youtubeRepository;
-
-    @Autowired
     private YouTubeApiService youtubeService;
 
     @Autowired
     private YouTubeMediaProcessor mediaProcessor;
 
-    protected final Set<String> youtubeChannels;
-
     protected AbstractOrgYouTubeService(YouTubeVideoRepository repository, String id, Set<String> youtubeChannels) {
-        super(repository, id);
-        this.youtubeChannels = Objects.requireNonNull(youtubeChannels);
+        super(repository, id, youtubeChannels);
     }
 
     @Override
@@ -94,7 +86,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         }
         LocalDateTime start = startUpdateMedia();
         int count = 0;
-        for (String channelId : youtubeChannels) {
+        for (String channelId : getRepoIds()) {
             count += updateYouTubeVideos(channelId);
         }
         syncYouTubeVideos();
@@ -116,19 +108,19 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
             } while (pageToken != null);
             LOGGER.info("Processed {} free videos for channel {}", count, channelId);
             if (!freeVideos.isEmpty()) {
-                Set<YouTubeVideo> noLongerFreeVideos = youtubeRepository.findByChannelIdAndIdNotIn(channelId,
-                        freeVideos.stream().map(YouTubeVideo::getId).toList());
+                Set<YouTubeVideo> noLongerFreeVideos = repository.findNotIn(Set.of(channelId),
+                        freeVideos.stream().map(v -> v.getId().getMediaId()).collect(toSet()));
                 if (!noLongerFreeVideos.isEmpty()) {
                     LOGGER.warn("Deleting {} videos no longer-free for channel {}: {}",
                             noLongerFreeVideos.size(), channelId, noLongerFreeVideos);
-                    youtubeRepository.deleteAll(noLongerFreeVideos);
+                    repository.deleteAll(noLongerFreeVideos);
                     count += noLongerFreeVideos.size();
                 }
             }
         } catch (HttpClientErrorException e) {
             LOGGER.error("HttpClientError while fetching YouTube videos from channel {}: {}", channelId, e.getMessage());
             if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                processYouTubeVideos(youtubeRepository.findByChannelIdIn(Set.of(channelId)));
+                processYouTubeVideos(repository.findAll(Set.of(channelId)));
             }
         } catch (IOException | RuntimeException e) {
             LOGGER.error("Error while fetching YouTube videos from channel " + channelId, e);
@@ -145,14 +137,14 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
 
     private YouTubeVideo toYouTubeVideo(Video ytVideo) {
         YouTubeVideo video = new YouTubeVideo();
-        video.setId(ytVideo.getId());
+        video.setId(new CompositeMediaId(null, ytVideo.getId()));
         addMetadata(video, newURL("https://www.youtube.com/watch?v=" + video.getId()), null);
         return fillVideoSnippetAndDetails(video, ytVideo);
     }
 
     private static YouTubeVideo fillVideoSnippetAndDetails(YouTubeVideo video, Video ytVideo) {
         VideoSnippet snippet = ytVideo.getSnippet();
-        ofNullable(snippet.getChannelId()).ifPresent(video::setChannelId);
+        ofNullable(snippet.getChannelId()).ifPresent(video.getId()::setRepoId);
         ofNullable(snippet.getChannelTitle()).ifPresent(video::setChannelTitle);
         ofNullable(snippet.getPublishedAt()).map(DateTime::toStringRfc3339).map(ZonedDateTime::parse)
                 .ifPresent(video::setPublicationDateTime);
@@ -186,7 +178,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
 
     private YouTubeVideo processYouTubeVideo(YouTubeVideo video) throws IOException {
         boolean save = false;
-        Optional<YouTubeVideo> optVideoInRepo = youtubeRepository.findById(video.getId());
+        Optional<YouTubeVideo> optVideoInRepo = repository.findById(video.getId());
         if (optVideoInRepo.isPresent()) {
             video = optVideoInRepo.get();
         } else {
@@ -203,7 +195,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         if (customProcessing(video)) {
             save = true;
         }
-        return save ? youtubeRepository.save(video) : video;
+        return save ? repository.save(video) : video;
     }
 
     private Path downloadVideo(YouTubeVideo video) {
@@ -240,23 +232,18 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
 
     @Override
     protected final YouTubeVideo refresh(YouTubeVideo video) throws IOException {
-        return fillVideoSnippetAndDetails(video, youtubeService.getVideo(video.getId()));
+        return fillVideoSnippetAndDetails(video, youtubeService.getVideo(video.getId().getMediaId()));
     }
 
     protected boolean customProcessing(YouTubeVideo video) {
         return false;
     }
 
-    @Override
-    protected final String getMediaId(String id) {
-        return id;
-    }
-
     private void syncYouTubeVideos() {
         List<String> categories = new ArrayList<>();
         categories.add("Spacemedia files (review needed)");
         categories.addAll(getOrgCategories());
-        mediaProcessor.syncYouTubeVideos(youtubeRepository.findMissingInCommons(youtubeChannels), categories);
+        mediaProcessor.syncYouTubeVideos(repository.findMissingInCommons(getRepoIds()), categories);
     }
 
     protected abstract List<String> getOrgCategories();
@@ -278,110 +265,5 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         result.add("YouTube CC-BY |1= " + video.getChannelTitle());
         result.add("LicenseReview");
         return result;
-    }
-
-    @Override
-    public final long countAllMedia() {
-        return youtubeRepository.count(youtubeChannels);
-    }
-
-    @Override
-    public final long countIgnored() {
-        return youtubeRepository.countByIgnoredTrue(youtubeChannels);
-    }
-
-    @Override
-    public final long countMissingMedia() {
-        return youtubeRepository.countMissingInCommons(youtubeChannels);
-    }
-
-    @Override
-    public final long countMissingImages() {
-        return 0;
-    }
-
-    @Override
-    public final long countMissingVideos() {
-        return countMissingMedia();
-    }
-
-    @Override
-    public final long countPerceptualHashes() {
-        return youtubeRepository.countByMetadata_PhashNotNull(youtubeChannels);
-    }
-
-    @Override
-    public final long countUploadedMedia() {
-        return youtubeRepository.countUploadedToCommons(youtubeChannels);
-    }
-
-    @Override
-    public final Iterable<YouTubeVideo> listAllMedia() {
-        return youtubeRepository.findByChannelIdIn(youtubeChannels);
-    }
-
-    @Override
-    public final Page<YouTubeVideo> listAllMedia(Pageable page) {
-        return youtubeRepository.findByChannelIdIn(youtubeChannels, page);
-    }
-
-    @Override
-    public final List<YouTubeVideo> listIgnoredMedia() {
-        return youtubeRepository.findByIgnoredTrue(youtubeChannels);
-    }
-
-    @Override
-    public final Page<YouTubeVideo> listIgnoredMedia(Pageable page) {
-        return youtubeRepository.findByIgnoredTrue(youtubeChannels, page);
-    }
-
-    @Override
-    public final List<YouTubeVideo> listMissingMedia() {
-        return youtubeRepository.findMissingInCommons(youtubeChannels);
-    }
-
-    @Override
-    public final Page<YouTubeVideo> listMissingMedia(Pageable page) {
-        return youtubeRepository.findMissingInCommons(youtubeChannels, page);
-    }
-
-    @Override
-    public final Page<YouTubeVideo> listMissingImages(Pageable page) {
-        return Page.empty();
-    }
-
-    @Override
-    public final Page<YouTubeVideo> listMissingVideos(Pageable page) {
-        return listMissingMedia(page);
-    }
-
-    @Override
-    public List<YouTubeVideo> listMissingMediaByDate(LocalDate date) {
-        return youtubeRepository.findMissingInCommonsByDate(youtubeChannels, date);
-    }
-
-    @Override
-    public List<YouTubeVideo> listMissingMediaByTitle(String title) {
-        return youtubeRepository.findMissingInCommonsByTitle(youtubeChannels, title);
-    }
-
-    @Override
-    public final Page<YouTubeVideo> listHashedMedia(Pageable page) {
-        return youtubeRepository.findByMetadata_PhashNotNull(youtubeChannels, page);
-    }
-
-    @Override
-    public final List<YouTubeVideo> listUploadedMedia() {
-        return youtubeRepository.findUploadedToCommons(youtubeChannels);
-    }
-
-    @Override
-    public final Page<YouTubeVideo> listUploadedMedia(Pageable page) {
-        return youtubeRepository.findUploadedToCommons(youtubeChannels, page);
-    }
-
-    @Override
-    public final List<YouTubeVideo> listDuplicateMedia() {
-        return youtubeRepository.findDuplicateInCommons(youtubeChannels);
     }
 }

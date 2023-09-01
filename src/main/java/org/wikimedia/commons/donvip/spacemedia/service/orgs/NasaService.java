@@ -2,7 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Collections.singleton;
 import static java.util.Map.entry;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -24,7 +24,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,6 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaAudio;
@@ -62,7 +62,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class NasaService extends AbstractOrgService<NasaMedia, String> {
+public class NasaService extends AbstractOrgService<NasaMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaService.class);
 
@@ -88,8 +88,7 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
     @Value("${nasa.max.tries}")
     private int maxTries;
 
-    @Value("${nasa.centers}")
-    private Set<String> nasaCenters;
+    private final Set<String> nasaCenters;
 
     @Autowired
     private NasaAudioRepository audioRepository;
@@ -115,8 +114,9 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
     private Map<String, String> nasaKeywords;
 
     @Autowired
-    public NasaService(NasaMediaRepository<NasaMedia> repository) {
-        super(repository, "nasa");
+    public NasaService(NasaMediaRepository<NasaMedia> repository, @Value("${nasa.centers}") Set<String> nasaCenters) {
+        super(repository, "nasa", nasaCenters);
+        this.nasaCenters = Objects.requireNonNull(nasaCenters);
     }
 
     @Override
@@ -134,11 +134,6 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
     @Override
     protected Class<NasaImage> getTopTermsMediaClass() {
         return NasaImage.class; // TODO can't get a direct lucene reader on NasaMedia
-    }
-
-    @Override
-    protected final String getMediaId(String id) {
-        return id;
     }
 
     @Override
@@ -175,12 +170,12 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
     }
 
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType, int year,
-            Set<String> centers, Map<String, Set<String>> foundIds, LocalDate doNotFetchEarlierThan) {
+            Set<String> centers, Set<CompositeMediaId> foundIds, LocalDate doNotFetchEarlierThan) {
         return doUpdateMedia(mediaType, year, year, centers, foundIds, doNotFetchEarlierThan);
     }
 
     private <T extends NasaMedia> Pair<Integer, Collection<T>> doUpdateMedia(NasaMediaType mediaType, int startYear,
-            int endYear, Set<String> centers, Map<String, Set<String>> foundIds, LocalDate doNotFetchEarlierThan) {
+            int endYear, Set<String> centers, Set<CompositeMediaId> foundIds, LocalDate doNotFetchEarlierThan) {
         Counter count = new Counter();
         Collection<T> uploadedMedia = new ArrayList<>();
         if (doNotFetchEarlierThan == null || endYear >= doNotFetchEarlierThan.getYear()) {
@@ -264,8 +259,7 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
         int count = 0;
         LocalDateTime start = LocalDateTime.now();
         List<NasaImage> uploadedImages = new ArrayList<>();
-        Map<String, Set<String>> foundIds = nasaCenters.stream()
-                .collect(toMap(Function.identity(), x -> new TreeSet<>()));
+        Set<CompositeMediaId> foundIds = new TreeSet<>();
         LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
         // Recent years have a lot of photos: search by center to avoid more than 10k results
         for (int year = LocalDateTime.now().getYear(); year >= 2000; year--) {
@@ -292,8 +286,9 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
         if (doNotFetchEarlierThan == null) {
             // Delete media removed from NASA website (only for complete updates)
             for (String center : nasaCenters) {
-                for (NasaImage image : imageRepository.findMissingInCommonsByCenterNotIn(center,
-                        foundIds.get(center))) {
+                for (NasaImage image : imageRepository.findMissingInCommonsNotIn(Set.of(center),
+                        foundIds.stream().filter(x -> x.getRepoId().equals(center)).map(CompositeMediaId::getMediaId)
+                                .collect(toSet()))) {
                     LOGGER.warn("TODO: deleting {} media removed from NASA website: {}", center, image);
                     // imageRepository.delete(image);
                 }
@@ -343,12 +338,12 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
 
     @Override
     public URL getSourceUrl(NasaMedia media, FileMetadata metadata) {
-        return newURL(detailsLink.replace("<id>", media.getId()));
+        return newURL(detailsLink.replace("<id>", media.getId().getMediaId()));
     }
 
     @Override
     protected String getAuthor(NasaMedia media) {
-        String center = media.getCenter().toLowerCase(Locale.ENGLISH);
+        String center = media.getId().getRepoId().toLowerCase(Locale.ENGLISH);
         URL homePage = env.getProperty("nasa." + center + ".home.page", URL.class);
         String name = env.getProperty("nasa." + center + ".name", String.class);
         if (media instanceof NasaImage image) {
@@ -370,12 +365,12 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
             if (centers.size() > 1) {
                 stats.setDetails(centers.parallelStream()
                         .map(c -> new Statistics(Objects.toString(c), Objects.toString(c),
-                                mediaRepository.countByCenter(c),
-                                mediaRepository.countUploadedToCommonsByCenter(c),
-                                mediaRepository.countIgnoredByCenter(c),
-                                mediaRepository.countMissingImagesInCommons(c),
-                                mediaRepository.countMissingVideosInCommons(c),
-                                mediaRepository.countByMetadata_PhashNotNullAndCenter(c), null))
+                                mediaRepository.count(Set.of(c)),
+                                mediaRepository.countUploadedToCommons(Set.of(c)),
+                                mediaRepository.countByIgnoredTrue(Set.of(c)),
+                                mediaRepository.countMissingImagesInCommons(Set.of(c)),
+                                mediaRepository.countMissingVideosInCommons(Set.of(c)),
+                                mediaRepository.countByMetadata_PhashNotNull(Set.of(c)), null))
                         .sorted().toList());
             }
         }
@@ -384,12 +379,12 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
 
     @Override
     protected String getSource(NasaMedia media, FileMetadata metadata) {
-        return "{{NASA-image|id=" + media.getId() + "|center=" + media.getCenter() + "}}";
+        return "{{NASA-image|id=" + media.getId().getMediaId() + "|center=" + media.getId().getRepoId() + "}}";
     }
 
     @Override
     protected String getTakenLocation(NasaMedia media) {
-        return ISS_PATTERN.matcher(media.getId()).matches() ? "ISS" : "";
+        return ISS_PATTERN.matcher(media.getId().getMediaId()).matches() ? "ISS" : "";
     }
 
     @Override
@@ -397,7 +392,7 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         result.addAll(media.getKeywords().stream().map(nasaKeywords::get).filter(Objects::nonNull).toList());
         String description = media.getDescription();
-        Matcher idMatcher = ISS_PATTERN.matcher(media.getId());
+        Matcher idMatcher = ISS_PATTERN.matcher(media.getId().getMediaId());
         if (idMatcher.matches()) {
             String expedition = "Expedition " + idMatcher.group(1);
             result.add("ISS " + expedition);
@@ -417,7 +412,7 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
                     result.add("Interior of Cupola (ISS module)");
                 }
         } else {
-            idMatcher = ARTEMIS_PATTERN.matcher(media.getId());
+            idMatcher = ARTEMIS_PATTERN.matcher(media.getId().getMediaId());
             if (idMatcher.matches()) {
                 String artemis = "Artemis " + idMatcher.group(1);
                 if (List.of("image of the planet", "photo of the Earth", "photo of Earth", "captures Earth",
@@ -465,7 +460,8 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
     @Override
     protected NasaMedia refresh(NasaMedia media) throws IOException {
         RestTemplate rest = new RestTemplate();
-        NasaResponse response = rest.getForObject(searchEndpoint + "nasa_id=" + media.getId(), NasaResponse.class);
+        NasaResponse response = rest.getForObject(searchEndpoint + "nasa_id=" + media.getId().getMediaId(),
+                NasaResponse.class);
         if (response != null) {
             List<NasaItem> items = response.getCollection().getItems();
             if (items.size() == 1) {
@@ -491,7 +487,7 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
     @Override
     protected Set<String> getEmojis(NasaMedia uploadedMedia) {
         Set<String> result = super.getEmojis(uploadedMedia);
-        if (ISS_PATTERN.matcher(uploadedMedia.getId()).matches()) {
+        if (ISS_PATTERN.matcher(uploadedMedia.getId().getMediaId()).matches()) {
             result.add(Emojis.ASTRONAUT);
         }
         return result;
@@ -500,10 +496,10 @@ public class NasaService extends AbstractOrgService<NasaMedia, String> {
     @Override
     protected Set<String> getTwitterAccounts(NasaMedia uploadedMedia) {
         Set<String> result = new HashSet<>();
-        if (ISS_PATTERN.matcher(uploadedMedia.getId()).matches()) {
+        if (ISS_PATTERN.matcher(uploadedMedia.getId().getMediaId()).matches()) {
             result.add("@Space_Station");
-        } else if (uploadedMedia.getCenter() != null) {
-            String account = TWITTER_CENTER_ACCOUNTS.get(uploadedMedia.getCenter());
+        } else if (uploadedMedia.getId().getRepoId() != null) {
+            String account = TWITTER_CENTER_ACCOUNTS.get(uploadedMedia.getId().getRepoId());
             if (account != null) {
                 result.add(account);
             }

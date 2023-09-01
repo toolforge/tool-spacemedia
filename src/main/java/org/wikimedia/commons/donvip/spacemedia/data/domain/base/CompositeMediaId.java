@@ -7,7 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 @Embeddable
-public class CompositeMediaId implements Serializable {
+public class CompositeMediaId implements Serializable, Comparable<CompositeMediaId> {
 
     private static final long serialVersionUID = 1L;
 
@@ -27,9 +27,9 @@ public class CompositeMediaId implements Serializable {
     }
 
     public CompositeMediaId(String jsonId) {
-        String[] tab = jsonId.split(":");
-        this.repoId = tab[0];
-        this.mediaId = tab[1];
+        int idx = jsonId.indexOf(':');
+        this.repoId = jsonId.substring(0, idx);
+        this.mediaId = jsonId.substring(idx + 1);
     }
 
     public String getRepoId() {
@@ -61,6 +61,11 @@ public class CompositeMediaId implements Serializable {
             return false;
         CompositeMediaId other = (CompositeMediaId) obj;
         return Objects.equals(repoId, other.repoId) && Objects.equals(mediaId, other.mediaId);
+    }
+
+    @Override
+    public int compareTo(CompositeMediaId o) {
+        return toString().compareTo(o.toString());
     }
 
     @Override

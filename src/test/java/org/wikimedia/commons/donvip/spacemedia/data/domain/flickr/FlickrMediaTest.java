@@ -11,13 +11,14 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 
 class FlickrMediaTest {
 
     @Test
     void testGetUploadTitle() {
         FlickrMedia media = new FlickrMedia();
-        media.setId("26635829145");
+        media.setId(new CompositeMediaId("", "26635829145"));
         FlickrPhotoSet photoset = new FlickrPhotoSet();
         photoset.setTitle("Flugversuche mit dem A320 ATRA");
         media.addPhotoSet(photoset);

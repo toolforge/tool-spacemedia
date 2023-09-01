@@ -8,7 +8,6 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
@@ -19,11 +18,8 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Table(indexes = { @Index(columnList = "url") })
-public class EsaMedia extends Media<String> implements WithKeywords {
+public class EsaMedia extends Media implements WithKeywords {
 
-    @Id
-    @Column(nullable = false)
-    private String id;
     @Column(nullable = false, unique = true, length = 200)
     private URL url;
     @Column(nullable = false, length = 300)
@@ -59,16 +55,6 @@ public class EsaMedia extends Media<String> implements WithKeywords {
 
     public void setCopyright(String copyright) {
         this.copyright = copyright;
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getActivity() {
@@ -139,7 +125,7 @@ public class EsaMedia extends Media<String> implements WithKeywords {
 
     @Override
     public String toString() {
-        return "EsaMedia [id=" + id + ", " + (url != null ? "url=" + url + ", " : "")
+        return "EsaMedia [id=" + getId() + ", " + (url != null ? "url=" + url + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (copyright != null ? "copyright=" + copyright + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
@@ -155,21 +141,6 @@ public class EsaMedia extends Media<String> implements WithKeywords {
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
         return CommonsService.normalizeFilename(title) + " ESA" + getUploadId(fileMetadata);
-    }
-
-    @Override
-    public boolean isAudio() {
-        return false;
-    }
-
-    @Override
-    public boolean isImage() {
-        return true;
-    }
-
-    @Override
-    public boolean isVideo() {
-        return false;
     }
 
     public EsaMedia copyDataFrom(EsaMedia mediaFromApi) {

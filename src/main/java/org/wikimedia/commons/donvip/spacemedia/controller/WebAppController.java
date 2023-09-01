@@ -13,7 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 public class WebAppController {
 
     @Autowired
-    private List<AbstractOrgService<? extends Media<?>, ?>> orgs;
+    private List<AbstractOrgService<? extends Media>> orgs;
 
     @GetMapping("/")
     public String index(Model model) {

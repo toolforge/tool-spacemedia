@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.dvids;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +33,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsWebcast;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsWebcastRepository;
-import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 @Service
 public class DvidsMediaProcessorService {
@@ -72,8 +70,7 @@ public class DvidsMediaProcessorService {
     public Pair<DvidsMedia, Integer> processDvidsMedia(Supplier<Optional<DvidsMedia>> dbFetcher,
             Supplier<DvidsMedia> apiFetcher, Predicate<DvidsMedia> processDvidsMediaUpdater,
             BiPredicate<DvidsMedia, Boolean> shouldUploadAuto,
-            Function<DvidsMedia, Triple<DvidsMedia, Collection<FileMetadata>, Integer>> uploader)
-            throws IOException, UploadException {
+            Function<DvidsMedia, Triple<DvidsMedia, Collection<FileMetadata>, Integer>> uploader) {
         DvidsMedia media = null;
         boolean save = false;
         Optional<DvidsMedia> mediaInDb = dbFetcher.get();

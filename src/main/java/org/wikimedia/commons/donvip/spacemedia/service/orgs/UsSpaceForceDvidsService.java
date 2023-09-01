@@ -33,7 +33,7 @@ public class UsSpaceForceDvidsService extends AbstractOrgDvidsService {
     public Set<String> findCategories(DvidsMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
-            switch (media.getUnit()) {
+            switch (media.getId().getRepoId()) {
             case "AFSC":
                 result.add("Photographs by the United States Air Force Space Command");
                 break;
@@ -53,7 +53,7 @@ public class UsSpaceForceDvidsService extends AbstractOrgDvidsService {
     @Override
     protected Set<String> getEmojis(DvidsMedia uploadedMedia) {
         Set<String> result = super.getEmojis(uploadedMedia);
-        switch (uploadedMedia.getUnit()) {
+        switch (uploadedMedia.getId().getRepoId()) {
         case "SLD30", "45SW":
             result.add(Emojis.ROCKET);
             break;
@@ -66,7 +66,7 @@ public class UsSpaceForceDvidsService extends AbstractOrgDvidsService {
 
     @Override
     protected Set<String> getTwitterAccounts(DvidsMedia uploadedMedia) {
-        switch (uploadedMedia.getUnit()) {
+        switch (uploadedMedia.getId().getRepoId()) {
         case "SBD1":
             return Set.of("@PeteSchriever");
         case "SLD30":

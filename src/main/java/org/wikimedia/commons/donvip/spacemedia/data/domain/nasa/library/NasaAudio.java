@@ -13,7 +13,6 @@ public class NasaAudio extends NasaMedia {
         return "NasaAudio ["
                 + (getId() != null ? "nasaId=" + getId() + ", " : "")
                 + (getTitle() != null ? "title=" + getTitle() + ", " : "")
-                + (getCenter() != null ? "center=" + getCenter() + ", " : "")
                 + (getDescription() != null ? "description=" + getDescription() : "") + ']';
     }
 }

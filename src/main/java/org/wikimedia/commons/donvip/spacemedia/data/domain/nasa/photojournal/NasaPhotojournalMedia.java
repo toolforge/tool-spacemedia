@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -9,7 +8,6 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.Lob;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
@@ -19,13 +17,9 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
 @Indexed
-public class NasaPhotojournalMedia extends Media<String> implements WithKeywords {
+public class NasaPhotojournalMedia extends Media implements WithKeywords {
 
     private static final Pattern FIGURE = Pattern.compile("PIA\\d+_fig[^\\.]+\\..+", Pattern.CASE_INSENSITIVE);
-
-    @Id
-    @Column(name = "pia_id", nullable = false, length = 10)
-    private String piaId;
 
     @Column(name = "nasa_id", nullable = true, length = 48)
     private String nasaId;
@@ -58,16 +52,6 @@ public class NasaPhotojournalMedia extends Media<String> implements WithKeywords
 
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
-
-    @Override
-    public String getId() {
-        return piaId;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.piaId = id;
-    }
 
     public String getNasaId() {
         return nasaId;
@@ -163,23 +147,8 @@ public class NasaPhotojournalMedia extends Media<String> implements WithKeywords
     }
 
     @Override
-    public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(piaId);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj) || getClass() != obj.getClass())
-            return false;
-        NasaPhotojournalMedia other = (NasaPhotojournalMedia) obj;
-        return Objects.equals(piaId, other.piaId);
-    }
-
-    @Override
     public String toString() {
-        return "NasaPhotojournalMedia [id=" + piaId + ", nasaId=" + nasaId + ", "
+        return "NasaPhotojournalMedia [id=" + getId() + ", nasaId=" + nasaId + ", "
                 + (target != null ? "target=" + target + ", " : "")
                 + (mission != null ? "mission=" + mission + ", " : "")
                 + (spacecraft != null ? "spacecraft=" + spacecraft + ", " : "")

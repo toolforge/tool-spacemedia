@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMedia;
@@ -46,7 +47,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
-public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String> {
+public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaAsterService.class);
 
@@ -108,7 +109,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
     private GeometryService geometry;
 
     public NasaAsterService(NasaAsterMediaRepository repository) {
-        super(repository, "nasa.aster");
+        super(repository, "nasa.aster", Set.of("aster"));
     }
 
     @Override
@@ -122,18 +123,13 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
     }
 
     @Override
-    protected String getMediaId(String id) {
-        return id;
-    }
-
-    @Override
     protected boolean checkBlocklist() {
         return false;
     }
 
     @Override
     public URL getSourceUrl(NasaAsterMedia media, FileMetadata metadata) {
-        return newURL(detailsUrl.replace("<id>", media.getId()));
+        return newURL(detailsUrl.replace("<id>", media.getId().getMediaId()));
     }
 
     @Override
@@ -163,7 +159,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
             throws IOException, UploadException {
         boolean save = false;
         NasaAsterMedia media = null;
-        Optional<NasaAsterMedia> imageInDb = repository.findById(item.getName());
+        Optional<NasaAsterMedia> imageInDb = repository.findById(new CompositeMediaId("aster", item.getName()));
         if (imageInDb.isPresent()) {
             media = imageInDb.get();
         } else {
@@ -204,7 +200,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
     @Override
     protected String getSource(NasaAsterMedia media, FileMetadata metadata) {
         return super.getSource(media, metadata) + " ([" + metadata.getAssetUrl() + " direct link])\n"
-                + "{{NASA-image|id=" + media.getId() + "|center=JPL}}";
+                + "{{NASA-image|id=" + media.getId().getMediaId() + "|center=JPL}}";
     }
 
     @Override
@@ -249,7 +245,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia, String>
 
     private NasaAsterMedia fetchMedia(AsterItem item) throws IOException {
         NasaAsterMedia image = new NasaAsterMedia();
-        image.setId(item.getName());
+        image.setId(new CompositeMediaId("aster", item.getName()));
         image.setLongName(item.getLname());
         image.setCategory(item.getCat());
         image.setIcon(item.getIcon());

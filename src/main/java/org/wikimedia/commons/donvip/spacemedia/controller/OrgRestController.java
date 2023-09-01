@@ -37,16 +37,15 @@ import org.wikimedia.commons.donvip.spacemedia.service.orgs.Org;
  * Superclass of orgs REST controllers. Sub-classes are created dynamically.
  *
  * @param <T>  the media type the repository manages
- * @param <ID> the type of the id of the entity the repository manages
  */
-public abstract class OrgRestController<T extends Media<ID>, ID> {
+public abstract class OrgRestController<T extends Media> {
 
     @Autowired
     private AsyncOrgUpdaterService async;
 
-    protected final Org<T, ID> service;
+    protected final Org<T> service;
 
-    protected OrgRestController(AbstractOrgService<T, ID> service) {
+    protected OrgRestController(AbstractOrgService<T> service) {
         this.service = Objects.requireNonNull(service);
     }
 

@@ -6,12 +6,10 @@ import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface BoxMediaRepository extends DefaultMediaRepository<BoxMedia> {
+public interface BoxMediaRepository extends MediaRepository<BoxMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "boxCount", "boxCountByShare", "boxCountIgnored",
@@ -34,58 +32,56 @@ public interface BoxMediaRepository extends DefaultMediaRepository<BoxMedia> {
     @Cacheable("boxCount")
     long count();
 
+    @Override
     @Cacheable("boxCountByShare")
-    @Query("select count(*) from #{#entityName} m where m.id.repoId in ?1")
     long count(Set<String> appShares);
 
     @Override
     @Cacheable("boxCountIgnored")
     long countByIgnoredTrue();
 
+    @Override
     @Cacheable("boxCountIgnoredByShare")
-    @Query("select count(*) from #{#entityName} m where m.ignored = true and m.id.repoId in ?1")
     long countByIgnoredTrue(Set<String> appShares);
 
     @Override
     @Cacheable("boxCountMissing")
     long countMissingInCommons();
 
+    @Override
     @Cacheable("boxCountMissingByShare")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1")
-    long countMissingInCommonsByShare(Set<String> appShares);
+    long countMissingInCommons(Set<String> appShares);
 
     @Override
     @Cacheable("boxCountMissingImages")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg')")
     long countMissingImagesInCommons();
 
     @Override
     @Cacheable("boxCountMissingVideos")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg')")
     long countMissingVideosInCommons();
 
+    @Override
     @Cacheable("boxCountMissingImagesByShare")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg') and m.id.repoId in ?1")
     long countMissingImagesInCommons(Set<String> appShares);
 
+    @Override
     @Cacheable("boxCountMissingVideosByShare")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg') and m.id.repoId in ?1")
     long countMissingVideosInCommons(Set<String> appShares);
 
     @Override
     @Cacheable("boxCountUploaded")
     long countUploadedToCommons();
 
+    @Override
     @Cacheable("boxCountUploadedByShare")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId in ?1")
     long countUploadedToCommons(Set<String> appShares);
 
     @Override
     @Cacheable("boxCountPhashNotNull")
     long countByMetadata_PhashNotNull();
 
+    @Override
     @Cacheable("boxCountPhashNotNullByShare")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.repoId in ?1")
     long countByMetadata_PhashNotNull(Set<String> appShares);
 
     // SAVE
@@ -118,8 +114,11 @@ public interface BoxMediaRepository extends DefaultMediaRepository<BoxMedia> {
 
     // UPDATE
 
-    @Modifying
+    @Override
     @CacheEvictBoxAll
-    @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true and m.id.repoId in ?1")
+    int resetIgnored();
+
+    @Override
+    @CacheEvictBoxAll
     int resetIgnored(Set<String> appShares);
 }

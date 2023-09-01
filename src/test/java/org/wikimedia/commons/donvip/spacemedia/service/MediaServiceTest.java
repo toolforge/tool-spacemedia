@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaCommonConfiguration;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociationRepository;
@@ -47,7 +48,7 @@ class MediaServiceTest {
 
     @Test
     void testBelongsToBlocklist() {
-        TestMedia media = new TestMedia();
+        Media media = new Media();
         media.setTitle("Spaceport of the Future Presentation");
         media.setDescription(
                 "Tom Stevens, Space Launch Delta 30 executive director, provides a Lunch\r\nand Learn topic presentation entitled Spaceport of the Future Overview at Vandenberg Space Force Base, Calif., March 7, 2023. The presentation included historical background, space launch vehicles and launch forecasts, spaceport vision and strategy, future assets and infrastructure projects, graphics and mapping of key assets. (U.S. Space Force photo by Senior Airman Tiarra Sibley)");
@@ -59,8 +60,7 @@ class MediaServiceTest {
     @Test
     void testCleanupDescription() {
         FlickrMedia media = new FlickrMedia();
-        media.setId("52840868995");
-        media.setPathAlias("pierre_markuse");
+        media.setId(new CompositeMediaId("pierre_markuse", "52840868995"));
         media.setDescription(
                 """
                         Contains modified Copernicus Sentinel data [2023], processed by <a href="https://twitter.com/Pierre_Markuse">Pierre Markuse</a>
@@ -90,18 +90,6 @@ class MediaServiceTest {
                         """
                         .trim(),
                 media.getDescription());
-    }
-
-    private static class TestMedia extends Media<String> {
-
-        @Override
-        public String getId() {
-            return null;
-        }
-
-        @Override
-        public void setId(String id) {
-        }
     }
 
     @Configuration

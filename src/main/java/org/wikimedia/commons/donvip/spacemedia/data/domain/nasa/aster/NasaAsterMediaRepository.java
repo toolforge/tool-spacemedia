@@ -8,10 +8,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 
-public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia, String> {
+public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -89,7 +90,7 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
 
     @Override
     @CacheEvictNasaAsterAll
-    void deleteById(String id);
+    void deleteById(CompositeMediaId id);
 
     @Override
     @CacheEvictNasaAsterAll

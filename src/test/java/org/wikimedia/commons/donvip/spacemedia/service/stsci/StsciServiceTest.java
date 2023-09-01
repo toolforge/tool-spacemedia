@@ -67,7 +67,7 @@ class StsciServiceTest {
         StsciMedia media = service.getImageDetailsByScrapping("2022/054/01GGT9JB74B5FXX95WGM0285E5", urlLink,
                 new URL(urlLink), html("nasahubble/2022_054_01GGT9JB74B5FXX95WGM0285E5.html"));
         assertNotNull(media);
-        assertEquals("2022/054/01GGT9JB74B5FXX95WGM0285E5", media.getId());
+        assertEquals("2022/054/01GGT9JB74B5FXX95WGM0285E5", media.getId().getMediaId());
         assertEquals("Lensed Supernova in Abell 370", media.getTitle());
         assertEquals(
                 "Through a phenomenon called gravitational lensing, three different moments in a far-off supernova explosion were captured in a single snapshot by NASA's Hubble Space Telescope. The light from the supernova, which was located behind the galaxy cluster Abell 370, was multiply lensed by the cluster's immense gravity. This light took three different paths through the cosmic lens of the massive cluster. The three paths were three different lengths and affected to different degrees by the slowing of time and curvature of space due to the cluster, so when the light arrived at Hubble (on the same day in December 2010), the supernova appeared at three different stages of evolution.\n"
@@ -95,7 +95,7 @@ class StsciServiceTest {
         StsciMedia media = service.getImageDetailsByScrapping("2022/060/01GJ3HZRT43P8JATFQ90Z8EZ0W", urlLink,
                 new URL(urlLink), html("nasawebb/2022_060_01GJ3HZRT43P8JATFQ90Z8EZ0W.html"));
         assertNotNull(media);
-        assertEquals("2022/060/01GJ3HZRT43P8JATFQ90Z8EZ0W", media.getId());
+        assertEquals("2022/060/01GJ3HZRT43P8JATFQ90Z8EZ0W", media.getId().getMediaId());
         assertEquals("Exoplanet WASP-39 b and its Star (Illustration)", media.getTitle());
         assertEquals(
                 "This illustration shows what exoplanet WASP-39 b could look like, based on current understanding of the planet.\n"
@@ -122,7 +122,7 @@ class StsciServiceTest {
         StsciMedia media = service.getImageDetailsByScrapping("2018/14/4119-Image", urlLink, new URL(urlLink),
                 html("nasawebb/2018_14_4119-Image.html"));
         assertNotNull(media);
-        assertEquals("2018/14/4119-Image", media.getId());
+        assertEquals("2018/14/4119-Image", media.getId().getMediaId());
         assertEquals("Reflection Nebula IC 2631 (ESO)", media.getTitle());
         assertEquals(
                 "An image from the European Southern Observatory shows blue light from a newborn star lights up the reflection nebula IC 2631. This nebula is part of the Chamaeleon star-forming region, which Webb will study to learn more about the formation of water and other cosmic ices.",
@@ -146,7 +146,7 @@ class StsciServiceTest {
         StsciMedia media = service.getImageDetailsByScrapping("2023/112/01GYJ7H5VSDMPRWX0R0Z6R87EC", urlLink,
                 new URL(urlLink), html("nasawebb/2023_112_01GYJ7H5VSDMPRWX0R0Z6R87EC.html"));
         assertNotNull(media);
-        assertEquals("2023/112/01GYJ7H5VSDMPRWX0R0Z6R87EC", media.getId());
+        assertEquals("2023/112/01GYJ7H5VSDMPRWX0R0Z6R87EC", media.getId().getMediaId());
         assertEquals("Enceladus Plume (Webb [NIRSpec] and Cassini Image)", media.getTitle());
         assertEquals(
                 "An image from NASA’s James Webb Space Telescope’s NIRSpec (Near-Infrared Spectrograph) shows a water vapor plume jetting from the southern pole of Saturn’s moon Enceladus, extending out more than 20 times the size of the moon itself. The inset, an image from the Cassini orbiter, emphasizes how small Enceladus appears in the Webb image compared to the water plume.\n"
@@ -173,7 +173,7 @@ class StsciServiceTest {
         String urlLink = "https://hubblesite.org/contents/media/images/2020/07/4622-Image";
         StsciMedia media = service.getImageDetailsByScrapping("2020/07/4622-Image", urlLink, new URL(urlLink),
                 html("nasahubble/2020_07_4622-Image.htm"));
-        assertEquals("2020/07/4622-Image", media.getId());
+        assertEquals("2020/07/4622-Image", media.getId().getMediaId());
         assertEquals("Illustration of Dwarf Nova System", media.getTitle());
         assertEquals(
                 "This illustration shows a newly discovered dwarf nova system, in which a white dwarf star is pulling material off a brown dwarf companion. The material collects into an accretion disk until reaching a tipping point, causing it to suddenly increase in brightness. Using archival Kepler data, a team observed a previously unseen, and unexplained, gradual intensification followed by a super-outburst in which the system brightened by a factor of 1,600 over less than a day.",

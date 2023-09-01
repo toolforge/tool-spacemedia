@@ -2,15 +2,15 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface DjangoplicityMediaRepository extends DefaultMediaRepository<DjangoplicityMedia> {
+public interface DjangoplicityMediaRepository extends MediaRepository<DjangoplicityMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "djangoCount", "djangoCountByWebsite", "djangoCountIgnoredByWebsite",
@@ -32,30 +32,30 @@ public interface DjangoplicityMediaRepository extends DefaultMediaRepository<Dja
     @Cacheable("djangoCount")
     long count();
 
+    @Override
     @Cacheable("djangoCountByWebsite")
-    @Query("select count(*) from #{#entityName} m where m.id.repoId = ?1")
-    long count(String website);
+    long count(Set<String> websites);
 
+    @Override
     @Cacheable("djangoCountIgnoredByWebsite")
-    @Query("select count(*) from #{#entityName} m where m.ignored = true and m.id.repoId = ?1")
-    long countByIgnoredTrue(String website);
+    long countByIgnoredTrue(Set<String> websites);
 
     @Override
     @Cacheable("djangoCountMissing")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     long countMissingInCommons();
 
+    @Override
     @Cacheable("djangoCountMissingByWebsite")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId = ?1")
-    long countMissingInCommons(String website);
+    long countMissingInCommons(Set<String> websites);
 
     @Override
     default long countMissingImagesInCommons() {
         return countMissingInCommons();
     }
 
-    default long countMissingImagesInCommons(String website) {
-        return countMissingInCommons(website);
+    @Override
+    default long countMissingImagesInCommons(Set<String> websites) {
+        return countMissingInCommons(websites);
     }
 
     @Override
@@ -66,17 +66,17 @@ public interface DjangoplicityMediaRepository extends DefaultMediaRepository<Dja
     @Cacheable("djangoCountUploaded")
     long countUploadedToCommons();
 
+    @Override
     @Cacheable("djangoCountUploadedByWebsite")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId = ?1")
-    long countUploadedToCommons(String website);
+    long countUploadedToCommons(Set<String> websites);
 
     @Override
     @Cacheable("djangoCountPhashNotNull")
     long countByMetadata_PhashNotNull();
 
+    @Override
     @Cacheable("djangoCountPhashNotNullByWebsite")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.repoId = ?1")
-    long countByMetadata_PhashNotNull(String website);
+    long countByMetadata_PhashNotNull(Set<String> websites);
 
     // SAVE
 
@@ -108,8 +108,11 @@ public interface DjangoplicityMediaRepository extends DefaultMediaRepository<Dja
 
     // UPDATE
 
-    @Modifying
+    @Override
     @CacheEvictDjangoAll
-    @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true and m.id.repoId = ?1")
-    int resetIgnored(String website);
+    int resetIgnored();
+
+    @Override
+    @CacheEvictDjangoAll
+    int resetIgnored(Set<String> websites);
 }

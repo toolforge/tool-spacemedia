@@ -5,9 +5,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
@@ -17,27 +15,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Indexed
-public class KariMedia extends SingleFileMedia<String> {
+public class KariMedia extends SingleFileMedia {
 
     private static final Pattern ID_REGEX = Pattern.compile("P_[^_]*_([^_]*)_(\\d{2})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})",
             Pattern.CASE_INSENSITIVE);
 
-    @Id
-    @Column(nullable = false)
-    private String id;
-
     @JsonProperty("kari_id")
     private String kariId;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getKariId() {
         return kariId;
@@ -69,7 +53,7 @@ public class KariMedia extends SingleFileMedia<String> {
 
     @Override
     public String toString() {
-        return "KariMedia [id=" + id + ", "
+        return "KariMedia [id=" + getId() + ", "
                 + (title != null ? "title=" + title + ", " : "") + (kariId != null ? "kariId=" + kariId + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + "metadata=" + getMetadata() + "]";
@@ -77,7 +61,7 @@ public class KariMedia extends SingleFileMedia<String> {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(id, kariId);
+        return 31 * super.hashCode() + Objects.hash(kariId);
     }
 
     @Override
@@ -87,7 +71,7 @@ public class KariMedia extends SingleFileMedia<String> {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         KariMedia other = (KariMedia) obj;
-        return id == other.id && Objects.equals(kariId, other.kariId);
+        return Objects.equals(kariId, other.kariId);
     }
 
     @Override

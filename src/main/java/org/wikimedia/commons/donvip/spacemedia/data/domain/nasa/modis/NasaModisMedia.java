@@ -4,21 +4,16 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Entity
 @Indexed
-public class NasaModisMedia extends SingleFileMedia<String> {
-
-    @Id
-    @Column(nullable = false, length = 32)
-    private String id;
+public class NasaModisMedia extends SingleFileMedia {
 
     @Column(nullable = false, length = 8)
     private String satellite;
@@ -28,16 +23,6 @@ public class NasaModisMedia extends SingleFileMedia<String> {
 
     @Column(nullable = false, length = 200)
     private String credit;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getSatellite() {
         return satellite;
@@ -81,7 +66,7 @@ public class NasaModisMedia extends SingleFileMedia<String> {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(id, satellite, bands, credit);
+        return 31 * super.hashCode() + Objects.hash(satellite, bands, credit);
     }
 
     @Override
@@ -91,7 +76,7 @@ public class NasaModisMedia extends SingleFileMedia<String> {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaModisMedia other = (NasaModisMedia) obj;
-        return Objects.equals(id, other.id) && Objects.equals(satellite, other.satellite)
+        return Objects.equals(satellite, other.satellite)
                 && Objects.equals(bands, other.bands) && Objects.equals(credit, other.credit);
     }
 
@@ -105,7 +90,7 @@ public class NasaModisMedia extends SingleFileMedia<String> {
 
     @Override
     public String toString() {
-        return "NasaModisMedia [id=" + id
+        return "NasaModisMedia [id=" + getId()
                 + ", satellite=" + satellite + ", bands=" + bands + ", credit=" + credit + ']';
     }
 }

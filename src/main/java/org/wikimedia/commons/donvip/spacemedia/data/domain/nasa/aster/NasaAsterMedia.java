@@ -6,7 +6,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Id;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
@@ -19,11 +18,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Entity
 @Indexed
-public class NasaAsterMedia extends Media<String> implements WithLatLon {
-
-    @Id
-    @Column(nullable = false, length = 32)
-    private String id;
+public class NasaAsterMedia extends Media implements WithLatLon {
 
     @Column(nullable = false)
     private double latitude;
@@ -43,16 +38,6 @@ public class NasaAsterMedia extends Media<String> implements WithLatLon {
     @Enumerated(EnumType.ORDINAL)
     @Column(nullable = false, columnDefinition = "TINYINT default 0")
     private NasaMediaType mediaType;
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     @Override
     public double getLatitude() {
@@ -131,7 +116,7 @@ public class NasaAsterMedia extends Media<String> implements WithLatLon {
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(id, latitude, longitude, longName, category, icon, mediaType);
+                + Objects.hash(latitude, longitude, longName, category, icon, mediaType);
     }
 
     @Override
@@ -141,14 +126,14 @@ public class NasaAsterMedia extends Media<String> implements WithLatLon {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         NasaAsterMedia other = (NasaAsterMedia) obj;
-        return Objects.equals(id, other.id) && latitude == other.latitude && longitude == other.longitude
+        return latitude == other.latitude && longitude == other.longitude
                 && Objects.equals(longName, other.longName) && Objects.equals(category, other.category)
                 && Objects.equals(icon, other.icon) && mediaType == other.mediaType;
     }
 
     @Override
     public String toString() {
-        return "NasaAsterMedia [id=" + id + ", latitude="
+        return "NasaAsterMedia [id=" + getId() + ", latitude="
                 + latitude + ", longitude=" + longitude + ", longName=" + longName
                 + ", category=" + category + ", icon=" + icon + ", mediaType=" + mediaType + ']';
     }

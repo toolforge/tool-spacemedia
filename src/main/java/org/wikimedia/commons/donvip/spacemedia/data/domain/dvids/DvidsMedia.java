@@ -17,8 +17,8 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToMany;
 
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultSingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
@@ -49,12 +49,6 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
      */
     @Column(length = 16)
     private String branch;
-
-    /**
-     * DVIDS abbreviation of unit credited with media asset.
-     */
-    @Column(length = 16)
-    private String unit;
 
     /**
      * Full name of unit credited with media asset.
@@ -170,14 +164,6 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
 
     public void setBranch(String branch) {
         this.branch = branch;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public void setUnit(String unit) {
-        this.unit = unit;
     }
 
     public String getUnitName() {
@@ -298,9 +284,9 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
             // # File names with no letters, except for some meaningless prefix:
             // File:\P{L}*\.[^.]+
             // File:\P{L}*(small|medium|large)\)?\.[^.]+
-            return normalizedTitle + " (" + unit + " " + getId().getMediaId() + ")";
+            return normalizedTitle + " (" + getUnitName() + " " + getId().getMediaId().split(":")[1] + ")";
         } else {
-            return normalizedTitle + " (" + getId().getMediaId() + ")";
+            return normalizedTitle + " (" + getId().getMediaId().split(":")[1] + ")";
         }
     }
 
@@ -312,7 +298,6 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
         setRating(mediaFromApi.getRating());
         setThumbnailUrl(mediaFromApi.getThumbnailUrl());
         setTimestamp(mediaFromApi.getTimestamp());
-        setUnit(mediaFromApi.getUnit());
         setUnitName(mediaFromApi.getUnitName());
         setVirin(mediaFromApi.getVirin());
         return this;

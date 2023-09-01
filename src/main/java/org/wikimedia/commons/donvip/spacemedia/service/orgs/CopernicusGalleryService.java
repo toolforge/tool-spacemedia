@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.CopernicusGalleryMedia;
@@ -37,7 +38,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.Co
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 @Service
-public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalleryMedia, String> {
+public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalleryMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CopernicusGalleryService.class);
 
@@ -89,7 +90,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
 
     @Autowired
     public CopernicusGalleryService(CopernicusGalleryMediaRepository repository) {
-        super(repository, "copernicus");
+        super(repository, "copernicus", Set.of("copernicus"));
     }
 
     @Override
@@ -99,7 +100,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
 
     @Override
     public URL getSourceUrl(CopernicusGalleryMedia media, FileMetadata metadata) {
-        return newURL(BASE_URL + "/en/media/image-day-gallery/" + media.getId());
+        return newURL(BASE_URL + "/en/media/image-day-gallery/" + media.getId().getMediaId());
     }
 
     @Override
@@ -137,7 +138,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
         return result;
     }
 
-    private void findCategoriesForSentinel(Media<?> media, String sentinel, Set<String> result) {
+    private void findCategoriesForSentinel(Media media, String sentinel, Set<String> result) {
         if (media.containsInTitleOrDescription(sentinel)) {
             result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by " + sentinel,
                     sentinel + " images"));
@@ -179,7 +180,8 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
                         loop = doNotFetchEarlierThan == null || date.toLocalDate().isAfter(doNotFetchEarlierThan);
                         if (loop) {
                             String href = result.getElementsByTag("a").first().attr("href");
-                            String id = href.substring(href.lastIndexOf('/') + 1);
+                            CompositeMediaId id = new CompositeMediaId("copernicus-gallery",
+                                    href.substring(href.lastIndexOf('/') + 1));
                             updateImage(id, date, uploadedMedia);
                             ongoingUpdateMedia(start, count++);
                         }
@@ -192,7 +194,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
         endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(Media::getMetadataStream).toList(), start);
     }
 
-    private CopernicusGalleryMedia updateImage(String id, ZonedDateTime date,
+    private CopernicusGalleryMedia updateImage(CompositeMediaId id, ZonedDateTime date,
             List<CopernicusGalleryMedia> uploadedMedia) throws IOException, UploadException {
         boolean save = false;
         CopernicusGalleryMedia media = null;
@@ -222,11 +224,11 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
         return media;
     }
 
-    private CopernicusGalleryMedia fetchMedia(String id, ZonedDateTime date) throws IOException {
+    private CopernicusGalleryMedia fetchMedia(CompositeMediaId id, ZonedDateTime date) throws IOException {
         CopernicusGalleryMedia media = new CopernicusGalleryMedia();
         media.setId(id);
         media.setPublicationDateTime(date);
-        String url = BASE_URL + "/en/media/image-day-gallery/" + id;
+        String url = BASE_URL + "/en/media/image-day-gallery/" + id.getMediaId();
         LOGGER.info("GET {}", url);
         boolean ok = false;
         for (int i = 0; i < maxTries && !ok; i++) {
@@ -296,11 +298,6 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
     @Override
     protected Class<CopernicusGalleryMedia> getMediaClass() {
         return CopernicusGalleryMedia.class;
-    }
-
-    @Override
-    protected String getMediaId(String id) {
-        return id;
     }
 
     @Override

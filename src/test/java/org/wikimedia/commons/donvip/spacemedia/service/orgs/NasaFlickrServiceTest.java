@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
@@ -41,8 +42,7 @@ class NasaFlickrServiceTest extends AbstractOrgServiceTest {
     @Test
     void testGetNasaIdAndSource() throws MalformedURLException {
         FlickrMedia media = new FlickrMedia();
-        media.setId("52867079337");
-        media.setPathAlias("nasahqphoto");
+        media.setId(new CompositeMediaId("nasahqphoto", "52867079337"));
         media.setTitle("Czech Republic Artemis Accords Signing (NHQ202305030019)");
         media.addMetadata(
                 new FileMetadata("https://live.staticflickr.com/65535/52867079337_932f992c50_o_d.jpg"));

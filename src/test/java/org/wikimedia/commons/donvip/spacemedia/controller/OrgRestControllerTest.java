@@ -35,7 +35,7 @@ class OrgRestControllerTest {
     private AsyncOrgUpdaterService async;
 
     @MockBean
-    private AbstractOrgService<Media<String>, String> service;
+    private AbstractOrgService<Media> service;
 
     @Test
     void testExtractId() {
@@ -78,16 +78,16 @@ class OrgRestControllerTest {
 
         @Bean
         @Autowired
-        public TestOrgRestController controller(AbstractOrgService<Media<String>, String> service) {
+        public TestOrgRestController controller(AbstractOrgService<Media> service) {
             return new TestOrgRestController(service);
         }
     }
 
     @RestController
     @RequestMapping(path = "snoopy/rest")
-    static class TestOrgRestController extends OrgRestController<Media<String>, String> {
+    static class TestOrgRestController extends OrgRestController<Media> {
 
-        public TestOrgRestController(AbstractOrgService<Media<String>, String> service) {
+        public TestOrgRestController(AbstractOrgService<Media> service) {
             super(service);
         }
     }

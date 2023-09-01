@@ -11,7 +11,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 public class StatsService {
 
     @Autowired
-    private List<AbstractOrgService<?, ?>> orgs;
+    private List<AbstractOrgService<?>> orgs;
 
     public List<Statistics> getStats(boolean details) {
         return orgs.parallelStream().map(a -> a.getStatistics(details)).sorted().toList();

@@ -8,17 +8,13 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.Lob;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
-public class CopernicusGalleryMedia extends SingleFileMedia<String> implements WithKeywords {
-
-    @Id
-    private String id;
+public class CopernicusGalleryMedia extends SingleFileMedia implements WithKeywords {
 
     @Lob
     @Column(name = "credit", nullable = false, columnDefinition = "TEXT")
@@ -30,16 +26,6 @@ public class CopernicusGalleryMedia extends SingleFileMedia<String> implements W
     @Column
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
 
     @Override
     public Set<String> getKeywords() {
@@ -74,7 +60,7 @@ public class CopernicusGalleryMedia extends SingleFileMedia<String> implements W
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(id, credit, location, keywords);
+        return 31 * super.hashCode() + Objects.hash(credit, location, keywords);
     }
 
     @Override
@@ -84,15 +70,14 @@ public class CopernicusGalleryMedia extends SingleFileMedia<String> implements W
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         CopernicusGalleryMedia other = (CopernicusGalleryMedia) obj;
-        return Objects.equals(id, other.id)
-                && Objects.equals(credit, other.credit)
+        return Objects.equals(credit, other.credit)
                 && Objects.equals(location, other.location)
                 && Objects.equals(keywords, other.keywords);
     }
 
     @Override
     public String toString() {
-        return "CopernicusGalleryMedia [id=" + id + ", title=" + title + "]";
+        return "CopernicusGalleryMedia [id=" + getId() + ", title=" + title + "]";
     }
 
     public CopernicusGalleryMedia copyDataFrom(CopernicusGalleryMedia mediaFromApi) {

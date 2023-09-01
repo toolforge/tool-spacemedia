@@ -98,12 +98,12 @@ public class MediaService {
         photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.photographers.csv"));
     }
 
-    public <M extends Media<?>> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
+    public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
             boolean forceUpdate, UrlResolver<M> urlResolver) throws IOException {
         return updateMedia(media, stringsToRemove, forceUpdate, urlResolver, true, true, false, null);
     }
 
-    public <M extends Media<?>> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
+    public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
             boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist, boolean includeByPerceptualHash,
             boolean ignoreExifMetadata, Path localPath) throws IOException {
         boolean result = false;
@@ -128,7 +128,7 @@ public class MediaService {
         return new MediaUpdateResult(result, ur.getException());
     }
 
-    protected boolean belongsToBlocklist(Media<?> media) {
+    protected boolean belongsToBlocklist(Media media) {
         String titleAndDescription = "";
         if (media.getTitle() != null) {
             titleAndDescription += media.getTitle().toLowerCase(Locale.ENGLISH);
@@ -167,7 +167,7 @@ public class MediaService {
         return photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith);
     }
 
-    public <M extends Media<?>> MediaUpdateResult updateReadableStateAndHashes(M media, Path localPath,
+    public <M extends Media> MediaUpdateResult updateReadableStateAndHashes(M media, Path localPath,
             UrlResolver<M> urlResolver, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
         boolean result = false;
         Exception exception = null;
@@ -204,7 +204,7 @@ public class MediaService {
         }
     }
 
-    private <M extends Media<?>> MediaUpdateResult updateReadableStateAndHashes(M media, FileMetadata metadata,
+    private <M extends Media> MediaUpdateResult updateReadableStateAndHashes(M media, FileMetadata metadata,
             Path localPath, UrlResolver<M> urlResolver, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
         boolean isImage = metadata.isImage();
         boolean result = false;
@@ -281,11 +281,11 @@ public class MediaService {
                                 || !metadata.hasSize() || forceUpdateOfHashes)));
     }
 
-    public static boolean ignoreMedia(Media<?> media, String reason) {
+    public static boolean ignoreMedia(Media media, String reason) {
         return ignoreMedia(media, reason, null);
     }
 
-    public static boolean ignoreMedia(Media<?> media, String reason, Exception e) {
+    public static boolean ignoreMedia(Media media, String reason, Exception e) {
         if (e != null) {
             LOGGER.warn("Ignored {} for reason {}", media, reason, e);
         } else {
@@ -296,7 +296,7 @@ public class MediaService {
         return true;
     }
 
-    public static boolean cleanupDescription(Media<?> media, Iterable<String> stringsToRemove) {
+    public static boolean cleanupDescription(Media media, Iterable<String> stringsToRemove) {
         boolean result = false;
         if (isNotBlank(media.getDescription())) {
             String unescaped = unescapeXml(media.getDescription());
@@ -348,7 +348,7 @@ public class MediaService {
      * @return {@code true} if media has been updated with computed SHA-1 and must be persisted
      * @throws IOException        in case of I/O error
      */
-    public <M extends Media<?>> boolean updateSha1(M media, FileMetadata metadata, Path localPath,
+    public <M extends Media> boolean updateSha1(M media, FileMetadata metadata, Path localPath,
             UrlResolver<M> urlResolver, boolean forceUpdate) throws IOException {
         if ((!metadata.hasSha1() || forceUpdate) && (metadata.getAssetUrl() != null || localPath != null)) {
             metadata.setSha1(getSha1(localPath, urlResolver.resolveDownloadUrl(media, metadata)));
@@ -485,7 +485,7 @@ public class MediaService {
         return result;
     }
 
-    public List<String> findSmallerCommonsFilesWithIdAndPhash(Media<?> media, FileMetadata metadata) throws IOException {
+    public List<String> findSmallerCommonsFilesWithIdAndPhash(Media media, FileMetadata metadata) throws IOException {
         List<String> result = new ArrayList<>();
         for (String idUsedInCommons : media.getIdUsedInCommons()) {
             result.addAll(findCommonsFilesWithIdAndPhashFiltered(commonsService.searchImages(idUsedInCommons), metadata,

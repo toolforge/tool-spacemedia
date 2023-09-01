@@ -41,8 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
@@ -65,8 +63,7 @@ import io.micrometer.core.instrument.util.StringUtils;
  *
  * @param <T> Type of media
  */
-public abstract class AbstractOrgDjangoplicityService
-        extends AbstractOrgService<DjangoplicityMedia, CompositeMediaId> {
+public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService<DjangoplicityMedia> {
 
     private static final String IDENTIFIABLE_PERSON = "Image likely include a picture of an identifiable person, using that image for commercial purposes is not permitted.";
 
@@ -90,17 +87,13 @@ public abstract class AbstractOrgDjangoplicityService
     private Map<String, String> dpTypes;
 
     @Autowired
-    private DjangoplicityMediaRepository djangoRepository;
-
-    @Autowired
     private ObjectMapper jackson;
 
     @Autowired
     private WikidataService wikidata;
 
     protected AbstractOrgDjangoplicityService(DjangoplicityMediaRepository repository, String id, String searchLink) {
-        super(repository, id);
-        this.djangoRepository = Objects.requireNonNull(repository);
+        super(repository, id, Set.of(id));
         this.searchLink = Objects.requireNonNull(searchLink);
     }
 
@@ -128,11 +121,6 @@ public abstract class AbstractOrgDjangoplicityService
     @Override
     protected final Class<DjangoplicityMedia> getMediaClass() {
         return DjangoplicityMedia.class;
-    }
-
-    @Override
-    protected final CompositeMediaId getMediaId(String id) {
-        return new CompositeMediaId(getId(), id);
     }
 
     private static void scrapingError(String url, String details) {
@@ -635,114 +623,5 @@ public abstract class AbstractOrgDjangoplicityService
     @Override
     protected Set<String> getEmojis(DjangoplicityMedia uploadedMedia) {
         return new HashSet<>(Set.of(Emojis.TELESCCOPE));
-    }
-
-    @Override
-    public final long countAllMedia() {
-        return djangoRepository.count(getId());
-    }
-
-    @Override
-    public final long countIgnored() {
-        return djangoRepository.countByIgnoredTrue(getId());
-    }
-
-    @Override
-    public final long countMissingMedia() {
-        return djangoRepository.countMissingInCommons(getId());
-    }
-
-    @Override
-    public final long countMissingImages() {
-        return djangoRepository.countMissingImagesInCommons(getId());
-    }
-
-    @Override
-    public final long countMissingVideos() {
-        return djangoRepository.countMissingVideosInCommons();
-    }
-
-    @Override
-    public final long countPerceptualHashes() {
-        return djangoRepository.countByMetadata_PhashNotNull(getId());
-    }
-
-    @Override
-    public final long countUploadedMedia() {
-        return djangoRepository.countUploadedToCommons(getId());
-    }
-
-    @Override
-    public final Iterable<DjangoplicityMedia> listAllMedia() {
-        return djangoRepository.findAll(getIdSet());
-    }
-
-    @Override
-    public final Page<DjangoplicityMedia> listAllMedia(Pageable page) {
-        return djangoRepository.findAll(getIdSet(), page);
-    }
-
-    @Override
-    public final List<DjangoplicityMedia> listIgnoredMedia() {
-        return djangoRepository.findByIgnoredTrue(getIdSet());
-    }
-
-    @Override
-    public final Page<DjangoplicityMedia> listIgnoredMedia(Pageable page) {
-        return djangoRepository.findByIgnoredTrue(getIdSet(), page);
-    }
-
-    @Override
-    public final List<DjangoplicityMedia> listMissingMedia() {
-        return djangoRepository.findMissingInCommons(getIdSet());
-    }
-
-    @Override
-    public final Page<DjangoplicityMedia> listMissingMedia(Pageable page) {
-        return djangoRepository.findMissingInCommons(getIdSet(), page);
-    }
-
-    @Override
-    public final Page<DjangoplicityMedia> listMissingImages(Pageable page) {
-        return djangoRepository.findMissingImagesInCommons(getIdSet(), page);
-    }
-
-    @Override
-    public final Page<DjangoplicityMedia> listMissingVideos(Pageable page) {
-        return djangoRepository.findMissingVideosInCommons(page);
-    }
-
-    @Override
-    public List<DjangoplicityMedia> listMissingMediaByDate(LocalDate date) {
-        return djangoRepository.findMissingInCommonsByDate(getIdSet(), date);
-    }
-
-    @Override
-    public List<DjangoplicityMedia> listMissingMediaByTitle(String title) {
-        return djangoRepository.findMissingInCommonsByTitle(getIdSet(), title);
-    }
-
-    @Override
-    public final Page<DjangoplicityMedia> listHashedMedia(Pageable page) {
-        return djangoRepository.findByMetadata_PhashNotNull(getIdSet(), page);
-    }
-
-    @Override
-    public final List<DjangoplicityMedia> listUploadedMedia() {
-        return djangoRepository.findUploadedToCommons(getIdSet());
-    }
-
-    @Override
-    public final Page<DjangoplicityMedia> listUploadedMedia(Pageable page) {
-        return djangoRepository.findUploadedToCommons(getIdSet(), page);
-    }
-
-    @Override
-    public final List<DjangoplicityMedia> listDuplicateMedia() {
-        return djangoRepository.findDuplicateInCommons(getIdSet());
-    }
-
-    private Set<String> getIdSet() {
-        return Set.of(getId());
     }
 }

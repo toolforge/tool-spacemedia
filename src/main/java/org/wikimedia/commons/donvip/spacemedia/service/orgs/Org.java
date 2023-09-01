@@ -20,7 +20,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
-public interface Org<T extends Media<ID>, ID> {
+public interface Org<T extends Media> {
 
     void evictCaches();
 
@@ -98,9 +98,9 @@ public interface Org<T extends Media<ID>, ID> {
 
     T uploadAndSaveById(String id, boolean isManual) throws UploadException, TooManyResultsException;
 
-    List<T> uploadAndSaveByDate(LocalDate date, Predicate<Media<?>> predicate, boolean isManual) throws UploadException;
+    List<T> uploadAndSaveByDate(LocalDate date, Predicate<Media> predicate, boolean isManual) throws UploadException;
 
-    List<T> uploadAndSaveByTitle(String title, Predicate<Media<?>> predicate, boolean isManual) throws UploadException;
+    List<T> uploadAndSaveByTitle(String title, Predicate<Media> predicate, boolean isManual) throws UploadException;
 
     Triple<T, Collection<FileMetadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
             throws UploadException;

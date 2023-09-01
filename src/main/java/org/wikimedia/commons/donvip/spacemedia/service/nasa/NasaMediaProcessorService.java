@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -48,6 +47,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -125,7 +125,7 @@ public class NasaMediaProcessorService {
 
     @Transactional
     public <T extends NasaMedia> String processSearchResults(RestTemplate rest, String searchUrl,
-            Collection<T> uploadedMedia, Counter counter, String who, Map<String, Set<String>> foundIds,
+            Collection<T> uploadedMedia, Counter counter, String who, Set<CompositeMediaId> foundIds,
             TriConsumer<LocalDateTime, String, Integer> ongoingUpdateMedia,
             Predicate<NasaMedia> doCommonUpdate, BiPredicate<NasaMedia, Boolean> shouldUploadAuto,
             BiConsumer<URL, Throwable> problem, UnaryOperator<NasaMedia> saveMedia,
@@ -154,7 +154,7 @@ public class NasaMediaProcessorService {
                             uploadedMedia.add(media);
                         }
                         if (foundIds != null) {
-                            foundIds.get(media.getCenter()).add(media.getId());
+                            foundIds.add(media.getId());
                         }
                         ongoingUpdateMedia.accept(start, who, count++);
                         counter.count++;
@@ -192,6 +192,7 @@ public class NasaMediaProcessorService {
             BiFunction<Boolean, NasaMedia, NasaMedia> saveMediaOrCheckRemote,
             TriFunction<NasaMedia, Boolean, Boolean, Triple<NasaMedia, Collection<FileMetadata>, Integer>> uploader)
             throws URISyntaxException {
+        media.setId(new CompositeMediaId(media.getCenter(), media.getNasaId()));
         Optional<NasaMedia> mediaInRepo = repository.findById(media.getId());
         boolean save = false;
         if (mediaInRepo.isPresent()) {
@@ -211,7 +212,7 @@ public class NasaMediaProcessorService {
             FileMetadata metadata = media.getUniqueMetadata();
             if (metadata.getExif() == null) {
                 try {
-                    ExifMetadata exifMetadata = readExifMetadata(restExif, media.getId());
+                    ExifMetadata exifMetadata = readExifMetadata(restExif, media.getId().getMediaId());
                     if (exifMetadata != null) {
                         metadata.setExif(exifRepository.save(exifMetadata));
                         save = true;
@@ -252,7 +253,7 @@ public class NasaMediaProcessorService {
         if (media.getTitle() != null && media.getTitle().startsWith("Title: ")) {
             media.setTitle(media.getTitle().replace("Title: ", ""));
         }
-        if (media.getId().length() < 3) {
+        if (media.getId().getMediaId().length() < 3) {
             problem.accept(media.getAssetUrl(), new Exception("Strange id: '" + media.getId() + "'"));
         }
         if (media.isIgnored() != Boolean.TRUE && media.getDescription() != null) {

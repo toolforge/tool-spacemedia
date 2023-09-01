@@ -28,6 +28,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciImageFiles;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
@@ -73,8 +74,7 @@ public class StsciService {
         Element main = html.getElementById("main-content");
         Element md8 = main.getElementsByClass("col-md-8").first();
         StsciMedia result = new StsciMedia();
-        result.setId(id);
-        result.setMission(getMission(url.getHost()));
+        result.setId(new CompositeMediaId(getMission(url.getHost()), id));
         result.setTitle(main.getElementsByTag("h1").first().text());
         // First attempt
         result.setCredits(extractCredits(md8));

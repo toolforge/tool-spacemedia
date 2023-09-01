@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.modis.NasaModisMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.modis.NasaModisMediaRepository;
@@ -35,7 +36,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class NasaModisService extends AbstractOrgService<NasaModisMedia, String> {
+public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaModisService.class);
 
@@ -44,11 +45,8 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia, String>
     @Value("${nasa.modis.details.url}")
     private String detailsUrl;
 
-    private final NasaModisMediaRepository modisRepository;
-
     public NasaModisService(NasaModisMediaRepository repository) {
-        super(repository, "nasa.modis");
-        this.modisRepository = repository;
+        super(repository, "nasa.modis", Set.of("modis"));
     }
 
     @Override
@@ -59,11 +57,6 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia, String>
     @Override
     public String getName() {
         return "NASA (MODIS)";
-    }
-
-    @Override
-    protected String getMediaId(String id) {
-        return id;
     }
 
     @Override
@@ -116,7 +109,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia, String>
             throws IOException, UploadException, UpdateFinishedException {
         boolean save = false;
         NasaModisMedia media = null;
-        Optional<NasaModisMedia> imageInDb = modisRepository.findByPublicationDate(date);
+        Optional<NasaModisMedia> imageInDb = repository.findByPublicationDate(date);
         if (imageInDb.isPresent()) {
             media = imageInDb.get();
         } else {
@@ -153,7 +146,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia, String>
     @Override
     protected String getSource(NasaModisMedia media, FileMetadata metadata) {
         return super.getSource(media, metadata) + " ([" + metadata.getAssetUrl() + " direct link])\n"
-                + "{{NASA-image|id=" + media.getId() + "|center=GSFC}}";
+                + "{{NASA-image|id=" + media.getId().getMediaId() + "|center=GSFC}}";
     }
 
     @Override
@@ -215,7 +208,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia, String>
 
     private NasaModisMedia fetchMedia(LocalDate date) throws IOException, UpdateFinishedException {
         NasaModisMedia image = new NasaModisMedia();
-        image.setId(date.toString());
+        image.setId(new CompositeMediaId("modis", date.toString()));
         image.setPublicationDate(date);
         String imgUrlLink = detailsUrl.replace("<date>", date.toString());
         LOGGER.info(imgUrlLink);
