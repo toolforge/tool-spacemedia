@@ -40,6 +40,7 @@ import org.springframework.web.client.HttpClientErrorException.NotFound;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsCredit;
@@ -47,7 +48,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaType;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaTypedId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiAssetResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiPageInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResponse;
@@ -67,8 +67,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
  * Service fetching images from https://api.dvidshub.net/
  */
 @Service
-public abstract class AbstractOrgDvidsService
-        extends AbstractOrgService<DvidsMedia, DvidsMediaTypedId> {
+public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMedia, CompositeMediaId> {
 
     private static final Pattern US_MEDIA_BY = Pattern
             .compile(".*\\((U\\.S\\. .+ (?:photo|graphic|video) by )[^\\)]+\\)", Pattern.DOTALL);
@@ -125,8 +124,8 @@ public abstract class AbstractOrgDvidsService
     }
 
     @Override
-    protected final DvidsMediaTypedId getMediaId(String id) {
-        return new DvidsMediaTypedId(id);
+    protected final CompositeMediaId getMediaId(String id) {
+        return new CompositeMediaId(id);
     }
 
     @Override
@@ -216,7 +215,7 @@ public abstract class AbstractOrgDvidsService
             try {
                 idsKnownToDvidsApi.add(id);
                 Pair<DvidsMedia, Integer> result = dvidsProcessor.processDvidsMedia(
-                        () -> mediaRepository.findById(new DvidsMediaTypedId(id)),
+                        () -> mediaRepository.findById(new CompositeMediaId(id)),
                         () -> getMediaFromApi(rest, id, unit),
                         media -> processDvidsMediaUpdate(media, false).getResult(), this::shouldUploadAuto,
                         this::uploadWrapped);
@@ -367,7 +366,7 @@ public abstract class AbstractOrgDvidsService
     @Override
     public final URL getSourceUrl(DvidsMedia media, FileMetadata metadata) {
         try {
-            return mediaUrl.expand(Map.of("type", media.getId().getType(), "id", media.getId().getId())).toURL();
+            return mediaUrl.expand(Map.of("type", media.getId().getRepoId(), "id", media.getId().getMediaId())).toURL();
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException(e);
         }
@@ -387,7 +386,8 @@ public abstract class AbstractOrgDvidsService
         if (m.matches()) {
             result.append(m.group(1));
         } else if (StringUtils.isNotBlank(media.getBranch()) && !"Joint".equals(media.getBranch())) {
-            result.append("U.S. ").append(media.getBranch()).append(' ').append(media.getId().getType()).append(" by ");
+            result.append("U.S. ").append(media.getBranch()).append(' ').append(media.getId().getRepoId())
+                    .append(" by ");
         }
         result.append(media.getCredit().stream().map(this::dvidsCreditToString).distinct().collect(joining(", ")));
         return result.toString();

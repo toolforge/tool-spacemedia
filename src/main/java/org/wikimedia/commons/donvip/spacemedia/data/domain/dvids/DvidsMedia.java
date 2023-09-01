@@ -20,6 +20,8 @@ import javax.persistence.ManyToMany;
 
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaIdBridge;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
@@ -36,15 +38,15 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "id", visible = true)
 @JsonTypeIdResolver(value = DvidsMediaTypeIdResolver.class)
-public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId> implements WithKeywords {
+public abstract class DvidsMedia extends SingleFileMedia<CompositeMediaId> implements WithKeywords {
 
     /**
      * Specific document id to retrieve for search.
      */
     @Id
     @Embedded
-    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = DvidsMediaTypedIdBridge.class))
-    private DvidsMediaTypedId id;
+    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = CompositeMediaIdBridge.class))
+    private CompositeMediaId id;
 
     /**
      * Comma separated list of keywords.
@@ -120,18 +122,18 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId> impl
     private String virin;
 
     @Override
-    public DvidsMediaTypedId getId() {
+    public CompositeMediaId getId() {
         return id;
     }
 
     @Override
-    public void setId(DvidsMediaTypedId id) {
+    public void setId(CompositeMediaId id) {
         this.id = id;
     }
 
     @Override
     public String getIdUsedInOrg() {
-        return getId().getId().toString();
+        return getId().getMediaId();
     }
 
     @Override
@@ -187,7 +189,7 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId> impl
 
     @JsonIgnore
     public DvidsMediaType getMediaType() {
-        return id.getType();
+        return DvidsMediaType.valueOf(id.getRepoId());
     }
 
     public String getBranch() {
@@ -303,17 +305,17 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId> impl
 
     @Override
     public final boolean isAudio() {
-        return id.getType() == DvidsMediaType.audio;
+        return getMediaType() == DvidsMediaType.audio;
     }
 
     @Override
     public final boolean isImage() {
-        return DvidsMediaType.images().contains(id.getType());
+        return DvidsMediaType.images().contains(id.getRepoId());
     }
 
     @Override
     public final boolean isVideo() {
-        return DvidsMediaType.videos().contains(id.getType());
+        return DvidsMediaType.videos().contains(id.getRepoId());
     }
 
     @Override
@@ -324,9 +326,9 @@ public abstract class DvidsMedia extends SingleFileMedia<DvidsMediaTypedId> impl
             // # File names with no letters, except for some meaningless prefix:
             // File:\P{L}*\.[^.]+
             // File:\P{L}*(small|medium|large)\)?\.[^.]+
-            return normalizedTitle + " (" + unit + " " + getId().getId() + ")";
+            return normalizedTitle + " (" + unit + " " + getId().getMediaId() + ")";
         } else {
-            return normalizedTitle + " (" + getId().getId() + ")";
+            return normalizedTitle + " (" + getId().getMediaId() + ")";
         }
     }
 

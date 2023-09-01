@@ -12,9 +12,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaRepository<T, DvidsMediaTypedId> {
+public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaRepository<T, CompositeMediaId> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "dvidsCount", "dvidsCountByUnit", "dvidsCountIgnored", "dvidsCountIgnoredByUnit",
@@ -59,11 +60,11 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     long countMissingInCommonsByUnit(Set<String> units);
 
     @Cacheable("dvidsCountMissingByType")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1")
-    long countMissingInCommonsByType(Set<DvidsMediaType> types);
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1")
+    long countMissingInCommonsByType(Set<String> types);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
-    long countMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units);
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and m.unit in ?2")
+    long countMissingInCommonsByTypeAndUnit(Set<String> types, Set<String> units);
 
     @Override
     @Cacheable("dvidsCountMissingImages")
@@ -120,11 +121,11 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.unit in ?1")
     List<T> findDuplicateInCommons(Set<String> units);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1")
-    Page<T> findMissingInCommonsByType(Set<DvidsMediaType> types, Pageable page);
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1")
+    Page<T> findMissingInCommonsByType(Set<String> types, Pageable page);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.type in ?1 and m.unit in ?2")
-    Page<T> findMissingInCommonsByTypeAndUnit(Set<DvidsMediaType> types, Set<String> units, Pageable page);
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and m.unit in ?2")
+    Page<T> findMissingInCommonsByTypeAndUnit(Set<String> types, Set<String> units, Pageable page);
 
     @Override
     default Page<T> findMissingImagesInCommons(Pageable page) {
@@ -179,7 +180,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
 
     @Override
     @CacheEvictDvidsAll
-    void deleteById(DvidsMediaTypedId id);
+    void deleteById(CompositeMediaId id);
 
     @Override
     @CacheEvictDvidsAll

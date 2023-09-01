@@ -15,11 +15,11 @@ public enum DvidsMediaType {
     video,
     webcast;
 
-    static Set<DvidsMediaType> images() {
-        return Set.of(image);
+    static Set<String> images() {
+        return Set.of(image.name());
     }
 
-    static Set<DvidsMediaType> videos() {
-        return Set.of(video, graphic);
+    static Set<String> videos() {
+        return Set.of(video.name(), graphic.name());
     }
 }

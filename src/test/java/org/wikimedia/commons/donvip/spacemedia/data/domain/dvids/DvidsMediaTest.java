@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 
 class DvidsMediaTest {
 
@@ -10,21 +11,21 @@ class DvidsMediaTest {
     void testUploadTitle() {
         DvidsMedia media = new DvidsImage();
         media.setUnit("Space Systems Command");
-        DvidsMediaTypedId id = new DvidsMediaTypedId();
-        id.setType(DvidsMediaType.image);
+        CompositeMediaId id = new CompositeMediaId();
+        id.setRepoId(DvidsMediaType.image.name());
         media.setId(id);
 
         media.setTitle("9/11 2017");
-        id.setId(3796505L);
+        id.setMediaId("3796505");
         assertEquals("9-11 2017 (Space Systems Command 3796505)", media.getUploadTitle(null));
 
         media.setTitle("AF 70th Birthday at Angel game");
-        id.setId(3793475L);
+        id.setMediaId("3793475");
         assertEquals("AF 70th Birthday at Angel game (3793475)", media.getUploadTitle(null));
 
         media.setTitle(
                 "http://www.patrick.af.mil/News/Article-Display/Article/1319994/air-force-senior-leaders-thank-team-patrick-cape-for-irma-recovery-efforts");
-        id.setId(3809731L);
+        id.setMediaId("3809731");
         assertEquals(
                 "www_patrick_af_mil-News-Article-Display-Article-1319994-air-force-senior-leaders-thank-team-patrick-cape-for-irma-recovery-efforts (3809731)",
                 media.getUploadTitle(null));
