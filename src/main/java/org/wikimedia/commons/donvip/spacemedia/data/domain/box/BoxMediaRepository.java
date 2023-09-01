@@ -2,20 +2,16 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.box;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultMediaRepository;
 
-public interface BoxMediaRepository extends MediaRepository<BoxMedia, CompositeMediaId> {
+public interface BoxMediaRepository extends DefaultMediaRepository<BoxMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "boxCount", "boxCountByShare", "boxCountIgnored",
@@ -91,58 +87,6 @@ public interface BoxMediaRepository extends MediaRepository<BoxMedia, CompositeM
     @Cacheable("boxCountPhashNotNullByShare")
     @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.repoId in ?1")
     long countByMetadata_PhashNotNull(Set<String> appShares);
-
-    // FIND
-
-    @Query("select m from #{#entityName} m where m.id.repoId in ?1")
-    Set<BoxMedia> findAll(Set<String> appShares);
-
-    @Query("select m from #{#entityName} m where m.id.repoId in ?1")
-    Page<BoxMedia> findAll(Set<String> appShares, Pageable page);
-
-    @Query("select m from #{#entityName} m where m.ignored = true and m.id.repoId in ?1")
-    List<BoxMedia> findByIgnoredTrue(Set<String> appShares);
-
-    @Query("select m from #{#entityName} m where m.ignored = true and m.id.repoId in ?1")
-    Page<BoxMedia> findByIgnoredTrue(Set<String> appShares, Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.id.repoId in ?1")
-    List<BoxMedia> findDuplicateInCommons(Set<String> appShares);
-
-    @Override
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg')")
-    Page<BoxMedia> findMissingImagesInCommons(Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg') and m.id.repoId in ?1")
-    Page<BoxMedia> findMissingImagesInCommons(Set<String> appShares, Pageable page);
-
-    @Override
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg')")
-    Page<BoxMedia> findMissingVideosInCommons(Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg') and m.id.repoId in ?1")
-    Page<BoxMedia> findMissingVideosInCommons(Set<String> appShares, Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1")
-    List<BoxMedia> findMissingInCommonsByShare(Set<String> appShares);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1")
-    Page<BoxMedia> findMissingInCommonsByShare(Set<String> appShares, Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and (m.creationDate = ?2 or m.publicationDate = ?2)")
-    List<BoxMedia> findMissingInCommonsByShareAndDate(Set<String> appShares, LocalDate date);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and m.title = ?2")
-    List<BoxMedia> findMissingInCommonsByShareAndTitle(Set<String> appShares, String title);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId in ?1")
-    List<BoxMedia> findUploadedToCommons(Set<String> appShares);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId in ?1")
-    Page<BoxMedia> findUploadedToCommons(Set<String> appShares, Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.repoId in ?1")
-    Page<BoxMedia> findByMetadata_PhashNotNull(Set<String> appShares, Pageable page);
 
     // SAVE
 

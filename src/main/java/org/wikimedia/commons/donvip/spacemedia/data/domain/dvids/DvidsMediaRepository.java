@@ -13,9 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultMediaRepository;
 
-public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaRepository<T, CompositeMediaId> {
+public interface DvidsMediaRepository<T extends DvidsMedia> extends DefaultMediaRepository<T> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "dvidsCount", "dvidsCountByUnit", "dvidsCountIgnored", "dvidsCountIgnoredByUnit",
@@ -106,18 +106,23 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
 
     // FIND
 
+    @Override
     @Query("select m from #{#entityName} m where m.unit in ?1")
     Set<T> findAll(Set<String> units);
 
+    @Override
     @Query("select m from #{#entityName} m where m.unit in ?1")
     Page<T> findAll(Set<String> units, Pageable page);
 
+    @Override
     @Query("select m from #{#entityName} m where m.ignored = true and m.unit in ?1")
     List<T> findByIgnoredTrue(Set<String> units);
 
+    @Override
     @Query("select m from #{#entityName} m where m.ignored = true and m.unit in ?1")
     Page<T> findByIgnoredTrue(Set<String> units, Pageable page);
 
+    @Override
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.unit in ?1")
     List<T> findDuplicateInCommons(Set<String> units);
 
@@ -132,6 +137,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
         return findMissingInCommonsByType(DvidsMediaType.images(), page);
     }
 
+    @Override
     default Page<T> findMissingImagesInCommons(Set<String> units, Pageable page) {
         return findMissingInCommonsByTypeAndUnit(DvidsMediaType.images(), units, page);
     }
@@ -141,6 +147,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
         return findMissingInCommonsByType(DvidsMediaType.videos(), page);
     }
 
+    @Override
     default Page<T> findMissingVideosInCommons(Set<String> units, Pageable page) {
         return findMissingInCommonsByTypeAndUnit(DvidsMediaType.videos(), units, page);
     }
@@ -151,18 +158,23 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1")
     Page<T> findMissingInCommonsByUnit(Set<String> units, Pageable page);
 
+    @Override
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1 and (m.creationDate = ?2 or m.publicationDate = ?2)")
     List<T> findMissingInCommonsByDate(Set<String> units, LocalDate date);
 
+    @Override
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.unit in ?1 and m.title = ?2")
     List<T> findMissingInCommonsByTitle(Set<String> units, String title);
 
+    @Override
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
     List<T> findUploadedToCommons(Set<String> units);
 
+    @Override
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.unit in ?1")
     Page<T> findUploadedToCommons(Set<String> units, Pageable page);
 
+    @Override
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where md.phash is not null and m.unit in ?1")
     Page<T> findByMetadata_PhashNotNull(Set<String> units, Pageable page);
 

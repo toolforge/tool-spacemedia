@@ -13,17 +13,12 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToMany;
 
-import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaIdBridge;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultSingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
@@ -38,15 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "id", visible = true)
 @JsonTypeIdResolver(value = DvidsMediaTypeIdResolver.class)
-public abstract class DvidsMedia extends SingleFileMedia<CompositeMediaId> implements WithKeywords {
-
-    /**
-     * Specific document id to retrieve for search.
-     */
-    @Id
-    @Embedded
-    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = CompositeMediaIdBridge.class))
-    private CompositeMediaId id;
+public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords {
 
     /**
      * Comma separated list of keywords.
@@ -122,21 +109,6 @@ public abstract class DvidsMedia extends SingleFileMedia<CompositeMediaId> imple
     private String virin;
 
     @Override
-    public CompositeMediaId getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(CompositeMediaId id) {
-        this.id = id;
-    }
-
-    @Override
-    public String getIdUsedInOrg() {
-        return getId().getMediaId();
-    }
-
-    @Override
     public List<String> getIdUsedInCommons() {
         return List.of(getIdUsedInOrg(), getVirin());
     }
@@ -189,7 +161,7 @@ public abstract class DvidsMedia extends SingleFileMedia<CompositeMediaId> imple
 
     @JsonIgnore
     public DvidsMediaType getMediaType() {
-        return DvidsMediaType.valueOf(id.getRepoId());
+        return DvidsMediaType.valueOf(getId().getRepoId());
     }
 
     public String getBranch() {
@@ -278,7 +250,7 @@ public abstract class DvidsMedia extends SingleFileMedia<CompositeMediaId> imple
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(description, category, keywords, id, title);
+        return 31 * super.hashCode() + Objects.hash(description, category, keywords, title);
     }
 
     @Override
@@ -292,12 +264,12 @@ public abstract class DvidsMedia extends SingleFileMedia<CompositeMediaId> imple
                 && Objects.equals(branch, other.branch)
                 && Objects.equals(category, other.category)
                 && Objects.equals(keywords, other.keywords)
-                && Objects.equals(id, other.id) && Objects.equals(title, other.title);
+                && Objects.equals(title, other.title);
     }
 
     @Override
     public String toString() {
-        return "DvidsMedia [" + (id != null ? "id=" + id + ", " : "")
+        return "DvidsMedia [" + (getId() != null ? "id=" + getId() + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (category != null ? "category=" + category + ", " : "")
                 + (getMetadata() != null ? "metadata=" + getMetadata() : "") + "]";
@@ -310,12 +282,12 @@ public abstract class DvidsMedia extends SingleFileMedia<CompositeMediaId> imple
 
     @Override
     public final boolean isImage() {
-        return DvidsMediaType.images().contains(id.getRepoId());
+        return DvidsMediaType.images().contains(getId().getRepoId());
     }
 
     @Override
     public final boolean isVideo() {
-        return DvidsMediaType.videos().contains(id.getRepoId());
+        return DvidsMediaType.videos().contains(getId().getRepoId());
     }
 
     @Override

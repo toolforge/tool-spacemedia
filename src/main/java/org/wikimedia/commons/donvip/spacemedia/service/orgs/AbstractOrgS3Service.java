@@ -36,8 +36,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 /**
  * Service fetching images from AWS S3
  */
-public abstract class AbstractOrgS3Service
-        extends AbstractOrgService<S3Media, CompositeMediaId> {
+public abstract class AbstractOrgS3Service extends DefaultOrgService<S3Media> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgS3Service.class);
 
@@ -64,11 +63,6 @@ public abstract class AbstractOrgS3Service
     @Override
     protected Class<S3Media> getTopTermsMediaClass() {
         return S3Media.class;
-    }
-
-    @Override
-    protected final CompositeMediaId getMediaId(String id) {
-        return new CompositeMediaId(id);
     }
 
     protected final S3Object getS3Object(CompositeMediaId mediaId) {
@@ -221,12 +215,12 @@ public abstract class AbstractOrgS3Service
 
     @Override
     public List<S3Media> listMissingMedia() {
-        return mediaRepository.findMissingInCommonsByShare(bucketNames);
+        return mediaRepository.findMissingInCommons(bucketNames);
     }
 
     @Override
     public Page<S3Media> listMissingMedia(Pageable page) {
-        return mediaRepository.findMissingInCommonsByShare(bucketNames, page);
+        return mediaRepository.findMissingInCommons(bucketNames, page);
     }
 
     @Override
@@ -241,12 +235,12 @@ public abstract class AbstractOrgS3Service
 
     @Override
     public List<S3Media> listMissingMediaByDate(LocalDate date) {
-        return mediaRepository.findMissingInCommonsByShareAndDate(bucketNames, date);
+        return mediaRepository.findMissingInCommonsByDate(bucketNames, date);
     }
 
     @Override
     public List<S3Media> listMissingMediaByTitle(String title) {
-        return mediaRepository.findMissingInCommonsByShareAndTitle(bucketNames, title);
+        return mediaRepository.findMissingInCommonsByTitle(bucketNames, title);
     }
 
     @Override

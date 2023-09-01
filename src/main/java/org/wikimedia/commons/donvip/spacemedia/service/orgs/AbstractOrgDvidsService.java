@@ -67,7 +67,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
  * Service fetching images from https://api.dvidshub.net/
  */
 @Service
-public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMedia, CompositeMediaId> {
+public abstract class AbstractOrgDvidsService extends DefaultOrgService<DvidsMedia> {
 
     private static final Pattern US_MEDIA_BY = Pattern
             .compile(".*\\((U\\.S\\. .+ (?:photo|graphic|video) by )[^\\)]+\\)", Pattern.DOTALL);
@@ -121,11 +121,6 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     @Override
     protected Class<DvidsImage> getTopTermsMediaClass() {
         return DvidsImage.class; // TODO can't get a direct lucene reader on DvidsMedia
-    }
-
-    @Override
-    protected final CompositeMediaId getMediaId(String id) {
-        return new CompositeMediaId(id);
     }
 
     @Override

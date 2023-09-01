@@ -674,37 +674,37 @@ public abstract class AbstractOrgDjangoplicityService
 
     @Override
     public final Iterable<DjangoplicityMedia> listAllMedia() {
-        return djangoRepository.findAll(getId());
+        return djangoRepository.findAll(getIdSet());
     }
 
     @Override
     public final Page<DjangoplicityMedia> listAllMedia(Pageable page) {
-        return djangoRepository.findAll(getId(), page);
+        return djangoRepository.findAll(getIdSet(), page);
     }
 
     @Override
     public final List<DjangoplicityMedia> listIgnoredMedia() {
-        return djangoRepository.findByIgnoredTrue(getId());
+        return djangoRepository.findByIgnoredTrue(getIdSet());
     }
 
     @Override
     public final Page<DjangoplicityMedia> listIgnoredMedia(Pageable page) {
-        return djangoRepository.findByIgnoredTrue(getId(), page);
+        return djangoRepository.findByIgnoredTrue(getIdSet(), page);
     }
 
     @Override
     public final List<DjangoplicityMedia> listMissingMedia() {
-        return djangoRepository.findMissingInCommons(getId());
+        return djangoRepository.findMissingInCommons(getIdSet());
     }
 
     @Override
     public final Page<DjangoplicityMedia> listMissingMedia(Pageable page) {
-        return djangoRepository.findMissingInCommons(getId(), page);
+        return djangoRepository.findMissingInCommons(getIdSet(), page);
     }
 
     @Override
     public final Page<DjangoplicityMedia> listMissingImages(Pageable page) {
-        return djangoRepository.findMissingImagesInCommons(getId(), page);
+        return djangoRepository.findMissingImagesInCommons(getIdSet(), page);
     }
 
     @Override
@@ -714,31 +714,35 @@ public abstract class AbstractOrgDjangoplicityService
 
     @Override
     public List<DjangoplicityMedia> listMissingMediaByDate(LocalDate date) {
-        return djangoRepository.findMissingInCommonsByDate(getId(), date);
+        return djangoRepository.findMissingInCommonsByDate(getIdSet(), date);
     }
 
     @Override
     public List<DjangoplicityMedia> listMissingMediaByTitle(String title) {
-        return djangoRepository.findMissingInCommonsByTitle(getId(), title);
+        return djangoRepository.findMissingInCommonsByTitle(getIdSet(), title);
     }
 
     @Override
     public final Page<DjangoplicityMedia> listHashedMedia(Pageable page) {
-        return djangoRepository.findByMetadata_PhashNotNull(getId(), page);
+        return djangoRepository.findByMetadata_PhashNotNull(getIdSet(), page);
     }
 
     @Override
     public final List<DjangoplicityMedia> listUploadedMedia() {
-        return djangoRepository.findUploadedToCommons(getId());
+        return djangoRepository.findUploadedToCommons(getIdSet());
     }
 
     @Override
     public final Page<DjangoplicityMedia> listUploadedMedia(Pageable page) {
-        return djangoRepository.findUploadedToCommons(getId(), page);
+        return djangoRepository.findUploadedToCommons(getIdSet(), page);
     }
 
     @Override
     public final List<DjangoplicityMedia> listDuplicateMedia() {
-        return djangoRepository.findDuplicateInCommons(getId());
+        return djangoRepository.findDuplicateInCommons(getIdSet());
+    }
+
+    private Set<String> getIdSet() {
+        return Set.of(getId());
     }
 }

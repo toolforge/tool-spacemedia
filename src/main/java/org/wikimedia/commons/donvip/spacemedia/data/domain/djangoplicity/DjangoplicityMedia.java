@@ -7,29 +7,18 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.Lob;
 
-import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaIdBridge;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultMedia;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
-public class DjangoplicityMedia extends Media<CompositeMediaId> {
-
-    @Id
-    @Embedded
-    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = CompositeMediaIdBridge.class))
-    private CompositeMediaId id;
+public class DjangoplicityMedia extends DefaultMedia {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true, length = 16)
@@ -96,21 +85,6 @@ public class DjangoplicityMedia extends Media<CompositeMediaId> {
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     private String credit;
-
-    @Override
-    public CompositeMediaId getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(CompositeMediaId id) {
-        this.id = id;
-    }
-
-    @Override
-    public String getIdUsedInOrg() {
-        return getId().getMediaId();
-    }
 
     public DjangoplicityLicence getLicence() {
         return licence;
@@ -242,7 +216,7 @@ public class DjangoplicityMedia extends Media<CompositeMediaId> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [" + (id != null ? "id=" + id + ", " : "")
+        return getClass().getSimpleName() + " [" + (getId() != null ? "id=" + getId() + ", " : "")
                 + (licence != null ? "licence=" + licence + ", " : "")
                 + (imageType != null ? "imageType=" + imageType + ", " : "")
                 + (name != null ? "name=" + name + ", " : "")
@@ -256,21 +230,6 @@ public class DjangoplicityMedia extends Media<CompositeMediaId> {
                 + (isNotEmpty(instruments) ? "instruments=" + instruments + ", " : "")
                 + (ignored != null ? "ignored=" + ignored + ", " : "")
                 + (ignoredReason != null ? "ignoredReason=" + ignoredReason : "") + "]";
-    }
-
-    @Override
-    public boolean isAudio() {
-        return false;
-    }
-
-    @Override
-    public boolean isImage() {
-        return true;
-    }
-
-    @Override
-    public boolean isVideo() {
-        return false;
     }
 
     public DjangoplicityMedia copyDataFrom(DjangoplicityMedia mediaFromApi) {

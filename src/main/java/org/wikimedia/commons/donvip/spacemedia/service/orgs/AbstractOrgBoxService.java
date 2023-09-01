@@ -39,8 +39,7 @@ import com.box.sdk.BoxFile;
 /**
  * Service fetching images from box.com
  */
-public abstract class AbstractOrgBoxService
-        extends AbstractOrgService<BoxMedia, CompositeMediaId> {
+public abstract class AbstractOrgBoxService extends DefaultOrgService<BoxMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgBoxService.class);
 
@@ -65,11 +64,6 @@ public abstract class AbstractOrgBoxService
     @Override
     protected Class<BoxMedia> getTopTermsMediaClass() {
         return BoxMedia.class;
-    }
-
-    @Override
-    protected final CompositeMediaId getMediaId(String id) {
-        return new CompositeMediaId(id);
     }
 
     @Override
@@ -250,12 +244,12 @@ public abstract class AbstractOrgBoxService
 
     @Override
     public List<BoxMedia> listMissingMedia() {
-        return mediaRepository.findMissingInCommonsByShare(appShares);
+        return mediaRepository.findMissingInCommons(appShares);
     }
 
     @Override
     public Page<BoxMedia> listMissingMedia(Pageable page) {
-        return mediaRepository.findMissingInCommonsByShare(appShares, page);
+        return mediaRepository.findMissingInCommons(appShares, page);
     }
 
     @Override
@@ -270,12 +264,12 @@ public abstract class AbstractOrgBoxService
 
     @Override
     public List<BoxMedia> listMissingMediaByDate(LocalDate date) {
-        return mediaRepository.findMissingInCommonsByShareAndDate(appShares, date);
+        return mediaRepository.findMissingInCommonsByDate(appShares, date);
     }
 
     @Override
     public List<BoxMedia> listMissingMediaByTitle(String title) {
-        return mediaRepository.findMissingInCommonsByShareAndTitle(appShares, title);
+        return mediaRepository.findMissingInCommonsByTitle(appShares, title);
     }
 
     @Override

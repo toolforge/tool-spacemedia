@@ -2,20 +2,16 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.s3;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.DefaultMediaRepository;
 
-public interface S3MediaRepository extends MediaRepository<S3Media, CompositeMediaId> {
+public interface S3MediaRepository extends DefaultMediaRepository<S3Media> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "s3Count", "s3CountByShare", "s3CountIgnored",
@@ -91,58 +87,6 @@ public interface S3MediaRepository extends MediaRepository<S3Media, CompositeMed
     @Cacheable("s3CountPhashNotNullByShare")
     @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.repoId in ?1")
     long countByMetadata_PhashNotNull(Set<String> buckets);
-
-    // FIND
-
-    @Query("select m from #{#entityName} m where m.id.repoId in ?1")
-    Set<S3Media> findAll(Set<String> buckets);
-
-    @Query("select m from #{#entityName} m where m.id.repoId in ?1")
-    Page<S3Media> findAll(Set<String> buckets, Pageable page);
-
-    @Query("select m from #{#entityName} m where m.ignored = true and m.id.repoId in ?1")
-    List<S3Media> findByIgnoredTrue(Set<String> buckets);
-
-    @Query("select m from #{#entityName} m where m.ignored = true and m.id.repoId in ?1")
-    Page<S3Media> findByIgnoredTrue(Set<String> buckets, Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.id.repoId in ?1")
-    List<S3Media> findDuplicateInCommons(Set<String> buckets);
-
-    @Override
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg')")
-    Page<S3Media> findMissingImagesInCommons(Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg') and m.id.repoId in ?1")
-    Page<S3Media> findMissingImagesInCommons(Set<String> buckets, Pageable page);
-
-    @Override
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg')")
-    Page<S3Media> findMissingVideosInCommons(Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg') and m.id.repoId in ?1")
-    Page<S3Media> findMissingVideosInCommons(Set<String> buckets, Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1")
-    List<S3Media> findMissingInCommonsByShare(Set<String> buckets);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1")
-    Page<S3Media> findMissingInCommonsByShare(Set<String> buckets, Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and (m.creationDate = ?2 or m.publicationDate = ?2)")
-    List<S3Media> findMissingInCommonsByShareAndDate(Set<String> buckets, LocalDate date);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and m.title = ?2")
-    List<S3Media> findMissingInCommonsByShareAndTitle(Set<String> buckets, String title);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId in ?1")
-    List<S3Media> findUploadedToCommons(Set<String> buckets);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId in ?1")
-    Page<S3Media> findUploadedToCommons(Set<String> buckets, Pageable page);
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.repoId in ?1")
-    Page<S3Media> findByMetadata_PhashNotNull(Set<String> buckets, Pageable page);
 
     // SAVE
 
