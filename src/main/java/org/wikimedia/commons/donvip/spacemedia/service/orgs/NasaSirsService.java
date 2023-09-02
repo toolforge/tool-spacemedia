@@ -28,13 +28,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImage;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsImageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs.NasaSirsMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 
 @Service
-public class NasaSirsService extends AbstractOrgService<NasaSirsImage> {
+public class NasaSirsService extends AbstractOrgService<NasaSirsMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NasaSirsService.class);
 
@@ -55,13 +55,13 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage> {
     @Value("${nasa.ssc.name}")
     private String sscName;
 
-    public NasaSirsService(NasaSirsImageRepository repository) {
+    public NasaSirsService(NasaSirsMediaRepository repository) {
         super(repository, "nasa.sirs", Set.of("sirs"));
     }
 
     @Override
-    protected Class<NasaSirsImage> getMediaClass() {
-        return NasaSirsImage.class;
+    protected Class<NasaSirsMedia> getMediaClass() {
+        return NasaSirsMedia.class;
     }
 
     @Override
@@ -70,12 +70,12 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage> {
     }
 
     @Override
-    public URL getSourceUrl(NasaSirsImage media, FileMetadata metadata) {
+    public URL getSourceUrl(NasaSirsMedia media, FileMetadata metadata) {
         return newURL(detailsUrl.replace("<id>", media.getId().getMediaId()));
     }
 
     @Override
-    protected String getAuthor(NasaSirsImage media) {
+    protected String getAuthor(NasaSirsMedia media) {
         return wikiLink(homePage, sscName);
     }
 
@@ -85,9 +85,9 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage> {
         int count = updateFromSirs();
         Set<CompositeMediaId> processedImages = new HashSet<>();
         // SIRS doesn"t work anymore so make sure we're still able to handle existing files
-        for (NasaSirsImage image : repository.findMissingInCommons()) {
+        for (NasaSirsMedia image : repository.findMissingInCommons()) {
             if (!processedImages.contains(image.getId())) {
-                for (NasaSirsImage dupe : repository.findByMetadata_Sha1(image.getUniqueMetadata().getSha1())) {
+                for (NasaSirsMedia dupe : repository.findByMetadata_Sha1(image.getUniqueMetadata().getSha1())) {
                     if (!dupe.getId().equals(image.getId())) {
                         processedImages.add(dupe.getId());
                         LOGGER.warn("Deleting {} SIRS image (duplicate of {})", dupe.getId(), image.getId());
@@ -123,15 +123,15 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage> {
                         problem(url, "invalid id");
                         return count;
                     }
-                    NasaSirsImage media = null;
+                    NasaSirsMedia media = null;
                     try {
                         boolean save = false;
-                        Optional<NasaSirsImage> mediaInRepo = repository.findById(id);
+                        Optional<NasaSirsMedia> mediaInRepo = repository.findById(id);
                         if (mediaInRepo.isPresent()) {
                             media = mediaInRepo.get();
                         } else {
                             List<String> values = loadImageValues(imageLink);
-                            media = new NasaSirsImage();
+                            media = new NasaSirsMedia();
                             media.setId(id);
                             media.setTitle(values.get(0));
                             media.setCategory(values.get(1));
@@ -193,7 +193,7 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage> {
     }
 
     @Override
-    public Set<String> findCategories(NasaSirsImage media, FileMetadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(NasaSirsMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (includeHidden) {
             result.add("Stennis Space Center in " + media.getYear());
@@ -202,25 +202,25 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsImage> {
     }
 
     @Override
-    protected String getSource(NasaSirsImage media, FileMetadata metadata) {
+    protected String getSource(NasaSirsMedia media, FileMetadata metadata) {
         return super.getSource(media, metadata) + " ([" + metadata.getAssetUrl() + " direct link])\n"
                 + "{{NASA-image|id=" + media.getId().getMediaId() + "|center=SSC}}";
     }
 
     @Override
-    public Set<String> findLicenceTemplates(NasaSirsImage media) {
+    public Set<String> findLicenceTemplates(NasaSirsMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
         result.add("PD-USGov-NASA");
         return result;
     }
 
     @Override
-    protected NasaSirsImage refresh(NasaSirsImage media) throws IOException {
+    protected NasaSirsMedia refresh(NasaSirsMedia media) throws IOException {
         throw new UnsupportedOperationException(); // TODO
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(NasaSirsImage uploadedMedia) {
+    protected Set<String> getTwitterAccounts(NasaSirsMedia uploadedMedia) {
         return Set.of("@NASAStennis");
     }
 }

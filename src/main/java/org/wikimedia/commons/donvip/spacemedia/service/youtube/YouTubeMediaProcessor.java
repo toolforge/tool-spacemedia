@@ -24,8 +24,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -48,7 +48,7 @@ public class YouTubeMediaProcessor {
             Pattern.DOTALL);
 
     @Autowired
-    private YouTubeVideoRepository youtubeRepository;
+    private YouTubeMediaRepository youtubeRepository;
 
     @Autowired
     private CommonsService commonsService;
@@ -74,7 +74,7 @@ public class YouTubeMediaProcessor {
         return null;
     }
 
-    public void syncYouTubeVideos(List<YouTubeVideo> videos, List<String> categories) {
+    public void syncYouTubeVideos(List<YouTubeMedia> videos, List<String> categories) {
         for (String category : categories) {
             if (isEmpty(self.syncYouTubeVideos(videos, category))) {
                 break;
@@ -83,7 +83,7 @@ public class YouTubeMediaProcessor {
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")
-    public List<YouTubeVideo> syncYouTubeVideos(List<YouTubeVideo> missingVideos, String category) {
+    public List<YouTubeMedia> syncYouTubeVideos(List<YouTubeMedia> missingVideos, String category) {
         if (isNotEmpty(missingVideos)) {
             LOGGER.info("Starting YouTube videos synchronization from {}...", category);
             LocalDateTime start = LocalDateTime.now();
@@ -98,7 +98,7 @@ public class YouTubeMediaProcessor {
                         if (title.endsWith(".ogv") || title.endsWith(".webm")) {
                             String id = findYouTubeId(commonsService.getPageContent(from));
                             if (StringUtils.isNotBlank(id)) {
-                                Optional<YouTubeVideo> opt = missingVideos.stream().filter(v -> v.getId().equals(id))
+                                Optional<YouTubeMedia> opt = missingVideos.stream().filter(v -> v.getId().equals(id))
                                         .findFirst();
                                 if (opt.isPresent()) {
                                     missingVideos.remove(self.updateYouTubeCommonsFileName(opt.get(), title));
@@ -122,7 +122,7 @@ public class YouTubeMediaProcessor {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public YouTubeVideo updateYouTubeCommonsFileName(YouTubeVideo video, String filename) {
+    public YouTubeMedia updateYouTubeCommonsFileName(YouTubeMedia video, String filename) {
         mediaService.saveNewMetadataCommonsFileNames(video.getUniqueMetadata(), new HashSet<>(Set.of(filename)));
         return youtubeRepository.save(video);
     }

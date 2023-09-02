@@ -8,8 +8,8 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -21,7 +21,7 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
             "Since its creation in 1980 as the world's first commercial space transportation company, Arianespace has led the launch services industry with many operational firsts and numerous record-setting missions.");
 
     public ArianespaceYouTubeService(
-            YouTubeVideoRepository repository,
+            YouTubeMediaRepository repository,
             @Value("${arianespace.youtube.channels}") Set<String> youtubeChannels) {
         super(repository, "arianespace", youtubeChannels);
     }
@@ -37,12 +37,12 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
     }
 
     @Override
-    protected String getAuthor(YouTubeVideo media) throws MalformedURLException {
+    protected String getAuthor(YouTubeMedia media) throws MalformedURLException {
         return "Arianespace";
     }
 
     @Override
-    protected boolean customProcessing(YouTubeVideo video) {
+    protected boolean customProcessing(YouTubeMedia video) {
         boolean result = super.customProcessing(video);
         if (!Boolean.TRUE.equals(video.isIgnored()) && video.getDescription().contains("copyright: ROSCOSMOS")) {
             result = ignoreFile(video, "ROSCOSMOS copyright");
@@ -63,7 +63,7 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
     }
 
     @Override
-    public Set<String> findCategories(YouTubeVideo video, FileMetadata metadata, boolean includeHidden) {
+    public Set<String> findCategories(YouTubeMedia video, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(video, metadata, includeHidden);
         if (includeHidden) {
             if (video.getTitle().contains("VA")) {
@@ -89,12 +89,12 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
     }
 
     @Override
-    protected Set<String> getEmojis(YouTubeVideo uploadedMedia) {
+    protected Set<String> getEmojis(YouTubeMedia uploadedMedia) {
         return Set.of(Emojis.ROCKET);
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(YouTubeVideo uploadedMedia) {
+    protected Set<String> getTwitterAccounts(YouTubeMedia uploadedMedia) {
         return Set.of("@Arianespace");
     }
 }

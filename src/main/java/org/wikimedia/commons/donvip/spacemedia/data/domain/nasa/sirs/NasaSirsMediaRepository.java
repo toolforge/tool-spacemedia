@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage> {
+public interface NasaSirsMediaRepository extends MediaRepository<NasaSirsMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
@@ -58,12 +58,12 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage> 
     // FIND
 
     @Override
-    default Page<NasaSirsImage> findMissingImagesInCommons(Pageable page) {
+    default Page<NasaSirsMedia> findMissingImagesInCommons(Pageable page) {
         return findMissingInCommons(page);
     }
 
     @Override
-    default Page<NasaSirsImage> findMissingVideosInCommons(Pageable page) {
+    default Page<NasaSirsMedia> findMissingVideosInCommons(Pageable page) {
         return Page.empty();
     }
 
@@ -71,11 +71,11 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage> 
 
     @Override
     @CacheEvictNasaSirsAll
-    <S extends NasaSirsImage> S save(S entity);
+    <S extends NasaSirsMedia> S save(S entity);
 
     @Override
     @CacheEvictNasaSirsAll
-    <S extends NasaSirsImage> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends NasaSirsMedia> Iterable<S> saveAll(Iterable<S> entities);
 
     // DELETE
 
@@ -85,11 +85,11 @@ public interface NasaSirsImageRepository extends MediaRepository<NasaSirsImage> 
 
     @Override
     @CacheEvictNasaSirsAll
-    void delete(NasaSirsImage entity);
+    void delete(NasaSirsMedia entity);
 
     @Override
     @CacheEvictNasaSirsAll
-    void deleteAll(Iterable<? extends NasaSirsImage> entities);
+    void deleteAll(Iterable<? extends NasaSirsMedia> entities);
 
     @Override
     @CacheEvictNasaSirsAll

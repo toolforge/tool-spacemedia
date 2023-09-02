@@ -21,7 +21,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepo
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @SpringJUnitConfig(MediaServiceTest.TestConfig.class)
@@ -32,7 +32,7 @@ class MediaServiceTest {
     private CommonsService commonsService;
 
     @MockBean
-    private YouTubeVideoRepository youtubeRepository;
+    private YouTubeMediaRepository youtubeRepository;
 
     @MockBean
     private HashAssociationRepository hashRepository;

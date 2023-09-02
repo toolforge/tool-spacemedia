@@ -15,7 +15,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
 @Indexed
-public class NasaSirsImage extends SingleFileMedia implements WithKeywords {
+public class NasaSirsMedia extends SingleFileMedia implements WithKeywords {
 
     @Column(nullable = false)
     private String category;
@@ -56,7 +56,7 @@ public class NasaSirsImage extends SingleFileMedia implements WithKeywords {
 
     @Override
     public String toString() {
-        return "NasaSirsImage [" + (getId() != null ? "id=" + getId() + ", " : "")
+        return "NasaSirsMedia [" + (getId() != null ? "id=" + getId() + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (category != null ? "category=" + category + ", " : "")
                 + (year != null ? "photoYear=" + year + ", " : "")

@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo> {
+public interface YouTubeMediaRepository extends MediaRepository<YouTubeMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "youtubeCount", "youtubeCountByChannel",
@@ -80,12 +80,12 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo> {
     // FIND
 
     @Override
-    default Page<YouTubeVideo> findMissingImagesInCommons(Pageable page) {
+    default Page<YouTubeMedia> findMissingImagesInCommons(Pageable page) {
         return Page.empty();
     }
 
     @Override
-    default Page<YouTubeVideo> findMissingVideosInCommons(Pageable page) {
+    default Page<YouTubeMedia> findMissingVideosInCommons(Pageable page) {
         return findMissingInCommons(page);
     }
 
@@ -93,11 +93,11 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo> {
 
     @Override
     @CacheEvictYouTubeAll
-    <S extends YouTubeVideo> S save(S entity);
+    <S extends YouTubeMedia> S save(S entity);
 
     @Override
     @CacheEvictYouTubeAll
-    <S extends YouTubeVideo> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends YouTubeMedia> Iterable<S> saveAll(Iterable<S> entities);
 
     // DELETE
 
@@ -107,11 +107,11 @@ public interface YouTubeVideoRepository extends MediaRepository<YouTubeVideo> {
 
     @Override
     @CacheEvictYouTubeAll
-    void delete(YouTubeVideo entity);
+    void delete(YouTubeMedia entity);
 
     @Override
     @CacheEvictYouTubeAll
-    void deleteAll(Iterable<? extends YouTubeVideo> entities);
+    void deleteAll(Iterable<? extends YouTubeMedia> entities);
 
     @Override
     @CacheEvictYouTubeAll

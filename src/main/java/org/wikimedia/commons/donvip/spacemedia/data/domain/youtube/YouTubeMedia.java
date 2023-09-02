@@ -9,8 +9,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Entity(name = "YoutubeVideo")
-public class YouTubeVideo extends SingleFileMedia {
+@Entity(name = "YoutubeMedia")
+public class YouTubeMedia extends SingleFileMedia {
 
     @Column(nullable = true)
     @JsonProperty("channel_title")
@@ -63,6 +63,6 @@ public class YouTubeVideo extends SingleFileMedia {
 
     @Override
     public String toString() {
-        return "YouTubeVideo [id=" + getId() + ']';
+        return "YouTubeMedia [id=" + getId() + ']';
     }
 }

@@ -11,13 +11,13 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.TestDataJpa;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-@EntityScan(basePackageClasses = { Media.class, NasaSirsImage.class })
-@EnableJpaRepositories(basePackageClasses = { MediaRepository.class, NasaSirsImageRepository.class })
+@EntityScan(basePackageClasses = { Media.class, NasaSirsMedia.class })
+@EnableJpaRepositories(basePackageClasses = { MediaRepository.class, NasaSirsMediaRepository.class })
 @ContextConfiguration(classes = TestDataJpa.Config.class)
 class NasaSirsMediaRepositoryTest extends TestDataJpa {
 
     @Autowired
-    private NasaSirsImageRepository mediaRepository;
+    private NasaSirsMediaRepository mediaRepository;
 
     @Test
     void injectedRepositoryIsNotNull() {

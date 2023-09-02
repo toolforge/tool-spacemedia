@@ -12,13 +12,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideo;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeVideoRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.Org;
 
 @ComponentScan(basePackages = "org.wikimedia.commons.donvip.spacemedia.service.youtube", excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".+Test.*"))
 @EnableJpaRepositories(entityManagerFactoryRef = "domainEntityManagerFactory", transactionManagerRef = "domainTransactionManager", basePackageClasses = {
-        Media.class, YouTubeVideo.class })
+        Media.class, YouTubeMedia.class })
 public class SpacemediaOrgYoutubeUpdateJobApplication extends AbstractSpacemediaOrgUpdateJobApplication {
 
     public static void main(String[] args) {
@@ -28,9 +28,9 @@ public class SpacemediaOrgYoutubeUpdateJobApplication extends AbstractSpacemedia
     @Bean
     public Org<?> org(@Value("${org}") String org,
             @Value("${youtube.channels}") Set<String> youtubeChannels,
-            @Autowired YouTubeVideoRepository repository,
+            @Autowired YouTubeMediaRepository repository,
             ApplicationContext context) throws ReflectiveOperationException {
-        return (Org<?>) Class.forName(org).getConstructor(YouTubeVideoRepository.class, Set.class)
+        return (Org<?>) Class.forName(org).getConstructor(YouTubeMediaRepository.class, Set.class)
                 .newInstance(repository, youtubeChannels);
     }
 }

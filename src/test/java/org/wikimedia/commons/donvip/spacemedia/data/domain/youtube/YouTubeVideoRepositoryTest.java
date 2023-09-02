@@ -11,13 +11,13 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.TestDataJpa;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
-@EntityScan(basePackageClasses = { Media.class, YouTubeVideo.class })
-@EnableJpaRepositories(basePackageClasses = { MediaRepository.class, YouTubeVideoRepository.class })
+@EntityScan(basePackageClasses = { Media.class, YouTubeMedia.class })
+@EnableJpaRepositories(basePackageClasses = { MediaRepository.class, YouTubeMediaRepository.class })
 @ContextConfiguration(classes = TestDataJpa.Config.class)
 class YouTubeVideoRepositoryTest extends TestDataJpa {
 
     @Autowired
-    private YouTubeVideoRepository mediaRepository;
+    private YouTubeMediaRepository mediaRepository;
 
     @Test
     void injectedRepositoriesAreNotNull() {
