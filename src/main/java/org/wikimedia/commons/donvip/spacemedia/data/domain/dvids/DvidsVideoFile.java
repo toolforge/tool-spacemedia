@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
+import java.util.Objects;
 
 import javax.persistence.Embeddable;
 
@@ -65,5 +66,22 @@ public class DvidsVideoFile {
 
     public void setBitrate(Short bitrate) {
         this.bitrate = bitrate;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bitrate, height, size, src, type, width);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        DvidsVideoFile other = (DvidsVideoFile) obj;
+        return Objects.equals(bitrate, other.bitrate) && Objects.equals(height, other.height)
+                && Objects.equals(size, other.size) && Objects.equals(src, other.src)
+                && Objects.equals(type, other.type) && Objects.equals(width, other.width);
     }
 }

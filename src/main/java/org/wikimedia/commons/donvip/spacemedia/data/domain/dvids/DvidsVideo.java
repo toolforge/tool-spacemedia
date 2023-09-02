@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
+import javax.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
@@ -33,8 +33,14 @@ public class DvidsVideo extends DvidsMedia {
     /**
      * List of mp4 files associated with asset
      */
-    @ElementCollection(fetch = FetchType.EAGER)
+    @Transient
     private Set<DvidsVideoFile> files = new HashSet<>();
+
+    /**
+     * The biggest mp4 file associated with asset
+     */
+    @Embedded
+    private DvidsVideoFile video;
 
     /**
      * Url to master m3u8 playlist for asset if video has been encoded for HLS playback
@@ -83,14 +89,24 @@ public class DvidsVideo extends DvidsMedia {
         super.setThumbnailUrl(thumbnailUrl);
     }
 
+    @Transient
     public Set<DvidsVideoFile> getFiles() {
         return files;
     }
 
+    @Transient
     public void setFiles(Set<DvidsVideoFile> files) {
         this.files = files;
-        files.stream().max(Comparator.comparing(DvidsVideoFile::getSize)).map(DvidsVideoFile::getSrc)
-                .ifPresent(this::setAssetUrl);
+        files.stream().max(Comparator.comparing(DvidsVideoFile::getSize)).ifPresent(this::setVideo);
+    }
+
+    public DvidsVideoFile getVideo() {
+        return video;
+    }
+
+    public void setVideo(DvidsVideoFile video) {
+        this.video = video;
+        setAssetUrl(video.getSrc());
     }
 
     public URL getHlsUrl() {
@@ -111,7 +127,7 @@ public class DvidsVideo extends DvidsMedia {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(aspectRatio, duration, files, hlsUrl, timeStart);
+        return 31 * super.hashCode() + Objects.hash(aspectRatio, duration, video, hlsUrl, timeStart);
     }
 
     @Override
@@ -122,7 +138,7 @@ public class DvidsVideo extends DvidsMedia {
             return false;
         DvidsVideo other = (DvidsVideo) obj;
         return aspectRatio == other.aspectRatio
-                && Objects.equals(duration, other.duration) && Objects.equals(files, other.files)
+                && Objects.equals(duration, other.duration) && Objects.equals(video, other.video)
                 && Objects.equals(hlsUrl, other.hlsUrl) && Objects.equals(timeStart, other.timeStart);
     }
 
