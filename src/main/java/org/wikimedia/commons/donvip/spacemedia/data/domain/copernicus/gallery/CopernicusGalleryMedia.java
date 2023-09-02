@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
 
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
@@ -56,6 +57,11 @@ public class CopernicusGalleryMedia extends SingleFileMedia implements WithKeywo
     @Override
     public final boolean isImage() {
         return true;
+    }
+
+    @Override
+    protected String getUploadId(FileMetadata fileMetadata) {
+        return "Copernicus";
     }
 
     @Override
