@@ -770,8 +770,8 @@ public class CommonsService {
             }
         }
         for (String cat : categories) {
-            Set<String> subcats = self.getSubCategories(cat, catSearchDepth);
-            if (subcats.parallelStream().noneMatch(categories::contains)) {
+            if (cat.startsWith("ISS Expedition")
+                    || self.getSubCategories(cat, catSearchDepth).parallelStream().noneMatch(categories::contains)) {
                 result.add(cat);
             }
         }
