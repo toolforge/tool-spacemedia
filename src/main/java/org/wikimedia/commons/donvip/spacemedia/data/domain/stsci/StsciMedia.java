@@ -125,7 +125,6 @@ public class StsciMedia extends Media implements WithKeywords {
 
     public StsciMedia copyDataFrom(StsciMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
-        this.keywords = mediaFromApi.keywords;
         this.newsId = mediaFromApi.newsId;
         this.objectName = mediaFromApi.objectName;
         this.constellation = mediaFromApi.constellation;

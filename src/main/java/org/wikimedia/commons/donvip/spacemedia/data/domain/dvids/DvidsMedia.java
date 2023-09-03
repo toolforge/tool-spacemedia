@@ -296,7 +296,6 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
         super.copyDataFrom(mediaFromApi);
         setBranch(mediaFromApi.getBranch());
         setCategory(mediaFromApi.getCategory());
-        setKeywords(mediaFromApi.getKeywords());
         setRating(mediaFromApi.getRating());
         setThumbnailUrl(mediaFromApi.getThumbnailUrl());
         setTimestamp(mediaFromApi.getTimestamp());

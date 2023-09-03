@@ -152,7 +152,6 @@ public class NasaPhotojournalMedia extends Media implements WithKeywords {
         setSpacecraft(mediaFromApi.getSpacecraft());
         setInstrument(mediaFromApi.getInstrument());
         setProducer(mediaFromApi.getProducer());
-        setKeywords(mediaFromApi.getKeywords());
         setBig(mediaFromApi.isBig());
         setLegend(mediaFromApi.getLegend());
         return this;

@@ -285,7 +285,6 @@ public class FlickrMedia extends SingleFileMedia implements WithLatLon, WithKeyw
         this.license = mediaFromApi.license;
         this.lastUpdate = mediaFromApi.lastUpdate;
         this.dateTakenGranularity = mediaFromApi.dateTakenGranularity;
-        this.tags = mediaFromApi.tags;
         this.originalFormat = mediaFromApi.originalFormat;
         this.latitude = mediaFromApi.latitude;
         this.longitude = mediaFromApi.longitude;

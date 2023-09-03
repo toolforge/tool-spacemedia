@@ -75,7 +75,6 @@ public class CopernicusGalleryMedia extends SingleFileMedia implements WithKeywo
     public CopernicusGalleryMedia copyDataFrom(CopernicusGalleryMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         this.location = mediaFromApi.location;
-        this.keywords = mediaFromApi.keywords;
         return this;
     }
 }

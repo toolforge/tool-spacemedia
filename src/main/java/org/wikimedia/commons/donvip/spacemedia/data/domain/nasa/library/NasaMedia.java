@@ -170,7 +170,6 @@ public abstract class NasaMedia extends SingleFileMedia implements WithKeywords 
         super.copyDataFrom(mediaFromApi);
         setLocation(mediaFromApi.getLocation());
         setMediaType(mediaFromApi.getMediaType());
-        setKeywords(mediaFromApi.getKeywords());
         return this;
     }
 }

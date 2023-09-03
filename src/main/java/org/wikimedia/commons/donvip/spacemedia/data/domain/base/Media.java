@@ -447,6 +447,9 @@ public class Media implements MediaProjection {
                 }
             }
         }
+        if (this instanceof WithKeywords kw && mediaFromApi instanceof WithKeywords kwApi) {
+            kw.setKeywords(kwApi.getKeywords());
+        }
     }
 
     protected boolean areSameUris(URI a, URI b) {
