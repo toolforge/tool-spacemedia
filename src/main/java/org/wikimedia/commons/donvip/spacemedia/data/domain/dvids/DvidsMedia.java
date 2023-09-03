@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
+import static java.util.stream.Collectors.joining;
+
 import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
@@ -7,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
@@ -15,7 +16,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.ManyToMany;
+import javax.persistence.Transient;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
@@ -60,7 +61,7 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
     /**
      * Who created the asset.
      */
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH })
+    @Transient
     @JsonDeserialize(using = DvidsCreditDeserializer.class)
     private List<DvidsCredit> credit;
 
@@ -180,6 +181,7 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
 
     public void setCredit(List<DvidsCredit> credit) {
         this.credit = credit;
+        setCredits(credit.stream().map(DvidsCredit::dvidsCreditToString).distinct().collect(joining(", ")));
     }
 
     public String getCategory() {

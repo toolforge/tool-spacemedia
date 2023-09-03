@@ -45,7 +45,7 @@ class WebbEsaServiceTest extends AbstractOrgServiceTest {
                 media.getDescription());
         assertEquals(Set.of("Galaxies", "NIRCam"), media.getCategories());
         assertEquals("NASA, ESA, CSA, STScI, and K. McQuinn (Rutgers University), A. Pagan (STScI).",
-                media.getCredit());
+                media.getCredits());
         assertEquals("2022-11-09T17:00", media.getPublicationDateTime().toLocalDateTime().toString());
         ImageDimensions dims = media.getMetadata().iterator().next().getImageDimensions();
         assertEquals(4134, dims.getHeight());

@@ -82,10 +82,6 @@ public class DjangoplicityMedia extends Media {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> categories = new HashSet<>();
 
-    @Lob
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String credit;
-
     public DjangoplicityLicence getLicence() {
         return licence;
     }
@@ -140,14 +136,6 @@ public class DjangoplicityMedia extends Media {
 
     public void setCategories(Set<String> categories) {
         this.categories = categories;
-    }
-
-    public String getCredit() {
-        return credit;
-    }
-
-    public void setCredit(String credit) {
-        this.credit = credit;
     }
 
     public String getFieldOfView() {
@@ -222,7 +210,6 @@ public class DjangoplicityMedia extends Media {
                 + (name != null ? "name=" + name + ", " : "")
                 + (isNotEmpty(types) ? "types=" + types + ", " : "")
                 + (isNotEmpty(categories) ? "categories=" + categories + ", " : "")
-                + (credit != null ? "credit=" + credit.replace('\n', ' ') + ", " : "")
                 + (getMetadata() != null ? "metadata=" + getMetadata() + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
@@ -236,7 +223,6 @@ public class DjangoplicityMedia extends Media {
         super.copyDataFrom(mediaFromApi);
         this.categories = mediaFromApi.categories;
         this.constellation = mediaFromApi.constellation;
-        this.credit = mediaFromApi.credit;
         this.distance = mediaFromApi.distance;
         this.fieldOfView = mediaFromApi.fieldOfView;
         this.imageType = mediaFromApi.imageType;

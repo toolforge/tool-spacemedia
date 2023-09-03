@@ -43,10 +43,6 @@ public class NasaPhotojournalMedia extends Media implements WithKeywords {
     private boolean big;
 
     @Lob
-    @Column(name = "credit", nullable = false, columnDefinition = "TEXT")
-    private String credit;
-
-    @Lob
     @Column(name = "legend", nullable = true, columnDefinition = "TEXT")
     private String legend;
 
@@ -119,14 +115,6 @@ public class NasaPhotojournalMedia extends Media implements WithKeywords {
         this.big = big;
     }
 
-    public String getCredit() {
-        return credit;
-    }
-
-    public void setCredit(String credit) {
-        this.credit = credit;
-    }
-
     public String getLegend() {
         return legend;
     }
@@ -166,7 +154,6 @@ public class NasaPhotojournalMedia extends Media implements WithKeywords {
         setProducer(mediaFromApi.getProducer());
         setKeywords(mediaFromApi.getKeywords());
         setBig(mediaFromApi.isBig());
-        setCredit(mediaFromApi.getCredit());
         setLegend(mediaFromApi.getLegend());
         return this;
     }

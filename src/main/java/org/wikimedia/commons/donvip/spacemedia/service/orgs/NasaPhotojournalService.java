@@ -199,7 +199,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     }
 
     private boolean ignoreNonFreeFiles(NasaPhotojournalMedia media) {
-        String credit = media.getCredit();
+        String credit = media.getCredits();
         return !credit.contains("NASA") && !credit.contains("JPL") && !credit.contains("Jet Propulsion Laboratory")
                 && !credit.contains("USSF") && ignoreFile(media, "Non-free content");
     }
@@ -220,7 +220,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         media.setThumbnailUrl(newURL(getString(doc, "browse-url")));
         media.setTitle(getString(doc, "image-title"));
         media.setBig("YES".equals(doc.getFirstValue("big-flag")));
-        media.setCredit(getString(doc, "credit"));
+        media.setCredits(getString(doc, "credit"));
         media.setLegend(getString(doc, "alt-tag"));
         ImageDimensions dims = new ImageDimensions(getInt(doc, "x-dim"), getInt(doc, "y-dim"));
         addMetadata(media, getString(doc, "full-res-jpeg"), m -> m.setImageDimensions(dims));
@@ -311,7 +311,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
                 .append("\n| mission= ").append(media.getMission())
                 .append("\n| instrument= ").append(media.getInstrument()).append("\n| caption = ").append("{{")
                 .append(lang).append("|1=").append(CommonsService.formatWikiCode(desc))
-                .append("}}\n| credit= ").append(media.getCredit());
+                .append("}}\n| credit= ").append(media.getCredits());
         getUploadDate(media).ifPresent(s -> sb.append("\n| addition_date = ").append(toIso8601(s)));
         sb.append("\n| creation_date = ");
         getCreationDate(media).ifPresent(sb::append);
@@ -396,7 +396,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
 
     @Override
     protected String getAuthor(NasaPhotojournalMedia media) throws MalformedURLException {
-        return media.getCredit();
+        return media.getCredits();
     }
 
     @Override

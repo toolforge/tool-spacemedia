@@ -104,7 +104,7 @@ public abstract class AbstractOrgServiceTest {
         assertEquals(name, media.getName());
         assertEquals(types, media.getTypes());
         assertEquals(categories, media.getCategories());
-        assertEquals(credit, media.getCredit());
+        assertEquals(credit, media.getCredits());
         assertEquals(assetUrls, media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).toList());
         assertEquals(title, media.getTitle());
         if (description != null) {

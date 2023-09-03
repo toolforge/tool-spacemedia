@@ -81,7 +81,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
 
     @Override
     protected String getAuthor(NasaModisMedia media) {
-        return media.getCredit();
+        return media.getCredits();
     }
 
     @Override
@@ -241,7 +241,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
             extractFact(cleanFact, "Satellite:", image::setSatellite);
             extractFact(cleanFact, "Date Acquired:", x -> image.setCreationDate(LocalDate.parse(x, dateFormatter)));
             extractFact(cleanFact, "Bands Used:", image::setBands);
-            extractFact(cleanFact, "Image Credit:", image::setCredit);
+            extractFact(cleanFact, "Image Credit:", image::setCredits);
         }
         if (image.getSatellite() == null) {
             boolean terra = image.getDescription().contains("Terra");

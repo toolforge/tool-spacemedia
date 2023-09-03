@@ -22,8 +22,6 @@ public class EsaMedia extends Media implements WithKeywords {
 
     @Column(nullable = false, unique = true, length = 200)
     private URL url;
-    @Column(nullable = false, length = 300)
-    private String copyright;
     @Column(length = 64)
     private String activity;
     @Column(length = 60)
@@ -47,14 +45,6 @@ public class EsaMedia extends Media implements WithKeywords {
 
     public void setUrl(URL url) {
         this.url = url;
-    }
-
-    public String getCopyright() {
-        return copyright;
-    }
-
-    public void setCopyright(String copyright) {
-        this.copyright = copyright;
     }
 
     public String getActivity() {
@@ -127,7 +117,6 @@ public class EsaMedia extends Media implements WithKeywords {
     public String toString() {
         return "EsaMedia [id=" + getId() + ", " + (url != null ? "url=" + url + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
-                + (copyright != null ? "copyright=" + copyright + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (activity != null ? "activity=" + activity + ", " : "")
                 + (mission != null ? "mission=" + mission + ", " : "")
@@ -146,7 +135,6 @@ public class EsaMedia extends Media implements WithKeywords {
     public EsaMedia copyDataFrom(EsaMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         this.url = mediaFromApi.url;
-        this.copyright = mediaFromApi.copyright;
         this.activity = mediaFromApi.activity;
         this.mission = mediaFromApi.mission;
         this.people = mediaFromApi.people;

@@ -105,7 +105,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
 
     @Override
     protected String getAuthor(CopernicusGalleryMedia media) throws MalformedURLException {
-        return media.getCredit();
+        return media.getCredits();
     }
 
     @Override
@@ -255,7 +255,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
             if ("Location:".equals(prevLine)) {
                 media.setLocation(line.strip());
             } else if ("Credit:".equals(prevLine)) {
-                media.setCredit(line.strip());
+                media.setCredits(line.strip());
             }
             prevLine = line.strip();
         }

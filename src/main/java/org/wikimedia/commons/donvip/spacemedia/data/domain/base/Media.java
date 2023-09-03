@@ -85,6 +85,10 @@ public class Media implements MediaProjection {
     @FullTextField
     protected String description;
 
+    @Lob
+    @Column(name = "credits", nullable = true, columnDefinition = "TEXT")
+    private String credits;
+
     @Column(nullable = true)
     protected LocalDate creationDate;
 
@@ -219,6 +223,14 @@ public class Media implements MediaProjection {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getCredits() {
+        return credits;
+    }
+
+    public void setCredits(String credits) {
+        this.credits = credits;
     }
 
     public LocalDate getCreationDate() {
@@ -413,6 +425,7 @@ public class Media implements MediaProjection {
     public final void copyDataFrom(Media mediaFromApi) {
         setDescription(mediaFromApi.getDescription());
         setTitle(mediaFromApi.getTitle());
+        setCredits(mediaFromApi.getCredits());
         setCreationDateTime(mediaFromApi.getCreationDateTime());
         setCreationDate(mediaFromApi.getCreationDate());
         setPublicationDateTime(mediaFromApi.getPublicationDateTime());

@@ -3,19 +3,12 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 import java.net.URL;
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
 import org.apache.commons.lang3.StringUtils;
 
-@Entity
 public class DvidsCredit {
 
-    @Id
     private Integer id;
 
-    @Column(nullable = false)
     private String name;
 
     private String rank;
@@ -52,6 +45,15 @@ public class DvidsCredit {
 
     public void setUrl(URL url) {
         this.url = url;
+    }
+
+    public String dvidsCreditToString() {
+        StringBuilder result = new StringBuilder();
+        if (StringUtils.isNotBlank(getRank())) {
+            result.append(getRank()).append(' ');
+        }
+        result.append('[').append(getUrl()).append(' ').append(getName()).append(']');
+        return result.toString();
     }
 
     @Override

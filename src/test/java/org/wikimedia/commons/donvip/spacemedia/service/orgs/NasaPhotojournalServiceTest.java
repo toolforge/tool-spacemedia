@@ -73,7 +73,7 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
         assertEquals("Thermal Emission Imaging System", media.getInstrument());
         assertEquals("Arizona State University", media.getProducer());
         assertEquals(Set.of(), media.getKeywords());
-        assertEquals("NASA/JPL-Caltech/ASU", media.getCredit());
+        assertEquals("NASA/JPL-Caltech/ASU", media.getCredits());
         assertFalse(media.isBig());
         assertNotNull(media.getMetadata());
         assertEquals(3, media.getMetadata().size());

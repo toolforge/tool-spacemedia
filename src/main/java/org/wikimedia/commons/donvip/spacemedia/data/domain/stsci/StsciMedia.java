@@ -36,13 +36,6 @@ public class StsciMedia extends Media implements WithKeywords {
     @Column(length = 100)
     private String constellation;
 
-    /**
-     * Image's credits and acknowledgments.
-     */
-    @Lob
-    @Column(columnDefinition = "TEXT")
-    private String credits;
-
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
 
@@ -52,14 +45,6 @@ public class StsciMedia extends Media implements WithKeywords {
 
     public void setNewsId(String newsId) {
         this.newsId = newsId;
-    }
-
-    public String getCredits() {
-        return credits;
-    }
-
-    public void setCredits(String credits) {
-        this.credits = credits;
     }
 
     @Transient
@@ -96,7 +81,7 @@ public class StsciMedia extends Media implements WithKeywords {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(credits, newsId, keywords, objectName, constellation);
+        return 31 * super.hashCode() + Objects.hash(newsId, keywords, objectName, constellation);
     }
 
     @Override
@@ -106,8 +91,7 @@ public class StsciMedia extends Media implements WithKeywords {
         if (!super.equals(obj) || getClass() != obj.getClass())
             return false;
         StsciMedia other = (StsciMedia) obj;
-        return Objects.equals(credits, other.credits)
-                && Objects.equals(newsId, other.newsId) && Objects.equals(keywords, other.keywords)
+        return Objects.equals(newsId, other.newsId) && Objects.equals(keywords, other.keywords)
                 && Objects.equals(objectName, other.objectName) && Objects.equals(constellation, other.constellation);
     }
 
@@ -141,7 +125,6 @@ public class StsciMedia extends Media implements WithKeywords {
 
     public StsciMedia copyDataFrom(StsciMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
-        this.credits = mediaFromApi.credits;
         this.keywords = mediaFromApi.keywords;
         this.newsId = mediaFromApi.newsId;
         this.objectName = mediaFromApi.objectName;

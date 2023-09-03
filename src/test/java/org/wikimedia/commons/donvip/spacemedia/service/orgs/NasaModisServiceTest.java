@@ -49,7 +49,7 @@ class NasaModisServiceTest extends AbstractOrgServiceTest {
 
         service.fillMediaWithHtml(Jsoup.parse(new File("src/test/resources/nasa/modis/" + date + ".htm")), media);
 
-        assertFalse(media.getCredit().isEmpty());
+        assertFalse(media.getCredits().isEmpty());
         assertFalse(media.getTitle().isEmpty());
         assertNotNull(media.getThumbnailUrl());
         assertFalse(media.getDescription().isEmpty());

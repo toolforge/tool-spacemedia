@@ -44,7 +44,7 @@ public class WebbEsaService extends AbstractOrgDjangoplicityService {
     @Override
     public Set<String> findLicenceTemplates(DjangoplicityMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
-        result.add("ESA-Webb|" + media.getCredit());
+        result.add("ESA-Webb|" + media.getCredits());
         return result;
     }
 

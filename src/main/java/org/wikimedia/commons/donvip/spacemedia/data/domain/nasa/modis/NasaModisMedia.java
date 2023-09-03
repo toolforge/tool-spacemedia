@@ -6,8 +6,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -20,9 +20,6 @@ public class NasaModisMedia extends SingleFileMedia {
 
     @Column(nullable = true, length = 8)
     private String bands;
-
-    @Column(nullable = false, length = 200)
-    private String credit;
 
     public String getSatellite() {
         return satellite;
@@ -38,14 +35,6 @@ public class NasaModisMedia extends SingleFileMedia {
 
     public void setBands(String bands) {
         this.bands = bands;
-    }
-
-    public String getCredit() {
-        return credit;
-    }
-
-    public void setCredit(String credit) {
-        this.credit = credit;
     }
 
     @Override
@@ -66,7 +55,7 @@ public class NasaModisMedia extends SingleFileMedia {
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(satellite, bands, credit);
+        return 31 * super.hashCode() + Objects.hash(satellite, bands);
     }
 
     @Override
@@ -77,20 +66,18 @@ public class NasaModisMedia extends SingleFileMedia {
             return false;
         NasaModisMedia other = (NasaModisMedia) obj;
         return Objects.equals(satellite, other.satellite)
-                && Objects.equals(bands, other.bands) && Objects.equals(credit, other.credit);
+                && Objects.equals(bands, other.bands);
     }
 
     public NasaModisMedia copyDataFrom(NasaModisMedia other) {
         super.copyDataFrom(other);
         this.satellite = other.satellite;
         this.bands = other.bands;
-        this.credit = other.credit;
         return this;
     }
 
     @Override
     public String toString() {
-        return "NasaModisMedia [id=" + getId()
-                + ", satellite=" + satellite + ", bands=" + bands + ", credit=" + credit + ']';
+        return "NasaModisMedia [id=" + getId() + ", satellite=" + satellite + ", bands=" + bands + ']';
     }
 }

@@ -13,7 +13,7 @@ class DjangoplicityMediaTest {
         DjangoplicityMedia m1 = new DjangoplicityMedia();
         m1.setCategories(Set.of("test"));
         m1.setConstellation("Dorado");
-        m1.setCredit("foo");
+        m1.setCredits("foo");
         m1.setDistance("bar");
         m1.setFieldOfView("baz");
         m1.setImageType(DjangoplicityMediaType.Artwork);
@@ -33,7 +33,7 @@ class DjangoplicityMediaTest {
 
         assertEquals(Set.of("test"), m2.getCategories());
         assertEquals("Dorado", m2.getConstellation());
-        assertEquals("foo", m2.getCredit());
+        assertEquals("foo", m2.getCredits());
         assertEquals("bar", m2.getDistance());
         assertEquals("baz", m2.getFieldOfView());
         assertEquals(DjangoplicityMediaType.Artwork, m2.getImageType());

@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
@@ -41,7 +40,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsCredit;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
@@ -375,17 +373,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             result.append("U.S. ").append(media.getBranch()).append(' ').append(media.getId().getRepoId())
                     .append(" by ");
         }
-        result.append(media.getCredit().stream().map(this::dvidsCreditToString).distinct().collect(joining(", ")));
-        return result.toString();
-    }
-
-    private String dvidsCreditToString(DvidsCredit credit) {
-        StringBuilder result = new StringBuilder();
-        if (StringUtils.isNotBlank(credit.getRank())) {
-            result.append(credit.getRank()).append(' ');
-        }
-        result.append('[').append(credit.getUrl()).append(' ').append(credit.getName()).append(']');
-        return result.toString();
+        return result.append(media.getCredits()).toString();
     }
 
     @Override

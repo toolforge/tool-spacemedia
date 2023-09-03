@@ -224,9 +224,9 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
         // Description CAN be empty, see https://www.eso.org/public/images/ann19041a/
         media.setDescription(findDescription(div).toString());
         // Find credit
-        media.setCredit(findCredit(div));
-        if (media.getCredit().startsWith("<") && !media.getCredit().startsWith("<a")) {
-            scrapingError(imgUrlLink, media.getCredit());
+        media.setCredits(findCredit(div));
+        if (media.getCredits().startsWith("<") && !media.getCredits().startsWith("<a")) {
+            scrapingError(imgUrlLink, media.getCredits());
         }
         // Check copyright is standard (CC-BY-4.0)
         Elements copyrights = div.getElementsByClass("copyright");
@@ -574,7 +574,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
 
     @Override
     protected String getAuthor(DjangoplicityMedia media) throws MalformedURLException {
-        return media.getCredit();
+        return media.getCredits();
     }
 
     @Override

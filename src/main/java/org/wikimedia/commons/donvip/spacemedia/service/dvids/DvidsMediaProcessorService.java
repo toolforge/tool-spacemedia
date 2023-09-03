@@ -1,7 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.dvids;
 
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
-
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudio;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsAudioRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsCreditRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsGraphic;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsGraphicRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImage;
@@ -63,9 +60,6 @@ public class DvidsMediaProcessorService {
     @Autowired
     private DvidsWebcastRepository webcastRepository;
 
-    @Autowired
-    private DvidsCreditRepository creditRepository;
-
     @Transactional
     public Pair<DvidsMedia, Integer> processDvidsMedia(Supplier<Optional<DvidsMedia>> dbFetcher,
             Supplier<DvidsMedia> apiFetcher, Predicate<DvidsMedia> processDvidsMediaUpdater,
@@ -89,13 +83,7 @@ public class DvidsMediaProcessorService {
             media = upload.getLeft();
             save = true;
         }
-        if (save) {
-            if (isNotEmpty(media.getCredit())) {
-                creditRepository.saveAll(media.getCredit());
-            }
-            save(media);
-        }
-        return Pair.of(media, uploadCount);
+        return Pair.of(save ? save(media) : media, uploadCount);
     }
 
     protected boolean updateCategoryAndCdnUrls(DvidsMedia media, Supplier<DvidsMedia> apiFetcher) {

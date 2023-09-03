@@ -150,7 +150,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 String label = li.child(1).text().trim();
                 switch (title) {
                 case "copyright":
-                    image.setCopyright(label); break;
+                    image.setCredits(label); break;
                 case "action":
                     image.setAction(label); break;
                 case "activity":
@@ -181,9 +181,9 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     }
 
     private static boolean isCopyrightOk(EsaMedia image) {
-        if (image.getCopyright() == null)
+        if (image.getCredits() == null)
             return false;
-        String copyrightUppercase = image.getCopyright().toUpperCase(Locale.ENGLISH);
+        String copyrightUppercase = image.getCredits().toUpperCase(Locale.ENGLISH);
         String descriptionUppercase = image.getDescription().toUpperCase(Locale.ENGLISH);
         return (copyrightUppercase.contains("BY-SA") || copyrightUppercase.contains("COPERNICUS SENTINEL")
                 || (copyrightUppercase.contains("COPERNICUS DATA") && descriptionUppercase.contains(" SENTINEL")))
@@ -204,7 +204,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 return Triple.of(Optional.empty(), emptyList(), 0);
             }
             if (!isCopyrightOk(media)) {
-                problem(media.getUrl(), "Invalid copyright: " + media.getCopyright());
+                problem(media.getUrl(), "Invalid copyright: " + media.getCredits());
                 return Triple.of(Optional.empty(), emptyList(), 0);
             }
             save = true;
@@ -363,8 +363,8 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
 
     @Override
     protected String getAuthor(EsaMedia media) {
-        if (media.getCopyright().contains("/")) {
-            String authors = media.getCopyright().replace("CC BY-SA 3.0 IGO", "").trim();
+        if (media.getCredits().contains("/")) {
+            String authors = media.getCredits().replace("CC BY-SA 3.0 IGO", "").trim();
             if (authors.endsWith(",") && authors.length() > 2) {
                 return authors.replace(",", "").trim();
             }
@@ -420,7 +420,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 }
             }
         }
-        enrichEsaCategories(result, media, media.getCopyright());
+        enrichEsaCategories(result, media, media.getCredits());
         return result;
     }
 
@@ -510,7 +510,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     @Override
     public Set<String> findLicenceTemplates(EsaMedia media) {
         Set<String> result = super.findLicenceTemplates(media);
-        String credit = media.getCopyright();
+        String credit = media.getCredits();
         for (String spelling : CC_BY_SA_SPELLINGS) {
             credit = credit.replace(", " + spelling, "").replace("; " + spelling, "").replace(" " + spelling, "").trim();
         }

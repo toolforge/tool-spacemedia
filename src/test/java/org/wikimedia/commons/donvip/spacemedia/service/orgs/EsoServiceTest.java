@@ -57,7 +57,7 @@ class EsoServiceTest extends AbstractOrgServiceTest {
     void testFbResolution() throws IOException {
         DjangoplicityMedia media = new DjangoplicityMedia();
         media.setPublicationDateTime(ZonedDateTime.now());
-        media.setCredit("ESO");
+        media.setCredits("ESO");
         media.setId(new CompositeMediaId("eso", "ann23006a"));
         media.setTitle("Live streaming: How will the ELT explore the Universe?");
         media.setDescription(

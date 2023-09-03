@@ -25,14 +25,14 @@ class NasaModisMediaTest {
         NasaModisMedia m1 = new NasaModisMedia();
         m1.setSatellite("foo");
         m1.setBands("bar");
-        m1.setCredit("baz");
+        m1.setCredits("baz");
         m1.setPublicationDate(LocalDate.now());
 
         NasaModisMedia m2 = new NasaModisMedia().copyDataFrom(m1);
 
         assertEquals(m1.getSatellite(), m2.getSatellite());
         assertEquals(m1.getBands(), m2.getBands());
-        assertEquals(m1.getCredit(), m2.getCredit());
+        assertEquals(m1.getCredits(), m2.getCredits());
         assertEquals(m1.getPublicationDate(), m2.getPublicationDate());
     }
 }
