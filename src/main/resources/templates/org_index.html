@@ -35,7 +35,7 @@
                   <a th:href="@{/{id}/rest/uploadmedia/{mid}(id=${org.id},mid=${media.id})}" target="_blank" th:if="${org.uploadEnabled}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.id}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
-		          <div th:if="'missing' == ${tab} or 'missing/images' == ${tab} or 'missing/videos' == ${tab}" th:each="asset : ${media.assetsToUpload}">
+		          <div th:fragment="assets (assetsToUpload)" th:each="asset : ${assetsToUpload}">
 		          	<a th:href="@{/{id}/rest/wiki/{sha1}(id=${org.id},sha1=${asset})}" target="_blank">
 		          		<img width="24" height="24" th:alt="'wikihtml ' + ${asset}" th:src="@{/Emblem-search.svg}">
 		          	</a>
@@ -45,6 +45,18 @@
 		          	<a th:href="@{/{id}/rest/upload/{sha1}(id=${org.id},sha1=${asset})}" target="_blank" th:if="${org.uploadEnabled}">
 		          		<img width="24" height="24" th:alt="'upload ' + ${asset}" th:src="@{/Wlm-icon-upload-red.svg}">
 		          	</a>
+		          </div>
+		          <div th:if="'missing' == ${tab}">
+                    <div th:replace="org_index :: assets(assetsToUpload=${media.assetsToUpload})" />
+		          </div>
+		          <div th:if="'missing/images' == ${tab}">
+                    <div th:replace="org_index :: assets(assetsToUpload=${media.imageAssetsToUpload})" />
+		          </div>
+		          <div th:if="'missing/videos' == ${tab}">
+                    <div th:replace="org_index :: assets(assetsToUpload=${media.videoAssetsToUpload})" />
+		          </div>
+		          <div th:if="'missing/audios' == ${tab}">
+                    <div th:replace="org_index :: assets(assetsToUpload=${media.audioAssetsToUpload})" />
 		          </div>
 		        </td>
 		        <td>

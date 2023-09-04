@@ -378,8 +378,27 @@ public class Media implements MediaProjection, MediaDescription {
         return Objects.equals(title, other.title) && Objects.equals(metadata, other.metadata);
     }
 
+    @JsonIgnore
     public List<String> getAssetsToUpload() {
         return getMetadataStream().filter(FileMetadata::shouldUpload).map(FileMetadata::getSha1).toList();
+    }
+
+    @JsonIgnore
+    public List<String> getAudioAssetsToUpload() {
+        return getMetadataStream().filter(FileMetadata::shouldUpload).filter(FileMetadata::isAudio)
+                .map(FileMetadata::getSha1).toList();
+    }
+
+    @JsonIgnore
+    public List<String> getImageAssetsToUpload() {
+        return getMetadataStream().filter(FileMetadata::shouldUpload).filter(FileMetadata::isImage)
+                .map(FileMetadata::getSha1).toList();
+    }
+
+    @JsonIgnore
+    public List<String> getVideoAssetsToUpload() {
+        return getMetadataStream().filter(FileMetadata::shouldUpload).filter(FileMetadata::isVideo)
+                .map(FileMetadata::getSha1).toList();
     }
 
     public LocalDateTime getLastUpdate() {
