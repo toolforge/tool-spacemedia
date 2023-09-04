@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.stream.Collectors.toSet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 
 import java.io.IOException;
 import java.util.Map;

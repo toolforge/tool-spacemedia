@@ -219,7 +219,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
 
     @Override
     protected final int doUpload(YouTubeMedia video, boolean checkUnicity, Collection<FileMetadata> uploaded,
-            boolean isManual) throws IOException {
+            boolean isManual) {
         FileMetadata metadata = video.getUniqueMetadata();
         throw new UnsupportedOperationException("<h2>Spacemedia is not able to upload YouTube videos by itself.</h2>\n"
                 + "<p>Please go to <a href=\"https://video2commons.toolforge.org/\">video2commons</a> and upload the <b>"

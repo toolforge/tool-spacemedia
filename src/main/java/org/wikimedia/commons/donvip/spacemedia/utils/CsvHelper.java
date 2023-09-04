@@ -62,4 +62,20 @@ public final class CsvHelper {
         }
         return result;
     }
+
+    public static Map<String, String> loadCsvMapping(String filename) {
+        return loadCsvMapping(CsvHelper.class, filename);
+    }
+
+    public static Map<String, String> loadCsvMapping(Class<?> klass, String filename) {
+        try {
+            return loadMap(klass.getResource("/mapping/" + filename));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static Map<String, Map<String, String>> loadCsvMapMapping(String filename) throws IOException {
+        return loadMapMap(CsvHelper.class.getResource("/mapping/" + filename));
+    }
 }

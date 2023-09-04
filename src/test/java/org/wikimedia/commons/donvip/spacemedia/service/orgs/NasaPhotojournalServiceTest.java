@@ -33,6 +33,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.Nas
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
+import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.NasaPhotojournalService.XMLResponseWithoutContentTypeParser;
 
 @SpringJUnitConfig(NasaPhotojournalServiceTest.TestConfig.class)
@@ -141,6 +142,11 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
     @Configuration
     @Import(DefaultOrgTestConfig.class)
     static class TestConfig {
+
+        @Bean
+        public NasaMappingService mappings() {
+            return new NasaMappingService();
+        }
 
         @Bean
         @Autowired

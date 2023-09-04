@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -203,7 +204,7 @@ public abstract class AbstractOrgService<T extends Media>
     void init() throws IOException {
         ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/search.ignored.terms.csv"));
         satellitePicturesCategories = CsvHelper.loadSet(getClass().getResource("/satellite.pictures.categories.txt"));
-        categoriesStatements = loadCsvMapping("categories.statements.csv");
+        categoriesStatements = CsvHelper.loadCsvMapping("categories.statements.csv");
         uploadMode = UploadMode.valueOf(
                 env.getProperty(id + ".upload", String.class, UploadMode.DISABLED.name())
                     .toUpperCase(Locale.ENGLISH));
@@ -693,13 +694,12 @@ public abstract class AbstractOrgService<T extends Media>
         }
     }
 
-    protected int doUpload(T media, boolean checkUnicity, Collection<FileMetadata> uploaded, boolean isManual)
-            throws IOException, UploadException {
+    protected int doUpload(T media, boolean checkUnicity, Collection<FileMetadata> uploaded, boolean isManual) {
         int count = 0;
         for (FileMetadata metadata : media.getMetadata()) {
             try {
                 count += doUpload(media, metadata, checkUnicity, uploaded, isManual);
-            } catch (ImageUploadForbiddenException e) {
+            } catch (ImageUploadForbiddenException | UploadException | IOException e) {
                 LOGGER.warn("File {} not uploaded: {}", metadata, e.getMessage());
             }
         }
@@ -1086,6 +1086,22 @@ public abstract class AbstractOrgService<T extends Media>
         return result;
     }
 
+    protected static Optional<String> findCategoryFromMapping(String value, String type,
+            Map<String, Map<String, String>> mappings) {
+        if (value != null) {
+            Map<String, String> map = mappings.get(value.replace('\n', ' ').trim());
+            if (map != null) {
+                String cat = map.get("Commons categories");
+                if (isBlank(cat)) {
+                    LOGGER.warn("No category found for {} {}", type, value);
+                } else {
+                    return Optional.of(cat);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     protected Optional<String> findCategoryFromTitle(String title) {
         if (title != null) {
             String[] words = title.strip().split(" ");
@@ -1238,22 +1254,6 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected Class<? extends T> getTopTermsMediaClass() {
         return getMediaClass();
-    }
-
-    protected final Map<String, String> loadCsvMapping(String filename) {
-        return loadCsvMapping(getClass(), filename);
-    }
-
-    protected static Map<String, String> loadCsvMapping(Class<?> klass, String filename) {
-        try {
-            return CsvHelper.loadMap(klass.getResource("/mapping/" + filename));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    protected final Map<String, Map<String, String>> loadCsvMapMapping(String filename) throws IOException {
-        return CsvHelper.loadMapMap(getClass().getResource("/mapping/" + filename));
     }
 
     protected final boolean ignoreFile(T media, String reason) {

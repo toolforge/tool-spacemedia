@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.lang.Double.parseDouble;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.text.StringEscapeUtils.unescapeHtml4;
 import static org.apache.commons.text.StringEscapeUtils.unescapeXml;
@@ -28,8 +27,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -54,6 +51,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Service
@@ -81,6 +79,9 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     @Autowired
     private NasaPhotojournalService self;
 
+    @Autowired
+    private NasaMappingService mappings;
+
     @Value("${nasa.photojournal.solr.retries}")
     private int solrRetries;
 
@@ -93,22 +94,9 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     @Value("${nasa.photojournal.geohack.globes}")
     private Set<String> globes;
 
-    private Map<String, Map<String, String>> nasaInstruments;
-    private Map<String, Map<String, String>> nasaMissions;
-    private Map<String, String> nasaKeywords;
-
     @Autowired
     public NasaPhotojournalService(NasaPhotojournalMediaRepository repository) {
         super(repository, "nasa.photojournal", Set.of("photojournal"));
-    }
-
-    @Override
-    @PostConstruct
-    void init() throws IOException {
-        super.init();
-        nasaInstruments = loadCsvMapMapping("nasa.instruments.csv");
-        nasaMissions = loadCsvMapMapping("nasa.missions.csv");
-        nasaKeywords = loadCsvMapping("nasa.keywords.csv");
     }
 
     private SolrQuery buildSolrQuery(int start) {
@@ -305,7 +293,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         // https://commons.wikimedia.org/wiki/Template:NASA_Photojournal/attribution/mission
         String lang = getLanguage(media);
         String desc = getDescription(media, metadata);
-        StringBuilder sb = new StringBuilder("{{NASA Photojournal\n| catalog = ").append(media.getId())
+        StringBuilder sb = new StringBuilder("{{NASA Photojournal\n| catalog = ").append(media.getId().getMediaId())
                 .append("\n| image= ").append(media.isImage()).append("\n| video= ").append(media.isVideo())
                 .append("\n| animation= ").append("gif".equals(metadata.getFileExtension()))
                 .append("\n| mission= ").append(media.getMission())
@@ -353,30 +341,16 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         if (media.getKeywords().contains("artist")) {
             result.add("Art from NASA");
         }
-        result.addAll(media.getKeywords().stream().map(nasaKeywords::get).filter(Objects::nonNull).toList());
-        getCategoryFromMapping(media.getInstrument(), "instrument", nasaInstruments).ifPresent(result::add);
-        getCategoryFromMapping(media.getMission(), "mission", nasaMissions).ifPresent(result::add);
+        result.addAll(
+                media.getKeywords().stream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());
+        findCategoryFromMapping(media.getInstrument(), "instrument", mappings.getNasaInstruments())
+                .ifPresent(result::add);
+        findCategoryFromMapping(media.getMission(), "mission", mappings.getNasaMissions()).ifPresent(result::add);
         if ("Mars".equalsIgnoreCase(media.getTarget())) {
             replace(result, "2001 Mars Odyssey", "Photos of Mars by 2001 Mars Odyssey");
             replace(result, "Photos by THEMIS", "Photos of Mars by THEMIS");
         }
         return result;
-    }
-
-    private static Optional<String> getCategoryFromMapping(String value, String type,
-            Map<String, Map<String, String>> mappings) {
-        if (value != null) {
-            Map<String, String> map = mappings.get(value.replace('\n', ' ').trim());
-            if (map != null) {
-                String cat = map.get("Commons categories");
-                if (isBlank(cat)) {
-                    LOGGER.warn("No category found for NASA {} {}", type, value);
-                } else {
-                    return Optional.of(cat);
-                }
-            }
-        }
-        return Optional.empty();
     }
 
     @Override
@@ -443,8 +417,8 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaPhotojournalMedia media,
             FileMetadata metadata) {
         Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
-        wikidataStatementMapping(media.getInstrument(), nasaInstruments, "P4082", result); // Taken with instrument
-        wikidataStatementMapping(media.getSpacecraft(), nasaMissions, "P170", result); // Created by mission
+        wikidataStatementMapping(media.getInstrument(), mappings.getNasaInstruments(), "P4082", result); // Taken with
+        wikidataStatementMapping(media.getSpacecraft(), mappings.getNasaMissions(), "P170", result); // Created by
         return result;
     }
 }

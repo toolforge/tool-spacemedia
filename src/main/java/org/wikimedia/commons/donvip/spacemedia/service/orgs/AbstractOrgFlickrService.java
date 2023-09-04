@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.toZonedDateTime;

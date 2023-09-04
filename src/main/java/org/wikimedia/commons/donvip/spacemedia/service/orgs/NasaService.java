@@ -4,6 +4,7 @@ import static java.util.Collections.singleton;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 

@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

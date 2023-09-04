@@ -1,7 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api;
 
-import java.net.URL;
-
 public record NasaSvsDataset(
         /** The full name of this dataset. */
         String name,
@@ -26,5 +24,5 @@ public record NasaSvsDataset(
         /** Who should be credited for this dataset. */
         String credit,
         /** A URL that this dataset can be found at (if applicable). */
-        URL url) {
+        String url) {
 }

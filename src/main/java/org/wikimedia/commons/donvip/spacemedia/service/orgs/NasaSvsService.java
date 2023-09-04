@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -36,6 +37,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsM
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsVizualisation;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -49,6 +51,9 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
 
     @Autowired
     private ObjectMapper jackson;
+
+    @Autowired
+    private NasaMappingService mappings;
 
     @Autowired
     public NasaSvsService(NasaSvsMediaRepository repository) {
@@ -138,14 +143,17 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
         media.setTitle(viz.title());
         media.setStudio(viz.studio());
         media.setPublicationDateTime(viz.release_date());
-        ofNullable(viz.credits()).map(x -> x.stream().map(NasaSvsCredits::person).collect(joining(", ")))
+        ofNullable(viz.credits()).map(x -> x.stream().map(NasaSvsCredits::person).distinct().collect(joining(", ")))
                 .ifPresent(media::setCredits);
         ofNullable(viz.keywords()).map(TreeSet::new).ifPresent(media::setKeywords);
+        ofNullable(viz.missions()).map(TreeSet::new).ifPresent(media::setMissions);
         if (viz.media_groups() != null) {
             for (NasaSvsMediaGroup group : viz.media_groups()) {
                 // For each group only consider the biggest media (unless we have a webm file at
                 // the same resolution)
-                group.media().stream().filter(x -> x.media_type().shouldBeOkForCommons())
+                group.media().stream()
+                        .filter(x -> x.media_type().shouldBeOkForCommons()
+                                && !x.alt_text().startsWith("Time slates for the multiple movies"))
                         .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst().ifPresent(biggest -> {
                             NasaSvsMediaItem item = group.media().stream()
                                     .filter(x -> x.url().toExternalForm().endsWith(".webm")
@@ -188,6 +196,24 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     }
 
     // https://svs.gsfc.nasa.gov/help/
+
+    @Override
+    protected Optional<String> getOtherFields(NasaSvsMedia media) {
+        StringBuilder sb = new StringBuilder();
+        addOtherField(sb, "Keyword", media.getKeywords());
+        String s = sb.toString();
+        return s.isEmpty() ? Optional.empty() : Optional.of(s);
+    }
+
+    @Override
+    public Set<String> findCategories(NasaSvsMedia media, FileMetadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        result.addAll(
+                media.getKeywords().stream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());
+        media.getMissions().stream()
+                .forEach(x -> findCategoryFromMapping(x, "mission", mappings.getNasaMissions()).ifPresent(result::add));
+        return result;
+    }
 
     @Override
     public Set<String> findLicenceTemplates(NasaSvsMedia media, FileMetadata metadata) {

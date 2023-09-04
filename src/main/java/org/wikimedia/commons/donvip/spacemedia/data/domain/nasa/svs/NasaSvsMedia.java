@@ -25,6 +25,9 @@ public class NasaSvsMedia extends Media implements WithKeywords {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> missions = new HashSet<>();
+
     public NasaSvsStudio getStudio() {
         return studio;
     }
@@ -43,15 +46,31 @@ public class NasaSvsMedia extends Media implements WithKeywords {
         this.keywords = keywords;
     }
 
+    public Set<String> getMissions() {
+        return missions;
+    }
+
+    public void setMissions(Set<String> missions) {
+        this.missions = missions;
+    }
+
     @Override
     protected String getUploadId(FileMetadata fileMetadata) {
         String file = fileMetadata.getAssetUrl().getFile();
-        return "SVS" + super.getUploadId(fileMetadata) + " - " + file.substring(0, file.indexOf('.'));
+        return "SVS" + super.getUploadId(fileMetadata) + " - "
+                + file.substring(file.lastIndexOf('/') + 1, file.lastIndexOf('.')).trim();
     }
 
     public NasaSvsMedia copyDataFrom(NasaSvsMedia media) {
         super.copyDataFrom(media);
         setStudio(media.getStudio());
+        setMissions(media.getMissions());
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "NasaSvsMedia [studio=" + studio + ", keywords=" + keywords + ", missions=" + missions + ", title="
+                + title + ", publicationDate=" + publicationDate + ", id=" + getIdUsedInOrg() + "]";
     }
 }
