@@ -43,8 +43,8 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
-    public Set<String> findLicenceTemplates(FlickrMedia media) {
-        Set<String> result = super.findLicenceTemplates(media);
+    public Set<String> findLicenceTemplates(FlickrMedia media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
         switch (media.getPathAlias()) {
         case "harrystrangerphotography", "194849271@N04":
             if ((media.getDescription() != null && media.getDescription().toLowerCase(Locale.ENGLISH).contains("usgs"))

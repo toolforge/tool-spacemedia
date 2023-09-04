@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.util.Comparator.comparingLong;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
@@ -12,7 +13,6 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +21,8 @@ import java.util.TreeSet;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
@@ -29,6 +31,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.NasaSvsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.NasaSvsMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsCredits;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsMediaGroup;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsMediaItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsVizualisation;
@@ -38,6 +41,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NasaSvsService.class);
 
     private static final String API_SEARCH_ENDPOINT = "https://svs.gsfc.nasa.gov/api/search/?sort_by_0=DESC";
     private static final String API_VIZUAL_ENDPOINT = "https://svs.gsfc.nasa.gov/api/";
@@ -76,7 +81,11 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                         InputStream in = response.getEntity().getContent()) {
                     NasaSvsSearchResultPage results = jackson.readValue(in, NasaSvsSearchResultPage.class);
                     for (NasaSvsSearchResult result : results.results()) {
-                        updateImage(newId(result.pk), uploadedMedia);
+                        try {
+                            updateImage(newId(result.pk), uploadedMedia);
+                        } catch (RuntimeException e) {
+                            LOGGER.error("Error while processing {}", result, e);
+                        }
                         count++;
                     }
                     done = results.next() == null;
@@ -129,16 +138,32 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
         media.setTitle(viz.title());
         media.setStudio(viz.studio());
         media.setPublicationDateTime(viz.release_date());
-        media.setCredits(viz.credits().stream().map(NasaSvsCredits::person).collect(joining(", ")));
-        media.setKeywords(new TreeSet<>(viz.keywords()));
-        NasaSvsMediaItem main = viz.main_video() != null ? viz.main_video() : viz.main_image();
-        media.setDescription(main.alt_text());
-        media.setType(main.media_type());
-        addMetadata(media, main.url(), fm -> fm.setImageDimensions(new ImageDimensions(main.width(), main.height())));
-        viz.media_groups().stream().flatMap(x -> x.media().stream())
-                .filter(x -> x.media_type() == NasaSvsMediaType.Image)
-                .sorted(Comparator.comparingLong(NasaSvsMediaItem::pixels)).map(NasaSvsMediaItem::url)
-                .findFirst().ifPresent(media::setThumbnailUrl);
+        ofNullable(viz.credits()).map(x -> x.stream().map(NasaSvsCredits::person).collect(joining(", ")))
+                .ifPresent(media::setCredits);
+        ofNullable(viz.keywords()).map(TreeSet::new).ifPresent(media::setKeywords);
+        if (viz.media_groups() != null) {
+            for (NasaSvsMediaGroup group : viz.media_groups()) {
+                // For each group only consider the biggest media (unless we have a webm file at
+                // the same resolution)
+                group.media().stream().filter(x -> x.media_type().shouldBeOkForCommons())
+                        .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst().ifPresent(biggest -> {
+                            NasaSvsMediaItem item = group.media().stream()
+                                    .filter(x -> x.url().toExternalForm().endsWith(".webm")
+                                            && ((x.width() >= biggest.width() && x.height() >= biggest.height())
+                                                    || (x.width() == 0 && x.height() == 0)))
+                                    .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst()
+                                    .orElse(biggest);
+                            addMetadata(media, item.url(), fm -> {
+                                fm.setDescription(item.alt_text());
+                                fm.setImageDimensions(new ImageDimensions(item.width(), item.height()));
+                            });
+                        });
+            }
+            viz.media_groups().stream().flatMap(x -> x.media().stream())
+                    .filter(x -> x.media_type() == NasaSvsMediaType.Image)
+                    .sorted(comparingLong(NasaSvsMediaItem::pixels)).map(NasaSvsMediaItem::url).findFirst()
+                    .ifPresent(media::setThumbnailUrl);
+        }
         return media;
     }
 
@@ -163,6 +188,13 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     }
 
     // https://svs.gsfc.nasa.gov/help/
+
+    @Override
+    public Set<String> findLicenceTemplates(NasaSvsMedia media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
+        result.add("PD-USGov-NASA");
+        return result;
+    }
 
     public static record NasaSvsSearchResultPage( /**
                                                    * The total number of results for the given query, regardless of

@@ -5,7 +5,9 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.stripAccents;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.normalizeFilename;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
 
@@ -37,12 +39,12 @@ import javax.persistence.ManyToMany;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,7 +57,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 @MappedSuperclass
 @EntityListeners(MediaListener.class)
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = As.PROPERTY, property = "class")
-public class Media implements MediaProjection {
+public class Media implements MediaProjection, MediaDescription {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Media.class);
 
@@ -171,11 +173,16 @@ public class Media implements MediaProjection {
         String s = getUploadTitle();
         if (strippedLower(id).equals(strippedLower(s))) {
             return isTitleBlacklisted(s)
-                    ? getUploadTitle(CommonsService.normalizeFilename(getFirstSentence(description)), id)
+                    ? getUploadTitle(normalizeFilename(getFirstSentence(getDescription(fileMetadata))), id)
                     : s.substring(0, Math.min(234, s.length()));
         } else {
             return getUploadTitle(s, id);
         }
+    }
+
+    public String getDescription(FileMetadata fileMetadata) {
+        return fileMetadata != null && isNotBlank(fileMetadata.getDescription()) ? fileMetadata.getDescription()
+                : getDescription();
     }
 
     private static String strippedLower(String s) {
@@ -188,11 +195,11 @@ public class Media implements MediaProjection {
     }
 
     protected String getUploadTitle() {
-        return CommonsService.normalizeFilename(title);
+        return normalizeFilename(title);
     }
 
     protected String getUploadId(FileMetadata fileMetadata) {
-        return CommonsService.normalizeFilename(getIdUsedInOrg());
+        return normalizeFilename(getIdUsedInOrg());
     }
 
     protected static String getFirstSentence(String desc) {
@@ -217,12 +224,29 @@ public class Media implements MediaProjection {
         this.title = title;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Transient
+    @JsonIgnore
+    public List<MediaDescription> getDescriptionObjects() {
+        List<MediaDescription> result = new ArrayList<>(List.of(this));
+        result.addAll(getMetadata());
+        return result;
+    }
+
+    @Transient
+    @JsonIgnore
+    public List<String> getDescriptions() {
+        return getDescriptionObjects().stream().map(MediaDescription::getDescription).filter(StringUtils::isNotBlank)
+                .distinct().toList();
     }
 
     public String getCredits() {
@@ -477,6 +501,8 @@ public class Media implements MediaProjection {
     public boolean containsInTitleOrDescription(String string) {
         String lc = string.toLowerCase(ENGLISH);
         return (title != null && title.toLowerCase(ENGLISH).contains(lc))
-                || (description != null && description.toLowerCase(ENGLISH).contains(lc));
+                || (description != null && description.toLowerCase(ENGLISH).contains(lc)) || (hasMetadata()
+                        && getMetadataStream().map(FileMetadata::getDescription).filter(StringUtils::isNotBlank)
+                                .distinct().anyMatch(x -> x.toLowerCase(ENGLISH).contains(lc)));
     }
 }

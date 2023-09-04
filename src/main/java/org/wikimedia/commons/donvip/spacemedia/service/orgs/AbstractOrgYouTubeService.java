@@ -259,8 +259,8 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     }
 
     @Override
-    public Set<String> findLicenceTemplates(YouTubeMedia video) {
-        Set<String> result = super.findLicenceTemplates(video);
+    public Set<String> findLicenceTemplates(YouTubeMedia video, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(video, metadata);
         result.add("From YouTube |1= " + video.getId());
         result.add("YouTube CC-BY |1= " + video.getChannelTitle());
         result.add("LicenseReview");

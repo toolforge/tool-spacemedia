@@ -106,8 +106,8 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     }
 
     @Override
-    public Set<String> findLicenceTemplates(S3Media media) {
-        Set<String> result = super.findLicenceTemplates(media);
+    public Set<String> findLicenceTemplates(S3Media media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("Cc-by-4.0");
         return result;
     }

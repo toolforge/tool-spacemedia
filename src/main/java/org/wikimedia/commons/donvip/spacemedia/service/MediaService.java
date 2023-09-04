@@ -1,9 +1,12 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.text.StringEscapeUtils.unescapeXml;
+import static org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils.readImage;
+import static org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils.readImageMetadata;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -14,7 +17,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -44,11 +46,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDescription;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
-import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 
 @Service
 public class MediaService {
@@ -129,13 +131,12 @@ public class MediaService {
     }
 
     protected boolean belongsToBlocklist(Media media) {
-        String titleAndDescription = "";
+        StringBuilder sb = new StringBuilder();
         if (media.getTitle() != null) {
-            titleAndDescription += media.getTitle().toLowerCase(Locale.ENGLISH);
+            sb.append(media.getTitle().toLowerCase(ENGLISH));
         }
-        if (media.getDescription() != null) {
-            titleAndDescription += media.getDescription().toLowerCase(Locale.ENGLISH);
-        }
+        media.getDescriptions().stream().forEach(x -> sb.append(' ').append(x.toLowerCase(ENGLISH)));
+        String titleAndDescription = sb.toString().trim();
         if (!titleAndDescription.isEmpty()) {
             titleAndDescription = titleAndDescription.replace("\r\n", " ").replace('\t', ' ').replace('\r', ' ')
                     .replace('\n', ' ');
@@ -163,7 +164,7 @@ public class MediaService {
     }
 
     public boolean isPhotographerBlocklisted(String photographer) {
-        String normalizedPhotographer = photographer.toLowerCase(Locale.ENGLISH).replace(' ', '_');
+        String normalizedPhotographer = photographer.toLowerCase(ENGLISH).replace(' ', '_');
         return photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith);
     }
 
@@ -213,7 +214,7 @@ public class MediaService {
             URL assetUrl = urlResolver.resolveDownloadUrl(media, metadata);
             if (isImage && shouldReadImage(assetUrl, metadata, forceUpdateOfHashes)) {
                 try {
-                    Pair<BufferedImage, Long> pair = ImageUtils.readImage(assetUrl, false, true);
+                    Pair<BufferedImage, Long> pair = readImage(assetUrl, false, true);
                     bi = pair.getLeft();
                     if (bi != null) {
                         if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
@@ -298,30 +299,30 @@ public class MediaService {
 
     public static boolean cleanupDescription(Media media, Iterable<String> stringsToRemove) {
         boolean result = false;
-        if (isNotBlank(media.getDescription())) {
-            String unescaped = unescapeXml(media.getDescription());
-            if (!unescaped.equals(media.getDescription())) {
-                media.setDescription(unescaped);
-                result = true;
-            }
-            if (stringsToRemove != null) {
-                for (String toRemove : stringsToRemove) {
-                    if (media.getDescription().contains(toRemove)) {
-                        media.setDescription(media.getDescription().replace(toRemove, "").trim());
-                        result = true;
+        for (MediaDescription md : media.getDescriptionObjects()) {
+            String description = md.getDescription();
+            if (isNotBlank(description)) {
+                description = unescapeXml(description);
+                if (stringsToRemove != null) {
+                    for (String toRemove : stringsToRemove) {
+                        if (description.contains(toRemove)) {
+                            description = description.replace(toRemove, "").trim();
+                        }
                     }
                 }
-            }
-            for (String toRemove : STRINGS_TO_REMOVE) {
-                if (media.getDescription().contains(toRemove)) {
-                    media.setDescription(media.getDescription().replace(toRemove, ""));
-                    result = true;
+                for (String toRemove : STRINGS_TO_REMOVE) {
+                    if (description.contains(toRemove)) {
+                        description = description.replace(toRemove, "");
+                    }
                 }
-            }
-            for (Entry<String, String> toReplace : STRINGS_TO_REPLACE.entrySet()) {
-                while (media.getDescription().contains(toReplace.getKey())) {
-                    media.setDescription(media.getDescription().replace(toReplace.getKey(), toReplace.getValue()));
-                    result = true;
+                for (Entry<String, String> toReplace : STRINGS_TO_REPLACE.entrySet()) {
+                    while (description.contains(toReplace.getKey())) {
+                        description = description.replace(toReplace.getKey(), toReplace.getValue());
+                    }
+                }
+                result = !description.equals(md.getDescription());
+                if (result) {
+                    md.setDescription(description);
                 }
             }
         }
@@ -330,8 +331,7 @@ public class MediaService {
 
     public boolean updateExifMetadata(FileMetadata metadata) throws IOException {
         if (metadata.getExif() == null) {
-            metadata.setExif(
-                    exifRepository.save(ExifMetadata.of(ImageUtils.readImageMetadata(metadata.getAssetUri()))));
+            metadata.setExif(exifRepository.save(ExifMetadata.of(readImageMetadata(metadata.getAssetUri()))));
             return true;
         }
         return false;

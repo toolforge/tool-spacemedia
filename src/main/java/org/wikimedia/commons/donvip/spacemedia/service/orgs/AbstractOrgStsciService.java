@@ -186,8 +186,8 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     }
 
     @Override
-    public final Set<String> findLicenceTemplates(StsciMedia media) {
-        Set<String> result = super.findLicenceTemplates(media);
+    public final Set<String> findLicenceTemplates(StsciMedia media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add(switch(media.getMission()) {
         case "hubble" -> "PD-Hubble";
         case "webb" -> "PD-Webb";

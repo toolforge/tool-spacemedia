@@ -291,7 +291,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             if (!Boolean.TRUE.equals(media.isIgnored())) {
                 if (ignoredCategories.contains(media.getCategory())) {
                     save = ignoreFile(media, "Ignored category: " + media.getCategory());
-                } else if (findLicenceTemplates(media).isEmpty()) {
+                } else if (findLicenceTemplates(media, media.getUniqueMetadata()).isEmpty()) {
                     // DVIDS media with VIRIN "O". we can assume it implies a courtesy photo
                     // https://www.dvidshub.net/image/3322521/45th-sw-supports-successful-atlas-v-oa-7-launch
                     save = ignoreFile(media, "No template found (VIRIN O): " + media.getVirin());
@@ -380,7 +380,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     protected final Pair<String, Map<String, String>> getWikiFileDesc(DvidsMedia media, FileMetadata metadata)
             throws MalformedURLException {
         String lang = getLanguage(media);
-        String desc = getDescription(media);
+        String desc = getDescription(media, metadata);
         StringBuilder sb = new StringBuilder("{{milim\n| description = ")
                 .append("{{").append(lang).append("|1=").append(CommonsService.formatWikiCode(desc)).append("}}");
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
@@ -413,8 +413,8 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
-    public Set<String> findLicenceTemplates(DvidsMedia media) {
-        Set<String> result = super.findLicenceTemplates(media);
+    public Set<String> findLicenceTemplates(DvidsMedia media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getUniqueMetadata().getAssetUrl());
         if (t != null && StringUtils.isNotBlank(t.getPdTemplate())) {
             result.add(t.getPdTemplate());

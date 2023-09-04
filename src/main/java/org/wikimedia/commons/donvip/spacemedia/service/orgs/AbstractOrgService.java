@@ -73,6 +73,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDescription;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Problem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ProblemRepository;
@@ -757,7 +758,7 @@ public abstract class AbstractOrgService<T extends Media>
                 getSourceUrl(media, metadata).toExternalForm(),
                 "P2699", metadata.getAssetUrl().toExternalForm()))));
         // Licences
-        Set<String> licences = findLicenceTemplates(media);
+        Set<String> licences = findLicenceTemplates(media, metadata);
         boolean usPublicDomain = PD_US.stream().anyMatch(pd -> licences.stream().anyMatch(l -> l.startsWith(pd)));
         result.put("P6216", Pair.of(usPublicDomain ? "Q19652" : "Q50423863",
                 usPublicDomain ? new TreeMap<>(Map.of("P459", "Q60671452", "P1001", "Q30")) : null));
@@ -850,7 +851,7 @@ public abstract class AbstractOrgService<T extends Media>
             StringBuilder sb = new StringBuilder("== {{int:filedesc}} ==\n")
                     .append(desc.getKey())
                     .append("\n=={{int:license-header}}==\n");
-            findLicenceTemplates(media).forEach(t -> sb.append("{{").append(t).append("}}\n"));
+            findLicenceTemplates(media, metadata).forEach(t -> sb.append("{{").append(t).append("}}\n"));
             commonsService
                     .cleanupCategories(findCategories(media, metadata, true), media.getBestTemporal())
                     .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
@@ -882,7 +883,7 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected Pair<String, Map<String, String>> getWikiFileDesc(T media, FileMetadata metadata) throws IOException {
         String language = getLanguage(media);
-        String description = getDescription(media);
+        String description = getDescription(media, metadata);
         StringBuilder sb = new StringBuilder();
         findBeforeInformationTemplates(media, metadata).forEach(t -> sb.append("{{").append(t).append("}}\n"));
         sb.append("{{Information\n| description = ");
@@ -962,8 +963,8 @@ public abstract class AbstractOrgService<T extends Media>
         return media instanceof WithKeywords kw && kw.getKeywords().contains("en Español") ? ES : EN;
     }
 
-    protected String getDescription(T media) {
-        String description = media.getDescription();
+    protected String getDescription(T media, FileMetadata fileMetadata) {
+        String description = media.getDescription(fileMetadata);
         if (StringUtils.isBlank(description)) {
             return media.getTitle();
         } else {
@@ -1171,12 +1172,13 @@ public abstract class AbstractOrgService<T extends Media>
     /**
      * Returns the list of licence templates to apply to the given media.
      *
-     * @param media the media for which licence template names are wanted
+     * @param media    the media for which licence template names are wanted
+     * @param metadata the file metadata for which licence template names are wanted
      * @return the list of licence templates to apply to {@code media}
      */
-    public Set<String> findLicenceTemplates(T media) {
+    public Set<String> findLicenceTemplates(T media, FileMetadata metadata) {
         Set<String> result = new LinkedHashSet<>();
-        String description = media.getDescription();
+        String description = media.getDescription(metadata);
         if (description != null) {
             ofNullable(getCopernicusTemplate(description)).ifPresent(result::add);
         }
@@ -1217,7 +1219,7 @@ public abstract class AbstractOrgService<T extends Media>
             throw new ImageUploadForbiddenException(
                     media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
-        if (findLicenceTemplates(media).isEmpty()) {
+        if (findLicenceTemplates(media, metadata).isEmpty()) {
             throw new ImageUploadForbiddenException(media + " has no template, so may be not free");
         }
     }
@@ -1263,10 +1265,11 @@ public abstract class AbstractOrgService<T extends Media>
                 forceUpdate, getUrlResolver(), checkBlocklist(), includeByPerceptualHash(), ignoreExifMetadata(), null);
         boolean result = ur.getResult();
         if (media.isIgnored() != Boolean.TRUE) {
-            if (media.getDescription() != null) {
-                String description = media.getDescription().toLowerCase(Locale.ENGLISH);
+            for (MediaDescription md : media.getDescriptionObjects()) {
+                String description = ofNullable(md.getDescription()).orElse("").toLowerCase(Locale.ENGLISH);
                 if (description.contains("courtesy")
-                        && (findLicenceTemplates(media).isEmpty() || courtesyOk.stream().noneMatch(description::contains))) {
+                        && (findLicenceTemplates(media, md instanceof FileMetadata fm ? fm : null).isEmpty()
+                                || courtesyOk.stream().noneMatch(description::contains))) {
                     result = ignoreFile(media, "Probably non-free image (courtesy)");
                     LOGGER.debug("Courtesy test has been trigerred for {}", media);
                 }

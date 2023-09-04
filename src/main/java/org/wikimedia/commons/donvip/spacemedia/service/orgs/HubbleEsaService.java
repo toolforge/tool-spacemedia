@@ -48,8 +48,8 @@ public class HubbleEsaService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
-    public Set<String> findLicenceTemplates(DjangoplicityMedia media) {
-        Set<String> result = super.findLicenceTemplates(media);
+    public Set<String> findLicenceTemplates(DjangoplicityMedia media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
         if (media.getYear().getValue() < 2009) {
             result.add("PD-Hubble");
         } else {

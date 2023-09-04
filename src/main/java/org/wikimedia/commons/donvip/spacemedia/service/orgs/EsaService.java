@@ -508,8 +508,8 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     }
 
     @Override
-    public Set<String> findLicenceTemplates(EsaMedia media) {
-        Set<String> result = super.findLicenceTemplates(media);
+    public Set<String> findLicenceTemplates(EsaMedia media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
         String credit = media.getCredits();
         for (String spelling : CC_BY_SA_SPELLINGS) {
             credit = credit.replace(", " + spelling, "").replace("; " + spelling, "").replace(" " + spelling, "").trim();

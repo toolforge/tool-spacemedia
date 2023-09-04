@@ -304,7 +304,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
             throws MalformedURLException {
         // https://commons.wikimedia.org/wiki/Template:NASA_Photojournal/attribution/mission
         String lang = getLanguage(media);
-        String desc = getDescription(media);
+        String desc = getDescription(media, metadata);
         StringBuilder sb = new StringBuilder("{{NASA Photojournal\n| catalog = ").append(media.getId())
                 .append("\n| image= ").append(media.isImage()).append("\n| video= ").append(media.isVideo())
                 .append("\n| animation= ").append("gif".equals(metadata.getFileExtension()))
@@ -380,8 +380,8 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     }
 
     @Override
-    public Set<String> findLicenceTemplates(NasaPhotojournalMedia media) {
-        Set<String> result = super.findLicenceTemplates(media);
+    public Set<String> findLicenceTemplates(NasaPhotojournalMedia media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("JPL Image Copyright");
         return result;
     }

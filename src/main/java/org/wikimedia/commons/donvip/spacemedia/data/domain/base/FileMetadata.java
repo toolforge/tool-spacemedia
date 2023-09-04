@@ -24,6 +24,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -35,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(indexes = { @Index(columnList = "assetUrl"), @Index(columnList = "sha1, phash") })
-public class FileMetadata implements FileMetadataProjection {
+public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
     private static final Set<String> AUDIO_EXTENSIONS = Set.of("wav", "mp3", "flac", "midi");
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("bmp", "jpg", "tiff", "png", "webp", "xcf", "gif",
@@ -86,6 +87,10 @@ public class FileMetadata implements FileMetadataProjection {
 
     @Embedded
     private ImageDimensions dimensions;
+
+    @Lob
+    @Column(nullable = true, columnDefinition = "MEDIUMTEXT")
+    protected String description;
 
     @OneToOne(cascade = { CascadeType.MERGE, CascadeType.REMOVE, CascadeType.REFRESH })
     @JoinColumn(name = "exif_id", referencedColumnName = "id")
@@ -226,6 +231,16 @@ public class FileMetadata implements FileMetadataProjection {
         this.commonsFileNames = commonsFileNames;
     }
 
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Transient
     @JsonIgnore
     public String getFileExtension() {
@@ -247,36 +262,26 @@ public class FileMetadata implements FileMetadataProjection {
         if (len < 3 || len > 4) {
             return null;
         }
-        switch (ext) {
-        case "apng":
-            return "png";
-        case "djv":
-            return "djvu";
-        case "jpe", "jpeg", "jps":
-            return "jpg"; // Use the same extension as flickr2commons as it solely relies on filenames
-        case "tif":
-            return "tiff";
-        case "mid", "kar":
-            return "midi";
-        case "mpe", "mpg":
-            return "mpeg";
-        default:
-            return ext;
-        }
+        return switch (ext) {
+        case "apng" -> "png";
+        case "djv" -> "djvu";
+        case "jpe", "jpeg", "jps" -> "jpg"; // Use the same extension as flickr2commons as it solely relies on filenames
+        case "tif" -> "tiff";
+        case "mid", "kar" -> "midi";
+        case "mpe", "mpg" -> "mpeg";
+        default -> ext;
+        };
     }
 
     @Transient
     @JsonIgnore
     public Set<String> getFileExtensions() {
         String ext = getFileExtension();
-        switch (ext) {
-        case "jpg":
-            return Set.of("jpg", "jpeg");
-        case "tiff":
-            return Set.of("tif", "tiff");
-        default:
-            return Set.of(ext);
-        }
+        return switch (ext) {
+        case "jpg" -> Set.of("jpg", "jpeg");
+        case "tiff" -> Set.of("tif", "tiff");
+        default -> Set.of(ext);
+        };
     }
 
     @Transient
@@ -286,32 +291,20 @@ public class FileMetadata implements FileMetadataProjection {
     }
 
     public static String getMime(String ext) {
-        switch (ext) {
-        case "djvu":
-            return "image/vnd.djvu";
-        case "jpg", "jpeg":
-            return "image/jpeg";
-        case "tif", "tiff":
-            return "image/tiff";
-        case "bmp", "gif", "png", "webp":
-            return "image/" + ext;
-        case "svg":
-            return "image/svg+xml";
-        case "xcf":
-            return "image/x-xcf";
-        case "midi", "flac", "wav":
-            return "audio/" + ext;
-        case "ogv":
-            return "video/ogg";
-        case "webm":
-            return "video/" + ext;
-        case "pdf":
-            return "application/pdf";
-        case "stl":
-            return "application/sla";
-        default:
-            return null;
-        }
+        return ext == null ? null : switch (ext) {
+        case "djvu" -> "image/vnd.djvu";
+        case "jpg", "jpeg" -> "image/jpeg";
+        case "tif", "tiff" -> "image/tiff";
+        case "bmp", "gif", "png", "webp" -> "image/" + ext;
+        case "svg" -> "image/svg+xml";
+        case "xcf" -> "image/x-xcf";
+        case "midi", "flac", "wav" -> "audio/" + ext;
+        case "ogv" -> "video/ogg";
+        case "webm" -> "video/" + ext;
+        case "pdf" -> "application/pdf";
+        case "stl" -> "application/sla";
+        default -> null;
+        };
     }
 
     /**
@@ -352,7 +345,8 @@ public class FileMetadata implements FileMetadataProjection {
 
     @Override
     public int hashCode() {
-        return Objects.hash(phash, sha1, readableImage, assetUrl, size, commonsFileNames, exif, dimensions, extension);
+        return Objects.hash(phash, sha1, readableImage, assetUrl, size, commonsFileNames, exif, dimensions, extension,
+                description);
     }
 
     @Override
@@ -365,7 +359,8 @@ public class FileMetadata implements FileMetadataProjection {
         return size == other.size && Objects.equals(phash, other.phash) && Objects.equals(sha1, other.sha1)
                 && Objects.equals(readableImage, other.readableImage) && Objects.equals(assetUrl, other.assetUrl)
                 && Objects.equals(commonsFileNames, other.commonsFileNames) && Objects.equals(exif, other.exif)
-                && Objects.equals(dimensions, other.dimensions) && Objects.equals(extension, other.extension);
+                && Objects.equals(dimensions, other.dimensions) && Objects.equals(extension, other.extension)
+                && Objects.equals(description, other.description);
     }
 
     @Override

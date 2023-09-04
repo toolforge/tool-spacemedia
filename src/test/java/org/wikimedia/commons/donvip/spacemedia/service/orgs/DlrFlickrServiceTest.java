@@ -43,7 +43,7 @@ class DlrFlickrServiceTest extends AbstractOrgServiceTest {
                 "Wichtige Informationen und Fotos von ATTAS: <a href=\"https://www.deutsches-museum.de/flugwerft/sammlungen/strahlflugzeuge/vfw-614-attas/\" rel=\"noreferrer nofollow\">https://www.deutsches-museum.de/flugwerft/sammlungen/strahlflugzeuge/vfw-614-attas/</a>\r\n"
                         + "    Bericht mit Fotos der Überführung von ATTAS: <a href=\"https://www.deutsches-museum.de/presse/presse-2013/attas/\" rel=\"noreferrer nofollow\">https://www.deutsches-museum.de/presse/presse-2013/attas/</a>\r\n"
                         + "    Quelle: DLR (CC-BY 3.0)",
-                service.getDescription(media));
+                service.getDescription(media, null));
     }
 
     @Test
@@ -65,7 +65,7 @@ class DlrFlickrServiceTest extends AbstractOrgServiceTest {
                         + "Aufzeichnung zum Event “Inbetriebnahme #Philae-Lander:\r\n"
                         + "<a href=\"https://www.youtube.com/watch?v=Nmuh8vYLSW0\" rel=\"nofollow\">https://www.youtube.com/watch?v=Nmuh8vYLSW0</a>\r\n"
                         + "Credit: DLR (CC-BY 3.0).",
-                service.getDescription(media));
+                service.getDescription(media, null));
     }
 
     @Configuration

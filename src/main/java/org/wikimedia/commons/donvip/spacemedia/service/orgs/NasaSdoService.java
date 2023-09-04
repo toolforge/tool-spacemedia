@@ -405,8 +405,8 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     @Override
-    public Set<String> findLicenceTemplates(NasaSdoMedia media) {
-        Set<String> result = super.findLicenceTemplates(media);
+    public Set<String> findLicenceTemplates(NasaSdoMedia media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("PD-USGov-NASA");
         return result;
     }

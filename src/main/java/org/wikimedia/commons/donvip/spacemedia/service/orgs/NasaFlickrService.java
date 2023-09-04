@@ -129,8 +129,8 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
-    public Set<String> findLicenceTemplates(FlickrMedia media) {
-        Set<String> result = super.findLicenceTemplates(media);
+    public Set<String> findLicenceTemplates(FlickrMedia media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("PD-USGov-NASA");
         return result;
     }

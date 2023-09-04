@@ -208,8 +208,8 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsMedia> {
     }
 
     @Override
-    public Set<String> findLicenceTemplates(NasaSirsMedia media) {
-        Set<String> result = super.findLicenceTemplates(media);
+    public Set<String> findLicenceTemplates(NasaSirsMedia media, FileMetadata metadata) {
+        Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("PD-USGov-NASA");
         return result;
     }

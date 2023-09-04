@@ -109,7 +109,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
     }
 
     @Override
-    public Set<String> findLicenceTemplates(CopernicusGalleryMedia media) {
+    public Set<String> findLicenceTemplates(CopernicusGalleryMedia media, FileMetadata metadata) {
         return Set.of("Attribution-Copernicus|" + media.getYear().getValue());
     }
 
