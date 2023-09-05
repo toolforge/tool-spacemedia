@@ -41,6 +41,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
@@ -1072,7 +1073,7 @@ public abstract class AbstractOrgService<T extends Media>
         } else if (media.containsInTitleOrDescription("Tropospheric Nitrogen Dioxide")) {
             result.add("Nitrogen dioxide maps");
         }
-        findCategoryFromTitle(media.getTitle()).ifPresent(title -> {
+        findCategoriesFromTitle(media.getTitle()).forEach(title -> {
             if (isSatellitePicture(media, metadata)) {
                 findCategoryForEarthObservationTargetOrSubject(x -> "Satellite pictures of " + x, title)
                         .ifPresentOrElse(result::add, () -> result.add(title));
@@ -1102,20 +1103,31 @@ public abstract class AbstractOrgService<T extends Media>
         return Optional.empty();
     }
 
-    protected Optional<String> findCategoryFromTitle(String title) {
+    protected Set<String> findCategoriesFromTitle(String title) {
+        Set<String> result = new TreeSet<>();
         if (title != null) {
             String[] words = title.strip().split(" ");
             if (words.length >= 2) {
-                for (int n = words.length; n >= 2; n--) {
-                    String firstWords = String.join(" ", Arrays.copyOfRange(words, 0, n));
-                    if (commonsService.existsCategoryPage(firstWords)) {
-                        return Optional.of(firstWords);
-                    }
-                    String firstWordsWithoutComma = firstWords.replace(",", "");
-                    if (commonsService.existsCategoryPage(firstWordsWithoutComma)) {
-                        return Optional.of(firstWordsWithoutComma);
-                    }
-                }
+                // Try first words
+                findCategoriesFromWords(words.length, n -> Arrays.copyOfRange(words, 0, words.length - n))
+                        .ifPresent(result::add);
+                // Try last words
+                findCategoriesFromWords(words.length, n -> Arrays.copyOfRange(words, n, words.length))
+                        .ifPresent(result::add);
+            }
+        }
+        return result;
+    }
+
+    private Optional<String> findCategoriesFromWords(int len, IntFunction<String[]> words) {
+        for (int n = 0; n <= len - 2; n++) {
+            String firstWords = String.join(" ", words.apply(n));
+            if (commonsService.existsCategoryPage(firstWords)) {
+                return Optional.of(firstWords);
+            }
+            String firstWordsWithoutComma = firstWords.replace(",", "");
+            if (commonsService.existsCategoryPage(firstWordsWithoutComma)) {
+                return Optional.of(firstWordsWithoutComma);
             }
         }
         return Optional.empty();
