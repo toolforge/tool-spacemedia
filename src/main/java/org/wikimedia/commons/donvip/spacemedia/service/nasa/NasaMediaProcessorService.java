@@ -186,13 +186,17 @@ public class NasaMediaProcessorService {
         return null;
     }
 
+    public void setId(NasaMedia media) {
+        media.setId(new CompositeMediaId(media.getCenter(), media.getNasaId()));
+    }
+
     private Pair<NasaMedia, Integer> processMedia(RestTemplate rest, RestTemplate restExif, NasaMedia media, URL href,
             Predicate<NasaMedia> doCommonUpdate, BiPredicate<NasaMedia, Boolean> shouldUploadAuto,
             BiConsumer<URL, Throwable> problem, UnaryOperator<NasaMedia> saveMedia,
             BiFunction<Boolean, NasaMedia, NasaMedia> saveMediaOrCheckRemote,
             TriFunction<NasaMedia, Boolean, Boolean, Triple<NasaMedia, Collection<FileMetadata>, Integer>> uploader)
             throws URISyntaxException {
-        media.setId(new CompositeMediaId(media.getCenter(), media.getNasaId()));
+        setId(media);
         Optional<NasaMedia> mediaInRepo = repository.findById(media.getId());
         boolean save = false;
         if (mediaInRepo.isPresent()) {
@@ -200,9 +204,7 @@ public class NasaMediaProcessorService {
         } else {
             save = processMediaFromApi(rest, media, href, problem, true);
         }
-        if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && isPhotographerBLocklisted(img)) {
-            ignoreMedia(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer() + " / "
-                    + img.getSecondaryCreator());
+        if (checkPhotographerBlocklist(media)) {
             save = true;
         }
         if (doCommonUpdate.test(media)) {
@@ -236,6 +238,15 @@ public class NasaMediaProcessorService {
             save = false;
         }
         return Pair.of(saveMediaOrCheckRemote.apply(save, media), uploadCount);
+    }
+
+    public boolean checkPhotographerBlocklist(NasaMedia media) {
+        if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && isPhotographerBLocklisted(img)) {
+            ignoreMedia(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer() + " / "
+                    + img.getSecondaryCreator());
+            return true;
+        }
+        return false;
     }
 
     public boolean processMediaFromApi(RestTemplate rest, NasaMedia media, URL href,
@@ -272,7 +283,8 @@ public class NasaMediaProcessorService {
     private boolean isPhotographerBLocklisted(NasaImage img) {
         return (img.getPhotographer() != null && mediaService.isPhotographerBlocklisted(img.getPhotographer()))
                 || (img.getSecondaryCreator() != null
-                        && mediaService.isPhotographerBlocklisted(img.getSecondaryCreator()));
+                        && mediaService.isPhotographerBlocklisted(img.getSecondaryCreator()))
+                || (img.getDescription() != null && img.getDescription().contains("Credit: SpaceX"));
     }
 
     ExifMetadata readExifMetadata(RestTemplate restExif, String id)

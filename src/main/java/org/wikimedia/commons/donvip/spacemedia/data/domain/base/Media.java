@@ -483,6 +483,10 @@ public class Media implements MediaProjection, MediaDescription {
                 }
             }
         }
+        if (ignored != Boolean.TRUE && mediaFromApi.ignored == Boolean.TRUE) {
+            setIgnored(mediaFromApi.isIgnored());
+            setIgnoredReason(mediaFromApi.getIgnoredReason());
+        }
         if (this instanceof WithKeywords kw && mediaFromApi instanceof WithKeywords kwApi) {
             kw.setKeywords(kwApi.getKeywords());
         }

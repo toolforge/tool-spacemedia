@@ -476,7 +476,9 @@ public class NasaService extends AbstractOrgService<NasaMedia> {
                 if (data.size() == 1) {
                     try {
                         NasaMedia mediaFromApi = data.get(0);
+                        processor.setId(mediaFromApi);
                         processor.processMediaFromApi(rest, mediaFromApi, item.getHref(), this::problem, false);
+                        processor.checkPhotographerBlocklist(mediaFromApi);
                         if (mediaFromApi.hasMetadata() && mediaFromApi.getAssetUrl() != null) {
                             LOGGER.info("Copying up-to-date data from {}", mediaFromApi);
                             return media.copyDataFrom(mediaFromApi);
