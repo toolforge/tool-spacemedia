@@ -58,6 +58,11 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     }
 
     @Override
+    protected boolean isNASA(StsciMedia media) {
+        return true;
+    }
+
+    @Override
     protected final Class<StsciMedia> getMediaClass() {
         return StsciMedia.class;
     }

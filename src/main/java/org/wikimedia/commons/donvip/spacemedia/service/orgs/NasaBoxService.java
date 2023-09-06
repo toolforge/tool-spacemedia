@@ -26,6 +26,11 @@ public class NasaBoxService extends AbstractOrgBoxService {
     }
 
     @Override
+    protected boolean isNASA(BoxMedia media) {
+        return true;
+    }
+
+    @Override
     public Set<String> findLicenceTemplates(BoxMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("PD-USGov-NASA");

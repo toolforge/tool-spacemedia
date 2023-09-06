@@ -1081,6 +1081,9 @@ public abstract class AbstractOrgService<T extends Media>
                 result.add(title);
             }
         });
+        if (metadata.isVideo() && isNASA(media)) {
+            result.add("NASA videos in " + media.getYear().getValue());
+        }
         if (includeHidden) {
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
         }
@@ -1211,6 +1214,16 @@ public abstract class AbstractOrgService<T extends Media>
             ofNullable(getCopernicusTemplate(description)).ifPresent(result::add);
         }
         return result;
+    }
+
+    /**
+     * Determines if the given media has been produced by NASA.
+     *
+     * @param media media
+     * @return {@code true} if media has been produced by NASA
+     */
+    protected boolean isNASA(T media) {
+        return false;
     }
 
     protected static String getCopernicusTemplate(String text) {

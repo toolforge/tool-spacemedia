@@ -113,6 +113,11 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
     }
 
     @Override
+    protected boolean isNASA(NasaAsterMedia media) {
+        return true;
+    }
+
+    @Override
     protected Class<NasaAsterMedia> getMediaClass() {
         return NasaAsterMedia.class;
     }

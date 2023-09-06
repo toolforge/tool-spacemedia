@@ -60,6 +60,11 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsMedia> {
     }
 
     @Override
+    protected boolean isNASA(NasaSirsMedia media) {
+        return true;
+    }
+
+    @Override
     protected Class<NasaSirsMedia> getMediaClass() {
         return NasaSirsMedia.class;
     }

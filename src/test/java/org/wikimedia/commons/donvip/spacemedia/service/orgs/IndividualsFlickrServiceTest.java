@@ -165,10 +165,11 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
 
         doCallRealMethod().when(mediaService).useMapping(any(), any(), any(), any(), any());
 
-        assertEquals(Set.of("Photos by the Curiosity rover Mastcam"), service.findCategories(media, null, false));
+        FileMetadata metadata = new FileMetadata();
+        assertEquals(Set.of("Photos by the Curiosity rover Mastcam"), service.findCategories(media, metadata, false));
         assertEquals(Set.of("Photos by the Curiosity rover Mastcam", "Files from Kevin Gill Flickr stream",
                 "Spacemedia Flickr files uploaded by null"),
-                service.findCategories(media, null, true));
+                service.findCategories(media, metadata, true));
     }
 
     @Test

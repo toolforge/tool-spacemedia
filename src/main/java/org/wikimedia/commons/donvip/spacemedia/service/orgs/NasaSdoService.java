@@ -72,6 +72,11 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     @Override
+    protected boolean isNASA(NasaSdoMedia media) {
+        return true;
+    }
+
+    @Override
     protected Class<NasaSdoMedia> getMediaClass() {
         return NasaSdoMedia.class;
     }

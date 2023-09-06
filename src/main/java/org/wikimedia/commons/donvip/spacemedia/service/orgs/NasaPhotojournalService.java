@@ -99,6 +99,11 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         super(repository, "nasa.photojournal", Set.of("photojournal"));
     }
 
+    @Override
+    protected boolean isNASA(NasaPhotojournalMedia media) {
+        return true;
+    }
+
     private SolrQuery buildSolrQuery(int start) {
         return new SolrQuery("*:*").setSort("publication-date", ORDER.desc).setRows(solrPage).setStart(start);
     }

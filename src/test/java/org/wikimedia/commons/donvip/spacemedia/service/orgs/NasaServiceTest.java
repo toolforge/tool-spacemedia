@@ -29,6 +29,7 @@ import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.PropertyIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaAudioRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaImageRepository;
@@ -84,7 +85,7 @@ class NasaServiceTest extends AbstractOrgServiceTest {
                         e("Prokopyev", "Sergey Prokopyev (cosmonaut)"), e("Cristoforetti", "Samantha Cristoforetti"),
                         e("Lindgren", "Kjell Lindgren"), e("Kikina", "Anna Kikina"), e("Rubio", "Francisco Rubio")));
         assertEquals(Set.of("ISS Expedition 68", "Anna Kikina", "Sergey Prokopyev (cosmonaut)"),
-                service.findCategories(media, null, false));
+                service.findCategories(media, new FileMetadata(), false));
     }
 
     @Test

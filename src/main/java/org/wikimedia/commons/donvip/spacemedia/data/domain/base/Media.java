@@ -37,7 +37,6 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
@@ -124,19 +123,16 @@ public class Media implements MediaProjection, MediaDescription {
         this.metadata = metadata;
     }
 
-    @Transient
     @JsonIgnore
     public Stream<FileMetadata> getMetadataStream() {
         return getMetadata().stream();
     }
 
-    @Transient
     @JsonIgnore
     public boolean hasMetadata() {
         return !getMetadata().isEmpty();
     }
 
-    @Transient
     @JsonIgnore
     public int getMetadataCount() {
         return getMetadata().size();
@@ -234,7 +230,6 @@ public class Media implements MediaProjection, MediaDescription {
         this.description = description;
     }
 
-    @Transient
     @JsonIgnore
     public List<MediaDescription> getDescriptionObjects() {
         List<MediaDescription> result = new ArrayList<>(List.of(this));
@@ -242,7 +237,6 @@ public class Media implements MediaProjection, MediaDescription {
         return result;
     }
 
-    @Transient
     @JsonIgnore
     public List<String> getDescriptions() {
         return getDescriptionObjects().stream().map(MediaDescription::getDescription).filter(StringUtils::isNotBlank)
@@ -295,7 +289,6 @@ public class Media implements MediaProjection, MediaDescription {
         return localDate != null ? localDate : zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
     }
 
-    @Transient
     @JsonIgnore
     public Set<String> getAllCommonsFileNames() {
         return getMetadataStream()
