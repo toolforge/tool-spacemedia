@@ -127,7 +127,8 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
             }
             String credits = media.getCredits();
             // Fix corrupted files with short credits. Can be removed in the future
-            if (isShortCredits(credits) && !SHORT_CREDITS_OK.contains(credits)) {
+            if ((isShortCredits(credits) && !SHORT_CREDITS_OK.contains(credits))
+                    || (credits != null && credits.trim().startsWith(","))) {
                 media = refresh(media);
                 save = !isShortCredits(media.getCredits());
             }
