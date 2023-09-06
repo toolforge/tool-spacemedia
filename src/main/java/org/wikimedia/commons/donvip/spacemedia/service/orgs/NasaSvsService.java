@@ -91,12 +91,14 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                         InputStream in = response.getEntity().getContent()) {
                     NasaSvsSearchResultPage results = jackson.readValue(in, NasaSvsSearchResultPage.class);
                     for (NasaSvsSearchResult result : results.results()) {
-                        try {
-                            updateImage(newId(result.pk), uploadedMedia);
-                        } catch (RuntimeException e) {
-                            LOGGER.error("Error while processing {}", result, e);
+                        if (!"Gallery".equals(result.result_type())) {
+                            try {
+                                updateImage(newId(result.pk), uploadedMedia);
+                            } catch (RuntimeException e) {
+                                LOGGER.error("Error while processing {}", result, e);
+                            }
+                            count++;
                         }
-                        count++;
                     }
                     done = results.next() == null;
                     if (!done) {
@@ -158,7 +160,9 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                 // the same resolution)
                 group.media().stream()
                         .filter(x -> x.media_type().shouldBeOkForCommons()
-                                && !x.alt_text().startsWith("Time slates for the multiple movies"))
+                                && !x.url().toExternalForm().endsWith(".exr")
+                                && !x.alt_text().startsWith("Time slates for the multiple movies")
+                                && !x.alt_text().startsWith("This timeline is synchronized with"))
                         .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst().ifPresent(biggest -> {
                             NasaSvsMediaItem item = group.media().stream()
                                     .filter(x -> x.url().toExternalForm().endsWith(".webm")
@@ -227,37 +231,47 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
         return result;
     }
 
-    public static record NasaSvsSearchResultPage( /**
-                                                   * The total number of results for the given query, regardless of
-                                                   * which page or how many results are currently being shown.
-                                                   */
-    int count, /**
-                * The URL that will display the next page of results, using the same limit as
-                * the current request. This field will be null if all of the results are being
-                * shown, or if the final page of results is being shown.
-                */
-    URL next, /**
-               * The URL that will display the previous page of results, using the same limit
-               * as the current request. This field will be null if all of the results are
-               * being shown, or if the first page of results is being shown.
-               */
-    URL previous, /** An array of results objects. */
-    List<NasaSvsSearchResult> results) {
+    public static record NasaSvsSearchResultPage(
+            /**
+             * The total number of results for the given query, regardless of which page or
+             * how many results are currently being shown.
+             */
+            int count,
+            /**
+             * The URL that will display the next page of results, using the same limit as
+             * the current request. This field will be null if all of the results are being
+             * shown, or if the final page of results is being shown.
+             */
+            URL next,
+            /**
+             * The URL that will display the previous page of results, using the same limit
+             * as the current request. This field will be null if all of the results are
+             * being shown, or if the first page of results is being shown.
+             */
+            URL previous, /** An array of results objects. */
+            List<NasaSvsSearchResult> results) {
     }
 
-    public static record NasaSvsSearchResult( /** The type of result that this is. */
-    String result_type, /** The internal database ID of the visualization. */
-    int pk, /** The url that the visualization can be accessed from. */
-    URL url, /** The date and time (ET) the visualization was released. */
-    ZonedDateTime release_date, /**
-                                 * The total number of views that this particular visualization has gotten over
-                                 * the past 10 days. This is used for popularity ranking on the site.
-                                 */
-    int hits, /** The title of the visualization. */
-    String title, /**
-                   * A description of the visualization. The length of this will vary greatly
-                   * based on the page content.
-                   */
-    String description) {
+    public static record NasaSvsSearchResult(
+            /** The type of result that this is. */
+            String result_type,
+            /** The internal database ID of the visualization. */
+            int pk,
+            /** The url that the visualization can be accessed from. */
+            URL url,
+            /** The date and time (ET) the visualization was released. */
+            ZonedDateTime release_date,
+            /**
+             * The total number of views that this particular visualization has gotten over
+             * the past 10 days. This is used for popularity ranking on the site.
+             */
+            int hits,
+            /** The title of the visualization. */
+            String title,
+            /**
+             * A description of the visualization. The length of this will vary greatly
+             * based on the page content.
+             */
+            String description) {
     }
 }
