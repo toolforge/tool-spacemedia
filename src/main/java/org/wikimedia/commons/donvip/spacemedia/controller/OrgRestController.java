@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -185,10 +186,18 @@ public abstract class OrgRestController<T extends Media> {
     }
 
     private final void refreshMissingMedia(Predicate<T> mustRefresh) throws IOException {
-        for (T media : service.listMissingMedia()) {
-            if (mustRefresh.test(media)) {
-                service.refreshAndSave(media);
+        Pageable page = PageRequest.of(0, SIZE, DESC, SORT);
+        while (true) {
+            Page<T> medias = service.listMissingMedia(page);
+            if (medias.isEmpty()) {
+                return;
             }
+            for (T media : medias) {
+                if (mustRefresh.test(media)) {
+                    service.refreshAndSave(media);
+                }
+            }
+            page = page.next();
         }
     }
 
