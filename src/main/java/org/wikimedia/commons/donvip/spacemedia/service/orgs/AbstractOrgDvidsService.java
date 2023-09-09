@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
@@ -13,12 +14,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,11 +36,11 @@ import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.HttpClientErrorException.NotFound;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsLocation;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaType;
@@ -54,7 +53,6 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.dvids.DvidsMediaProcessorService;
-import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -222,7 +220,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     private DvidsMedia getMediaFromApi(RestTemplate rest, String id, String unit) {
-        DvidsMedia media = Optional.ofNullable(
+        DvidsMedia media = ofNullable(
                 rest.getForObject(assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)), ApiAssetResponse.class))
                 .orElseThrow(() -> new IllegalArgumentException("No result from DVIDS API for " + id))
                 .getResults();
@@ -361,11 +359,11 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     protected final String getSource(DvidsMedia media, FileMetadata metadata) {
         URL sourceUrl = getSourceUrl(media, metadata);
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), sourceUrl);
-        return t != null ? "{{" + t.getVirinTemplate() + "}}" : sourceUrl.toExternalForm();
+        return t != null ? "{{" + t.virinTemplate() + "}}" : sourceUrl.toExternalForm();
     }
 
     @Override
-    protected final String getAuthor(DvidsMedia media) throws MalformedURLException {
+    protected final String getAuthor(DvidsMedia media) {
         StringBuilder result = new StringBuilder();
         Matcher m = US_MEDIA_BY.matcher(media.getDescription());
         if (m.matches()) {
@@ -378,26 +376,9 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
-    protected final Pair<String, Map<String, String>> getWikiFileDesc(DvidsMedia media, FileMetadata metadata)
-            throws MalformedURLException {
-        String lang = getLanguage(media);
-        String desc = getDescription(media, metadata);
-        StringBuilder sb = new StringBuilder("{{milim\n| description = ")
-                .append("{{").append(lang).append("|1=").append(CommonsService.formatWikiCode(desc)).append("}}");
-        getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
-        sb.append("\n| source = ").append(getSource(media, metadata))
-          .append("\n| author = ").append(getAuthor(media));
-        getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
-        Optional.ofNullable(media.getLocation()).ifPresent(l -> sb.append("\n| location = ").append(l));
-        sb.append("\n| virin = ").append(media.getVirin());
-        Optional.ofNullable(media.getPublicationDateTime())
-                .ifPresent(p -> sb.append("\n| dateposted = ").append(toIso8601(p)));
-        Optional.ofNullable(media.getRating()).ifPresent(r -> sb.append("\n| stars = ").append(r.intValue()));
-        getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| other versions = ").append(s));
-        getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
-        getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
-        sb.append("\n}}");
-        return Pair.of(sb.toString(), Map.of(lang, desc));
+    protected final Pair<String, Map<String, String>> getWikiFileDesc(DvidsMedia media, FileMetadata metadata) {
+        return milim(media, metadata, media.getVirin(), ofNullable(media.getLocation()).map(DvidsLocation::toString),
+                ofNullable(media.getRating()));
     }
 
     @Override
@@ -417,8 +398,8 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     public Set<String> findLicenceTemplates(DvidsMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getUniqueMetadata().getAssetUrl());
-        if (t != null && StringUtils.isNotBlank(t.getPdTemplate())) {
-            result.add(t.getPdTemplate());
+        if (t != null && StringUtils.isNotBlank(t.pdTemplate())) {
+            result.add(t.pdTemplate());
         }
         if (media.getDescription() != null) {
             if (media.getDescription().contains("Space Force photo")) {
@@ -436,24 +417,16 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
-    public Statistics getStatistics(boolean details) {
-        Statistics stats = super.getStatistics(details);
-        if (details && getRepoIds().size() > 1) {
-            stats.setDetails(getRepoIds().stream()
-                    .map(this::getStatistics)
-                    .sorted().toList());
-        }
-        return stats;
+    protected Set<String> getEmojis(DvidsMedia uploadedMedia) {
+        Set<String> result = super.getEmojis(uploadedMedia);
+        result.add(UnitedStates.getUsMilitaryEmoji(uploadedMedia));
+        return result;
     }
 
-    private Statistics getStatistics(String alias) {
-        Set<String> singleton = Collections.singleton(alias);
-        return new Statistics(alias, alias,
-                repository.count(singleton),
-                repository.countUploadedToCommons(singleton),
-                repository.countByIgnoredTrue(singleton),
-                repository.countMissingImagesInCommons(singleton),
-                repository.countMissingVideosInCommons(singleton),
-                repository.countByMetadata_PhashNotNull(singleton), null);
+    @Override
+    protected Set<String> getTwitterAccounts(DvidsMedia uploadedMedia) {
+        Set<String> result = super.getTwitterAccounts(uploadedMedia);
+        result.add(UnitedStates.getUsMilitaryTwitterAccount(uploadedMedia));
+        return result;
     }
 }

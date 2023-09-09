@@ -467,6 +467,7 @@ public class Media implements MediaProjection, MediaDescription {
         setCreationDate(mediaFromApi.getCreationDate());
         setPublicationDateTime(mediaFromApi.getPublicationDateTime());
         setPublicationDate(mediaFromApi.getPublicationDate());
+        setThumbnailUrl(mediaFromApi.getThumbnailUrl());
         if (mediaFromApi.hasMetadata()) {
             for (Iterator<FileMetadata> it = getMetadata().iterator(); it.hasNext();) {
                 FileMetadata m = it.next();

@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
-import java.net.MalformedURLException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +36,7 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
     }
 
     @Override
-    protected String getAuthor(YouTubeMedia media) throws MalformedURLException {
+    protected String getAuthor(YouTubeMedia media) {
         return "Arianespace";
     }
 

@@ -9,7 +9,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
+import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
 @Service
 public class UsSpaceForceFlickrService extends AbstractOrgFlickrService {
@@ -38,33 +38,15 @@ public class UsSpaceForceFlickrService extends AbstractOrgFlickrService {
 
     @Override
     protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
-        return Set.of(Emojis.FLAG_USA);
-    }
-
-    @Override
-    public Set<String> findCategories(FlickrMedia media, FileMetadata metadata, boolean includeHidden) {
-        Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (includeHidden) {
-            switch (media.getPathAlias()) {
-            case "airforcespacecommand":
-                result.add("Photographs by the United States Air Force Space Command");
-                break;
-            case "129133022@N07":
-                result.add("Photographs by the Space Systems Command");
-                break;
-            default:
-                // Do nothing
-            }
-        }
+        Set<String> result = super.getEmojis(uploadedMedia);
+        result.add(UnitedStates.getUsMilitaryEmoji(uploadedMedia));
         return result;
     }
 
     @Override
     protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        if ("129133022@N07".equals(uploadedMedia.getPathAlias())) {
-            return Set.of("@USSF_SSC");
-        } else {
-            return Set.of("@SpaceForceDoD");
-        }
+        Set<String> result = super.getEmojis(uploadedMedia);
+        result.add(UnitedStates.getUsMilitaryTwitterAccount(uploadedMedia));
+        return result;
     }
 }

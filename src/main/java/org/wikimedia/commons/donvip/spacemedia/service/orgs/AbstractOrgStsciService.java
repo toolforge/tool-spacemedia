@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -205,11 +204,6 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     @Override
     public final URL getSourceUrl(StsciMedia media, FileMetadata metadata) {
         return newURL(getImageDetailsLink(media.getId().getMediaId()));
-    }
-
-    @Override
-    protected final String getAuthor(StsciMedia media) throws MalformedURLException {
-        return media.getCredits();
     }
 
     @Override

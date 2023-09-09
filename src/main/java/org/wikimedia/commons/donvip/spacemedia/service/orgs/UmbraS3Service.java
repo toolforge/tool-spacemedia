@@ -4,7 +4,6 @@ import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -113,7 +112,7 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     }
 
     @Override
-    protected String getAuthor(S3Media media) throws MalformedURLException {
+    protected String getAuthor(S3Media media) {
         // https://registry.opendata.aws/umbra-open-data/
         // https://umbra.space/terms-of-use
         return "Umbra Lab, Inc.";

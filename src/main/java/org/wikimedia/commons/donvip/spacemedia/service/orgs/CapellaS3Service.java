@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
@@ -93,7 +92,7 @@ public class CapellaS3Service extends AbstractOrgS3Service {
     }
 
     @Override
-    protected String getAuthor(S3Media media) throws MalformedURLException {
+    protected String getAuthor(S3Media media) {
         // https://registry.opendata.aws/capella_opendata/
         return "Capella Space";
     }

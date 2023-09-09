@@ -6,7 +6,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMap
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -571,11 +570,6 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
             }
         }
         endUpdateMedia(count, uploadedMedia, uploadedMetadata, start);
-    }
-
-    @Override
-    protected String getAuthor(DjangoplicityMedia media) throws MalformedURLException {
-        return media.getCredits();
     }
 
     @Override

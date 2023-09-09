@@ -374,11 +374,6 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     }
 
     @Override
-    protected String getAuthor(NasaPhotojournalMedia media) throws MalformedURLException {
-        return media.getCredits();
-    }
-
-    @Override
     protected Class<NasaPhotojournalMedia> getMediaClass() {
         return NasaPhotojournalMedia.class;
     }

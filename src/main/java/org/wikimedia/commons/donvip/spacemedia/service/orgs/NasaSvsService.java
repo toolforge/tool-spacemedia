@@ -8,7 +8,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -195,7 +194,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     }
 
     @Override
-    protected String getAuthor(NasaSvsMedia media) throws MalformedURLException {
+    protected String getAuthor(NasaSvsMedia media) {
         return "NASA's Scientific Visualization Studio - " + media.getCredits();
     }
 

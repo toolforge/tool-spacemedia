@@ -27,6 +27,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -101,6 +102,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
+import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
 /**
  * Superclass of orgs services.
@@ -493,8 +495,20 @@ public abstract class AbstractOrgService<T extends Media>
     @Override
     public Statistics getStatistics(boolean details) {
         long problems = getProblemsCount();
-        return new Statistics(getName(), getId(), countAllMedia(), countUploadedMedia(), countIgnored(),
+        Statistics stats = new Statistics(getName(), getId(), countAllMedia(), countUploadedMedia(), countIgnored(),
                 countMissingImages(), countMissingVideos(), countPerceptualHashes(), problems > 0 ? problems : null);
+        if (details && getRepoIds().size() > 1) {
+            stats.setDetails(getRepoIds().stream().map(this::getStatistics).sorted().toList());
+        }
+        return stats;
+    }
+
+    private Statistics getStatistics(String alias) {
+        Set<String> singleton = Collections.singleton(alias);
+        return new Statistics(alias, alias, repository.count(singleton), repository.countUploadedToCommons(singleton),
+                repository.countByIgnoredTrue(singleton), repository.countMissingImagesInCommons(singleton),
+                repository.countMissingVideosInCommons(singleton), repository.countByMetadata_PhashNotNull(singleton),
+                null);
     }
 
     @Override
@@ -1004,7 +1018,9 @@ public abstract class AbstractOrgService<T extends Media>
         return wikiLink(getSourceUrl(media, metadata), media.getTitle());
     }
 
-    protected abstract String getAuthor(T media) throws MalformedURLException;
+    protected String getAuthor(T media) {
+        return media.getCredits();
+    }
 
     protected final Optional<Temporal> getCreationDate(T media) {
         return Optional.<Temporal>ofNullable(media.getCreationDateTime())
@@ -1085,6 +1101,7 @@ public abstract class AbstractOrgService<T extends Media>
             result.add("NASA videos in " + media.getYear().getValue());
         }
         if (includeHidden) {
+            UnitedStates.getUsMilitaryCategory(media).ifPresent(result::add);
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
         }
         return result;
@@ -1444,6 +1461,27 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected static Object smartExceptionLog(Throwable e) {
         return e.getCause() instanceof RuntimeException ? e : e.toString();
+    }
+
+    protected Pair<String, Map<String, String>> milim(T media, FileMetadata metadata, String virin,
+            Optional<String> location, Optional<Float> rating) {
+        String lang = getLanguage(media);
+        String desc = getDescription(media, metadata);
+        StringBuilder sb = new StringBuilder("{{milim\n| description = ").append("{{").append(lang).append("|1=")
+                .append(CommonsService.formatWikiCode(desc)).append("}}");
+        getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
+        sb.append("\n| source = ").append(getSource(media, metadata)).append("\n| author = ").append(getAuthor(media));
+        getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
+        location.ifPresent(l -> sb.append("\n| location = ").append(l));
+        sb.append("\n| virin = ").append(virin);
+        Optional.ofNullable(media.getPublicationDateTime())
+                .ifPresent(p -> sb.append("\n| dateposted = ").append(toIso8601(p)));
+        rating.ifPresent(r -> sb.append("\n| stars = ").append(r.intValue()));
+        getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| other versions = ").append(s));
+        getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
+        getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
+        sb.append("\n}}");
+        return Pair.of(sb.toString(), Map.of(lang, desc));
     }
 
     protected static final class UpdateFinishedException extends Exception {

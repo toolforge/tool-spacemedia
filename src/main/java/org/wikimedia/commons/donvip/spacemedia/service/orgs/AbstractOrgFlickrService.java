@@ -15,7 +15,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
@@ -92,34 +90,12 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
-    public Statistics getStatistics(boolean details) {
-        Statistics stats = super.getStatistics(details);
-        if (details && getRepoIds().size() > 1) {
-            stats.setDetails(getRepoIds().stream()
-                    .map(this::getStatistics)
-                    .sorted().toList());
-        }
-        return stats;
-    }
-
-    private Statistics getStatistics(String alias) {
-        Set<String> singleton = Collections.singleton(alias);
-        return new Statistics(alias, alias,
-                flickrRepository.count(singleton),
-                flickrRepository.countUploadedToCommons(singleton),
-                flickrRepository.countByIgnoredTrue(singleton),
-                flickrRepository.countMissingImagesInCommons(singleton),
-                flickrRepository.countMissingVideosInCommons(singleton),
-                flickrRepository.countByMetadata_PhashNotNull(singleton), null);
-    }
-
-    @Override
     public final URL getSourceUrl(FlickrMedia media, FileMetadata metadata) {
         return getPhotoUrl(media);
     }
 
     @Override
-    protected final String getAuthor(FlickrMedia media) throws MalformedURLException {
+    protected final String getAuthor(FlickrMedia media) {
         URL userPhotosUrl = getUserPhotosUrl(media);
         try {
             User user = flickrService.findUser(userPhotosUrl);
@@ -175,9 +151,9 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(),
                 getSourceUrl(media, media.getUniqueMetadata()));
         if (t != null) {
-            result.add(t.getVirinTemplate());
-            if (StringUtils.isNotBlank(t.getPdTemplate())) {
-                result.add(t.getPdTemplate());
+            result.add(t.virinTemplate());
+            if (StringUtils.isNotBlank(t.pdTemplate())) {
+                result.add(t.pdTemplate());
             }
         }
         String description = media.getDescription();

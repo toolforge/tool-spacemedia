@@ -1,16 +1,15 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
+import static java.util.Optional.ofNullable;
+
 import java.net.URL;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
 public final class UnitedStates {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(UnitedStates.class);
 
     /**
      * Exact pattern for US Military VIRIN identifiers. See
@@ -50,22 +49,7 @@ public final class UnitedStates {
         return US_VIRIN.matcher(identifier).matches();
     }
 
-    public static class VirinTemplates {
-        private final String virinTemplate;
-        private final String pdTemplate;
-
-        VirinTemplates(String virinTemplate, String pdTemplate) {
-            this.virinTemplate = Objects.requireNonNull(virinTemplate);
-            this.pdTemplate = pdTemplate;
-        }
-
-        public String getVirinTemplate() {
-            return virinTemplate;
-        }
-
-        public String getPdTemplate() {
-            return pdTemplate;
-        }
+    public static record VirinTemplates(String virinTemplate, String pdTemplate) {
     }
 
     public static VirinTemplates getUsVirinTemplates(String virin, URL url) {
@@ -74,42 +58,54 @@ public final class UnitedStates {
 
     public static VirinTemplates getUsVirinTemplates(String virin, String url) {
         Matcher m = US_VIRIN.matcher(virin);
-        if (m.matches()) {
-            String letter = m.group(2);
-            switch (letter) {
-            case "A":
-                return new VirinTemplates(virinTemplate(virin, "Army", url), "PD-USGov-Military-Army");
-            case "D":
-                return new VirinTemplates(virinTemplate(virin, "Department of Defense", url), "PD-USGov-Military");
-            case "F":
-                return new VirinTemplates(virinTemplate(virin, "Air Force", url), "PD-USGov-Military-Air Force");
-            case "G":
-                return new VirinTemplates(virinTemplate(virin, "Coast Guard", url), "PD-USCG");
-            case "H":
-                return new VirinTemplates(virinTemplate(virin, "Department of Homeland Security", url), "PD-USGov-DHS");
-            case "M":
-                return new VirinTemplates(virinTemplate(virin, "Marine Corps", url), "PD-USGov-Military-Marines");
-            case "N":
-                return new VirinTemplates(virinTemplate(virin, "Navy", url), "PD-USGov-Military-Navy");
-            case "O":
-                return new VirinTemplates(virinTemplate(virin, "Other", url), null);
-            case "P":
-                return new VirinTemplates(virinTemplate(virin, "Executive Office of the President", url), "PD-USGov-POTUS");
-            case "S":
-                return new VirinTemplates(virinTemplate(virin, "Department of State", url), "PD-USGov-DOS");
-            case "X":
-                return new VirinTemplates(virinTemplate(virin, "Space Force", url), "PD-USGov-Military-Space Force");
-            case "Z":
-                return new VirinTemplates(virinTemplate(virin, "National Guard", url), "PD-USGov-Military-National Guard");
-            default:
-                LOGGER.error("Unknown US military organization letter: {}", letter);
-                return new VirinTemplates(virinTemplate(virin, "Armed Forces", url), null);
-            }
-        }
-        return null;
+        return m.matches() ? switch (m.group(2)) {
+            case "A" -> new VirinTemplates(vt(virin, "Army", url), "PD-USGov-Military-Army");
+            case "D" -> new VirinTemplates(vt(virin, "Department of Defense", url), "PD-USGov-Military");
+            case "F" -> new VirinTemplates(vt(virin, "Air Force", url), "PD-USGov-Military-Air Force");
+            case "G" -> new VirinTemplates(vt(virin, "Coast Guard", url), "PD-USCG");
+            case "H" -> new VirinTemplates(vt(virin, "Department of Homeland Security", url), "PD-USGov-DHS");
+            case "M" -> new VirinTemplates(vt(virin, "Marine Corps", url), "PD-USGov-Military-Marines");
+            case "N" -> new VirinTemplates(vt(virin, "Navy", url), "PD-USGov-Military-Navy");
+            case "O" -> new VirinTemplates(vt(virin, "Other", url), null);
+            case "P" -> new VirinTemplates(vt(virin, "Executive Office of the President", url), "PD-USGov-POTUS");
+            case "S" -> new VirinTemplates(vt(virin, "Department of State", url), "PD-USGov-DOS");
+            case "X" -> new VirinTemplates(vt(virin, "Space Force", url), "PD-USGov-Military-Space Force");
+            case "Z" -> new VirinTemplates(vt(virin, "National Guard", url), "PD-USGov-Military-National Guard");
+            default -> new VirinTemplates(vt(virin, "Armed Forces", url), null);
+        } : null;
     }
 
-    private static String virinTemplate(String virin, String organization, String url) {
+    private static String vt(String virin, String organization, String url) {
         return "ID-USMil |1=" + virin + " |2= " + organization + "|url= " + url;
+    }
+
+    public static Optional<String> getUsMilitaryCategory(Media media) {
+        return ofNullable(switch (media.getId().getRepoId()) {
+        case "afspc", "AFSC", "airforcespacecommand" -> "Photographs by the United States Air Force Space Command";
+        case "ssc", "SSC", "129133022@N07" -> "Photographs by the Space Systems Command";
+        case "jtfsd", "spacecom", "USSPACECOM" -> "Photographs by the United States Space Command";
+        default -> null;
+        });
+    }
+
+    public static String getUsMilitaryEmoji(Media media) {
+        return switch (media.getId().getRepoId()) {
+        case "SLD30", "45SW", "patrick", "vandenberg" -> Emojis.ROCKET;
+        default -> Emojis.FLAG_USA;
+        };
+    }
+
+    public static String getUsMilitaryTwitterAccount(Media media) {
+        return switch (media.getId().getRepoId()) {
+        case "buckley" -> "@Buckley_SFB";
+        case "SBD1" -> "@PeteSchriever";
+        case "vandenberg", "SLD30" -> "@SLDelta30";
+        case "patrick", "45SW" -> "@SLDelta45";
+        case "ssc", "SSC", "129133022@N07" -> "@USSF_SSC";
+        case "spoc", "SpOC" -> "@ussfspoc";
+        case "starcom", "STARCOM" -> "@USSF_STARCOM";
+        case "jtfsd", "spacecom", "USSPACECOM" -> "@US_SpaceCom";
+        default -> "@SpaceForceDoD";
+        };
     }
 }

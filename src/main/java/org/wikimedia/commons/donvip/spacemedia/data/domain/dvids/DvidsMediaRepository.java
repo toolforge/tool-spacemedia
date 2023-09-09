@@ -16,7 +16,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     @CacheEvict(allEntries = true, cacheNames = { "dvidsCount", "dvidsCountByUnit", "dvidsCountIgnored", "dvidsCountIgnoredByUnit",
             "dvidsCountMissing", "dvidsCountMissingImages", "dvidsCountMissingVideos", "dvidsCountMissingImagesByUnit",
             "dvidsCountMissingVideosByUnit", "dvidsCountMissingByUnit", "dvidsCountUploaded",
-            "dvidsCountUploadedByUnit", "dvidsCountPhashNotNull", "dvidsCountPhashNotNullByAccount" })
+            "dvidsCountUploadedByUnit", "dvidsCountPhashNotNull", "dvidsCountPhashNotNullByUnit" })
     @interface CacheEvictDvidsAll {
 
     }
@@ -82,7 +82,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     long countByMetadata_PhashNotNull();
 
     @Override
-    @Cacheable("dvidsCountPhashNotNullByAccount")
+    @Cacheable("dvidsCountPhashNotNullByUnit")
     long countByMetadata_PhashNotNull(Set<String> units);
 
     // SAVE

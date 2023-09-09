@@ -85,11 +85,6 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
     }
 
     @Override
-    protected String getAuthor(NasaModisMedia media) {
-        return media.getCredits();
-    }
-
-    @Override
     public void updateMedia() throws IOException, UploadException {
         LocalDateTime start = startUpdateMedia();
         List<NasaModisMedia> uploadedMedia = new ArrayList<>();

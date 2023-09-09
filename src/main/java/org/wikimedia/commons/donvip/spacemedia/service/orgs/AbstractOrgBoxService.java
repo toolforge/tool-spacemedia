@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -187,7 +186,7 @@ public abstract class AbstractOrgBoxService extends AbstractOrgService<BoxMedia>
     }
 
     @Override
-    protected final String getAuthor(BoxMedia media) throws MalformedURLException {
+    protected final String getAuthor(BoxMedia media) {
         return boxService.getSharedItem(getSharedLink(media.getId())).getCreatedBy().getName();
     }
 }
