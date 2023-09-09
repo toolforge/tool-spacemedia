@@ -1,29 +1,36 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.webmil;
 
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import javax.persistence.Column;
+import javax.persistence.Entity;
 
-public class WebMilMedia extends Media {
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 
-    // https://www.web.dma.mil/Our-Customers/#space-force-websites
+@Entity(name = "WebmilMedia")
+public class WebMilMedia extends SingleFileMedia {
 
-    // NRO
-    // https://www.nro.gov/Media/Images/
+    /**
+     * VIRIN of asset.
+     */
+    @Column(length = 20)
+    private String virin;
 
-    // USSF
-    // https://www.spaceforce.mil/Multimedia/Photos/
-    // https://www.buckley.spaceforce.mil/News/Photos/
-    // https://www.losangeles.spaceforce.mil/News/Photos/
-    // https://www.patrick.spaceforce.mil/News/Photos/
-    // https://www.spacebasedelta1.spaceforce.mil/Newsroom/Photos/
-    // https://www.schriever.spaceforce.mil/News/Photos/
-    // https://www.vandenberg.spaceforce.mil/News/Photos/
+    public String getVirin() {
+        return virin;
+    }
 
-    // SPOC
-    // https://www.spoc.spaceforce.mil/Connect-With-Us/Photos
+    public void setVirin(String virin) {
+        this.virin = virin;
+    }
 
-    // STARCOM
-    // https://www.starcom.spaceforce.mil/Connect-With-Us/Photos/
+    public WebMilMedia copyDataFrom(WebMilMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        setVirin(mediaFromApi.getVirin());
+        return this;
+    }
 
-    // AFSPC
-    // https://www.afspc.af.mil/News/Photos/
+    @Override
+    public String toString() {
+        return "WebMilMedia [virin=" + virin + ", title=" + getTitle() + ", credits=" + getCredits()
+                + ", publicationDate=" + getPublicationDate() + ", id=" + getId() + ']';
+    }
 }

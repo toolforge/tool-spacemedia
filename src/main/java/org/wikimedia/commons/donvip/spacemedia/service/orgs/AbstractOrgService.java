@@ -1473,9 +1473,8 @@ public abstract class AbstractOrgService<T extends Media>
         sb.append("\n| source = ").append(getSource(media, metadata)).append("\n| author = ").append(getAuthor(media));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
         location.ifPresent(l -> sb.append("\n| location = ").append(l));
-        sb.append("\n| virin = ").append(virin);
-        Optional.ofNullable(media.getPublicationDateTime())
-                .ifPresent(p -> sb.append("\n| dateposted = ").append(toIso8601(p)));
+        sb.append("\n| virin = ").append(virin).append("\n| dateposted = ").append(toIso8601(
+                Optional.<Temporal>ofNullable(media.getPublicationDateTime()).orElse(media.getPublicationDate())));
         rating.ifPresent(r -> sb.append("\n| stars = ").append(r.intValue()));
         getOtherVersions(media, metadata).ifPresent(s -> sb.append("\n| other versions = ").append(s));
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
