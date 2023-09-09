@@ -297,7 +297,7 @@ public abstract class AbstractOrgService<T extends Media>
 
     @Override
     public List<T> listMissingMediaByDate(LocalDate date) {
-        return repository.findMissingInCommonsByDate(getRepoIds(), date);
+        return repository.findMissingInCommonsByPublicationDate(getRepoIds(), date);
     }
 
     @Override
