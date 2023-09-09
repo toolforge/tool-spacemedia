@@ -4,6 +4,7 @@ import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -52,6 +53,10 @@ public abstract class NasaMedia extends SingleFileMedia implements WithKeywords 
     @Column(length = 340)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
+
+    @JsonProperty("album")
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> albums = new HashSet<>();
 
     @Transient
     public String getNasaId() {
@@ -103,6 +108,14 @@ public abstract class NasaMedia extends SingleFileMedia implements WithKeywords 
         this.keywords = keywords;
     }
 
+    public Set<String> getAlbums() {
+        return albums;
+    }
+
+    public void setAlbums(Set<String> albums) {
+        this.albums = albums;
+    }
+
     public NasaMediaType getMediaType() {
         return mediaType;
     }
@@ -121,6 +134,11 @@ public abstract class NasaMedia extends SingleFileMedia implements WithKeywords 
     @JsonProperty("asset_url")
     public void setAssetUrl(URL assetUrl) {
         getUniqueMetadata().setAssetUrl(assetUrl);
+    }
+
+    @Override
+    public Optional<String> getAlbumName() {
+        return getAlbums().stream().findFirst();
     }
 
     @Override
@@ -170,6 +188,7 @@ public abstract class NasaMedia extends SingleFileMedia implements WithKeywords 
         super.copyDataFrom(mediaFromApi);
         setLocation(mediaFromApi.getLocation());
         setMediaType(mediaFromApi.getMediaType());
+        setAlbums(mediaFromApi.getAlbums());
         return this;
     }
 }

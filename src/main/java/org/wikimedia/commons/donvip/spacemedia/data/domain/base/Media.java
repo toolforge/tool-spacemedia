@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -61,7 +62,7 @@ public class Media implements MediaProjection, MediaDescription {
     private static final Logger LOGGER = LoggerFactory.getLogger(Media.class);
 
     private static final Pattern ONLY_DIGITS = Pattern.compile("\\d+");
-    private static final Pattern IMG = Pattern.compile("IMG[-_]\\d+(-[A-Z]+)?");
+    private static final Pattern IMG = Pattern.compile("(?:IMG|DSC)[-_]\\d+(-[A-Z]+)?");
     private static final Pattern URI_LIKE = Pattern.compile("Https?\\-\\-.*", Pattern.CASE_INSENSITIVE);
 
     @Id
@@ -165,15 +166,22 @@ public class Media implements MediaProjection, MediaDescription {
 
     public String getUploadTitle(FileMetadata fileMetadata) {
         // Upload title must not exceed mediawiki limit (240 characters, filename-toolong API error)
-        String id = getUploadId(fileMetadata);
+        String uid = getUploadId(fileMetadata);
         String s = getUploadTitle();
-        if (strippedLower(id).equals(strippedLower(s))) {
+        if (strippedLower(uid).equals(strippedLower(s))) {
             return isTitleBlacklisted(s)
-                    ? getUploadTitle(normalizeFilename(getFirstSentence(getDescription(fileMetadata))), id)
+                    ? getUploadTitle(
+                            normalizeFilename(
+                                    getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata)))),
+                            uid)
                     : s.substring(0, Math.min(234, s.length()));
         } else {
-            return getUploadTitle(s, id);
+            return getUploadTitle(s, uid);
         }
+    }
+
+    public Optional<String> getAlbumName() {
+        return Optional.empty();
     }
 
     public String getDescription(FileMetadata fileMetadata) {

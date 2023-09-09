@@ -49,5 +49,6 @@ class MediaTest {
     @Test
     void testIsTitleBlacklisted() {
         assertTrue(Media.isTitleBlacklisted("IMG_5057-CC"));
+        assertTrue(Media.isTitleBlacklisted("DSC_1693"));
     }
 }
