@@ -92,7 +92,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                     for (NasaSvsSearchResult result : results.results()) {
                         if (!"Gallery".equals(result.result_type())) {
                             try {
-                                updateImage(newId(result.pk), uploadedMedia);
+                                updateImage(newId(result.id), uploadedMedia);
                             } catch (RuntimeException e) {
                                 LOGGER.error("Error while processing {}", result, e);
                             }
@@ -255,7 +255,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
             /** The type of result that this is. */
             String result_type,
             /** The internal database ID of the visualization. */
-            int pk,
+            int id,
             /** The url that the visualization can be accessed from. */
             URL url,
             /** The date and time (ET) the visualization was released. */
