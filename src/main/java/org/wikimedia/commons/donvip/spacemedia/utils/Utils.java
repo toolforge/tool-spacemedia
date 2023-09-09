@@ -269,4 +269,12 @@ public final class Utils {
     public static <T> boolean replace(Collection<T> collection, T oldValue, T newValue) {
         return collection.remove(oldValue) && collection.add(newValue);
     }
+
+    public static String getFirstSentence(String desc) {
+        if (desc == null) {
+            return "";
+        }
+        int idxDotInDesc = desc.indexOf('.');
+        return idxDotInDesc > 0 ? desc.substring(0, idxDotInDesc) : desc;
+    }
 }

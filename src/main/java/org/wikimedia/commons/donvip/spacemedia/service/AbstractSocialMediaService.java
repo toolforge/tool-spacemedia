@@ -15,12 +15,14 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
@@ -141,28 +143,17 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     }
 
     protected String createStatusText(Set<String> emojis, Set<String> accounts, long imgCount, long vidCount,
-            Collection<? extends Media> uploadedMedia, Collection<FileMetadata> uploadedMetadata, int maxTitles,
-            int maxKeywords) {
+            Collection<? extends Media> uploadedMedia, Collection<FileMetadata> uploadedMetadata, int maxKeywords) {
         StringBuilder sb = new StringBuilder(emojis.stream().sorted().collect(joining()));
-        if (imgCount > 0) {
-            sb.append(String.format(" %d new picture%s", imgCount, imgCount > 1 ? "s" : ""));
-            if (vidCount > 0) {
-                sb.append(" and");
-            }
-        }
-        if (vidCount > 0) {
-            sb.append(String.format(" %d new video%s", vidCount, vidCount > 1 ? "s" : ""));
-        }
-        if (!accounts.isEmpty()) {
-            sb.append(" from " + accounts.stream().sorted().collect(joining(" ")));
-        }
-        appendTitles(uploadedMedia, sb, maxTitles);
+        getLongestTitle(uploadedMedia).ifPresent(sb::append);
         appendKeywords(uploadedMedia, sb, maxKeywords);
+        String mediaFrom = getMediaFrom(accounts, imgCount, vidCount);
         if (imgCount + vidCount > 1) {
+            sb.append("\n\n⏩ ").append(mediaFrom);
             String maxTimestamp = imageRepo.findMaxTimestampBySha1In(uploadedMetadata.parallelStream()
                     .map(FileMetadata::getSha1).filter(Objects::nonNull).map(CommonsService::base36Sha1).toList());
             if (maxTimestamp != null) {
-                sb.append("\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
+                sb.append(" https://commons.wikimedia.org/wiki/Special:ListFiles?limit=" + uploadedMetadata.size()
                         + "&user=" + commonsAccount + "&ilshowall=1&offset=" + timestampFormatter
                                 .format(timestampFormatter.parse(maxTimestamp, LocalDateTime::from).plusSeconds(1)));
             } else {
@@ -171,7 +162,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             }
         } else {
             try {
-                sb.append("\n\n▶️ https://commons.wikimedia.org/wiki/File:"
+                sb.append("\n\n▶️ ").append(mediaFrom).append(" https://commons.wikimedia.org/wiki/File:"
                         + URLEncoder.encode(uploadedMetadata.iterator().next().getCommonsFileNames().iterator().next(),
                                 StandardCharsets.UTF_8));
             } catch (NoSuchElementException e) {
@@ -181,10 +172,28 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         return sb.toString().strip();
     }
 
-    private static void appendTitles(Collection<? extends Media> uploadedMedia, StringBuilder sb, int max) {
-        uploadedMedia.stream().map(Media::getTitle).filter(x -> x != null && x.length() > 3)
-                .map(x -> x.replace(" (annotated)", "").replace(" (labeled)", "")).distinct().sorted()
-                .limit(max).forEach(title -> sb.append("\n- ").append(title));
+    private static String getMediaFrom(Set<String> accounts, long imgCount, long vidCount) {
+        StringBuilder mediaFrom = new StringBuilder();
+        if (imgCount > 0) {
+            mediaFrom.append(String.format("%d new picture%s", imgCount, imgCount > 1 ? "s" : ""));
+            if (vidCount > 0) {
+                mediaFrom.append(" and");
+            }
+        }
+        if (vidCount > 0) {
+            mediaFrom.append(String.format("%d new video%s", vidCount, vidCount > 1 ? "s" : ""));
+        }
+        if (!accounts.isEmpty()) {
+            mediaFrom.append(" from " + accounts.stream().sorted().collect(joining(" ")));
+        }
+        return mediaFrom.toString();
+    }
+
+    private static Optional<String> getLongestTitle(Collection<? extends Media> uploadedMedia) {
+        return uploadedMedia.stream().map(Media::getTitle)
+                .filter(x -> x != null && x.length() > 3 && !x.matches("[a-z0-9]+"))
+                .map(x -> " " + x.replace(" (annotated)", "").replace(" (labeled)", "")).distinct()
+                .sorted(Comparator.comparingInt(String::length).reversed()).findFirst();
     }
 
     private static void appendKeywords(Collection<? extends Media> uploadedMedia, StringBuilder sb, int max) {

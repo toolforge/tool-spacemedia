@@ -116,17 +116,12 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
             Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
         final long imagesCount = uploadedMedia.stream().filter(Media::isImage).count();
         final long videosCount = uploadedMedia.stream().filter(Media::isVideo).count();
-        int maxTitles = 5;
         int maxKeywords = 10;
         String text = createStatusText(emojis, accounts, imagesCount, videosCount, uploadedMedia, uploadedMetadata,
-                maxTitles, maxKeywords);
-        while (!isTweetValid(text) && maxTitles > 1) {
-            text = createStatusText(emojis, accounts, imagesCount, videosCount, uploadedMedia, uploadedMetadata,
-                    --maxTitles, maxKeywords);
-        }
+                maxKeywords);
         while (!isTweetValid(text) && maxKeywords > 1) {
             text = createStatusText(emojis, accounts, imagesCount, videosCount, uploadedMedia, uploadedMetadata,
-                    maxTitles, --maxKeywords);
+                    --maxKeywords);
         }
         return postRequest(V2_TWEET, "application/json", new TweetRequest(createTweetMedia(uploadedMetadata), text));
     }

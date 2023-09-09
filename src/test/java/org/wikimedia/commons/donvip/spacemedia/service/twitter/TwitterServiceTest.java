@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.twitter;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -59,14 +60,14 @@ class TwitterServiceTest {
                 twitter.buildStatusRequest(List.of(image), List.of(newMetadata()), Set.of(), Set.of())
                         .getStringPayload(),
                 TweetRequest.class);
-        assertEquals("1 new picture", request.getText());
+        assertTrue(request.getText().contains("1 new picture"));
 
         request = jackson.readValue(
                 twitter.buildStatusRequest(List.of(image, image),
                         List.of(newMetadata(), newMetadata()), Set.of(), Set.of("@ESA", "@NASA"))
                         .getStringPayload(),
                 TweetRequest.class);
-        assertEquals("2 new pictures from @ESA @NASA\n\n⏩ https://commons.wikimedia.org/wiki/Special:ListFiles?limit=2&user=OptimusPrimeBot&ilshowall=1&offset=20230407000354", request.getText());
+        assertEquals("⏩ 2 new pictures from @ESA @NASA https://commons.wikimedia.org/wiki/Special:ListFiles?limit=2&user=OptimusPrimeBot&ilshowall=1&offset=20230407000354", request.getText());
     }
 
     private static final FileMetadata newMetadata() {

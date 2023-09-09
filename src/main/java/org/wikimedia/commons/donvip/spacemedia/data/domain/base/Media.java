@@ -8,6 +8,7 @@ import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.stripAccents;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.normalizeFilename;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getFirstSentence;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
 
@@ -204,14 +205,6 @@ public class Media implements MediaProjection, MediaDescription {
 
     protected String getUploadId(FileMetadata fileMetadata) {
         return normalizeFilename(getIdUsedInOrg());
-    }
-
-    protected static String getFirstSentence(String desc) {
-        if (desc == null) {
-            return "";
-        }
-        int idxDotInDesc = desc.indexOf('.');
-        return idxDotInDesc > 0 ? desc.substring(0, idxDotInDesc) : desc;
     }
 
     protected static String getUploadTitle(String s, String id) {
