@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -9,9 +10,9 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -51,8 +52,9 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
     private static final Pattern URL_PATTERN = Pattern
             .compile("https://.*\\.defense\\.gov/(\\d{4}/[A-Za-z]{3}/\\d{2})/.*");
 
-    private static final DateTimeFormatter URL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MMM/dd", Locale.ENGLISH);
-    private static final DateTimeFormatter VIRIN_DATE_FORMAT = DateTimeFormatter.ofPattern("yyMMdd", Locale.ENGLISH);
+    private static final DateTimeFormatter URL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MMM/dd", ENGLISH);
+    private static final DateTimeFormatter VIRIN_DATE_FORMAT = DateTimeFormatter.ofPattern("yyMMdd", ENGLISH);
+    private static final DateTimeFormatter VIRIN_BAD_DATE_FORMAT = DateTimeFormatter.ofPattern("MMddyy", ENGLISH);
 
     private static final String PHOTO_BY = "Photo by:";
     private static final String VIRIN = "VIRIN:";
@@ -183,7 +185,13 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
                 image.setVirin(text.substring(idxVirin + VIRIN.length() + 1, text.lastIndexOf('.')));
             }
         }
-        image.setCreationDate(LocalDate.parse(image.getVirin().substring(0, 6), VIRIN_DATE_FORMAT));
+        String virinDate = image.getVirin().substring(0, 6);
+        try {
+            image.setCreationDate(LocalDate.parse(virinDate, VIRIN_DATE_FORMAT));
+        } catch (DateTimeParseException e) {
+            LOGGER.warn(e.getMessage());
+            image.setCreationDate(LocalDate.parse(virinDate, VIRIN_BAD_DATE_FORMAT));
+        }
         String assetUrl = div.getElementById("aDownloadLrg").attr("href");
         addMetadata(image, assetUrl, null);
         Matcher m = URL_PATTERN.matcher(assetUrl);
