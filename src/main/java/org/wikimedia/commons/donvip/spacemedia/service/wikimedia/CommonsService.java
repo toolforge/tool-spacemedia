@@ -557,9 +557,15 @@ public class CommonsService {
         }
     }
 
+    @Cacheable("revisionContent")
     public String queryRevisionContent(int pageId) throws IOException {
-        RevisionsQuery query = apiHttpGet("?action=query&prop=revisions&rvprop=content&rvslots=main&rvlimit=1&pageids=" + pageId,
-                RevisionsQueryResponse.class).getQuery();
+        RevisionsQueryResponse response = apiHttpGet(
+                "?action=query&prop=revisions&rvprop=content&rvslots=main&rvlimit=1&pageids=" + pageId,
+                RevisionsQueryResponse.class);
+        if (response.getError() != null) {
+            LOGGER.error("API error while querying revision for page {}: {}", pageId, response.getError());
+        }
+        RevisionsQuery query = response.getQuery();
         if (query != null) {
             RevisionsPage rp = query.getPages().get(pageId);
             if (rp != null) {
@@ -750,12 +756,13 @@ public class CommonsService {
     }
 
     public String getPageContent(CommonsPage page) throws IOException {
-        return queryRevisionContent(page.getId());
+        return self.queryRevisionContent(page.getId());
     }
 
     public Set<String> cleanupCategories(Set<String> categories, Temporal date) {
         LocalDateTime start = now();
         LOGGER.info("Cleaning {} categories with depth {}...", categories.size(), catSearchDepth);
+        followCategoryRedirects(categories);
         Set<String> result = new HashSet<>();
         Set<String> lowerCategories = categories.stream().map(c -> c.toLowerCase(ENGLISH)).collect(toSet());
         for (Iterator<String> it = categories.iterator(); it.hasNext();) {
@@ -785,6 +792,57 @@ public class CommonsService {
         // Make sure all imported files get reviewed
         result.add("Spacemedia files (review needed)");
         return result;
+    }
+
+    private void followCategoryRedirects(Set<String> categories) {
+        Set<String> redirects = new HashSet<>();
+        for (Iterator<String> it = categories.iterator(); it.hasNext();) {
+            String cat = it.next();
+            try {
+                self.getCategoryRedirect(cat).ifPresent(redirect -> {
+                    redirects.add(redirect);
+                    it.remove();
+                });
+            } catch (CategoryNotFoundException | CategoryPageNotFoundException e) {
+                LOGGER.info("Category not found: {}", cat);
+                it.remove();
+            } catch (IOException e) {
+                LOGGER.info("I/O error while reviewing category {}", cat, e);
+            }
+        }
+        categories.addAll(redirects);
+    }
+
+    @Transactional(transactionManager = "commonsTransactionManager")
+    @Cacheable("categoryRedirect")
+    public Optional<String> getCategoryRedirect(String title) throws IOException {
+        CommonsPage page = self.getCategoryPage(title);
+        if (Boolean.TRUE.equals(page.getIsRedirect())) {
+            return Optional.of(page.getRedirect().getTitle());
+        } else {
+            // Look for CategoryRedirect template
+            // Must use the API as the text table is not aviable in db replica
+            return findRedirect(getPageContent(page));
+        }
+    }
+
+    static Optional<String> findRedirect(String wikitext) {
+        if (wikitext != null) {
+            int idx = wikitext.indexOf("{{Category redirect");
+            if (idx > -1) {
+                idx = wikitext.indexOf('|', idx + 19);
+                if (idx > -1) {
+                    int end = wikitext.indexOf('}', idx + 1);
+                    if (end > -1) {
+                        int pipe = wikitext.indexOf('|', idx + 1);
+                        return Optional
+                                .of(wikitext.substring(idx + 1, pipe > -1 ? pipe : end).replace("1=", "")
+                                        .replace("Category:", "").trim());
+                    }
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     protected Set<String> mapCategoriesByDate(Set<String> cats, Temporal date) {

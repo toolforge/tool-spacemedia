@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -105,24 +106,31 @@ class CommonsServiceTest {
 
     @Test
     void testCleanupCategories() {
+        mockCatPage("Combined_Force_Space_Component_Command", 90552264);
+        mockCatPage("Combined_Space_Operations_Center", 90552326);
         mockCategoryLinks();
         assertEquals(Set.of("Spacemedia files (review needed)", "Combined Space Operations Center"),
                 service.cleanupCategories(
-                        Set.of("Combined Force Space Component Command", "Combined Space Operations Center"),
+                        new HashSet<>(
+                                Set.of("Combined Force Space Component Command", "Combined Space Operations Center")),
                         LocalDateTime.now()));
     }
 
     @Test
     void testMapCategoriesByDate() {
-        CommonsCategory cat = new CommonsCategory();
-        cat.setTitle("Bill_Nelson_in_2023");
-        CommonsPage page = new CommonsPage();
-        page.setTitle("Bill Nelson in 2023");
-        when(commonsCategoryRepository.findByTitle("Bill_Nelson_in_2023")).thenReturn(Optional.of(cat));
-        when(commonsPageRepository.findByCategoryTitle("Bill_Nelson_in_2023")).thenReturn(Optional.of(page));
-
+        mockCatPage("Bill_Nelson_in_2023", 128109304);
         assertEquals(Set.of("Bill Nelson in 2023"),
                 service.mapCategoriesByDate(Set.of("Bill Nelson"), LocalDateTime.of(2023, 1, 1, 1, 1)));
+    }
+
+    private void mockCatPage(String title, int pageId) {
+        CommonsCategory cat = new CommonsCategory();
+        cat.setTitle(title);
+        CommonsPage page = new CommonsPage();
+        page.setId(pageId);
+        page.setTitle(title.replace('_', ' '));
+        when(commonsCategoryRepository.findByTitle(title)).thenReturn(Optional.of(cat));
+        when(commonsPageRepository.findByCategoryTitle(title)).thenReturn(Optional.of(page));
     }
 
     @Test
@@ -220,6 +228,18 @@ Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a hr
     @Test
     void testCreateDateValue() {
         assertNotNull(CommonsService.createDateValue(Year.of(2023)));
+    }
+
+    @Test
+    void testFindRedirect() {
+        assertTrue(CommonsService.findRedirect("").isEmpty());
+        assertTrue(CommonsService.findRedirect("foo").isEmpty());
+        assertTrue(CommonsService.findRedirect("{{Category redirect|foo").isEmpty());
+        assertEquals("foo", CommonsService.findRedirect("{{Category redirect|foo}}").get());
+        assertEquals("foo", CommonsService.findRedirect("{{Category redirect| foo}}").get());
+        assertEquals("foo", CommonsService.findRedirect("{{Category redirect| foo }}").get());
+        assertEquals("foo", CommonsService.findRedirect("{{Category redirect|1=foo}}").get());
+        assertEquals("foo", CommonsService.findRedirect("{{Category redirect|1=foo|reason=bar}}").get());
     }
 
     private void mockCategoryLinks() {

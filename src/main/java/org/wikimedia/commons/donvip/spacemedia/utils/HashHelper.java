@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
@@ -95,7 +96,7 @@ public final class HashHelper {
     }
 
     private static Hash newHash(BigInteger phash) {
-        return new Hash(phash, BIT_RESOLUTION, ALGORITHM_ID);
+        return new Hash(Objects.requireNonNull(phash, "phash"), BIT_RESOLUTION, ALGORITHM_ID);
     }
 
     public static BigInteger decode(String phash) {
