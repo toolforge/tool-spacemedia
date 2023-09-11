@@ -514,13 +514,15 @@ public class MediaService {
                     hash = Optional.ofNullable(commonsService.computeAndSaveHash(sha1base36, filename,
                             FileMetadata.getMime(filename.substring(filename.lastIndexOf('.') + 1))));
                 }
-                double score = HashHelper.similarityScore(metadata.getPhash(),
-                        hash.orElseThrow(() -> new IllegalStateException("No hash for " + sha1base36)).getPhash());
-                if (score <= perceptualThresholdIdenticalId) {
-                    LOGGER.info("Found match ({}) between {} and {}", score, metadata, image);
-                    filenames.add(filename);
-                } else if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("No match between {} and {} / {} -> {}", metadata, image, hash, score);
+                String phash = hash.orElseThrow(() -> new IllegalStateException("No hash for " + sha1base36)).getPhash();
+                if (phash != null) {
+                    double score = HashHelper.similarityScore(metadata.getPhash(), phash);
+                    if (score <= perceptualThresholdIdenticalId) {
+                        LOGGER.info("Found match ({}) between {} and {}", score, metadata, image);
+                        filenames.add(filename);
+                    } else if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("No match between {} and {} / {} -> {}", metadata, image, hash, score);
+                    }
                 }
             }
         }
