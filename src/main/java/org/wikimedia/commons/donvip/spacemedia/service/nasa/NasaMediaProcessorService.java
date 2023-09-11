@@ -284,7 +284,10 @@ public class NasaMediaProcessorService {
         return (img.getPhotographer() != null && mediaService.isPhotographerBlocklisted(img.getPhotographer()))
                 || (img.getSecondaryCreator() != null
                         && mediaService.isPhotographerBlocklisted(img.getSecondaryCreator()))
-                || (img.getDescription() != null && img.getDescription().contains("Credit: SpaceX"));
+                || (img.getDescription() != null && img.getDescription().contains("Credit: SpaceX"))
+                || (img.hasMetadata() && img.getUniqueMetadata().getExif() != null
+                        && img.getUniqueMetadata().getExif().getExifImageDescription() != null
+                        && img.getUniqueMetadata().getExif().getExifImageDescription().contains("Credit: SpaceX"));
     }
 
     ExifMetadata readExifMetadata(RestTemplate restExif, String id)
