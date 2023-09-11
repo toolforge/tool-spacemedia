@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -22,8 +24,8 @@ public class CompositeMediaId implements Serializable, Comparable<CompositeMedia
     }
 
     public CompositeMediaId(String repoId, String mediaId) {
-        this.repoId = repoId;
-        this.mediaId = mediaId;
+        this.repoId = requireNonNull(repoId, "repoId");
+        this.mediaId = requireNonNull(mediaId, "mediaId");
     }
 
     public CompositeMediaId(String jsonId) {

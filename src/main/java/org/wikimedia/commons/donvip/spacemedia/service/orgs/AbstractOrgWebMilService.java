@@ -7,6 +7,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -92,7 +93,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
     }
 
     private int updateWebsite(String website, List<WebMilMedia> uploadedMedia, LocalDateTime start, int startCount) {
-        int count = startCount;
+        int count = 0;
         String galleryUrl = galleryUrls.get(website);
         LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
         LOGGER.info("Fetching {} media from {} ...", website, galleryUrl);
@@ -116,6 +117,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
                         String[] items = links.first().attr("href").split("/");
                         WebMilMedia image = updateImage(website, items[items.length - 1], uploadedMedia);
                         count++;
+                        ongoingUpdateMedia(start, startCount + count);
                         if (doNotFetchEarlierThan != null
                                 && image.getPublicationDate().isBefore(doNotFetchEarlierThan)) {
                             return count;
@@ -124,8 +126,11 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
                         LOGGER.error("Error while processing {}", elem, e);
                     }
                 }
-                ongoingUpdateMedia(start, count);
             } catch (HttpStatusException e) {
+                LOGGER.info(e.getMessage());
+                break;
+            } catch (UnknownHostException e) {
+                LOGGER.error("Error while fetching {}", pageUrl, e);
                 break;
             } catch (IOException e) {
                 LOGGER.error("Error while fetching {}", pageUrl, e);
@@ -159,7 +164,9 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
     private WebMilMedia fetchMediaFromApi(String id, String website) throws IOException {
         WebMilMedia media = new WebMilMedia();
         media.setId(new CompositeMediaId(website, id));
-        fillMediaWithHtml(Jsoup.connect(getSourceUrl(media.getId())).timeout(10_000).get(), media);
+        String sourceUrl = getSourceUrl(media.getId());
+        LOGGER.info("Fetching {}", sourceUrl);
+        fillMediaWithHtml(Jsoup.connect(sourceUrl).timeout(10_000).get(), media);
         return media;
     }
 
@@ -169,7 +176,8 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
             div = html.getElementsByClass("AF2ImageDiv").first();
         }
         if (div == null) {
-            throw new IllegalArgumentException(image.toString());
+            LOGGER.error("{} => {}", image.getId(), html);
+            throw new IllegalArgumentException("No div element found for " + image.getId());
         }
         mapField(div, "spanTitle", image::setTitle);
         mapField(div, "spanCaption", image::setDescription);
@@ -188,9 +196,13 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
         String virinDate = image.getVirin().substring(0, 6);
         try {
             image.setCreationDate(LocalDate.parse(virinDate, VIRIN_DATE_FORMAT));
-        } catch (DateTimeParseException e) {
-            LOGGER.warn(e.getMessage());
-            image.setCreationDate(LocalDate.parse(virinDate, VIRIN_BAD_DATE_FORMAT));
+        } catch (DateTimeParseException e1) {
+            LOGGER.warn(e1.getMessage());
+            try {
+                image.setCreationDate(LocalDate.parse(virinDate, VIRIN_BAD_DATE_FORMAT));
+            } catch (DateTimeParseException e2) {
+                LOGGER.warn(e2.getMessage());
+            }
         }
         String assetUrl = div.getElementById("aDownloadLrg").attr("href");
         addMetadata(image, assetUrl, null);
@@ -199,6 +211,10 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
             image.setPublicationDate(LocalDate.parse(m.group(1), URL_DATE_FORMAT));
         } else {
             throw new IllegalArgumentException(assetUrl);
+        }
+        if (image.getCredits() != null && image.getCredits().toLowerCase(ENGLISH).contains("courtesy")
+                && findLicenceTemplates(image, image.getUniqueMetadata()).isEmpty()) {
+            ignoreFile(image, "Courtesy photo not free");
         }
     }
 

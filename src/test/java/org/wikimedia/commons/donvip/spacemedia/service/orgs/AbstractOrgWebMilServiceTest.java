@@ -32,7 +32,7 @@ class AbstractOrgWebMilServiceTest extends AbstractOrgServiceTest {
     private UsSpaceForceWebMilService service;
 
     @ParameterizedTest
-    @CsvSource({ "230829-F-LE393-1171", "191212-F-00000-002", "190923-F-UR189-1004" })
+    @CsvSource({ "230829-F-LE393-1171", "191212-F-00000-002", "190923-F-UR189-1004", "221011-F-TD231-1215" })
     void testParseHtml(String virin) throws Exception {
         basicChecks(virin);
     }
