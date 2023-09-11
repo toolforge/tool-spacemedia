@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
+import static java.util.Objects.requireNonNull;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 
 import java.awt.image.BufferedImage;
@@ -11,7 +12,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
@@ -84,7 +84,7 @@ public final class HashHelper {
     }
 
     public static double similarityScore(String phash1, String phash2) {
-        return similarityScore(decode(phash1), decode(phash2));
+        return similarityScore(decode(requireNonNull(phash1, "phash1")), decode(requireNonNull(phash2, "phash2")));
     }
 
     public static double similarityScore(BigInteger phash1, String phash2) {
@@ -96,7 +96,7 @@ public final class HashHelper {
     }
 
     private static Hash newHash(BigInteger phash) {
-        return new Hash(Objects.requireNonNull(phash, "phash"), BIT_RESOLUTION, ALGORITHM_ID);
+        return new Hash(requireNonNull(phash, "phash"), BIT_RESOLUTION, ALGORITHM_ID);
     }
 
     public static BigInteger decode(String phash) {
