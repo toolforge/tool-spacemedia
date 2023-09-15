@@ -24,7 +24,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -256,10 +255,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
         image.setIcon(item.getIcon());
         image.setLatitude(item.getLat());
         image.setLongitude(item.getLng());
-        String imgUrlLink = detailsUrl.replace("<id>", item.getName());
-        LOGGER.info(imgUrlLink);
-        Document html = Jsoup.connect(imgUrlLink).timeout(15_000).get();
-        fillMediaWithHtml(html, image);
+        fillMediaWithHtml(getWithJsoup(detailsUrl.replace("<id>", item.getName()), 15_000, 3), image);
         return image;
     }
 

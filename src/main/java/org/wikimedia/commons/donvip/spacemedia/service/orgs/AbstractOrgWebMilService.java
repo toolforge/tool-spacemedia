@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -100,7 +99,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
         for (int i = 1;; i++) {
             String pageUrl = galleryUrl + "/igpage/" + i;
             try {
-                Document html = Jsoup.connect(pageUrl).timeout(10_000).get();
+                Document html = getWithJsoup(pageUrl, 10_000, 5);
                 Elements elems = html.getElementsByClass("gallery_container");
                 if (elems.isEmpty()) {
                     elems = html.getElementsByClass("AF2ImageGallerylvItem");
@@ -164,9 +163,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
     private WebMilMedia fetchMediaFromApi(String id, String website) throws IOException {
         WebMilMedia media = new WebMilMedia();
         media.setId(new CompositeMediaId(website, id));
-        String sourceUrl = getSourceUrl(media.getId());
-        LOGGER.info("Fetching {}", sourceUrl);
-        fillMediaWithHtml(Jsoup.connect(sourceUrl).timeout(10_000).get(), media);
+        fillMediaWithHtml(getWithJsoup(getSourceUrl(media.getId()), 10_000, 5), media);
         return media;
     }
 

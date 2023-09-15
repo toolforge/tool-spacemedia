@@ -32,7 +32,6 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -198,9 +197,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
 
     private DjangoplicityMedia fetchMedia(URL url, String id, String imgUrlLink)
             throws ReflectiveOperationException, IOException {
-        LOGGER.info("Fetching djangoplicity media from {}", imgUrlLink);
-        Document html = Jsoup.connect(imgUrlLink).timeout(60_000).get();
-        return newMediaFromHtml(html, url, id, imgUrlLink);
+        return newMediaFromHtml(getWithJsoup(imgUrlLink, 60_000, 3), url, id, imgUrlLink);
     }
 
     protected String mainDivClass() {
@@ -543,7 +540,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
             URL url = newURL(urlLink);
             try {
                 for (Iterator<DjangoplicityFrontPageItem> it = findFrontPageItems(
-                        Jsoup.connect(urlLink).timeout(60_000).get()); it.hasNext();) {
+                        getWithJsoup(urlLink, 60_000, 3)); it.hasNext();) {
                     try {
                         Triple<Optional<DjangoplicityMedia>, Collection<FileMetadata>, Integer> update = updateMediaForUrl(
                                 url, it.next());

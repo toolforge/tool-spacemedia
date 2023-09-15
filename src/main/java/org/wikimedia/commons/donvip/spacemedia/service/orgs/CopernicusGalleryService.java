@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -163,7 +162,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
         List<CopernicusGalleryMedia> uploadedMedia = new ArrayList<>();
         LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
         do {
-            Elements results = Jsoup.connect(BASE_URL + "/en/media/image-day?page=" + i++).get()
+            Elements results = getWithJsoup(BASE_URL + "/en/media/image-day?page=" + i++, 10_000, 3)
                     .getElementsByClass("search-results-item-details");
             loop = !results.isEmpty();
             if (loop) {
@@ -223,15 +222,10 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
         media.setId(id);
         media.setPublicationDateTime(date);
         String url = BASE_URL + "/en/media/image-day-gallery/" + id.getMediaId();
-        LOGGER.info("GET {}", url);
-        boolean ok = false;
-        for (int i = 0; i < maxTries && !ok; i++) {
-            try {
-                fillMediaWithHtml(Jsoup.connect(url).get(), media);
-                ok = true;
-            } catch (IOException e) {
-                LOGGER.error(media.toString(), e);
-            }
+        try {
+            fillMediaWithHtml(getWithJsoup(url, 10_000, maxTries), media);
+        } catch (IOException e) {
+            LOGGER.error(media.toString(), e);
         }
         return media;
     }

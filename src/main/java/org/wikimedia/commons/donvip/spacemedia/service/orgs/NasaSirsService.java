@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -17,10 +18,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,7 +169,7 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsMedia> {
     }
 
     private static List<String> loadImageValues(String imageLink) throws IOException {
-        Elements tds = Jsoup.connect(imageLink).timeout(15_000).get().getElementsByTag("td");
+        Elements tds = getWithJsoup(imageLink, 15_000, 3).getElementsByTag("td");
         List<String> result = new ArrayList<>();
         for (int i = 1; i < tds.size(); i += 2) {
             if (i == 11) {
@@ -187,14 +186,14 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsMedia> {
     private List<String> loadImageLinks(String category, int page) throws IOException {
         String link = imagesUrl.replace("<cat>", category).replace("<idx>", Integer.toString(page));
         URL url = newURL(link);
-        return Jsoup.connect(link).timeout(15_000).get().getElementsByTag("tr").stream()
+        return getWithJsoup(link, 15_000, 3).getElementsByTag("tr").stream()
                 .map(e -> url.getProtocol() + "://" + url.getHost() + e.getElementsByTag("a").get(1).attr("href"))
                 .toList();
     }
 
     private Set<String> loadCategories() throws IOException {
-        return Jsoup.connect(categoriesUrl).timeout(15_000).get().getElementsByTag("tbody").get(0)
-                .getElementsByTag("input").stream().map(e -> e.attr("value")).collect(Collectors.toSet());
+        return getWithJsoup(categoriesUrl, 15_000, 3).getElementsByTag("tbody").get(0)
+                .getElementsByTag("input").stream().map(e -> e.attr("value")).collect(toSet());
     }
 
     @Override

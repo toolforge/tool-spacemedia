@@ -13,6 +13,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -60,6 +61,8 @@ import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1481,6 +1484,18 @@ public abstract class AbstractOrgService<T extends Media>
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
         return Pair.of(sb.toString(), Map.of(lang, desc));
+    }
+
+    protected static Document getWithJsoup(String pageUrl, int timetout, int nRetries) throws IOException {
+        for (int i = 0; i < nRetries; i++) {
+            try {
+                LOGGER.debug("Scrapping {}", pageUrl);
+                return Jsoup.connect(pageUrl).timeout(timetout).get();
+            } catch (SocketTimeoutException e) {
+                LOGGER.error("Timeout when scrapping {} => {}", pageUrl, e.getMessage());
+            }
+        }
+        throw new IOException("Unable to scrap " + pageUrl);
     }
 
     protected static final class UpdateFinishedException extends Exception {

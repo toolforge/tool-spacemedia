@@ -5,7 +5,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMap
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,7 +28,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -241,48 +239,42 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     private EsaMedia fetchMedia(URL url) {
         EsaMedia media = new EsaMedia();
         media.setUrl(url);
-        boolean ok = false;
-        for (int i = 0; i < maxTries && !ok; i++) {
-            try {
-                Document html = Jsoup.connect(url.toExternalForm()).get();
-                List<URL> files = new ArrayList<>();
-                Optional<URL> lowRes = Optional.empty();
-                for (Element element : html.getElementsByClass("dropdown__item")) {
-                    String text = element.text().toUpperCase(Locale.ENGLISH);
-                    if (text.startsWith("HI-RES") || text.startsWith("SOURCE")) {
-                        getImageUrl(element.attr("href"), url).ifPresent(files::add);
-                    } else {
-                        lowRes = getImageUrl(element.attr("href"), url);
-                    }
+        try {
+            Document html = getWithJsoup(url.toExternalForm(), 10_000, maxTries);
+            List<URL> files = new ArrayList<>();
+            Optional<URL> lowRes = Optional.empty();
+            for (Element element : html.getElementsByClass("dropdown__item")) {
+                String text = element.text().toUpperCase(Locale.ENGLISH);
+                if (text.startsWith("HI-RES") || text.startsWith("SOURCE")) {
+                    getImageUrl(element.attr("href"), url).ifPresent(files::add);
+                } else {
+                    lowRes = getImageUrl(element.attr("href"), url);
                 }
-                if (lowRes.isPresent()) {
-                    if (files.isEmpty()) {
-                        // No hi-res for some missions (Gaia, Visual Monitoring Camera, OSIRIS...)
-                        files.add(lowRes.get());
-                    }
-                    if (media.getThumbnailUrl() == null) {
-                        media.setThumbnailUrl(lowRes.get());
-                    }
-                }
-                int size = files.size();
-                if (size == 0) {
-                    problem(media.getUrl(), "Image without any file");
-                }
-                for (URL file : files) {
-                    addMetadata(media, file, null);
-                }
-                if (size > 1) {
-                    checkAssetUrlCorrectness(media);
-                }
-                processHeader(media, html.getElementsByClass("modal__header").get(0));
-                processShare(media, html.getElementsByClass("modal__share").get(0));
-                processExtra(media, html.getElementsByClass("modal__extra").get(0));
-                ok = true;
-            } catch (SocketTimeoutException e) {
-                LOGGER.debug(url.toExternalForm(), e);
-            } catch (IOException | IllegalStateException e) {
-                LOGGER.error(url.toExternalForm(), e);
             }
+            if (lowRes.isPresent()) {
+                if (files.isEmpty()) {
+                    // No hi-res for some missions (Gaia, Visual Monitoring Camera, OSIRIS...)
+                    files.add(lowRes.get());
+                }
+                if (media.getThumbnailUrl() == null) {
+                    media.setThumbnailUrl(lowRes.get());
+                }
+            }
+            int size = files.size();
+            if (size == 0) {
+                problem(media.getUrl(), "Image without any file");
+            }
+            for (URL file : files) {
+                addMetadata(media, file, null);
+            }
+            if (size > 1) {
+                checkAssetUrlCorrectness(media);
+            }
+            processHeader(media, html.getElementsByClass("modal__header").get(0));
+            processShare(media, html.getElementsByClass("modal__share").get(0));
+            processExtra(media, html.getElementsByClass("modal__extra").get(0));
+        } catch (IOException | IllegalStateException e) {
+            LOGGER.error(url.toExternalForm(), e);
         }
         return media;
     }
@@ -311,33 +303,24 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         do {
             String searchUrl = searchLink.replace("<idx>", Integer.toString(index));
             try {
-                boolean ok = false;
-                for (int i = 0; i < maxTries && !ok; i++) {
-                    try {
-                        LOGGER.debug("Fetching ESA images: {}", searchUrl);
-                        Document html = Jsoup.connect(searchUrl).timeout(15_000).get();
-                        Elements divs = html.getElementsByClass("grid-item");
-                        for (Element div : divs) {
-                            URL imageUrl = newURL(proto, host, div.select("a").get(0).attr("href"));
-                            index++;
-                            LOGGER.debug("Checking ESA image {}: {}", index, imageUrl);
-                            Triple<Optional<EsaMedia>, Collection<FileMetadata>, Integer> check = checkEsaImage(imageUrl);
-                            Optional<EsaMedia> optionalMedia = check.getLeft();
-                            if (optionalMedia.isPresent()) {
-                                count++;
-                                if (check.getRight() > 0) {
-                                    uploadedMetadata.addAll(check.getMiddle());
-                                    uploadedMedia.add(optionalMedia.get());
-                                }
-                            }
+                Document html = getWithJsoup(searchUrl, 15_000, maxTries);
+                Elements divs = html.getElementsByClass("grid-item");
+                for (Element div : divs) {
+                    URL imageUrl = newURL(proto, host, div.select("a").get(0).attr("href"));
+                    index++;
+                    LOGGER.debug("Checking ESA image {}: {}", index, imageUrl);
+                    Triple<Optional<EsaMedia>, Collection<FileMetadata>, Integer> check = checkEsaImage(imageUrl);
+                    Optional<EsaMedia> optionalMedia = check.getLeft();
+                    if (optionalMedia.isPresent()) {
+                        count++;
+                        if (check.getRight() > 0) {
+                            uploadedMetadata.addAll(check.getMiddle());
+                            uploadedMedia.add(optionalMedia.get());
                         }
-                        moreImages = !html.getElementsByClass("paging").get(0)
-                                .getElementsByAttributeValue("title", "Next").isEmpty();
-                        ok = true;
-                    } catch (SocketTimeoutException e) {
-                        LOGGER.debug(searchUrl, e);
                     }
                 }
+                moreImages = !html.getElementsByClass("paging").get(0).getElementsByAttributeValue("title", "Next")
+                        .isEmpty();
             } catch (IOException | RuntimeException e) {
                 LOGGER.error(searchUrl, e);
                 moreImages = false;

@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
@@ -163,7 +162,7 @@ public class KariService extends AbstractOrgService<KariMedia> {
         boolean incrementConsecutiveFailures = false;
         Exception ex = null;
         try {
-            Element div = Jsoup.connect(viewUrl).timeout(60_000).get().getElementsByClass("board_view").get(0);
+            Element div = getWithJsoup(viewUrl, 60_000, 3).getElementsByClass("board_view").get(0);
             String title = div.getElementsByTag("h4").get(0).text();
             if (!title.isEmpty()) {
                 resetConsecutiveFailures = true;

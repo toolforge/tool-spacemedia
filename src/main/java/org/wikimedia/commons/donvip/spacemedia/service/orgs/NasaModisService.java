@@ -210,9 +210,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
         NasaModisMedia image = new NasaModisMedia();
         image.setId(new CompositeMediaId("modis", date.toString()));
         image.setPublicationDate(date);
-        String imgUrlLink = detailsUrl.replace("<date>", date.toString());
-        LOGGER.info(imgUrlLink);
-        fillMediaWithHtml(Jsoup.connect(imgUrlLink).timeout(10_000).get(), image);
+        fillMediaWithHtml(getWithJsoup(detailsUrl.replace("<date>", date.toString()), 10_000, 3), image);
         return image;
     }
 
