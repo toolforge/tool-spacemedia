@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
   <head th:replace="_header :: common_header(~{::title},~{})">
     <title th:text="Spacemedia + ' - ' + ${org.name}"></title>
   </head>
   <body>
-    <nav th:replace="_header :: navbar"></nav>
+    <nav aria-label="Site navigation" th:replace="_header :: navbar"></nav>
     <h2 th:text="${org.name}"></h2>
     <ul th:replace="_media :: tabs(${tab})"></ul>
     <!-- Medias tabs -->
     <div th:if="${medias}">
-	    <nav th:replace="_media :: pagination_nav(${medias})"></nav>
+	    <nav aria-label="Media navigation top" th:replace="_media :: pagination_nav(${medias})"></nav>
 	    <table class="table table-sm table-hover">
+	      <caption>Media</caption>
 	      <thead class="thead-dark">
 		      <tr>
 		        <th>Media</th>
@@ -94,12 +95,13 @@
 		      </tr>
 	      </tbody>
 	    </table>
-	    <nav th:replace="_media :: pagination_nav(${medias})"></nav>
+	    <nav aria-label="Media navigation bottom" th:replace="_media :: pagination_nav(${medias})"></nav>
     </div>
     <!-- Problems tab -->
     <div th:if="${problems}">
-	    <nav th:replace="_media :: pagination_nav(${problems})"></nav>
+	    <nav aria-label="Problem navigation top" th:replace="_media :: pagination_nav(${problems})"></nav>
 	    <table class="table table-sm table-hover">
+	      <caption>Problems</caption>
 	      <thead class="thead-dark">
 		      <tr>
 		        <th>URL</th>
@@ -113,11 +115,12 @@
 		      </tr>
 	      </tbody>
 	    </table>
-	    <nav th:replace="_media :: pagination_nav(${problems})"></nav>
+	    <nav aria-label="Problem navigation bottom" th:replace="_media :: pagination_nav(${problems})"></nav>
     </div>
     <!-- Top terms tab -->
     <div th:if="${topterms}">
 	    <table class="table table-sm table-hover">
+	      <caption>Top terms</caption>
 	      <thead class="thead-dark">
 		      <tr>
 		        <th>Term</th>
