@@ -128,36 +128,42 @@ public abstract class OrgRestController<T extends Media> {
     }
 
     @GetMapping("/uploadbydate/{date}")
-    public final List<T> uploadByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date)
+    public final List<T> uploadByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "repo", required = false) String repo)
             throws UploadException {
-        return service.uploadAndSaveByDate(date, x -> true, true);
+        return service.uploadAndSaveByDate(date, repo, x -> true, true);
     }
 
     @GetMapping("/uploadimagesbydate/{date}")
-    public final List<T> uploadImagesByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date)
+    public final List<T> uploadImagesByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "repo", required = false) String repo)
             throws UploadException {
-        return service.uploadAndSaveByDate(date, Media::isImage, true);
+        return service.uploadAndSaveByDate(date, repo, Media::isImage, true);
     }
 
     @GetMapping("/uploadvideosbydate/{date}")
-    public final List<T> uploadVideosByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date)
+    public final List<T> uploadVideosByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "repo", required = false) String repo)
             throws UploadException {
-        return service.uploadAndSaveByDate(date, Media::isVideo, true);
+        return service.uploadAndSaveByDate(date, repo, Media::isVideo, true);
     }
 
     @GetMapping("/uploadbytitle/{title}")
-    public final List<T> uploadByTitle(@PathVariable String title) throws UploadException {
-        return service.uploadAndSaveByTitle(title, x -> true, true);
+    public final List<T> uploadByTitle(@PathVariable String title,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByTitle(title, repo, x -> true, true);
     }
 
     @GetMapping("/uploadimagesbytitle/{title}")
-    public final List<T> uploadImagesByTitle(@PathVariable String title) throws UploadException {
-        return service.uploadAndSaveByTitle(title, Media::isImage, true);
+    public final List<T> uploadImagesByTitle(@PathVariable String title,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByTitle(title, repo, Media::isImage, true);
     }
 
     @GetMapping("/uploadvideosbytitle/{title}")
-    public final List<T> uploadVideosByTitle(@PathVariable String title) throws UploadException {
-        return service.uploadAndSaveByTitle(title, Media::isVideo, true);
+    public final List<T> uploadVideosByTitle(@PathVariable String title,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByTitle(title, repo, Media::isVideo, true);
     }
 
     @GetMapping("/uploadmedia/**")

@@ -14,6 +14,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Search;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
@@ -41,90 +42,102 @@ public class OrgWebController<T extends Media> {
     }
 
     @GetMapping
-    public String index(Model model) {
-        return template(model, "org_index");
+    public String index(Model model, @RequestParam(name = "repo", required = false) String repo) {
+        return template(model, "org_index", repo);
     }
 
     @GetMapping("/all")
-    public String all(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "all", service.listAllMedia(page));
+    public String all(Model model, @RequestParam(name = "repo", required = false) String repo,
+            @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return media(model, "all", repo, service.listAllMedia(repo, page));
     }
 
     @GetMapping("/missing")
-    public String missing(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "missing", service.listMissingMedia(page));
+    public String missing(Model model, @RequestParam(name = "repo", required = false) String repo,
+            @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return media(model, "missing", repo, service.listMissingMedia(repo, page));
     }
 
     @GetMapping("/missing/images")
-    public String missingImages(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "missing/images", service.listMissingImages(page));
+    public String missingImages(Model model, @RequestParam(name = "repo", required = false) String repo,
+            @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return media(model, "missing/images", repo, service.listMissingImages(repo, page));
     }
 
     @GetMapping("/missing/videos")
-    public String missingVideos(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "missing/videos", service.listMissingVideos(page));
+    public String missingVideos(Model model, @RequestParam(name = "repo", required = false) String repo,
+            @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return media(model, "missing/videos", repo, service.listMissingVideos(repo, page));
     }
 
     @GetMapping("/hashes")
-    public String hashes(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "hashes", service.listHashedMedia(page));
+    public String hashes(Model model, @RequestParam(name = "repo", required = false) String repo,
+            @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return media(model, "hashes", repo, service.listHashedMedia(repo, page));
     }
 
     @GetMapping("/uploaded")
-    public String uploaded(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "uploaded", service.listUploadedMedia(page));
+    public String uploaded(Model model, @RequestParam(name = "repo", required = false) String repo,
+            @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return media(model, "uploaded", repo, service.listUploadedMedia(repo, page));
     }
 
     @GetMapping("/ignored")
-    public String ignored(Model model, @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
-        return media(model, "ignored", service.listIgnoredMedia(page));
+    public String ignored(Model model, @RequestParam(name = "repo", required = false) String repo,
+            @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return media(model, "ignored", repo, service.listIgnoredMedia(repo, page));
     }
 
     @GetMapping("/stats")
-    public String stats(Model model) {
+    public String stats(Model model, @RequestParam(name = "repo", required = false) String repo) {
         model.addAttribute("stats", service.getStatistics(true));
-        return template(model, "org_stats");
+        return template(model, "org_stats", repo);
     }
 
     @GetMapping("/problems")
-    public String problems(Model model, @PageableDefault(size = SIZE) Pageable page) {
-        return pageIndex(model, "problems", service.getProblems(page), "problems", newSearch());
+    public String problems(Model model, @RequestParam(name = "repo", required = false) String repo,
+            @PageableDefault(size = SIZE) Pageable page) {
+        return pageIndex(model, "problems", repo, service.getProblems(page), "problems", newSearch());
     }
 
     @GetMapping("/search")
     public final String search(Model model, @ModelAttribute Search search,
+            @RequestParam(name = "repo", required = false) String repo,
             @PageableDefault(size = SIZE) Pageable page) {
-        return media(model, "search", service.searchMedia(search.getQ(), page), search);
+        return media(model, "search", repo, service.searchMedia(search.getQ(), page), search);
     }
 
-    private String template(Model model, String template) {
-        return template(model, template, newSearch());
+    private String template(Model model, String template, String repo) {
+        return template(model, template, repo, newSearch());
     }
 
-    private String template(Model model, String template, Search search) {
+    private String template(Model model, String template, String repo, Search search) {
+        if (repo != null) {
+            model.addAttribute("repo", repo);
+        }
         model.addAttribute("search", search);
         model.addAttribute("orgs", orgs.stream().sorted().toList());
         model.addAttribute("org", service);
         return template;
     }
 
-    private String media(Model model, String tab, Page<T> medias) {
-        return media(model, tab, medias, newSearch());
+    private String media(Model model, String tab, String repo, Page<T> medias) {
+        return media(model, tab, repo, medias, newSearch());
     }
 
-    private String media(Model model, String tab, Page<T> medias, Search search) {
-        return pageIndex(model, tab, medias, "medias", search);
+    private String media(Model model, String tab, String repo, Page<T> medias, Search search) {
+        return pageIndex(model, tab, repo, medias, "medias", search);
     }
 
-    private String index(Model model, String tab, Iterable<?> items, String itemsName, Search search) {
+    private String index(Model model, String tab, String repo, Iterable<?> items, String itemsName, Search search) {
         model.addAttribute(itemsName, items);
         model.addAttribute("tab", tab);
-        return template(model, "org_index", search);
+        return template(model, "org_index", repo, search);
     }
 
-    private String pageIndex(Model model, String tab, Page<?> items, String itemsName, Search search) {
+    private String pageIndex(Model model, String tab, String repo, Page<?> items, String itemsName, Search search) {
         Pagination.setPageNumbers(model, items);
-        return index(model, tab, items, itemsName, search);
+        return index(model, tab, repo, items, itemsName, search);
     }
 
     private Search newSearch() {

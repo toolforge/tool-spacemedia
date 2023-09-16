@@ -3,28 +3,28 @@
   <body>
 	<ul th:fragment="tabs(tab)" class="nav nav-pills">
 	  <li class="nav-item">
-	    <a th:class="'nav-link' + ('all' == ${tab} ? ' active' : '') + (${org.countAllMedia()} == 0 ? ' disabled': '')"
-	       th:href="@{/{id}/all(id=${org.id})}" th:text="'Free Media (' + ${org.countAllMedia()} + ')'"></a>
+	    <a th:class="'nav-link' + ('all' == ${tab} ? ' active' : '') + (${org.countAllMedia(repo)} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/all(id=${org.id},repo=${repo})}" th:text="'Free Media (' + ${org.countAllMedia(repo)} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
-	    <a th:class="'nav-link' + ('uploaded' == ${tab} ? ' active' : '') + (${org.countUploadedMedia()} == 0 ? ' disabled': '')"
-	       th:href="@{/{id}/uploaded(id=${org.id})}" th:text="'Uploaded (' + ${org.countUploadedMedia()} + ')'"></a>
+	    <a th:class="'nav-link' + ('uploaded' == ${tab} ? ' active' : '') + (${org.countUploadedMedia(repo)} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/uploaded(id=${org.id},repo=${repo})}" th:text="'Uploaded (' + ${org.countUploadedMedia(repo)} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
-	    <a th:class="'nav-link' + ('missing/images' == ${tab} ? ' active' : '') + (${org.countMissingImages()} == 0 ? ' disabled': '')"
-	       th:href="@{/{id}/missing/images(id=${org.id})}" th:text="'Images to upload (' + ${org.countMissingImages()} + ')'"></a>
+	    <a th:class="'nav-link' + ('missing/images' == ${tab} ? ' active' : '') + (${org.countMissingImages(repo)} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/missing/images(id=${org.id},repo=${repo})}" th:text="'Images to upload (' + ${org.countMissingImages(repo)} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
-	    <a th:class="'nav-link' + ('missing/videos' == ${tab} ? ' active' : '') + (${org.countMissingVideos()} == 0 ? ' disabled': '')"
-	       th:href="@{/{id}/missing/videos(id=${org.id})}" th:text="'Videos to upload (' + ${org.countMissingVideos()} + ')'"></a>
+	    <a th:class="'nav-link' + ('missing/videos' == ${tab} ? ' active' : '') + (${org.countMissingVideos(repo)} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/missing/videos(id=${org.id},repo=${repo})}" th:text="'Videos to upload (' + ${org.countMissingVideos(repo)} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
-	    <a th:class="'nav-link' + ('ignored' == ${tab} ? ' active' : '') + (${org.countIgnored()} == 0 ? ' disabled': '')"
-	       th:href="@{/{id}/ignored(id=${org.id})}" th:text="'Ignored (' + ${org.countIgnored()} + ')'"></a>
+	    <a th:class="'nav-link' + ('ignored' == ${tab} ? ' active' : '') + (${org.countIgnored(repo)} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/ignored(id=${org.id},repo=${repo})}" th:text="'Ignored (' + ${org.countIgnored(repo)} + ')'"></a>
 	  </li>
 	  <li class="nav-item" th:if="${org.getProblemsCount()}">
 	    <a th:class="'nav-link' + ('problems' == ${tab} ? ' active' : '') + (${org.getProblemsCount()} == 0 ? ' disabled': '')"
-	       th:href="@{/{id}/problems(id=${org.id})}" th:text="'Problems (' + ${org.getProblemsCount()} + ')'"></a>
+	       th:href="@{/{id}/problems(id=${org.id},repo=${repo})}" th:text="'Problems (' + ${org.getProblemsCount()} + ')'"></a>
 	  </li>
 	  <li class="nav-item" th:if="${search != null}">
 	    <a th:class="'nav-link' + ('topterms' == ${tab} ? ' active' : '')"
@@ -40,7 +40,7 @@
       <ul class="pagination">
         <li th:class="'page-item ' + (${pageNumber==page.number + 1} ? active)"
             th:each="pageNumber : ${pageNumbers}">
-          <a class="page-link" th:if="${search == null or search.q == null}" th:href="@{''(size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
+          <a class="page-link" th:if="${search == null or search.q == null}" th:href="@{''(repo=${repo}, size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
           </a>
           <a class="page-link" th:if="${search != null and search.q != null}" th:href="@{''(q=${search.q}, size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
           </a>

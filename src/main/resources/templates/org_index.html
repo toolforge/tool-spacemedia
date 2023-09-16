@@ -5,13 +5,24 @@
   </head>
   <body>
     <nav aria-label="Site navigation" th:replace="_header :: navbar"></nav>
-    <h2 th:text="${org.name}"></h2>
+    <nav aria-label="Org navigation" class="navbar navbar-expand-lg">
+		<a class="navbar-brand" th:text="${org.name}"></a>
+		<div th:if="${org.multiRepo}" class="collapse navbar-collapse">
+			<ul class="navbar-nav">
+				<li class="nav-item">
+					<a th:class="'nav-link' + (${repo} == null ? ' active' : '')" th:href="@{/{id}(id=${org.id})}" th:text="All"></a>
+				</li>
+				<li class="nav-item" th:each="repoId : ${org.repoIds}" >
+					<a th:class="'nav-link' + (${repoId} == ${repo} ? ' active' : '')" th:href="@{/{id}?repo={repo}(id=${org.id},repo=${repoId})}" th:text="${repoId}"></a>
+				</li>
+			</ul>
+		</div>
+	</nav>
     <ul th:replace="_media :: tabs(${tab})"></ul>
     <!-- Medias tabs -->
     <div th:if="${medias}">
 	    <nav aria-label="Media navigation top" th:replace="_media :: pagination_nav(${medias})"></nav>
 	    <table class="table table-sm table-hover">
-	      <caption>Media</caption>
 	      <thead class="thead-dark">
 		      <tr>
 		        <th>Media</th>
@@ -62,25 +73,25 @@
 		        </td>
 		        <td>
 		          <a th:text="${media.title}"></a>
-                  <a th:href="@{/{id}/rest/uploadbytitle/{title}(id=${org.id},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
+                  <a th:href="@{/{id}/rest/uploadbytitle/{title}(id=${org.id},repo=${repo},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.title}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
-                  <a th:href="@{/{id}/rest/uploadimagesbytitle/{title}(id=${org.id},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/images' == ${tab}">
+                  <a th:href="@{/{id}/rest/uploadimagesbytitle/{title}(id=${org.id},repo=${repo},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/images' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.title}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
-                  <a th:href="@{/{id}/rest/uploadvideosbytitle/{title}(id=${org.id},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
+                  <a th:href="@{/{id}/rest/uploadvideosbytitle/{title}(id=${org.id},repo=${repo},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.title}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
 		        </td>
 		        <td>
 		          <a th:text="${media.publicationDate}"></a>
-                  <a th:href="@{/{id}/rest/uploadbydate/{date}(id=${org.id},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
+                  <a th:href="@{/{id}/rest/uploadbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
-                  <a th:href="@{/{id}/rest/uploadimagesbydate/{date}(id=${org.id},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/images' == ${tab}">
+                  <a th:href="@{/{id}/rest/uploadimagesbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/images' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
-                  <a th:href="@{/{id}/rest/uploadvideosbydate/{date}(id=${org.id},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
+                  <a th:href="@{/{id}/rest/uploadvideosbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
 		        </td>
@@ -101,7 +112,6 @@
     <div th:if="${problems}">
 	    <nav aria-label="Problem navigation top" th:replace="_media :: pagination_nav(${problems})"></nav>
 	    <table class="table table-sm table-hover">
-	      <caption>Problems</caption>
 	      <thead class="thead-dark">
 		      <tr>
 		        <th>URL</th>
@@ -120,7 +130,6 @@
     <!-- Top terms tab -->
     <div th:if="${topterms}">
 	    <table class="table table-sm table-hover">
-	      <caption>Top terms</caption>
 	      <thead class="thead-dark">
 		      <tr>
 		        <th>Term</th>

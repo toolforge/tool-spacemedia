@@ -26,45 +26,73 @@ public interface Org<T extends Media> {
 
     long countAllMedia();
 
+    long countAllMedia(String repo);
+
     long countIgnored();
+
+    long countIgnored(String repo);
 
     long countMissingMedia();
 
+    long countMissingMedia(String repo);
+
     long countMissingImages();
+
+    long countMissingImages(String repo);
 
     long countMissingVideos();
 
+    long countMissingVideos(String repo);
+
     long countPerceptualHashes();
 
+    long countPerceptualHashes(String repo);
+
     long countUploadedMedia();
+
+    long countUploadedMedia(String repo);
 
     Iterable<T> listAllMedia();
 
     Page<T> listAllMedia(Pageable page);
 
+    Page<T> listAllMedia(String repo, Pageable page);
+
     List<T> listMissingMedia();
 
     Page<T> listMissingMedia(Pageable page);
 
+    Page<T> listMissingMedia(String repo, Pageable page);
+
     Page<T> listMissingImages(Pageable page);
+
+    Page<T> listMissingImages(String repo, Pageable page);
 
     Page<T> listMissingVideos(Pageable page);
 
-    List<T> listMissingMediaByDate(LocalDate date);
+    Page<T> listMissingVideos(String repo, Pageable page);
 
-    List<T> listMissingMediaByTitle(String title);
+    List<T> listMissingMediaByDate(LocalDate date, String repo);
+
+    List<T> listMissingMediaByTitle(String title, String repo);
 
     Page<T> listHashedMedia(Pageable page);
+
+    Page<T> listHashedMedia(String repo, Pageable page);
 
     List<T> listUploadedMedia();
 
     Page<T> listUploadedMedia(Pageable page);
+
+    Page<T> listUploadedMedia(String repo, Pageable page);
 
     List<T> listDuplicateMedia();
 
     List<T> listIgnoredMedia();
 
     Page<T> listIgnoredMedia(Pageable page);
+
+    Page<T> listIgnoredMedia(String repo, Pageable page);
 
     /**
      * Returns the space org name, used in statistics and logs.
@@ -98,9 +126,11 @@ public interface Org<T extends Media> {
 
     T uploadAndSaveById(String id, boolean isManual) throws UploadException, TooManyResultsException;
 
-    List<T> uploadAndSaveByDate(LocalDate date, Predicate<Media> predicate, boolean isManual) throws UploadException;
+    List<T> uploadAndSaveByDate(LocalDate date, String repo, Predicate<Media> predicate, boolean isManual)
+            throws UploadException;
 
-    List<T> uploadAndSaveByTitle(String title, Predicate<Media> predicate, boolean isManual) throws UploadException;
+    List<T> uploadAndSaveByTitle(String title, String repo, Predicate<Media> predicate, boolean isManual)
+            throws UploadException;
 
     Triple<T, Collection<FileMetadata>, Integer> upload(T media, boolean checkUnicity, boolean isManual)
             throws UploadException;

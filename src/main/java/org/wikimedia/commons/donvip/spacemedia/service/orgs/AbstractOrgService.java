@@ -241,8 +241,18 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     @Override
+    public long countAllMedia(String repo) {
+        return isBlank(repo) ? countAllMedia() : repository.count(Set.of(repo));
+    }
+
+    @Override
     public long countIgnored() {
         return repository.countByIgnoredTrue(getRepoIds());
+    }
+
+    @Override
+    public long countIgnored(String repo) {
+        return isBlank(repo) ? countIgnored() : repository.countByIgnoredTrue(Set.of(repo));
     }
 
     @Override
@@ -251,8 +261,18 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     @Override
+    public long countMissingMedia(String repo) {
+        return isBlank(repo) ? countMissingMedia() : repository.countMissingInCommons(Set.of(repo));
+    }
+
+    @Override
     public long countMissingImages() {
         return repository.countMissingImagesInCommons(getRepoIds());
+    }
+
+    @Override
+    public long countMissingImages(String repo) {
+        return isBlank(repo) ? countMissingImages() : repository.countMissingImagesInCommons(Set.of(repo));
     }
 
     @Override
@@ -261,13 +281,28 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     @Override
+    public long countMissingVideos(String repo) {
+        return isBlank(repo) ? countMissingVideos() : repository.countMissingVideosInCommons(Set.of(repo));
+    }
+
+    @Override
     public long countPerceptualHashes() {
         return repository.countByMetadata_PhashNotNull(getRepoIds());
     }
 
     @Override
+    public long countPerceptualHashes(String repo) {
+        return isBlank(repo) ? countPerceptualHashes() : repository.countByMetadata_PhashNotNull(Set.of(repo));
+    }
+
+    @Override
     public long countUploadedMedia() {
         return repository.countUploadedToCommons(getRepoIds());
+    }
+
+    @Override
+    public long countUploadedMedia(String repo) {
+        return isBlank(repo) ? countUploadedMedia() : repository.countUploadedToCommons(Set.of(repo));
     }
 
     @Override
@@ -281,6 +316,11 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     @Override
+    public Page<T> listAllMedia(String repo, Pageable page) {
+        return isBlank(repo) ? listAllMedia(page) : repository.findAll(Set.of(repo), page);
+    }
+
+    @Override
     public List<T> listMissingMedia() {
         return repository.findMissingInCommons(getRepoIds());
     }
@@ -291,8 +331,18 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     @Override
+    public Page<T> listMissingMedia(String repo, Pageable page) {
+        return isBlank(repo) ? listMissingMedia(page) : repository.findMissingInCommons(Set.of(repo), page);
+    }
+
+    @Override
     public Page<T> listMissingImages(Pageable page) {
         return repository.findMissingImagesInCommons(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<T> listMissingImages(String repo, Pageable page) {
+        return isBlank(repo) ? listMissingImages(page) : repository.findMissingImagesInCommons(Set.of(repo), page);
     }
 
     @Override
@@ -301,18 +351,28 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     @Override
-    public List<T> listMissingMediaByDate(LocalDate date) {
-        return repository.findMissingInCommonsByPublicationDate(getRepoIds(), date);
+    public Page<T> listMissingVideos(String repo, Pageable page) {
+        return isBlank(repo) ? listMissingVideos(page) : repository.findMissingVideosInCommons(Set.of(repo), page);
     }
 
     @Override
-    public List<T> listMissingMediaByTitle(String title) {
-        return repository.findMissingInCommonsByTitle(getRepoIds(), title);
+    public List<T> listMissingMediaByDate(LocalDate date, String repo) {
+        return repository.findMissingInCommonsByPublicationDate(isBlank(repo) ? getRepoIds() : Set.of(repo), date);
+    }
+
+    @Override
+    public List<T> listMissingMediaByTitle(String title, String repo) {
+        return repository.findMissingInCommonsByTitle(isBlank(repo) ? getRepoIds() : Set.of(repo), title);
     }
 
     @Override
     public Page<T> listHashedMedia(Pageable page) {
         return repository.findByMetadata_PhashNotNull(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<T> listHashedMedia(String repo, Pageable page) {
+        return isBlank(repo) ? listHashedMedia(page) : repository.findByMetadata_PhashNotNull(Set.of(repo), page);
     }
 
     @Override
@@ -323,6 +383,11 @@ public abstract class AbstractOrgService<T extends Media>
     @Override
     public Page<T> listUploadedMedia(Pageable page) {
         return repository.findUploadedToCommons(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<T> listUploadedMedia(String repo, Pageable page) {
+        return isBlank(repo) ? listUploadedMedia(page) : repository.findUploadedToCommons(Set.of(repo), page);
     }
 
     @Override
@@ -338,6 +403,11 @@ public abstract class AbstractOrgService<T extends Media>
     @Override
     public Page<T> listIgnoredMedia(Pageable page) {
         return repository.findByIgnoredTrue(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<T> listIgnoredMedia(String repo, Pageable page) {
+        return isBlank(repo) ? listIgnoredMedia(page) : repository.findByIgnoredTrue(Set.of(repo), page);
     }
 
     @Override
@@ -362,8 +432,12 @@ public abstract class AbstractOrgService<T extends Media>
         return id;
     }
 
-    protected Set<String> getRepoIds() {
+    public Set<String> getRepoIds() {
         return repoIds;
+    }
+
+    public boolean isMultiRepo() {
+        return repoIds.size() > 1;
     }
 
     protected final LocalDateTime startUpdateMedia() {
@@ -666,15 +740,15 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     @Override
-    public List<T> uploadAndSaveByDate(LocalDate date, Predicate<Media> predicate, boolean isManual)
+    public List<T> uploadAndSaveByDate(LocalDate date, String repo, Predicate<Media> predicate, boolean isManual)
             throws UploadException {
-        return uploadAndSaveMedias(listMissingMediaByDate(date).stream().filter(predicate), isManual);
+        return uploadAndSaveMedias(listMissingMediaByDate(date, repo).stream().filter(predicate), isManual);
     }
 
     @Override
-    public List<T> uploadAndSaveByTitle(String title, Predicate<Media> predicate, boolean isManual)
+    public List<T> uploadAndSaveByTitle(String title, String repo, Predicate<Media> predicate, boolean isManual)
             throws UploadException {
-        return uploadAndSaveMedias(listMissingMediaByTitle(title).stream().filter(predicate), isManual);
+        return uploadAndSaveMedias(listMissingMediaByTitle(title, repo).stream().filter(predicate), isManual);
     }
 
     private List<T> uploadAndSaveMedias(Stream<T> medias, boolean isManual) {
