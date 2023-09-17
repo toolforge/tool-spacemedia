@@ -50,7 +50,10 @@ class NOIRLabServiceTest extends AbstractOrgServiceTest {
             // Sept. 30, 2022, 1:05 p.m.
             "GeMS-62-CC|Photographic|2022-09-30T13:05|3606|5409|Gemini Multi-Conjugate Adaptive Optics System (GeMS), Gemini South||Gemini Observatory|International Gemini Observatory/NOIRLab/NSF/AURA/M. Paredes|https://noirlab.edu/public/media/archives/images/original/GeMS-62-CC.tif,https://noirlab.edu/public/media/archives/images/large/GeMS-62-CC.jpg|Gemini South and its Instruments|The Gemini South telescope with its numerous instruments on Cerro Pachón in Chile.|",
             // Jan. 22, 2021
-            "ann21004a|Artwork|2021-01-22T00:00|850|1100|||Illustrations|NOIRLab|https://noirlab.edu/public/media/archives/images/original/ann21004a.tif,https://noirlab.edu/public/media/archives/images/large/ann21004a.jpg|NOIRLab Mirror: Issue 02||" })
+            "ann21004a|Artwork|2021-01-22T00:00|850|1100|||Illustrations|NOIRLab|https://noirlab.edu/public/media/archives/images/original/ann21004a.tif,https://noirlab.edu/public/media/archives/images/large/ann21004a.jpg|NOIRLab Mirror: Issue 02||",
+            // <em> in credits in description
+            "GeminiMontage|Collage|2022-01-04T12:00|2560|1300|||Gemini Observatory|Gemini/<a href=\"https://www.nsf.gov/\">NSF</a>/AURA|https://noirlab.edu/public/media/archives/images/original/GeminiMontage.tif,https://noirlab.edu/public/media/archives/images/large/GeminiMontage.jpg|Gemini Montage|Gemini South on the summit of Cerro Pachón in Chile (left) and Gemini North on the summit of Maunakea in Hawai’i (right)||"
+    })
     void testReadHtml(String id, DjangoplicityMediaType imageType, String date, int width, int height, String name,
             @ConvertWith(SetArgumentConverter.class) Set<String> types,
             @ConvertWith(SetArgumentConverter.class) Set<String> categories, String credit,

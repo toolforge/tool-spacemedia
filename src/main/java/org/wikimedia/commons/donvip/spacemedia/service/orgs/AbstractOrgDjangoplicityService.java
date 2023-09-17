@@ -123,7 +123,8 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
     }
 
     private static void scrapingError(String url, String details) {
-        throw new IllegalStateException("ESO scraping code must be updated, see " + url + " - Details: " + details);
+        throw new IllegalStateException(
+                "Djangoplicity scraping code must be updated, see " + url + " - Details: " + details);
     }
 
     protected abstract Matcher getLocalizedUrlMatcher(String imgUrlLink);
@@ -292,7 +293,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
         }
         return links.isEmpty() ? credit.text()
                 : credit.html().replaceAll("</?span[^>]*>", "").replace("<br>", ". ").replaceAll("</?p[^>]*>", "")
-                        .replaceAll("</?strong>", "");
+                        .replaceAll("</?strong>", "").replaceAll("</?em>", "");
     }
 
     protected StringBuilder findDescription(Element div) {
@@ -303,7 +304,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
             } else if (!"p".equals(p.tagName())) {
                 break;
             }
-            description.append(p.html());
+            description.append(p.html().replaceAll("</?em>", ""));
         }
         return description;
     }
