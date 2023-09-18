@@ -69,7 +69,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
             select count(*)
             from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
             on (nasa_sdo_media.media_id = nasa_sdo_media_metadata.nasa_sdo_media_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
-            where media_type = ?1 and width = ?2 and height = ?3 and DATE(creation_date_time) = ?4
+            where media_type = ?1 and width = ?2 and height = ?3 and creation_date = ?4
             and exists (select * from file_metadata_commons_file_names where file_metadata_commons_file_names.file_metadata_id = file_metadata.id)
             """, nativeQuery = true)
     long countUploadedByMediaTypeAndDimensionsAndDate(int mediaType, int width, int height, LocalDate date);
@@ -81,7 +81,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
     @Query(value = """
             select count(*)
             from nasa_sdo_media
-            where media_type = ?1 and data_type in ?2 and DATE(creation_date_time) = ?3 and fsn is null
+            where media_type = ?1 and data_type in ?2 and creation_date = ?3 and fsn is null
             """, nativeQuery = true)
     long countByMediaTypeAndDataTypeInAndDateAndKeywords_FsnIsNull(int mediaType, Collection<String> dataTypes,
             LocalDate date);
@@ -93,6 +93,20 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
     }
 
     // FIND
+
+    @Query(value = """
+            select nasa_sdo_media.*
+            from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
+            on (nasa_sdo_media.media_id = nasa_sdo_media_metadata.nasa_sdo_media_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
+            where media_type = ?1 and width = ?2 and height = ?3 and creation_date = ?4
+            and not exists (select * from file_metadata_commons_file_names where file_metadata_commons_file_names.file_metadata_id = file_metadata.id)
+            """, nativeQuery = true)
+    List<NasaSdoMedia> findMissingByMediaTypeAndDimensionsAndDate(int mediaType, int width, int height, LocalDate date);
+
+    default List<NasaSdoMedia> findMissingByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, ImageDimensions dim,
+            LocalDate date) {
+        return findMissingByMediaTypeAndDimensionsAndDate(mediaType.ordinal(), dim.getWidth(), dim.getHeight(), date);
+    }
 
     @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
     Page<NasaSdoMedia> findMissingInCommonsByType(NasaMediaType type, Pageable page);
@@ -111,7 +125,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
             select *
             from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
             on (nasa_sdo_media.media_id = nasa_sdo_media_metadata.nasa_sdo_media_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
-            where media_type = ?1 and width = ?2 and height = ?3 and DATE(creation_date_time) = ?4 and fsn is null
+            where media_type = ?1 and width = ?2 and height = ?3 and creation_date = ?4 and fsn is null
             """, nativeQuery = true)
     List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDateAndFsnIsNull(int mediaType, int width,
             int height, LocalDate date);
