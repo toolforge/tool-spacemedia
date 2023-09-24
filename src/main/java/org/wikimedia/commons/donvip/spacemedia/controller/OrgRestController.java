@@ -5,6 +5,8 @@ import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDe
 import static org.wikimedia.commons.donvip.spacemedia.controller.PagingSortingDefaults.SORT;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -231,6 +233,11 @@ public abstract class OrgRestController<T extends Media> {
      */
     String extractId(HttpServletRequest request, String name) {
         String requestURI = request.getRequestURI();
-        return requestURI.substring(requestURI.indexOf('/', ("/" + service.getId() + "/rest/" + name).length()) + 1);
+        try {
+            return URLDecoder.decode(requestURI.substring(
+                    requestURI.indexOf('/', ("/" + service.getId() + "/rest/" + name).length()) + 1), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

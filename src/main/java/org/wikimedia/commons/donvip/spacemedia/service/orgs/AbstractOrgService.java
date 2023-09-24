@@ -653,12 +653,12 @@ public abstract class AbstractOrgService<T extends Media>
     @Override
     public T getById(String id) throws ImageNotFoundException {
         LOGGER.info("Looking for media by id: {}", id);
-        return repository.findById(getMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id));
+        return repository.findById(new CompositeMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id));
     }
 
     @Override
     public void deleteById(String id) throws ImageNotFoundException {
-        repository.deleteById(getMediaId(id));
+        repository.deleteById(new CompositeMediaId(id));
     }
 
     @Override
@@ -1360,16 +1360,6 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected abstract Class<T> getMediaClass();
-
-    /**
-     * Returns the media identifier for the given string representation.
-     *
-     * @param id the string representation of a media identifier
-     * @return the media identifier for the given string representation
-     */
-    protected final CompositeMediaId getMediaId(String id) {
-        return new CompositeMediaId(id);
-    }
 
     protected Class<? extends T> getTopTermsMediaClass() {
         return getMediaClass();
