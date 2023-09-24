@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.jpa.repository.Modifying;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
@@ -120,7 +119,6 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     int resetIgnored();
 
     @Override
-    @Modifying
     @CacheEvictDvidsAll
     int resetIgnored(Set<String> units);
 }

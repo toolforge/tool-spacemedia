@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.jpa.repository.Modifying;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
@@ -121,7 +120,6 @@ public interface WebMilMediaRepository extends MediaRepository<WebMilMedia> {
     int resetIgnored();
 
     @Override
-    @Modifying
     @CacheEvictWebmilAll
     int resetIgnored(Set<String> websites);
 }

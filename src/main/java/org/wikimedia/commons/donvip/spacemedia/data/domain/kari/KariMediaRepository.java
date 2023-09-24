@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.kari;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -14,7 +15,9 @@ public interface KariMediaRepository extends MediaRepository<KariMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "kariCount", "kariCountIgnored", "kariCountMissing", "kariCountMissingImages", "kariCountUploaded" })
+            "kariCount", "kariCountRepo", "kariCountIgnored", "kariCountIgnoredRepo", "kariCountMissing",
+            "kariCountMissingRepo", "kariCountMissingImages", "kariCountMissingImagesRepo", "kariCountUploaded",
+            "kariCountUploadedRepo", "kariCountPhashNotNull", "kariCountPhashNotNullRepo" })
     @interface CacheEvictKariAll {
 
     }
@@ -32,12 +35,24 @@ public interface KariMediaRepository extends MediaRepository<KariMedia> {
     long count();
 
     @Override
+    @Cacheable("kariCountRepo")
+    long count(Set<String> repos);
+
+    @Override
     @Cacheable("kariCountIgnored")
     long countByIgnoredTrue();
 
     @Override
+    @Cacheable("kariCountIgnoredRepo")
+    long countByIgnoredTrue(Set<String> repos);
+
+    @Override
     @Cacheable("kariCountMissing")
     long countMissingInCommons();
+
+    @Override
+    @Cacheable("kariCountMissingRepo")
+    long countMissingInCommons(Set<String> repos);
 
     @Override
     @Cacheable("kariCountMissingImages")
@@ -46,13 +61,36 @@ public interface KariMediaRepository extends MediaRepository<KariMedia> {
     }
 
     @Override
+    @Cacheable("kariCountMissingImagesRepo")
+    default long countMissingImagesInCommons(Set<String> repos) {
+        return countMissingInCommons(repos);
+    }
+
+    @Override
     default long countMissingVideosInCommons() {
+        return 0;
+    }
+
+    @Override
+    default long countMissingVideosInCommons(Set<String> repos) {
         return 0;
     }
 
     @Override
     @Cacheable("kariCountUploaded")
     long countUploadedToCommons();
+
+    @Override
+    @Cacheable("kariCountUploadedRepo")
+    long countUploadedToCommons(Set<String> repos);
+
+    @Override
+    @Cacheable("kariCountPhashNotNull")
+    long countByMetadata_PhashNotNull();
+
+    @Override
+    @Cacheable("kariCountPhashNotNullRepo")
+    long countByMetadata_PhashNotNull(Set<String> repos);
 
     // FIND
 
@@ -93,4 +131,14 @@ public interface KariMediaRepository extends MediaRepository<KariMedia> {
     @Override
     @CacheEvictKariAll
     void deleteAll();
+
+    // UPDATE
+
+    @Override
+    @CacheEvictKariAll
+    int resetIgnored();
+
+    @Override
+    @CacheEvictKariAll
+    int resetIgnored(Set<String> repos);
 }

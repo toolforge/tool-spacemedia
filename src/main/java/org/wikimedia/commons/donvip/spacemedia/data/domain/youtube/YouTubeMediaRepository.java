@@ -15,7 +15,8 @@ public interface YouTubeMediaRepository extends MediaRepository<YouTubeMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "youtubeCount", "youtubeCountByChannel",
-            "youtubeCountIgnoredByChannel", "youtubeCountMissing", "youtubeCountMissingByChannel",
+            "youtubeCountIgnored", "youtubeCountIgnoredByChannel", "youtubeCountMissing",
+            "youtubeCountMissingByChannel",
             "youtubeCountUploaded", "youtubeCountUploadedByChannel", "youtubeCountPhashNotNull",
             "youtubeCountPhashNotNullByChannel" })
     @interface CacheEvictYouTubeAll {
@@ -37,6 +38,10 @@ public interface YouTubeMediaRepository extends MediaRepository<YouTubeMedia> {
     @Override
     @Cacheable("youtubeCountByChannel")
     long count(Set<String> youtubeChannels);
+
+    @Override
+    @Cacheable("youtubeCountIgnored")
+    long countByIgnoredTrue();
 
     @Override
     @Cacheable("youtubeCountIgnoredByChannel")
@@ -116,4 +121,14 @@ public interface YouTubeMediaRepository extends MediaRepository<YouTubeMedia> {
     @Override
     @CacheEvictYouTubeAll
     void deleteAll();
+
+    // UPDATE
+
+    @Override
+    @CacheEvictYouTubeAll
+    int resetIgnored();
+
+    @Override
+    @CacheEvictYouTubeAll
+    int resetIgnored(Set<String> repos);
 }

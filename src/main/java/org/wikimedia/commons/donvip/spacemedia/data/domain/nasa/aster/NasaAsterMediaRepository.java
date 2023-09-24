@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -16,8 +17,11 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "nasaAsterCount", "nasaAsterCountIgnored", "nasaAsterCountMissing", "nasaAsterCountMissingImages",
-            "nasaAsterCountUploaded" })
+            "nasaAsterCount", "nasaAsterCountRepo", "nasaAsterCountIgnored", "nasaAsterCountIgnoredRepo",
+            "nasaAsterCountMissing", "nasaAsterCountMissingRepo",
+            "nasaAsterCountMissingImages",
+            "nasaAsterCountUploaded", "nasaAsterCountUploadedRepo", "nasaAsterCountPhashNotNull",
+            "nasaAsterCountPhashNotNullRepo" })
     @interface CacheEvictNasaAsterAll {
 
     }
@@ -35,12 +39,24 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
     long count();
 
     @Override
+    @Cacheable("nasaAsterCountRepo")
+    long count(Set<String> repos);
+
+    @Override
     @Cacheable("nasaAsterCountIgnored")
     long countByIgnoredTrue();
 
     @Override
+    @Cacheable("nasaAsterCountIgnoredRepo")
+    long countByIgnoredTrue(Set<String> repos);
+
+    @Override
     @Cacheable("nasaAsterCountMissing")
     long countMissingInCommons();
+
+    @Override
+    @Cacheable("nasaAsterCountMissingRepo")
+    long countMissingInCommons(Set<String> repos);
 
     @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons(NasaMediaType type);
@@ -60,6 +76,18 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
     @Override
     @Cacheable("nasaAsterCountUploaded")
     long countUploadedToCommons();
+
+    @Override
+    @Cacheable("nasaAsterCountUploadedRepo")
+    long countUploadedToCommons(Set<String> repos);
+
+    @Override
+    @Cacheable("nasaAsterCountPhashNotNull")
+    long countByMetadata_PhashNotNull();
+
+    @Override
+    @Cacheable("nasaAsterCountPhashNotNullRepo")
+    long countByMetadata_PhashNotNull(Set<String> repos);
 
     // FIND
 
@@ -103,4 +131,14 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
     @Override
     @CacheEvictNasaAsterAll
     void deleteAll();
+
+    // UPDATE
+
+    @Override
+    @CacheEvictNasaAsterAll
+    int resetIgnored();
+
+    @Override
+    @CacheEvictNasaAsterAll
+    int resetIgnored(Set<String> repos);
 }

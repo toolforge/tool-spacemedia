@@ -103,4 +103,14 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia> {
     @Override
     @CacheEvictStsciAll
     void deleteAll();
+
+    // UPDATE
+
+    @Override
+    @CacheEvictStsciAll
+    int resetIgnored();
+
+    @Override
+    @CacheEvictStsciAll
+    int resetIgnored(Set<String> repos);
 }

@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -94,4 +95,14 @@ public interface NasaSirsMediaRepository extends MediaRepository<NasaSirsMedia> 
     @Override
     @CacheEvictNasaSirsAll
     void deleteAll();
+
+    // UPDATE
+
+    @Override
+    @CacheEvictNasaSirsAll
+    int resetIgnored();
+
+    @Override
+    @CacheEvictNasaSirsAll
+    int resetIgnored(Set<String> repos);
 }

@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -19,7 +18,7 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
             "nasaCountMissingByCenter", "nasaCountMissingImages", "nasaCountMissingImagesByCenter",
             "nasaCountMissingVideos", "nasaCountMissingVideosByCenter",
             "nasaCountUploaded", "nasaCountUploadedByCenter", "nasaCountPhashNotNull",
-            "nasaCountPhashNotNullByCenter", "nasaCenters" })
+            "nasaCountPhashNotNullByCenter" })
     @interface CacheEvictNasaAll {
 
     }
@@ -102,12 +101,6 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Cacheable("nasaCountUploadedByCenter")
     long countUploadedToCommons(Set<String> centers);
 
-    // CUSTOM
-
-    @Cacheable("nasaCenters")
-    @Query("select distinct(id.repoId) from #{#entityName}")
-    List<String> findCenters();
-
     // SAVE
 
     @Override
@@ -135,4 +128,14 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Override
     @CacheEvictNasaAll
     void deleteAll();
+
+    // UPDATE
+
+    @Override
+    @CacheEvictNasaAll
+    int resetIgnored();
+
+    @Override
+    @CacheEvictNasaAll
+    int resetIgnored(Set<String> repos);
 }

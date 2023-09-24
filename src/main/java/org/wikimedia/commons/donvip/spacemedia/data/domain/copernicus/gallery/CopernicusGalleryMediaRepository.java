@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -11,8 +12,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 public interface CopernicusGalleryMediaRepository extends MediaRepository<CopernicusGalleryMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
-    @CacheEvict(allEntries = true, cacheNames = { "copGalCount", "copGalCountIgnored", "copGalCountMissing",
-            "copGalCountMissingImages", "copGalCountMissingVideos", "copGalCountUploaded" })
+    @CacheEvict(allEntries = true, cacheNames = { "copGalCount", "copGalCountRepo", "copGalCountIgnored",
+            "copGalCountIgnoredRepo", "copGalCountMissing", "copGalCountMissingRepo",
+            "copGalCountMissingImages", "copGalCountMissingImagesRepo", "copGalCountMissingVideos",
+            "copGalCountMissingVideosRepo", "copGalCountUploaded", "copGalCountUploadedRepo",
+            "copGalCountPhashNotNull", "copGalCountPhashNotNullRepo" })
     @interface CacheEvictCopernicusGalleryAll {
 
     }
@@ -30,28 +34,56 @@ public interface CopernicusGalleryMediaRepository extends MediaRepository<Copern
     long count();
 
     @Override
+    @Cacheable("copGalCountRepo")
+    long count(Set<String> repos);
+
+    @Override
     @Cacheable("copGalCountIgnored")
     long countByIgnoredTrue();
+
+    @Override
+    @Cacheable("copGalCountIgnoredRepo")
+    long countByIgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("copGalCountMissing")
     long countMissingInCommons();
 
     @Override
+    @Cacheable("copGalCountMissingRepo")
+    long countMissingInCommons(Set<String> repos);
+
+    @Override
     @Cacheable("copGalCountMissingImages")
-    default long countMissingImagesInCommons() {
-        return countMissingInCommons();
-    }
+    long countMissingImagesInCommons();
+
+    @Override
+    @Cacheable("copGalCountMissingImagesRepo")
+    long countMissingImagesInCommons(Set<String> repos);
 
     @Override
     @Cacheable("copGalCountMissingVideos")
-    default long countMissingVideosInCommons() {
-        return 0;
-    }
+    long countMissingVideosInCommons();
+
+    @Override
+    @Cacheable("copGalCountMissingVideosRepo")
+    long countMissingVideosInCommons(Set<String> repos);
 
     @Override
     @Cacheable("copGalCountUploaded")
     long countUploadedToCommons();
+
+    @Override
+    @Cacheable("copGalCountUploadedRepo")
+    long countUploadedToCommons(Set<String> repos);
+
+    @Override
+    @Cacheable("copGalCountPhashNotNull")
+    long countByMetadata_PhashNotNull();
+
+    @Override
+    @Cacheable("copGalCountPhashNotNullRepo")
+    long countByMetadata_PhashNotNull(Set<String> repos);
 
     // SAVE
 
@@ -80,4 +112,14 @@ public interface CopernicusGalleryMediaRepository extends MediaRepository<Copern
     @Override
     @CacheEvictCopernicusGalleryAll
     void deleteAll();
+
+    // UPDATE
+
+    @Override
+    @CacheEvictCopernicusGalleryAll
+    int resetIgnored();
+
+    @Override
+    @CacheEvictCopernicusGalleryAll
+    int resetIgnored(Set<String> repos);
 }

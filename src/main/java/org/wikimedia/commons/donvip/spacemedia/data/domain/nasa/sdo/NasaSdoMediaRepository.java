@@ -5,6 +5,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,8 +21,10 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "nasaSdoCount", "nasaSdoCountIgnored", "nasaSdoCountMissing", "nasaSdoCountMissingImages",
-            "nasaSdoCountMissingVideos", "nasaSdoCountUploaded" })
+            "nasaSdoCount", "nasaSdoCountRepo", "nasaSdoCountIgnored", "nasaSdoCountIgnoredRepo", "nasaSdoCountMissing",
+            "nasaSdoCountMissingRepo", "nasaSdoCountMissingImages", "nasaSdoCountMissingImagesRepo",
+            "nasaSdoCountMissingVideos", "nasaSdoCountMissingVideosRepo", "nasaSdoCountUploaded",
+            "nasaSdoCountUploadedRepo", "nasaSdoCountPhashNotNullRepo" })
     @interface CacheEvictNasaSdoAll {
 
     }
@@ -39,12 +42,24 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
     long count();
 
     @Override
+    @Cacheable("nasaSdoCountRepo")
+    long count(Set<String> repos);
+
+    @Override
     @Cacheable("nasaSdoCountIgnored")
     long countByIgnoredTrue();
 
     @Override
+    @Cacheable("nasaSdoCountIgnoredRepo")
+    long countByIgnoredTrue(Set<String> repos);
+
+    @Override
     @Cacheable("nasaSdoCountMissing")
     long countMissingInCommons();
+
+    @Override
+    @Cacheable("nasaSdoCountMissingRepo")
+    long countMissingInCommons(Set<String> repos);
 
     @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
     long countMissingInCommons(NasaMediaType type);
@@ -56,14 +71,30 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
     }
 
     @Override
+    @Cacheable("nasaSdoCountMissingImagesRepo")
+    long countMissingImagesInCommons(Set<String> repos);
+
+    @Override
     @Cacheable("nasaSdoCountMissingVideos")
     default long countMissingVideosInCommons() {
         return countMissingInCommons(NasaMediaType.video);
     }
 
     @Override
+    @Cacheable("nasaSdoCountMissingVideosRepo")
+    long countMissingVideosInCommons(Set<String> repos);
+
+    @Override
     @Cacheable("nasaSdoCountUploaded")
     long countUploadedToCommons();
+
+    @Override
+    @Cacheable("nasaSdoCountUploadedRepo")
+    long countUploadedToCommons(Set<String> repos);
+
+    @Override
+    @Cacheable("nasaSdoCountPhashNotNullRepo")
+    long countByMetadata_PhashNotNull(Set<String> repos);
 
     @Query(value = """
             select count(*)
@@ -163,4 +194,14 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
     @Override
     @CacheEvictNasaSdoAll
     void deleteAll();
+
+    // UPDATE
+
+    @Override
+    @CacheEvictNasaSdoAll
+    int resetIgnored();
+
+    @Override
+    @CacheEvictNasaSdoAll
+    int resetIgnored(Set<String> repos);
 }

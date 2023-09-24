@@ -4,6 +4,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -14,8 +15,10 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "esaCount", "esaCountIgnored", "esaCountMissing", "esaCountMissingImages", "esaCountMissingVideos",
-            "esaCountUploaded" })
+            "esaCount", "esaCountRepo", "esaCountIgnored", "esaCountIgnoredRepo", "esaCountMissing",
+            "esaCountMissingRepo", "esaCountMissingImages", "esaCountMissingImagesRepo", "esaCountMissingVideos",
+            "esaCountMissingVideosRepo", "esaCountUploaded", "esaCountUploadedRepo", "esaCountPhashNotNull",
+            "esaCountPhashNotNullRepo" })
     @interface CacheEvictEsaAll {
 
     }
@@ -33,28 +36,56 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia> {
     long count();
 
     @Override
+    @Cacheable("esaCountRepo")
+    long count(Set<String> repos);
+
+    @Override
     @Cacheable("esaCountIgnored")
     long countByIgnoredTrue();
+
+    @Override
+    @Cacheable("esaCountIgnoredRepo")
+    long countByIgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("esaCountMissing")
     long countMissingInCommons();
 
     @Override
+    @Cacheable("esaCountMissingRepo")
+    long countMissingInCommons(Set<String> repos);
+
+    @Override
     @Cacheable("esaCountMissingImages")
-    default long countMissingImagesInCommons() {
-        return countMissingInCommons();
-    }
+    long countMissingImagesInCommons();
+
+    @Override
+    @Cacheable("esaCountMissingImagesRepo")
+    long countMissingImagesInCommons(Set<String> repos);
 
     @Override
     @Cacheable("esaCountMissingVideos")
-    default long countMissingVideosInCommons() {
-        return 0;
-    }
+    long countMissingVideosInCommons();
+
+    @Override
+    @Cacheable("esaCountMissingVideosRepo")
+    long countMissingVideosInCommons(Set<String> repos);
 
     @Override
     @Cacheable("esaCountUploaded")
     long countUploadedToCommons();
+
+    @Override
+    @Cacheable("esaCountUploadedRepo")
+    long countUploadedToCommons(Set<String> repos);
+
+    @Override
+    @Cacheable("esaCountPhashNotNull")
+    long countByMetadata_PhashNotNull();
+
+    @Override
+    @Cacheable("esaCountPhashNotNullRepo")
+    long countByMetadata_PhashNotNull(Set<String> repos);
 
     // FIND
 
@@ -87,4 +118,14 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia> {
     @Override
     @CacheEvictEsaAll
     void deleteAll();
+
+    // UPDATE
+
+    @Override
+    @CacheEvictEsaAll
+    int resetIgnored();
+
+    @Override
+    @CacheEvictEsaAll
+    int resetIgnored(Set<String> repos);
 }

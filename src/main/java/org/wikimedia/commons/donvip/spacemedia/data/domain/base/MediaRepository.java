@@ -248,5 +248,4 @@ public interface MediaRepository<T extends Media> extends PagingAndSortingReposi
     @Modifying
     @Query("update #{#entityName} m set m.ignored = null, m.ignoredReason = null where m.ignored = true and m.id.repoId in ?1")
     int resetIgnored(Set<String> repos);
-
 }

@@ -14,7 +14,8 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "flickrCount", "flickrCountByAccount", "flickrCountIgnoredByAccount", "flickrCountMissing",
+            "flickrCount", "flickrCountByAccount", "flickrCountIgnored", "flickrCountIgnoredByAccount",
+            "flickrCountMissing",
             "flickrCountMissingByAccount", "flickrCountMissingByType", "flickrCountMissingByTypeAndAccount",
             "flickrCountMissingImages", "flickrCountMissingVideos", "flickrCountMissingImagesByAccount",
             "flickrCountMissingVideosByAccount", "flickrCountUploaded", "flickrCountUploadedByAccount",
@@ -38,6 +39,10 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia> {
     @Override
     @Cacheable("flickrCountByAccount")
     long count(Set<String> flickrAccounts);
+
+    @Override
+    @Cacheable("flickrCountIgnored")
+    long countByIgnoredTrue();
 
     @Override
     @Cacheable("flickrCountIgnoredByAccount")

@@ -40,7 +40,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
@@ -99,9 +98,6 @@ public class NasaService extends AbstractOrgService<NasaMedia> {
 
     @Autowired
     private NasaVideoRepository videoRepository;
-
-    @Autowired
-    private NasaMediaRepository<NasaMedia> mediaRepository;
 
     @Autowired
     private WikidataService wikidata;
@@ -361,26 +357,6 @@ public class NasaService extends AbstractOrgService<NasaMedia> {
             }
         }
         return wikiLink(homePage, name);
-    }
-
-    @Override
-    public Statistics getStatistics(boolean details) {
-        Statistics stats = super.getStatistics(details);
-        if (details) {
-            List<String> centers = mediaRepository.findCenters();
-            if (centers.size() > 1) {
-                stats.setDetails(centers.parallelStream()
-                        .map(c -> new Statistics(Objects.toString(c), Objects.toString(c),
-                                mediaRepository.count(Set.of(c)),
-                                mediaRepository.countUploadedToCommons(Set.of(c)),
-                                mediaRepository.countByIgnoredTrue(Set.of(c)),
-                                mediaRepository.countMissingImagesInCommons(Set.of(c)),
-                                mediaRepository.countMissingVideosInCommons(Set.of(c)),
-                                mediaRepository.countByMetadata_PhashNotNull(Set.of(c)), null))
-                        .sorted().toList());
-            }
-        }
-        return stats;
     }
 
     @Override

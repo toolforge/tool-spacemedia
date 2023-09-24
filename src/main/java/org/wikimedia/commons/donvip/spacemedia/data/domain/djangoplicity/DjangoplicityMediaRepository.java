@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
@@ -14,8 +13,10 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "djangoCount", "djangoCountByWebsite", "djangoCountIgnoredByWebsite",
-            "djangoCountMissing", "djangoCountMissingByWebsite", "djangoCountUploaded", "djangoCountUploadedByWebsite",
-            "djangoCountPhashNotNull", "djangoCountPhashNotNullByWebsite" })
+            "djangoCountMissing", "djangoCountMissingByWebsite", "djangoCountMissingImages",
+            "djangoCountMissingImagesByWebsite", "djangoCountMissingVideos", "djangoCountMissingVideosByWebsite",
+            "djangoCountUploaded", "djangoCountUploadedByWebsite", "djangoCountPhashNotNull",
+            "djangoCountPhashNotNullByWebsite" })
     @interface CacheEvictDjangoAll {
 
     }
@@ -49,18 +50,20 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
     long countMissingInCommons(Set<String> websites);
 
     @Override
-    default long countMissingImagesInCommons() {
-        return countMissingInCommons();
-    }
+    @Cacheable("djangoCountMissingImages")
+    long countMissingImagesInCommons();
 
     @Override
-    default long countMissingImagesInCommons(Set<String> websites) {
-        return countMissingInCommons(websites);
-    }
+    @Cacheable("djangoCountMissingImagesByWebsite")
+    long countMissingImagesInCommons(Set<String> websites);
 
     @Override
-    @Query(value = "select 0", nativeQuery = true)
+    @Cacheable("djangoCountMissingVideos")
     long countMissingVideosInCommons();
+
+    @Override
+    @Cacheable("djangoCountMissingVideosByWebsite")
+    long countMissingVideosInCommons(Set<String> websites);
 
     @Override
     @Cacheable("djangoCountUploaded")
