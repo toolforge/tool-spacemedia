@@ -90,6 +90,11 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
+    public String getUiRepoId(String repoId) {
+        return repoId.replaceAll("@N0[1-9]", "");
+    }
+
+    @Override
     public final URL getSourceUrl(FlickrMedia media, FileMetadata metadata) {
         return getPhotoUrl(media);
     }

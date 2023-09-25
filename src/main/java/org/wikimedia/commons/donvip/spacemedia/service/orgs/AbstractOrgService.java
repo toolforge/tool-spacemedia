@@ -203,7 +203,7 @@ public abstract class AbstractOrgService<T extends Media>
     protected AbstractOrgService(MediaRepository<T> repository, String id, Set<String> repoIds) {
         this.repository = Objects.requireNonNull(repository);
         this.id = Objects.requireNonNull(id);
-        this.repoIds = Objects.requireNonNull(repoIds);
+        this.repoIds = new TreeSet<>(repoIds);
     }
 
     @PostConstruct
@@ -434,6 +434,10 @@ public abstract class AbstractOrgService<T extends Media>
 
     public Set<String> getRepoIds() {
         return repoIds;
+    }
+
+    public String getUiRepoId(String repoId) {
+        return repoId;
     }
 
     public boolean isMultiRepo() {

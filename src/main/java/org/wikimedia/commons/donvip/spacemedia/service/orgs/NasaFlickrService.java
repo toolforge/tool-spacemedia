@@ -51,6 +51,14 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    public String getUiRepoId(String repoId) {
+        // Remove "nasa" from ids displayed in UI to make the long list fit in screen
+        return super.getUiRepoId(repoId).replaceAll("nasa[_-]?", "").replaceAll("_?photos?", "").replace("mission", "")
+                .replace("telescope", "").replace("-science", "").replace("-mars", "").replace("-infrared-sounder", "")
+                .replace("researchstation", "").replace("lander", "");
+    }
+
+    @Override
     protected boolean isNASA(FlickrMedia media) {
         return true;
     }

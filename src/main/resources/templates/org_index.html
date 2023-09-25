@@ -13,7 +13,7 @@
 					<a th:class="'nav-link' + (${repo} == null ? ' active' : '')" th:href="@{/{id}(id=${org.id})}" th:text="All"></a>
 				</li>
 				<li class="nav-item" th:each="repoId : ${org.repoIds}" >
-					<a th:class="'nav-link' + (${repoId} == ${repo} ? ' active' : '')" th:href="@{/{id}?repo={repo}(id=${org.id},repo=${repoId})}" th:text="${repoId}"></a>
+					<a th:class="'nav-link' + (${repoId} == ${repo} ? ' active' : '')" th:href="@{/{id}?repo={repo}(id=${org.id},repo=${repoId})}" th:text="${org.getUiRepoId(repoId)}"></a>
 				</li>
 			</ul>
 		</div>
