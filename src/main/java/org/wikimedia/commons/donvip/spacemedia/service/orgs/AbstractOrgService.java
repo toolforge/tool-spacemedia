@@ -124,7 +124,7 @@ public abstract class AbstractOrgService<T extends Media>
 
     private static final Pattern PATTERN_SHORT = Pattern
             .compile(
-                    "(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{7}|youtu.be/[\\w\\-]{11}|flic.kr/p/[0-9a-zA-Z]{6}|fb.me/e/[0-9a-zA-Z]{9})");
+                    "(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{6,7}|youtu.be/[\\w\\-]{11}|flic.kr/p/[0-9a-zA-Z]{6}|fb.me/e/[0-9a-zA-Z]{9})");
 
     private static final Pattern PATTERN_TWITTER_SEARCH = Pattern
             .compile("<a href=\"https://twitter.com/search?[^\"]+\">([^<]*)</a>");
