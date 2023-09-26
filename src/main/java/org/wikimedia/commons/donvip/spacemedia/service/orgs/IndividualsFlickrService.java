@@ -119,6 +119,9 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
             case "192271236@N03":
                 result.add("Files from Andrea Luck Flickr stream");
                 break;
+            case "semeion":
+                result.add("Files from Simeon Schmauß Flickr stream");
+                break;
             }
         }
         return result;
@@ -136,7 +139,7 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
         case "geckzilla":
             result.add(Emojis.STARS);
             break;
-        case "kevinmgill", "192271236@N03":
+        case "kevinmgill", "192271236@N03", "semeion":
             result.add(Emojis.PLANET_WITH_RINGS);
             break;
         case "pierre_markuse", "harrystrangerphotography", "194849271@N04":
@@ -162,6 +165,8 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
             return Set.of("@spacefromspace@spacey.space");
         case "192271236@N03":
             return Set.of("@andrealuck@fosstodon.org");
+        case "semeion":
+            return Set.of("@stim3on@fosstodon.org");
         default:
             return Set.of();
         }
@@ -180,6 +185,8 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
             return Set.of("@Harry__Stranger");
         case "192271236@N03":
             return Set.of("@andrluck");
+        case "semeion":
+            return Set.of("@stim3on");
         default:
             return Set.of();
         }
