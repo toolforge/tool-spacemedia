@@ -276,13 +276,8 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     private FlickrMedia photoToFlickrMedia(Photo p, String flickrAccount) {
-        return repository.findById(new CompositeMediaId(getPathAlias(p, flickrAccount), p.getId())).orElseGet(() -> {
-            try {
-                return saveMedia(mapPhoto(p, flickrAccount, true));
-            } catch (FlickrException e) {
-                throw new IllegalArgumentException(e);
-            }
-        });
+        return repository.findById(new CompositeMediaId(getPathAlias(p, flickrAccount), p.getId()))
+                .orElseGet(() -> saveMedia(mapPhoto(p, flickrAccount, true)));
     }
 
     private Pair<Integer, Collection<FlickrMedia>> processFlickrMedia(Iterable<FlickrMedia> medias,
@@ -316,7 +311,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         }
     }
 
-    private FlickrMedia mapPhoto(Photo p, String flickrAccount, boolean saveMetadata) throws FlickrException {
+    private FlickrMedia mapPhoto(Photo p, String flickrAccount, boolean saveMetadata) {
         FlickrMedia m = new FlickrMedia();
         ofNullable(p.getGeoData()).ifPresent(geo -> {
             m.setLatitude(geo.getLatitude());
@@ -332,9 +327,13 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         m.setMedia(FlickrMediaType.valueOf(p.getMedia()));
         m.setMediaStatus(p.getMediaStatus());
         m.setOriginalFormat(p.getOriginalFormat());
-        FileMetadata md = new FileMetadata(newURL(p.getOriginalUrl()));
-        md.setImageDimensions(new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight()));
-        m.addMetadata(saveMetadata ? metadataRepository.save(md) : md);
+        try {
+            FileMetadata md = new FileMetadata(newURL(p.getOriginalUrl()));
+            md.setImageDimensions(new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight()));
+            m.addMetadata(saveMetadata ? metadataRepository.save(md) : md);
+        } catch (FlickrException e) {
+            LOGGER.error("Flickr error : {}", e.getMessage(), e);
+        }
         m.setTags(p.getTags().stream().map(Tag::getValue).collect(toSet()));
         m.setThumbnailUrl(newURL(p.getThumbnailUrl()));
         m.setTitle(p.getTitle());
