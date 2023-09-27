@@ -330,6 +330,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         try {
             FileMetadata md = new FileMetadata(newURL(p.getOriginalUrl()));
             md.setImageDimensions(new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight()));
+            md.setExtension(p.getOriginalFormat());
             m.addMetadata(saveMetadata ? metadataRepository.save(md) : md);
         } catch (FlickrException e) {
             LOGGER.error("Flickr error : {}", e.getMessage(), e);
