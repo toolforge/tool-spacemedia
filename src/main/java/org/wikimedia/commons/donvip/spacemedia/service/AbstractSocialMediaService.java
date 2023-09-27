@@ -144,8 +144,9 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
 
     protected String createStatusText(Set<String> emojis, Set<String> accounts, long imgCount, long vidCount,
             Collection<? extends Media> uploadedMedia, Collection<FileMetadata> uploadedMetadata, int maxKeywords) {
-        StringBuilder sb = new StringBuilder(emojis.stream().sorted().collect(joining()));
+        StringBuilder sb = new StringBuilder();
         getLongestTitle(uploadedMedia).ifPresent(sb::append);
+        sb.append(' ').append(emojis.stream().sorted().collect(joining()));
         appendKeywords(uploadedMedia, sb, maxKeywords);
         String mediaFrom = getMediaFrom(accounts, imgCount, vidCount);
         if (imgCount + vidCount > 1) {
@@ -198,7 +199,8 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
 
     private static void appendKeywords(Collection<? extends Media> uploadedMedia, StringBuilder sb, int max) {
         List<String> keywords = uploadedMedia.stream().filter(WithKeywords.class::isInstance)
-                .flatMap(x -> ((WithKeywords) x).getKeywords().stream()).map(kw -> kw.replace(" ", "").replace("-", ""))
+                .flatMap(x -> ((WithKeywords) x).getKeywords().stream())
+                .map(kw -> kw.replace(" ", "").replace("-", "").replace(".", ""))
                 .distinct().sorted().limit(max).toList();
         if (!keywords.isEmpty()) {
             sb.append("\n\n");

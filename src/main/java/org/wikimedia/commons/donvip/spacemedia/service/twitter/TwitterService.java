@@ -116,7 +116,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
             Collection<FileMetadata> uploadedMetadata, Set<String> emojis, Set<String> accounts) throws IOException {
         final long imagesCount = uploadedMedia.stream().filter(Media::isImage).count();
         final long videosCount = uploadedMedia.stream().filter(Media::isVideo).count();
-        int maxKeywords = 10;
+        int maxKeywords = 8;
         String text = createStatusText(emojis, accounts, imagesCount, videosCount, uploadedMedia, uploadedMetadata,
                 maxKeywords);
         while (!isTweetValid(text) && maxKeywords > 1) {
