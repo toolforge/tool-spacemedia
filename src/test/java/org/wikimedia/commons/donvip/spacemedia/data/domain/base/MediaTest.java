@@ -48,7 +48,12 @@ class MediaTest {
 
     @Test
     void testIsTitleBlacklisted() {
+        assertTrue(Media.isTitleBlacklisted("image1"));
         assertTrue(Media.isTitleBlacklisted("IMG_5057-CC"));
         assertTrue(Media.isTitleBlacklisted("DSC_1693"));
+        assertTrue(Media.isTitleBlacklisted("GOPR0146"));
+        assertTrue(Media.isTitleBlacklisted("DCIM\\100GOPRO"));
+        assertTrue(Media.isTitleBlacklisted("Dcim\\100gopro"));
+        assertTrue(Media.isTitleBlacklisted("gopr0151_28395279615_o"));
     }
 }

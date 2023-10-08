@@ -63,7 +63,7 @@ public class Media implements MediaProjection, MediaDescription {
     private static final Logger LOGGER = LoggerFactory.getLogger(Media.class);
 
     private static final Pattern ONLY_DIGITS = Pattern.compile("\\d+");
-    private static final Pattern IMG = Pattern.compile("(?:IMG|DSC)[-_]\\d+(-[A-Z]+)?");
+    private static final Pattern IMG = Pattern.compile("(?:IMA?GE?|DSC|GOPR|DCIM)[-_\\\\]?[_\\d]+([_-]?[A-Z]+)?(_O)?");
     private static final Pattern URI_LIKE = Pattern.compile("Https?\\-\\-.*", Pattern.CASE_INSENSITIVE);
 
     @Id
@@ -177,7 +177,9 @@ public class Media implements MediaProjection, MediaDescription {
                             uid)
                     : s.substring(0, Math.min(234, s.length()));
         } else {
-            return getUploadTitle(s, uid);
+            return getUploadTitle(isTitleBlacklisted(s)
+                    ? normalizeFilename(getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata))))
+                    : s, uid);
         }
     }
 
@@ -507,7 +509,7 @@ public class Media implements MediaProjection, MediaDescription {
      */
     public static boolean isTitleBlacklisted(String title) {
         return ONLY_DIGITS.matcher(title.replace(" ", "").replace("/", "").replace("_", "").replace("-", "")).matches()
-                || URI_LIKE.matcher(title).matches() || IMG.matcher(title).matches();
+                || URI_LIKE.matcher(title).matches() || IMG.matcher(title.toUpperCase(ENGLISH)).matches();
     }
 
     /**

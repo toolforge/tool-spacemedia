@@ -53,6 +53,16 @@ class NasaFlickrServiceTest extends AbstractOrgServiceTest {
                 service.getSource(media, media.getUniqueMetadata()));
     }
 
+    @Test
+    void testResolveShortenerOwly() {
+        FlickrMedia media = new FlickrMedia();
+        media.setDescription(
+                "Notes from the underground: Interpreting the data deluge to understand drought. ow.ly/T7DjP This blog post is part of a series of first-hand stories from NASA scientists, visualizers and educators that were created for Earth Science Week 2015: Visualizing Earth Systems, an American Geosciences Institute initiative. Read all the blogs and find educational resources for all ages at: svs.gsfc.nasa.gov/ESW2015/ Twitter Notes from the underground: Interpreting the data deluge to understand drought. #ESW2015 ow.ly/T7DjP");
+        assertEquals(
+                "Notes from the underground: Interpreting the data deluge to understand drought. https://svs.gsfc.nasa.gov/cgi-bin/details.cgi?aid=4363 This blog post is part of a series of first-hand stories from NASA scientists, visualizers and educators that were created for Earth Science Week 2015: Visualizing Earth Systems, an American Geosciences Institute initiative. Read all the blogs and find educational resources for all ages at: svs.gsfc.nasa.gov/ESW2015/ Twitter Notes from the underground: Interpreting the data deluge to understand drought. #ESW2015 https://svs.gsfc.nasa.gov/cgi-bin/details.cgi?aid=4363",
+                service.getDescription(media, null));
+    }
+
     @Configuration
     @Import(DefaultOrgTestConfig.class)
     static class TestConfig {

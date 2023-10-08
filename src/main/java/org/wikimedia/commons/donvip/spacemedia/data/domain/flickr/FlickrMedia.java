@@ -1,5 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.normalizeFilename;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getFirstSentence;
+
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -248,7 +251,10 @@ public class FlickrMedia extends SingleFileMedia implements WithLatLon, WithKeyw
                 return albumTitle + " (" + getId().getMediaId() + ")";
             }
         }
-        return getUploadTitle(getUploadTitle(), getUserDefinedId().orElseGet(() -> getUploadId(fileMetadata)));
+        String s = getUploadTitle();
+        return getUploadTitle(isTitleBlacklisted(s)
+                ? normalizeFilename(getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata))))
+                : s, getUserDefinedId().orElseGet(() -> getUploadId(fileMetadata)));
     }
 
     @Override

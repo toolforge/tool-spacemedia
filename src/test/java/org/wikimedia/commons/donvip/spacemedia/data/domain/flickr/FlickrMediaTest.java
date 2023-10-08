@@ -16,7 +16,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId
 class FlickrMediaTest {
 
     @Test
-    void testGetUploadTitle() {
+    void testGetUploadTitle1() {
         FlickrMedia media = new FlickrMedia();
         media.setId(new CompositeMediaId("", "26635829145"));
         FlickrPhotoSet photoset = new FlickrPhotoSet();
@@ -29,6 +29,18 @@ class FlickrMediaTest {
                         + "Vollständiger Artikel unter <a href=\"http://www.dlr.de/dlr/desktopdefault.aspx/tabid-10081/151_read-17505/\" rel=\"nofollow\">www.dlr.de/dlr/desktopdefault.aspx/tabid-10081/151_read-17505/</a>\r\n"
                         + "\r\n" + "Fotos: DLR / Maasewerd CC-BY 3.0");
         assertEquals("Flugversuche mit dem A320 ATRA (26635829145)", media.getUploadTitle(null));
+    }
+
+    @Test
+    void testGetUploadTitle2() {
+        FlickrMedia media = new FlickrMedia();
+        media.setId(new CompositeMediaId("", "5727383147"));
+        FlickrPhotoSet photoset = new FlickrPhotoSet();
+        photoset.setTitle("NEEMO 15 Eng Eval Day 4");
+        media.addPhotoSet(photoset);
+        media.setTitle("GOPR0146");
+        media.setDescription("Dcim\\100gopro");
+        assertEquals("NEEMO 15 Eng Eval Day 4 (5727383147)", media.getUploadTitle(null));
     }
 
     @ParameterizedTest
