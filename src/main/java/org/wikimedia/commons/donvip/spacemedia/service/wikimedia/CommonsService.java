@@ -892,7 +892,7 @@ public class CommonsService {
         return unescapeHtml4(
                 unescapeXml(filename.endsWith(".") ? filename.substring(0, filename.length() - 1) : filename))
                 .replace('/', '-').replace(':', '-').replace('\\', '-').replace('.', '_').replace("â€™", "’")
-                .replace("http---", "").replace("https---", "").trim();
+                .replace("http---", "").replace("https---", "").replaceAll("(?i)_(JPE?G|PNG|GIF|TIFF?)$", "").trim();
     }
 
     public boolean isPermittedFileExt(String ext) {

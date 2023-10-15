@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -29,6 +30,14 @@ class MediaTest {
         media.setId(new CompositeMediaId("", "NHQ202304210018"));
         media.setTitle("NASA Leadership Meets with UK Space Agency (NHQ202304210018)");
         assertEquals("NASA Leadership Meets with UK Space Agency (NHQ202304210018)", media.getUploadTitle(null));
+
+        media.setId(new CompositeMediaId("", "4908509092"));
+        media.setTitle("HercC130_GoingHome.jPG");
+        assertEquals("HercC130_GoingHome (4908509092)", media.getUploadTitle(null));
+
+        media.setId(new CompositeMediaId("", "4896018997"));
+        media.setTitle("HercC130.JPG");
+        assertEquals("HercC130 (4896018997)", media.getUploadTitle(null));
     }
 
     @Test
@@ -55,5 +64,12 @@ class MediaTest {
         assertTrue(Media.isTitleBlacklisted("DCIM\\100GOPRO"));
         assertTrue(Media.isTitleBlacklisted("Dcim\\100gopro"));
         assertTrue(Media.isTitleBlacklisted("gopr0151_28395279615_o"));
+        assertTrue(Media.isTitleBlacklisted("27836994673_b88ea78623_o"));
+        assertTrue(Media.isTitleBlacklisted("578224_389534067749441_1515397233_n"));
+        assertTrue(Media.isTitleBlacklisted("GOPR7166 reframed by Herve"));
+        assertTrue(Media.isTitleBlacklisted("IMG_3836_propellers_cirrus_David_Noone"));
+
+        assertFalse(Media.isTitleBlacklisted("Hubble Takes a Closer Look at its 31st Anniversary Image"));
+        assertFalse(Media.isTitleBlacklisted("HercC130_GoingHome.jPG"));
     }
 }

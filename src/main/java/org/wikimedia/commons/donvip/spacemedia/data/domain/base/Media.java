@@ -62,8 +62,8 @@ public class Media implements MediaProjection, MediaDescription {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Media.class);
 
-    private static final Pattern ONLY_DIGITS = Pattern.compile("\\d+");
-    private static final Pattern IMG = Pattern.compile("(?:IMA?GE?|DSC|GOPR|DCIM)[-_\\\\]?[_\\d]+([_-]?[A-Z]+)?(_O)?");
+    private static final Pattern ONLY_DIGITS = Pattern.compile("[\\da-f]+[on]?");
+    private static final Pattern IMG = Pattern.compile("(IMA?GE?|DSC|GOPR|DCIM)[-_\\\\]?[_\\d]+.*");
     private static final Pattern URI_LIKE = Pattern.compile("Https?\\-\\-.*", Pattern.CASE_INSENSITIVE);
 
     @Id
