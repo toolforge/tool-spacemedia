@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
@@ -83,7 +84,8 @@ public class FlickrMediaProcessorService {
     public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
             Supplier<Collection<String>> stringsToRemove, BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<FileMetadata>, Integer>> uploader,
-            UrlResolver<FlickrMedia> urlResolver, UnaryOperator<FlickrMedia> saver) throws IOException {
+            UrlResolver<FlickrMedia> urlResolver, UnaryOperator<FlickrMedia> saver,
+            List<IgnoreCriteria> ignoreCriterias) throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
         final Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
@@ -128,6 +130,14 @@ public class FlickrMediaProcessorService {
             }
         } catch (URISyntaxException e) {
             LOGGER.error("URISyntaxException for video " + media.getId(), e);
+        }
+        if (!Boolean.TRUE.equals(media.isIgnored())) {
+            for (IgnoreCriteria c : ignoreCriterias) {
+                if (c.match(media)) {
+                    save = MediaService.ignoreMedia(media, "Ignored criteria: " + c);
+                    break;
+                }
+            }
         }
         if ((!isPresentInDb || isEmpty(media.getAllCommonsFileNames())) && media.getPhotosets() != null) {
             for (FlickrPhotoSet photoSet : media.getPhotosets()) {

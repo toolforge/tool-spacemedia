@@ -43,6 +43,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenExc
 import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrService;
+import org.wikimedia.commons.donvip.spacemedia.service.flickr.IgnoreCriteria;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 
@@ -289,7 +290,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             try {
                 Pair<FlickrMedia, Integer> result = processor.processFlickrMedia(media, flickrAccount,
                         () -> getStringsToRemove(media), this::shouldUploadAuto, this::uploadWrapped,
-                        getUrlResolver(), this::saveMedia);
+                        getUrlResolver(), this::saveMedia, getIgnoreCriteria());
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }
@@ -299,6 +300,10 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             }
         }
         return Pair.of(count, uploadedMedia);
+    }
+
+    protected List<IgnoreCriteria> getIgnoreCriteria() {
+        return List.of();
     }
 
     @Override

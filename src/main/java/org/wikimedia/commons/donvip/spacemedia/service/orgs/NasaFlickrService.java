@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.flickr.IgnoreCriteria;
 
 @Service
 public class NasaFlickrService extends AbstractOrgFlickrService {
@@ -66,6 +67,11 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
     @Override
     protected boolean includeAllLicences() {
         return true; // A lot of NASA employees seem not aware their work is public domain :(
+    }
+
+    @Override
+    protected List<IgnoreCriteria> getIgnoreCriteria() {
+        return List.of(new IgnoreCriteria(List.of("Copyright 2010 Mars Institute"), List.of("Photo by", "(NASA")));
     }
 
     @Override
