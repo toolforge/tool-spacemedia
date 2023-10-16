@@ -207,12 +207,12 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
-    public void updateMedia() {
+    public void updateMedia(String[] args) {
         LocalDateTime start = startUpdateMedia();
         List<FlickrMedia> uploadedMedia = new ArrayList<>();
         LocalDate minUploadDate = getRuntimeData().getDoNotFetchEarlierThan();
         int count = 0;
-        for (String flickrAccount : getRepoIds()) {
+        for (String flickrAccount : getRepoIdsFromArgs(args)) {
             try {
                 LOGGER.info("Fetching Flickr media from account '{}'...", flickrAccount);
                 List<FlickrMedia> freePictures = buildFlickrMediaList(

@@ -529,7 +529,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
     }
 
     @Override
-    public final void updateMedia() throws IOException {
+    public final void updateMedia(String[] args) throws IOException {
         LocalDateTime start = startUpdateMedia();
         int count = 0;
         boolean loop = true;

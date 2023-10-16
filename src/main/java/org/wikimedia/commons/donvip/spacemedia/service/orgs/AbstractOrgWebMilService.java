@@ -80,11 +80,11 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
     }
 
     @Override
-    public void updateMedia() {
+    public void updateMedia(String[] args) {
         LocalDateTime start = startUpdateMedia();
         List<WebMilMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
-        for (String website : getRepoIds()) {
+        for (String website : getRepoIdsFromArgs(args)) {
             count += updateWebsite(website, uploadedMedia, start, count);
         }
         endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(Media::getMetadataStream).toList(), start,

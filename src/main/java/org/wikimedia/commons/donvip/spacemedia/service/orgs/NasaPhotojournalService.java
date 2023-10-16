@@ -139,7 +139,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     }
 
     @Override
-    public void updateMedia() throws IOException, UploadException {
+    public void updateMedia(String[] args) throws IOException, UploadException {
         processResponse(queryWithRetries(buildSolrQuery(0)));
     }
 

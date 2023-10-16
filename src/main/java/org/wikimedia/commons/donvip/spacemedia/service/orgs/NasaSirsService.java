@@ -84,7 +84,7 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsMedia> {
     }
 
     @Override
-    public void updateMedia() throws IOException, UploadException {
+    public void updateMedia(String[] args) throws IOException, UploadException {
         LocalDateTime start = startUpdateMedia();
         int count = updateFromSirs();
         Set<CompositeMediaId> processedImages = new HashSet<>();

@@ -436,6 +436,17 @@ public abstract class AbstractOrgService<T extends Media>
         return repoIds;
     }
 
+    protected Set<String> getRepoIdsFromArgs(String[] args) {
+        if (args != null && args.length >= 1 && !isBlank(args[args.length - 1])) {
+            Set<String> ids = Arrays.stream(args[args.length - 1].split(",")).filter(repoIds::contains)
+                    .collect(toSet());
+            if (!ids.isEmpty()) {
+                return ids;
+            }
+        }
+        return repoIds;
+    }
+
     public String getUiRepoId(String repoId) {
         return repoId;
     }

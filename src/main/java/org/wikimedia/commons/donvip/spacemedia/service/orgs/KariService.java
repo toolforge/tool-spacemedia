@@ -93,7 +93,7 @@ public class KariService extends AbstractOrgService<KariMedia> {
     }
 
     @Override
-    public void updateMedia() throws IOException {
+    public void updateMedia(String[] args) throws IOException {
         LocalDateTime start = startUpdateMedia();
         int consecutiveFailures = 0;
         int count = 0;

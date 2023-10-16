@@ -85,7 +85,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
     }
 
     @Override
-    public void updateMedia() throws IOException, UploadException {
+    public void updateMedia(String[] args) throws IOException, UploadException {
         LocalDateTime start = startUpdateMedia();
         List<NasaModisMedia> uploadedMedia = new ArrayList<>();
         int count = 0;

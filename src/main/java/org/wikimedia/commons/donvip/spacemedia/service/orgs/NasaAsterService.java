@@ -142,7 +142,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
     }
 
     @Override
-    public void updateMedia() throws IOException, UploadException {
+    public void updateMedia(String[] args) throws IOException, UploadException {
         LocalDateTime start = startUpdateMedia();
         List<NasaAsterMedia> uploadedMedia = new ArrayList<>();
         int count = 0;

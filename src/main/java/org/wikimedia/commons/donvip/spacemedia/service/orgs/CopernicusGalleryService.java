@@ -154,7 +154,7 @@ public class CopernicusGalleryService extends AbstractOrgService<CopernicusGalle
     }
 
     @Override
-    public void updateMedia() throws IOException, UploadException {
+    public void updateMedia(String[] args) throws IOException, UploadException {
         int i = 0;
         int count = 0;
         boolean loop = true;

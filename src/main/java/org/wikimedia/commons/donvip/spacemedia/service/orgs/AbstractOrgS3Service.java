@@ -70,11 +70,11 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
     }
 
     @Override
-    public void updateMedia() {
+    public void updateMedia(String[] args) {
         LocalDateTime start = startUpdateMedia();
         List<S3Media> uploadedMedia = new ArrayList<>();
         int count = 0;
-        for (String bucket : getRepoIds()) {
+        for (String bucket : getRepoIdsFromArgs(args)) {
             Pair<Integer, Collection<S3Media>> update = updateS3Media(region, bucket);
             uploadedMedia.addAll(update.getRight());
             count += update.getLeft();

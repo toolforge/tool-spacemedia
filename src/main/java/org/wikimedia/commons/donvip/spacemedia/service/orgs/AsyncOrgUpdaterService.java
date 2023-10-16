@@ -11,6 +11,6 @@ public class AsyncOrgUpdaterService {
 
     @Async
     public void updateMedia(Org<?> org) throws IOException, UploadException {
-        org.updateMedia();
+        org.updateMedia(null);
     }
 }

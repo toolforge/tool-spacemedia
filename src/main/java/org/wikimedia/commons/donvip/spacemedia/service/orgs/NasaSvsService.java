@@ -75,7 +75,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     }
 
     @Override
-    public void updateMedia() throws IOException, UploadException {
+    public void updateMedia(String[] args) throws IOException, UploadException {
         int count = 0;
         LocalDateTime start = startUpdateMedia();
         List<NasaSvsMedia> uploadedMedia = new ArrayList<>();

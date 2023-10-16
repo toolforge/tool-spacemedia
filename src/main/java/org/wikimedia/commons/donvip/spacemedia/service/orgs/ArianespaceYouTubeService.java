@@ -31,11 +31,6 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
     }
 
     @Override
-    public void updateMedia() {
-        updateYouTubeVideos();
-    }
-
-    @Override
     protected String getAuthor(YouTubeMedia media) {
         return "Arianespace";
     }

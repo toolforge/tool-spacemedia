@@ -88,11 +88,11 @@ public abstract class AbstractOrgBoxService extends AbstractOrgService<BoxMedia>
     }
 
     @Override
-    public void updateMedia() {
+    public void updateMedia(String[] args) {
         LocalDateTime start = startUpdateMedia();
         List<BoxMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
-        for (String appShare : getRepoIds()) {
+        for (String appShare : getRepoIdsFromArgs(args)) {
             String[] as = appShare.split(":");
             Pair<Integer, Collection<BoxMedia>> update = updateBoxMedia(as[0], as[1]);
             uploadedMedia.addAll(update.getRight());

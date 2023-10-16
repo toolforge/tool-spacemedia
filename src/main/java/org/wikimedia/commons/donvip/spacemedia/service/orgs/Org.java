@@ -108,7 +108,7 @@ public interface Org<T extends Media> {
      */
     String getId();
 
-    void updateMedia() throws IOException, UploadException;
+    void updateMedia(String[] args) throws IOException, UploadException;
 
     Statistics getStatistics(boolean details);
 

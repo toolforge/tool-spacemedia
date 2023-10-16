@@ -45,11 +45,6 @@ public class HubbleNasaService extends AbstractOrgStsciService {
         return "Hubble (NASA)";
     }
 
-    @Override
-    public void updateMedia() throws IOException {
-        super.updateMedia();
-    }
-
     public void checkHubbleCategories() {
         checkCommonsCategories(hubbleCategories);
     }

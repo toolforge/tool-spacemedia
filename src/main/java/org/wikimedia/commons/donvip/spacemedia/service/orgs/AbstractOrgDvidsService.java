@@ -112,7 +112,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
-    public void updateMedia() {
+    public void updateMedia(String[] args) {
         LocalDateTime start = startUpdateMedia();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
@@ -120,7 +120,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
         for (int year = LocalDateTime.now().getYear(); year >= minYear
                 && (doNotFetchEarlierThan == null || year >= doNotFetchEarlierThan.getYear()); year--) {
-            for (String unit : getRepoIds()) {
+            for (String unit : getRepoIdsFromArgs(args)) {
                 Pair<Integer, Collection<DvidsMedia>> update = updateDvidsMedia(unit, year, DvidsMediaType.image,
                         idsKnownToDvidsApi);
                 uploadedMedia.addAll(update.getRight());

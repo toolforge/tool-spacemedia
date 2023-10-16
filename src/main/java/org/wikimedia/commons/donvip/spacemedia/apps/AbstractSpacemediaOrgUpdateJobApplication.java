@@ -31,7 +31,7 @@ abstract class AbstractSpacemediaOrgUpdateJobApplication implements ApplicationL
     public void onApplicationEvent(ApplicationReadyEvent event) {
         try {
             if (!Arrays.asList(event.getApplicationContext().getEnvironment().getActiveProfiles()).contains("test")) {
-                org.updateMedia();
+                org.updateMedia(event.getArgs());
             }
         } catch (IOException | UploadException e) {
             LOGGER.error(e.getMessage(), e);

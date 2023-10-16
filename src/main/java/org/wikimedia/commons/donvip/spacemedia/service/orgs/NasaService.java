@@ -308,7 +308,7 @@ public class NasaService extends AbstractOrgService<NasaMedia> {
     }
 
     @Override
-    public void updateMedia() {
+    public void updateMedia(String[] args) {
         LocalDateTime start = startUpdateMedia();
         Collection<NasaMedia> uploadedMedia = new ArrayList<>();
         int count = 0;

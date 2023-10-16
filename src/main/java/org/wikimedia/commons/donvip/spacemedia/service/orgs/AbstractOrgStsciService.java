@@ -76,7 +76,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     }
 
     @Override
-    public void updateMedia() throws IOException {
+    public void updateMedia(String[] args) throws IOException {
         LocalDateTime start = startUpdateMedia();
         int count = 0;
         boolean loop = true;

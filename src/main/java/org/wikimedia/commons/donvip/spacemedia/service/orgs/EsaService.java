@@ -290,7 +290,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     }
 
     @Override
-    public void updateMedia() throws IOException {
+    public void updateMedia(String[] args) throws IOException {
         LocalDateTime start = startUpdateMedia();
         final URL url = newURL(searchLink);
         final String proto = url.getProtocol();

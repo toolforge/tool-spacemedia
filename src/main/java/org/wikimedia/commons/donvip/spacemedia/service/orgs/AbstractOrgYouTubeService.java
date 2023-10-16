@@ -79,17 +79,24 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         return false;
     }
 
-    protected void updateYouTubeVideos() {
+    @Override
+    public void updateMedia(String[] args) {
         if (!videosEnabled) {
             LOGGER.info("Videos support disabled. Exiting...");
             return;
         }
         LocalDateTime start = startUpdateMedia();
         int count = 0;
-        for (String channelId : getRepoIds()) {
+        Set<String> repoIdsFromArgs = getRepoIdsFromArgs(args);
+        for (String channelId : repoIdsFromArgs) {
             count += updateYouTubeVideos(channelId);
         }
-        syncYouTubeVideos();
+
+        List<String> categories = new ArrayList<>();
+        categories.add("Spacemedia files (review needed)");
+        categories.addAll(getOrgCategories());
+        mediaProcessor.syncYouTubeVideos(repository.findMissingInCommons(repoIdsFromArgs), categories);
+
         endUpdateMedia(count, emptyList(), emptyList(), start);
     }
 
@@ -237,13 +244,6 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
 
     protected boolean customProcessing(YouTubeMedia video) {
         return false;
-    }
-
-    private void syncYouTubeVideos() {
-        List<String> categories = new ArrayList<>();
-        categories.add("Spacemedia files (review needed)");
-        categories.addAll(getOrgCategories());
-        mediaProcessor.syncYouTubeVideos(repository.findMissingInCommons(getRepoIds()), categories);
     }
 
     protected abstract List<String> getOrgCategories();
