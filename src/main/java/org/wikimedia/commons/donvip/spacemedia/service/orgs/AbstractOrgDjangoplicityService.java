@@ -350,7 +350,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
                     String text = sibling.text();
                     switch (h3.text()) {
                     case "About the Image":
-                        result = processAboutTheImage(url, imgUrlLink, id, media, title, sibling, text);
+                        result = processAboutTheImage(url, imgUrlLink, id, media, title.text(), sibling, text);
                         break;
                     case "About the Object":
                         processAboutTheObject(imgUrlLink, media, title, sibling, html, text);
@@ -374,9 +374,9 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
     }
 
     protected ImageDimensions processAboutTheImage(URL url, String imgUrlLink, String id, DjangoplicityMedia media,
-            Element title, Element sibling, String text) {
+            String titleText, Element sibling, String text) {
         ImageDimensions result = null;
-        switch (title.text()) {
+        switch (titleText) {
         case "Id:":
             if (!id.equals(text)) {
                 problem(newURL(imgUrlLink), "Different ids: " + id + " <> " + text);
@@ -386,7 +386,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
             media.setLicence(DjangoplicityLicence.from(text));
             break;
         case "Type:":
-            media.setImageType(DjangoplicityMediaType.valueOf(text));
+            media.setImageType(DjangoplicityMediaType.valueOf(text.replace(' ', '_').split(";")[0].trim()));
             break;
         case "Release date:":
             media.setPublicationDateTime(parseDateTime(text).atZone(ZoneId.systemDefault()));
@@ -412,7 +412,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
             // Ignored
             break;
         default:
-            scrapingError(imgUrlLink, title.text());
+            scrapingError(imgUrlLink, titleText);
         }
         return result;
     }

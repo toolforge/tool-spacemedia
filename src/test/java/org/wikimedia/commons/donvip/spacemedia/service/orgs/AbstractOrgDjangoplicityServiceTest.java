@@ -23,6 +23,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgDjangoplicityServiceTest.TestConfig.TestAbstractDjangoplicityService;
 
 @SpringJUnitConfig(AbstractOrgDjangoplicityServiceTest.TestConfig.class)
@@ -51,6 +52,19 @@ class AbstractOrgDjangoplicityServiceTest extends AbstractOrgServiceTest {
         assertEquals(
                 "{P1163=(image/tiff,null), P180=(Q86709121,null), P2048=((3878,Q355198),null), P2049=((3977,Q355198),null), P4092=(dde6dbb2424a7a21608302f8cad9a5b3bcccb589,{P459=Q13414952}), P571=(2022-12-19T06:00Z[UTC],null), P6216=(Q50423863,null), P7482=(Q74228490,{P2699=https://esahubble.org/media/archives/images/original/potw2251a.tif, P973=https://esahubble.org/images/potw2251a/}), P9310=(57edtmbje3hvtfycdzpni9fyfal1ujv80pnmwmgwaw0h1p9nzq,{P459=Q118189277})}",
                 service.getStatements(media, metadata).toString());
+    }
+
+    @Test
+    void testProcessAboutTheImage() {
+        doTestProcessAboutTheImageType("Artwork", DjangoplicityMediaType.Artwork);
+        doTestProcessAboutTheImageType("Annotated Photo", DjangoplicityMediaType.Annotated_Photo);
+        doTestProcessAboutTheImageType("Collage; Simulation", DjangoplicityMediaType.Collage);
+    }
+
+    private void doTestProcessAboutTheImageType(String type, DjangoplicityMediaType mediaType) {
+        DjangoplicityMedia media = new DjangoplicityMedia();
+        service.processAboutTheImage(null, null, null, media, "Type:", null, type);
+        assertEquals(mediaType, media.getImageType());
     }
 
     @Configuration

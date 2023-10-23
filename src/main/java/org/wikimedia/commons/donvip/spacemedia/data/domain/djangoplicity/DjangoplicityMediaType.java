@@ -7,5 +7,7 @@ public enum DjangoplicityMediaType {
     Observation,
     Photographic,
     Planetary,
-    Simulation
+    Simulation,
+    Annotated,
+    Annotated_Photo
 }
