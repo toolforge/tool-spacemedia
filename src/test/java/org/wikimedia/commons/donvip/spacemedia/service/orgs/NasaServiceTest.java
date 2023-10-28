@@ -1,24 +1,34 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikidata.wdtk.datamodel.implementation.ItemIdValueImpl;
 import org.wikidata.wdtk.datamodel.implementation.PropertyIdValueImpl;
@@ -39,6 +49,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaVide
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 
 @SpringJUnitConfig(NasaServiceTest.TestConfig.class)
+@TestPropertySource("/application-test.properties")
 class NasaServiceTest extends AbstractOrgServiceTest {
 
     @MockBean
@@ -58,6 +69,12 @@ class NasaServiceTest extends AbstractOrgServiceTest {
 
     @Autowired
     private NasaService service;
+
+    @Autowired
+    private Environment env;
+
+    @Value("${nasa.centers}")
+    private Set<String> nasaCenters;
 
     @Test
     void testIssPattern() {
@@ -100,6 +117,33 @@ class NasaServiceTest extends AbstractOrgServiceTest {
         assertEquals(
                 "OCI Installed to Ground Support Equipment Application for Tilt or RotationThe Ocean Color Instrument (OCI) is installed onto the Ground Support Equipment Application for Tilt or Rotation (GAToR) made by New (GSFC_20220415_PACE_036720).jpeg",
                 uploadTitle);
+    }
+
+    @Test
+    void testNasaCentersHomePages() {
+        assertFalse(nasaCenters.isEmpty());
+        Map<String, String> errors = new TreeMap<>();
+        for (String center : nasaCenters) {
+            URL homePage = env.getProperty("nasa." + center.toLowerCase(Locale.ENGLISH) + ".home.page", URL.class);
+            assertNotNull(homePage, env.toString());
+            try {
+                URLConnection conn = homePage.openConnection();
+                if (conn instanceof HttpURLConnection httpConn) {
+                    String message = homePage + " -> " + httpConn.getResponseCode();
+                    if (httpConn.getResponseCode() != 200) {
+                        System.err.println(message);
+                        errors.put(center, message);
+                    } else {
+                        System.out.println(message);
+                    }
+                } else {
+                    errors.put(center, homePage + " -> " + conn.toString());
+                }
+            } catch (IOException e) {
+                errors.put(center, homePage + " -> " + e.toString());
+            }
+        }
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     private static Statement s(ItemIdValue subject, PropertyIdValue property, String targetQid) {
