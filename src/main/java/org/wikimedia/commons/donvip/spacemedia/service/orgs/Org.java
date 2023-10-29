@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -147,7 +148,8 @@ public interface Org<T extends Media> {
 
     default URL getSourceUrl(T media) {
         // Used in web app
-        return getSourceUrl(media, media.getMetadata().iterator().next());
+        Iterator<FileMetadata> iterator = media.getMetadata().iterator();
+        return getSourceUrl(media, iterator.hasNext() ? iterator.next() : null);
     }
 
     URL getSourceUrl(T media, FileMetadata metadata);
