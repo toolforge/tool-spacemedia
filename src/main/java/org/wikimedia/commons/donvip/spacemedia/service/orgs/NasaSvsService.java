@@ -157,13 +157,13 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
             for (NasaSvsMediaGroup group : viz.media_groups()) {
                 // For each group only consider the biggest media (unless we have a webm file at
                 // the same resolution)
-                group.media().stream()
+                group.mediaItemsStream()
                         .filter(x -> x.media_type().shouldBeOkForCommons()
                                 && !x.url().toExternalForm().endsWith(".exr")
                                 && !x.alt_text().startsWith("Time slates for the multiple movies")
                                 && !x.alt_text().startsWith("This timeline is synchronized with"))
                         .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst().ifPresent(biggest -> {
-                            NasaSvsMediaItem item = group.media().stream()
+                            NasaSvsMediaItem item = group.mediaItemsStream()
                                     .filter(x -> x.url().toExternalForm().endsWith(".webm")
                                             && ((x.width() >= biggest.width() && x.height() >= biggest.height())
                                                     || (x.width() == 0 && x.height() == 0)))
@@ -175,7 +175,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                             });
                         });
             }
-            viz.media_groups().stream().flatMap(x -> x.media().stream())
+            viz.media_groups().stream().flatMap(x -> x.mediaItemsStream())
                     .filter(x -> x.media_type() == NasaSvsMediaType.Image)
                     .sorted(comparingLong(NasaSvsMediaItem::pixels)).map(NasaSvsMediaItem::url).findFirst()
                     .ifPresent(media::setThumbnailUrl);

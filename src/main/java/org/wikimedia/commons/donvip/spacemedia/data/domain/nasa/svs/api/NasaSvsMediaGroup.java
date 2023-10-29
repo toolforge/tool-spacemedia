@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public record NasaSvsMediaGroup(
         /**
@@ -24,5 +25,9 @@ public record NasaSvsMediaGroup(
          * A list of media items contained in this media group. For more information on
          * media items, see the section on media items.
          */
-        List<NasaSvsMediaItem> media) {
+        List<NasaSvsMediaGroupItem> items) {
+
+    public Stream<NasaSvsMediaItem> mediaItemsStream() {
+        return items().stream().filter(x -> x.type() == NasaSvsMediaGroupItemType.media).map(x -> x.instance());
+    }
 }
