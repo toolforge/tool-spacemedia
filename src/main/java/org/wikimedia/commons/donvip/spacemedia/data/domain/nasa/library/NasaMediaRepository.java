@@ -15,10 +15,9 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "nasaCount", "nasaCountByCenter", "nasaCountIgnored", "nasaCountIgnoredByCenter", "nasaCountMissing",
-            "nasaCountMissingByCenter", "nasaCountMissingImages", "nasaCountMissingImagesByCenter",
-            "nasaCountMissingVideos", "nasaCountMissingVideosByCenter",
-            "nasaCountUploaded", "nasaCountUploadedByCenter", "nasaCountPhashNotNull",
-            "nasaCountPhashNotNullByCenter" })
+            "nasaCountMissingByCenter", "nasaCountMissingImagesByCenter", "nasaCountMissingVideosByCenter",
+            "nasaCountMissingDocumentsByCenter", "nasaCountUploaded", "nasaCountUploadedByCenter",
+            "nasaCountPhashNotNull", "nasaCountPhashNotNullByCenter" })
     @interface CacheEvictNasaAll {
 
     }
@@ -70,21 +69,9 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     long countMissingInCommons(NasaMediaType type);
 
     @Override
-    @Cacheable("nasaCountMissingImages")
-    default long countMissingImagesInCommons() {
-        return countMissingInCommons(NasaMediaType.image);
-    }
-
-    @Override
     @Cacheable("nasaCountMissingImagesByCenter")
     default long countMissingImagesInCommons(Set<String> centers) {
         return countMissingInCommonsByTypeAndCenters(NasaMediaType.image, centers);
-    }
-
-    @Override
-    @Cacheable("nasaCountMissingVideos")
-    default long countMissingVideosInCommons() {
-        return countMissingInCommons(NasaMediaType.video);
     }
 
     @Override
@@ -92,6 +79,10 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     default long countMissingVideosInCommons(Set<String> centers) {
         return countMissingInCommonsByTypeAndCenters(NasaMediaType.video, centers);
     }
+
+    @Override
+    @Cacheable("nasaCountMissingDocumentsByCenter")
+    long countMissingDocumentsInCommons(Set<String> centers);
 
     @Override
     @Cacheable("nasaCountUploaded")

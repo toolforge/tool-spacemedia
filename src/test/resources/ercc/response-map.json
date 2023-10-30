@@ -1,0 +1,208 @@
+{
+"Access": "Public",
+"Api": "https://erccportal.jrc.ec.europa.eu/API/ERCC/Maps/Get?mapID=10",
+"CategoryCode": null,
+"ContentItemId": 10,
+"Continent": null,
+"Countries":
+    [
+        {
+        "Capital": "Athens",
+        "ContinentCC": "EU",
+        "ContinentName": null,
+        "East": 282470837.0,
+        "Flag": "GR.png",
+        "Flag32": null,
+        "IsMemberState": true,
+        "Iso2": null,
+        "ISO3": "GRC",
+        "Iso3": "GRC",
+        "IsUCPM": true,
+        "LatitudeAverage": 382752838.0,
+        "Link": "https://erccportal.jrc.ec.europa.eu/Countries#/country-profile/GRC",
+        "LongitudeAverage": 238103428.0,
+        "Name": "Greece",
+        "North": 417485.0,
+        "South": 348020668.0,
+        "TimeZones":
+            [
+                {
+                "Comment": "",
+                "ID": "Europe/Athens",
+                "Offset": "+02"
+                }
+            ],
+        "West": 193736038.0
+        },
+        {
+        "Capital": "Rome",
+        "ContinentCC": "EU",
+        "ContinentName": null,
+        "East": 185134449.0,
+        "Flag": "IT.png",
+        "Flag32": null,
+        "IsMemberState": true,
+        "Iso2": null,
+        "ISO3": "ITA",
+        "Iso3": "ITA",
+        "IsUCPM": true,
+        "LatitudeAverage": 4187399.0,
+        "Link": "https://erccportal.jrc.ec.europa.eu/Countries#/country-profile/ITA",
+        "LongitudeAverage": 12564167.0,
+        "Name": "Italy",
+        "North": 470951958.0,
+        "South": 3665278.0,
+        "TimeZones":
+            [
+                {
+                "Comment": "",
+                "ID": "Europe/Rome",
+                "Offset": "+01"
+                }
+            ],
+        "West": 6614889.0
+        }
+    ],
+"Country":
+    {
+    "Capital": "Athens",
+    "ContinentCC": "EU",
+    "ContinentName": null,
+    "East": 282470837.0,
+    "Flag": "GR.png",
+    "Flag32": null,
+    "IsMemberState": true,
+    "Iso2": null,
+    "ISO3": "GRC",
+    "Iso3": "GRC",
+    "IsUCPM": true,
+    "LatitudeAverage": 382752838.0,
+    "Link": "https://erccportal.jrc.ec.europa.eu/Countries#/country-profile/GRC",
+    "LongitudeAverage": 238103428.0,
+    "Name": "Greece",
+    "North": 417485.0,
+    "South": 348020668.0,
+    "TimeZones":
+        [
+            {
+            "Comment": "",
+            "ID": "Europe/Athens",
+            "Offset": "+02"
+            }
+        ],
+    "West": 193736038.0
+    },
+"CreatedByUser": null,
+"CreatedOnDate": "0001-01-01T00:00:00",
+"DailyMapRequest": null,
+"Description": "ECHO Daily Map",
+"EchoFlash":
+    {
+    "Api": "https://erccportal.jrc.ec.europa.eu/API/ERCC/EchoFlash/Get?echoFlashID=111",
+    "ApprovedByErccOnDate": null,
+    "ContentItemId": 111,
+    "Continent": null,
+    "Countries":
+        [
+        ],
+    "Country": null,
+    "CreatedByUser": null,
+    "CreatedOnDate": "2013-04-23T11:04:00.383",
+    "Description": "Heavy rains affected parts of Java island in the last few days. In Curug, western Java, 60mm of rain in 24h was observed on 21 April. According to national authorities, a landslide caused by heavy rains killed 4 people in a village in Bogor District (West Java Province) on 19 April.",
+    "DescriptionJRC": "Heavy rains affected parts of Java island in the last few days. In Curug, western Java, 60mm of rain in 24h was observed on 21 April. According to national authorities, a landslide caused by heavy rains killed 4 people in a village in Bogor District (West Java Province) on 19 April.",
+    "DisplayOrder": null,
+    "Emergencies":
+        [
+        ],
+    "EventType": null,
+    "EventTypeCode": "LS",
+    "EventTypes":
+        [
+        ],
+    "GdacsEvents":
+        [
+        ],
+    "Glide": null,
+    "IsCopernicusActivated": false,
+    "IsFromJrc": null,
+    "Iso3": null,
+    "IsUcpmActivated": false,
+    "ItemSources":
+        [
+        ],
+    "LastModifiedByUser": null,
+    "LastModifiedOnDate": "0001-01-01T00:00:00",
+    "Latitude": -66.0,
+    "Link": "https://erccportal.jrc.ec.europa.eu/ECHOProducts//EchoFlash#/echo-flash-items/111",
+    "Longitude": 1068.0,
+    "Losses":
+        [
+        ],
+    "NextEchoFlashID": null,
+    "PreviousEchoFlashID": null,
+    "PublicationStatus": "Published",
+    "PublishedOnDate": "2013-04-23T11:04:00.383",
+    "RelatedEchoFlash": null,
+    "RelatedEchoFlashID": null,
+    "Scope": "International",
+    "Section": null,
+    "SourceList": "BNPB, WMO",
+    "Sources": "BNPB: http://www.bnpb.go.id/news/read/1355/4-tewas-tertimbun-longsor-di-sempurbogor \r\nWMO: http://severe.worldweather.org/rain/c3/ipopc3h8v8.html",
+    "SourcesJRC": "BNPB: http://www.bnpb.go.id/news/read/1355/4-tewas-tertimbun-longsor-di-sempurbogor \r\nWMO: http://severe.worldweather.org/rain/c3/ipopc3h8v8.html",
+    "Title": "Indonesia \u2013 Landslide",
+    "ValidatedByErccUser": null,
+    "ValidatedByErccUserId": null
+    },
+"Emergencies":
+    [
+    ],
+"EventTypes":
+    [
+        {
+        "Category": "Natural emergency",
+        "Code": "EQ",
+        "EventCategory": "EQ",
+        "IconLink": "https://erccportal.jrc.ec.europa.eu//portals/0/images/unocha_icons/disaster_earthquake_32px_icon_bluebox.png",
+        "Name": "Earthquake"
+        }
+    ],
+"FileSize": null,
+"FileSize2": null,
+"GdacsEvents":
+    [
+    ],
+"Glide": null,
+"ImageDownloadPath": "https://erccportal.jrc.ec.europa.eu/API/ERCC/Maps/DownloadPublicMap?contentItemID=10&fileN=ImageFile&forceDownload=True",
+"ImageExtension": "JPG",
+"ImageWebPath": "https://erccportal.jrc.ec.europa.eu/API/ERCC/Maps/DownloadPublicMap?contentItemID=10&fileN=ImageFile&forceDownload=False",
+"Iso3": "GRC",
+"ItemSources":
+    [
+    ],
+"LastModifiedByUser": null,
+"LastModifiedOnDate": "0001-01-01T00:00:00",
+"Link": "https://erccportal.jrc.ec.europa.eu/ECHOProducts//Maps#/maps/10",
+"MainDownloadPath": "https://erccportal.jrc.ec.europa.eu/API/ERCC/Maps/DownloadPublicMap?contentItemID=10&fileN=MainFile&forceDownload=True",
+"MainFileExtension": null,
+"MainFileName": "",
+"MainWebPath": "https://erccportal.jrc.ec.europa.eu/API/ERCC/Maps/DownloadPublicMap?contentItemID=10&fileN=MainFile&forceDownload=False",
+"MapOf": null,
+"MapType": "Daily Map",
+"Owner": "-1",
+"PreparedBy": null,
+"PublishedOnDate": "2013-04-28T00:00:00",
+"Request": null,
+"RequestID": -1,
+"SecondDownloadPath": "https://erccportal.jrc.ec.europa.eu/API/ERCC/Maps/DownloadPublicMap?contentItemID=10&fileN=SecondFile&forceDownload=True",
+"SecondFileExtension": null,
+"SecondFileName": null,
+"SecondWebPath": "https://erccportal.jrc.ec.europa.eu/API/ERCC/Maps/DownloadPublicMap?contentItemID=10&fileN=SecondFile&forceDownload=False",
+"SourceList": null,
+"Sources": null,
+"ThumbnailDownloadPath": "https://erccportal.jrc.ec.europa.eu/API/ERCC/Maps/DownloadPublicMap?contentItemID=10&fileN=ThumbFile&forceDownload=True",
+"ThumbnailExtension": "JPG",
+"ThumbnailFileName": "Kachin.JPG",
+"ThumbnailFileSize": "157.7KB",
+"ThumbnailWebPath": "https://erccportal.jrc.ec.europa.eu/API/ERCC/Maps/DownloadPublicMap?contentItemID=10&fileN=ThumbFile&forceDownload=False",
+"Title": "ECHO Daily Map"
+}

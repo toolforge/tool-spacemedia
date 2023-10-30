@@ -16,9 +16,9 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia> {
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "esaCount", "esaCountRepo", "esaCountIgnored", "esaCountIgnoredRepo", "esaCountMissing",
-            "esaCountMissingRepo", "esaCountMissingImages", "esaCountMissingImagesRepo", "esaCountMissingVideos",
-            "esaCountMissingVideosRepo", "esaCountUploaded", "esaCountUploadedRepo", "esaCountPhashNotNull",
-            "esaCountPhashNotNullRepo" })
+            "esaCountMissingRepo", "esaCountMissingImagesRepo", "esaCountMissingVideosRepo",
+            "esaCountMissingDocumentsRepo", "esaCountUploaded", "esaCountUploadedRepo",
+            "esaCountPhashNotNull", "esaCountPhashNotNullRepo" })
     @interface CacheEvictEsaAll {
 
     }
@@ -56,20 +56,16 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia> {
     long countMissingInCommons(Set<String> repos);
 
     @Override
-    @Cacheable("esaCountMissingImages")
-    long countMissingImagesInCommons();
-
-    @Override
     @Cacheable("esaCountMissingImagesRepo")
     long countMissingImagesInCommons(Set<String> repos);
 
     @Override
-    @Cacheable("esaCountMissingVideos")
-    long countMissingVideosInCommons();
-
-    @Override
     @Cacheable("esaCountMissingVideosRepo")
     long countMissingVideosInCommons(Set<String> repos);
+
+    @Override
+    @Cacheable("esaCountMissingDocumentsRepo")
+    long countMissingDocumentsInCommons(Set<String>repos);
 
     @Override
     @Cacheable("esaCountUploaded")

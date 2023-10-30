@@ -15,8 +15,8 @@ public interface NasaSirsMediaRepository extends MediaRepository<NasaSirsMedia> 
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "nasaSirsCount", "nasaSirsCountIgnored", "nasaSirsCountMissing", "nasaSirsCountMissingImages",
-            "nasaSirsCountUploaded" })
+            "nasaSirsCount", "nasaSirsCountIgnored", "nasaSirsCountMissing", "nasaSirsCountMissingImagesRepo",
+            "nasaSirsCountMissingVideosRepo", "nasaSirsCountMissingDocumentsRepo", "nasaSirsCountUploaded" })
     @interface CacheEvictNasaSirsAll {
 
     }
@@ -42,15 +42,16 @@ public interface NasaSirsMediaRepository extends MediaRepository<NasaSirsMedia> 
     long countMissingInCommons();
 
     @Override
-    @Cacheable("nasaSirsCountMissingImages")
-    default long countMissingImagesInCommons() {
-        return countMissingInCommons();
-    }
+    @Cacheable("nasaSirsCountMissingImagesRepo")
+    long countMissingImagesInCommons(Set<String> repos);
 
     @Override
-    default long countMissingVideosInCommons() {
-        return 0;
-    }
+    @Cacheable("nasaSirsCountMissingVideosRepo")
+    long countMissingVideosInCommons(Set<String> repos);
+
+    @Override
+    @Cacheable("nasaSirsCountMissingDocumentsRepo")
+    long countMissingDocumentsInCommons(Set<String> repos);
 
     @Override
     @Cacheable("nasaSirsCountUploaded")

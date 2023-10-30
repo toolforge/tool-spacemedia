@@ -145,7 +145,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     private YouTubeMedia toYouTubeVideo(Video ytVideo) {
         YouTubeMedia video = new YouTubeMedia();
         video.setId(new CompositeMediaId(null, ytVideo.getId()));
-        addMetadata(video, newURL("https://www.youtube.com/watch?v=" + video.getId()), null);
+        addMetadata(video, "https://www.youtube.com/watch?v=" + video.getId(), null);
         return fillVideoSnippetAndDetails(video, ytVideo);
     }
 

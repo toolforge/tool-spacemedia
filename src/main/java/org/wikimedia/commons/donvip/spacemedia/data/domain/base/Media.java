@@ -397,6 +397,12 @@ public class Media implements MediaProjection, MediaDescription {
                 .map(FileMetadata::getSha1).toList();
     }
 
+    @JsonIgnore
+    public List<String> getDocumentAssetsToUpload() {
+        return getMetadataStream().filter(FileMetadata::shouldUpload).filter(FileMetadata::isDocument)
+                .map(FileMetadata::getSha1).toList();
+    }
+
     public LocalDateTime getLastUpdate() {
         return lastUpdate;
     }
@@ -430,6 +436,15 @@ public class Media implements MediaProjection, MediaDescription {
      */
     public boolean isVideo() {
         return getMetadataStream().anyMatch(FileMetadata::isVideo);
+    }
+
+    /**
+     * Determines if this media is a document.
+     *
+     * @return {@code true} if this media is a document
+     */
+    public boolean isDocument() {
+        return getMetadataStream().anyMatch(FileMetadata::isDocument);
     }
 
     /**

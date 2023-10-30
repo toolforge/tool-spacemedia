@@ -29,7 +29,7 @@
 		        <th>Title</th>
 		        <th>Date</th>
 		        <th>Description</th>
-		        <th th:if="'missing' != ${tab} and 'missing/images' != ${tab} and 'missing/videos' != ${tab}">Commons</th>
+		        <th th:if="'missing' != ${tab} and 'missing/images' != ${tab} and 'missing/videos' != ${tab} and 'missing/documents' != ${tab}">Commons</th>
 		        <th th:if="'ignored' == ${tab}">Reason</th>
 		      <tr>
 	      </thead>
@@ -67,6 +67,9 @@
 		          <div th:if="'missing/videos' == ${tab}">
                     <div th:replace="org_index :: assets(assetsToUpload=${media.videoAssetsToUpload})" />
 		          </div>
+		          <div th:if="'missing/documents' == ${tab}">
+                    <div th:replace="org_index :: assets(assetsToUpload=${media.documentAssetsToUpload})" />
+		          </div>
 		          <div th:if="'missing/audios' == ${tab}">
                     <div th:replace="org_index :: assets(assetsToUpload=${media.audioAssetsToUpload})" />
 		          </div>
@@ -82,6 +85,9 @@
                   <a th:href="@{/{id}/rest/uploadvideosbytitle/{title}(id=${org.id},repo=${repo},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.title}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
+                  <a th:href="@{/{id}/rest/uploaddocumentsbytitle/{title}(id=${org.id},repo=${repo},title=${media.title})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/documents' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.title}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  </a>
 		        </td>
 		        <td>
 		          <a th:text="${media.publicationDate}"></a>
@@ -94,9 +100,12 @@
                   <a th:href="@{/{id}/rest/uploadvideosbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
+                  <a th:href="@{/{id}/rest/uploaddocumentsbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/documents' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  </a>
 		        </td>
 		        <td th:utext="${#strings.abbreviate(media.description,2000)}"></td>
-		        <td th:if="'missing' != ${tab} and 'missing/images' != ${tab} and 'missing/videos' != ${tab}">
+		        <td th:if="'missing' != ${tab} and 'missing/images' != ${tab} and 'missing/videos' != ${tab} and 'missing/documents' != ${tab}">
 		          <div th:each="file : ${media.allCommonsFileNames}">
 		            <a th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a><br>
 		          </div>

@@ -14,6 +14,7 @@ public final class Emojis {
     public static final String FLAG_GER = "🇩🇪";
     public static final String FLAG_KOR = "🇰🇷";
     public static final String FLAG_USA = "🇺🇸";
+    public static final String MAP = "🗺️";
     public static final String MOON = "🌑";
     public static final String PLANET_WITH_RINGS = "🪐";
     public static final String PLANT = "🌱";

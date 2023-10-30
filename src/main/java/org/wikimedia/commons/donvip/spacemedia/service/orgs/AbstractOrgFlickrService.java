@@ -278,7 +278,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
 
     private FlickrMedia photoToFlickrMedia(Photo p, String flickrAccount) {
         return repository.findById(new CompositeMediaId(getPathAlias(p, flickrAccount), p.getId()))
-                .orElseGet(() -> saveMedia(mapPhoto(p, flickrAccount, true)));
+                .orElseGet(() -> saveMedia(mapPhoto(p, flickrAccount)));
     }
 
     private Pair<Integer, Collection<FlickrMedia>> processFlickrMedia(Iterable<FlickrMedia> medias,
@@ -310,13 +310,13 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     protected final FlickrMedia refresh(FlickrMedia media) throws IOException {
         try {
             return media.copyDataFrom(
-                    mapPhoto(flickrService.findPhoto(media.getId().getMediaId()), media.getPathAlias(), false));
+                    mapPhoto(flickrService.findPhoto(media.getId().getMediaId()), media.getPathAlias()));
         } catch (FlickrException e) {
             throw new IOException(e);
         }
     }
 
-    private FlickrMedia mapPhoto(Photo p, String flickrAccount, boolean saveMetadata) {
+    private FlickrMedia mapPhoto(Photo p, String flickrAccount) {
         FlickrMedia m = new FlickrMedia();
         ofNullable(p.getGeoData()).ifPresent(geo -> {
             m.setLatitude(geo.getLatitude());
@@ -333,10 +333,10 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         m.setMediaStatus(p.getMediaStatus());
         m.setOriginalFormat(p.getOriginalFormat());
         try {
-            FileMetadata md = new FileMetadata(newURL(p.getOriginalUrl()));
-            md.setImageDimensions(new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight()));
-            md.setExtension(p.getOriginalFormat());
-            m.addMetadata(saveMetadata ? metadataRepository.save(md) : md);
+            addMetadata(m, p.getOriginalUrl(), md -> {
+                md.setImageDimensions(new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight()));
+                md.setExtension(p.getOriginalFormat());
+            });
         } catch (FlickrException e) {
             LOGGER.error("Flickr error : {}", e.getMessage(), e);
         }

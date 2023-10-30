@@ -13,8 +13,8 @@ public interface S3MediaRepository extends MediaRepository<S3Media> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "s3Count", "s3CountByShare", "s3CountIgnored",
-            "s3CountIgnoredByShare", "s3CountMissing", "s3CountMissingImages", "s3CountMissingVideos",
-            "s3CountMissingImagesByShare", "s3CountMissingVideosByShare", "s3CountMissingByShare", "s3CountUploaded",
+            "s3CountIgnoredByShare", "s3CountMissing", "s3CountMissingImagesByShare", "s3CountMissingVideosByShare",
+            "s3CountMissingDocumentsByShare", "s3CountMissingByShare", "s3CountUploaded",
             "s3CountUploadedByShare", "s3CountPhashNotNull", "s3CountPhashNotNullByShare" })
     @interface CacheEvictS3All {
 
@@ -53,20 +53,16 @@ public interface S3MediaRepository extends MediaRepository<S3Media> {
     long countMissingInCommons(Set<String> buckets);
 
     @Override
-    @Cacheable("s3CountMissingImages")
-    long countMissingImagesInCommons();
-
-    @Override
-    @Cacheable("s3CountMissingVideos")
-    long countMissingVideosInCommons();
-
-    @Override
     @Cacheable("s3CountMissingImagesByShare")
     long countMissingImagesInCommons(Set<String> buckets);
 
     @Override
     @Cacheable("s3CountMissingVideosByShare")
     long countMissingVideosInCommons(Set<String> buckets);
+
+    @Override
+    @Cacheable("s3CountMissingDocumentsByShare")
+    long countMissingDocumentsInCommons(Set<String> buckets);
 
     @Override
     @Cacheable("s3CountUploaded")

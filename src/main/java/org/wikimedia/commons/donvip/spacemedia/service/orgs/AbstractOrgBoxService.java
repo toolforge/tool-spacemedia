@@ -144,6 +144,7 @@ public abstract class AbstractOrgBoxService extends AbstractOrgService<BoxMedia>
         m.setExtension(fileInfo.getExtension());
         m.setSha1(fileInfo.getSha1());
         m.setSize(fileInfo.getSize());
+        m.setOriginalFileName(fileInfo.getName());
         return m;
     }
 

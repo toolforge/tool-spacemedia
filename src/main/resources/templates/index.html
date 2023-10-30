@@ -15,6 +15,7 @@
 	        <th>Uploaded</th>
 	        <th>Images to upload</th>
 	        <th>Videos to upload</th>
+	        <th>Documents to upload</th>
 	        <th>Ignored</th>
 	        <th>Problems</th>
 	      </tr>
@@ -52,6 +53,9 @@
             {"data": "missing_videos", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
             	ahref(td, s, alink(o, "/missing/videos"));
             }},
+            {"data": "missing_documents", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+            	ahref(td, s, alink(o, "/missing/documents"));
+            }},
             {"data": "ignored_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
             	ahref(td, s, alink(o, "/ignored"));
             }},
@@ -60,7 +64,7 @@
             }}
         ],
         "rowCallback": function( row, data ) {
-            if (data.missing_images == 0 && data.missing_videos == 0) {
+            if (data.missing_images == 0 && data.missing_videos == 0 && data.missing_documents == 0) {
                 $('td:eq(0)', row).css('background-color', 'Green');
             } else if (data.missing_images > "20") {
                 $('td:eq(0)', row).css('background-color', 'Red');
@@ -78,6 +82,11 @@
                 $('td:eq(4)', row).css('background-color', 'Green');
             } else {
                 $('td:eq(4)', row).css('background-color', 'Orange');
+            }
+            if (data.missing_documents == 0) {
+                $('td:eq(5)', row).css('background-color', 'Green');
+            } else {
+                $('td:eq(5)', row).css('background-color', 'Orange');
             }
         }
     });

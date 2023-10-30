@@ -13,9 +13,9 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
-            "stsciCount", "stsciCountIgnored", "stsciCountMissing", "stsciCountMissingImages",
-            "stsciCountMissingImagesByMission", "stsciCountMissingVideos", "stsciCountMissingVideosByMission",
-            "stsciCountUploaded" })
+            "stsciCount", "stsciCountIgnored", "stsciCountMissing",
+            "stsciCountMissingImagesByMission", "stsciCountMissingVideosByMission",
+            "stsciCountMissingDocumentsByMission", "stsciCountUploaded" })
     @interface CacheEvictStsciAll {
 
     }
@@ -45,28 +45,16 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia> {
     long countMissingInCommons(Set<String> missions);
 
     @Override
-    @Cacheable("stsciCountMissingImages")
-    default long countMissingImagesInCommons() {
-        return countMissingInCommons();
-    }
-
-    @Override
     @Cacheable("stsciCountMissingImagesByMission")
-    default long countMissingImagesInCommons(Set<String> missions) {
-        return countMissingInCommons(missions);
-    }
-
-    @Override
-    @Cacheable("stsciCountMissingVideos")
-    default long countMissingVideosInCommons() {
-        return 0;
-    }
+    long countMissingImagesInCommons(Set<String> missions);
 
     @Override
     @Cacheable("stsciCountMissingVideosByMission")
-    default long countMissingVideosInCommons(Set<String> missions) {
-        return 0;
-    }
+    long countMissingVideosInCommons(Set<String> missions);
+
+    @Override
+    @Cacheable("stsciCountMissingDocumentsByMission")
+    long countMissingDocumentsInCommons(Set<String> missions);
 
     @Override
     @Cacheable("stsciCountUploaded")

@@ -13,10 +13,9 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "djangoCount", "djangoCountByWebsite", "djangoCountIgnoredByWebsite",
-            "djangoCountMissing", "djangoCountMissingByWebsite", "djangoCountMissingImages",
-            "djangoCountMissingImagesByWebsite", "djangoCountMissingVideos", "djangoCountMissingVideosByWebsite",
-            "djangoCountUploaded", "djangoCountUploadedByWebsite", "djangoCountPhashNotNull",
-            "djangoCountPhashNotNullByWebsite" })
+            "djangoCountMissing", "djangoCountMissingByWebsite", "djangoCountMissingImagesByWebsite",
+            "djangoCountMissingVideosByWebsite", "djangoCountMissingDocumentsByWebsite", "djangoCountUploaded",
+            "djangoCountUploadedByWebsite", "djangoCountPhashNotNull", "djangoCountPhashNotNullByWebsite" })
     @interface CacheEvictDjangoAll {
 
     }
@@ -50,20 +49,16 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
     long countMissingInCommons(Set<String> websites);
 
     @Override
-    @Cacheable("djangoCountMissingImages")
-    long countMissingImagesInCommons();
-
-    @Override
     @Cacheable("djangoCountMissingImagesByWebsite")
     long countMissingImagesInCommons(Set<String> websites);
 
     @Override
-    @Cacheable("djangoCountMissingVideos")
-    long countMissingVideosInCommons();
-
-    @Override
     @Cacheable("djangoCountMissingVideosByWebsite")
     long countMissingVideosInCommons(Set<String> websites);
+
+    @Override
+    @Cacheable("djangoCountMissingDocumentsByWebsite")
+    long countMissingDocumentsInCommons(Set<String> websites);
 
     @Override
     @Cacheable("djangoCountUploaded")

@@ -45,6 +45,10 @@ public interface Org<T extends Media> {
 
     long countMissingVideos(String repo);
 
+    long countMissingDocuments();
+
+    long countMissingDocuments(String repo);
+
     long countPerceptualHashes();
 
     long countPerceptualHashes(String repo);
@@ -72,6 +76,10 @@ public interface Org<T extends Media> {
     Page<T> listMissingVideos(Pageable page);
 
     Page<T> listMissingVideos(String repo, Pageable page);
+
+    Page<T> listMissingDocuments(Pageable page);
+
+    Page<T> listMissingDocuments(String repo, Pageable page);
 
     List<T> listMissingMediaByDate(LocalDate date, String repo);
 

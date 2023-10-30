@@ -15,11 +15,10 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia> {
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "flickrCount", "flickrCountByAccount", "flickrCountIgnored", "flickrCountIgnoredByAccount",
-            "flickrCountMissing",
-            "flickrCountMissingByAccount", "flickrCountMissingByType", "flickrCountMissingByTypeAndAccount",
-            "flickrCountMissingImages", "flickrCountMissingVideos", "flickrCountMissingImagesByAccount",
-            "flickrCountMissingVideosByAccount", "flickrCountUploaded", "flickrCountUploadedByAccount",
-            "flickrCountPhashNotNull", "flickrCountPhashNotNullByAccount" })
+            "flickrCountMissing", "flickrCountMissingByAccount", "flickrCountMissingByType",
+            "flickrCountMissingByTypeAndAccount", "flickrCountMissingImagesByAccount",
+            "flickrCountMissingVideosByAccount", "flickrCountMissingDocumentsByAccount", "flickrCountUploaded",
+            "flickrCountUploadedByAccount", "flickrCountPhashNotNull", "flickrCountPhashNotNullByAccount" })
     @interface CacheEvictFlickrAll {
 
     }
@@ -65,21 +64,9 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia> {
     long countMissingInCommons(FlickrMediaType type, Set<String> flickrAccounts);
 
     @Override
-    @Cacheable("flickrCountMissingImages")
-    default long countMissingImagesInCommons() {
-        return countMissingInCommons(FlickrMediaType.photo);
-    }
-
-    @Override
     @Cacheable("flickrCountMissingImagesByAccount")
     default long countMissingImagesInCommons(Set<String> flickrAccounts) {
         return countMissingInCommons(FlickrMediaType.photo, flickrAccounts);
-    }
-
-    @Override
-    @Cacheable("flickrCountMissingVideos")
-    default long countMissingVideosInCommons() {
-        return countMissingInCommons(FlickrMediaType.video);
     }
 
     @Override
@@ -87,6 +74,10 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia> {
     default long countMissingVideosInCommons(Set<String> flickrAccounts) {
         return countMissingInCommons(FlickrMediaType.video, flickrAccounts);
     }
+
+    @Override
+    @Cacheable("flickrCountMissingDocumentsByAccount")
+    long countMissingDocumentsInCommons(Set<String> flickrAccounts);
 
     @Override
     @Cacheable("flickrCountUploaded")

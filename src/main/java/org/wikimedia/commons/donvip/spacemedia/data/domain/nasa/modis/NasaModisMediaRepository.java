@@ -14,10 +14,9 @@ public interface NasaModisMediaRepository extends MediaRepository<NasaModisMedia
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "nasaModisCount", "nasaModisCountRepo", "nasaModisCountIgnored", "nasaModisCountIgnoredRepo",
-            "nasaModisCountMissing", "nasaModisCountMissingRepo", "nasaModisCountMissingImages",
-            "nasaModisCountMissingImagesRepo", "nasaModisCountMissingVideos", "nasaModisCountMissingVideosRepo",
-            "nasaModisCountUploaded", "nasaModisCountUploadedRepo", "nasaModisCountPhashNotNull",
-            "nasaModisCountPhashNotNullRepo" })
+            "nasaModisCountMissing", "nasaModisCountMissingRepo", "nasaModisCountMissingImagesRepo",
+            "nasaModisCountMissingVideosRepo", "nasaModisCountMissingDocumentsRepo", "nasaModisCountUploaded",
+            "nasaModisCountUploadedRepo", "nasaModisCountPhashNotNull", "nasaModisCountPhashNotNullRepo" })
     @interface CacheEvictNasaModisAll {
 
     }
@@ -55,20 +54,16 @@ public interface NasaModisMediaRepository extends MediaRepository<NasaModisMedia
     long countMissingInCommons(Set<String> repos);
 
     @Override
-    @Cacheable("nasaModisCountMissingImages")
-    long countMissingImagesInCommons();
-
-    @Override
     @Cacheable("nasaModisCountMissingImagesRepo")
     long countMissingImagesInCommons(Set<String> repos);
 
     @Override
-    @Cacheable("nasaModisCountMissingVideos")
-    long countMissingVideosInCommons();
-
-    @Override
     @Cacheable("nasaModisCountMissingVideosRepo")
     long countMissingVideosInCommons(Set<String> repos);
+
+    @Override
+    @Cacheable("nasaModisCountMissingDocumentsRepo")
+    long countMissingDocumentsInCommons(Set<String> repos);
 
     @Override
     @Cacheable("nasaModisCountUploaded")

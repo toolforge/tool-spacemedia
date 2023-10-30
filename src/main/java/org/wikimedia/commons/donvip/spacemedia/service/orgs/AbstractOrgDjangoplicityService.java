@@ -208,8 +208,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
         return "col-md-9";
     }
 
-    protected DjangoplicityMedia newMediaFromHtml(Document html, URL url, String id, String imgUrlLink)
-            throws ReflectiveOperationException {
+    protected DjangoplicityMedia newMediaFromHtml(Document html, URL url, String id, String imgUrlLink) {
         Element div = html.getElementsByClass(mainDivClass()).last();
         if (div == null) {
             scrapingError(imgUrlLink, html.toString());

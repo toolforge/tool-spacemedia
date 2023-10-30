@@ -216,6 +216,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
                     repository.countByIgnoredTrue(getRepoIds()),
                     repository.countMissingImagesInCommons(getRepoIds()),
                     repository.countMissingVideosInCommons(getRepoIds()),
+                    repository.countMissingDocumentsInCommons(getRepoIds()),
                     repository.countByMetadata_PhashNotNull(getRepoIds()), null)));
         }
         return stats;

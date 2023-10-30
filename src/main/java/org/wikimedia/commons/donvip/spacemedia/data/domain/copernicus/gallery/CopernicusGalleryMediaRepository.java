@@ -14,9 +14,9 @@ public interface CopernicusGalleryMediaRepository extends MediaRepository<Copern
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "copGalCount", "copGalCountRepo", "copGalCountIgnored",
             "copGalCountIgnoredRepo", "copGalCountMissing", "copGalCountMissingRepo",
-            "copGalCountMissingImages", "copGalCountMissingImagesRepo", "copGalCountMissingVideos",
-            "copGalCountMissingVideosRepo", "copGalCountUploaded", "copGalCountUploadedRepo",
-            "copGalCountPhashNotNull", "copGalCountPhashNotNullRepo" })
+            "copGalCountMissingImagesRepo", "copGalCountMissingVideosRepo", "copGalCountMissingDocumentsRepo",
+            "copGalCountUploaded", "copGalCountUploadedRepo", "copGalCountPhashNotNull",
+            "copGalCountPhashNotNullRepo" })
     @interface CacheEvictCopernicusGalleryAll {
 
     }
@@ -54,20 +54,16 @@ public interface CopernicusGalleryMediaRepository extends MediaRepository<Copern
     long countMissingInCommons(Set<String> repos);
 
     @Override
-    @Cacheable("copGalCountMissingImages")
-    long countMissingImagesInCommons();
-
-    @Override
     @Cacheable("copGalCountMissingImagesRepo")
     long countMissingImagesInCommons(Set<String> repos);
 
     @Override
-    @Cacheable("copGalCountMissingVideos")
-    long countMissingVideosInCommons();
-
-    @Override
     @Cacheable("copGalCountMissingVideosRepo")
     long countMissingVideosInCommons(Set<String> repos);
+
+    @Override
+    @Cacheable("copGalCountMissingDocumentsRepo")
+    long countMissingDocumentsInCommons(Set<String> repos);
 
     @Override
     @Cacheable("copGalCountUploaded")

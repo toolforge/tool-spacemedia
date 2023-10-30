@@ -874,7 +874,7 @@ public class CommonsService {
     }
 
     private static String replaceLinks(String text, String replacement) {
-        return text.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", replacement);
+        return text == null ? text : text.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", replacement);
     }
 
     public String uploadNewFile(String wikiCode, String filename, String ext, URL url, String sha1)
@@ -1088,8 +1088,9 @@ public class CommonsService {
     static String truncatedLabel(String desc, int limit) {
         String result = desc;
         if (result != null) {
-            result = replaceLinks(result.trim().replace("\r\n", ". ").replace("\n\n", ". ").replace(".. ", ". "), "$2");
-            if (result.contains(".")) {
+            result = replaceLinks(unescapeHtml4(result.trim().replace("\r\n", ". ").replace("\n\n", ". ")
+                    .replace(".. ", ". ").replace("<p>", "").replace("</p>", "")), "$2");
+            if (result != null && result.contains(".")) {
                 while (result.length() > limit) {
                     result = result.substring(0, result.lastIndexOf('.', result.length() - 2) + 1).trim();
                 }

@@ -56,22 +56,6 @@ public interface MediaRepository<T extends Media> extends PagingAndSortingReposi
     @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames)")
     long countMissingInCommons();
 
-    /**
-     * Count images not yet uploaded to Wikimedia Commons.
-     *
-     * @return number of images not yet uploaded to Wikimedia Commons
-     */
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg')")
-    long countMissingImagesInCommons();
-
-    /**
-     * Count videos not yet uploaded to Wikimedia Commons.
-     *
-     * @return number of videos not yet uploaded to Wikimedia Commons
-     */
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg')")
-    long countMissingVideosInCommons();
-
     // COUNT composite
 
     @Query("select count(*) from #{#entityName} m where m.id.repoId in ?1")
@@ -88,6 +72,9 @@ public interface MediaRepository<T extends Media> extends PagingAndSortingReposi
 
     @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg') and m.id.repoId in ?1")
     long countMissingVideosInCommons(Set<String> repos);
+
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('pdf','stl') and m.id.repoId in ?1")
+    long countMissingDocumentsInCommons(Set<String> repos);
 
     @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId in ?1")
     long countUploadedToCommons(Set<String> repos);
@@ -214,6 +201,9 @@ public interface MediaRepository<T extends Media> extends PagingAndSortingReposi
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg') and m.id.repoId in ?1")
     Page<T> findMissingVideosInCommons(Set<String> repos, Pageable page);
+
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and md.extension in ('pdf','stl') and m.id.repoId in ?1")
+    Page<T> findMissingDocumentsInCommons(Set<String> repos, Pageable page);
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 order by m.publicationDate desc")
     List<T> findMissingInCommons(Set<String> repos);

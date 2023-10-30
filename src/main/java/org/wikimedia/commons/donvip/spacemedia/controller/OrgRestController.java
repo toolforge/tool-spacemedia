@@ -150,6 +150,13 @@ public abstract class OrgRestController<T extends Media> {
         return service.uploadAndSaveByDate(date, repo, Media::isVideo, true);
     }
 
+    @GetMapping("/uploaddocumentsbydate/{date}")
+    public final List<T> uploadDocumentsByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "repo", required = false) String repo)
+            throws UploadException {
+        return service.uploadAndSaveByDate(date, repo, Media::isDocument, true);
+    }
+
     @GetMapping("/uploadbytitle/{title}")
     public final List<T> uploadByTitle(@PathVariable String title,
             @RequestParam(name = "repo", required = false) String repo) throws UploadException {
@@ -166,6 +173,12 @@ public abstract class OrgRestController<T extends Media> {
     public final List<T> uploadVideosByTitle(@PathVariable String title,
             @RequestParam(name = "repo", required = false) String repo) throws UploadException {
         return service.uploadAndSaveByTitle(title, repo, Media::isVideo, true);
+    }
+
+    @GetMapping("/uploaddocumentsbytitle/{title}")
+    public final List<T> uploadDocumentsByTitle(@PathVariable String title,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByTitle(title, repo, Media::isDocument, true);
     }
 
     @GetMapping("/uploadmedia/**")
@@ -191,6 +204,11 @@ public abstract class OrgRestController<T extends Media> {
     @GetMapping("/refreshmissing/videos")
     public final void refreshMissingVideos() throws IOException {
         refreshMissingMedia(T::isVideo);
+    }
+
+    @GetMapping("/refreshmissing/documents")
+    public final void refreshMissingDocuments() throws IOException {
+        refreshMissingMedia(T::isDocument);
     }
 
     private final void refreshMissingMedia(Predicate<T> mustRefresh) throws IOException {

@@ -28,6 +28,7 @@ class FileMetadataTest {
     @Test
     void testConstructor() throws Exception {
         FileMetadata fm = new FileMetadata("https://www.flickr.com/video_download.gne?id=53199053407");
+        assertEquals("video_download.gne", fm.getOriginalFileName());
         assertNull(fm.getFileExtension());
         assertEquals("https://www.flickr.com/video_download.gne?id=53199053407", fm.getAssetUri().toString());
     }

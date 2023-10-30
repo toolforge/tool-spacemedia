@@ -122,6 +122,7 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
 
     private static FileMetadata fillMetadata(FileMetadata m, S3ObjectSummary summary) {
         m.setExtension(summary.getKey().substring(summary.getKey().lastIndexOf('.') + 1));
+        m.setOriginalFileName(summary.getKey());
         m.setSize(summary.getSize());
         return m;
     }

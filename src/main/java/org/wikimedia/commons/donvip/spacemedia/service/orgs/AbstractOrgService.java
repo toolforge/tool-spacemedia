@@ -151,7 +151,7 @@ public abstract class AbstractOrgService<T extends Media>
     protected TransactionService transactionService;
 
     @Autowired
-    protected FileMetadataRepository metadataRepository;
+    private FileMetadataRepository metadataRepository;
     @Autowired
     protected RuntimeDataRepository runtimeDataRepository;
     @Autowired
@@ -286,6 +286,16 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     @Override
+    public long countMissingDocuments() {
+        return repository.countMissingDocumentsInCommons(getRepoIds());
+    }
+
+    @Override
+    public long countMissingDocuments(String repo) {
+        return isBlank(repo) ? countMissingDocuments() : repository.countMissingDocumentsInCommons(Set.of(repo));
+    }
+
+    @Override
     public long countPerceptualHashes() {
         return repository.countByMetadata_PhashNotNull(getRepoIds());
     }
@@ -353,6 +363,17 @@ public abstract class AbstractOrgService<T extends Media>
     @Override
     public Page<T> listMissingVideos(String repo, Pageable page) {
         return isBlank(repo) ? listMissingVideos(page) : repository.findMissingVideosInCommons(Set.of(repo), page);
+    }
+
+    @Override
+    public Page<T> listMissingDocuments(Pageable page) {
+        return repository.findMissingDocumentsInCommons(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<T> listMissingDocuments(String repo, Pageable page) {
+        return isBlank(repo) ? listMissingDocuments(page)
+                : repository.findMissingDocumentsInCommons(Set.of(repo), page);
     }
 
     @Override
@@ -588,7 +609,8 @@ public abstract class AbstractOrgService<T extends Media>
     public Statistics getStatistics(boolean details) {
         long problems = getProblemsCount();
         Statistics stats = new Statistics(getName(), getId(), countAllMedia(), countUploadedMedia(), countIgnored(),
-                countMissingImages(), countMissingVideos(), countPerceptualHashes(), problems > 0 ? problems : null);
+                countMissingImages(), countMissingVideos(), countMissingDocuments(), countPerceptualHashes(),
+                problems > 0 ? problems : null);
         if (details && getRepoIds().size() > 1) {
             stats.setDetails(getRepoIds().stream().map(this::getStatistics).sorted().toList());
         }
@@ -599,7 +621,8 @@ public abstract class AbstractOrgService<T extends Media>
         Set<String> singleton = Collections.singleton(alias);
         return new Statistics(alias, alias, repository.count(singleton), repository.countUploadedToCommons(singleton),
                 repository.countByIgnoredTrue(singleton), repository.countMissingImagesInCommons(singleton),
-                repository.countMissingVideosInCommons(singleton), repository.countByMetadata_PhashNotNull(singleton),
+                repository.countMissingVideosInCommons(singleton), repository.countMissingDocumentsInCommons(singleton),
+                repository.countByMetadata_PhashNotNull(singleton),
                 null);
     }
 
@@ -1482,8 +1505,17 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected FileMetadata addMetadata(T media, URL assetUrl, Consumer<FileMetadata> consumer) {
-        FileMetadata fm = metadataRepository.findByAssetUrl(assetUrl)
-                .orElseGet(() -> metadataRepository.save(newFileMetadata(assetUrl, consumer)));
+        return addMetadata(media, assetUrl, consumer, false);
+    }
+
+    protected FileMetadata addMetadata(T media, URL assetUrl, Consumer<FileMetadata> consumer, boolean forceConsumer) {
+        FileMetadata fm = metadataRepository.findByAssetUrl(assetUrl).map(x -> {
+            if (forceConsumer && consumer != null) {
+                consumer.accept(x);
+                x = metadataRepository.save(x);
+            }
+            return x;
+        }).orElseGet(() -> metadataRepository.save(newFileMetadata(assetUrl, consumer)));
         media.addMetadata(fm);
         return fm;
     }
@@ -1571,11 +1603,11 @@ public abstract class AbstractOrgService<T extends Media>
         return Pair.of(sb.toString(), Map.of(lang, desc));
     }
 
-    protected static Document getWithJsoup(String pageUrl, int timetout, int nRetries) throws IOException {
+    protected static Document getWithJsoup(String pageUrl, int timeout, int nRetries) throws IOException {
         for (int i = 0; i < nRetries; i++) {
             try {
                 LOGGER.debug("Scrapping {}", pageUrl);
-                return Jsoup.connect(pageUrl).timeout(timetout).get();
+                return Jsoup.connect(pageUrl).timeout(timeout).get();
             } catch (SocketTimeoutException e) {
                 LOGGER.error("Timeout when scrapping {} => {}", pageUrl, e.getMessage());
             }

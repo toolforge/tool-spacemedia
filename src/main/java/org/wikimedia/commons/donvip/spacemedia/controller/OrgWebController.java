@@ -70,6 +70,12 @@ public class OrgWebController<T extends Media> {
         return media(model, "missing/videos", repo, service.listMissingVideos(repo, page));
     }
 
+    @GetMapping("/missing/documents")
+    public String missingDocuments(Model model, @RequestParam(name = "repo", required = false) String repo,
+            @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {
+        return media(model, "missing/documents", repo, service.listMissingDocuments(repo, page));
+    }
+
     @GetMapping("/hashes")
     public String hashes(Model model, @RequestParam(name = "repo", required = false) String repo,
             @PageableDefault(size = SIZE, sort = SORT, direction = DESC) Pageable page) {

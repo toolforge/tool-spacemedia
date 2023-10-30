@@ -347,7 +347,6 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
             media = imageInDb.get();
         } else {
             media = new NasaSdoMedia();
-            FileMetadata metadata = new FileMetadata(url);
             media.setId(id);
             media.setTitle(id.getMediaId());
             media.setCreationDateTime(date);
@@ -356,8 +355,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
             if (dimensions.getWidth() == 4096) {
                 media.setThumbnailUrl(newURL(url.toExternalForm().replace("_4096_", "_1024_")));
             }
-            metadata.setImageDimensions(dimensions);
-            media.addMetadata(metadataRepository.save(metadata));
+            addMetadata(media, url, fm -> fm.setImageDimensions(dimensions));
             media.setMediaType(mediaType);
             save = true;
         }

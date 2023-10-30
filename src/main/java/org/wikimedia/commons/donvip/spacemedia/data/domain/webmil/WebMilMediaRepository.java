@@ -13,8 +13,9 @@ public interface WebMilMediaRepository extends MediaRepository<WebMilMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "webmilCount", "webmilCountByWebsite", "webmilCountIgnored",
-            "webmilCountIgnoredByWebsite", "webmilCountMissing", "webmilCountMissingImages", "webmilCountMissingVideos",
-            "webmilCountMissingImagesByWebsite", "webmilCountMissingVideosByWebsite", "webmilCountMissingByWebsite",
+            "webmilCountIgnoredByWebsite", "webmilCountMissing",
+            "webmilCountMissingImagesByWebsite", "webmilCountMissingVideosByWebsite",
+            "webmilCountMissingDocumentsByWebsite", "webmilCountMissingByWebsite",
             "webmilCountUploaded", "webmilCountUploadedByWebsite", "webmilCountPhashNotNull",
             "webmilCountPhashNotNullByWebsite" })
     @interface CacheEvictWebmilAll {
@@ -54,20 +55,16 @@ public interface WebMilMediaRepository extends MediaRepository<WebMilMedia> {
     long countMissingInCommons(Set<String> websites);
 
     @Override
-    @Cacheable("webmilCountMissingImages")
-    long countMissingImagesInCommons();
-
-    @Override
-    @Cacheable("webmilCountMissingVideos")
-    long countMissingVideosInCommons();
-
-    @Override
     @Cacheable("webmilCountMissingImagesByWebsite")
     long countMissingImagesInCommons(Set<String> websites);
 
     @Override
     @Cacheable("webmilCountMissingVideosByWebsite")
     long countMissingVideosInCommons(Set<String> websites);
+
+    @Override
+    @Cacheable("webmilCountMissingDocumentsByWebsite")
+    long countMissingDocumentsInCommons(Set<String> websites);
 
     @Override
     @Cacheable("webmilCountUploaded")

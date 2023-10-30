@@ -13,8 +13,8 @@ public interface BoxMediaRepository extends MediaRepository<BoxMedia> {
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "boxCount", "boxCountByShare", "boxCountIgnored",
-            "boxCountIgnoredByShare", "boxCountMissing", "boxCountMissingImages", "boxCountMissingVideos",
-            "boxCountMissingImagesByShare", "boxCountMissingVideosByShare", "boxCountMissingByShare",
+            "boxCountIgnoredByShare", "boxCountMissing", "boxCountMissingByShare",
+            "boxCountMissingImagesByShare", "boxCountMissingVideosByShare", "boxCountMissingDocumentsByShare",
             "boxCountUploaded", "boxCountUploadedByShare", "boxCountPhashNotNull", "boxCountPhashNotNullByShare" })
     @interface CacheEvictBoxAll {
 
@@ -53,20 +53,16 @@ public interface BoxMediaRepository extends MediaRepository<BoxMedia> {
     long countMissingInCommons(Set<String> appShares);
 
     @Override
-    @Cacheable("boxCountMissingImages")
-    long countMissingImagesInCommons();
-
-    @Override
-    @Cacheable("boxCountMissingVideos")
-    long countMissingVideosInCommons();
-
-    @Override
     @Cacheable("boxCountMissingImagesByShare")
     long countMissingImagesInCommons(Set<String> appShares);
 
     @Override
     @Cacheable("boxCountMissingVideosByShare")
     long countMissingVideosInCommons(Set<String> appShares);
+
+    @Override
+    @Cacheable("boxCountMissingDocumentsByShare")
+    long countMissingDocumentsInCommons(Set<String> appShares);
 
     @Override
     @Cacheable("boxCountUploaded")

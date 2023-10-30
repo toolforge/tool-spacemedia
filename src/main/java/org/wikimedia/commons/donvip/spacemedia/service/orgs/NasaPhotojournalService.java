@@ -226,7 +226,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
             if (isAnimation || isQtvr) {
                 Matcher m = (isAnimation ? ANIMATION_PATTERN : QTVR_PATTERN).matcher(caption);
                 if (m.matches()) {
-                    addMetadata(media, newURL(m.group(1)), null);
+                    addMetadata(media, m.group(1), null);
                 }
             }
         }

@@ -16,7 +16,7 @@ public interface KariMediaRepository extends MediaRepository<KariMedia> {
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = {
             "kariCount", "kariCountRepo", "kariCountIgnored", "kariCountIgnoredRepo", "kariCountMissing",
-            "kariCountMissingRepo", "kariCountMissingImages", "kariCountMissingImagesRepo", "kariCountUploaded",
+            "kariCountMissingRepo", "kariCountMissingImagesRepo", "kariCountUploaded",
             "kariCountUploadedRepo", "kariCountPhashNotNull", "kariCountPhashNotNullRepo" })
     @interface CacheEvictKariAll {
 
@@ -55,24 +55,18 @@ public interface KariMediaRepository extends MediaRepository<KariMedia> {
     long countMissingInCommons(Set<String> repos);
 
     @Override
-    @Cacheable("kariCountMissingImages")
-    default long countMissingImagesInCommons() {
-        return countMissingInCommons();
-    }
-
-    @Override
     @Cacheable("kariCountMissingImagesRepo")
     default long countMissingImagesInCommons(Set<String> repos) {
         return countMissingInCommons(repos);
     }
 
     @Override
-    default long countMissingVideosInCommons() {
+    default long countMissingVideosInCommons(Set<String> repos) {
         return 0;
     }
 
     @Override
-    default long countMissingVideosInCommons(Set<String> repos) {
+    default long countMissingDocumentsInCommons(Set<String> repos) {
         return 0;
     }
 

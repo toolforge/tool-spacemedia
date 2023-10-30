@@ -42,6 +42,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("bmp", "jpg", "tiff", "png", "webp", "xcf", "gif",
             "svg");
     private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg");
+    private static final Set<String> DOC_EXTENSIONS = Set.of("pdf", "stl");
 
     @Id
     @JsonIgnore
@@ -76,6 +77,9 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JsonProperty("asset_url")
     private URL assetUrl;
 
+    @Column(nullable = true)
+    private String originalFileName;
+
     @Column(nullable = true, length = 4)
     private String extension;
 
@@ -106,6 +110,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
     public FileMetadata(URL assetUrl) {
         this.assetUrl = assetUrl;
+        setOriginalFileName(assetUrl.getPath().replace("/", ""));
         setExtension(getFileExtension(assetUrl.toExternalForm()));
     }
 
@@ -183,6 +188,14 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
     public void setAssetUrl(URL assetUrl) {
         this.assetUrl = assetUrl;
+    }
+
+    public String getOriginalFileName() {
+        return originalFileName;
+    }
+
+    public void setOriginalFileName(String originalFileName) {
+        this.originalFileName = originalFileName;
     }
 
     public String getExtension() {
@@ -343,10 +356,22 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
         return ext != null && VIDEO_EXTENSIONS.contains(ext);
     }
 
+    /**
+     * Determines if this media is a document.
+     *
+     * @return {@code true} if this media is a document
+     */
+    @Transient
+    @JsonIgnore
+    public boolean isDocument() {
+        String ext = getFileExtension();
+        return ext != null && DOC_EXTENSIONS.contains(ext);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(phash, sha1, readableImage, assetUrl, size, commonsFileNames, exif, dimensions, extension,
-                description);
+                description, originalFileName);
     }
 
     @Override
@@ -360,7 +385,8 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
                 && Objects.equals(readableImage, other.readableImage) && Objects.equals(assetUrl, other.assetUrl)
                 && Objects.equals(commonsFileNames, other.commonsFileNames) && Objects.equals(exif, other.exif)
                 && Objects.equals(dimensions, other.dimensions) && Objects.equals(extension, other.extension)
-                && Objects.equals(description, other.description);
+                && Objects.equals(description, other.description)
+                && Objects.equals(originalFileName, other.originalFileName);
     }
 
     @Override
@@ -372,6 +398,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
                 + (readableImage != null ? "readableImage=" + readableImage + ", " : "")
                 + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "") + (size != null ? "size=" + size + ", " : "")
                 + (exif != null ? "exif=" + exif + ", " : "")
+                + (originalFileName != null ? "originalFileName=" + originalFileName + ", " : "")
                 + (commonsFileNames != null ? "commonsFileNames=" + commonsFileNames : "") + ']';
     }
 }

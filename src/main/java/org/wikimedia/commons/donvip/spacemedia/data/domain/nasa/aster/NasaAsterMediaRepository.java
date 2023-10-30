@@ -19,7 +19,7 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
     @CacheEvict(allEntries = true, cacheNames = {
             "nasaAsterCount", "nasaAsterCountRepo", "nasaAsterCountIgnored", "nasaAsterCountIgnoredRepo",
             "nasaAsterCountMissing", "nasaAsterCountMissingRepo",
-            "nasaAsterCountMissingImages",
+            "nasaAsterCountMissingImagesRepo", "nasaAsterCountMissingVideosRepo", "nasaAsterCountMissingDocumentsRepo",
             "nasaAsterCountUploaded", "nasaAsterCountUploadedRepo", "nasaAsterCountPhashNotNull",
             "nasaAsterCountPhashNotNullRepo" })
     @interface CacheEvictNasaAsterAll {
@@ -58,20 +58,17 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
     @Cacheable("nasaAsterCountMissingRepo")
     long countMissingInCommons(Set<String> repos);
 
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
-    long countMissingInCommons(NasaMediaType type);
+    @Override
+    @Cacheable("nasaAsterCountMissingImagesRepo")
+    long countMissingImagesInCommons(Set<String> repos);
 
     @Override
-    @Cacheable("nasaAsterCountMissingImages")
-    default long countMissingImagesInCommons() {
-        return countMissingInCommons(NasaMediaType.image);
-    }
+    @Cacheable("nasaAsterCountMissingVideosRepo")
+    long countMissingVideosInCommons(Set<String> repos);
 
     @Override
-    @Cacheable("nasaAsterCountMissingVideos")
-    default long countMissingVideosInCommons() {
-        return countMissingInCommons(NasaMediaType.video);
-    }
+    @Cacheable("nasaAsterCountMissingDocumentsRepo")
+    long countMissingDocumentsInCommons(Set<String> repos);
 
     @Override
     @Cacheable("nasaAsterCountUploaded")

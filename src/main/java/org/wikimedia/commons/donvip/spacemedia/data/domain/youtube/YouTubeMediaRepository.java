@@ -56,14 +56,18 @@ public interface YouTubeMediaRepository extends MediaRepository<YouTubeMedia> {
     long countMissingInCommons(Set<String> youtubeChannels);
 
     @Override
-    default long countMissingImagesInCommons() {
+    default long countMissingImagesInCommons(Set<String> repos) {
         return 0;
     }
 
     @Override
-    @Cacheable("youtubeCountMissingVideos")
-    default long countMissingVideosInCommons() {
-        return countMissingInCommons();
+    default long countMissingVideosInCommons(Set<String> repos) {
+        return countMissingInCommons(repos);
+    }
+
+    @Override
+    default long countMissingDocumentsInCommons(Set<String> repos) {
+        return 0;
     }
 
     @Override

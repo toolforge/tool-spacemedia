@@ -13,8 +13,8 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
 
     @Retention(RetentionPolicy.RUNTIME)
     @CacheEvict(allEntries = true, cacheNames = { "dvidsCount", "dvidsCountByUnit", "dvidsCountIgnored", "dvidsCountIgnoredByUnit",
-            "dvidsCountMissing", "dvidsCountMissingImages", "dvidsCountMissingVideos", "dvidsCountMissingImagesByUnit",
-            "dvidsCountMissingVideosByUnit", "dvidsCountMissingByUnit", "dvidsCountUploaded",
+            "dvidsCountMissing", "dvidsCountMissingImagesByUnit", "dvidsCountMissingVideosByUnit",
+            "dvidsCountMissingDocumentsByUnit", "dvidsCountMissingByUnit", "dvidsCountUploaded",
             "dvidsCountUploadedByUnit", "dvidsCountPhashNotNull", "dvidsCountPhashNotNullByUnit" })
     @interface CacheEvictDvidsAll {
 
@@ -53,20 +53,16 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     long countMissingInCommons(Set<String> units);
 
     @Override
-    @Cacheable("dvidsCountMissingImages")
-    long countMissingImagesInCommons();
-
-    @Override
-    @Cacheable("dvidsCountMissingVideos")
-    long countMissingVideosInCommons();
-
-    @Override
     @Cacheable("dvidsCountMissingImagesByUnit")
     long countMissingImagesInCommons(Set<String> units);
 
     @Override
     @Cacheable("dvidsCountMissingVideosByUnit")
     long countMissingVideosInCommons(Set<String> units);
+
+    @Override
+    @Cacheable("dvidsCountMissingDocumentsByUnit")
+    long countMissingDocumentsInCommons(Set<String> units);
 
     @Override
     @Cacheable("dvidsCountUploaded")

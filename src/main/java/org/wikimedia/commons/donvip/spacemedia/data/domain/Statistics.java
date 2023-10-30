@@ -11,18 +11,20 @@ public class Statistics implements Comparable<Statistics> {
     private final long ignoredMedia;
     private final long missingImages;
     private final long missingVideos;
+    private final long missingDocuments;
     private final long hashedMedia;
     private final Long problemsCount;
     private List<Statistics> details;
 
     public Statistics(String org, String id, long totalMedia, long uploadedMedia, long ignoredMedia,
-            long missingImages, long missingVideos, long hashedMedia, Long problemsCount) {
-        this(org, id, totalMedia, uploadedMedia, ignoredMedia, missingImages, missingVideos, hashedMedia,
-                problemsCount, null);
+            long missingImages, long missingVideos, long missingDocuments, long hashedMedia, Long problemsCount) {
+        this(org, id, totalMedia, uploadedMedia, ignoredMedia, missingImages, missingVideos, missingDocuments,
+                hashedMedia, problemsCount, null);
     }
 
     public Statistics(String org, String id, long totalMedia, long uploadedMedia, long ignoredMedia,
-            long missingImages, long missingVideos, long hashedMedia, Long problemsCount, List<Statistics> details) {
+            long missingImages, long missingVideos, long missingDocuments, long hashedMedia, Long problemsCount,
+            List<Statistics> details) {
         this.org = Objects.requireNonNull(org);
         this.id = Objects.requireNonNull(id);
         this.totalMedia = totalMedia;
@@ -30,6 +32,7 @@ public class Statistics implements Comparable<Statistics> {
         this.ignoredMedia = ignoredMedia;
         this.missingImages = missingImages;
         this.missingVideos = missingVideos;
+        this.missingDocuments = missingDocuments;
         this.hashedMedia = hashedMedia;
         this.problemsCount = problemsCount;
         this.details = details;
@@ -75,6 +78,13 @@ public class Statistics implements Comparable<Statistics> {
      */
     public long getMissingVideos() {
         return missingVideos;
+    }
+
+    /**
+     * @return the missingDocuments
+     */
+    public long getMissingDocuments() {
+        return missingDocuments;
     }
 
     /**
