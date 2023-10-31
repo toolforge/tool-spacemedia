@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -158,17 +159,19 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
             if (media == null) {
                 return Triple.of(Optional.empty(), emptyList(), 0);
             }
-            if (media.getCategories() != null && Boolean.TRUE != media.isIgnored()) {
-                // Try to detect pictures of identifiable people, as per ESO/IAU conditions
-                if (media.getCategories().size() == 1 && media.getCategories().iterator().next().contains("People")
-                        && media.getTypes() != null
-                        && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
-                    ignoreFile(media, IDENTIFIABLE_PERSON);
-                } else if (media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
-                    ignoreFile(media, "Forbidden category.");
-                }
-            }
             save = true;
+        }
+        if (Boolean.TRUE != media.isIgnored()) {
+            // Try to detect pictures of identifiable people, as per ESO/IAU conditions
+            if ((isEmpty(media.getCategories()) || (media.getCategories().size() == 1
+                    && media.getCategories().iterator().next().contains("People")))
+                    && media.getTypes() != null
+                    && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
+                save = ignoreFile(media, IDENTIFIABLE_PERSON);
+            } else if (media.getCategories() != null
+                    && media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
+                save = ignoreFile(media, "Forbidden category.");
+            }
         }
         Collection<String> forbiddenWordsInTitleOrDescription = getForbiddenWordsInTitleOrDescription();
         if (Boolean.TRUE != media.isIgnored() && !forbiddenWordsInTitleOrDescription.isEmpty()

@@ -3,6 +3,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.net.URL;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +30,11 @@ public class EsoService extends AbstractOrgDjangoplicityService {
     @Autowired
     public EsoService(DjangoplicityMediaRepository repository, @Value("${eso.search.link}") String searchLink) {
         super(repository, "eso", searchLink);
+    }
+
+    @Override
+    protected Collection<String> getForbiddenWordsInTitleOrDescription() {
+        return List.of("Second Chance programme", "Tu Oportunidad");
     }
 
     @Override
