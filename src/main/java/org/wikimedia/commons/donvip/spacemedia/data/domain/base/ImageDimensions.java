@@ -44,6 +44,10 @@ public class ImageDimensions {
         this.width = width;
     }
 
+    public long getPixelsNumber() {
+        return width * (long) height;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(height, width);

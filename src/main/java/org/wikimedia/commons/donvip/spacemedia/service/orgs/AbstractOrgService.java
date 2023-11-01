@@ -1291,7 +1291,7 @@ public abstract class AbstractOrgService<T extends Media>
         Set<String> result = new LinkedHashSet<>();
         Long size = metadata.getSize();
         ImageDimensions dims = metadata.getImageDimensions();
-        if (size != null && size >= LOTS_OF_MP || (dims != null && dims.getHeight() * dims.getWidth() >= LOTS_OF_MP)) {
+        if (size != null && size >= LOTS_OF_MP || (dims != null && dims.getPixelsNumber() >= LOTS_OF_MP)) {
             result.add("LargeImage");
         }
         return result;
@@ -1402,6 +1402,12 @@ public abstract class AbstractOrgService<T extends Media>
                 // To ignore https://www.dvidshub.net/image/6592675 (title and desc are '.')
                 result = ignoreFile(media, "Very short or missing title and description");
                 LOGGER.debug("Short title or description test has been trigerred for {}", media);
+            }
+            if (media.hasMetadata() && media.isImage()
+                    && media.getMetadataStream().allMatch(
+                            fm -> fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000)) {
+                result = ignoreFile(media, "Too small image");
+                LOGGER.debug("Too small image test has been trigerred for {}", media);
             }
         }
         return new MediaUpdateResult(result, ur.getException());
