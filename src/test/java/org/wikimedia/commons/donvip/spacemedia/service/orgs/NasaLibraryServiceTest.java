@@ -48,9 +48,9 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMedi
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 
-@SpringJUnitConfig(NasaServiceTest.TestConfig.class)
+@SpringJUnitConfig(NasaLibraryServiceTest.TestConfig.class)
 @TestPropertySource("/application-test.properties")
-class NasaServiceTest extends AbstractOrgServiceTest {
+class NasaLibraryServiceTest extends AbstractOrgServiceTest {
 
     @MockBean
     private NasaMediaRepository<NasaMedia> repository;
@@ -68,7 +68,7 @@ class NasaServiceTest extends AbstractOrgServiceTest {
     private NasaMediaProcessorService processor;
 
     @Autowired
-    private NasaService service;
+    private NasaLibraryService service;
 
     @Autowired
     private Environment env;
@@ -78,7 +78,7 @@ class NasaServiceTest extends AbstractOrgServiceTest {
 
     @Test
     void testIssPattern() {
-        Matcher m = NasaService.ISS_PATTERN.matcher("iss068e029662");
+        Matcher m = NasaLibraryService.ISS_PATTERN.matcher("iss068e029662");
         assertTrue(m.matches());
         assertEquals("68", m.group(1));
     }
@@ -161,8 +161,8 @@ class NasaServiceTest extends AbstractOrgServiceTest {
 
         @Bean
         @Autowired
-        public NasaService service(NasaMediaRepository<NasaMedia> repository) {
-            return new NasaService(repository, Set.of("HQ"));
+        public NasaLibraryService service(NasaMediaRepository<NasaMedia> repository) {
+            return new NasaLibraryService(repository, Set.of("HQ"));
         }
     }
 }

@@ -62,9 +62,9 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
-public class NasaService extends AbstractOrgService<NasaMedia> {
+public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NasaService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NasaLibraryService.class);
 
     static final Pattern ISS_PATTERN = Pattern.compile("iss0{1,2}(\\d{1,2})e\\d{6}");
 
@@ -111,7 +111,7 @@ public class NasaService extends AbstractOrgService<NasaMedia> {
     private Map<String, String> nasaKeywords;
 
     @Autowired
-    public NasaService(NasaMediaRepository<NasaMedia> repository, @Value("${nasa.centers}") Set<String> nasaCenters) {
+    public NasaLibraryService(NasaMediaRepository<NasaMedia> repository, @Value("${nasa.centers}") Set<String> nasaCenters) {
         super(repository, "nasa", nasaCenters);
         this.nasaCenters = Objects.requireNonNull(nasaCenters);
     }
@@ -335,7 +335,7 @@ public class NasaService extends AbstractOrgService<NasaMedia> {
 
     @Override
     public String getName() {
-        return "NASA";
+        return "NASA (Image Library)";
     }
 
     @Override
