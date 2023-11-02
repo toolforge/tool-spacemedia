@@ -1432,6 +1432,11 @@ public abstract class AbstractOrgService<T extends Media>
                 result = ignoreFile(media, "Too small image");
                 LOGGER.debug("Too small image test has been trigerred for {}", media);
             }
+            if (isBlank(media.getDescription()) && media.getTitle() != null
+                    && media.getTitle().matches("Picture \\d+")) {
+                result = ignoreFile(media, "Media without description and with uninteresting title");
+                LOGGER.debug("No description and uninteresting title test has been trigerred for {}", media);
+            }
         }
         return new MediaUpdateResult(result, ur.getException());
     }
