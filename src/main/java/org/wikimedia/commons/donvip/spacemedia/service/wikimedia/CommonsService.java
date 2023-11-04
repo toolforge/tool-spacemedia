@@ -891,7 +891,8 @@ public class CommonsService {
         // check filename doesn't end with a dot, see MediaWiki:Titleblacklist-custom-space
         return unescapeHtml4(
                 unescapeXml(filename.endsWith(".") ? filename.substring(0, filename.length() - 1) : filename))
-                .replace('/', '-').replace(':', '-').replace('\\', '-').replace('.', '_').replace("â€™", "’")
+                .replace('/', '-').replace(':', '-').replace('\\', '-').replace(" .", ".").replace("_.", ".")
+                .replace('.', '_').replace("â€™", "’")
                 .replace("http---", "").replace("https---", "").replaceAll("(?i)_(JPE?G|PNG|GIF|TIFF?)$", "")
                 .replace("''", "\"").trim();
     }

@@ -86,7 +86,8 @@ public class ErccMedia extends Media {
 
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
-        return fileMetadata.getOriginalFileName().substring(0, fileMetadata.getOriginalFileName().indexOf('.'));
+        return fileMetadata.getOriginalFileName().substring(0, fileMetadata.getOriginalFileName().indexOf('.'))
+                .replace('_', ' ').trim();
     }
 
     @Override
