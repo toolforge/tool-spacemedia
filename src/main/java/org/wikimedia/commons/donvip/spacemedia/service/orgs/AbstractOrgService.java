@@ -103,6 +103,9 @@ import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
 import org.wikimedia.commons.donvip.spacemedia.service.mastodon.MastodonService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -136,7 +139,8 @@ public abstract class AbstractOrgService<T extends Media>
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private static final Map<String, String> LICENCES = Map.ofEntries(e("YouTube CC-BY", "Q14947546"),
-            e("Cc-by-2.0", "Q19125117"), e("Cc-by-sa-2.0", "Q19068220"), e("Cc-zero", "Q6938433"),
+            e("Cc-by-2.0", "Q19125117"), e("Cc-by-4.0", "Q20007257"), e("Cc-by-sa-2.0", "Q19068220"),
+            e("Cc-zero", "Q6938433"),
             e("DLR-License", "Q62619894"), e("ESA|", "Q26259495"), e("ESO", "Q20007257"), e("IAU", "Q20007257"),
             e("KOGL", "Q12584618"), e("NOIRLab", "Q20007257"), e("ESA-Hubble", "Q20007257"),
             e("ESA-Webb", "Q20007257"));
@@ -160,6 +164,8 @@ public abstract class AbstractOrgService<T extends Media>
     protected MediaService mediaService;
     @Autowired
     protected CommonsService commonsService;
+    @Autowired
+    protected WikidataService wikidata;
     @Autowired
     private SearchService searchService;
     @Autowired
@@ -873,7 +879,7 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected void editStructuredDataContent(String uploadedFilename, Map<String, String> legends, T media,
             FileMetadata metadata) {
-        Map<String, Pair<Object, Map<String, Object>>> statements = getStatements(media, metadata);
+        SdcStatements statements = getStatements(media, metadata);
         try {
             commonsService.editStructuredDataContent(uploadedFilename, legends, statements);
         } catch (MediaWikiApiErrorException | IOException | RuntimeException e) {
@@ -881,18 +887,18 @@ public abstract class AbstractOrgService<T extends Media>
         }
     }
 
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(T media, FileMetadata metadata) {
-        Map<String, Pair<Object, Map<String, Object>>> result = new TreeMap<>();
+    protected SdcStatements getStatements(T media, FileMetadata metadata) {
+        SdcStatements result = new SdcStatements();
         // Source: file available on the internet
         result.put("P7482", Pair.of("Q74228490", new TreeMap<>(Map.of("P973",
                 getSourceUrl(media, metadata).toExternalForm(),
                 "P2699", metadata.getAssetUrl().toExternalForm()))));
         // Licences
         Set<String> licences = findLicenceTemplates(media, metadata);
-        boolean usPublicDomain = PD_US.stream().anyMatch(pd -> licences.stream().anyMatch(l -> l.startsWith(pd)));
-        result.put("P6216", Pair.of(usPublicDomain ? "Q19652" : "Q50423863",
-                usPublicDomain ? new TreeMap<>(Map.of("P459", "Q60671452", "P1001", "Q30")) : null));
-        if (!usPublicDomain) {
+        if (PD_US.stream().anyMatch(pd -> licences.stream().anyMatch(l -> l.startsWith(pd)))) {
+            result.put("P6216", Pair.of("Q19652", new TreeMap<>(Map.of("P459", "Q60671452", "P1001", "Q30"))));
+        } else {
+            result.put("P6216", Pair.of("Q50423863", null));
             LICENCES.entrySet().stream().filter(e -> licences.stream().anyMatch(l -> l.startsWith(e.getKey())))
                     .map(Entry::getValue).distinct().forEach(l -> result.put("P275", Pair.of(l, null)));
         }
@@ -918,7 +924,7 @@ public abstract class AbstractOrgService<T extends Media>
         }
         // Video
         if (metadata.isVideo()) {
-            result.put("P31", Pair.of("Q98069877", null));
+            result.instanceOf(WikidataItem.Q98069877_VIDEO);
         }
         // Dimensions
         if (metadata.getImageDimensions() != null) {
@@ -946,7 +952,7 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected final void wikidataStatementMapping(String value, Map<String, Map<String, String>> csvMapping,
-            String property, Map<String, Pair<Object, Map<String, Object>>> result) {
+            String property, SdcStatements result) {
         ofNullable(value).map(csvMapping::get).map(m -> m.get("Wikidata")).filter(Objects::nonNull)
                 .ifPresent(m -> result.put(property, Pair.of(m, null)));
     }
@@ -1194,7 +1200,7 @@ public abstract class AbstractOrgService<T extends Media>
      * @return the list of Wikimedia Commons categories to apply to {@code media}
      */
     public Set<String> findCategories(T media, FileMetadata metadata, boolean includeHidden) {
-        Set<String> result = new HashSet<>();
+        Set<String> result = new TreeSet<>();
         if (media.containsInTitleOrDescription("360 Panorama")) {
             result.add("360° panoramas");
         } else if (media.containsInTitleOrDescription("Land Surface Temperature")) {

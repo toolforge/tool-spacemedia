@@ -59,6 +59,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -763,7 +764,7 @@ public class CommonsService {
         LocalDateTime start = now();
         LOGGER.info("Cleaning {} categories with depth {}...", categories.size(), catSearchDepth);
         followCategoryRedirects(categories);
-        Set<String> result = new HashSet<>();
+        Set<String> result = new TreeSet<>();
         Set<String> lowerCategories = categories.stream().map(c -> c.toLowerCase(ENGLISH)).collect(toSet());
         for (Iterator<String> it = categories.iterator(); it.hasNext();) {
             String c = it.next().toLowerCase(ENGLISH);
@@ -866,7 +867,7 @@ public class CommonsService {
                 }
                 return c;
             }
-        }).collect(toSet());
+        }).collect(toCollection(TreeSet::new));
     }
 
     public static String formatWikiCode(String badWikiCode) {
@@ -1003,7 +1004,7 @@ public class CommonsService {
     }
 
     public void editStructuredDataContent(String filename, Map<String, String> legends,
-            Map<String, Pair<Object, Map<String, Object>>> statements) throws IOException, MediaWikiApiErrorException {
+            SdcStatements statements) throws IOException, MediaWikiApiErrorException {
         MediaInfoDocument doc = getMediaInfoDocument(filename);
         MediaInfoIdValue entityId = doc.getEntityId();
         LOGGER.info("Editing SDC {} of {}...", entityId, filename);
@@ -1035,6 +1036,8 @@ public class CommonsService {
     static org.wikidata.wdtk.datamodel.interfaces.Value createWikidataValue(Object o) {
         if (o instanceof org.wikidata.wdtk.datamodel.interfaces.Value v) {
             return v;
+        } else if (o instanceof WikidataItem i) {
+            return makeWikidataItemIdValue(i.toString());
         } else if (o instanceof String s) {
             return s.matches("Q\\d+") ? makeWikidataItemIdValue(s) : makeStringValue(s);
         } else if (o instanceof Temporal t) {

@@ -58,7 +58,6 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.exception.WrappedUploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService.Counter;
-import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -98,9 +97,6 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
 
     @Autowired
     private NasaVideoRepository videoRepository;
-
-    @Autowired
-    private WikidataService wikidata;
 
     @Autowired
     private Environment env;

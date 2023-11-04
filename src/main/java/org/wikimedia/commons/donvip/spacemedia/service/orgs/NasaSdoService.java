@@ -3,6 +3,11 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoInstrument.AIA;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q115801008_MAGNETOGRAM;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q119021644_INTENSITYGRAM;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q125191_PHOTOGRAPH;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q5297355_DOPPLERGRAM;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q98069877_VIDEO;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -23,7 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -49,6 +53,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoMedia
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -108,27 +113,25 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaSdoMedia media, FileMetadata metadata) {
-        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
+    protected SdcStatements getStatements(NasaSdoMedia media, FileMetadata metadata) {
         NasaSdoDataType dataType = media.getDataType();
-        result.put("P31", Pair.of(switch (dataType) {
-        case _HMID -> "Q5297355"; // dopplergram
-        case _HMIB, _HMIBC -> "Q115801008"; // magnetogram
-        case _HMII, _HMIIC, _HMIIF -> "Q119021644"; // intensitygram
-        default -> metadata.isVideo() ? "Q98069877" : "Q125191"; // video or photograph
-        }, null));
-        result.put("P170", Pair.of("Q382494", null)); // Created by SDO
-        result.put("P180", Pair.of("Q525", null)); // Depicts the Sun
-        result.put("P1071", Pair.of("Q472251", null)); // Created in geosynchronous orbit
-        result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
+        SdcStatements result = super.getStatements(media, metadata).instanceOf(switch (dataType) {
+        case _HMID -> Q5297355_DOPPLERGRAM;
+        case _HMIB, _HMIBC -> Q115801008_MAGNETOGRAM;
+        case _HMII, _HMIIC, _HMIIF -> Q119021644_INTENSITYGRAM;
+        default -> metadata.isVideo() ? Q98069877_VIDEO : Q125191_PHOTOGRAPH;
+        });
+        result.creator("Q382494") // Created by SDO
+                .depicts("Q525") // Depicts the Sun
+                .locationOfCreation("Q472251") // Created in geosynchronous orbit
+                .fabricationMethod("Q725252") // Satellite imagery
+                .capturedWith(dataType.getInstrument().getQid()); // Taken with SDO instrument
         result.put("P2808", Pair.of(Pair.of(dataType.getWavelength(), "Q81454"), null)); // Wavelength in ångström (Å)
-        result.put("P4082", Pair.of(dataType.getInstrument().getQid(), null)); // Taken with SDO instrument
         addSdcKeywordsStatements(media.getKeywords(), result);
         return result;
     }
 
-    private static void addSdcKeywordsStatements(NasaSdoKeywords keywords,
-            Map<String, Pair<Object, Map<String, Object>>> result) {
+    private static void addSdcKeywordsStatements(NasaSdoKeywords keywords, SdcStatements result) {
         Optional.ofNullable(keywords).map(NasaSdoKeywords::getExpTime) // Exposure time in seconds
                 .ifPresent(exp -> result.put("P6757", Pair.of(Pair.of(exp, "Q11574"), null)));
     }
@@ -294,7 +297,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         if (isNotEmpty(aiaKeywords) || isNotEmpty(hmiKeywords)) {
             for (NasaSdoMedia media : sdoRepository.findByMediaTypeAndDimensionsAndDateAndFsnIsNull(mediaType, dims,
                     date)) {
-                Map<String, Pair<Object, Map<String, Object>>> statements = updateKeywords(aiaKeywords, hmiKeywords,
+                SdcStatements statements = updateKeywords(aiaKeywords, hmiKeywords,
                         media);
                 for (String uploadFileName : media.getUniqueMetadata().getCommonsFileNames()) {
                     LOGGER.info("Updating SDC keywords for {} : {}", media, uploadFileName);
@@ -308,10 +311,10 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         }
     }
 
-    private Map<String, Pair<Object, Map<String, Object>>> updateKeywords(List<NasaSdoKeywords> aiaKeywords,
-            List<NasaSdoKeywords> hmiKeywords, NasaSdoMedia media) {
+    private SdcStatements updateKeywords(List<NasaSdoKeywords> aiaKeywords, List<NasaSdoKeywords> hmiKeywords,
+            NasaSdoMedia media) {
         NasaSdoDataType type = media.getDataType();
-        Map<String, Pair<Object, Map<String, Object>>> statements = new TreeMap<>();
+        SdcStatements statements = new SdcStatements();
         List<NasaSdoKeywords> keywords = AIA == type.getInstrument() ? aiaKeywords : hmiKeywords;
         if (isNotEmpty(keywords)) {
             List<NasaSdoKeywords> matches = filterKeywords(keywords, type.getWavelength(), media.getCreationDateTime());

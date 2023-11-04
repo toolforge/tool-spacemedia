@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,6 +34,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.NasaPhotojournalService.XMLResponseWithoutContentTypeParser;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
 @SpringJUnitConfig(NasaPhotojournalServiceTest.TestConfig.class)
 class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
@@ -90,7 +90,7 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
         assertEquals(611, jpeg.getImageDimensions().getWidth());
         assertEquals(2696, jpeg.getImageDimensions().getHeight());
 
-        Map<String, Pair<Object, Map<String, Object>>> statements = service.getStatements(media, jpeg);
+        SdcStatements statements = service.getStatements(media, jpeg);
         assertEquals(Pair.of("Q1108979", null), statements.get("P4082"));
         assertEquals(Pair.of("Q207164", null), statements.get("P170"));
 

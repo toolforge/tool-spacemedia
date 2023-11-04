@@ -51,7 +51,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.Djangop
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,9 +88,6 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
 
     @Autowired
     private ObjectMapper jackson;
-
-    @Autowired
-    private WikidataService wikidata;
 
     protected AbstractOrgDjangoplicityService(DjangoplicityMediaRepository repository, String id, String searchLink) {
         super(repository, id, Set.of(id));
@@ -573,19 +570,16 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(DjangoplicityMedia media,
-            FileMetadata metadata) {
-        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
+    protected SdcStatements getStatements(DjangoplicityMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
         if (StringUtils.isNotBlank(media.getName())) {
             for (String name : media.getName().split(", ")) {
-                wikidata.searchAstronomicalObject(name).map(Pair::getKey)
-                        .ifPresent(qid -> result.put("P180", Pair.of(qid, null))); // Depicts the object
+                // FIXME handle several values
+                wikidata.searchAstronomicalObject(name).map(Pair::getKey).ifPresent(result::depicts);
             }
         }
-        doFor(media.getTelescopes(), t -> wikidata.searchTelescope(t).map(Pair::getKey),
-                qid -> result.put("P170", Pair.of(qid, null))); // Created by telescope
-        doFor(media.getInstruments(), i -> wikidata.searchInstrument(i).map(Pair::getKey),
-                qid -> result.put("P4082", Pair.of(qid, null))); // Taken with instrument
+        doFor(media.getTelescopes(), t -> wikidata.searchTelescope(t).map(Pair::getKey), result::creator);
+        doFor(media.getInstruments(), i -> wikidata.searchInstrument(i).map(Pair::getKey), result::capturedWith);
         return result;
     }
 

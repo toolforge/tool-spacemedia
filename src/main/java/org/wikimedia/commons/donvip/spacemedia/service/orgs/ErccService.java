@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -40,6 +41,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.Country;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.GetPagedMapsResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.MapsItem;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -69,6 +72,7 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
     public Set<String> findLicenceTemplates(ErccMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("PD-European-Commission");
+        result.add("Cc-by-4.0"); // https://commission.europa.eu/legal-notice_en
         return result;
     }
 
@@ -93,6 +97,15 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
             result.add(commonsService.existsCategoryPage(cat) ? cat : "Maps of " + country);
         }
         return false;
+    }
+
+    @Override
+    protected SdcStatements getStatements(ErccMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata).instanceOf(WikidataItem.Q4006_MAP)
+                .creator("Q818564"); // Created by ERCC
+        ofNullable(media.getMainCountry()).ifPresent(mainCountry -> wikidata.searchCountry(mainCountry)
+                .or(() -> wikidata.searchContinent(mainCountry)).map(Pair::getKey).ifPresent(result::depicts));
+        return result;
     }
 
     @Override

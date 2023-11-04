@@ -2,10 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,6 +13,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.IgnoreCriteria;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.IgnoreCriteriaOnRepoId;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.IgnoreCriteriaOnTerms;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
 @Service
 public class NasaFlickrService extends AbstractOrgFlickrService {
@@ -139,14 +138,14 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(FlickrMedia media, FileMetadata metadata) {
-        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
+    protected SdcStatements getStatements(FlickrMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
         if ("uahirise-mars".equals(media.getPathAlias())) {
-            result.put("P170", Pair.of("Q183160", null)); // Created by MRO
-            result.put("P180", Pair.of("Q111", null)); // Depicts Mars
-            result.put("P1071", Pair.of("Q111", null)); // Created in Mars orbit
-            result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
-            result.put("P4082", Pair.of("Q1036092", null)); // Taken with HiRISE
+            result.creator("Q183160") // Created by MRO
+                    .depicts("Q111") // Depicts Mars
+                    .locationOfCreation("Q111") // Created in Mars orbit
+                    .fabricationMethod("Q725252") // Satellite imagery
+                    .capturedWith("Q1036092"); // Taken with HiRISE
         }
         return result;
     }

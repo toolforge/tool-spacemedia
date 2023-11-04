@@ -53,6 +53,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.Nas
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
 @Service
 public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournalMedia> {
@@ -414,9 +415,8 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaPhotojournalMedia media,
-            FileMetadata metadata) {
-        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
+    protected SdcStatements getStatements(NasaPhotojournalMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
         wikidataStatementMapping(media.getInstrument(), mappings.getNasaInstruments(), "P4082", result); // Taken with
         wikidataStatementMapping(media.getSpacecraft(), mappings.getNasaMissions(), "P170", result); // Created by
         return result;

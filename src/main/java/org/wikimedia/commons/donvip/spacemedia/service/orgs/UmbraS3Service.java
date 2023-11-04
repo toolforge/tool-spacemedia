@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +23,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.UmbraS3Service.UmbraMetadata.Collect;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.amazonaws.regions.Regions;
@@ -119,16 +119,15 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(S3Media media, FileMetadata metadata) {
-        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
+    protected SdcStatements getStatements(S3Media media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
         Matcher m = SAT_PATTERN.matcher(media.getId().getMediaId());
         if (m.matches()) {
-            result.put("P170", Pair.of(SATS.get(m.group(1)), null)); // Created by UMBRA-XX
+            result.creator(SATS.get(m.group(1))); // Created by UMBRA-XX
         }
-        result.put("P1071", Pair.of("Q663611", null)); // Created in low earth orbit
-        result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
-        result.put("P4082", Pair.of("Q740686", null)); // Taken with SAR
-        return result;
+        return result.locationOfCreation("Q663611") // Created in low earth orbit
+                .fabricationMethod("Q725252") // Satellite imagery
+                .capturedWith("Q740686"); // Taken with SAR
     }
 
     @Override

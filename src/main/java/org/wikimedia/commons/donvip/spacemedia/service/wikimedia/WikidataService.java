@@ -1,6 +1,17 @@
 package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 import static java.util.stream.Collectors.toMap;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q17444909_ASTRONOMICAL_OBJECT_TYPE;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q3099911_SCIENTIFIC_INSTUMENT;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q4213_TELESCOPE;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q5107_CONTINENT;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q6256_COUNTRY;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q8928_CONSTELLATION;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataProperty.P1448_OFFICIAL_NAME;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataProperty.P1705_NATIVE_LABEL;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataProperty.P373_COMMONS_CATEGORY;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataProperty.P528_CATALOG_CODE;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataProperty.P734_FAMILY_NAME;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -93,16 +104,16 @@ public class WikidataService {
     }
 
     public String findCommonsCategory(ItemDocument doc) {
-        Statement statement = doc.findStatement("P373");
+        Statement statement = doc.findStatement(P373_COMMONS_CATEGORY.toString());
         return statement != null && statement.getValue() instanceof StringValue sv ? sv.getString() : null;
     }
 
     public String findFamilyName(ItemDocument doc) {
-        Statement statement = doc.findStatement("P734");
+        Statement statement = doc.findStatement(P734_FAMILY_NAME.toString());
         if (statement != null) {
             return findEnglishLabel(statement);
         }
-        StatementGroup statementGroup = doc.findStatementGroup("P734");
+        StatementGroup statementGroup = doc.findStatementGroup(P734_FAMILY_NAME.toString());
         if (statementGroup != null) {
             StatementGroup best = statementGroup.getBestStatements();
             return findEnglishLabel((best != null ? best : statementGroup).getStatements().get(0));
@@ -149,6 +160,16 @@ public class WikidataService {
         }
     }
 
+    @Cacheable("wikidataContinents")
+    public Optional<Pair<String, String>> searchContinent(String name) {
+        return searchCommonsCategory(WikidataService::getContinentQuery, name);
+    }
+
+    @Cacheable("wikidataCountries")
+    public Optional<Pair<String, String>> searchCountry(String name) {
+        return searchCommonsCategory(WikidataService::getCountryQuery, name);
+    }
+
     @Cacheable("wikidataAstronomicalObjects")
     public Optional<Pair<String, String>> searchAstronomicalObject(String catalogName) {
         return searchCommonsCategory(WikidataService::getAstronomicalObjectQuery, catalogName);
@@ -187,23 +208,32 @@ public class WikidataService {
         return Optional.empty();
     }
 
+
+    private static String getContinentQuery(String name) {
+        return getNamedObjectQuery(Q5107_CONTINENT, P1705_NATIVE_LABEL, name, "en");
+    }
+
+    private static String getCountryQuery(String name) {
+        return getNamedObjectQuery(Q6256_COUNTRY, P1705_NATIVE_LABEL, name, "en");
+    }
+
     private static String getAstronomicalObjectQuery(String catalogName) {
-        return getNamedObjectQuery("Q17444909", "P528", catalogName);
+        return getNamedObjectQuery(Q17444909_ASTRONOMICAL_OBJECT_TYPE, P528_CATALOG_CODE, catalogName);
     }
 
     private static String getConstellationQuery(String officialName) {
-        return getNamedObjectQuery("Q8928", "P1448", officialName, "la");
+        return getNamedObjectQuery(Q8928_CONSTELLATION, P1448_OFFICIAL_NAME, officialName, "la");
     }
 
     private static String getTelescopeQuery(String name) {
-        return getNamedObjectQuery("Q4213", "P1705", name, "en");
+        return getNamedObjectQuery(Q4213_TELESCOPE, P1705_NATIVE_LABEL, name, "en");
     }
 
     private static String getInstrumentQuery(String name) {
-        return getNamedObjectQuery("Q3099911", "P1705", name, "en");
+        return getNamedObjectQuery(Q3099911_SCIENTIFIC_INSTUMENT, P1705_NATIVE_LABEL, name, "en");
     }
 
-    private static String getNamedObjectQuery(String natureQid, String namingProperty, String name) {
+    private static String getNamedObjectQuery(WikidataItem natureQid, WikidataProperty namingProperty, String name) {
         return """
                 SELECT DISTINCT ?item ?itemLabel ?commonsCat
                 WHERE
@@ -214,11 +244,12 @@ public class WikidataService {
                   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
                 }
                 LIMIT 2
-                """.replace("$name", name.replace("\"", "")).replace("$namingProperty", namingProperty)
-                .replace("$natureQid", natureQid);
+                """.replace("$name", name.replace("\"", "")).replace("$namingProperty", namingProperty.toString())
+                .replace("$natureQid", natureQid.toString());
     }
 
-    private static String getNamedObjectQuery(String natureQid, String namingProperty, String name, String lang) {
+    private static String getNamedObjectQuery(WikidataItem natureQid, WikidataProperty namingProperty, String name,
+            String lang) {
         return """
                 SELECT DISTINCT ?item ?itemLabel ?commonsCat
                 WHERE
@@ -230,6 +261,6 @@ public class WikidataService {
                 }
                 LIMIT 2
                 """.replace("$lang", lang).replace("$name", name.replace("\"", ""))
-                .replace("$namingProperty", namingProperty).replace("$natureQid", natureQid);
+                .replace("$namingProperty", namingProperty.toString()).replace("$natureQid", natureQid.toString());
     }
 }

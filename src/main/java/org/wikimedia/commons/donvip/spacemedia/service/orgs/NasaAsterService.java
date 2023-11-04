@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -40,6 +39,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterM
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -222,14 +222,11 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaAsterMedia media,
-            FileMetadata metadata) {
-        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
-        result.put("P170", Pair.of("Q584697", null)); // Created by Terra
-        result.put("P1071", Pair.of("Q663611", null)); // Created in low earth orbit
-        result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
-        result.put("P4082", Pair.of("Q298019", null)); // Taken with ASTER instrument
-        return result;
+    protected SdcStatements getStatements(NasaAsterMedia media, FileMetadata metadata) {
+        return super.getStatements(media, metadata).creator("Q584697") // Created by Terra
+                .locationOfCreation("Q663611") // Created in low earth orbit
+                .fabricationMethod("Q725252") // Satellite imagery
+                .capturedWith("Q298019"); // Taken with ASTER instrument
     }
 
     @Override

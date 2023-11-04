@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -33,6 +32,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.modis.NasaModisMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.modis.NasaModisMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -166,16 +166,12 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(NasaModisMedia media,
-            FileMetadata metadata) {
-        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
-        terraOrAqua(media,
-                () -> result.put("P170", Pair.of("Q584697", null)),
-                () -> result.put("P170", Pair.of("Q17397", null))); // Created by Terra or Aqua
-        result.put("P1071", Pair.of("Q663611", null)); // Created in low earth orbit
-        result.put("P2079", Pair.of("Q725252", null)); // Satellite imagery
-        result.put("P4082", Pair.of("Q676840", null)); // Taken with MODIS instrument
-        return result;
+    protected SdcStatements getStatements(NasaModisMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
+        terraOrAqua(media, () -> result.creator("Q584697"), () -> result.creator("Q17397")); // Created by Terra or Aqua
+        return result.locationOfCreation("Q663611") // Created in low earth orbit
+                .fabricationMethod("Q725252") // Satellite imagery
+                .capturedWith("Q676840"); // Taken with MODIS instrument
     }
 
     private static <T> T terraOrAqua(NasaModisMedia media, Supplier<T> terra, Supplier<T> aqua) {

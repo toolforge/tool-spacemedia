@@ -35,6 +35,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
 @SpringJUnitConfig(IndividualsFlickrServiceTest.TestConfig.class)
 class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
@@ -132,7 +133,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
 
         doCallRealMethod().when(mediaService).useMapping(any(), any(), any(), any(), any());
 
-        Map<String, Pair<Object, Map<String, Object>>> statements = service.getStatements(media, metadata);
+        SdcStatements statements = service.getStatements(media, metadata);
 
         Set<String> checkedProperties = new TreeSet<>();
 

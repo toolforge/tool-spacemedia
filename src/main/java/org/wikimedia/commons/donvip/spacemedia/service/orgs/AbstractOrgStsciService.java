@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.length;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -9,11 +11,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jsoup.HttpStatusException;
@@ -27,7 +27,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.stsci.StsciService;
-import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
 /**
  * Service harvesting images from NASA Hubble / Jame Webb websites.
@@ -44,9 +44,6 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
 
     @Autowired
     private StsciService stsci;
-
-    @Autowired
-    private WikidataService wikidata;
 
     protected AbstractOrgStsciService(StsciMediaRepository repository, String mission, String searchEndpoint,
             String detailEndpoint) {
@@ -152,7 +149,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     }
 
     private static boolean isShortCredits(String credits) {
-        return StringUtils.length(credits) < 10;
+        return length(credits) < 10;
     }
 
     private StsciMedia getMediaFromWebsite(String id) throws IOException {
@@ -165,11 +162,10 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     }
 
     @Override
-    protected Map<String, Pair<Object, Map<String, Object>>> getStatements(StsciMedia media, FileMetadata metadata) {
-        Map<String, Pair<Object, Map<String, Object>>> result = super.getStatements(media, metadata);
-        if (StringUtils.isNotBlank(media.getObjectName())) {
-            wikidata.searchAstronomicalObject(media.getObjectName()).map(Pair::getKey)
-                    .ifPresent(qid -> result.put("P180", Pair.of(qid, null))); // Depicts the object
+    protected SdcStatements getStatements(StsciMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
+        if (isNotBlank(media.getObjectName())) {
+            wikidata.searchAstronomicalObject(media.getObjectName()).map(Pair::getKey).ifPresent(result::depicts);
         }
         return result;
     }
@@ -177,11 +173,11 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     @Override
     public Set<String> findCategories(StsciMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (StringUtils.isNotBlank(media.getObjectName())) {
+        if (isNotBlank(media.getObjectName())) {
             wikidata.searchAstronomicalObject(media.getObjectName()).map(Pair::getValue)
                     .ifPresentOrElse(result::add,
                     () -> {
-                        if (StringUtils.isNotBlank(media.getConstellation())) {
+                                if (isNotBlank(media.getConstellation())) {
                             wikidata.searchConstellation(media.getConstellation())
                                     .map(Pair::getValue).ifPresent(result::add);
                         }
