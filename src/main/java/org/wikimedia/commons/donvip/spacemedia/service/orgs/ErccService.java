@@ -38,6 +38,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.ErccMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.ErccMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.Continent;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.Country;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.EventType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.GetPagedMapsResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.MapsItem;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -80,21 +81,50 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
     public Set<String> findCategories(ErccMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         int year = media.getYear().getValue();
-        boolean yearMapCatAdded = addCountryMapCat(result, year, media.getMainCountry());
+        boolean yearMapCatAdded = addLocationMapCat(result, year, media.getMainCountry());
         for (String country : media.getCountries()) {
-            yearMapCatAdded |= addCountryMapCat(result, year, country);
+            yearMapCatAdded |= addLocationMapCat(result, year, country);
+        }
+        if (isBlank(media.getMainCountry()) || media.getCountries().size() >= 3) {
+            yearMapCatAdded |= addLocationMapCat(result, year, media.getContinent());
         }
         if (!yearMapCatAdded) {
             result.add(year + " maps");
         }
-        result.add("ECHO " + media.getMapType() + " Maps");
+        String cat = "ECHO " + media.getMapType() + " Maps";
+        if (EchoMapType.Base == media.getMapType()) {
+            result.add(cat);
+        } else {
+            result.add(cat + " of " + year);
+            media.getEventTypes().forEach(event -> ofNullable(switch (event) {
+            case "Cold Wave" -> "cold waves";
+            case "Assault", "Conflict" -> "conflicts";
+            case "Drought" -> "droughts";
+            case "Earthquake" -> "earthquakes";
+            case "Epidemic" -> "diseases";
+            case "Flash Flood", "Flood" -> "floods";
+            case "Food Security", "Nutrition" -> "food security";
+            case "Heat Wave" -> "heatwaves";
+            case "Landslide", "Mud Slide" -> "landslides";
+            case "Meteo Warning" -> "weather warnings";
+            case "Population Displacement" -> "displaced persons";
+            case "Extratropical Cyclone", "Storm Surge", "Tornado", "Tropical Cyclone" -> "storms";
+            case "Tsunami" -> "tsunamis";
+            case "Volcanic eruption" -> "volcanic eruptions";
+            case "Fire", "Forest Fire", "Wild fire" -> "wildfires";
+            case "Complex Emergency", "Factsheet", "Health", "Insect Infestation", "Resources", "Severe Weather",
+                    "Snow Avalanche", "Technological Disaster", "UCPM", "Unrest" ->
+                null;
+            default -> null;
+            }).ifPresent(x -> result.add(cat + " of " + x)));
+        }
         return result;
     }
 
-    boolean addCountryMapCat(Set<String> result, int year, String country) {
-        if (isNotBlank(country)) {
-            String cat = year + " maps of " + country;
-            result.add(commonsService.existsCategoryPage(cat) ? cat : "Maps of " + country);
+    boolean addLocationMapCat(Set<String> result, int year, String location) {
+        if (isNotBlank(location)) {
+            String cat = year + " maps of " + location;
+            result.add(commonsService.existsCategoryPage(cat) ? cat : "Maps of " + location);
         }
         return false;
     }
@@ -191,10 +221,10 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
         media.setMapType(item.getEchoMapType());
         media.setSources(item.SourceList());
         if (isNotEmpty(item.EventTypes())) {
-            media.setEventType(item.EventTypes().get(0).Name());
+            media.setEventTypes(item.EventTypes().stream().map(EventType::Name).collect(toSet()));
         }
-        ofNullable(item.Country()).map(Country::Name).or(() -> ofNullable(item.Continent()).map(Continent::Name))
-                .ifPresent(media::setMainCountry);
+        ofNullable(item.Continent()).map(Continent::Name).ifPresent(media::setContinent);
+        ofNullable(item.Country()).map(Country::Name).ifPresent(media::setMainCountry);
         media.setCountries(item.Countries().stream().map(Country::Name).collect(toSet()));
         media.setCategory(item.CategoryCode());
         media.setDescription(item.Description());

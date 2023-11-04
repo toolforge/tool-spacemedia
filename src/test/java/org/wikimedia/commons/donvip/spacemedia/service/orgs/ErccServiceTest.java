@@ -46,7 +46,8 @@ class ErccServiceTest extends AbstractOrgServiceTest {
         assertEquals(id, media.getId());
         assertEquals(EchoMapType.Daily, media.getMapType());
         assertNull(media.getSources());
-        assertEquals("Earthquake", media.getEventType());
+        assertEquals(Set.of("Earthquake"), media.getEventTypes());
+        assertNull(media.getContinent());
         assertEquals("Greece", media.getMainCountry());
         assertEquals(Set.of("Greece", "Italy"), media.getCountries());
         assertNull(media.getCategory());

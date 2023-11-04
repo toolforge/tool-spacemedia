@@ -24,7 +24,11 @@ public class ErccMedia extends Media {
     private String sources;
 
     @Column(nullable = true, length = 64)
-    private String eventType;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> eventTypes;
+
+    @Column(nullable = true, length = 64)
+    private String continent;
 
     @Column(nullable = true, length = 64)
     private String mainCountry;
@@ -52,12 +56,20 @@ public class ErccMedia extends Media {
         this.sources = sources;
     }
 
-    public String getEventType() {
-        return eventType;
+    public Set<String> getEventTypes() {
+        return eventTypes;
     }
 
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
+    public void setEventTypes(Set<String> eventTypes) {
+        this.eventTypes = eventTypes;
+    }
+
+    public String getContinent() {
+        return continent;
+    }
+
+    public void setContinent(String continent) {
+        this.continent = continent;
     }
 
     public String getMainCountry() {
@@ -86,13 +98,15 @@ public class ErccMedia extends Media {
 
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
-        return fileMetadata.getOriginalFileName().substring(0, fileMetadata.getOriginalFileName().indexOf('.'))
-                .replace('_', ' ').trim();
+        String fileName = fileMetadata.getOriginalFileName();
+        return fileName != null ? fileName.substring(0, fileName.indexOf('.')).replace('_', ' ').trim()
+                : super.getUploadId(fileMetadata);
     }
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(category, countries, eventType, mainCountry, mapType, sources);
+        return 31 * super.hashCode()
+                + Objects.hash(category, countries, continent, eventTypes, mainCountry, mapType, sources);
     }
 
     @Override
@@ -103,21 +117,24 @@ public class ErccMedia extends Media {
             return false;
         ErccMedia other = (ErccMedia) obj;
         return Objects.equals(category, other.category) && Objects.equals(countries, other.countries)
-                && Objects.equals(eventType, other.eventType) && Objects.equals(mainCountry, other.mainCountry)
-                && mapType == other.mapType && Objects.equals(sources, other.sources);
+                && Objects.equals(continent, other.continent) && Objects.equals(eventTypes, other.eventTypes)
+                && Objects.equals(mainCountry, other.mainCountry) && mapType == other.mapType
+                && Objects.equals(sources, other.sources);
     }
 
     @Override
     public String toString() {
-        return "ErccMedia [id=" + getId() + ", mapType=" + mapType + ", sources=" + sources + ", eventType=" + eventType
-                + ", mainCountry=" + mainCountry + ", countries=" + countries + ", category=" + category + ']';
+        return "ErccMedia [id=" + getId() + ", mapType=" + mapType + ", sources=" + sources + ", eventTypes="
+                + eventTypes + ", continent=" + continent + ", mainCountry=" + mainCountry + ", countries=" + countries
+                + ", category=" + category + ']';
     }
 
     public ErccMedia copyDataFrom(ErccMedia media) {
         super.copyDataFrom(media);
         setCategory(media.getCategory());
+        setContinent(media.getContinent());
         setCountries(media.getCountries());
-        setEventType(media.getEventType());
+        setEventTypes(media.getEventTypes());
         setMainCountry(media.getMainCountry());
         setMapType(media.getMapType());
         setSources(media.getSources());

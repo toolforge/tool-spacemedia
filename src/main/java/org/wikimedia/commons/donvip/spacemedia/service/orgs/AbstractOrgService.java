@@ -1136,7 +1136,7 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected String getSource(T media, FileMetadata metadata) {
-        return wikiLink(getSourceUrl(media, metadata), media.getTitle());
+        return wikiLink(getSourceUrl(media, metadata), media.getTitle().replace('|', '-'));
     }
 
     protected String getAuthor(T media) {
