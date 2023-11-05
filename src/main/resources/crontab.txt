@@ -7,7 +7,7 @@
 25  0 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-sirs
 30  0 * * * /bin/sh /data/project/spacemedia/run.sh custom kari
 # Real ones
- 0  1 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa
+ 0  1 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-library
  0  2 * * * /bin/sh /data/project/spacemedia/run.sh flickr nasa-flickr
  0  3 * * * /bin/sh /data/project/spacemedia/run.sh box nasa-box
  0  4 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-photojournal

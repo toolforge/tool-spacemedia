@@ -196,8 +196,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
         return Triple.of(Optional.of(saveMediaOrCheckRemote(save, media)), uploadedMetadata, uploadCount);
     }
 
-    private DjangoplicityMedia fetchMedia(URL url, String id, String imgUrlLink)
-            throws ReflectiveOperationException, IOException {
+    private DjangoplicityMedia fetchMedia(URL url, String id, String imgUrlLink) throws IOException {
         return newMediaFromHtml(getWithJsoup(imgUrlLink, 60_000, 3), url, id, imgUrlLink);
     }
 
@@ -260,11 +259,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
     @Override
     protected DjangoplicityMedia refresh(DjangoplicityMedia media) throws IOException {
         URL url = getSourceUrl(media, null);
-        try {
-            return media.copyDataFrom(fetchMedia(url, media.getIdUsedInOrg(), url.toExternalForm()));
-        } catch (ReflectiveOperationException e) {
-            throw new IOException(e);
-        }
+        return media.copyDataFrom(fetchMedia(url, media.getIdUsedInOrg(), url.toExternalForm()));
     }
 
     protected Collection<String> getForbiddenCategories() {

@@ -38,6 +38,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
@@ -276,5 +279,13 @@ public final class Utils {
         }
         int idxDotInDesc = desc.indexOf('.');
         return idxDotInDesc > 0 ? desc.substring(0, idxDotInDesc) : desc;
+    }
+
+    public static boolean uriExists(String uri) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().disableRedirectHandling().build()) {
+            return httpClient.execute(new HttpHead(uri)).getStatusLine().getStatusCode() == 200;
+        } catch (IOException e) {
+            return false;
+        }
     }
 }

@@ -7,12 +7,9 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,7 +22,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -34,10 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.webmil.WebMilMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.webmil.WebMilMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 
@@ -45,7 +39,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates
  * Service fetching images from WEB.mil websites
  */
 @Service
-public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMilMedia> {
+public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGalleryService<WebMilMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgWebMilService.class);
 
@@ -80,94 +74,33 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
     }
 
     @Override
-    public void updateMedia(String[] args) {
-        LocalDateTime start = startUpdateMedia();
-        List<WebMilMedia> uploadedMedia = new ArrayList<>();
-        int count = 0;
-        for (String website : getRepoIdsFromArgs(args)) {
-            count += updateWebsite(website, uploadedMedia, start, count);
-        }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(Media::getMetadataStream).toList(), start,
-                LocalDate.now().minusYears(1), true);
+    protected List<String> fetchGalleryUrls(String repoId) {
+        return List.of(galleryUrls.get(repoId));
     }
 
-    private int updateWebsite(String website, List<WebMilMedia> uploadedMedia, LocalDateTime start, int startCount) {
-        int count = 0;
-        String galleryUrl = galleryUrls.get(website);
-        LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
-        LOGGER.info("Fetching {} media from {} ...", website, galleryUrl);
-        for (int i = 1;; i++) {
-            String pageUrl = galleryUrl + "/igpage/" + i;
-            try {
-                Document html = getWithJsoup(pageUrl, 10_000, 5);
-                Elements elems = html.getElementsByClass("gallery_container");
-                if (elems.isEmpty()) {
-                    elems = html.getElementsByClass("AF2ImageGallerylvItem");
-                }
-                if (elems.isEmpty()) {
-                    break;
-                }
-                for (Element elem : elems) {
-                    try {
-                        Elements links = elem.getElementsByClass("gallery-image-details-link");
-                        if (links.isEmpty()) {
-                            links = elem.getElementsByClass("aImageDetailsImgLink");
-                        }
-                        String[] items = links.first().attr("href").split("/");
-                        WebMilMedia image = updateImage(website, items[items.length - 1], uploadedMedia);
-                        count++;
-                        ongoingUpdateMedia(start, startCount + count);
-                        if (doNotFetchEarlierThan != null
-                                && image.getPublicationDate().isBefore(doNotFetchEarlierThan)) {
-                            return count;
-                        }
-                    } catch (UploadException | RuntimeException e) {
-                        LOGGER.error("Error while processing {}", elem, e);
-                    }
-                }
-            } catch (HttpStatusException e) {
-                LOGGER.info(e.getMessage());
-                break;
-            } catch (UnknownHostException e) {
-                LOGGER.error("Error while fetching {}", pageUrl, e);
-                break;
-            } catch (IOException e) {
-                LOGGER.error("Error while fetching {}", pageUrl, e);
-            }
-        }
-        return count;
+    @Override
+    protected String getGalleryPageUrl(String galleryUrl, int page) {
+        return galleryUrl + "/igpage/" + page;
     }
 
-    private WebMilMedia updateImage(String website, String id, List<WebMilMedia> uploadedMedia)
-            throws IOException, UploadException {
-        boolean save = false;
-        WebMilMedia media = null;
-        Optional<WebMilMedia> imageInDb = repository.findById(new CompositeMediaId(website, id));
-        if (imageInDb.isPresent()) {
-            media = imageInDb.get();
-        } else {
-            media = fetchMediaFromApi(id, website);
-            save = true;
-        }
-        if (doCommonUpdate(media)) {
-            save = true;
-        }
-        if (shouldUploadAuto(media, false)) {
-            media = saveMedia(upload(save ? saveMedia(media) : media, true, false).getLeft());
-            uploadedMedia.add(media);
-            save = false;
-        }
-        return save ? saveMedia(media) : media;
+    @Override
+    protected Elements getGalleryItems(Element html) {
+        Elements elems = html.getElementsByClass("gallery_container");
+        return elems.isEmpty() ? html.getElementsByClass("AF2ImageGallerylvItem") : elems;
     }
 
-    private WebMilMedia fetchMediaFromApi(String id, String website) throws IOException {
-        WebMilMedia media = new WebMilMedia();
-        media.setId(new CompositeMediaId(website, id));
-        fillMediaWithHtml(getWithJsoup(getSourceUrl(media.getId()), 10_000, 5), media);
-        return media;
+    @Override
+    protected String extractIdFromGalleryItem(Element result) {
+        Elements links = result.getElementsByClass("gallery-image-details-link");
+        if (links.isEmpty()) {
+            links = result.getElementsByClass("aImageDetailsImgLink");
+        }
+        String[] items = links.first().attr("href").split("/");
+        return items[items.length - 1];
     }
 
-    void fillMediaWithHtml(Document html, WebMilMedia image) {
+    @Override
+    void fillMediaWithHtml(String url, Document html, WebMilMedia image) {
         Element div = html.getElementsByClass("details-content").first();
         if (div == null) {
             div = html.getElementsByClass("AF2ImageDiv").first();
@@ -224,7 +157,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
 
     @Override
     protected final WebMilMedia refresh(WebMilMedia media) throws IOException {
-        return media.copyDataFrom(fetchMediaFromApi(media.getId().getMediaId(), media.getId().getRepoId()));
+        return media.copyDataFrom(fetchMedia(media.getId(), Optional.empty()));
     }
 
     @Override
@@ -232,7 +165,8 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgService<WebMil
         return newURL(getSourceUrl(media.getId()));
     }
 
-    public final String getSourceUrl(CompositeMediaId id) {
+    @Override
+    protected final String getSourceUrl(CompositeMediaId id) {
         return galleryUrls.get(id.getRepoId()) + "igphoto/" + id.getMediaId();
     }
 
