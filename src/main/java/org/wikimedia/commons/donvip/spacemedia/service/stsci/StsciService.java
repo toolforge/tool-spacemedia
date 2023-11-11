@@ -123,7 +123,7 @@ public class StsciService {
         }
         elems = h3s.stream().filter(p -> p.text().equals("Read the Release")).toList();
         if (elems.size() == 1) {
-            result.setNewsId(elems.get(0).nextElementSibling().text());
+            result.setNewsId(elems.get(0).nextElementSibling().text().replace("Release ID: ", ""));
         }
 
         return result;
