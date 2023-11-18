@@ -353,7 +353,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 return authors.replace(",", "").trim();
             }
         }
-        return "European Space Org";
+        return "European Space Agency";
     }
 
     @Override
