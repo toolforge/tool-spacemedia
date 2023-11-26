@@ -53,6 +53,16 @@ public class CapellaS3Service extends AbstractOrgS3Service {
     }
 
     @Override
+    protected boolean isSatellitePicture(S3Media media, FileMetadata metadata) {
+        return true;
+    }
+
+    @Override
+    protected boolean checkBlocklist() {
+        return false;
+    }
+
+    @Override
     protected S3Media enrichS3Media(S3Media media) throws IOException {
         CompositeMediaId id = media.getId();
         String[] items = id.getMediaId().split("/");
