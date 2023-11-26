@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
@@ -207,8 +208,8 @@ public abstract class AbstractOrgService<T extends Media>
     private UploadMode uploadMode;
 
     protected AbstractOrgService(MediaRepository<T> repository, String id, Set<String> repoIds) {
-        this.repository = Objects.requireNonNull(repository);
-        this.id = Objects.requireNonNull(id);
+        this.repository = requireNonNull(repository);
+        this.id = requireNonNull(id);
         this.repoIds = new TreeSet<>(repoIds);
     }
 
@@ -890,9 +891,8 @@ public abstract class AbstractOrgService<T extends Media>
     protected SdcStatements getStatements(T media, FileMetadata metadata) {
         SdcStatements result = new SdcStatements();
         // Source: file available on the internet
-        result.put("P7482", Pair.of("Q74228490", new TreeMap<>(Map.of("P973",
-                getSourceUrl(media, metadata).toExternalForm(),
-                "P2699", metadata.getAssetUrl().toExternalForm()))));
+        result.put("P7482", Pair.of("Q74228490",
+                new TreeMap<>(Map.of("P973", getSourceUrl(media, metadata), "P2699", metadata.getAssetUrl()))));
         // Licences
         Set<String> licences = findLicenceTemplates(media, metadata);
         if (PD_US.stream().anyMatch(pd -> licences.stream().anyMatch(l -> l.startsWith(pd)))) {
@@ -1370,7 +1370,8 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected final String wikiLink(URL url, String text) {
-        return "[" + Objects.requireNonNull(url, "url") + ' ' + Objects.requireNonNull(text, "text") + ']';
+        return "[" + requireNonNull(url, "url").toExternalForm().replace(" ", "%20") + ' '
+                + requireNonNull(text, "text") + ']';
     }
 
     protected void checkUploadPreconditions(T media, boolean checkUnicity, boolean isManual)

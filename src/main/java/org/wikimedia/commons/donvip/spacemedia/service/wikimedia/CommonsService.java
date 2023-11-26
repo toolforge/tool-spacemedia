@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.SocketTimeoutException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -1040,6 +1041,10 @@ public class CommonsService {
             return makeWikidataItemIdValue(i.toString());
         } else if (o instanceof String s) {
             return s.matches("Q\\d+") ? makeWikidataItemIdValue(s) : makeStringValue(s);
+        } else if (o instanceof URI u) {
+            return makeStringValue(u.toASCIIString().replace(" ", "%20"));
+        } else if (o instanceof URL u) {
+            return makeStringValue(u.toExternalForm().replace(" ", "%20"));
         } else if (o instanceof Temporal t) {
             return createDateValue(t);
         } else if (o instanceof Pair<?, ?> p && p.getKey() instanceof Number n && p.getValue() instanceof String u) {
