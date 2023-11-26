@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,12 @@ class UmbraS3ServiceTest extends AbstractOrgServiceTest {
     @Test
     void testFindCategories() {
         assertEquals(Set.of("Images by Umbra"), service.findCategories(new S3Media(), new FileMetadata()));
+    }
+
+    @Test
+    void testToIso8601() {
+        assertEquals("2023-01-01T01:01:01Z",
+                service.toIso8601(ZonedDateTime.of(2023, 1, 1, 1, 1, 1, 123456, ZoneId.of("UTC"))));
     }
 
     @Configuration

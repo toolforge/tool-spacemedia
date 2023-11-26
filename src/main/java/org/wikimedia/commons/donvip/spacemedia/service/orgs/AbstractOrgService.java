@@ -1084,7 +1084,7 @@ public abstract class AbstractOrgService<T extends Media>
             d = LocalDate.of(d.get(ChronoField.YEAR), d.get(ChronoField.MONTH_OF_YEAR), d.get(ChronoField.DAY_OF_MONTH));
         }
         if (d instanceof ZonedDateTime zoned) {
-            return zoned.toInstant().toString();
+            return zoned.withNano(0).toInstant().toString();
         }
         return d.toString();
     }
