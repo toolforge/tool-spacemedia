@@ -66,7 +66,7 @@ public class UmbraS3Service extends AbstractOrgS3Service {
         String[] items = id.getMediaId().split("/");
         if (items.length == 5) {
             media.setTitle(items[3]);
-        }else if (items.length == 6) {
+        } else if (items.length == 6) {
             media.setTitle(items[2] + " (" + items[4] + ')');
         } else if (items.length == 7) {
             media.setTitle(items[3] + " (" + items[5] + ')');
