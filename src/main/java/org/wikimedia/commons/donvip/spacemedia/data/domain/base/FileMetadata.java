@@ -258,7 +258,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JsonIgnore
     public String getFileExtension() {
         if (getExtension() != null) {
-            return getExtension();
+            return getNormalizedExtension(getExtension());
         } else if (getAssetUrl() == null) {
             return null;
         }
@@ -275,6 +275,10 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
         if (len < 3 || len > 4) {
             return null;
         }
+        return getNormalizedExtension(ext);
+    }
+
+    private static String getNormalizedExtension(String ext) {
         return switch (ext) {
         case "apng" -> "png";
         case "djv" -> "djvu";

@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
 class FileMetadataTest {
 
     @Test
-    void testHasValidDImensions() {
+    void testHasValidDimensions() {
         FileMetadata metadata = new FileMetadata();
         assertFalse(metadata.hasValidDimensions());
         metadata.setImageDimensions(new ImageDimensions());
@@ -31,5 +33,14 @@ class FileMetadataTest {
         assertEquals("video_download.gne", fm.getOriginalFileName());
         assertNull(fm.getFileExtension());
         assertEquals("https://www.flickr.com/video_download.gne?id=53199053407", fm.getAssetUri().toString());
+    }
+
+    @Test
+    void testIsImage() {
+        FileMetadata fm = new FileMetadata();
+        for (String ext : Set.of("bmp", "jpg", "jpeg", "tif", "tiff", "png", "webp", "xcf", "gif", "svg")) {
+            fm.setExtension(ext);
+            assertTrue(fm.isImage());
+        }
     }
 }
