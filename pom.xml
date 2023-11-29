@@ -20,9 +20,9 @@
 
 		<batik.version>1.17</batik.version>
 		<flickr4java-version>3.0.8</flickr4java-version>
-		<springboot-version>2.7.15</springboot-version>
+		<springboot-version>2.7.18</springboot-version>
 		<scribejava-version>8.3.3</scribejava-version>
-		<twelvemonkeys-version>3.9.4</twelvemonkeys-version>
+		<twelvemonkeys-version>3.10.1</twelvemonkeys-version>
 	</properties>
 
 	<scm>
@@ -43,21 +43,21 @@
 			<dependency>
 				<groupId>com.amazonaws</groupId>
 				<artifactId>aws-java-sdk-bom</artifactId>
-				<version>1.12.541</version>
+				<version>1.12.599</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.rdf4j</groupId>
 				<artifactId>rdf4j-bom</artifactId>
-				<version>4.3.6</version>
+				<version>4.3.8</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>32.1.2-jre</version>
+				<version>32.1.3-jre</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -94,7 +94,7 @@
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-geojson-store</artifactId>
-			<version>29.2</version>
+			<version>29.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -103,7 +103,7 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.16.1</version>
+			<version>1.17.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -152,7 +152,7 @@
 		<dependency>
 			<groupId>com.drewnoakes</groupId>
 			<artifactId>metadata-extractor</artifactId>
-			<version>2.18.0</version>
+			<version>2.19.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.flickr4java</groupId>
@@ -171,12 +171,12 @@
 		<dependency>
 			<groupId>org.hibernate.search</groupId>
 			<artifactId>hibernate-search-mapper-orm</artifactId>
-			<version>6.2.1.Final</version>
+			<version>6.2.2.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate.search</groupId>
 			<artifactId>hibernate-search-backend-lucene</artifactId>
-			<version>6.2.1.Final</version>
+			<version>6.2.2.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.solr</groupId>
@@ -214,7 +214,7 @@
 		<dependency>
 			<groupId>com.google.cloud</groupId>
 			<artifactId>google-cloud-translate</artifactId>
-			<version>2.23.0</version>
+			<version>2.30.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.http-client</groupId>
@@ -245,7 +245,7 @@
 		<dependency>
 			<groupId>com.box</groupId>
 			<artifactId>box-java-sdk</artifactId>
-			<version>4.4.0</version>
+			<version>4.6.1</version>
 			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
@@ -260,14 +260,14 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.70</version>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.77</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>1.70</version>
+			<artifactId>bcpkix-jdk18on</artifactId>
+			<version>1.77</version>
 			<scope>runtime</scope>
 		</dependency>
 		<!-- S3 -->
@@ -279,7 +279,7 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>webjars-locator</artifactId>
-			<version>0.47</version>
+			<version>0.50</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -316,7 +316,7 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>mariadb</artifactId>
-			<version>1.19.0</version>
+			<version>1.19.3</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -382,12 +382,12 @@
 				<plugin>
 					<groupId>org.sonarsource.scanner.maven</groupId>
 					<artifactId>sonar-maven-plugin</artifactId>
-					<version>3.9.1.2184</version>
+					<version>3.10.0.2594</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>3.3.2</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -402,12 +402,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>4.0.0-M9</version>
+					<version>4.0.0-M12</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>versions-maven-plugin</artifactId>
-					<version>2.16.0</version>
+					<version>2.16.2</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -420,7 +420,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.4.0</version>
+				<version>3.4.1</version>
 				<executions>
 					<execution>
 						<id>enforce-maven</id>
@@ -453,7 +453,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.1.2</version>
+				<version>3.2.2</version>
 				<configuration>
 					<forkCount>1</forkCount>
 					<argLine>-Dfile.encoding=UTF-8</argLine>
@@ -463,7 +463,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.10</version>
+				<version>0.8.11</version>
 			</plugin>
 		</plugins>
 	</build>
