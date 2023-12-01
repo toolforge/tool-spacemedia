@@ -2,8 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import java.util.Objects;
 
-import javax.persistence.Embeddable;
-import javax.persistence.Transient;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

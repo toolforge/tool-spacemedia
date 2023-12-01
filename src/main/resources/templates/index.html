@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
-  <head th:replace="_header :: common_header(~{::title},~{})">
+  <head th:replace="~{_header :: common_header(~{::title},~{})}">
     <title>Spacemedia</title>
   </head>
   <body>
-    <nav th:replace="_header :: navbar"></nav>
+    <nav th:replace="~{_header :: navbar}"></nav>
     <h2>Sources</h2>
 
     <table id="orgs_table" class="table table-sm table-hover">
@@ -21,7 +21,7 @@
 	      </tr>
       </thead>
     </table>
-    <div th:replace="_header :: scripts"></div>
+    <div th:replace="~{_header :: scripts}"></div>
     <script type="text/javascript" th:inline="javascript">
     function alink(o, path = "") {
     	return "[(@{/})]" + o.id + path;

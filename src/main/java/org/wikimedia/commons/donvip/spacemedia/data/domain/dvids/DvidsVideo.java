@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.Transient;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 

@@ -3,8 +3,8 @@ package org.wikimedia.commons.donvip.spacemedia.data.commons;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
  * <a href="https://www.mediawiki.org/wiki/Manual:Slots_table">ID for Mediawiki

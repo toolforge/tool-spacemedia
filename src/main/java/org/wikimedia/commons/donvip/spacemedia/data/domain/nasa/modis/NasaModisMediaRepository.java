@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.modis;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -89,7 +90,7 @@ public interface NasaModisMediaRepository extends MediaRepository<NasaModisMedia
 
     @Override
     @CacheEvictNasaModisAll
-    <S extends NasaModisMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends NasaModisMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

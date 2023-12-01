@@ -32,18 +32,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embedded;
-import javax.persistence.EntityListeners;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Lob;
-import javax.persistence.ManyToMany;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Table;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
@@ -55,6 +43,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Table;
 
 /**
  * Base class of all media.
@@ -483,9 +483,20 @@ public class Media implements MediaProjection, MediaDescription {
     }
 
     /**
-     * Returns the preview URL to display in UI. Thumbnail if available, otherwise asset.
+     * Determines if this media is a Cloud-Optimized GeoTIFF.
      *
-     * @return the preview URL to display in UI. Thumbnail if available, otherwise asset.
+     * @return {@code true} if this media is a Cloud-Optimized GeoTIFF
+     */
+    public boolean isCOG() {
+        return false;
+    }
+
+    /**
+     * Returns the preview URL to display in UI. Thumbnail if available, otherwise
+     * asset.
+     *
+     * @return the preview URL to display in UI. Thumbnail if available, otherwise
+     *         asset.
      */
     public final URL getPreviewUrl() {
         return ofNullable(getThumbnailUrl()).orElse(

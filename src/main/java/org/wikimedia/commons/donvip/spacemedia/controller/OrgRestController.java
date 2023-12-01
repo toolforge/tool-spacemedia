@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +35,8 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AsyncOrgUpdaterService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.Org;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Superclass of orgs REST controllers. Sub-classes are created dynamically.

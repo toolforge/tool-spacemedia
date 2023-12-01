@@ -2,32 +2,37 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactoryBean;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import jakarta.persistence.EntityManager;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
+@SpringJUnitConfig(TestDataJpa.Config.class)
+@TestPropertySource("/application-test.properties")
 public abstract class TestDataJpa {
-    @Autowired
-    protected DataSource dataSource;
-    @Autowired
-    protected JdbcTemplate jdbcTemplate;
-    @Autowired
-    protected EntityManager entityManager;
 
-    @Test
-    void injectedComponentsAreNotNull() {
+    @Autowired
+    private DataSource dataSource;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private EntityManager entityManager;
+
+    protected void checkInjectedComponentsAreNotNull() {
         assertNotNull(dataSource);
         assertNotNull(jdbcTemplate);
         assertNotNull(entityManager);
@@ -35,12 +40,18 @@ public abstract class TestDataJpa {
 
     @Configuration
     public static class Config {
-        @Bean
-        public EmbeddedDatabaseFactoryBean embeddedDatabaseFactory() {
-            EmbeddedDatabaseFactoryBean factory = new EmbeddedDatabaseFactoryBean();
-            factory.setGenerateUniqueDatabaseName(false);
-            factory.setDatabaseName(EmbeddedDatabaseFactory.DEFAULT_DATABASE_NAME + ";sql.syntax_mys=true");
-            return factory;
+
+        @Bean(name = "domainDataSourceProperties")
+        @ConfigurationProperties("domain.datasource")
+        public DataSourceProperties dataSourceProperties() {
+            return new DataSourceProperties();
+        }
+
+        @Bean(name = "domainDataSource")
+        @ConfigurationProperties("domain.datasource.hikari")
+        public DataSource dataSource(
+                @Qualifier("domainDataSourceProperties") DataSourceProperties dataSourceProperties) {
+            return dataSourceProperties.initializeDataSourceBuilder().build();
         }
     }
 }

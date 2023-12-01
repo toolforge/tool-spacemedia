@@ -4,8 +4,8 @@ import static java.util.stream.Collectors.joining;
 
 import java.util.Arrays;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 import org.apache.commons.lang3.StringUtils;
 

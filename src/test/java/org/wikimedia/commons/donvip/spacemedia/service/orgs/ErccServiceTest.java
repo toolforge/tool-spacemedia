@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

@@ -1,16 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
+import static jakarta.persistence.GenerationType.SEQUENCE;
 import static java.util.Optional.ofNullable;
-import static javax.persistence.GenerationType.SEQUENCE;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wikimedia.commons.donvip.spacemedia.utils.StringArrayAsStringDeserializer;
@@ -28,6 +22,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)

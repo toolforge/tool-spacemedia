@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -88,7 +89,7 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
 
     // FIND
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
     Page<NasaAsterMedia> findMissingInCommonsByType(NasaMediaType type, Pageable page);
 
     @Override
@@ -109,7 +110,7 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
 
     @Override
     @CacheEvictNasaAsterAll
-    <S extends NasaAsterMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends NasaAsterMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

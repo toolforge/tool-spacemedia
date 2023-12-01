@@ -1,8 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import java.time.YearMonth;
 
-import javax.persistence.AttributeConverter;
+import jakarta.persistence.AttributeConverter;
 
 public class YearMonthAttributeConverter implements AttributeConverter<YearMonth, String> {
 
@@ -13,6 +15,6 @@ public class YearMonthAttributeConverter implements AttributeConverter<YearMonth
 
     @Override
     public YearMonth convertToEntityAttribute(String dbData) {
-        return dbData != null ? YearMonth.parse(dbData) : null;
+        return isNotBlank(dbData) ? YearMonth.parse(dbData) : null;
     }
 }

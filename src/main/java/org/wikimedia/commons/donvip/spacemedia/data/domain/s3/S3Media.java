@@ -1,14 +1,14 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.s3;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 @Entity
 @Indexed
@@ -55,6 +55,11 @@ public class S3Media extends SingleFileMedia implements WithLatLon {
     @Override
     protected String getUploadId(FileMetadata fileMetadata) {
         return getUploadTitle();
+    }
+
+    @Override
+    public boolean isCOG() {
+        return latitude != 0 && longitude != 0 && getUniqueMetadata().getAssetUri().toString().contains(".tif");
     }
 
     public S3Media copyDataFrom(S3Media other) {

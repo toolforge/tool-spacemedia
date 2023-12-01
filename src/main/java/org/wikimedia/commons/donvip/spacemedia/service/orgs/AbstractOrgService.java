@@ -54,8 +54,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -112,6 +110,9 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * Superclass of orgs services.
@@ -1457,11 +1458,17 @@ public abstract class AbstractOrgService<T extends Media>
                 result = ignoreFile(media, "Very short or missing title and description");
                 LOGGER.debug("Short title or description test has been trigerred for {}", media);
             }
-            if (media.hasMetadata() && media.isImage()
-                    && media.getMetadataStream().allMatch(
-                            fm -> fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000)) {
-                result = ignoreFile(media, "Too small image");
-                LOGGER.debug("Too small image test has been trigerred for {}", media);
+            if (media.hasMetadata() && media.isImage()) {
+                if (media.getMetadataStream().allMatch(
+                        fm -> fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000)) {
+                    result = ignoreFile(media, "Too small image");
+                    LOGGER.debug("Too small image test has been trigerred for {}", media);
+                } else if (media.getMetadataStream()
+                        .allMatch(fm -> fm.getSize() != null && fm.getSize() > Integer.MAX_VALUE)) {
+                    // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
+                    result = ignoreFile(media, "Too big image");
+                    LOGGER.debug("Too big image test has been trigerred for {}", media);
+                }
             }
             if (isBlank(media.getDescription()) && media.getTitle() != null
                     && media.getTitle().matches("Picture \\d+")) {

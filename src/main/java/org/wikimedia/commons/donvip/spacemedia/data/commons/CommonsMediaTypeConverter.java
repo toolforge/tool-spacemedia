@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.commons;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
 public class CommonsMediaTypeConverter implements AttributeConverter<CommonsMediaType, String> {

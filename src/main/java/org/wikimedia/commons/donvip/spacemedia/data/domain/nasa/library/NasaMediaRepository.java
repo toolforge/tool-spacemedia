@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -62,10 +63,10 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Cacheable("nasaCountMissingByCenter")
     long countMissingInCommons(Set<String> centers);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.mediaType = ?1 and m.id.repoId in ?2")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and not exists elements (md.commonsFileNames) and m.mediaType = ?1 and m.id.repoId in ?2")
     long countMissingInCommonsByTypeAndCenters(NasaMediaType type, Set<String> centers);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
     long countMissingInCommons(NasaMediaType type);
 
     @Override
@@ -100,7 +101,7 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     @Override
     @CacheEvictNasaAll
-    <S extends T> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends T> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.stsci;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -72,7 +73,7 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia> {
 
     @Override
     @CacheEvictStsciAll
-    <S extends StsciMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends StsciMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

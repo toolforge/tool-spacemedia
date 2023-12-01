@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.kari;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -106,7 +107,7 @@ public interface KariMediaRepository extends MediaRepository<KariMedia> {
 
     @Override
     @CacheEvictKariAll
-    <S extends KariMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends KariMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

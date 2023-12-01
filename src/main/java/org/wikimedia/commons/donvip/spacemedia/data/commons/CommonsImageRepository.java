@@ -6,10 +6,10 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface CommonsImageRepository extends PagingAndSortingRepository<CommonsImage, String> {
+public interface CommonsImageRepository extends JpaRepository<CommonsImage, String> {
 
     List<CommonsImageProjection> findBySha1OrderByTimestamp(String sha1);
 

@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

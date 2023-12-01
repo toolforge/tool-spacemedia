@@ -63,6 +63,11 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
     }
 
     @Test
+    void testSolrClient() {
+        assertNotNull(NasaPhotojournalService.solrClient("https://photojournal.jpl.nasa.gov/beta/solr/photojournal"));
+    }
+
+    @Test
     void testReadXml1() throws Exception {
         NasaPhotojournalMedia media = readXml("PIA25927");
 

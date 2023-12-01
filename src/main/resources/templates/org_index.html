@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
-  <head th:replace="_header :: common_header(~{::title},~{})">
+  <head th:replace="~{_header :: common_header(~{::title},~{})}">
     <title th:text="Spacemedia + ' - ' + ${org.name}"></title>
   </head>
   <body>
-    <nav aria-label="Site navigation" th:replace="_header :: navbar"></nav>
+    <nav aria-label="Site navigation" th:replace="~{_header :: navbar}"></nav>
     <nav aria-label="Org navigation" class="navbar navbar-expand-lg">
 		<a class="navbar-brand" th:text="${org.name}"></a>
 		<div th:if="${org.multiRepo}" class="collapse navbar-collapse">
@@ -18,10 +18,10 @@
 			</ul>
 		</div>
 	</nav>
-    <ul th:replace="_media :: tabs(${tab})"></ul>
+    <ul th:replace="~{_media :: tabs(${tab})}"></ul>
     <!-- Medias tabs -->
     <div th:if="${medias}">
-	    <nav aria-label="Media navigation top" th:replace="_media :: pagination_nav(${medias})"></nav>
+	    <nav aria-label="Media navigation top" th:replace="~{_media :: pagination_nav(${medias})}"></nav>
 	    <table class="table table-sm table-hover">
 	      <thead class="thead-dark">
 		      <tr>
@@ -37,15 +37,16 @@
 		      <tr th:each="media : ${medias}">
 		        <td>
 		          <a th:href="${org.getSourceUrl(media)}" class="imagelink">
-		            <img th:src="${media.PreviewUrl}" width="210px" th:alt="${media.PreviewUrl}" />
-		            <img th:if="${media.video}" class="cornerimage" width="80px" src="/Antu_videoclip-amarok.svg" alt="" />
-		            <img th:if="${media.audio}" class="cornerimage" width="80px" src="/Antu_audio-volume-high.svg" alt="" />
+		            <canvas th:id="${media.id.mediaId}" width="210px" style="width:210px" th:alt="${media.id.mediaId}" th:if="${media.COG}" class="img_cog"></canvas>
+		            <img th:id="${media.id.mediaId}" width="210px" th:alt="${media.id.mediaId}" th:unless="${media.COG}" th:src="${media.PreviewUrl}">
+		            <img th:if="${media.video}" class="cornerimage" width="80px" src="/Antu_videoclip-amarok.svg" alt="">
+		            <img th:if="${media.audio}" class="cornerimage" width="80px" src="/Antu_audio-volume-high.svg" alt="">
 		          </a>
                   <a th:href="@{/{id}/rest/refreshmedia/{mid}(id=${org.id},mid=${media.id})}" target="_blank">
                     <img width="24" height="24" th:alt="'refresh ' + ${media.id}" th:src="@{/Gtk-refresh.svg}">
                   </a>
                   <a th:href="@{/{id}/rest/uploadmedia/{mid}(id=${org.id},mid=${media.id})}" target="_blank" th:if="${org.uploadEnabled}">
-                    <img width="24" height="24" th:alt="'upload ' + ${media.id}" th:src="@{/Wlm-icon-upload-green.svg}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.id}" th:src="@{/Wlm-icon-upload-green.svg}" />
                   </a>
 		          <div th:fragment="assets (assetsToUpload)" th:each="asset : ${assetsToUpload}">
 		          	<a th:href="@{/{id}/rest/wiki/{sha1}(id=${org.id},sha1=${asset})}" target="_blank">
@@ -59,19 +60,19 @@
 		          	</a>
 		          </div>
 		          <div th:if="'missing' == ${tab}">
-                    <div th:replace="org_index :: assets(assetsToUpload=${media.assetsToUpload})" />
+                    <div th:replace="~{org_index :: assets(assetsToUpload=${media.assetsToUpload})}"></div>
 		          </div>
 		          <div th:if="'missing/images' == ${tab}">
-                    <div th:replace="org_index :: assets(assetsToUpload=${media.imageAssetsToUpload})" />
+                    <div th:replace="~{org_index :: assets(assetsToUpload=${media.imageAssetsToUpload})}"></div>
 		          </div>
 		          <div th:if="'missing/videos' == ${tab}">
-                    <div th:replace="org_index :: assets(assetsToUpload=${media.videoAssetsToUpload})" />
+                    <div th:replace="~{org_index :: assets(assetsToUpload=${media.videoAssetsToUpload})}"></div>
 		          </div>
 		          <div th:if="'missing/documents' == ${tab}">
-                    <div th:replace="org_index :: assets(assetsToUpload=${media.documentAssetsToUpload})" />
+                    <div th:replace="~{org_index :: assets(assetsToUpload=${media.documentAssetsToUpload})}"></div>
 		          </div>
 		          <div th:if="'missing/audios' == ${tab}">
-                    <div th:replace="org_index :: assets(assetsToUpload=${media.audioAssetsToUpload})" />
+                    <div th:replace="~{org_index :: assets(assetsToUpload=${media.audioAssetsToUpload})}"></div>
 		          </div>
 		        </td>
 		        <td>
@@ -142,11 +143,11 @@
 		      </tr>
 	      </tbody>
 	    </table>
-	    <nav aria-label="Media navigation bottom" th:replace="_media :: pagination_nav(${medias})"></nav>
+	    <nav aria-label="Media navigation bottom" th:replace="~{_media :: pagination_nav(${medias})}"></nav>
     </div>
     <!-- Problems tab -->
     <div th:if="${problems}">
-	    <nav aria-label="Problem navigation top" th:replace="_media :: pagination_nav(${problems})"></nav>
+	    <nav aria-label="Problem navigation top" th:replace="~{_media :: pagination_nav(${problems})}"></nav>
 	    <table class="table table-sm table-hover">
 	      <thead class="thead-dark">
 		      <tr>
@@ -161,7 +162,7 @@
 		      </tr>
 	      </tbody>
 	    </table>
-	    <nav aria-label="Problem navigation bottom" th:replace="_media :: pagination_nav(${problems})"></nav>
+	    <nav aria-label="Problem navigation bottom" th:replace="~{_media :: pagination_nav(${problems})}"></nav>
     </div>
     <!-- Top terms tab -->
     <div th:if="${topterms}">
@@ -184,6 +185,35 @@
 	      </tbody>
 	    </table>
     </div>
-    <div th:replace="_header :: scripts"></div>
+    <div th:replace="~{_header :: scripts}"></div>
+	<script th:src="@{/webjars/geotiff/2.1.0/dist-browser/geotiff.js}"></script>
+	<script th:src="@{/webjars/plotty/0.4.9/dist/plotty.min.js}"></script>
+    <script th:inline="javascript">
+/*<![CDATA[*/
+	window.onload = function() {
+		const { fromUrl } = GeoTIFF;
+	    const medias = /*[[${medias}]]*/ {};
+	    for (let x in medias.content) {
+			const media = medias.content[x];
+			const canvas = document.getElementById(media.id.mediaId);
+			if (canvas != null && canvas.className == 'img_cog') {
+				(async function() {
+					const tiff = await fromUrl(media.previewUrl.replace('http://', 'https://'));
+					const smallestImage = await tiff.getImage(await tiff.getImageCount() - 1);
+					const data = await smallestImage.readRasters();
+					new plotty.plot({
+					  canvas,
+					  data: data[0],
+					  width: data.width,
+					  height: data.height,
+					  domain: [0, 256],
+					  colorScale: "greys"
+					}).render();
+				})();
+			}
+		}
+	}
+/*]]>*/
+	</script>
   </body>
 </html>

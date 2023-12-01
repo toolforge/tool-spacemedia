@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.box;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -88,7 +89,7 @@ public interface BoxMediaRepository extends MediaRepository<BoxMedia> {
 
     @Override
     @CacheEvictBoxAll
-    <S extends BoxMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends BoxMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

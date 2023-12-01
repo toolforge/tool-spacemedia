@@ -2,8 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.modis;
 
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;

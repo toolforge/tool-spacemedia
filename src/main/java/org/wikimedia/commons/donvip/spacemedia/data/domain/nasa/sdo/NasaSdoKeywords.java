@@ -3,7 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
-import javax.persistence.Embeddable;
+import jakarta.persistence.Embeddable;
 
 @Embeddable
 public class NasaSdoKeywords {

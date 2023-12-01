@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -89,7 +90,7 @@ public interface CopernicusGalleryMediaRepository extends MediaRepository<Copern
 
     @Override
     @CacheEvictCopernicusGalleryAll
-    <S extends CopernicusGalleryMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends CopernicusGalleryMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

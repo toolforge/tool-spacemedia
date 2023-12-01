@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.webmil;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -90,7 +91,7 @@ public interface WebMilMediaRepository extends MediaRepository<WebMilMedia> {
 
     @Override
     @CacheEvictWebmilAll
-    <S extends WebMilMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends WebMilMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

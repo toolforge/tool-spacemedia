@@ -1,8 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

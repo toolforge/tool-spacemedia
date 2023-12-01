@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.esa;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -95,7 +96,7 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia> {
 
     @Override
     @CacheEvictEsaAll
-    <S extends EsaMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends EsaMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

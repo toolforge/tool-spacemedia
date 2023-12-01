@@ -61,7 +61,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
     @Cacheable("nasaSdoCountMissingRepo")
     long countMissingInCommons(Set<String> repos);
 
-    @Query("select count(*) from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
     long countMissingInCommons(NasaMediaType type);
 
     @Override
@@ -131,7 +131,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
         return findMissingByMediaTypeAndDimensionsAndDate(mediaType.ordinal(), dim.getWidth(), dim.getHeight(), date);
     }
 
-    @Query("select m from #{#entityName} m where (m.ignored is null or m.ignored is false) and m.mediaType = ?1 and not exists elements (m.metadata.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
     Page<NasaSdoMedia> findMissingInCommonsByType(NasaMediaType type, Pageable page);
 
     @Override
@@ -167,7 +167,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
 
     @Override
     @CacheEvictNasaSdoAll
-    <S extends NasaSdoMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends NasaSdoMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

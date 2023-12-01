@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -89,7 +90,7 @@ public interface NasaSvsMediaRepository extends MediaRepository<NasaSvsMedia> {
 
     @Override
     @CacheEvictNasaSvsAll
-    <S extends NasaSvsMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends NasaSvsMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

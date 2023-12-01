@@ -8,8 +8,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import javax.transaction.Transactional;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +28,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsVideo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsVideoRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsWebcast;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsWebcastRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class DvidsMediaProcessorService {

@@ -33,7 +33,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.impl.XMLResponseParser;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -397,8 +397,8 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         return result;
     }
 
-    private static SolrClient solrClient(String host) {
-        return new HttpSolrClient.Builder(host).withResponseParser(new XMLResponseWithoutContentTypeParser()).build();
+    protected static SolrClient solrClient(String host) {
+        return new Http2SolrClient.Builder(host).withResponseParser(new XMLResponseWithoutContentTypeParser()).build();
     }
 
     protected static final class XMLResponseWithoutContentTypeParser extends XMLResponseParser {

@@ -2,8 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 
 public class MediaListener {
 

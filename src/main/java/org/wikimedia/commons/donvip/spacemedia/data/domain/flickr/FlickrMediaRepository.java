@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -56,11 +57,11 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia> {
     long countMissingInCommons(Set<String> flickrAccounts);
 
     @Cacheable("flickrCountMissingByType")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.media = ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and not exists elements (md.commonsFileNames) and m.media = ?1")
     long countMissingInCommons(FlickrMediaType type);
 
     @Cacheable("flickrCountMissingByTypeAndAccount")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.media = ?1 and m.id.repoId in ?2")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and not exists elements (md.commonsFileNames) and m.media = ?1 and m.id.repoId in ?2")
     long countMissingInCommons(FlickrMediaType type, Set<String> flickrAccounts);
 
     @Override
@@ -103,7 +104,7 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia> {
 
     @Override
     @CacheEvictFlickrAll
-    <S extends FlickrMedia> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends FlickrMedia> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

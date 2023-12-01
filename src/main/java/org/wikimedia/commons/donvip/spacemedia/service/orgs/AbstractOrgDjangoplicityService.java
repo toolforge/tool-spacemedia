@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jsoup.HttpStatusException;
@@ -56,7 +57,6 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.micrometer.core.instrument.util.StringUtils;
 
 /**
  * Service fetching images from djangoplicity-powered website

@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.webmil;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 

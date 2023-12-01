@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.s3;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -88,7 +89,7 @@ public interface S3MediaRepository extends MediaRepository<S3Media> {
 
     @Override
     @CacheEvictS3All
-    <S extends S3Media> Iterable<S> saveAll(Iterable<S> entities);
+    <S extends S3Media> List<S> saveAll(Iterable<S> entities);
 
     // DELETE
 

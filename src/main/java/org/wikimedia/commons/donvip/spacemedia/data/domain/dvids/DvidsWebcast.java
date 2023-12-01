@@ -1,6 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 

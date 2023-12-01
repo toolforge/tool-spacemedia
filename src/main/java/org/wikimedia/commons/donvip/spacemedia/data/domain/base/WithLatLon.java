@@ -1,6 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
-import javax.persistence.Transient;
+import jakarta.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
