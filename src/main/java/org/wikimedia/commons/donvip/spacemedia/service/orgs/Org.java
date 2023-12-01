@@ -3,6 +3,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.Year;
+import java.time.YearMonth;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -83,6 +85,10 @@ public interface Org<T extends Media> {
 
     List<T> listMissingMediaByDate(LocalDate date, String repo);
 
+    List<T> listMissingMediaByMonth(YearMonth month, String repo);
+
+    List<T> listMissingMediaByYear(Year year, String repo);
+
     List<T> listMissingMediaByTitle(String title, String repo);
 
     Page<T> listHashedMedia(Pageable page);
@@ -136,6 +142,12 @@ public interface Org<T extends Media> {
     T uploadAndSaveById(String id, boolean isManual) throws UploadException, TooManyResultsException;
 
     List<T> uploadAndSaveByDate(LocalDate date, String repo, Predicate<Media> predicate, boolean isManual)
+            throws UploadException;
+
+    List<T> uploadAndSaveByMonth(YearMonth month, String repo, Predicate<Media> predicate, boolean isManual)
+            throws UploadException;
+
+    List<T> uploadAndSaveByYear(Year year, String repo, Predicate<Media> predicate, boolean isManual)
             throws UploadException;
 
     List<T> uploadAndSaveByTitle(String title, String repo, Predicate<Media> predicate, boolean isManual)

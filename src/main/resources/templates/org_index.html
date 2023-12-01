@@ -91,6 +91,7 @@
 		        </td>
 		        <td>
 		          <a th:text="${media.publicationDate}"></a>
+                  <!-- uploads by date -->
                   <a th:href="@{/{id}/rest/uploadbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
                   </a>
@@ -102,6 +103,32 @@
                   </a>
                   <a th:href="@{/{id}/rest/uploaddocumentsbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/documents' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
+                  </a>
+                  <!-- uploads by month -->
+                  <a th:href="@{/{id}/rest/uploadbymonth/{month}(id=${org.id},repo=${repo},month=${media.publicationMonth})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationMonth}" th:src="@{/Wlm-icon-upload-blue.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/uploadimagesbymonth/{month}(id=${org.id},repo=${repo},month=${media.publicationMonth})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/images' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationMonth}" th:src="@{/Wlm-icon-upload-blue.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/uploadvideosbymonth/{month}(id=${org.id},repo=${repo},month=${media.publicationMonth})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationMonth}" th:src="@{/Wlm-icon-upload-blue.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/uploaddocumentsbymonth/{month}(id=${org.id},repo=${repo},month=${media.publicationMonth})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/documents' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationMonth}" th:src="@{/Wlm-icon-upload-blue.svg}">
+                  </a>
+                  <!-- uploads by year -->
+                  <a th:href="@{/{id}/rest/uploadbyyear/{year}(id=${org.id},repo=${repo},year=${media.publicationYear})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationYear}" th:src="@{/Wlm-icon-upload-red.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/uploadimagesbyyear/{year}(id=${org.id},repo=${repo},year=${media.publicationYear})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/images' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationYear}" th:src="@{/Wlm-icon-upload-red.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/uploadvideosbyyear/{year}(id=${org.id},repo=${repo},year=${media.publicationYear})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/videos' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationYear}" th:src="@{/Wlm-icon-upload-red.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/uploaddocumentsbyyear/{year}(id=${org.id},repo=${repo},year=${media.publicationYear})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/documents' == ${tab}">
+                    <img width="24" height="24" th:alt="'upload ' + ${media.publicationYear}" th:src="@{/Wlm-icon-upload-red.svg}">
                   </a>
 		        </td>
 		        <td th:utext="${#strings.abbreviate(media.description,2000)}"></td>

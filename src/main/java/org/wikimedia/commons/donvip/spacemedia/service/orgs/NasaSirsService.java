@@ -141,9 +141,8 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsMedia> {
                             media.setCategory(values.get(1));
                             try {
                                 media.setPublicationDate(LocalDate.parse(values.get(3), usDateformatter));
-                                media.setYear(Year.of(media.getPublicationDate().getYear()));
                             } catch (DateTimeParseException e) {
-                                media.setYear(Year.parse(values.get(3)));
+                                media.setPublicationYear(Year.parse(values.get(3)));
                             }
                             media.setKeywords(NasaMediaProcessorService.normalizeKeywords(singleton(values.get(4))));
                             media.setThumbnailUrl(newURL(url.getProtocol(), url.getHost(), values.get(5)));

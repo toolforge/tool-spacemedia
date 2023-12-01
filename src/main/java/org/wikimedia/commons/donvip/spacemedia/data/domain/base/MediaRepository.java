@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.Year;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -216,6 +218,12 @@ public interface MediaRepository<T extends Media> extends PagingAndSortingReposi
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and m.publicationDate = ?2 order by m.publicationDate desc")
     List<T> findMissingInCommonsByPublicationDate(Set<String> repos, LocalDate date);
+
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and m.publicationMonth = ?2 order by m.publicationDate desc")
+    List<T> findMissingInCommonsByPublicationMonth(Set<String> repos, YearMonth month);
+
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and m.publicationYear = ?2 order by m.publicationDate desc")
+    List<T> findMissingInCommonsByPublicationYear(Set<String> repos, Year year);
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored is false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 and m.title = ?2 order by m.publicationDate desc")
     List<T> findMissingInCommonsByTitle(Set<String> repos, String title);

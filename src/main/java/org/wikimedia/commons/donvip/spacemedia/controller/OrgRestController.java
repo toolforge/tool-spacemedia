@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.time.LocalDate;
+import java.time.Year;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -155,6 +157,54 @@ public abstract class OrgRestController<T extends Media> {
             @RequestParam(name = "repo", required = false) String repo)
             throws UploadException {
         return service.uploadAndSaveByDate(date, repo, Media::isDocument, true);
+    }
+
+    @GetMapping("/uploadbymonth/{month}")
+    public final List<T> uploadByMonth(@PathVariable YearMonth month,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByMonth(month, repo, x -> true, true);
+    }
+
+    @GetMapping("/uploadimagesbymonth/{month}")
+    public final List<T> uploadImagesByMonth(@PathVariable YearMonth month,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByMonth(month, repo, Media::isImage, true);
+    }
+
+    @GetMapping("/uploadvideosbymonth/{month}")
+    public final List<T> uploadVideosByMonth(@PathVariable YearMonth month,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByMonth(month, repo, Media::isVideo, true);
+    }
+
+    @GetMapping("/uploaddocumentsbymonth/{month}")
+    public final List<T> uploadDocumentsByMonth(@PathVariable YearMonth month,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByMonth(month, repo, Media::isDocument, true);
+    }
+
+    @GetMapping("/uploadbyyear/{year}")
+    public final List<T> uploadByYear(@PathVariable Year year,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByYear(year, repo, x -> true, true);
+    }
+
+    @GetMapping("/uploadimagesbyyear/{year}")
+    public final List<T> uploadImagesByYear(@PathVariable Year year,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByYear(year, repo, Media::isImage, true);
+    }
+
+    @GetMapping("/uploadvideosbyyear/{year}")
+    public final List<T> uploadVideosByYear(@PathVariable Year year,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByYear(year, repo, Media::isVideo, true);
+    }
+
+    @GetMapping("/uploaddocumentsbyyear/{year}")
+    public final List<T> uploadDocumentsByYear(@PathVariable Year year,
+            @RequestParam(name = "repo", required = false) String repo) throws UploadException {
+        return service.uploadAndSaveByYear(year, repo, Media::isDocument, true);
     }
 
     @GetMapping("/uploadbytitle/{title}")

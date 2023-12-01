@@ -17,6 +17,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
@@ -32,13 +33,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Embedded;
 import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Table;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
@@ -56,6 +60,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
  * Base class of all media.
  */
 @MappedSuperclass
+@Table(indexes = {
+        @Index(name = "repo_id", columnList = "repo_id"),
+        @Index(name = "media_id", columnList = "media_id"),
+        @Index(name = "publication_date", columnList = "publication_date"),
+        @Index(name = "publication_month", columnList = "publication_month"),
+        @Index(name = "publication_year", columnList = "publication_year") })
 @EntityListeners(MediaListener.class)
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = As.PROPERTY, property = "class")
 public class Media implements MediaProjection, MediaDescription {
@@ -100,6 +110,13 @@ public class Media implements MediaProjection, MediaDescription {
 
     @Column(nullable = false)
     protected LocalDate publicationDate;
+
+    @Column(nullable = false, columnDefinition = "CHAR(7)")
+    @Convert(converter = YearMonthAttributeConverter.class)
+    protected YearMonth publicationMonth;
+
+    @Column(nullable = false, columnDefinition = "YEAR(4)")
+    protected Year publicationYear;
 
     @Column(nullable = true)
     protected ZonedDateTime publicationDateTime;
@@ -277,6 +294,24 @@ public class Media implements MediaProjection, MediaDescription {
 
     public void setPublicationDate(LocalDate publicationDate) {
         this.publicationDate = publicationDate;
+        setPublicationMonth(publicationDate != null ? YearMonth.from(publicationDate) : null);
+    }
+
+    public YearMonth getPublicationMonth() {
+        return publicationMonth;
+    }
+
+    public void setPublicationMonth(YearMonth publicationMonth) {
+        this.publicationMonth = publicationMonth;
+        setPublicationYear(publicationMonth != null ? Year.from(publicationMonth) : null);
+    }
+
+    public Year getPublicationYear() {
+        return publicationYear;
+    }
+
+    public void setPublicationYear(Year publicationYear) {
+        this.publicationYear = publicationYear;
     }
 
     public ZonedDateTime getPublicationDateTime() {

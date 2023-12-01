@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs;
 
-import java.time.Year;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,9 +19,6 @@ public class NasaSirsMedia extends SingleFileMedia implements WithKeywords {
     @Column(nullable = false)
     private String category;
 
-    @Column(name = "photo_year", nullable = false)
-    private Year year;
-
     @Column(length = 340)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
@@ -33,15 +29,6 @@ public class NasaSirsMedia extends SingleFileMedia implements WithKeywords {
 
     public void setCategory(String category) {
         this.category = category;
-    }
-
-    @Override
-    public Year getYear() {
-        return year;
-    }
-
-    public void setYear(Year photoYear) {
-        this.year = photoYear;
     }
 
     @Override
@@ -59,24 +46,8 @@ public class NasaSirsMedia extends SingleFileMedia implements WithKeywords {
         return "NasaSirsMedia [" + (getId() != null ? "id=" + getId() + ", " : "")
                 + (title != null ? "title=" + title + ", " : "")
                 + (category != null ? "category=" + category + ", " : "")
-                + (year != null ? "photoYear=" + year + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (keywords != null ? "keywords=" + keywords + ", " : "")
                 + "metadata=" + getMetadata() + "]";
-    }
-
-    @Override
-    public boolean isAudio() {
-        return false;
-    }
-
-    @Override
-    public boolean isImage() {
-        return true;
-    }
-
-    @Override
-    public boolean isVideo() {
-        return false;
     }
 }

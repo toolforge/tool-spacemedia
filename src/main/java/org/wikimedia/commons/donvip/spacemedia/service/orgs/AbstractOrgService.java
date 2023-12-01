@@ -21,6 +21,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -386,6 +388,16 @@ public abstract class AbstractOrgService<T extends Media>
     @Override
     public List<T> listMissingMediaByDate(LocalDate date, String repo) {
         return repository.findMissingInCommonsByPublicationDate(isBlank(repo) ? getRepoIds() : Set.of(repo), date);
+    }
+
+    @Override
+    public List<T> listMissingMediaByMonth(YearMonth month, String repo) {
+        return repository.findMissingInCommonsByPublicationMonth(isBlank(repo) ? getRepoIds() : Set.of(repo), month);
+    }
+
+    @Override
+    public List<T> listMissingMediaByYear(Year year, String repo) {
+        return repository.findMissingInCommonsByPublicationYear(isBlank(repo) ? getRepoIds() : Set.of(repo), year);
     }
 
     @Override
@@ -788,6 +800,18 @@ public abstract class AbstractOrgService<T extends Media>
     public List<T> uploadAndSaveByDate(LocalDate date, String repo, Predicate<Media> predicate, boolean isManual)
             throws UploadException {
         return uploadAndSaveMedias(listMissingMediaByDate(date, repo).stream().filter(predicate), isManual);
+    }
+
+    @Override
+    public List<T> uploadAndSaveByMonth(YearMonth month, String repo, Predicate<Media> predicate, boolean isManual)
+            throws UploadException {
+        return uploadAndSaveMedias(listMissingMediaByMonth(month, repo).stream().filter(predicate), isManual);
+    }
+
+    @Override
+    public List<T> uploadAndSaveByYear(Year year, String repo, Predicate<Media> predicate, boolean isManual)
+            throws UploadException {
+        return uploadAndSaveMedias(listMissingMediaByYear(year, repo).stream().filter(predicate), isManual);
     }
 
     @Override
