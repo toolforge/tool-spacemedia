@@ -27,6 +27,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.s3.S3Service;
 
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
@@ -99,6 +100,11 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
                     uploadedMedia.add(result.getKey());
                 }
                 ongoingUpdateMedia(start, bucket, count++);
+            } catch (AmazonS3Exception e) {
+                LOGGER.warn(e.getMessage());
+                if (e.getStatusCode() == 404) {
+                    repository.delete(media);
+                }
             } catch (UploadException | IOException | RuntimeException e) {
                 LOGGER.error(e.getMessage(), e);
             }
