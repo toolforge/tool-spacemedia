@@ -82,8 +82,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDescription;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Problem;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
@@ -162,8 +160,6 @@ public abstract class AbstractOrgService<T extends Media>
     private FileMetadataRepository metadataRepository;
     @Autowired
     protected RuntimeDataRepository runtimeDataRepository;
-    @Autowired
-    protected ProblemRepository problemRepository;
     @Autowired
     protected MediaService mediaService;
     @Autowired
@@ -627,10 +623,8 @@ public abstract class AbstractOrgService<T extends Media>
 
     @Override
     public Statistics getStatistics(boolean details) {
-        long problems = getProblemsCount();
         Statistics stats = new Statistics(getName(), getId(), countAllMedia(), countUploadedMedia(), countIgnored(),
-                countMissingImages(), countMissingVideos(), countMissingDocuments(), countPerceptualHashes(),
-                problems > 0 ? problems : null);
+                countMissingImages(), countMissingVideos(), countMissingDocuments(), countPerceptualHashes());
         if (details && getRepoIds().size() > 1) {
             stats.setDetails(getRepoIds().stream().map(this::getStatistics).sorted().toList());
         }
@@ -646,46 +640,20 @@ public abstract class AbstractOrgService<T extends Media>
                 null);
     }
 
-    @Override
-    public List<Problem> getProblems() {
-        return problemRepository.findByOrg(getId());
+    protected final void problem(URL problematicUrl, Throwable t) {
+        problem(problematicUrl, t.toString());
     }
 
-    @Override
-    public Page<Problem> getProblems(Pageable page) {
-        return problemRepository.findByOrg(getId(), page);
+    protected final void problem(String problematicUrl, Throwable t) {
+        problem(problematicUrl, t.toString());
     }
 
-    @Override
-    public long getProblemsCount() {
-        return problemRepository.countByOrg(getId());
+    protected final void problem(String problematicUrl, String errorMessage) {
+        problem(newURL(problematicUrl), errorMessage);
     }
 
-    protected final Problem problem(URL problematicUrl, Throwable t) {
-        return problem(problematicUrl, t.toString());
-    }
-
-    protected final Problem problem(String problematicUrl, Throwable t) {
-        return problem(problematicUrl, t.toString());
-    }
-
-    protected final Problem problem(String problematicUrl, String errorMessage) {
-        return problem(newURL(problematicUrl), errorMessage);
-    }
-
-    protected final Problem problem(URL problematicUrl, String errorMessage) {
-        Optional<Problem> problem = problemRepository.findByOrgAndProblematicUrl(getId(), problematicUrl);
-        if (problem.isPresent()) {
-            return problem.get();
-        } else {
-            Problem pb = new Problem();
-            pb.setOrg(getId());
-            pb.setErrorMessage(errorMessage);
-            pb.setProblematicUrl(problematicUrl);
-            pb.setDate(LocalDateTime.now());
-            LOGGER.warn("{}", pb);
-            return problemRepository.save(pb);
-        }
+    protected final void problem(URL problematicUrl, String errorMessage) {
+        LOGGER.warn("{} => {}", problematicUrl, errorMessage);
     }
 
     protected final T findBySomeSha1OrThrow(String sha1, Function<String, List<T>> finder, boolean throwIfNotFound)
@@ -1504,19 +1472,9 @@ public abstract class AbstractOrgService<T extends Media>
         return repository.resetIgnored(getRepoIds());
     }
 
-    protected int doResetProblems() {
-        return problemRepository.deleteByOrg(getId());
-    }
-
     public final int resetIgnored() {
         int result = doResetIgnored();
         LOGGER.info("Reset {} ignored media for org {}", result, getName());
-        return result;
-    }
-
-    public final int resetProblems() {
-        int result = doResetProblems();
-        LOGGER.info("Reset {} problems for org {}", result, getName());
         return result;
     }
 

@@ -26,10 +26,6 @@
 	    <a th:class="'nav-link' + ('ignored' == ${tab} ? ' active' : '') + (${org.countIgnored(repo)} == 0 ? ' disabled': '')"
 	       th:href="@{/{id}/ignored(id=${org.id},repo=${repo})}" th:text="'Ignored (' + ${org.countIgnored(repo)} + ')'"></a>
 	  </li>
-	  <li class="nav-item" th:if="${org.getProblemsCount()}">
-	    <a th:class="'nav-link' + ('problems' == ${tab} ? ' active' : '') + (${org.getProblemsCount()} == 0 ? ' disabled': '')"
-	       th:href="@{/{id}/problems(id=${org.id},repo=${repo})}" th:text="'Problems (' + ${org.getProblemsCount()} + ')'"></a>
-	  </li>
 	  <li class="nav-item" th:if="${search != null}">
 	    <a th:class="'nav-link' + ('topterms' == ${tab} ? ' active' : '')"
 	       th:href="@{/{id}/topterms(id=${org.id})}">Top terms</a>

@@ -18,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Problem;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -126,12 +125,6 @@ public interface Org<T extends Media> {
     void updateMedia(String[] args) throws IOException, UploadException;
 
     Statistics getStatistics(boolean details);
-
-    List<Problem> getProblems();
-
-    Page<Problem> getProblems(Pageable page);
-
-    long getProblemsCount();
 
     T getById(String id) throws ImageNotFoundException;
 

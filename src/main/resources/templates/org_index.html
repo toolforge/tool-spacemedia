@@ -145,25 +145,6 @@
 	    </table>
 	    <nav aria-label="Media navigation bottom" th:replace="~{_media :: pagination_nav(${medias})}"></nav>
     </div>
-    <!-- Problems tab -->
-    <div th:if="${problems}">
-	    <nav aria-label="Problem navigation top" th:replace="~{_media :: pagination_nav(${problems})}"></nav>
-	    <table class="table table-sm table-hover">
-	      <thead class="thead-dark">
-		      <tr>
-		        <th>URL</th>
-		        <th>Problem</th>
-		      <tr>
-	      </thead>
-	      <tbody>
-		      <tr th:each="problem : ${problems}">
-		        <td><a th:text="${problem.problematicUrl}" th:href="${problem.problematicUrl}"></a></td>
-		        <td th:text="${problem.errorMessage}"></td>
-		      </tr>
-	      </tbody>
-	    </table>
-	    <nav aria-label="Problem navigation bottom" th:replace="~{_media :: pagination_nav(${problems})}"></nav>
-    </div>
     <!-- Top terms tab -->
     <div th:if="${topterms}">
 	    <table class="table table-sm table-hover">

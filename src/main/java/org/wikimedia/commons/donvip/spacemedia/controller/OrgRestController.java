@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Problem;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -92,11 +91,6 @@ public abstract class OrgRestController<T extends Media> {
     @GetMapping("/duplicates")
     public final List<T> listDuplicate() {
         return service.listDuplicateMedia();
-    }
-
-    @GetMapping("/problems")
-    public final List<Problem> listProblems() {
-        return service.getProblems();
     }
 
     @GetMapping("/search")

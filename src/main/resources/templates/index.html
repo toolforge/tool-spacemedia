@@ -17,7 +17,6 @@
 	        <th>Videos to upload</th>
 	        <th>Documents to upload</th>
 	        <th>Ignored</th>
-	        <th>Problems</th>
 	      </tr>
       </thead>
     </table>
@@ -58,9 +57,6 @@
             }},
             {"data": "ignored_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
             	ahref(td, s, alink(o, "/ignored"));
-            }},
-            {"data": "problem_count", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-            	ahref(td, s, alink(o, "/problems"));
             }}
         ],
         "rowCallback": function( row, data ) {

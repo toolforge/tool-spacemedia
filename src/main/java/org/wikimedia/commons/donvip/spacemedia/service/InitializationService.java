@@ -39,14 +39,8 @@ public class InitializationService implements ApplicationRunner {
     @Value("${reset.sha1.hashes}")
     private boolean resetSha1Hashes;
 
-    @Value("${reset.problems}")
-    private boolean resetProblems;
-
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        if (resetProblems) {
-            LOGGER.info("Reset a total number of {} problems", self.resetProblems());
-        }
         if (resetIgnored) {
             LOGGER.info("Reset a total number of {} ignored media", self.resetIgnored());
         }
@@ -73,10 +67,5 @@ public class InitializationService implements ApplicationRunner {
     @Transactional
     public int resetSha1Hashes() {
         return metadataRepo.resetSha1Hashes();
-    }
-
-    @Transactional
-    public int resetProblems() {
-        return orgs.stream().mapToInt(AbstractOrgService::resetProblems).sum();
     }
 }

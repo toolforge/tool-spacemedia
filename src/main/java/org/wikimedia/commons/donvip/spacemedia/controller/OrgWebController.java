@@ -100,12 +100,6 @@ public class OrgWebController<T extends Media> {
         return template(model, "org_stats", repo);
     }
 
-    @GetMapping("/problems")
-    public String problems(Model model, @RequestParam(name = "repo", required = false) String repo,
-            @PageableDefault(size = SIZE) Pageable page) {
-        return pageIndex(model, "problems", repo, service.getProblems(page), "problems", newSearch());
-    }
-
     @GetMapping("/search")
     public final String search(Model model, @ModelAttribute Search search,
             @RequestParam(name = "repo", required = false) String repo,

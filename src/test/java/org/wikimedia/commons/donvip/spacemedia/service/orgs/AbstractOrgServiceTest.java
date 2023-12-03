@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import jakarta.persistence.EntityManagerFactory;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.params.converter.ArgumentConversionException;
@@ -25,7 +23,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ProblemRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
@@ -40,14 +37,13 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.persistence.EntityManagerFactory;
+
 @TestPropertySource("/application-test.properties")
 public abstract class AbstractOrgServiceTest {
 
     @MockBean
     protected FileMetadataRepository metadataRepository;
-
-    @MockBean
-    protected ProblemRepository problemRepository;
 
     @MockBean
     protected ExifMetadataRepository exifRepository;
