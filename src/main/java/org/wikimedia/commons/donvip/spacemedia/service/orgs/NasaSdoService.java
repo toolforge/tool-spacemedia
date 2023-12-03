@@ -269,7 +269,8 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                 LOGGER.info("Fetching {} ({}<{})", browseUrl, imagesNotUploadedInDatabase.size(), expectedCount);
                 try {
                     List<String> files = Jsoup.connect(browseUrl).header("Accept", "text/html").timeout(30_000).get()
-                            .getElementsByTag("a").stream().map(e -> e.attr("href"))
+                            .getElementsByTag("a").stream().filter(a -> !a.nextSibling().toString().endsWith(" 0"))
+                            .map(e -> e.attr("href"))
                             .filter(href -> href.contains("_" + dims.getWidth() + "_")).sorted().toList();
                     for (NasaSdoDataType dataType : NasaSdoDataType.values()) {
                         Optional<String> opt = files.stream().filter(i -> i.endsWith(dataType.name() + '.' + ext))
