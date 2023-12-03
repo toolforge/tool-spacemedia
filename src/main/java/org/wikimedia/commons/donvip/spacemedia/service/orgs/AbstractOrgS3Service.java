@@ -67,7 +67,7 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
     }
 
     protected final String getUrl(CompositeMediaId id) {
-        return "http://" + id.getRepoId() + ".s3.amazonaws.com/" + id.getMediaId();
+        return "https://" + id.getRepoId() + ".s3.amazonaws.com/" + id.getMediaId();
     }
 
     @Override
