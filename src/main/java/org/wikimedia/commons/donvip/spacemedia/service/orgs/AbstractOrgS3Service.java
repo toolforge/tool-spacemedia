@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -88,8 +89,9 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
         List<S3Media> uploadedMedia = new ArrayList<>();
         int count = 0;
         LocalDateTime start = LocalDateTime.now();
-
+        LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
         List<S3Media> files = s3.getFiles(region, bucket, summary -> toS3Media(bucket, summary),
+                file -> doNotFetchEarlierThan == null || file.getPublicationDate().isAfter(doNotFetchEarlierThan),
                 Comparator.comparing(S3Media::getPublicationDateTime));
         LOGGER.info("Found {} files in {}", files.size(), Duration.between(start, LocalDateTime.now()));
 

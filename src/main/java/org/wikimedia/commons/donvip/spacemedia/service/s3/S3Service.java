@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class S3Service {
     }
 
     public <T> List<T> getFiles(Regions region, String bucket, Function<S3ObjectSummary, T> mapper,
-            Comparator<T> comparator) {
+            Predicate<T> predicate, Comparator<T> comparator) {
         LOGGER.info("Looking for S3 media in {}...", bucket);
         AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(region).build();
         List<T> result = new ArrayList<>();
@@ -41,7 +42,7 @@ public class S3Service {
             listing = s3.listNextBatchOfObjects(listing);
             addObjects(result, listing, mapper);
         }
-        return result.stream().sorted(comparator.reversed()).toList();
+        return result.stream().filter(predicate).sorted(comparator.reversed()).toList();
     }
 
     private static <T> boolean addObjects(List<T> result, ObjectListing listing, Function<S3ObjectSummary, T> mapper) {
