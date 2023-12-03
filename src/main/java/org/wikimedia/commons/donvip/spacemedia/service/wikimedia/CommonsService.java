@@ -1098,7 +1098,7 @@ public class CommonsService {
         String result = desc;
         if (result != null) {
             result = replaceLinks(unescapeHtml4(result.trim().replace("\r\n", ". ").replace("\n\n", ". ")
-                    .replace(".. ", ". ").replace("<p>", "").replace("</p>", "")), "$2");
+                    .replace(".. ", ". ").replace("<p>", "").replace("</p>", "").replace("<br>", " ")), "$2");
             if (result != null && result.contains(".")) {
                 while (result.length() > limit) {
                     result = result.substring(0, result.lastIndexOf('.', result.length() - 2) + 1).trim();
