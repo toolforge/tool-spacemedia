@@ -241,7 +241,7 @@ public class NasaMediaProcessorService {
     }
 
     public boolean checkPhotographerBlocklist(NasaMedia media) {
-        if (media instanceof NasaImage img && img.isIgnored() != Boolean.TRUE && isPhotographerBLocklisted(img)) {
+        if (media instanceof NasaImage img && !img.isIgnored() && isPhotographerBLocklisted(img)) {
             ignoreMedia(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer() + " / "
                     + img.getSecondaryCreator());
             return true;
@@ -267,7 +267,7 @@ public class NasaMediaProcessorService {
         if (media.getId().getMediaId().length() < 3) {
             problem.accept(media.getAssetUrl(), new Exception("Strange id: '" + media.getId() + "'"));
         }
-        if (media.isIgnored() != Boolean.TRUE && media.getDescription() != null) {
+        if (!media.isIgnored() && media.getDescription() != null) {
             if (media.getDescription().contains("/photojournal")) {
                 ignoreMedia(media, "Photojournal");
             } else {

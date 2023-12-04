@@ -40,11 +40,11 @@ public interface NasaModisMediaRepository extends MediaRepository<NasaModisMedia
 
     @Override
     @Cacheable("nasaModisCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("nasaModisCountIgnoredRepo")
-    long countByIgnoredTrue(Set<String> repos);
+    long countByMetadata_IgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("nasaModisCountMissing")
@@ -109,14 +109,4 @@ public interface NasaModisMediaRepository extends MediaRepository<NasaModisMedia
     @Override
     @CacheEvictNasaModisAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictNasaModisAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictNasaModisAll
-    int resetIgnored(Set<String> repos);
 }

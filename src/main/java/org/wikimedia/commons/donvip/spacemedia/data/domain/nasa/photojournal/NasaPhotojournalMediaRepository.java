@@ -40,11 +40,11 @@ public interface NasaPhotojournalMediaRepository extends MediaRepository<NasaPho
 
     @Override
     @Cacheable("nasaPjCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("nasaPjCountIgnoredRepo")
-    long countByIgnoredTrue(Set<String> repos);
+    long countByMetadata_IgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("nasaPjCountMissing")
@@ -109,14 +109,4 @@ public interface NasaPhotojournalMediaRepository extends MediaRepository<NasaPho
     @Override
     @CacheEvictNasaPhotojournalAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictNasaPhotojournalAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictNasaPhotojournalAll
-    int resetIgnored(Set<String> repos);
 }

@@ -104,6 +104,14 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JsonProperty("commons_file_names")
     protected Set<String> commonsFileNames = new HashSet<>();
 
+    @Column(nullable = true)
+    protected Boolean ignored;
+
+    @Lob
+    @Column(nullable = true, columnDefinition = "TEXT")
+    @JsonProperty("ignored_reason")
+    protected String ignoredReason;
+
     public FileMetadata() {
 
     }
@@ -252,6 +260,22 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @Override
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean isIgnored() {
+        return ignored;
+    }
+
+    public void setIgnored(Boolean ignored) {
+        this.ignored = ignored;
+    }
+
+    public String getIgnoredReason() {
+        return ignoredReason;
+    }
+
+    public void setIgnoredReason(String ignoredReason) {
+        this.ignoredReason = ignoredReason;
     }
 
     @Transient

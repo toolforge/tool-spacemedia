@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMedia;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -56,7 +57,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 
 /**
  * Service fetching images from djangoplicity-powered website
@@ -158,24 +158,24 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
             }
             save = true;
         }
-        if (Boolean.TRUE != media.isIgnored()) {
+        if (!media.isIgnored()) {
             // Try to detect pictures of identifiable people, as per ESO/IAU conditions
             if ((isEmpty(media.getCategories()) || (media.getCategories().size() == 1
                     && media.getCategories().iterator().next().contains("People")))
                     && media.getTypes() != null
                     && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
-                save = ignoreFile(media, IDENTIFIABLE_PERSON);
+                save = ignoreMedia(media, IDENTIFIABLE_PERSON);
             } else if (media.getCategories() != null
                     && media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
-                save = ignoreFile(media, "Forbidden category.");
+                save = ignoreMedia(media, "Forbidden category.");
             }
         }
         Collection<String> forbiddenWordsInTitleOrDescription = getForbiddenWordsInTitleOrDescription();
-        if (Boolean.TRUE != media.isIgnored() && !forbiddenWordsInTitleOrDescription.isEmpty()
+        if (!media.isIgnored() && !forbiddenWordsInTitleOrDescription.isEmpty()
                 && (media.getTitle() != null || media.getDescription() != null)) {
             for (String forbiddenWord : forbiddenWordsInTitleOrDescription) {
                 if (media.containsInTitleOrDescription(forbiddenWord)) {
-                    save = ignoreFile(media, "Forbidden keyword: " + forbiddenWord + ". " + IDENTIFIABLE_PERSON);
+                    save = ignoreMedia(media, "Forbidden keyword: " + forbiddenWord + ". " + IDENTIFIABLE_PERSON);
                     break;
                 }
             }

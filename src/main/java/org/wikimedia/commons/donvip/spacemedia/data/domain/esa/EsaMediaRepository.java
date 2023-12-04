@@ -42,11 +42,11 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia> {
 
     @Override
     @Cacheable("esaCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("esaCountIgnoredRepo")
-    long countByIgnoredTrue(Set<String> repos);
+    long countByMetadata_IgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("esaCountMissing")
@@ -115,14 +115,4 @@ public interface EsaMediaRepository extends MediaRepository<EsaMedia> {
     @Override
     @CacheEvictEsaAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictEsaAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictEsaAll
-    int resetIgnored(Set<String> repos);
 }

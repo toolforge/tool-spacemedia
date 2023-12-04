@@ -123,7 +123,7 @@ public class MediaService {
             LOGGER.info("Commons files have been updated for {}", media);
             result = true;
         }
-        if (checkBlocklist && !Boolean.TRUE.equals(media.isIgnored()) && belongsToBlocklist(media)) {
+        if (checkBlocklist && !media.isIgnored() && belongsToBlocklist(media)) {
             LOGGER.info("Blocklist has been trigerred for {}", media);
             result = true;
         }
@@ -173,14 +173,16 @@ public class MediaService {
         boolean result = false;
         Exception exception = null;
         for (FileMetadata metadata : media.getMetadata()) {
-            MediaUpdateResult ur = updateReadableStateAndHashes(media, metadata, localPath, urlResolver,
-                    forceUpdateOfHashes, ignoreExifMetadata);
-            result |= ur.getResult();
-            if (ur.getException() != null) {
-                exception = ur.getException();
-            }
-            if (ur.getResult()) {
-                LOGGER.info("Readable state and/or hashes have been updated for {}", metadata);
+            if (metadata.isIgnored() != Boolean.TRUE) {
+                MediaUpdateResult ur = updateReadableStateAndHashes(media, metadata, localPath, urlResolver,
+                        forceUpdateOfHashes, ignoreExifMetadata);
+                result |= ur.getResult();
+                if (ur.getException() != null) {
+                    exception = ur.getException();
+                }
+                if (ur.getResult()) {
+                    LOGGER.info("Readable state and/or hashes have been updated for {}", metadata);
+                }
             }
         }
         // T230284 - Processing full-res images can lead to OOM errors
@@ -219,25 +221,25 @@ public class MediaService {
                     if (bi != null) {
                         if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
                             metadata.setReadableImage(Boolean.TRUE);
-                            LOGGER.info("Readable state has been updated to {} for {}", Boolean.TRUE, media);
+                            LOGGER.info("Readable state has been updated to {} for {}", Boolean.TRUE, metadata);
                             result = true;
                         }
                         if (bi.getWidth() > 0 && bi.getHeight() > 0 && !metadata.hasValidDimensions()) {
                             metadata.setImageDimensions(new ImageDimensions(bi.getWidth(), bi.getHeight()));
-                            LOGGER.info("Image dimensions have been updated for {}", media);
+                            LOGGER.info("Image dimensions have been updated for {}", metadata);
                             result = true;
                         }
                     }
                     Long contentLength = pair.getRight();
                     if (contentLength > 0 && !metadata.hasSize()) {
                         metadata.setSize(contentLength);
-                        LOGGER.info("Size has been updated for {}", media);
+                        LOGGER.info("Size has been updated for {}", metadata);
                         result = true;
                     }
                 } catch (IOException | ImageDecodingException e) {
-                    result = ignoreMedia(media, "Unreadable media", e);
+                    result = ignoreMetadata(metadata, "Unreadable file", e);
                     metadata.setReadableImage(Boolean.FALSE);
-                    LOGGER.info("Readable state has been updated to {} for {}", Boolean.FALSE, media);
+                    LOGGER.info("Readable state has been updated to {} for {}", Boolean.FALSE, metadata);
                 }
             }
             if (isImage && Boolean.TRUE.equals(metadata.isReadableImage())
@@ -287,13 +289,22 @@ public class MediaService {
     }
 
     public static boolean ignoreMedia(Media media, String reason, Exception e) {
+        media.getMetadataStream().forEach(fm -> ignoreMetadata(fm, reason, e));
+        return true;
+    }
+
+    public static boolean ignoreMetadata(FileMetadata fm, String reason) {
+        return ignoreMetadata(fm, reason, null);
+    }
+
+    public static boolean ignoreMetadata(FileMetadata fm, String reason, Exception e) {
         if (e != null) {
-            LOGGER.warn("Ignored {} for reason {}", media, reason, e);
+            LOGGER.warn("Ignored {} for reason {}", fm, reason, e);
         } else {
-            LOGGER.warn("Ignored {} for reason {}", media, reason);
+            LOGGER.warn("Ignored {} for reason {}", fm, reason);
         }
-        media.setIgnored(Boolean.TRUE);
-        media.setIgnoredReason(reason + (e != null ? ": " + e.getMessage() : ""));
+        fm.setIgnored(Boolean.TRUE);
+        fm.setIgnoredReason(reason + (e != null ? ": " + e.getMessage() : ""));
         return true;
     }
 

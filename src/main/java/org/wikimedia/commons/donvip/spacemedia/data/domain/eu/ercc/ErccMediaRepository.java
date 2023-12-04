@@ -40,11 +40,11 @@ public interface ErccMediaRepository extends MediaRepository<ErccMedia> {
 
     @Override
     @Cacheable("erccCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("erccCountIgnoredRepo")
-    long countByIgnoredTrue(Set<String> repos);
+    long countByMetadata_IgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("erccCountMissing")
@@ -109,14 +109,4 @@ public interface ErccMediaRepository extends MediaRepository<ErccMedia> {
     @Override
     @CacheEvictErccAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictErccAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictErccAll
-    int resetIgnored(Set<String> repos);
 }

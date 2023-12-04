@@ -39,11 +39,11 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
 
     @Override
     @Cacheable("dvidsCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("dvidsCountIgnoredByUnit")
-    long countByIgnoredTrue(Set<String> units);
+    long countByMetadata_IgnoredTrue(Set<String> units);
 
     @Override
     @Cacheable("dvidsCountMissing")
@@ -108,14 +108,4 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     @Override
     @CacheEvictDvidsAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictDvidsAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictDvidsAll
-    int resetIgnored(Set<String> units);
 }

@@ -42,11 +42,11 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia> {
 
     @Override
     @Cacheable("flickrCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("flickrCountIgnoredByAccount")
-    long countByIgnoredTrue(Set<String> flickrAccounts);
+    long countByMetadata_IgnoredTrue(Set<String> flickrAccounts);
 
     @Override
     @Cacheable("flickrCountMissing")
@@ -57,11 +57,11 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia> {
     long countMissingInCommons(Set<String> flickrAccounts);
 
     @Cacheable("flickrCountMissingByType")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and not exists elements (md.commonsFileNames) and m.media = ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and m.media = ?1")
     long countMissingInCommons(FlickrMediaType type);
 
     @Cacheable("flickrCountMissingByTypeAndAccount")
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and not exists elements (md.commonsFileNames) and m.media = ?1 and m.id.repoId in ?2")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and m.media = ?1 and m.id.repoId in ?2")
     long countMissingInCommons(FlickrMediaType type, Set<String> flickrAccounts);
 
     @Override
@@ -123,14 +123,4 @@ public interface FlickrMediaRepository extends MediaRepository<FlickrMedia> {
     @Override
     @CacheEvictFlickrAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictFlickrAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictFlickrAll
-    int resetIgnored(Set<String> flickrAccounts);
 }

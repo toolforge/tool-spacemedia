@@ -101,7 +101,7 @@ public class FlickrMediaProcessorService {
             try {
                 FlickrLicense license = FlickrLicense.of(media.getLicense());
                 if (license == FlickrLicense.Public_Domain_Mark
-                        && !Boolean.TRUE.equals(media.isIgnored())
+                        && !media.isIgnored()
                         && !UnitedStates.isClearPublicDomain(media.getDescription())) {
                     MediaService.ignoreMedia(media, "Public Domain Mark is not a legal license");
                 } else if (!license.isFree()) {
@@ -207,13 +207,13 @@ public class FlickrMediaProcessorService {
                 media.getId(), flickrAccount, mediaInRepo.getLicense(), media.getLicense());
         try {
             FlickrLicense license = FlickrLicense.of(media.getLicense());
-            if (!license.isFree() && Boolean.TRUE != mediaInRepo.isIgnored()) {
+            if (!license.isFree() && !mediaInRepo.isIgnored()) {
                 String message = String.format("Flickr license for picture %d of %s is no longer free!", media.getId(),
                         flickrAccount);
                 mediaInRepo.setIgnored(Boolean.TRUE);
                 mediaInRepo.setIgnoredReason(message);
                 LOGGER.warn(message);
-            } else if (license.isFree() && Boolean.TRUE == mediaInRepo.isIgnored()
+            } else if (license.isFree() && mediaInRepo.isIgnored()
                     && mediaInRepo.getIgnoredReason() != null
                     && mediaInRepo.getIgnoredReason().endsWith("is no longer free!")) {
                 LOGGER.info("Flickr license for picture {} of {} is free again!", media.getId(), flickrAccount);

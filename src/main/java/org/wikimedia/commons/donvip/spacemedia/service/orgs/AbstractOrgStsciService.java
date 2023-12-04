@@ -209,7 +209,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
             stats.setDetails(List.of(new Statistics(mission, mission,
                     repository.count(getRepoIds()),
                     repository.countUploadedToCommons(getRepoIds()),
-                    repository.countByIgnoredTrue(getRepoIds()),
+                    repository.countByMetadata_IgnoredTrue(getRepoIds()),
                     repository.countMissingImagesInCommons(getRepoIds()),
                     repository.countMissingVideosInCommons(getRepoIds()),
                     repository.countMissingDocumentsInCommons(getRepoIds()),

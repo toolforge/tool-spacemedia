@@ -45,11 +45,11 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
 
     @Override
     @Cacheable("nasaAsterCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("nasaAsterCountIgnoredRepo")
-    long countByIgnoredTrue(Set<String> repos);
+    long countByMetadata_IgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("nasaAsterCountMissing")
@@ -89,7 +89,7 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
 
     // FIND
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
     Page<NasaAsterMedia> findMissingInCommonsByType(NasaMediaType type, Pageable page);
 
     @Override
@@ -129,14 +129,4 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
     @Override
     @CacheEvictNasaAsterAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictNasaAsterAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictNasaAsterAll
-    int resetIgnored(Set<String> repos);
 }

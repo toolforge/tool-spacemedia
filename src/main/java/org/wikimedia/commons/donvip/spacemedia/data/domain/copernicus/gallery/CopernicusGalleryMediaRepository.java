@@ -40,11 +40,11 @@ public interface CopernicusGalleryMediaRepository extends MediaRepository<Copern
 
     @Override
     @Cacheable("copGalCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("copGalCountIgnoredRepo")
-    long countByIgnoredTrue(Set<String> repos);
+    long countByMetadata_IgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("copGalCountMissing")
@@ -109,14 +109,4 @@ public interface CopernicusGalleryMediaRepository extends MediaRepository<Copern
     @Override
     @CacheEvictCopernicusGalleryAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictCopernicusGalleryAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictCopernicusGalleryAll
-    int resetIgnored(Set<String> repos);
 }

@@ -47,11 +47,11 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
 
     @Override
     @Cacheable("nasaSdoCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("nasaSdoCountIgnoredRepo")
-    long countByIgnoredTrue(Set<String> repos);
+    long countByMetadata_IgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("nasaSdoCountMissing")
@@ -61,7 +61,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
     @Cacheable("nasaSdoCountMissingRepo")
     long countMissingInCommons(Set<String> repos);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
     long countMissingInCommons(NasaMediaType type);
 
     @Override
@@ -131,7 +131,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
         return findMissingByMediaTypeAndDimensionsAndDate(mediaType.ordinal(), dim.getWidth(), dim.getHeight(), date);
     }
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
     Page<NasaSdoMedia> findMissingInCommonsByType(NasaMediaType type, Pageable page);
 
     @Override
@@ -186,14 +186,4 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
     @Override
     @CacheEvictNasaSdoAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictNasaSdoAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictNasaSdoAll
-    int resetIgnored(Set<String> repos);
 }

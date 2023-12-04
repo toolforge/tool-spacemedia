@@ -41,11 +41,11 @@ public interface KariMediaRepository extends MediaRepository<KariMedia> {
 
     @Override
     @Cacheable("kariCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("kariCountIgnoredRepo")
-    long countByIgnoredTrue(Set<String> repos);
+    long countByMetadata_IgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("kariCountMissing")
@@ -126,14 +126,4 @@ public interface KariMediaRepository extends MediaRepository<KariMedia> {
     @Override
     @CacheEvictKariAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictKariAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictKariAll
-    int resetIgnored(Set<String> repos);
 }

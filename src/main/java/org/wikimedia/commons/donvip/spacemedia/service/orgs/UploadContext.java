@@ -32,22 +32,26 @@ public final class UploadContext<T extends Media> {
         return (uploadMode == UploadMode.AUTO
                 || (uploadMode == UploadMode.AUTO_FROM_DATE
                         && (isManual || media.getYear().getValue() >= minYearUploadAuto))
-                || uploadMode == UploadMode.MANUAL) && !isForbiddenUpload(media, isManual)
+                || uploadMode == UploadMode.MANUAL) && !isForbiddenUpload(metadata, isManual)
                 && isEmpty(metadata.getCommonsFileNames()) && isPermittedFileType.test(metadata);
     }
 
     public boolean shouldUploadAuto() {
         return (uploadMode == UploadMode.AUTO || (uploadMode == UploadMode.AUTO_FROM_DATE
                 && (isManual || media.getYear().getValue() >= minYearUploadAuto)))
-                && !Boolean.TRUE.equals(media.isIgnored()) && isEmpty(metadata.getCommonsFileNames())
+                && !Boolean.TRUE.equals(metadata.isIgnored()) && isEmpty(metadata.getCommonsFileNames())
                 && isPermittedFileType.test(metadata);
     }
 
     public static boolean isForbiddenUpload(Media media, boolean isManual) {
-        return Boolean.TRUE.equals(media.isIgnored()) && (!isManual || StringUtils.isBlank(media.getIgnoredReason())
-                || !(media.getIgnoredReason().contains("block list")
-                        || media.getIgnoredReason().contains("Photoset ignored")
-                        || media.getIgnoredReason().contains("Public Domain Mark")
-                        || media.getIgnoredReason().contains("Integer.MAX_VALUE")));
+        return media.getMetadataStream().anyMatch(fm -> isForbiddenUpload(fm, isManual));
+    }
+
+    public static boolean isForbiddenUpload(FileMetadata fm, boolean isManual) {
+        return Boolean.TRUE.equals(fm.isIgnored()) && (!isManual || StringUtils.isBlank(fm.getIgnoredReason())
+                || !(fm.getIgnoredReason().contains("block list")
+                        || fm.getIgnoredReason().contains("Photoset ignored")
+                        || fm.getIgnoredReason().contains("Public Domain Mark")
+                        || fm.getIgnoredReason().contains("Integer.MAX_VALUE")));
     }
 }

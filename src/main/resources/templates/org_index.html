@@ -138,7 +138,7 @@
 		            <a th:text="${file}" th:href="'https://commons.wikimedia.org/wiki/File:' + ${file}"></a><br>
 		          </div>
 		        </td>
-		        <td th:if="'ignored' == ${tab}" th:text="${media.ignoredReason}">
+		        <td th:if="'ignored' == ${tab}" th:text="${media.ignoredReasons}">
 		        </td>
 		      </tr>
 	      </tbody>

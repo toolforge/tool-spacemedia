@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMedia;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +12,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
-
 @Service
 public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
 
@@ -38,14 +39,14 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
     @Override
     protected boolean customProcessing(YouTubeMedia video) {
         boolean result = super.customProcessing(video);
-        if (!Boolean.TRUE.equals(video.isIgnored()) && video.getDescription().contains("copyright: ROSCOSMOS")) {
-            result = ignoreFile(video, "ROSCOSMOS copyright");
+        if (!video.isIgnored() && video.getDescription().contains("copyright: ROSCOSMOS")) {
+            result = ignoreMedia(video, "ROSCOSMOS copyright");
         }
-        if (!Boolean.TRUE.equals(video.isIgnored()) && video.getDuration().compareTo(Duration.ofMinutes(6)) > 0) {
-            result = ignoreFile(video, "Video longer than 6 minutes");
+        if (!video.isIgnored() && video.getDuration().compareTo(Duration.ofMinutes(6)) > 0) {
+            result = ignoreMedia(video, "Video longer than 6 minutes");
         }
         if ("yMy9IfNqJ2k".equals(video.getId())) {
-            result = ignoreFile(video, "Video duplicated");
+            result = ignoreMedia(video, "Video duplicated");
         }
         for (String toRemove : TO_REMOVE) {
             if (video.getDescription().contains(toRemove)) {

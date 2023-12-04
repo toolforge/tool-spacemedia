@@ -40,11 +40,11 @@ public interface NasaSvsMediaRepository extends MediaRepository<NasaSvsMedia> {
 
     @Override
     @Cacheable("nasaSvsCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("nasaSvsCountIgnoredRepo")
-    long countByIgnoredTrue(Set<String> repos);
+    long countByMetadata_IgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("nasaSvsCountMissing")
@@ -109,14 +109,4 @@ public interface NasaSvsMediaRepository extends MediaRepository<NasaSvsMedia> {
     @Override
     @CacheEvictNasaSvsAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictNasaSvsAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictNasaSvsAll
-    int resetIgnored(Set<String> repos);
 }

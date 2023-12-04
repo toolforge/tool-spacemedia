@@ -8,7 +8,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.toZonedDateTime;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
@@ -179,7 +178,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
 
     @Override
     protected void checkUploadPreconditions(FlickrMedia media, boolean checkUnicity, boolean isManual)
-            throws MalformedURLException, URISyntaxException {
+            throws URISyntaxException {
         super.checkUploadPreconditions(media, checkUnicity, isManual);
         if (processor.isBadVideoEntry(media)) {
             throw new ImageUploadForbiddenException("Bad video download link: " + media);

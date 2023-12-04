@@ -17,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaCommonConfiguration;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
@@ -49,12 +50,14 @@ class MediaServiceTest {
     @Test
     void testBelongsToBlocklist() {
         Media media = new Media();
+        media.addMetadata(new FileMetadata());
         media.setTitle("Spaceport of the Future Presentation");
         media.setDescription(
                 "Tom Stevens, Space Launch Delta 30 executive director, provides a Lunch\r\nand Learn topic presentation entitled Spaceport of the Future Overview at Vandenberg Space Force Base, Calif., March 7, 2023. The presentation included historical background, space launch vehicles and launch forecasts, spaceport vision and strategy, future assets and infrastructure projects, graphics and mapping of key assets. (U.S. Space Force photo by Senior Airman Tiarra Sibley)");
         assertTrue(service.belongsToBlocklist(media));
         assertTrue(media.isIgnored());
-        assertEquals("Title or description contains term(s) in block list: lunch and learn", media.getIgnoredReason());
+        assertEquals(List.of("Title or description contains term(s) in block list: lunch and learn"),
+                media.getIgnoredReasons());
     }
 
     @Test

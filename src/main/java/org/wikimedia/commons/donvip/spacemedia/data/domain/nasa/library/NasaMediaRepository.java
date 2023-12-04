@@ -49,11 +49,11 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
 
     @Override
     @Cacheable("nasaCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("nasaCountIgnoredByCenter")
-    long countByIgnoredTrue(Set<String> centers);
+    long countByMetadata_IgnoredTrue(Set<String> centers);
 
     @Override
     @Cacheable("nasaCountMissing")
@@ -63,10 +63,10 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Cacheable("nasaCountMissingByCenter")
     long countMissingInCommons(Set<String> centers);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and not exists elements (md.commonsFileNames) and m.mediaType = ?1 and m.id.repoId in ?2")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and m.mediaType = ?1 and m.id.repoId in ?2")
     long countMissingInCommonsByTypeAndCenters(NasaMediaType type, Set<String> centers);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (m.ignored is null or m.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
     long countMissingInCommons(NasaMediaType type);
 
     @Override
@@ -120,14 +120,4 @@ public interface NasaMediaRepository<T extends NasaMedia> extends MediaRepositor
     @Override
     @CacheEvictNasaAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictNasaAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictNasaAll
-    int resetIgnored(Set<String> repos);
 }

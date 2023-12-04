@@ -5,6 +5,10 @@ import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -12,10 +16,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Lob;
-
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 public class DjangoplicityMedia extends Media {
@@ -214,9 +214,7 @@ public class DjangoplicityMedia extends Media {
                 + (title != null ? "title=" + title + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + (isNotEmpty(telescopes) ? "telescopes=" + telescopes + ", " : "")
-                + (isNotEmpty(instruments) ? "instruments=" + instruments + ", " : "")
-                + (ignored != null ? "ignored=" + ignored + ", " : "")
-                + (ignoredReason != null ? "ignoredReason=" + ignoredReason : "") + "]";
+                + (isNotEmpty(instruments) ? "instruments=" + instruments + ", " : "") + "]";
     }
 
     public DjangoplicityMedia copyDataFrom(DjangoplicityMedia mediaFromApi) {

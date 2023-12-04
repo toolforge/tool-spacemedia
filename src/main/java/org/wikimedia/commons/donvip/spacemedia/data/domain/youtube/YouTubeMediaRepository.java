@@ -42,11 +42,11 @@ public interface YouTubeMediaRepository extends MediaRepository<YouTubeMedia> {
 
     @Override
     @Cacheable("youtubeCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("youtubeCountIgnoredByChannel")
-    long countByIgnoredTrue(Set<String> youtubeChannels);
+    long countByMetadata_IgnoredTrue(Set<String> youtubeChannels);
 
     @Override
     @Cacheable("youtubeCountMissing")
@@ -126,14 +126,4 @@ public interface YouTubeMediaRepository extends MediaRepository<YouTubeMedia> {
     @Override
     @CacheEvictYouTubeAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictYouTubeAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictYouTubeAll
-    int resetIgnored(Set<String> repos);
 }

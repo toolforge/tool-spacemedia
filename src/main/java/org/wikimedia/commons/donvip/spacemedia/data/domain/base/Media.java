@@ -55,6 +55,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 /**
  * Base class of all media.
@@ -120,14 +121,6 @@ public class Media implements MediaProjection, MediaDescription {
 
     @Column(nullable = true)
     protected ZonedDateTime publicationDateTime;
-
-    @Column(nullable = true)
-    protected Boolean ignored;
-
-    @Lob
-    @Column(nullable = true, columnDefinition = "TEXT")
-    @JsonProperty("ignored_reason")
-    protected String ignoredReason;
 
     @Column(nullable = true)
     @JsonProperty("last_update")
@@ -333,20 +326,16 @@ public class Media implements MediaProjection, MediaDescription {
                 .flatMap(m -> ofNullable(m.getCommonsFileNames()).orElse(Set.of()).stream()).collect(toSet());
     }
 
-    public Boolean isIgnored() {
-        return ignored;
+    @Transient
+    @JsonIgnore
+    public boolean isIgnored() {
+        return getMetadataStream().allMatch(fm -> fm.isIgnored() == Boolean.TRUE);
     }
 
-    public void setIgnored(Boolean ignored) {
-        this.ignored = ignored;
-    }
-
-    public String getIgnoredReason() {
-        return ignoredReason;
-    }
-
-    public void setIgnoredReason(String ignoredReason) {
-        this.ignoredReason = ignoredReason;
+    @Transient
+    @JsonIgnore
+    public List<String> getIgnoredReasons() {
+        return getMetadataStream().map(FileMetadata::getIgnoredReason).distinct().toList();
     }
 
     @Override
@@ -547,10 +536,6 @@ public class Media implements MediaProjection, MediaDescription {
                     addMetadata(apiMetadata);
                 }
             }
-        }
-        if (ignored != Boolean.TRUE && mediaFromApi.ignored == Boolean.TRUE) {
-            setIgnored(mediaFromApi.isIgnored());
-            setIgnoredReason(mediaFromApi.getIgnoredReason());
         }
         if (this instanceof WithKeywords kw && mediaFromApi instanceof WithKeywords kwApi) {
             kw.setKeywords(kwApi.getKeywords());

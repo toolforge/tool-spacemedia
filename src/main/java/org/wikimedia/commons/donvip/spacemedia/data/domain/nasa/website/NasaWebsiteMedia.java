@@ -4,13 +4,13 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
+
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 
 @Entity
 @Indexed
@@ -50,8 +50,6 @@ public class NasaWebsiteMedia extends Media implements WithKeywords {
                 + (title != null ? "title=" + title + ", " : "")
                 + (publicationDate != null ? "publicationDate=" + publicationDate + ", " : "")
                 + (publicationDateTime != null ? "publicationDateTime=" + publicationDateTime + ", " : "")
-                + (ignored != null ? "ignored=" + ignored + ", " : "")
-                + (ignoredReason != null ? "ignoredReason=" + ignoredReason + ", " : "")
                 + (getId() != null ? "id=" + getId() : "") + "]";
     }
 

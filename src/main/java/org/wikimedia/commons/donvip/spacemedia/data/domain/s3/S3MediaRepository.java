@@ -39,11 +39,11 @@ public interface S3MediaRepository extends MediaRepository<S3Media> {
 
     @Override
     @Cacheable("s3CountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("s3CountIgnoredByShare")
-    long countByIgnoredTrue(Set<String> buckets);
+    long countByMetadata_IgnoredTrue(Set<String> buckets);
 
     @Override
     @Cacheable("s3CountMissing")
@@ -108,14 +108,4 @@ public interface S3MediaRepository extends MediaRepository<S3Media> {
     @Override
     @CacheEvictS3All
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictS3All
-    int resetIgnored();
-
-    @Override
-    @CacheEvictS3All
-    int resetIgnored(Set<String> buckets);
 }

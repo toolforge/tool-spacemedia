@@ -36,7 +36,7 @@ public interface NasaSirsMediaRepository extends MediaRepository<NasaSirsMedia> 
 
     @Override
     @Cacheable("nasaSirsCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("nasaSirsCountMissing")
@@ -97,14 +97,4 @@ public interface NasaSirsMediaRepository extends MediaRepository<NasaSirsMedia> 
     @Override
     @CacheEvictNasaSirsAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictNasaSirsAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictNasaSirsAll
-    int resetIgnored(Set<String> repos);
 }

@@ -40,11 +40,11 @@ public interface NasaWebsiteMediaRepository extends MediaRepository<NasaWebsiteM
 
     @Override
     @Cacheable("nasaWebsiteCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("nasaWebsiteCountIgnoredRepo")
-    long countByIgnoredTrue(Set<String> repos);
+    long countByMetadata_IgnoredTrue(Set<String> repos);
 
     @Override
     @Cacheable("nasaWebsiteCountMissing")
@@ -109,14 +109,4 @@ public interface NasaWebsiteMediaRepository extends MediaRepository<NasaWebsiteM
     @Override
     @CacheEvictNasaWebsiteAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictNasaWebsiteAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictNasaWebsiteAll
-    int resetIgnored(Set<String> repos);
 }

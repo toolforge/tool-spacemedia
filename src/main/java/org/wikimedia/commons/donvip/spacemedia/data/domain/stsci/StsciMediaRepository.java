@@ -39,7 +39,7 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia> {
 
     @Override
     @Cacheable("stsciCountIgnored")
-    long countByIgnoredTrue(Set<String> missions);
+    long countByMetadata_IgnoredTrue(Set<String> missions);
 
     @Override
     @Cacheable("stsciCountMissing")
@@ -92,14 +92,4 @@ public interface StsciMediaRepository extends MediaRepository<StsciMedia> {
     @Override
     @CacheEvictStsciAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictStsciAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictStsciAll
-    int resetIgnored(Set<String> repos);
 }

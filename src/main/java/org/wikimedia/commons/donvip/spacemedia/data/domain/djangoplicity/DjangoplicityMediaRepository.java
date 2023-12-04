@@ -39,7 +39,7 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
 
     @Override
     @Cacheable("djangoCountIgnoredByWebsite")
-    long countByIgnoredTrue(Set<String> websites);
+    long countByMetadata_IgnoredTrue(Set<String> websites);
 
     @Override
     @Cacheable("djangoCountMissing")
@@ -104,14 +104,4 @@ public interface DjangoplicityMediaRepository extends MediaRepository<Djangoplic
     @Override
     @CacheEvictDjangoAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictDjangoAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictDjangoAll
-    int resetIgnored(Set<String> websites);
 }

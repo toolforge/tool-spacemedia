@@ -7,13 +7,14 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMedia;
+import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMetadata;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -253,12 +254,12 @@ public abstract class AbstractOrgService<T extends Media>
 
     @Override
     public long countIgnored() {
-        return repository.countByIgnoredTrue(getRepoIds());
+        return repository.countByMetadata_IgnoredTrue(getRepoIds());
     }
 
     @Override
     public long countIgnored(String repo) {
-        return isBlank(repo) ? countIgnored() : repository.countByIgnoredTrue(Set.of(repo));
+        return isBlank(repo) ? countIgnored() : repository.countByMetadata_IgnoredTrue(Set.of(repo));
     }
 
     @Override
@@ -434,17 +435,17 @@ public abstract class AbstractOrgService<T extends Media>
 
     @Override
     public List<T> listIgnoredMedia() {
-        return repository.findByIgnoredTrue(getRepoIds());
+        return repository.findByMetadata_IgnoredTrue(getRepoIds());
     }
 
     @Override
     public Page<T> listIgnoredMedia(Pageable page) {
-        return repository.findByIgnoredTrue(getRepoIds(), page);
+        return repository.findByMetadata_IgnoredTrue(getRepoIds(), page);
     }
 
     @Override
     public Page<T> listIgnoredMedia(String repo, Pageable page) {
-        return isBlank(repo) ? listIgnoredMedia(page) : repository.findByIgnoredTrue(Set.of(repo), page);
+        return isBlank(repo) ? listIgnoredMedia(page) : repository.findByMetadata_IgnoredTrue(Set.of(repo), page);
     }
 
     @Override
@@ -634,7 +635,7 @@ public abstract class AbstractOrgService<T extends Media>
     private Statistics getStatistics(String alias) {
         Set<String> singleton = Collections.singleton(alias);
         return new Statistics(alias, alias, repository.count(singleton), repository.countUploadedToCommons(singleton),
-                repository.countByIgnoredTrue(singleton), repository.countMissingImagesInCommons(singleton),
+                repository.countByMetadata_IgnoredTrue(singleton), repository.countMissingImagesInCommons(singleton),
                 repository.countMissingVideosInCommons(singleton), repository.countMissingDocumentsInCommons(singleton),
                 repository.countByMetadata_PhashNotNull(singleton),
                 null);
@@ -819,7 +820,7 @@ public abstract class AbstractOrgService<T extends Media>
             checkUploadPreconditions(media, checkUnicity, isManual);
             List<FileMetadata> uploaded = new ArrayList<>();
             return Triple.of(media, uploaded, doUpload(media, checkUnicity, uploaded, isManual));
-        } catch (IOException | RuntimeException | URISyntaxException e) {
+        } catch (RuntimeException | URISyntaxException e) {
             throw new UploadException(e);
         }
     }
@@ -1368,7 +1369,7 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected void checkUploadPreconditions(T media, boolean checkUnicity, boolean isManual)
-            throws MalformedURLException, URISyntaxException {
+            throws URISyntaxException {
         if (UploadContext.isForbiddenUpload(media, isManual)) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored (manual: " + isManual + ")");
         }
@@ -1403,44 +1404,40 @@ public abstract class AbstractOrgService<T extends Media>
         return getMediaClass();
     }
 
-    protected final boolean ignoreFile(T media, String reason) {
-        return MediaService.ignoreMedia(media, reason);
-    }
-
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
         MediaUpdateResult ur = mediaService.updateMedia(media, getStringsToRemove(media),
                 forceUpdate, getUrlResolver(), checkBlocklist(), includeByPerceptualHash(), ignoreExifMetadata(), null);
         boolean result = ur.getResult();
-        if (media.isIgnored() != Boolean.TRUE) {
+        if (!media.isIgnored()) {
             for (MediaDescription md : media.getDescriptionObjects()) {
                 String description = ofNullable(md.getDescription()).orElse("").toLowerCase(Locale.ENGLISH);
                 if (description.contains("courtesy")
                         && (findLicenceTemplates(media, md instanceof FileMetadata fm ? fm : null).isEmpty()
                                 || courtesyOk.stream().noneMatch(description::contains))) {
-                    result = ignoreFile(media, "Probably non-free image (courtesy)");
+                    result = ignoreMedia(media, "Probably non-free image (courtesy)");
                     LOGGER.debug("Courtesy test has been trigerred for {}", media);
                 }
             }
             if (StringUtils.length(media.getTitle()) + StringUtils.length(media.getDescription()) <= 2) {
                 // To ignore https://www.dvidshub.net/image/6592675 (title and desc are '.')
-                result = ignoreFile(media, "Very short or missing title and description");
+                result = ignoreMedia(media, "Very short or missing title and description");
                 LOGGER.debug("Short title or description test has been trigerred for {}", media);
             }
             if (media.hasMetadata() && media.isImage()) {
-                if (media.getMetadataStream().allMatch(
-                        fm -> fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000)) {
-                    result = ignoreFile(media, "Too small image");
-                    LOGGER.debug("Too small image test has been trigerred for {}", media);
-                } else if (media.getMetadataStream()
-                        .allMatch(fm -> fm.getSize() != null && fm.getSize() > Integer.MAX_VALUE)) {
-                    // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
-                    result = ignoreFile(media, "Too big image");
-                    LOGGER.debug("Too big image test has been trigerred for {}", media);
+                for (FileMetadata fm : media.getMetadata()) {
+                    if (fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000) {
+                        result = ignoreMetadata(fm, "Too small image");
+                        LOGGER.debug("Too small image test has been trigerred for {}", media);
+                    } else if (fm.getSize() != null && fm.getSize() > Integer.MAX_VALUE) {
+                        // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
+                        result = ignoreMetadata(fm, "Too big image");
+                        LOGGER.debug("Too big image test has been trigerred for {}", media);
+                    }
                 }
             }
             if (isBlank(media.getDescription()) && media.getTitle() != null
                     && media.getTitle().matches("Picture \\d+")) {
-                result = ignoreFile(media, "Media without description and with uninteresting title");
+                result = ignoreMedia(media, "Media without description and with uninteresting title");
                 LOGGER.debug("No description and uninteresting title test has been trigerred for {}", media);
             }
         }
@@ -1466,16 +1463,6 @@ public abstract class AbstractOrgService<T extends Media>
     @Override
     public int compareTo(AbstractOrgService<T> o) {
         return getName().compareTo(o.getName());
-    }
-
-    protected final int doResetIgnored() {
-        return repository.resetIgnored(getRepoIds());
-    }
-
-    public final int resetIgnored() {
-        int result = doResetIgnored();
-        LOGGER.info("Reset {} ignored media for org {}", result, getName());
-        return result;
     }
 
     protected final RuntimeData getRuntimeData() {

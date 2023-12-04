@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMedia;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 
 import java.io.IOException;
@@ -287,13 +288,13 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         try {
             MediaUpdateResult commonUpdate = doCommonUpdate(media, forceUpdate);
             boolean save = commonUpdate.getResult();
-            if (!Boolean.TRUE.equals(media.isIgnored())) {
+            if (!media.isIgnored()) {
                 if (ignoredCategories.contains(media.getCategory())) {
-                    save = ignoreFile(media, "Ignored category: " + media.getCategory());
+                    save = ignoreMedia(media, "Ignored category: " + media.getCategory());
                 } else if (findLicenceTemplates(media, media.getUniqueMetadata()).isEmpty()) {
                     // DVIDS media with VIRIN "O". we can assume it implies a courtesy photo
                     // https://www.dvidshub.net/image/3322521/45th-sw-supports-successful-atlas-v-oa-7-launch
-                    save = ignoreFile(media, "No template found (VIRIN O): " + media.getVirin());
+                    save = ignoreMedia(media, "No template found (VIRIN O): " + media.getVirin());
                 }
             }
             return new MediaUpdateResult(save, commonUpdate.getException());

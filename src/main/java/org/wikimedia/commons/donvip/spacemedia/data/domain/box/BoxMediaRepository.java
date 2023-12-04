@@ -39,11 +39,11 @@ public interface BoxMediaRepository extends MediaRepository<BoxMedia> {
 
     @Override
     @Cacheable("boxCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("boxCountIgnoredByShare")
-    long countByIgnoredTrue(Set<String> appShares);
+    long countByMetadata_IgnoredTrue(Set<String> appShares);
 
     @Override
     @Cacheable("boxCountMissing")
@@ -108,14 +108,4 @@ public interface BoxMediaRepository extends MediaRepository<BoxMedia> {
     @Override
     @CacheEvictBoxAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictBoxAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictBoxAll
-    int resetIgnored(Set<String> appShares);
 }

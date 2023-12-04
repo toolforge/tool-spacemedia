@@ -1,7 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +9,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 
 @Service
 public class InitializationService implements ApplicationRunner {
@@ -25,13 +22,7 @@ public class InitializationService implements ApplicationRunner {
     private StatsService statsService;
 
     @Autowired
-    private List<AbstractOrgService<?>> orgs;
-
-    @Autowired
     private FileMetadataRepository metadataRepo;
-
-    @Value("${reset.ignored}")
-    private boolean resetIgnored;
 
     @Value("${reset.perceptual.hashes}")
     private boolean resetPerceptualHashes;
@@ -41,9 +32,6 @@ public class InitializationService implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        if (resetIgnored) {
-            LOGGER.info("Reset a total number of {} ignored media", self.resetIgnored());
-        }
         if (resetPerceptualHashes) {
             LOGGER.info("Reset a total number of {} perceptual hashes", self.resetPerceptualHashes());
         }
@@ -52,11 +40,6 @@ public class InitializationService implements ApplicationRunner {
         }
         // Perform the most exhaustive data-fetching operation to populate all caches at startup
         statsService.getStats(true);
-    }
-
-    @Transactional
-    public int resetIgnored() {
-        return orgs.stream().mapToInt(AbstractOrgService::resetIgnored).sum();
     }
 
     @Transactional

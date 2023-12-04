@@ -41,11 +41,11 @@ public interface WebMilMediaRepository extends MediaRepository<WebMilMedia> {
 
     @Override
     @Cacheable("webmilCountIgnored")
-    long countByIgnoredTrue();
+    long countByMetadata_IgnoredTrue();
 
     @Override
     @Cacheable("webmilCountIgnoredByWebsite")
-    long countByIgnoredTrue(Set<String> websites);
+    long countByMetadata_IgnoredTrue(Set<String> websites);
 
     @Override
     @Cacheable("webmilCountMissing")
@@ -110,14 +110,4 @@ public interface WebMilMediaRepository extends MediaRepository<WebMilMedia> {
     @Override
     @CacheEvictWebmilAll
     void deleteAll();
-
-    // UPDATE
-
-    @Override
-    @CacheEvictWebmilAll
-    int resetIgnored();
-
-    @Override
-    @CacheEvictWebmilAll
-    int resetIgnored(Set<String> websites);
 }
