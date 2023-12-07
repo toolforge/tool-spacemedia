@@ -204,7 +204,7 @@ public class NasaMediaProcessorService {
         } else {
             save = processMediaFromApi(rest, media, href, problem, true);
         }
-        if (checkPhotographerBlocklist(media)) {
+        if (checkIgnoreRules(media)) {
             save = true;
         }
         if (doCommonUpdate.test(media)) {
@@ -240,11 +240,21 @@ public class NasaMediaProcessorService {
         return Pair.of(saveMediaOrCheckRemote.apply(save, media), uploadCount);
     }
 
-    public boolean checkPhotographerBlocklist(NasaMedia media) {
-        if (media instanceof NasaImage img && !img.isIgnored() && isPhotographerBLocklisted(img)) {
-            ignoreMedia(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer() + " / "
-                    + img.getSecondaryCreator());
-            return true;
+    public boolean checkIgnoreRules(NasaMedia media) {
+        if (!media.isIgnored()) {
+            if (media instanceof NasaImage img && isPhotographerBLocklisted(img)) {
+                return ignoreMedia(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer() + " / "
+                        + img.getSecondaryCreator());
+            } else if (media.getDescription() != null) {
+                if (media.getDescription().contains("/photojournal")) {
+                    return ignoreMedia(media, "Photojournal");
+                } else {
+                    String desc = media.getDescription().toLowerCase(Locale.ENGLISH);
+                    if ((desc.contains("courtesy") && !desc.contains("courtesy of nasa")) || desc.contains("©")) {
+                        return ignoreMedia(media, "Probably non-free image (courtesy)");
+                    }
+                }
+            }
         }
         return false;
     }
@@ -266,16 +276,6 @@ public class NasaMediaProcessorService {
         }
         if (media.getId().getMediaId().length() < 3) {
             problem.accept(media.getAssetUrl(), new Exception("Strange id: '" + media.getId() + "'"));
-        }
-        if (!media.isIgnored() && media.getDescription() != null) {
-            if (media.getDescription().contains("/photojournal")) {
-                ignoreMedia(media, "Photojournal");
-            } else {
-                String desc = media.getDescription().toLowerCase(Locale.ENGLISH);
-                if (desc.contains("courtesy") || desc.contains("©")) {
-                    ignoreMedia(media, "Probably non-free image (courtesy)");
-                }
-            }
         }
         return true;
     }
