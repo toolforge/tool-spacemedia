@@ -356,8 +356,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @Transient
     @JsonIgnore
     public boolean isAudio() {
-        String ext = getFileExtension();
-        return ext != null && AUDIO_EXTENSIONS.contains(ext);
+        return isOf(AUDIO_EXTENSIONS, "/audio/");
     }
 
     /**
@@ -368,8 +367,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @Transient
     @JsonIgnore
     public boolean isImage() {
-        String ext = getFileExtension();
-        return ext != null && IMAGE_EXTENSIONS.contains(ext);
+        return isOf(IMAGE_EXTENSIONS, "/image/");
     }
 
     /**
@@ -380,8 +378,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @Transient
     @JsonIgnore
     public boolean isVideo() {
-        String ext = getFileExtension();
-        return ext != null && VIDEO_EXTENSIONS.contains(ext);
+        return isOf(VIDEO_EXTENSIONS, "/video/");
     }
 
     /**
@@ -392,8 +389,12 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @Transient
     @JsonIgnore
     public boolean isDocument() {
+        return isOf(DOC_EXTENSIONS, "/document/");
+    }
+
+    private boolean isOf(Set<String> extensions, String type) {
         String ext = getFileExtension();
-        return ext != null && DOC_EXTENSIONS.contains(ext);
+        return ext != null ? extensions.contains(ext) : assetUrl.toString().contains(type);
     }
 
     @Override

@@ -155,7 +155,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     }
 
     @Test
-    void testFindCategories() {
+    void testFindCategories() throws Exception {
         FlickrMedia media = new FlickrMedia();
         media.setId(new CompositeMediaId("kevinmgill", "52935302219"));
         media.setTitle("MSL - Sol 3841 - MastCam");
@@ -166,7 +166,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
 
         doCallRealMethod().when(mediaService).useMapping(any(), any(), any(), any(), any());
 
-        FileMetadata metadata = new FileMetadata();
+        FileMetadata metadata = new FileMetadata(new URL("https://foo"));
         assertEquals(Set.of("Photos by the Curiosity rover Mastcam"), service.findCategories(media, metadata, false));
         assertEquals(Set.of("Photos by the Curiosity rover Mastcam", "Files from Kevin Gill Flickr stream",
                 "Spacemedia Flickr files uploaded by null"),

@@ -102,7 +102,7 @@ class NasaLibraryServiceTest extends AbstractOrgServiceTest {
                         e("Prokopyev", "Sergey Prokopyev (cosmonaut)"), e("Cristoforetti", "Samantha Cristoforetti"),
                         e("Lindgren", "Kjell Lindgren"), e("Kikina", "Anna Kikina"), e("Rubio", "Francisco Rubio")));
         assertEquals(Set.of("ISS Expedition 68", "Anna Kikina", "Sergey Prokopyev (cosmonaut)"),
-                service.findCategories(media, new FileMetadata(), false));
+                service.findCategories(media, new FileMetadata(new URL("https://foo")), false));
     }
 
     @Test
