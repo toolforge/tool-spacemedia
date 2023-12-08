@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.text.StringEscapeUtils.unescapeXml;
 import static org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils.readImage;
@@ -29,7 +30,6 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +51,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
+import org.wikimedia.commons.donvip.spacemedia.utils.ImageAndMetadata;
 
 @Service
 public class MediaService {
@@ -216,8 +217,8 @@ public class MediaService {
             URL assetUrl = urlResolver.resolveDownloadUrl(media, metadata);
             if (isImage && shouldReadImage(assetUrl, metadata, forceUpdateOfHashes)) {
                 try {
-                    Pair<BufferedImage, Long> pair = readImage(assetUrl, false, true);
-                    bi = pair.getLeft();
+                    ImageAndMetadata img = readImage(assetUrl, false, true);
+                    bi = img.image();
                     if (bi != null) {
                         if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
                             metadata.setReadableImage(Boolean.TRUE);
@@ -230,10 +231,19 @@ public class MediaService {
                             result = true;
                         }
                     }
-                    Long contentLength = pair.getRight();
-                    if (contentLength > 0 && !metadata.hasSize()) {
-                        metadata.setSize(contentLength);
+                    if (img.contentLength() > 0 && !metadata.hasSize()) {
+                        metadata.setSize(img.contentLength());
                         LOGGER.info("Size has been updated for {}", metadata);
+                        result = true;
+                    }
+                    if (isNotBlank(img.extension()) && isBlank(metadata.getExtension())) {
+                        metadata.setExtension(img.extension());
+                        LOGGER.info("Extension has been updated for {}", metadata);
+                        result = true;
+                    }
+                    if (isNotBlank(img.filename()) && isBlank(metadata.getOriginalFileName())) {
+                        metadata.setOriginalFileName(img.filename());
+                        LOGGER.info("Filename has been updated for {}", metadata);
                         result = true;
                     }
                 } catch (IOException | ImageDecodingException e) {
@@ -281,7 +291,8 @@ public class MediaService {
         return assetUrl != null
                 && (metadata.isReadableImage() == null || (Boolean.TRUE.equals(metadata.isReadableImage())
                         && (!metadata.hasPhash() || !metadata.hasSha1() || !metadata.hasValidDimensions()
-                                || !metadata.hasSize() || forceUpdateOfHashes)));
+                                || !metadata.hasSize() || isBlank(metadata.getExtension())
+                                || isBlank(metadata.getOriginalFileName()) || forceUpdateOfHashes)));
     }
 
     public static boolean ignoreMedia(Media media, String reason) {

@@ -1388,7 +1388,7 @@ public class CommonsService {
             BufferedImage bi = null;
             try {
                 URL url = getImageUrl(name);
-                bi = ImageUtils.readImage(url, false, false).getLeft();
+                bi = ImageUtils.readImage(url, false, false).image();
                 if (bi == null) {
                     throw new IOException("Failed to read image from " + url);
                 }

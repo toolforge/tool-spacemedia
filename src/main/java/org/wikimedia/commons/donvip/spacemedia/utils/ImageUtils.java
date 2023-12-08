@@ -20,7 +20,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -85,12 +84,12 @@ public class ImageUtils {
         }
     }
 
-    public static Pair<BufferedImage, Long> readImage(URL url, boolean readMetadata, boolean log)
+    public static ImageAndMetadata readImage(URL url, boolean readMetadata, boolean log)
             throws IOException, ImageDecodingException {
         return readImage(Utils.urlToUriUnchecked(url), readMetadata, log);
     }
 
-    public static Pair<BufferedImage, Long> readImage(URI uri, boolean readMetadata, boolean log)
+    public static ImageAndMetadata readImage(URI uri, boolean readMetadata, boolean log)
             throws IOException, ImageDecodingException {
         if (log) {
             LOGGER.info("Reading image {}", uri);
@@ -100,18 +99,23 @@ public class ImageUtils {
                 CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
                 InputStream in = response.getEntity().getContent()) {
             boolean ok = IMAGE_EXTENSIONS.contains(extension);
+            String filename = null;
             if (!ok) {
                 Header[] disposition = response.getHeaders("Content-Disposition");
                 if (ArrayUtils.isNotEmpty(disposition)) {
-                    extension = Utils.findExtension(disposition[0].getValue());
+                    String value = disposition[0].getValue();
+                    if (value.startsWith("attachment;filename=")) {
+                        filename = value.split("=")[1];
+                    }
+                    extension = Utils.findExtension(value);
                     ok = IMAGE_EXTENSIONS.contains(extension);
                 }
             }
             long contentLength = response.getEntity().getContentLength();
             if (ok) {
-                return Pair.of(readImage(in, readMetadata), contentLength);
+                return new ImageAndMetadata(readImage(in, readMetadata), contentLength, filename, extension);
             } else if ("webp".equals(extension)) {
-                return Pair.of(readWebp(uri, readMetadata), contentLength);
+                return new ImageAndMetadata(readWebp(uri, readMetadata), contentLength, filename, extension);
             } else {
                 throw new ImageDecodingException(
                         "Unsupported format: " + extension + " / headers:" + response.getAllHeaders());
