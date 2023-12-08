@@ -4,17 +4,17 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
-import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @Entity
 @Table(indexes = { @Index(columnList = "url") })
@@ -24,7 +24,7 @@ public class EsaMedia extends Media implements WithKeywords {
     private URL url;
     @Column(length = 64)
     private String activity;
-    @Column(length = 60)
+    @Column(length = 160)
     private String mission;
     @Column(length = 70)
     private String people;
