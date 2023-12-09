@@ -13,11 +13,12 @@ class NasaModisMediaTest {
     @Test
     void testGetUploadTitle() throws MalformedURLException {
         NasaModisMedia media = new NasaModisMedia();
+        media.setPublicationDate(LocalDate.of(2015, 12, 2));
         FileMetadata m1 = new FileMetadata("http://modis.gsfc.nasa.gov/gallery/images/image12022015_250m.jpg");
         media.addMetadata(m1);
         media.setTitle("Kerguelen Island, South Indian Ocean");
 
-        assertEquals("Kerguelen Island, South Indian Ocean (MODIS)", media.getUploadTitle(m1));
+        assertEquals("Kerguelen Island, South Indian Ocean (MODIS 2015-12-02)", media.getUploadTitle(m1));
     }
 
     @Test
