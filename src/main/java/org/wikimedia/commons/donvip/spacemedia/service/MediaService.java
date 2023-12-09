@@ -12,6 +12,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils.readImage
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -219,33 +221,9 @@ public class MediaService {
                 try {
                     ImageAndMetadata img = readImage(assetUrl, false, true);
                     bi = img.image();
-                    if (bi != null) {
-                        if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
-                            metadata.setReadableImage(Boolean.TRUE);
-                            LOGGER.info("Readable state has been updated to {} for {}", Boolean.TRUE, metadata);
-                            result = true;
-                        }
-                        if (bi.getWidth() > 0 && bi.getHeight() > 0 && !metadata.hasValidDimensions()) {
-                            metadata.setImageDimensions(new ImageDimensions(bi.getWidth(), bi.getHeight()));
-                            LOGGER.info("Image dimensions have been updated for {}", metadata);
-                            result = true;
-                        }
-                    }
-                    if (img.contentLength() > 0 && !metadata.hasSize()) {
-                        metadata.setSize(img.contentLength());
-                        LOGGER.info("Size has been updated for {}", metadata);
-                        result = true;
-                    }
-                    if (isNotBlank(img.extension()) && isBlank(metadata.getExtension())) {
-                        metadata.setExtension(img.extension());
-                        LOGGER.info("Extension has been updated for {}", metadata);
-                        result = true;
-                    }
-                    if (isNotBlank(img.filename()) && isBlank(metadata.getOriginalFileName())) {
-                        metadata.setOriginalFileName(img.filename());
-                        LOGGER.info("Filename has been updated for {}", metadata);
-                        result = true;
-                    }
+                    result |= updateReadableStateAndDims(metadata, bi);
+                    result |= updateFileSize(metadata, img);
+                    result |= updateExtensionAndFilename(metadata, img);
                 } catch (IOException | ImageDecodingException e) {
                     result = ignoreMetadata(metadata, "Unreadable file", e);
                     metadata.setReadableImage(Boolean.FALSE);
@@ -285,6 +263,66 @@ public class MediaService {
             metadataRepository.save(metadata);
         }
         return new MediaUpdateResult(result, null);
+    }
+
+    private static boolean updateReadableStateAndDims(FileMetadata metadata, BufferedImage bi) {
+        boolean result = false;
+        if (bi != null) {
+            if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
+                metadata.setReadableImage(Boolean.TRUE);
+                LOGGER.info("Readable state has been updated to {} for {}", Boolean.TRUE, metadata);
+                result = true;
+            }
+            if (bi.getWidth() > 0 && bi.getHeight() > 0 && !metadata.hasValidDimensions()) {
+                metadata.setImageDimensions(new ImageDimensions(bi.getWidth(), bi.getHeight()));
+                LOGGER.info("Image dimensions have been updated for {}", metadata);
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    private static boolean updateFileSize(FileMetadata metadata, ImageAndMetadata img) {
+        if (!metadata.hasSize()) {
+            if (img.contentLength() > 0) {
+                metadata.setSize(img.contentLength());
+                LOGGER.info("Size has been updated from contentLength for {}", metadata);
+                return true;
+            } else if (img.image() != null && isNotBlank(img.extension())) {
+                try {
+                    Path tempFile = Files.createTempFile("sm", img.extension());
+                    try {
+                        if (ImageIO.write(img.image(), img.extension(), tempFile.toFile())) {
+                            metadata.setSize(Files.size(tempFile));
+                            LOGGER.info("Size has been updated from file size for {}", metadata);
+                            return true;
+                        } else {
+                            LOGGER.warn("Failed to write {} to {}", metadata, tempFile);
+                        }
+                    } finally {
+                        Files.delete(tempFile);
+                    }
+                } catch (IOException e) {
+                    LOGGER.error("Failed to compute file size for {}", metadata, e);
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean updateExtensionAndFilename(FileMetadata metadata, ImageAndMetadata img) {
+        boolean result = false;
+        if (isNotBlank(img.extension()) && isBlank(metadata.getExtension())) {
+            metadata.setExtension(img.extension());
+            LOGGER.info("Extension has been updated for {}", metadata);
+            result = true;
+        }
+        if (isNotBlank(img.filename()) && isBlank(metadata.getOriginalFileName())) {
+            metadata.setOriginalFileName(img.filename());
+            LOGGER.info("Filename has been updated for {}", metadata);
+            result = true;
+        }
+        return result;
     }
 
     private static boolean shouldReadImage(URL assetUrl, FileMetadata metadata, boolean forceUpdateOfHashes) {
