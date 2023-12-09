@@ -7,8 +7,6 @@ import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
@@ -86,18 +84,6 @@ public interface YouTubeMediaRepository extends MediaRepository<YouTubeMedia> {
     @Override
     @Cacheable("youtubeCountPhashNotNullByChannel")
     long countByMetadata_PhashNotNull(Set<String> youtubeChannels);
-
-    // FIND
-
-    @Override
-    default Page<YouTubeMedia> findMissingImagesInCommons(Pageable page) {
-        return Page.empty();
-    }
-
-    @Override
-    default Page<YouTubeMedia> findMissingVideosInCommons(Pageable page) {
-        return findMissingInCommons(page);
-    }
 
     // SAVE
 

@@ -7,8 +7,6 @@ import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 
@@ -57,18 +55,6 @@ public interface NasaSirsMediaRepository extends MediaRepository<NasaSirsMedia> 
     @Override
     @Cacheable("nasaSirsCountUploaded")
     long countUploadedToCommons();
-
-    // FIND
-
-    @Override
-    default Page<NasaSirsMedia> findMissingImagesInCommons(Pageable page) {
-        return findMissingInCommons(page);
-    }
-
-    @Override
-    default Page<NasaSirsMedia> findMissingVideosInCommons(Pageable page) {
-        return Page.empty();
-    }
 
     // SAVE
 

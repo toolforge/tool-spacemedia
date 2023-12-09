@@ -3,17 +3,22 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 import static jakarta.persistence.GenerationType.SEQUENCE;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.findExtension;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getNormalizedExtension;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,11 +43,13 @@ import jakarta.persistence.Transient;
 @Table(indexes = { @Index(columnList = "assetUrl"), @Index(columnList = "sha1, phash") })
 public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileMetadata.class);
+
     private static final Set<String> AUDIO_EXTENSIONS = Set.of("wav", "mp3", "flac", "midi");
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("bmp", "jpg", "tiff", "png", "webp", "xcf", "gif",
-            "svg");
-    private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg");
-    private static final Set<String> DOC_EXTENSIONS = Set.of("pdf", "stl");
+            "svg", "exr");
+    private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg", "wmv");
+    private static final Set<String> DOC_EXTENSIONS = Set.of("pdf", "stl", "epub", "ppt", "pptm", "pptx");
 
     @Id
     @JsonIgnore
@@ -118,12 +125,29 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
     public FileMetadata(URL assetUrl) {
         this.assetUrl = assetUrl;
-        setOriginalFileName(assetUrl.getPath().replace("/", ""));
-        setExtension(getFileExtension(assetUrl.toExternalForm()));
+        updateFilenameAndExtension(assetUrl.getPath());
     }
 
     public FileMetadata(String assetUrl) throws MalformedURLException {
         this(new URL(assetUrl));
+    }
+
+    public boolean updateFilenameAndExtension(String assetPath) {
+        int idx = assetPath.lastIndexOf('/');
+        if (idx > -1) {
+            assetPath = assetPath.substring(idx + 1);
+        }
+        String ext = findExtension(assetPath);
+        if (ext != null) {
+            try {
+                setOriginalFileName(URLDecoder.decode(assetPath, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+            setExtension(ext);
+            return true;
+        }
+        return false;
     }
 
     public String getSha1() {
@@ -211,7 +235,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     }
 
     public void setExtension(String extension) {
-        this.extension = extension;
+        this.extension = getNormalizedExtension(extension);
     }
 
     public Long getSize() {
@@ -286,43 +310,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
         } else if (getAssetUrl() == null) {
             return null;
         }
-        return getFileExtension(getAssetUrl().toExternalForm());
-    }
-
-    private static String getFileExtension(String url) {
-        int idx = url.lastIndexOf('.');
-        if (idx < 0) {
-            return null;
-        }
-        String ext = url.substring(idx + 1).toLowerCase(Locale.ENGLISH);
-        int len = ext.length();
-        if (len < 3 || len > 4) {
-            return null;
-        }
-        return getNormalizedExtension(ext);
-    }
-
-    private static String getNormalizedExtension(String ext) {
-        return switch (ext) {
-        case "apng" -> "png";
-        case "djv" -> "djvu";
-        case "jpe", "jpeg", "jps" -> "jpg"; // Use the same extension as flickr2commons as it solely relies on filenames
-        case "tif" -> "tiff";
-        case "mid", "kar" -> "midi";
-        case "mpe", "mpg" -> "mpeg";
-        default -> ext;
-        };
-    }
-
-    @Transient
-    @JsonIgnore
-    public Set<String> getFileExtensions() {
-        String ext = getFileExtension();
-        return switch (ext) {
-        case "jpg" -> Set.of("jpg", "jpeg");
-        case "tiff" -> Set.of("tif", "tiff");
-        default -> Set.of(ext);
-        };
+        return findExtension(getAssetUrl().toExternalForm());
     }
 
     @Transient
@@ -334,7 +322,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     public static String getMime(String ext) {
         return ext == null ? null : switch (ext) {
         case "djvu" -> "image/vnd.djvu";
-        case "jpg", "jpeg" -> "image/jpeg";
+        case "jpe", "jpg", "jpeg" -> "image/jpeg";
         case "tif", "tiff" -> "image/tiff";
         case "bmp", "gif", "png", "webp" -> "image/" + ext;
         case "svg" -> "image/svg+xml";
@@ -344,6 +332,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
         case "webm" -> "video/" + ext;
         case "pdf" -> "application/pdf";
         case "stl" -> "application/sla";
+        case "epub" -> "application/epub+zip";
         default -> null;
         };
     }

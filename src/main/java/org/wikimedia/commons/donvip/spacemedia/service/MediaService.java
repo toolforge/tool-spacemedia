@@ -217,6 +217,8 @@ public class MediaService {
         BufferedImage bi = null;
         try {
             URL assetUrl = urlResolver.resolveDownloadUrl(media, metadata);
+            result |= isBlank(metadata.getOriginalFileName())
+                    && metadata.updateFilenameAndExtension(assetUrl.getPath());
             if (isImage && shouldReadImage(assetUrl, metadata, forceUpdateOfHashes)) {
                 try {
                     ImageAndMetadata img = readImage(assetUrl, false, true);
@@ -230,8 +232,8 @@ public class MediaService {
                     LOGGER.info("Readable state has been updated to {} for {}", Boolean.FALSE, metadata);
                 }
             }
-            if (isImage && Boolean.TRUE.equals(metadata.isReadableImage())
-                    && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
+            boolean isReadableImage = isImage && Boolean.TRUE == metadata.isReadableImage();
+            if (isReadableImage && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
                 LOGGER.info("Perceptual hash has been updated for {}", metadata);
                 result = true;
             }
@@ -243,7 +245,7 @@ public class MediaService {
                 LOGGER.info("SHA1 hash has been updated for {}", metadata);
                 result = true;
             }
-            if (isImage && !ignoreExifMetadata && updateExifMetadata(metadata)) {
+            if (isReadableImage && !ignoreExifMetadata && updateExifMetadata(metadata)) {
                 LOGGER.info("EXIF metadata has been updated for {}", metadata);
                 result = true;
             }
@@ -348,7 +350,7 @@ public class MediaService {
 
     public static boolean ignoreMetadata(FileMetadata fm, String reason, Exception e) {
         if (e != null) {
-            LOGGER.warn("Ignored {} for reason {}", fm, reason, e);
+            LOGGER.warn("Ignored {} for reason {}: {}", fm, reason, e.toString());
         } else {
             LOGGER.warn("Ignored {} for reason {}", fm, reason);
         }
@@ -391,8 +393,12 @@ public class MediaService {
 
     public boolean updateExifMetadata(FileMetadata metadata) throws IOException {
         if (metadata.getExif() == null) {
-            metadata.setExif(exifRepository.save(ExifMetadata.of(readImageMetadata(metadata.getAssetUri()))));
-            return true;
+            try {
+                metadata.setExif(exifRepository.save(ExifMetadata.of(readImageMetadata(metadata.getAssetUri()))));
+                return true;
+            } catch (IOException e) {
+                LOGGER.error("Failed to update EXIF metadata for {}: {}", metadata, e.getMessage());
+            }
         }
         return false;
     }

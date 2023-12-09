@@ -109,7 +109,8 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
             do {
                 SearchListResponse list = youtubeService.searchCreativeCommonsVideos(channelId, pageToken);
                 pageToken = list.getNextPageToken();
-                List<YouTubeMedia> videos = processYouTubeVideos(buildYouTubeVideoList(list, youtubeService.listVideos(list)));
+                List<YouTubeMedia> videos = processYouTubeVideos(
+                        buildYouTubeVideoList(channelId, list, youtubeService.listVideos(list)));
                 count += videos.size();
                 freeVideos.addAll(videos);
             } while (pageToken != null);
@@ -135,17 +136,18 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         return count;
     }
 
-    private List<YouTubeMedia> buildYouTubeVideoList(SearchListResponse searchList, VideoListResponse videoList) {
+    private List<YouTubeMedia> buildYouTubeVideoList(String channel, SearchListResponse searchList,
+            VideoListResponse videoList) {
         return searchList.getItems().stream()
-                .map(sr -> toYouTubeVideo(
+                .map(sr -> toYouTubeVideo(channel,
                         videoList.getItems().stream().filter(v -> sr.getId().getVideoId().equals(v.getId())).findFirst().get()))
                 .toList();
     }
 
-    private YouTubeMedia toYouTubeVideo(Video ytVideo) {
+    private YouTubeMedia toYouTubeVideo(String channel, Video ytVideo) {
         YouTubeMedia video = new YouTubeMedia();
-        video.setId(new CompositeMediaId(null, ytVideo.getId()));
-        addMetadata(video, "https://www.youtube.com/watch?v=" + video.getId(), null);
+        video.setId(new CompositeMediaId(channel, ytVideo.getId()));
+        addMetadata(video, "https://www.youtube.com/watch?v=" + video.getId(), fm -> fm.setExtension("webm"));
         return fillVideoSnippetAndDetails(video, ytVideo);
     }
 

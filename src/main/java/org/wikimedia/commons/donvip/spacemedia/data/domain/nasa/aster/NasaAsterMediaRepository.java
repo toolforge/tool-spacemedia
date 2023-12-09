@@ -7,12 +7,8 @@ import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 
 public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia> {
 
@@ -86,21 +82,6 @@ public interface NasaAsterMediaRepository extends MediaRepository<NasaAsterMedia
     @Override
     @Cacheable("nasaAsterCountPhashNotNullRepo")
     long countByMetadata_PhashNotNull(Set<String> repos);
-
-    // FIND
-
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and m.mediaType = ?1 and not exists elements (md.commonsFileNames)")
-    Page<NasaAsterMedia> findMissingInCommonsByType(NasaMediaType type, Pageable page);
-
-    @Override
-    default Page<NasaAsterMedia> findMissingImagesInCommons(Pageable page) {
-        return findMissingInCommonsByType(NasaMediaType.image, page);
-    }
-
-    @Override
-    default Page<NasaAsterMedia> findMissingVideosInCommons(Pageable page) {
-        return findMissingInCommonsByType(NasaMediaType.video, page);
-    }
 
     // SAVE
 

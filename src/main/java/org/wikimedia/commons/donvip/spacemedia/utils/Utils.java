@@ -117,7 +117,31 @@ public final class Utils {
     }
 
     public static String findExtension(String path) {
-        return path.substring(path.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH);
+        int idx = path.lastIndexOf('.');
+        if (idx < 0) {
+            return null;
+        }
+        String ext = path.substring(idx + 1).toLowerCase(Locale.ENGLISH);
+        if ("gne".equals(ext)) {
+            return null;
+        }
+        int len = ext.length();
+        if (len < 3 || len > 4) {
+            return null;
+        }
+        return getNormalizedExtension(ext);
+    }
+
+    public static String getNormalizedExtension(String ext) {
+        return ext != null ? switch (ext) {
+        case "apng" -> "png";
+        case "djv" -> "djvu";
+        case "jpe", "jpeg", "jps" -> "jpg"; // Use the same extension as flickr2commons as it solely relies on filenames
+        case "tif" -> "tiff";
+        case "mid", "kar" -> "midi";
+        case "mpe", "mpg" -> "mpeg";
+        default -> ext;
+        } : null;
     }
 
     public static String getFilename(URL url) {

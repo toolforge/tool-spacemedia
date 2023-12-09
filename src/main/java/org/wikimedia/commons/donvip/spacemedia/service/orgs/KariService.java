@@ -97,7 +97,7 @@ public class KariService extends AbstractOrgService<KariMedia> {
         LocalDateTime start = startUpdateMedia();
         int consecutiveFailures = 0;
         int count = 0;
-        String id = repository.findMaxId().orElse("1");
+        String id = "1";
         while (consecutiveFailures < maxFailures) {
             boolean save = false;
             String viewUrl = getViewUrl(id);

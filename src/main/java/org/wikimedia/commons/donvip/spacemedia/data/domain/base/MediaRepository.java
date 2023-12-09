@@ -68,13 +68,13 @@ public interface MediaRepository<T extends Media> extends JpaRepository<T, Compo
     @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1")
     long countMissingInCommons(Set<String> repos);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg') and m.id.repoId in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg','exr') and m.id.repoId in ?1")
     long countMissingImagesInCommons(Set<String> repos);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg') and m.id.repoId in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg','wmv') and m.id.repoId in ?1")
     long countMissingVideosInCommons(Set<String> repos);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('pdf','stl') and m.id.repoId in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('pdf','stl','epub','ppt','pptm','pptx') and m.id.repoId in ?1")
     long countMissingDocumentsInCommons(Set<String> repos);
 
     @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId in ?1")
@@ -102,26 +102,6 @@ public interface MediaRepository<T extends Media> extends JpaRepository<T, Compo
      */
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames)")
     Page<T> findMissingInCommons(Pageable page);
-
-    /**
-     * Find images not yet uploaded to Wikimedia Commons.
-     *
-     * @param page pagination information
-     *
-     * @return images not yet uploaded to Wikimedia Commons
-     */
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg')")
-    Page<T> findMissingImagesInCommons(Pageable page);
-
-    /**
-     * Find videos not yet uploaded to Wikimedia Commons.
-     *
-     * @param page pagination information
-     *
-     * @return videos not yet uploaded to Wikimedia Commons
-     */
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg')")
-    Page<T> findMissingVideosInCommons(Pageable page);
 
     /**
      * Count files already uploaded to Wikimedia Commons.
@@ -174,9 +154,6 @@ public interface MediaRepository<T extends Media> extends JpaRepository<T, Compo
 
     Page<T> findByMetadata_IgnoredTrue(Pageable page);
 
-    @Query("select max(id.mediaId) from #{#entityName}")
-    Optional<String> findMaxId();
-
     // FIND Composite
 
     @Query("select m from #{#entityName} m where m.id.repoId in ?1 order by m.publicationDate desc")
@@ -197,13 +174,13 @@ public interface MediaRepository<T extends Media> extends JpaRepository<T, Compo
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where size (md.commonsFileNames) >= 2 and m.id.repoId in ?1 order by m.publicationDate desc")
     List<T> findDuplicateInCommons(Set<String> repos);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg') and m.id.repoId in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg','exr') and m.id.repoId in ?1")
     Page<T> findMissingImagesInCommons(Set<String> repos, Pageable page);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg') and m.id.repoId in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg','wmv') and m.id.repoId in ?1")
     Page<T> findMissingVideosInCommons(Set<String> repos, Pageable page);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('pdf','stl') and m.id.repoId in ?1")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('pdf','stl','epub','ppt','pptm','pptx') and m.id.repoId in ?1")
     Page<T> findMissingDocumentsInCommons(Set<String> repos, Pageable page);
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and m.id.repoId in ?1 order by m.publicationDate desc")
