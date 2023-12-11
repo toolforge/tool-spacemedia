@@ -540,6 +540,10 @@ public class Media implements MediaProjection, MediaDescription {
         if (this instanceof WithKeywords kw && mediaFromApi instanceof WithKeywords kwApi) {
             kw.setKeywords(kwApi.getKeywords());
         }
+        if (this instanceof WithLatLon ll && mediaFromApi instanceof WithLatLon llApi) {
+            ll.setLatitude(llApi.getLatitude());
+            ll.setLongitude(llApi.getLongitude());
+        }
     }
 
     protected boolean areSameUris(URI a, URI b) {

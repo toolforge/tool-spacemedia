@@ -13,6 +13,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -23,6 +24,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -31,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
@@ -43,6 +46,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -146,9 +150,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
         LocalDateTime start = startUpdateMedia();
         List<NasaAsterMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
-        for (AsterItem item : jackson.readValue(
-                restTemplateSupportingAll(Charset.forName("Windows-1252")).getForObject(galleryUrl, String.class),
-                AsterItem[].class)) {
+        for (AsterItem item : fetchItems()) {
             try {
                 updateImage(item, uploadedMedia);
             } catch (IOException | UploadException | RuntimeException e) {
@@ -157,6 +159,12 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
             ongoingUpdateMedia(start, "ASTER", count++);
         }
         endUpdateMedia(count, uploadedMedia, start);
+    }
+
+    private AsterItem[] fetchItems() throws JsonProcessingException, RestClientException {
+        return jackson.readValue(
+                restTemplateSupportingAll(Charset.forName("Windows-1252")).getForObject(galleryUrl, String.class),
+                AsterItem[].class);
     }
 
     private NasaAsterMedia updateImage(AsterItem item, List<NasaAsterMedia> uploadedMedia)
@@ -231,7 +239,9 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
 
     @Override
     protected NasaAsterMedia refresh(NasaAsterMedia media) throws IOException {
-        throw new UnsupportedOperationException(); // TODO
+        return media.copyDataFrom(fetchMedia(
+                Arrays.stream(fetchItems()).filter(x -> StringUtils.equals(x.getName(), media.getId().getMediaId()))
+                        .findAny().orElseThrow(() -> new IOException("ASTER item not found"))));
     }
 
     @Override

@@ -2,11 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster;
 
 import java.util.Objects;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -15,6 +10,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Indexed
@@ -136,5 +136,14 @@ public class NasaAsterMedia extends Media implements WithLatLon {
         return "NasaAsterMedia [id=" + getId() + ", latitude="
                 + latitude + ", longitude=" + longitude + ", longName=" + longName
                 + ", category=" + category + ", icon=" + icon + ", mediaType=" + mediaType + ']';
+    }
+
+    public NasaAsterMedia copyDataFrom(NasaAsterMedia mediaFromApi) {
+        super.copyDataFrom(mediaFromApi);
+        this.mediaType = mediaFromApi.mediaType;
+        this.longName = mediaFromApi.longName;
+        this.category = mediaFromApi.category;
+        this.icon = mediaFromApi.icon;
+        return this;
     }
 }
