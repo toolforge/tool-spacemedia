@@ -76,6 +76,9 @@ public class Media implements MediaProjection, MediaDescription {
     private static final Pattern ONLY_DIGITS = Pattern.compile("[\\da-f]+[on]?");
     private static final Pattern IMG = Pattern.compile("(IMA?GE?|DSC|GOPR|DCIM)[-_\\\\]?[_\\d]+.*");
     private static final Pattern URI_LIKE = Pattern.compile("Https?\\-\\-.*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern IMG2 = Pattern.compile(
+            "(Untitled|No[-_]?name|Unbenannt|Picture|Pict?|Image[mn]?|Img|Immagine|Clip|Photo|Foto|Bild|Scan[\\W\\d_]|Panorama|Sin_título)_?\\P{L}*",
+            Pattern.CASE_INSENSITIVE | Pattern.CANON_EQ | Pattern.UNICODE_CASE);
 
     @Id
     @Embedded
@@ -559,7 +562,8 @@ public class Media implements MediaProjection, MediaDescription {
      */
     public static boolean isTitleBlacklisted(String title) {
         return ONLY_DIGITS.matcher(title.replace(" ", "").replace("/", "").replace("_", "").replace("-", "")).matches()
-                || URI_LIKE.matcher(title).matches() || IMG.matcher(title.toUpperCase(ENGLISH)).matches();
+                || URI_LIKE.matcher(title).matches() || IMG.matcher(title.toUpperCase(ENGLISH)).matches()
+                || IMG2.matcher(title.toUpperCase(ENGLISH)).matches();
     }
 
     /**

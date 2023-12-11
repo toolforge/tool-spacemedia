@@ -3,15 +3,15 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc;
 import java.util.Objects;
 import java.util.Set;
 
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
 @Entity
 public class ErccMedia extends Media {
@@ -99,8 +99,10 @@ public class ErccMedia extends Media {
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
         String fileName = fileMetadata.getOriginalFileName();
-        return fileName != null ? fileName.substring(0, fileName.indexOf('.')).replace('_', ' ').trim()
-                : super.getUploadId(fileMetadata);
+        if (fileName != null) {
+            fileName = fileName.substring(0, fileName.indexOf('.')).replace('_', ' ').trim();
+        }
+        return fileName != null && !isTitleBlacklisted(fileName) ? fileName : super.getUploadTitle(fileMetadata);
     }
 
     @Override
