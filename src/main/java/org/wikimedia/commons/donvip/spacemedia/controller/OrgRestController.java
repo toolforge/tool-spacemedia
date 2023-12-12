@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +45,8 @@ import jakarta.servlet.http.HttpServletRequest;
  * @param <T>  the media type the repository manages
  */
 public abstract class OrgRestController<T extends Media> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrgRestController.class);
 
     @Autowired
     private AsyncOrgUpdaterService async;
@@ -264,7 +268,11 @@ public abstract class OrgRestController<T extends Media> {
             }
             for (T media : medias) {
                 if (mustRefresh.test(media)) {
-                    service.refreshAndSave(media);
+                    try {
+                        service.refreshAndSave(media);
+                    } catch (IOException e) {
+                        LOGGER.error("Failed to refresh {}: {}", media, e.getMessage());
+                    }
                 }
             }
             page = page.next();
