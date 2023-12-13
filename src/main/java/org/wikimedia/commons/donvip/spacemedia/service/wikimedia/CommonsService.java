@@ -124,6 +124,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImageRepos
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRestrictionsRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.HeartbeatRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.ApiError;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.EditApiResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.FileArchive;
@@ -217,6 +218,9 @@ public class CommonsService {
     private CommonsPageRestrictionsRepository restrictionsRepository;
 
     @Autowired
+    private HeartbeatRepository heartbeat;
+
+    @Autowired
     private HashAssociationRepository hashRepository;
 
     @Autowired
@@ -291,6 +295,9 @@ public class CommonsService {
 
     @Value("${commons.automatic.hashes.computation.desc:false}")
     private boolean automaticHashComputationDesc;
+
+    @Value("${commons.duplicates.lag.threshold:1}")
+    private double lagThreshold;
 
     @Autowired
     private ExecutorService taskExecutor;
@@ -1177,6 +1184,11 @@ public class CommonsService {
         LOGGER.info("There are currently {} duplicate files identified as such in Commons", currentDupes);
         if (currentDupes >= duplicateMaxFiles) {
             LOGGER.warn("Too much backlog, skipping");
+            return;
+        }
+        double lag = heartbeat.findAll().iterator().next().getLag();
+        if (lag >= lagThreshold) {
+            LOGGER.warn("Replication lag of {}s, skipping", lag);
             return;
         }
         int count = 0;

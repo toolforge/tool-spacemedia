@@ -42,6 +42,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsOldImageRepos
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRestrictionsRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.HeartbeatRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
@@ -72,6 +73,8 @@ class CommonsServiceTest {
     private HashAssociationRepository hashAssociationRepository;
     @MockBean
     private RuntimeDataRepository runtimeDataRepository;
+    @MockBean
+    private HeartbeatRepository heartbeat;
     @MockBean
     private RemoteService remote;
 
