@@ -1425,13 +1425,15 @@ public abstract class AbstractOrgService<T extends Media>
             }
             if (media.hasMetadata() && media.isImage()) {
                 for (FileMetadata fm : media.getMetadata()) {
-                    if (fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000) {
-                        result = ignoreMetadata(fm, "Too small image");
-                        LOGGER.debug("Too small image test has been trigerred for {}", media);
-                    } else if (fm.getSize() != null && fm.getSize() > Integer.MAX_VALUE) {
-                        // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
-                        result = ignoreMetadata(fm, "Too big image");
-                        LOGGER.debug("Too big image test has been trigerred for {}", media);
+                    if (Boolean.TRUE != fm.isIgnored()) {
+                        if (fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000) {
+                            result = ignoreMetadata(fm, "Too small image");
+                            LOGGER.debug("Too small image test has been trigerred for {}", media);
+                        } else if (fm.getSize() != null && fm.getSize() > Integer.MAX_VALUE) {
+                            // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
+                            result = ignoreMetadata(fm, "Too big image");
+                            LOGGER.debug("Too big image test has been trigerred for {}", media);
+                        }
                     }
                 }
             }
