@@ -42,7 +42,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -228,7 +227,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 LOGGER.error(media.toString(), e);
                 if (e.getMessage() != null &&
                         (e.getMessage().contains("tiffinfo command failed") || e.getMessage().contains("upstream request timeout"))) {
-                    save = MediaService.ignoreMedia(media, media.getMetadata().toString(), e);
+                    save = mediaService.ignoreMedia(media, media.getMetadata().toString(), e);
                     break;
                 }
             }

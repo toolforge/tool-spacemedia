@@ -149,17 +149,18 @@ public class MediaService {
                 return ignoreMedia(media, "Title or description contains term(s) in block list: " + ignoredTerms);
             }
         }
+        boolean result = false;
         for (FileMetadata metadata : media.getMetadata()) {
             if (metadata != null && metadata.getExif() != null
                     && (metadata.getExif().getPhotographers().anyMatch(this::isPhotographerBlocklisted)
                             || metadata.getExif().getCopyrights().anyMatch(this::isCopyrightBlocklisted))) {
-                return ignoreMedia(media,
+                result |= ignoreAndSaveMetadata(metadata,
                         "Probably non-free image (EXIF photographer/copyright blocklisted) : "
                                 + metadata.getExif().getPhotographers().sorted().toList() + " / "
                                 + metadata.getExif().getCopyrights().sorted().toList());
             }
         }
-        return false;
+        return result;
     }
 
     public boolean isCopyrightBlocklisted(String copyright) {
@@ -261,10 +262,15 @@ public class MediaService {
             }
         }
         if (result) {
-            LOGGER.info("Saving {}", metadata);
-            metadataRepository.save(metadata);
+            saveMetadata(metadata);
         }
         return new MediaUpdateResult(result, null);
+    }
+
+    public boolean saveMetadata(FileMetadata metadata) {
+        LOGGER.info("Saving {}", metadata);
+        metadataRepository.save(metadata);
+        return true;
     }
 
     private static boolean updateReadableStateAndDims(FileMetadata metadata, BufferedImage bi) {
@@ -335,13 +341,22 @@ public class MediaService {
                                 || isBlank(metadata.getOriginalFileName()) || forceUpdateOfHashes)));
     }
 
-    public static boolean ignoreMedia(Media media, String reason) {
+    public boolean ignoreMedia(Media media, String reason) {
         return ignoreMedia(media, reason, null);
     }
 
-    public static boolean ignoreMedia(Media media, String reason, Exception e) {
-        media.getMetadataStream().forEach(fm -> ignoreMetadata(fm, reason, e));
+    public boolean ignoreMedia(Media media, String reason, Exception e) {
+        media.getMetadataStream().forEach(fm -> ignoreAndSaveMetadata(fm, reason, e));
         return true;
+    }
+
+    public boolean ignoreAndSaveMetadata(FileMetadata fm, String reason) {
+        return ignoreAndSaveMetadata(fm, reason, null);
+    }
+
+    public boolean ignoreAndSaveMetadata(FileMetadata fm, String reason, Exception e) {
+        ignoreMetadata(fm, reason, e);
+        return saveMetadata(fm);
     }
 
     public static boolean ignoreMetadata(FileMetadata fm, String reason) {
@@ -624,8 +639,7 @@ public class MediaService {
     public boolean saveNewMetadataCommonsFileNames(FileMetadata metadata, Set<String> commonsFileNames) {
         LOGGER.info("Saving new commons filenames {} for {}", commonsFileNames, metadata);
         metadata.setCommonsFileNames(commonsFileNames);
-        metadataRepository.save(metadata);
-        return true;
+        return saveMetadata(metadata);
     }
 
     public <T> void useMapping(Set<String> result, String key, Set<T> items,

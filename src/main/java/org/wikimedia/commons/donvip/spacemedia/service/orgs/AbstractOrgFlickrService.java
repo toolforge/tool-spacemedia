@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
@@ -302,14 +303,18 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     protected List<IgnoreCriteria> getIgnoreCriteria() {
-        return List.of();
+        return new ArrayList<>();
     }
 
     @Override
     protected final FlickrMedia refresh(FlickrMedia media) throws IOException {
         try {
-            return media.copyDataFrom(
+            media.copyDataFrom(
                     mapPhoto(flickrService.findPhoto(media.getId().getMediaId()), media.getPathAlias()));
+            if (processor.checkIgnoredCriteria(media, getIgnoreCriteria())) {
+                mediaService.saveMetadata(media.getUniqueMetadata());
+            }
+            return media;
         } catch (FlickrException e) {
             throw new IOException(e);
         }
@@ -324,10 +329,10 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         });
         m.setPublicationDateTime(toZonedDateTime(p.getDatePosted()));
         m.setCreationDateTime(toZonedDateTime(p.getDateTaken()));
-        ofNullable(p.getTakenGranularity()).ifPresent(granu -> m.setDateTakenGranularity(Integer.parseInt(granu)));
+        ofNullable(p.getTakenGranularity()).ifPresent(granu -> m.setDateTakenGranularity(parseInt(granu)));
         m.setDescription(p.getDescription());
         m.setId(new CompositeMediaId(getPathAlias(p, flickrAccount), p.getId()));
-        m.setLicense(Integer.parseInt(p.getLicense()));
+        m.setLicense(parseInt(p.getLicense()));
         m.setMedia(FlickrMediaType.valueOf(p.getMedia()));
         m.setMediaStatus(p.getMediaStatus());
         m.setOriginalFormat(p.getOriginalFormat());

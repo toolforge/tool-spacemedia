@@ -72,9 +72,10 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
 
     @Override
     protected List<IgnoreCriteria> getIgnoreCriteria() {
-        return List.of(
-                new IgnoreCriteriaOnTerms(List.of("Copyright 2010 Mars Institute"), List.of("Photo by", "(NASA")),
-                new IgnoreCriteriaOnRepoId(List.of("nasa-jpl"), List.of("NASA")));
+        List<IgnoreCriteria> result = super.getIgnoreCriteria();
+        result.add(new IgnoreCriteriaOnTerms(List.of("Copyright 2010 Mars Institute"), List.of("Photo by", "(NASA")));
+        result.add(new IgnoreCriteriaOnRepoId(List.of("nasa-jpl"), List.of("NASA")));
+        return result;
     }
 
     @Override

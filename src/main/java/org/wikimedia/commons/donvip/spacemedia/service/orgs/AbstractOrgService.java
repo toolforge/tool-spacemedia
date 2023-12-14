@@ -7,8 +7,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMedia;
-import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMetadata;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -1414,24 +1412,24 @@ public abstract class AbstractOrgService<T extends Media>
                 if (description.contains("courtesy")
                         && (findLicenceTemplates(media, md instanceof FileMetadata fm ? fm : null).isEmpty()
                                 || courtesyOk.stream().noneMatch(description::contains))) {
-                    result = ignoreMedia(media, "Probably non-free image (courtesy)");
+                    result = mediaService.ignoreMedia(media, "Probably non-free image (courtesy)");
                     LOGGER.debug("Courtesy test has been trigerred for {}", media);
                 }
             }
             if (StringUtils.length(media.getTitle()) + StringUtils.length(media.getDescription()) <= 2) {
                 // To ignore https://www.dvidshub.net/image/6592675 (title and desc are '.')
-                result = ignoreMedia(media, "Very short or missing title and description");
+                result = mediaService.ignoreMedia(media, "Very short or missing title and description");
                 LOGGER.debug("Short title or description test has been trigerred for {}", media);
             }
             if (media.hasMetadata() && media.isImage()) {
                 for (FileMetadata fm : media.getMetadata()) {
                     if (Boolean.TRUE != fm.isIgnored()) {
                         if (fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000) {
-                            result = ignoreMetadata(fm, "Too small image");
+                            result = mediaService.ignoreAndSaveMetadata(fm, "Too small image");
                             LOGGER.debug("Too small image test has been trigerred for {}", media);
                         } else if (fm.getSize() != null && fm.getSize() > Integer.MAX_VALUE) {
                             // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
-                            result = ignoreMetadata(fm, "Too big image");
+                            result = mediaService.ignoreAndSaveMetadata(fm, "Too big image");
                             LOGGER.debug("Too big image test has been trigerred for {}", media);
                         }
                     }
@@ -1439,7 +1437,7 @@ public abstract class AbstractOrgService<T extends Media>
             }
             if (isBlank(media.getDescription()) && media.getTitle() != null
                     && media.getTitle().matches("Picture \\d+")) {
-                result = ignoreMedia(media, "Media without description and with uninteresting title");
+                result = mediaService.ignoreMedia(media, "Media without description and with uninteresting title");
                 LOGGER.debug("No description and uninteresting title test has been trigerred for {}", media);
             }
         }

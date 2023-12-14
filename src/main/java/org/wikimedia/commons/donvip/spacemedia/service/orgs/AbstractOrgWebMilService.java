@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
-import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMedia;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -145,7 +144,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
         }
         if (image.getCredits() != null && image.getCredits().toLowerCase(ENGLISH).contains("courtesy")
                 && findLicenceTemplates(image, image.getUniqueMetadata()).isEmpty()) {
-            ignoreMedia(image, "Courtesy photo not free");
+            mediaService.ignoreMedia(image, "Courtesy photo not free");
         }
     }
 

@@ -4,7 +4,6 @@ import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
-import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMedia;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.restTemplateSupportingAll;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUri;
@@ -243,15 +242,16 @@ public class NasaMediaProcessorService {
     public boolean checkIgnoreRules(NasaMedia media) {
         if (!media.isIgnored()) {
             if (media instanceof NasaImage img && isPhotographerBLocklisted(img)) {
-                return ignoreMedia(media, "Non-NASA image, photographer blocklisted: " + img.getPhotographer() + " / "
+                return mediaService.ignoreMedia(media,
+                        "Non-NASA image, photographer blocklisted: " + img.getPhotographer() + " / "
                         + img.getSecondaryCreator());
             } else if (media.getDescription() != null) {
                 if (media.getDescription().contains("/photojournal")) {
-                    return ignoreMedia(media, "Photojournal");
+                    return mediaService.ignoreMedia(media, "Photojournal");
                 } else {
                     String desc = media.getDescription().toLowerCase(Locale.ENGLISH);
                     if ((desc.contains("courtesy") && !desc.contains("courtesy of nasa")) || desc.contains("©")) {
-                        return ignoreMedia(media, "Probably non-free image (courtesy)");
+                        return mediaService.ignoreMedia(media, "Probably non-free image (courtesy)");
                     }
                 }
             }

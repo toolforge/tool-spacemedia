@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.flickr;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMetadata;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -90,6 +91,7 @@ public class FlickrMediaProcessorService {
         boolean savePhotoSets = false;
         final Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
         final boolean isPresentInDb = optMediaInRepo.isPresent();
+        boolean saveMetadata = false;
         if (isPresentInDb) {
             FlickrMedia mediaInRepo = optMediaInRepo.get();
             if (mediaInRepo.getLicense() != media.getLicense()) {
@@ -103,7 +105,8 @@ public class FlickrMediaProcessorService {
                 if (license == FlickrLicense.Public_Domain_Mark
                         && !media.isIgnored()
                         && !UnitedStates.isClearPublicDomain(media.getDescription())) {
-                    MediaService.ignoreMedia(media, "Public Domain Mark is not a legal license");
+                    saveMetadata = ignoreMetadata(media.getUniqueMetadata(),
+                            "Public Domain Mark is not a legal license");
                 } else if (!license.isFree()) {
                     LOGGER.debug("Non-free Flickr licence for media {}: {}", media, license);
                 }
@@ -131,24 +134,18 @@ public class FlickrMediaProcessorService {
         } catch (URISyntaxException e) {
             LOGGER.error("URISyntaxException for video " + media.getId(), e);
         }
-        if (!Boolean.TRUE.equals(media.isIgnored())) {
-            for (IgnoreCriteria c : ignoreCriterias) {
-                if (c.match(media)) {
-                    save = MediaService.ignoreMedia(media, "Ignored criteria: " + c);
-                    break;
-                }
-            }
-        }
-        if ((!isPresentInDb || isEmpty(media.getAllCommonsFileNames())) && media.getPhotosets() != null) {
+        if ((!isPresentInDb || isEmpty(media.getUniqueMetadata().getCommonsFileNames()))
+                && media.getPhotosets() != null) {
             for (FlickrPhotoSet photoSet : media.getPhotosets()) {
                 if (StringUtils.isBlank(photoSet.getPathAlias())) {
                     photoSet.setPathAlias(flickrAccount);
                     savePhotoSets = true;
                 }
-                if (!Boolean.TRUE.equals(media.isIgnored()) && ignoredPhotoAlbums.contains(photoSet.getId())) {
-                    save = MediaService.ignoreMedia(media, "Photoset ignored: " + photoSet.getTitle());
-                }
             }
+        }
+        saveMetadata |= checkIgnoredCriteria(media, ignoreCriterias);
+        if (saveMetadata) {
+            mediaService.saveMetadata(media.getUniqueMetadata());
         }
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb, saver);
         savePhotoSets = false;
@@ -161,6 +158,26 @@ public class FlickrMediaProcessorService {
             save = true;
         }
         return Pair.of(saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb, saver), uploadCount);
+    }
+
+    public boolean checkIgnoredCriteria(FlickrMedia media, List<IgnoreCriteria> ignoreCriterias) {
+        boolean result = false;
+        FileMetadata fm = media.getUniqueMetadata();
+        if (Boolean.TRUE != fm.isIgnored()) {
+            for (IgnoreCriteria c : ignoreCriterias) {
+                if (c.match(media)) {
+                    result |= ignoreMetadata(fm, "Ignored criteria: " + c);
+                }
+            }
+            if (!result && media.getPhotosets() != null) {
+                for (FlickrPhotoSet photoSet : media.getPhotosets()) {
+                    if (ignoredPhotoAlbums.contains(photoSet.getId())) {
+                        result |= ignoreMetadata(fm, "Photoset ignored: " + photoSet.getTitle());
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private FlickrMedia saveMediaAndPhotosetsIfNeeded(FlickrMedia media, boolean save, boolean savePhotoSets,

@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
-import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMedia;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -164,10 +163,10 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
                     && media.getCategories().iterator().next().contains("People")))
                     && media.getTypes() != null
                     && media.getTypes().stream().allMatch(s -> s.startsWith("Unspecified : People"))) {
-                save = ignoreMedia(media, IDENTIFIABLE_PERSON);
+                save = mediaService.ignoreMedia(media, IDENTIFIABLE_PERSON);
             } else if (media.getCategories() != null
                     && media.getCategories().stream().anyMatch(c -> getForbiddenCategories().contains(c))) {
-                save = ignoreMedia(media, "Forbidden category.");
+                save = mediaService.ignoreMedia(media, "Forbidden category.");
             }
         }
         Collection<String> forbiddenWordsInTitleOrDescription = getForbiddenWordsInTitleOrDescription();
@@ -175,7 +174,8 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
                 && (media.getTitle() != null || media.getDescription() != null)) {
             for (String forbiddenWord : forbiddenWordsInTitleOrDescription) {
                 if (media.containsInTitleOrDescription(forbiddenWord)) {
-                    save = ignoreMedia(media, "Forbidden keyword: " + forbiddenWord + ". " + IDENTIFIABLE_PERSON);
+                    save = mediaService.ignoreMedia(media,
+                            "Forbidden keyword: " + forbiddenWord + ". " + IDENTIFIABLE_PERSON);
                     break;
                 }
             }

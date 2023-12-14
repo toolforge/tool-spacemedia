@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.text.StringEscapeUtils.unescapeHtml4;
 import static org.apache.commons.text.StringEscapeUtils.unescapeXml;
-import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignoreMedia;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
@@ -196,7 +195,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     private boolean ignoreNonFreeFiles(NasaPhotojournalMedia media) {
         String credit = media.getCredits();
         return !credit.contains("NASA") && !credit.contains("JPL") && !credit.contains("Jet Propulsion Laboratory")
-                && !credit.contains("USSF") && ignoreMedia(media, "Non-free content");
+                && !credit.contains("USSF") && mediaService.ignoreMedia(media, "Non-free content");
     }
 
     private NasaPhotojournalMedia solrDocumentToMedia(SolrDocument doc) {
