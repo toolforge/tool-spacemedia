@@ -4,19 +4,11 @@ import static java.util.stream.Collectors.joining;
 
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.Transient;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
@@ -29,6 +21,15 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Transient;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -105,7 +106,7 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
 
     @Override
     public List<String> getIdUsedInCommons() {
-        return List.of(getIdUsedInOrg(), getVirin());
+        return Arrays.stream(new String[] { getIdUsedInOrg(), getVirin() }).filter(Objects::nonNull).toList();
     }
 
     /**
@@ -156,7 +157,7 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
 
     @JsonIgnore
     public DvidsMediaType getMediaType() {
-        return DvidsMediaType.valueOf(getId().getRepoId());
+        return DvidsMediaType.valueOf(getId().getMediaId().split(":")[0]);
     }
 
     public String getBranch() {
