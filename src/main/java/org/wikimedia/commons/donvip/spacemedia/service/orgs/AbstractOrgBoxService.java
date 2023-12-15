@@ -93,7 +93,7 @@ public abstract class AbstractOrgBoxService extends AbstractOrgService<BoxMedia>
         List<BoxMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         for (String appShare : getRepoIdsFromArgs(args)) {
-            String[] as = appShare.split(":");
+            String[] as = appShare.split("/");
             Pair<Integer, Collection<BoxMedia>> update = updateBoxMedia(as[0], as[1]);
             uploadedMedia.addAll(update.getRight());
             count += update.getLeft();

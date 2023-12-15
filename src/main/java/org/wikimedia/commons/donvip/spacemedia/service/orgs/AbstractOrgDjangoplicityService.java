@@ -127,8 +127,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
     protected abstract Matcher getLocalizedUrlMatcher(String imgUrlLink);
 
     private Triple<Optional<DjangoplicityMedia>, Collection<FileMetadata>, Integer> updateMediaForUrl(URL url,
-            DjangoplicityFrontPageItem item)
-            throws IOException, ReflectiveOperationException, UploadException, UpdateFinishedException {
+            DjangoplicityFrontPageItem item) throws IOException, UploadException, UpdateFinishedException {
         String imgUrlLink = url.getProtocol() + "://" + url.getHost() + item.getUrl();
         Matcher m = getLocalizedUrlMatcher(imgUrlLink);
         if (m.matches()) {
@@ -557,7 +556,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
                 // End of search when we receive an HTTP 404 or an old image found
                 LOGGER.info("End of search: {}", e.getMessage());
                 loop = false;
-            } catch (IOException | ReflectiveOperationException | RuntimeException e) {
+            } catch (IOException | RuntimeException e) {
                 LOGGER.error("Error when fetching {}", url, e);
             }
         }
