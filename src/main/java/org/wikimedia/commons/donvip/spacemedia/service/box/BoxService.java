@@ -65,8 +65,7 @@ public class BoxService {
             @Value("${box.api.oauth2.client-id}") String clientId,
             @Value("${box.api.oauth2.client-secret}") String clientSecret,
             @Value("${box.api.user-email}") String userEmail,
-            @Value("${box.api.user-password}") String userPassword)
-            throws IOException {
+            @Value("${box.api.user-password}") String userPassword) {
         if (isNotBlank(clientId) && isNotBlank(clientSecret) && isNotBlank(userEmail) && isNotBlank(userPassword)) {
             // Access tokens expire quickly, so request new token at startup
             String authURL = BoxAPIConnection.getAuthorizationURL(clientId, URI.create(REDIRECT_URL), "state", null)
@@ -111,6 +110,8 @@ public class BoxService {
                         }
                     }
                 }
+            } catch (IOException e) {
+                LOGGER.error("Failed to instantiate Box API: {}", e.getMessage(), e);
             }
         } else {
             LOGGER.warn("Incomplete Box credentials configuration => Box API will not be available");
