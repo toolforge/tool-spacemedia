@@ -115,7 +115,8 @@ public class ImageUtils {
                 if (ArrayUtils.isNotEmpty(disposition)) {
                     String value = disposition[0].getValue();
                     if (value.startsWith("attachment;filename=")) {
-                        filename = URLDecoder.decode(value.split("=")[1], "UTF-8");
+                        filename = URLDecoder.decode(value.split("=")[1], "UTF-8").replace(";filename*", "")
+                                .replace("\"", "");
                     }
                     extension = Utils.findExtension(value);
                     ok = extension != null && IMAGE_EXTENSIONS.contains(extension);
