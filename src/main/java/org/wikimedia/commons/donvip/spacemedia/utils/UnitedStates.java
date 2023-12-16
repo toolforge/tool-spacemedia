@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 import static java.util.Optional.ofNullable;
 
 import java.net.URL;
+import java.time.Year;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,6 +85,8 @@ public final class UnitedStates {
         case "afspc", "AFSC", "airforcespacecommand" -> "Photographs by the United States Air Force Space Command";
         case "ssc", "SSC", "129133022@N07" -> "Photographs by the Space Systems Command";
         case "jtfsd", "spacecom", "USSPACECOM" -> "Photographs by the United States Space Command";
+        case "spoc" ->
+            media.getYear().isBefore(Year.of(2020)) ? "Photographs by the United States Air Force Space Command" : null;
         default -> null;
         });
     }
