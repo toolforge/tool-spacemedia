@@ -227,7 +227,7 @@ public class MediaService {
                     result |= updateReadableStateAndDims(metadata, bi);
                     result |= updateFileSize(metadata, img);
                     result |= updateExtensionAndFilename(metadata, img);
-                } catch (IOException | ImageDecodingException e) {
+                } catch (IOException | RestClientException | ImageDecodingException e) {
                     result = ignoreMetadata(metadata, "Unreadable file", e);
                     metadata.setReadableImage(Boolean.FALSE);
                     LOGGER.info("Readable state has been updated to {} for {}", Boolean.FALSE, metadata);
@@ -242,7 +242,8 @@ public class MediaService {
                 bi.flush();
                 bi = null;
             }
-            if (updateSha1(media, metadata, localPath, urlResolver, forceUpdateOfHashes)) {
+            if ((!isImage || isReadableImage)
+                    && updateSha1(media, metadata, localPath, urlResolver, forceUpdateOfHashes)) {
                 LOGGER.info("SHA1 hash has been updated for {}", metadata);
                 result = true;
             }

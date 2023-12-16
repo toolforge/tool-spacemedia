@@ -1389,6 +1389,7 @@ public abstract class AbstractOrgService<T extends Media>
                     media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
         if (findLicenceTemplates(media, metadata).isEmpty()) {
+            mediaService.ignoreAndSaveMetadata(metadata, "no template found, so may be not free");
             throw new ImageUploadForbiddenException(media + " has no template, so may be not free");
         }
     }
