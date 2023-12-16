@@ -4,7 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -23,25 +25,37 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.UnaryOperator;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.slf4j.Logger;
@@ -114,6 +128,61 @@ public final class Utils {
         requestConfig.setSocketTimeout(30 * 1000);
         request.setConfig(requestConfig.build());
         return request;
+    }
+
+    public static HttpPost newHttpPost(Element form, BiConsumer<Element, List<NameValuePair>> consumer)
+            throws IOException {
+        return newHttpPost(form, x -> x, consumer, null);
+    }
+
+    public static HttpPost newHttpPost(Element form, UnaryOperator<String> actionFunction,
+            BiConsumer<Element, List<NameValuePair>> inputConsumer,
+            BiConsumer<Element, List<NameValuePair>> buttonConsumer) throws IOException {
+        if (form == null) {
+            throw new IOException("Form not found");
+        }
+        List<NameValuePair> params = new ArrayList<>();
+        buildPostParams(form, "input", inputConsumer, params);
+        buildPostParams(form, "button", buttonConsumer, params);
+        return newHttpPost(actionFunction.apply(form.attr("action")), params);
+    }
+
+    public static HttpPost newHttpPost(String uri, Map<String, Object> params) throws UnsupportedEncodingException {
+        return newHttpPost(uri, params.entrySet().stream()
+                .map(e -> new BasicNameValuePair(e.getKey(), Objects.toString(e.getValue()))).toList());
+    }
+
+    public static HttpPost newHttpPost(String uri, List<? extends NameValuePair> params)
+            throws UnsupportedEncodingException {
+        HttpPost post = new HttpPost(uri);
+        post.setEntity(new UrlEncodedFormEntity(params));
+        return post;
+    }
+
+    private static void buildPostParams(Element form, String tag, BiConsumer<Element, List<NameValuePair>> consumer,
+            List<NameValuePair> params) {
+        if (consumer != null) {
+            form.getElementsByTag(tag).forEach(elem -> consumer.accept(elem, params));
+        }
+    }
+
+    public static <T extends HttpResponse> T checkResponse(HttpRequest request, T response) throws IOException {
+        if (response.getStatusLine().getStatusCode() >= 400) {
+            throw new IOException(request + " => " + response.getStatusLine().toString());
+        }
+        return response;
+    }
+
+    public static Document getWithJsoup(String pageUrl, int timeout, int nRetries) throws IOException {
+        for (int i = 0; i < nRetries; i++) {
+            try {
+                LOGGER.debug("Scrapping {}", pageUrl);
+                return Jsoup.connect(pageUrl).timeout(timeout).get();
+            } catch (SocketTimeoutException e) {
+                LOGGER.error("Timeout when scrapping {} => {}", pageUrl, e.getMessage());
+            }
+        }
+        throw new IOException("Unable to scrap " + pageUrl);
     }
 
     public static String findExtension(String path) {

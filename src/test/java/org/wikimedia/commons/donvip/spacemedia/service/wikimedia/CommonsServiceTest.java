@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.URL;
@@ -77,6 +76,8 @@ class CommonsServiceTest {
     private HeartbeatRepository heartbeat;
     @MockBean
     private RemoteService remote;
+    @MockBean
+    private Video2CommonsService video2Commons;
 
     @Test
     void testFormatWikiCode() {
@@ -86,17 +87,13 @@ class CommonsServiceTest {
                         "Learn more: <a href=\"http://www.spacex.com/news/2015/05/06/crew-dragon-completes-pad-abort-test\" rel=\"nofollow\">www.spacex.com/news/2015/05/06/crew-dragon-completes-pad-...</a> and <a href=\"http://www.spacex.com/news/2015/05/04/5-things-know-about-spacexs-pad-abort-test\" rel=\"nofollow\">www.spacex.com/news/2015/05/04/5-things-know-about-spacex...</a>"));
     }
 
-    @Test
-    void testGetImageUrl() throws Exception {
-        assertEquals(new URL("https://upload.wikimedia.org/wikipedia/commons/0/05/Now_what%3F_(232815406).jpg"),
-                CommonsService.getImageUrl("Now_what?_(232815406).jpg"));
-        assertEquals(new URL(
-                "https://upload.wikimedia.org/wikipedia/commons/6/6c/2009-11-30_-_Chicago_Climate_Justice_activists_in_Chicago_-_Cap%27n%27Trade_protest_009.jpg"),
-                CommonsService.getImageUrl(
-                        "2009-11-30_-_Chicago_Climate_Justice_activists_in_Chicago_-_Cap'n'Trade_protest_009.jpg"));
-        assertEquals(
-                new URL("https://upload.wikimedia.org/wikipedia/commons/9/9a/%22Meillandine%22_Rose_in_clay_pot.jpg"),
-                CommonsService.getImageUrl("\"Meillandine\"_Rose_in_clay_pot.jpg"));
+    @ParameterizedTest
+    @CsvSource({
+            "https://upload.wikimedia.org/wikipedia/commons/0/05/Now_what%3F_(232815406).jpg,Now_what?_(232815406).jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/6/6c/2009-11-30_-_Chicago_Climate_Justice_activists_in_Chicago_-_Cap%27n%27Trade_protest_009.jpg,2009-11-30_-_Chicago_Climate_Justice_activists_in_Chicago_-_Cap'n'Trade_protest_009.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/9/9a/%22Meillandine%22_Rose_in_clay_pot.jpg,\"Meillandine\"_Rose_in_clay_pot.jpg" })
+    void testGetImageUrl(URL expected, String imageUrl) {
+        assertEquals(expected, CommonsService.getImageUrl(imageUrl));
     }
 
     @Test
@@ -137,9 +134,17 @@ class CommonsServiceTest {
     }
 
     @Test
-    void testIsPermittedFileUrl() {
-        assertTrue(service.isPermittedFileUrl(newURL("https://www.kari.re.kr/image/kari_image_down.do?idx=79")));
-        assertTrue(service.isPermittedFileUrl(newURL("https://photojournal.jpl.nasa.gov/archive/PIA25257.gif")));
+    void testIsPermittedFileExt() {
+        assertFalse(service.isPermittedFileExt("mp4"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "true,https://www.kari.re.kr/image/kari_image_down.do?idx=79",
+        "true,https://photojournal.jpl.nasa.gov/archive/PIA25257.gif",
+        "false,https://d34w7g4gy10iej.cloudfront.net/video/2211/DOD_109318216/DOD_109318216.mp4" })
+    void testIsPermittedFileUrl(boolean expected, URL url) {
+        assertEquals(expected, service.isPermittedFileUrl(url));
     }
 
     @ParameterizedTest
@@ -260,6 +265,11 @@ Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a hr
         @Bean
         public ConversionService conversionService() {
             return ApplicationConversionService.getSharedInstance();
+        }
+
+        @Bean
+        public OAuthHttpService oAuthHttp() {
+            return new OAuthHttpService();
         }
 
         @Bean

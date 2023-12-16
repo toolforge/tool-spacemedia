@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -62,7 +61,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -162,18 +160,17 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.apis.MediaWikiApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.httpclient.multipart.BodyPartPayload;
 import com.github.scribejava.core.httpclient.multipart.FileByteArrayBodyPartPayload;
 import com.github.scribejava.core.model.OAuth1AccessToken;
-import com.github.scribejava.core.model.OAuthRequest;
-import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth10aService;
 
 @Service
 public class CommonsService {
+
+    public static final String BASE_URL = "https://commons.wikimedia.org";
 
     private static final String DUPLICATE = "Duplicate";
 
@@ -184,7 +181,7 @@ public class CommonsService {
     private static final Pattern EXACT_DUPE_ERROR = Pattern.compile(
             "The upload is an exact duplicate of the current version of \\[\\[:File:(.+)\\]\\]\\.");
 
-    private static final Pattern REMOTE_FILE_URL = Pattern.compile("https?://.+\\.[a-zA-Z]{3,4}");
+    private static final Pattern REMOTE_FILE_URL = Pattern.compile("https?://.+\\.[a-zA-Z0-9]{3,4}");
 
     private static final Pattern FILE_EXT_MISMATCH = Pattern.compile(
             "File extension \"\\.([a-z]+)\" does not match the detected MIME type of the file \\(image/([a-z]+)\\)\\.");
@@ -230,7 +227,10 @@ public class CommonsService {
     private List<AbstractSocialMediaService<?, ?>> socialMediaServices = new ArrayList<>();
 
     @Autowired
-    private ObjectMapper jackson;
+    private OAuthHttpService oAuthHttp;
+
+    @Autowired
+    private Video2CommonsService video2Commons;
 
     /**
      * Self-autowiring to call {@link Cacheable} methods, otherwise the cache is
@@ -505,65 +505,19 @@ public class CommonsService {
     }
 
     private <T> T apiHttpGet(String path, Class<T> responseClass) throws IOException {
-        return httpGet(apiUrl.toExternalForm() + path + "&format=json", responseClass);
+        return oAuthHttp.httpGet(oAuthService, oAuthAccessToken, apiUrl.toExternalForm() + path + "&format=json",
+                responseClass);
     }
 
     private <T> T apiHttpPost(Map<String, String> params, Class<T> responseClass) throws IOException {
-        return httpPost(apiUrl.toExternalForm(), responseClass, params,
+        return oAuthHttp.httpPost(oAuthService, oAuthAccessToken, apiUrl.toExternalForm(), responseClass, params,
                 "application/x-www-form-urlencoded; charset=UTF-8", null);
     }
 
     private <T> T apiHttpPost(Map<String, String> params, Class<T> responseClass, BodyPartPayload bodyPartPayload)
             throws IOException {
-        return httpPost(apiUrl.toExternalForm(), responseClass, params, "multipart/form-data", bodyPartPayload);
-    }
-
-    private <T> T httpGet(String url, Class<T> responseClass) throws IOException {
-        return httpCall(Verb.GET, url, responseClass, Collections.emptyMap(), Collections.emptyMap(), null, true);
-    }
-
-    private <T> T httpPost(String url, Class<T> responseClass, Map<String, String> params, String contentType,
-            BodyPartPayload bodyPartPayload) throws IOException {
-        return httpCall(Verb.POST, url, responseClass,
-                contentType != null ? Map.of("Content-Type", contentType) : Map.of(), params, bodyPartPayload, true);
-    }
-
-    private <T> T httpCall(Verb verb, String url, Class<T> responseClass, Map<String, String> headers,
-            Map<String, String> params, BodyPartPayload bodyPartPayload, boolean retryOnTimeout) throws IOException {
-        LOGGER.debug("{} {} {}", verb, url, params);
-        OAuthRequest request = new OAuthRequest(verb, url);
-        request.setCharset(UTF_8.name());
-        headers.forEach(request::addHeader);
-        if (bodyPartPayload != null) {
-            request.initMultipartPayload();
-            params.forEach((k, v) -> request
-                    .addBodyPartPayloadInMultipartPayload(new FileByteArrayBodyPartPayload(v.getBytes(), k)));
-            request.addBodyPartPayloadInMultipartPayload(bodyPartPayload);
-        } else {
-            params.forEach(request::addParameter);
-        }
-        oAuthService.signRequest(oAuthAccessToken, request);
-        try {
-            String body = oAuthService.execute(request).getBody();
-            if ("upstream request timeout".equalsIgnoreCase(body)) {
-                if (retryOnTimeout) {
-                    return httpCall(verb, url, responseClass, headers, params, bodyPartPayload, false);
-                } else {
-                    throw new IOException(body);
-                }
-            } else if (body.startsWith("<!DOCTYPE html>")) {
-                throw new IOException(body);
-            }
-            return jackson.readValue(body, responseClass);
-        } catch (SocketTimeoutException e) {
-            if (retryOnTimeout) {
-                return httpCall(verb, url, responseClass, headers, params, bodyPartPayload, false);
-            } else {
-                throw e;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException(e);
-        }
+        return oAuthHttp.httpPost(oAuthService, oAuthAccessToken, apiUrl.toExternalForm(), responseClass, params,
+                "multipart/form-data", bodyPartPayload);
     }
 
     @Cacheable("revisionContent")
@@ -919,7 +873,9 @@ public class CommonsService {
     private synchronized String doUpload(String wikiCode, String filename, String ext, URL url, String sha1,
             boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error,
             boolean uploadByUrl) throws IOException, UploadException {
-        if (!isPermittedFileExt(ext) && !isPermittedFileUrl(url)) {
+        if ("mp4".equals(ext) || url.getFile().endsWith(".mp4") || "www.youtube.com".equals(url.getHost())) {
+            return video2Commons.uploadVideo(wikiCode, filename, ext, url);
+        } else if (!isPermittedFileExt(ext) && !isPermittedFileUrl(url)) {
             throw new UploadException("Neither extension " + ext + " nor URL " + url
                     + " match any supported file type: " + permittedFileTypes);
         }

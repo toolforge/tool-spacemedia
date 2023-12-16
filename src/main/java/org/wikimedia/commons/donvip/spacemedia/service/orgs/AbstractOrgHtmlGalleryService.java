@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.time.LocalDate;

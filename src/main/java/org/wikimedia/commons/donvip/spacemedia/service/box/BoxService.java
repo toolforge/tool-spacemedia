@@ -1,7 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.service.box;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.checkResponse;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpPost;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -20,18 +21,15 @@ import javax.annotation.PostConstruct;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.ProtocolException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,12 +72,10 @@ public class BoxService {
             try (CloseableHttpClient httpclient = HttpClientBuilder.create()
                     .setRedirectStrategy(new BoxRedirectStrategy()).build()) {
                 // STEP 1 - Request login page
-                try (CloseableHttpResponse response1 = httpclient.execute(newHttpGet(authURL));
+                HttpRequestBase request = newHttpGet(authURL);
+                try (CloseableHttpResponse response1 = checkResponse(request, httpclient.execute(request));
                         InputStream in1 = response1.getEntity().getContent()) {
-                    if (response1.getStatusLine().getStatusCode() >= 400) {
-                        throw new IOException(response1.getStatusLine().toString());
-                    }
-                    HttpPost loginPost = httpPostFor(
+                    request = newHttpPost(
                             Jsoup.parse(in1, "UTF-8", authURL).getElementsByClass("form login_form").first(),
                             (input, params) -> params.add(new BasicNameValuePair(input.attr("name"),
                                     "login".equals(input.attr("id")) ? userEmail
@@ -87,12 +83,9 @@ public class BoxService {
                                                     : input.attr("value"))));
 
                     // STEP 2 - Login and request authorize page
-                    try (CloseableHttpResponse response2 = httpclient.execute(loginPost);
+                    try (CloseableHttpResponse response2 = checkResponse(request, httpclient.execute(request));
                             InputStream in2 = response2.getEntity().getContent()) {
-                        if (response2.getStatusLine().getStatusCode() >= 400) {
-                            throw new IOException(response2.getStatusLine().toString());
-                        }
-                        HttpPost authorizePost = httpPostFor(
+                        request = newHttpPost(
                                 Jsoup.parse(in2, "UTF-8", authURL).getElementById("consent_form"), (input, params) -> {
                                     if (!"consent_reject_button".equals(input.attr("id"))) {
                                         params.add(new BasicNameValuePair(input.attr("name"), input.attr("value")));
@@ -100,10 +93,7 @@ public class BoxService {
                                 });
 
                         // STEP 3 - authorize and request authorization code
-                        try (CloseableHttpResponse response3 = httpclient.execute(authorizePost)) {
-                            if (response3.getStatusLine().getStatusCode() != 302) {
-                                throw new IOException(response3.getStatusLine().toString());
-                            }
+                        try (CloseableHttpResponse response3 = checkResponse(request, httpclient.execute(request))) {
                             // https://app.box.com/developers/console
                             api = new BoxAPIConnection(clientId, clientSecret,
                                     response3.getFirstHeader("location").getValue().split("=")[2]);
@@ -125,18 +115,6 @@ public class BoxService {
         } else if (LOGGER.isTraceEnabled()) {
             java.util.logging.Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINEST);
         }
-    }
-
-    private static HttpPost httpPostFor(Element form, BiConsumer<Element, List<NameValuePair>> consumer)
-            throws IOException {
-        if (form == null) {
-            throw new IOException("Form not found");
-        }
-        HttpPost post = new HttpPost(form.attr("action"));
-        List<NameValuePair> params = new ArrayList<>();
-        form.getElementsByTag("input").forEach(input -> consumer.accept(input, params));
-        post.setEntity(new UrlEncodedFormEntity(params));
-        return post;
     }
 
     public String getSharedLink(String app, String share) {

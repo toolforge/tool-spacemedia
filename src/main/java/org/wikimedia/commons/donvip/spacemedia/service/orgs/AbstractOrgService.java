@@ -13,7 +13,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -61,8 +60,6 @@ import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1474,8 +1471,10 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected boolean isPermittedFileType(FileMetadata metadata) {
-        return commonsService.isPermittedFileExt(metadata.getExtension())
-                || (metadata.getAssetUrl() != null && commonsService.isPermittedFileUrl(metadata.getAssetUrl()));
+        return commonsService.isPermittedFileExt(metadata.getExtension()) || "mp4".equals(metadata.getExtension())
+                || (metadata.getAssetUrl() != null && (commonsService.isPermittedFileUrl(metadata.getAssetUrl())
+                        || metadata.getAssetUrl().getFile().endsWith(".mp4")
+                        || "www.youtube.com".equals(metadata.getAssetUrl().getHost())));
     }
 
     protected boolean shouldUploadAuto(T media, boolean isManual) {
@@ -1589,18 +1588,6 @@ public abstract class AbstractOrgService<T extends Media>
         getOtherFields1(media).ifPresent(s -> sb.append("\n| other fields 1 = ").append(s));
         sb.append("\n}}");
         return Pair.of(sb.toString(), Map.of(lang, desc));
-    }
-
-    protected static Document getWithJsoup(String pageUrl, int timeout, int nRetries) throws IOException {
-        for (int i = 0; i < nRetries; i++) {
-            try {
-                LOGGER.debug("Scrapping {}", pageUrl);
-                return Jsoup.connect(pageUrl).timeout(timeout).get();
-            } catch (SocketTimeoutException e) {
-                LOGGER.error("Timeout when scrapping {} => {}", pageUrl, e.getMessage());
-            }
-        }
-        throw new IOException("Unable to scrap " + pageUrl);
     }
 
     protected static final class UpdateFinishedException extends Exception {

@@ -248,7 +248,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
 
     protected static URL getImageUrl(URL url, int width, String fileName) {
         return width > 2560
-                ? newURL(String.format("https://commons.wikimedia.org/w/thumb.php?f=%s&w=%d", fileName, 2560))
+                ? newURL(String.format(CommonsService.BASE_URL + "/w/thumb.php?f=%s&w=%d", fileName, 2560))
                 : url;
     }
 

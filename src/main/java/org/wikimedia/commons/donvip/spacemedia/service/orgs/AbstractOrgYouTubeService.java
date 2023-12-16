@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,7 +34,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeApiService;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeMediaProcessor;
 
@@ -147,7 +145,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     private YouTubeMedia toYouTubeVideo(String channel, Video ytVideo) {
         YouTubeMedia video = new YouTubeMedia();
         video.setId(new CompositeMediaId(channel, ytVideo.getId()));
-        addMetadata(video, "https://www.youtube.com/watch?v=" + video.getId(), fm -> fm.setExtension("webm"));
+        addMetadata(video, "https://www.youtube.com/watch?v=" + video.getIdUsedInOrg(), fm -> fm.setExtension("webm"));
         return fillVideoSnippetAndDetails(video, ytVideo);
     }
 
@@ -227,19 +225,6 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     }
 
     @Override
-    protected final int doUpload(YouTubeMedia video, boolean checkUnicity, Collection<FileMetadata> uploaded,
-            boolean isManual) {
-        FileMetadata metadata = video.getUniqueMetadata();
-        throw new UnsupportedOperationException("<h2>Spacemedia is not able to upload YouTube videos by itself.</h2>\n"
-                + "<p>Please go to <a href=\"https://video2commons.toolforge.org/\">video2commons</a> and upload the <b>"
-                + video.getId()
-                + ".mkv/mp4/webm</b> file, using following information:</p>\n"
-                + "<h4>Title:</h4>\n"
-                + CommonsService.normalizeFilename(video.getUploadTitle(metadata))
-                + "\n<h4>Wikicode:</h4>\n<pre>" + getWikiCode(video, metadata) + "</pre>");
-    }
-
-    @Override
     protected final YouTubeMedia refresh(YouTubeMedia video) throws IOException {
         return fillVideoSnippetAndDetails(video, youtubeService.getVideo(video.getId().getMediaId()));
     }
@@ -263,7 +248,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     @Override
     public Set<String> findLicenceTemplates(YouTubeMedia video, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(video, metadata);
-        result.add("From YouTube |1= " + video.getId());
+        result.add("From YouTube |1= " + video.getIdUsedInOrg());
         result.add("YouTube CC-BY |1= " + video.getChannelTitle());
         result.add("LicenseReview");
         return result;
