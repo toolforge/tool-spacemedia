@@ -620,7 +620,8 @@ public abstract class AbstractOrgService<T extends Media>
     @Override
     public Statistics getStatistics(boolean details) {
         Statistics stats = new Statistics(getName(), getId(), countAllMedia(), countUploadedMedia(), countIgnored(),
-                countMissingImages(), countMissingVideos(), countMissingDocuments(), countPerceptualHashes());
+                countMissingImages(), countMissingVideos(), countMissingDocuments(), countPerceptualHashes(),
+                getRuntimeData().getLastUpdateEnd());
         if (details && getRepoIds().size() > 1) {
             stats.setDetails(getRepoIds().stream().map(this::getStatistics).sorted().toList());
         }

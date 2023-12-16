@@ -13,20 +13,21 @@
 	        <th>Name</th>
 	        <th>Free Media</th>
 	        <th>Uploaded</th>
+	        <th>Ignored</th>
 	        <th>Images to upload</th>
 	        <th>Videos to upload</th>
 	        <th>Documents to upload</th>
-	        <th>Ignored</th>
+	        <th>Last update</th>
 	      </tr>
       </thead>
     </table>
     <div th:replace="~{_header :: scripts}"></div>
     <script type="text/javascript" th:inline="javascript">
     function alink(o, path = "") {
-    	return "[(@{/})]" + o.id + path;
+        return "[(@{/})]" + o.id + path;
     }
     function ahref(td, s, link) {
-    	$(td).html("<a href='"+link+"'>"+s+"</a>");
+        $(td).html("<a href='"+link+"'>"+s+"</a>");
     }
     $('#orgs_table').DataTable({
     	"info": false,
@@ -38,25 +39,28 @@
         },
         "columns": [
             {"data": "org", "fnCreatedCell": function (td, s, o, i, j) {
-            	ahref(td, s, alink(o));
+                ahref(td, s, alink(o));
             }},
             {"data": "total_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-            	ahref(td, s, alink(o, "/all"));
+                ahref(td, s, alink(o, "/all"));
             }},
             {"data": "uploaded_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-            	ahref(td, s, alink(o, "/uploaded"));
-            }},
-            {"data": "missing_images", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-            	ahref(td, s, alink(o, "/missing/images"));
-            }},
-            {"data": "missing_videos", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-            	ahref(td, s, alink(o, "/missing/videos"));
-            }},
-            {"data": "missing_documents", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-            	ahref(td, s, alink(o, "/missing/documents"));
+                ahref(td, s, alink(o, "/uploaded"));
             }},
             {"data": "ignored_media", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
-            	ahref(td, s, alink(o, "/ignored"));
+                ahref(td, s, alink(o, "/ignored"));
+            }},
+            {"data": "missing_images", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+                ahref(td, s, alink(o, "/missing/images"));
+            }},
+            {"data": "missing_videos", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+                ahref(td, s, alink(o, "/missing/videos"));
+            }},
+            {"data": "missing_documents", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+                ahref(td, s, alink(o, "/missing/documents"));
+            }},
+            {"data": "last_update", "defaultContent": 0, "fnCreatedCell": function (td, s, o, i, j) {
+                $(td).html(s);
             }}
         ],
         "rowCallback": function( row, data ) {
@@ -68,21 +72,33 @@
                 $('td:eq(0)', row).css('background-color', 'Orange');
             }
             if (data.missing_images == 0) {
-                $('td:eq(3)', row).css('background-color', 'Green');
+                $('td:eq(4)', row).css('background-color', 'Green');
             } else if (data.missing_images <= "20") {
-                $('td:eq(3)', row).css('background-color', 'Orange');
+                $('td:eq(4)', row).css('background-color', 'Orange');
             } else {
-                $('td:eq(3)', row).css('background-color', 'Red');
+                $('td:eq(4)', row).css('background-color', 'Red');
             }
             if (data.missing_videos == 0) {
-                $('td:eq(4)', row).css('background-color', 'Green');
-            } else {
-                $('td:eq(4)', row).css('background-color', 'Orange');
-            }
-            if (data.missing_documents == 0) {
                 $('td:eq(5)', row).css('background-color', 'Green');
             } else {
                 $('td:eq(5)', row).css('background-color', 'Orange');
+            }
+            if (data.missing_documents == 0) {
+                $('td:eq(6)', row).css('background-color', 'Green');
+            } else {
+                $('td:eq(6)', row).css('background-color', 'Orange');
+            }
+            if (!data.last_update) {
+                $('td:eq(7)', row).css('background-color', 'Red');
+            } else {
+                var current = new Date();
+                var rowDate = new Date(data.last_update);
+                var diff = (current.getTime() - rowDate.getTime()) / 1000;
+                if (diff > 93600) {
+                    $('td:eq(7)', row).css('background-color', 'Orange');
+                } else {
+                    $('td:eq(7)', row).css('background-color', 'Green');
+                }
             }
         }
     });

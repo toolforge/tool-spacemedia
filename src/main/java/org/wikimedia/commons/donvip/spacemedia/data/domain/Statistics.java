@@ -1,7 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class Statistics implements Comparable<Statistics> {
     private final String org;
@@ -13,16 +16,17 @@ public class Statistics implements Comparable<Statistics> {
     private final long missingVideos;
     private final long missingDocuments;
     private final long hashedMedia;
+    private final LocalDateTime lastUpdate;
     private List<Statistics> details;
 
     public Statistics(String org, String id, long totalMedia, long uploadedMedia, long ignoredMedia,
-            long missingImages, long missingVideos, long missingDocuments, long hashedMedia) {
+            long missingImages, long missingVideos, long missingDocuments, long hashedMedia, LocalDateTime lastUpdate) {
         this(org, id, totalMedia, uploadedMedia, ignoredMedia, missingImages, missingVideos, missingDocuments,
-                hashedMedia, null);
+                hashedMedia, lastUpdate, null);
     }
 
     public Statistics(String org, String id, long totalMedia, long uploadedMedia, long ignoredMedia,
-            long missingImages, long missingVideos, long missingDocuments, long hashedMedia,
+            long missingImages, long missingVideos, long missingDocuments, long hashedMedia, LocalDateTime lastUpdate,
             List<Statistics> details) {
         this.org = Objects.requireNonNull(org);
         this.id = Objects.requireNonNull(id);
@@ -33,6 +37,7 @@ public class Statistics implements Comparable<Statistics> {
         this.missingVideos = missingVideos;
         this.missingDocuments = missingDocuments;
         this.hashedMedia = hashedMedia;
+        this.lastUpdate = lastUpdate;
         this.details = details;
     }
 
@@ -105,6 +110,11 @@ public class Statistics implements Comparable<Statistics> {
 
     public long getIgnoredMedia() {
         return ignoredMedia;
+    }
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    public LocalDateTime getLastUpdate() {
+        return lastUpdate;
     }
 
     @Override

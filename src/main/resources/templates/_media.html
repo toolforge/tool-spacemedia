@@ -11,6 +11,10 @@
 	       th:href="@{/{id}/uploaded(id=${org.id},repo=${repo})}" th:text="'Uploaded (' + ${org.countUploadedMedia(repo)} + ')'"></a>
 	  </li>
 	  <li class="nav-item">
+	    <a th:class="'nav-link' + ('ignored' == ${tab} ? ' active' : '') + (${org.countIgnored(repo)} == 0 ? ' disabled': '')"
+	       th:href="@{/{id}/ignored(id=${org.id},repo=${repo})}" th:text="'Ignored (' + ${org.countIgnored(repo)} + ')'"></a>
+	  </li>
+	  <li class="nav-item">
 	    <a th:class="'nav-link' + ('missing/images' == ${tab} ? ' active' : '') + (${org.countMissingImages(repo)} == 0 ? ' disabled': '')"
 	       th:href="@{/{id}/missing/images(id=${org.id},repo=${repo})}" th:text="'Images to upload (' + ${org.countMissingImages(repo)} + ')'"></a>
 	  </li>
@@ -21,10 +25,6 @@
 	  <li class="nav-item">
 	    <a th:class="'nav-link' + ('missing/documents' == ${tab} ? ' active' : '') + (${org.countMissingDocuments(repo)} == 0 ? ' disabled': '')"
 	       th:href="@{/{id}/missing/documents(id=${org.id},repo=${repo})}" th:text="'Documents to upload (' + ${org.countMissingDocuments(repo)} + ')'"></a>
-	  </li>
-	  <li class="nav-item">
-	    <a th:class="'nav-link' + ('ignored' == ${tab} ? ' active' : '') + (${org.countIgnored(repo)} == 0 ? ' disabled': '')"
-	       th:href="@{/{id}/ignored(id=${org.id},repo=${repo})}" th:text="'Ignored (' + ${org.countIgnored(repo)} + ')'"></a>
 	  </li>
 	  <li class="nav-item" th:if="${search != null}">
 	    <a th:class="'nav-link' + ('topterms' == ${tab} ? ' active' : '')"
