@@ -226,8 +226,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 break;
             } catch (IOException | IllegalArgumentException | UploadException e) {
                 LOGGER.error(media.toString(), e);
-                if (e.getMessage() != null &&
-                        (e.getMessage().contains("tiffinfo command failed") || e.getMessage().contains("upstream request timeout"))) {
+                if (e.getMessage() != null && e.getMessage().contains("tiffinfo command failed")) {
                     save = mediaService.ignoreMedia(media, media.getMetadata().toString(), e);
                     break;
                 }

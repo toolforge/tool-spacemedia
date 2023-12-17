@@ -909,9 +909,11 @@ public class CommonsService {
                 LOGGER.info("Uploading {} by URL as {}..", url, filenameExt);
                 apiResponse = apiHttpPost(params, UploadApiResponse.class);
             } catch (IOException e) {
-                if (e.getMessage() != null && e.getMessage().contains("bytes exhausted (tried to allocate")) {
-                    LOGGER.warn("Unable to upload {} by URL (memory exhaustion), fallback to upload in chunks...", url);
-                    // T334814 - upload by chunk in case of memory exhaustion during upload by url
+                String msg = e.getMessage();
+                if (msg != null && (msg.contains("bytes exhausted (tried to allocate")
+                        || msg.contains("upstream request timeout"))) {
+                    LOGGER.warn("Unable to upload {} by URL ({}), fallback to upload in chunks...", url, msg);
+                    // T334814 - upload by chunk for memory exhaustion or upstream request timeout
                     return doUpload(wikiCode, filename, ext, url, sha1, renewTokenIfBadToken, retryWithSanitizedUrl,
                             retryAfterRandomProxy403error, false);
                 }
