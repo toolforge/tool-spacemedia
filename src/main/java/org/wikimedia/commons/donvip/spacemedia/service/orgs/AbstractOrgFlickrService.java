@@ -290,7 +290,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             try {
                 Pair<FlickrMedia, Integer> result = processor.processFlickrMedia(media, flickrAccount,
                         () -> getStringsToRemove(media), this::shouldUploadAuto, this::uploadWrapped,
-                        getUrlResolver(), this::saveMedia, getIgnoreCriteria());
+                        getUrlResolver(), checkBlocklist(), this::saveMedia, getIgnoreCriteria());
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }

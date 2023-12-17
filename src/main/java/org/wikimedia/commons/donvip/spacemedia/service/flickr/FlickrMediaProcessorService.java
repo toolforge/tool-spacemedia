@@ -85,7 +85,7 @@ public class FlickrMediaProcessorService {
     public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
             Supplier<Collection<String>> stringsToRemove, BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<FileMetadata>, Integer>> uploader,
-            UrlResolver<FlickrMedia> urlResolver, UnaryOperator<FlickrMedia> saver,
+            UrlResolver<FlickrMedia> urlResolver, boolean checkBlocklist, UnaryOperator<FlickrMedia> saver,
             List<IgnoreCriteria> ignoreCriterias) throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
@@ -149,7 +149,7 @@ public class FlickrMediaProcessorService {
         }
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb, saver);
         savePhotoSets = false;
-        save = mediaService.updateMedia(media, stringsToRemove.get(), false, urlResolver).getResult();
+        save = mediaService.updateMedia(media, stringsToRemove.get(), false, urlResolver, checkBlocklist).getResult();
         int uploadCount = 0;
         if (shouldUploadAuto.test(media, false) && (videosEnabled || !media.isVideo())) {
             Triple<FlickrMedia, Collection<FileMetadata>, Integer> upload = uploader.apply(media);

@@ -104,8 +104,8 @@ public class MediaService {
     }
 
     public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
-            boolean forceUpdate, UrlResolver<M> urlResolver) throws IOException {
-        return updateMedia(media, stringsToRemove, forceUpdate, urlResolver, true, true, false, null);
+            boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist) throws IOException {
+        return updateMedia(media, stringsToRemove, forceUpdate, urlResolver, checkBlocklist, true, false, null);
     }
 
     public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
