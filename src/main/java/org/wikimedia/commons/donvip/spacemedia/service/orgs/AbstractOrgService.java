@@ -60,6 +60,7 @@ import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.jsoup.HttpStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.client.HttpClientErrorException.NotFound;
 import org.springframework.web.client.RestClientException;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
@@ -691,7 +693,17 @@ public abstract class AbstractOrgService<T extends Media>
 
     @Override
     public T refreshAndSave(T media) throws IOException {
-        T refreshedMedia = refresh(media);
+        T refreshedMedia = null;
+        try {
+            refreshedMedia = refresh(media);
+        } catch (NotFound e) {
+            LOGGER.warn("Refresh of {} failed: {}", media, e.getMessage());
+        } catch (HttpStatusException e) {
+            if (e.getStatusCode() != 404) {
+                throw e;
+            }
+            LOGGER.warn("Refresh of {} failed: {}", media, e.getMessage());
+        }
         if (refreshedMedia != null) {
             doCommonUpdate(refreshedMedia, true);
             return saveMedia(refreshedMedia);
