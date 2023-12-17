@@ -50,6 +50,7 @@ public final class UploadContext<T extends Media> {
     public static boolean isForbiddenUpload(FileMetadata fm, boolean isManual) {
         return Boolean.TRUE.equals(fm.isIgnored()) && (!isManual || StringUtils.isBlank(fm.getIgnoredReason())
                 || !(fm.getIgnoredReason().contains("block list")
+                        || fm.getIgnoredReason().contains("likely")
                         || fm.getIgnoredReason().contains("Photoset ignored")
                         || fm.getIgnoredReason().contains("Public Domain Mark")
                         || fm.getIgnoredReason().contains("Integer.MAX_VALUE")));
