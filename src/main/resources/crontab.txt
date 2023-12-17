@@ -27,5 +27,11 @@
 10 11 * * * /bin/sh /data/project/spacemedia/run.sh flickr ussf-flickr
 20 11 * * * /bin/sh /data/project/spacemedia/run.sh dvids ussf-dvids
 05 12 * * * /bin/sh /data/project/spacemedia/run.sh custom copernicus
+15 12 * * * /bin/sh /data/project/spacemedia/run.sh custom ussf-webmil
+25 12 * * * /bin/sh /data/project/spacemedia/run.sh s3 capella
+35 12 * * * /bin/sh /data/project/spacemedia/run.sh s3 umbra
+45 12 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-svs
+55 12 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-website
+05 13 * * * /bin/sh /data/project/spacemedia/run.sh custom ercc
 # Hashes
-15 12 * * * /bin/sh /data/project/spacemedia/run.sh web
+15 13 * * * /bin/sh /data/project/spacemedia/run.sh web
