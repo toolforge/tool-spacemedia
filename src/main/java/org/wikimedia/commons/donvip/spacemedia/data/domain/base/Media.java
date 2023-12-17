@@ -388,7 +388,7 @@ public class Media implements MediaProjection, MediaDescription {
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, metadata);
+        return Objects.hash(id);
     }
 
     @Override
@@ -398,7 +398,7 @@ public class Media implements MediaProjection, MediaDescription {
         if (obj == null || getClass() != obj.getClass())
             return false;
         Media other = (Media) obj;
-        return Objects.equals(title, other.title) && Objects.equals(metadata, other.metadata);
+        return Objects.equals(id, other.id);
     }
 
     @JsonIgnore

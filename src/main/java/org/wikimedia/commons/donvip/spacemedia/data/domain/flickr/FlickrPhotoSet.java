@@ -4,13 +4,13 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 public class FlickrPhotoSet {
@@ -73,7 +73,7 @@ public class FlickrPhotoSet {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title);
+        return Objects.hash(id);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class FlickrPhotoSet {
         if (obj == null || getClass() != obj.getClass())
             return false;
         FlickrPhotoSet other = (FlickrPhotoSet) obj;
-        return Objects.equals(id, other.id) && Objects.equals(title, other.title);
+        return Objects.equals(id, other.id);
     }
 
     @Override
