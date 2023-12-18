@@ -398,7 +398,8 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     }
 
     protected static SolrClient solrClient(String host) {
-        return new Http2SolrClient.Builder(host).withResponseParser(new XMLResponseWithoutContentTypeParser()).build();
+        return new Http2SolrClient.Builder(host).useHttp1_1(true)
+                .withResponseParser(new XMLResponseWithoutContentTypeParser()).build();
     }
 
     protected static final class XMLResponseWithoutContentTypeParser extends XMLResponseParser {
