@@ -194,8 +194,9 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
 
     private boolean ignoreNonFreeFiles(NasaPhotojournalMedia media) {
         String credit = media.getCredits();
-        return !credit.contains("NASA") && !credit.contains("JPL") && !credit.contains("Jet Propulsion Laboratory")
-                && !credit.contains("USSF") && mediaService.ignoreMedia(media, "Non-free content");
+        return !media.isIgnored() && !credit.contains("NASA") && !credit.contains("JPL")
+                && !credit.contains("Jet Propulsion Laboratory") && !credit.contains("USSF")
+                && mediaService.ignoreMedia(media, "Non-free content");
     }
 
     private NasaPhotojournalMedia solrDocumentToMedia(SolrDocument doc) {
