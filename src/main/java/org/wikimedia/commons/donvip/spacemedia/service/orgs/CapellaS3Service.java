@@ -76,10 +76,10 @@ public class CapellaS3Service extends AbstractOrgS3Service {
             StacProperties properties = jackson.readValue(newURL(String.format(
                     "%s/%s-by-datetime/%s-%d/%s-%d-%d/%s-%d-%d-%d/%s/%s.json", stacEndpoint, stacCatalog, stacCatalog,
                     year, stacCatalog, year, month, stacCatalog, year, month, day, img, img)), StacMetadata.class)
-                    .getProperties();
-            media.setLongitude(properties.getProjCentroid().get(0));
-            media.setLatitude(properties.getProjCentroid().get(1));
-            media.setCreationDateTime(properties.getDatetime());
+                    .properties();
+            media.setLongitude(properties.projCentroid().get(0));
+            media.setLatitude(properties.projCentroid().get(1));
+            media.setCreationDateTime(properties.datetime());
         } else {
             LOGGER.error("Unrecognized object key: {}", id);
         }
@@ -122,57 +122,12 @@ public class CapellaS3Service extends AbstractOrgS3Service {
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class StacMetadata {
-        private String id;
-        private StacProperties properties;
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public StacProperties getProperties() {
-            return properties;
-        }
-
-        public void setProperties(StacProperties properties) {
-            this.properties = properties;
-        }
+    public static record StacMetadata(String id, StacProperties properties) {
 
         @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class StacProperties {
-            private ZonedDateTime datetime;
-            private String platform;
-            @JsonProperty("proj:centroid")
-            private List<Double> projCentroid;
-
-            public ZonedDateTime getDatetime() {
-                return datetime;
-            }
-
-            public void setDatetime(ZonedDateTime datetime) {
-                this.datetime = datetime;
-            }
-
-            public String getPlatform() {
-                return platform;
-            }
-
-            public void setPlatform(String platform) {
-                this.platform = platform;
-            }
-
-            public List<Double> getProjCentroid() {
-                return projCentroid;
-            }
-
-            public void setProjCentroid(List<Double> projCentroid) {
-                this.projCentroid = projCentroid;
-            }
+        public static record StacProperties(ZonedDateTime datetime, String platform,
+                @JsonProperty("proj:centroid") List<Double> projCentroid) {
         }
     }
 }

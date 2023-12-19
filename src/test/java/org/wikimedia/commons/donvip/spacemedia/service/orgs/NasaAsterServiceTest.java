@@ -52,7 +52,7 @@ class NasaAsterServiceTest extends AbstractOrgServiceTest {
         AsterItem[] list = json("nasa/aster/gallery.json", AsterItem[].class);
         assertEquals(612, list.length);
         assertEquals(
-                "AsterItem [lat=-21.0, lng=-68.3, name=Andes, lname=Andes Mts., Chile - Bolivia, cat=Volcanoes, icon=volcanoes]",
+                "AsterItem[lat=-21.0, lng=-68.3, name=Andes, lname=Andes Mts., Chile - Bolivia, cat=Volcanoes, icon=volcanoes]",
                 list[0].toString());
     }
 

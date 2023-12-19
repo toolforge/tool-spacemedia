@@ -96,9 +96,9 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
             LOGGER.error("Unable to post status with own code: {}", e.getMessage(), e);
             LOGGER.info("Fallback to twittered client call...");
             TweetRequest tweet = jackson.readValue(request.getStringPayload(), TweetRequest.class);
-            TweetParametersBuilder builder = TweetParameters.builder().text(tweet.getText());
-            if (tweet.getMedia() != null) {
-                builder.media(TweetParameters.Media.builder().mediaIds(tweet.getMedia().getMediaIds()).build());
+            TweetParametersBuilder builder = TweetParameters.builder().text(tweet.text());
+            if (tweet.media() != null) {
+                builder.media(TweetParameters.Media.builder().mediaIds(tweet.media().mediaIds()).build());
             }
             TweetParameters params = builder.build();
             LOGGER.info("Twittered JSON payload: {}", jackson.writeValueAsString(params));

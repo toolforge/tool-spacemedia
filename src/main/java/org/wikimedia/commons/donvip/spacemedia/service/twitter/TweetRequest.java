@@ -4,53 +4,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-class TweetRequest {
-    private String text;
-    private TweetMedia media;
+record TweetRequest(TweetMedia media, String text) {
 
-    public TweetRequest() {
-        // Default constructor for jackson
-    }
-
-    public TweetRequest(TweetRequest.TweetMedia media, String text) {
-        this.media = media;
-        this.text = text;
-    }
-
-    public TweetRequest.TweetMedia getMedia() {
-        return media;
-    }
-
-    public void setMedia(TweetRequest.TweetMedia media) {
-        this.media = media;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    static class TweetMedia {
-        @JsonProperty("media_ids")
-        private List<String> mediaIds;
-
-        public TweetMedia() {
-            // Default constructor for jackson
-        }
-
-        public TweetMedia(List<String> mediaIds) {
-            this.mediaIds = mediaIds;
-        }
-
-        public List<String> getMediaIds() {
-            return mediaIds;
-        }
-
-        public void setMediaIds(List<String> mediaIds) {
-            this.mediaIds = mediaIds;
-        }
+    static record TweetMedia(@JsonProperty("media_ids") List<String> mediaIds) {
     }
 }

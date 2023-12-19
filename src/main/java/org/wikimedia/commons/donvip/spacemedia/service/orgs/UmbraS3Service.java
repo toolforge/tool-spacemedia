@@ -91,12 +91,12 @@ public class UmbraS3Service extends AbstractOrgS3Service {
         try (InputStream in = getS3Object(id.getRepoId(),
                 id.getMediaId().replace("GEC.tif", "METADATA.json").replace(".tif", "_METADATA.json"))
                 .getObjectContent()) {
-            List<Collect> collects = jackson.readValue(in, UmbraMetadata.class).getCollects();
+            List<Collect> collects = jackson.readValue(in, UmbraMetadata.class).collects();
             if (isNotEmpty(collects)) {
                 Collect collect = collects.get(0);
-                List<Double> center = collect.getSceneCenterPointLla().getCoordinates();
-                media.setCreationDateTime(collect.getStartAtUTC()
-                        .plus(Duration.between(collect.getStartAtUTC(), collect.getEndAtUTC()).dividedBy(2)));
+                List<Double> center = collect.sceneCenterPointLla().coordinates();
+                media.setCreationDateTime(collect.startAtUTC()
+                        .plus(Duration.between(collect.startAtUTC(), collect.endAtUTC()).dividedBy(2)));
                 media.setLongitude(center.get(0));
                 media.setLatitude(center.get(1));
             } else {
@@ -158,88 +158,23 @@ public class UmbraS3Service extends AbstractOrgS3Service {
      */
     @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class UmbraMetadata {
-        private String vendor;
-        private String umbraSatelliteName;
-        private List<Collect> collects;
+    public static record UmbraMetadata (
+        String vendor,
+        String umbraSatelliteName,
+        List<Collect> collects) {
 
-        public String getVendor() {
-            return vendor;
-        }
-
-        public void setVendor(String vendor) {
-            this.vendor = vendor;
-        }
-
-        public String getUmbraSatelliteName() {
-            return umbraSatelliteName;
-        }
-
-        public void setUmbraSatelliteName(String umbraSatelliteName) {
-            this.umbraSatelliteName = umbraSatelliteName;
-        }
-
-        public List<Collect> getCollects() {
-            return collects;
-        }
-
-        public void setCollects(List<Collect> collects) {
-            this.collects = collects;
+        @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static record Collect(
+            ZonedDateTime startAtUTC,
+            ZonedDateTime endAtUTC,
+            String radarBand,
+            Point sceneCenterPointLla) {
         }
 
         @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
         @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Collect {
-            private ZonedDateTime startAtUTC;
-            private ZonedDateTime endAtUTC;
-            private String radarBand;
-            private Point sceneCenterPointLla;
-
-            public ZonedDateTime getStartAtUTC() {
-                return startAtUTC;
-            }
-
-            public void setStartAtUTC(ZonedDateTime startAtUTC) {
-                this.startAtUTC = startAtUTC;
-            }
-
-            public ZonedDateTime getEndAtUTC() {
-                return endAtUTC;
-            }
-
-            public void setEndAtUTC(ZonedDateTime endAtUTC) {
-                this.endAtUTC = endAtUTC;
-            }
-
-            public String getRadarBand() {
-                return radarBand;
-            }
-
-            public void setRadarBand(String radarBand) {
-                this.radarBand = radarBand;
-            }
-
-            public Point getSceneCenterPointLla() {
-                return sceneCenterPointLla;
-            }
-
-            public void setSceneCenterPointLla(Point sceneCenterPointLla) {
-                this.sceneCenterPointLla = sceneCenterPointLla;
-            }
-        }
-
-        @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Point {
-            private List<Double> coordinates;
-
-            public List<Double> getCoordinates() {
-                return coordinates;
-            }
-
-            public void setCoordinates(List<Double> coordinates) {
-                this.coordinates = coordinates;
-            }
+        public static record Point(List<Double> coordinates) {
         }
     }
 }

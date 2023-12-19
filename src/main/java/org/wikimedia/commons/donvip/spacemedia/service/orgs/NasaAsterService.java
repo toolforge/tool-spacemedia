@@ -172,7 +172,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
             throws IOException, UploadException {
         boolean save = false;
         NasaAsterMedia media = null;
-        Optional<NasaAsterMedia> imageInDb = repository.findById(new CompositeMediaId("aster", item.getName()));
+        Optional<NasaAsterMedia> imageInDb = repository.findById(new CompositeMediaId("aster", item.name()));
         if (imageInDb.isPresent()) {
             media = imageInDb.get();
         } else {
@@ -241,7 +241,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
     @Override
     protected NasaAsterMedia refresh(NasaAsterMedia media) throws IOException {
         return media.copyDataFrom(fetchMedia(
-                Arrays.stream(fetchItems()).filter(x -> StringUtils.equals(x.getName(), media.getId().getMediaId()))
+                Arrays.stream(fetchItems()).filter(x -> StringUtils.equals(x.name(), media.getId().getMediaId()))
                         .findAny().orElseThrow(() -> new IOException("ASTER item not found"))));
     }
 
@@ -257,13 +257,13 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
 
     private NasaAsterMedia fetchMedia(AsterItem item) throws IOException {
         NasaAsterMedia image = new NasaAsterMedia();
-        image.setId(new CompositeMediaId("aster", item.getName()));
-        image.setLongName(item.getLname());
-        image.setCategory(item.getCat());
-        image.setIcon(item.getIcon());
-        image.setLatitude(item.getLat());
-        image.setLongitude(item.getLng());
-        fillMediaWithHtml(getWithJsoup(detailsUrl.replace("<id>", item.getName()), 15_000, 3), image);
+        image.setId(new CompositeMediaId("aster", item.name()));
+        image.setLongName(item.lname());
+        image.setCategory(item.cat());
+        image.setIcon(item.icon());
+        image.setLatitude(item.lat());
+        image.setLongitude(item.lng());
+        fillMediaWithHtml(getWithJsoup(detailsUrl.replace("<id>", item.name()), 15_000, 3), image);
         return image;
     }
 
@@ -360,67 +360,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
         return s.replace(",", "").replace(".", "");
     }
 
-    static class AsterItem {
-        private double lat;
-        private double lng;
-        private String name;
-        private String lname;
-        @JsonProperty("Cat")
-        private String cat;
-        private String icon;
-
-        public double getLat() {
-            return lat;
-        }
-
-        public void setLat(double lat) {
-            this.lat = lat;
-        }
-
-        public double getLng() {
-            return lng;
-        }
-
-        public void setLng(double lng) {
-            this.lng = lng;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getLname() {
-            return lname;
-        }
-
-        public void setLname(String lname) {
-            this.lname = lname;
-        }
-
-        public String getCat() {
-            return cat;
-        }
-
-        public void setCat(String cat) {
-            this.cat = cat;
-        }
-
-        public String getIcon() {
-            return icon;
-        }
-
-        public void setIcon(String icon) {
-            this.icon = icon;
-        }
-
-        @Override
-        public String toString() {
-            return "AsterItem [lat=" + lat + ", lng=" + lng + ", name=" + name + ", lname=" + lname + ", cat=" + cat
-                    + ", icon=" + icon + "]";
-        }
+    static record AsterItem(double lat, double lng, String name, String lname, @JsonProperty("Cat") String cat,
+            String icon) {
     }
 }

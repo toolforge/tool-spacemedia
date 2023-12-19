@@ -228,21 +228,9 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         return media;
     }
 
-    private static class DvidsUpdateResult {
-        private final Set<String> idsKnownToDvidsApi;
-        Collection<DvidsMedia> uploadedMedia = new ArrayList<>();
-        private final int count;
-        private final int resultsPerPage;
-        private final int totalResults;
-
-        public DvidsUpdateResult(int resultsPerPage, int totalResults, int count, Collection<DvidsMedia> uploadedMedia,
-                Set<String> processedIds) {
-            this.count = count;
-            this.resultsPerPage = resultsPerPage;
-            this.totalResults = totalResults;
-            this.uploadedMedia = uploadedMedia;
-            this.idsKnownToDvidsApi = processedIds;
-        }
+    private static record DvidsUpdateResult(
+            int resultsPerPage, int totalResults, int count, Collection<DvidsMedia> uploadedMedia,
+            Set<String> idsKnownToDvidsApi) {
 
         public int numberOfPages() {
             return (int) Math.ceil((double) totalResults / (double) resultsPerPage);
