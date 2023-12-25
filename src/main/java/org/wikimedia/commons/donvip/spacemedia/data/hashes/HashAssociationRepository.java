@@ -1,4 +1,4 @@
-package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
+package org.wikimedia.commons.donvip.spacemedia.data.hashes;
 
 import java.util.List;
 import java.util.Optional;

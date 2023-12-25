@@ -19,10 +19,10 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @SpringJUnitConfig(MediaServiceTest.TestConfig.class)

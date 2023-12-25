@@ -145,10 +145,10 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadApiRespons
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UserInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.WikiPage;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociation;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociation;
+import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;

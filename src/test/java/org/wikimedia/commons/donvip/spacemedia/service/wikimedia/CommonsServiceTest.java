@@ -42,8 +42,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPage;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsPageRestrictionsRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.HeartbeatRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsServiceTest.TestConfig;
 
