@@ -162,6 +162,9 @@ public interface MediaRepository<T extends Media> extends JpaRepository<T, Compo
     @Query("select m from #{#entityName} m where m.id.repoId in ?1")
     Page<T> findAll(Set<String> repos, Pageable page);
 
+    @Query("select m from #{#entityName} m where m.id.repoId in ?1 order by m.publicationDate desc limit 1")
+    Optional<T> findFirst(Set<String> repos);
+
     @Query("select m from #{#entityName} m where m.id.repoId in ?1 and m.id.mediaId not in ?2 order by m.publicationDate desc")
     Set<T> findNotIn(Set<String> repos, Set<String> mediaIds);
 
