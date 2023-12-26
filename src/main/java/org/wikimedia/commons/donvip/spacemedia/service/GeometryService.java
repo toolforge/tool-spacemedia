@@ -6,14 +6,14 @@ import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.geojson.GeoJSONReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureIterator;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.opengis.feature.simple.SimpleFeature;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,7 +39,7 @@ public class GeometryService {
      */
     public String getContinent(double lat, double lon) {
         Point coord = new GeometryFactory().createPoint(new Coordinate(lon, lat));
-        try (FeatureIterator<SimpleFeature> i = continents.features()) {
+        try (SimpleFeatureIterator i = continents.features()) {
             while (i.hasNext()) {
                 SimpleFeature continent = i.next();
                 if (continent.getAttribute("geometry") instanceof Geometry geometry && geometry.contains(coord)) {
