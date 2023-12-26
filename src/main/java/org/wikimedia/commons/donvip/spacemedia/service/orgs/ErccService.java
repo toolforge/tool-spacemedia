@@ -174,13 +174,15 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
                 if (idx == 1) {
                     LOGGER.info("Found {} items to process", response.TotalCount());
                 }
-                for (MapsItem item : response.Items()) {
-                    try {
-                        updateMapItem(item, uploadedMedia, uploadedMetadata);
-                    } catch (RuntimeException e) {
-                        LOGGER.error("Error when updating {}", item, e);
+                if (response.TotalCount() > 0) {
+                    for (MapsItem item : response.Items()) {
+                        try {
+                            updateMapItem(item, uploadedMedia, uploadedMetadata);
+                        } catch (RuntimeException e) {
+                            LOGGER.error("Error when updating {}", item, e);
+                        }
+                        ongoingUpdateMedia(start, count++);
                     }
-                    ongoingUpdateMedia(start, count++);
                 }
                 loop = ++idx <= response.NumberOfPages();
             } catch (IOException | RuntimeException e) {
