@@ -12,6 +12,8 @@ import java.net.URL;
 import java.util.Map;
 
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -166,6 +168,7 @@ public class Video2CommonsService {
     private HttpClientContext getHttpClientContext() {
         HttpClientContext context = new HttpClientContext();
         context.setCookieStore(cookieStore);
+        context.setRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build());
         return context;
     }
 
