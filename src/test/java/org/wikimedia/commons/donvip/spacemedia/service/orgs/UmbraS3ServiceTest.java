@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Set;
@@ -40,8 +41,10 @@ class UmbraS3ServiceTest extends AbstractOrgServiceTest {
 
     @Test
     void testFindCategories() throws Exception {
-        assertEquals(Set.of("Images by Umbra"),
-                service.findCategories(new S3Media(), new FileMetadata(new URL("https://foo"))));
+        S3Media media = new S3Media();
+        media.setCreationDate(LocalDate.of(2023, 1, 1));
+        assertEquals(Set.of("Images by Umbra", "2023 satellite pictures"),
+                service.findCategories(media, new FileMetadata(new URL("https://foo"))));
     }
 
     @Test

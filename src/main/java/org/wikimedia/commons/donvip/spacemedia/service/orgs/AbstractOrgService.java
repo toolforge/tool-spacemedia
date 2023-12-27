@@ -1220,6 +1220,9 @@ public abstract class AbstractOrgService<T extends Media>
                 result.add(title);
             }
         });
+        if (isSatellitePicture(media, metadata)) {
+            result.add(media.getYear() + " satellite pictures");
+        }
         if (metadata.isVideo() && isNASA(media)) {
             result.add("NASA videos in " + media.getYear().getValue());
         }
@@ -1287,7 +1290,6 @@ public abstract class AbstractOrgService<T extends Media>
         if (result.isEmpty()) {
             result.add(defaultCat);
         }
-        result.add(image.getYear() + " satellite pictures");
         return result;
     }
 
