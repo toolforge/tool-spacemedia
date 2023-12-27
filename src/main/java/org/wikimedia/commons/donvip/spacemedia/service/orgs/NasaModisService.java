@@ -12,6 +12,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -237,7 +238,11 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("metadata"))) {
             String cleanFact = fact.replace("</b> ", "").replace("\n", "").strip();
             extractFact(cleanFact, "Satellite:", image::setSatellite);
-            extractFact(cleanFact, "Date Acquired:", x -> image.setCreationDate(LocalDate.parse(x, dateFormatter)));
+            try {
+                extractFact(cleanFact, "Date Acquired:", x -> image.setCreationDate(LocalDate.parse(x, dateFormatter)));
+            } catch (DateTimeParseException e) {
+                LOGGER.warn("Cannot parse acquisition date for {}: {}", image, e.getMessage());
+            }
             extractFact(cleanFact, "Bands Used:", image::setBands);
             extractFact(cleanFact, "Image Credit:", image::setCredits);
         }
