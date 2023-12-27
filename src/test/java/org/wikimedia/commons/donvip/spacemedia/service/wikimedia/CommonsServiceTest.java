@@ -113,7 +113,7 @@ class CommonsServiceTest {
                 service.cleanupCategories(
                         new HashSet<>(
                                 Set.of("Combined Force Space Component Command", "Combined Space Operations Center")),
-                        LocalDateTime.now()));
+                        LocalDateTime.now(), true));
     }
 
     @Test

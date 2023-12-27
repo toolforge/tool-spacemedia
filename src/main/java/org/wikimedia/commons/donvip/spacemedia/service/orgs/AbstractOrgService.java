@@ -991,7 +991,7 @@ public abstract class AbstractOrgService<T extends Media>
                     .append("\n=={{int:license-header}}==\n");
             findLicenceTemplates(media, metadata).forEach(t -> sb.append("{{").append(t).append("}}\n"));
             commonsService
-                    .cleanupCategories(findCategories(media, metadata, true), media.getBestTemporal())
+                    .cleanupCategories(findCategories(media, metadata, true), media.getBestTemporal(), needsReview())
                     .forEach(t -> sb.append("[[Category:").append(t).append("]]\n"));
             return Pair.of(sb.toString(), getLegends(media, desc.getValue()));
         } catch (IOException e) {
@@ -1465,6 +1465,10 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected boolean ignoreExifMetadata() {
         return false;
+    }
+
+    protected boolean needsReview() {
+        return true;
     }
 
     protected final boolean doCommonUpdate(T media) throws IOException {

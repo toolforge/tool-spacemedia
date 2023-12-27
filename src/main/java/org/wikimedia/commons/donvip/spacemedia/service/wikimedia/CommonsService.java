@@ -722,7 +722,7 @@ public class CommonsService {
         return self.queryRevisionContent(page.getId());
     }
 
-    public Set<String> cleanupCategories(Set<String> categories, Temporal date) {
+    public Set<String> cleanupCategories(Set<String> categories, Temporal date, boolean needsReview) {
         LocalDateTime start = now();
         LOGGER.info("Cleaning {} categories with depth {}...", categories.size(), catSearchDepth);
         followCategoryRedirects(categories);
@@ -753,7 +753,9 @@ public class CommonsService {
         // Find category by year/by month
         result = mapCategoriesByDate(result, date);
         // Make sure all imported files get reviewed
-        result.add("Spacemedia files (review needed)");
+        if (needsReview) {
+            result.add("Spacemedia files (review needed)");
+        }
         return result;
     }
 
