@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
@@ -220,11 +221,13 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
         }
         image.setTitle(h5.substring(h5.indexOf('-') + 1).strip());
         // Image at top is used as thumbnail
-        String thumb = div.getElementsByTag("img").first().attr("src").replace("http://", "https://");
-        if (!thumb.startsWith("https://")) {
-            thumb = "https://modis.gsfc.nasa.gov/gallery/" + thumb;
-        }
-        image.setThumbnailUrl(newURL(thumb));
+        ofNullable(div.getElementsByTag("img").first()).ifPresent(img -> {
+            String thumb = img.attr("src").replace("http://", "https://");
+            if (!thumb.startsWith("https://")) {
+                thumb = "https://modis.gsfc.nasa.gov/gallery/" + thumb;
+            }
+            image.setThumbnailUrl(newURL(thumb));
+        });
         // Description and acquisition date
         image.setDescription(
                 div.getElementsByTag("p").stream().map(p -> p.text().strip())
