@@ -235,7 +235,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
                         .filter(x -> isNotBlank(x) && !x.startsWith("Image Facts")).collect(joining("\n\n")));
         for (String fact : div.getElementsByTag("p").stream().map(p -> p.html().strip())
                 .filter(x -> x.contains("<b>Image Facts")).map(x -> x.split("<br>"))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException("metadata"))) {
+                .findFirst().orElse(new String[] {})) {
             String cleanFact = fact.replace("</b> ", "").replace("\n", "").strip();
             extractFact(cleanFact, "Satellite:", image::setSatellite);
             try {
