@@ -1427,6 +1427,9 @@ public abstract class AbstractOrgService<T extends Media>
                                 || courtesyOk.stream().noneMatch(description::contains))) {
                     result = mediaService.ignoreMedia(media, "Probably non-free image (courtesy)");
                     LOGGER.debug("Courtesy test has been trigerred for {}", media);
+                } else if (description.contains("citizen scien") || description.contains("citizenscien")) {
+                    result = mediaService.ignoreMedia(media, "Probably non-free image (citizen science)");
+                    LOGGER.debug("Citizen science test has been trigerred for {}", media);
                 }
             }
             if (StringUtils.length(media.getTitle()) + StringUtils.length(media.getDescription()) <= 2) {
