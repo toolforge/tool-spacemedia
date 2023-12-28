@@ -511,14 +511,17 @@ public abstract class AbstractOrgService<T extends Media>
         }
     }
 
+    protected final List<FileMetadata> allMetadata(Collection<T> uploadedMedia) {
+        return uploadedMedia.stream().flatMap(Media::getMetadataStream).toList();
+    }
+
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, LocalDateTime start) {
         endUpdateMedia(count, uploadedMedia, start, true);
     }
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, LocalDateTime start,
             boolean postTweet) {
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(Media::getMetadataStream).toList(),
-                start, postTweet);
+        endUpdateMedia(count, uploadedMedia, allMetadata(uploadedMedia), start, postTweet);
     }
 
     protected final void endUpdateMedia(int count, Collection<T> uploadedMedia, Collection<FileMetadata> uploadedMetadata,

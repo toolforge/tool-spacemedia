@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
@@ -29,10 +31,10 @@ public class DvidsThumbnailDeserializer extends StdDeserializer<URL> {
         if (node instanceof ObjectNode object) {
             JsonNode urlNode = object.get("url");
             if (urlNode != null) {
-                return new URL(urlNode.asText());
+                return newURL(urlNode.asText());
             }
         } else if (node instanceof TextNode text) {
-            return new URL(text.asText());
+            return newURL(text.asText());
         }
         throw new IllegalArgumentException(Objects.toString(node));
     }

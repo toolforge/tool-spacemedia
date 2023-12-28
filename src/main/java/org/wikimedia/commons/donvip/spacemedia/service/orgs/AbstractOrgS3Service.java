@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
@@ -14,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -40,13 +43,13 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgS3Service.class);
 
     @Autowired
-    private S3Service s3;
+    protected S3Service s3;
 
-    private final Regions region;
+    protected final Regions region;
 
     protected AbstractOrgS3Service(S3MediaRepository repository, String id, Regions region, Set<String> bucketNames) {
         super(repository, id, bucketNames);
-        this.region = region;
+        this.region = requireNonNull(region);
     }
 
     @Override
@@ -77,7 +80,7 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
         List<S3Media> uploadedMedia = new ArrayList<>();
         int count = 0;
         for (String bucket : getRepoIdsFromArgs(args)) {
-            Pair<Integer, Collection<S3Media>> update = updateS3Media(region, bucket);
+            Pair<Integer, Collection<S3Media>> update = updateS3Media(bucket);
             uploadedMedia.addAll(update.getRight());
             count += update.getLeft();
             ongoingUpdateMedia(start, count);
@@ -85,7 +88,7 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
         endUpdateMedia(count, uploadedMedia, start);
     }
 
-    private Pair<Integer, Collection<S3Media>> updateS3Media(Regions region, String bucket) {
+    protected Pair<Integer, Collection<S3Media>> updateS3Media(String bucket) {
         List<S3Media> uploadedMedia = new ArrayList<>();
         int count = 0;
         LocalDateTime start = LocalDateTime.now();
@@ -97,7 +100,7 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
 
         for (S3Media media : files) {
             try {
-                Pair<S3Media, Integer> result = processS3Media(media);
+                Pair<S3Media, Integer> result = processS3Media(media, this::enrichS3Media);
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }
@@ -115,14 +118,14 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
         return Pair.of(count, uploadedMedia);
     }
 
-    private S3Media toS3Media(String bucket, S3ObjectSummary summary) {
+    protected S3Media toS3Media(String bucket, S3ObjectSummary summary) {
         S3Media media = new S3Media(bucket, summary.getKey());
         media.setPublicationDateTime(toZonedDateTime(summary.getLastModified()));
         addMetadata(media, getUrl(media.getId()), m -> fillMetadata(m, summary));
         return media;
     }
 
-    protected abstract S3Media enrichS3Media(S3Media media) throws IOException;
+    protected abstract S3Media enrichS3Media(S3Media media);
 
     private static ZonedDateTime toZonedDateTime(Date date) {
         return date.toInstant().atZone(ZoneOffset.ofHours(-7));
@@ -135,14 +138,15 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
         return m;
     }
 
-    private Pair<S3Media, Integer> processS3Media(S3Media mediaFromApi) throws IOException, UploadException {
+    protected Pair<S3Media, Integer> processS3Media(S3Media mediaFromApi, Function<S3Media, S3Media> worker)
+            throws IOException, UploadException {
         S3Media media = null;
         boolean save = false;
         Optional<S3Media> mediaInDb = repository.findById(mediaFromApi.getId());
         if (mediaInDb.isPresent()) {
             media = mediaInDb.get();
         } else {
-            media = enrichS3Media(mediaFromApi);
+            media = worker.apply(mediaFromApi);
             save = true;
         }
         save |= doCommonUpdate(media);

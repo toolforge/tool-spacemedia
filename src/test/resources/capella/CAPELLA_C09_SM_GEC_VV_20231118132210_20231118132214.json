@@ -1,0 +1,164 @@
+{
+  "type": "Feature",
+  "stac_version": "1.0.0",
+  "id": "CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214",
+  "properties": {
+    "sar:frequency_band": "X",
+    "instruments": [
+      "capella-radar-9"
+    ],
+    "proj:centroid": [
+      -115.19457753,
+      32.906081959999995
+    ],
+    "proj:shape": [
+      20211,
+      27193
+    ],
+    "proj:transform": [
+      0.8,
+      0,
+      657965.5598879671,
+      0,
+      -0.8,
+      3650407.901766273,
+      0,
+      0,
+      1
+    ],
+    "proj:epsg": 32611,
+    "datetime": "2023-11-18T13:22:12.698788Z",
+    "start_datetime": "2023-11-18T13:22:10.528436Z",
+    "end_datetime": "2023-11-18T13:22:14.869140Z",
+    "locale:datetime": "2023-11-18T05:22:12.698788-0800",
+    "locale:timezone": "America/Los_Angeles",
+    "locale:time": "05:22:12.698788",
+    "platform": "capella-9",
+    "constellation": "capella",
+    "sar:instrument_mode": "stripmap",
+    "sar:center_frequency": 9.65,
+    "sar:polarizations": [
+      "VV"
+    ],
+    "sat:orbit_state": "ascending",
+    "sar:product_type": "GEC",
+    "sar:pixel_spacing_range": 0.8,
+    "sar:pixel_spacing_azimuth": 0.8,
+    "sar:looks_range": 1,
+    "sar:looks_azimuth": 1,
+    "sar:looks_equivalent_number": 1,
+    "sar:resolution_range": 0.95,
+    "capella:resolution_ground_range": 1.72,
+    "sar:resolution_azimuth": 1.27,
+    "view:incidence_angle": 33.7,
+    "view:look_angle": 30.5,
+    "capella:squint_angle": 0,
+    "capella:orbital_plane": 45,
+    "sar:observation_direction": "right",
+    "capella:collect_id": "aff2dbe4-3a4a-4777-9c0d-4992bc92266f",
+    "capella:product_category": "standard",
+    "capella:image_length": 19867.478630302183,
+    "capella:image_width": 5025.347056392928,
+    "processing:software": {
+      "Capella SAR Processor": "2.50.2"
+    }
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          -115.30064093,
+          32.8831782
+        ],
+        [
+          -115.27502894,
+          32.84335589
+        ],
+        [
+          -115.08851413,
+          32.92893387
+        ],
+        [
+          -115.11405004,
+          32.96880803
+        ],
+        [
+          -115.30064093,
+          32.8831782
+        ]
+      ]
+    ]
+  },
+  "links": [
+    {
+      "rel": "root",
+      "href": "../../../catalog.json",
+      "type": "application/json",
+      "title": "Capella Open Data"
+    },
+    {
+      "rel": "collection",
+      "href": "../collection.json",
+      "type": "application/json",
+      "title": "Other"
+    },
+    {
+      "rel": "parent",
+      "href": "../collection.json",
+      "type": "application/json",
+      "title": "Other"
+    }
+  ],
+  "assets": {
+    "VV": {
+      "href": "https://capella-open-data.s3.amazonaws.com/data/2023/11/18/CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214/CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214.tif",
+      "type": "image/tiff; application=geotiff",
+      "title": "Data file",
+      "sar:polarizations": [
+        "VV"
+      ],
+      "roles": [
+        "data"
+      ]
+    },
+    "metadata": {
+      "href": "https://capella-open-data.s3.amazonaws.com/data/2023/11/18/CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214/CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214_extended.json",
+      "type": "application/json",
+      "title": "Extended Metadata",
+      "roles": [
+        "metadata"
+      ]
+    },
+    "preview": {
+      "href": "https://capella-open-data.s3.amazonaws.com/data/2023/11/18/CAPELLA_C09_SM_GEO_VV_20231118132210_20231118132214/CAPELLA_C09_SM_GEO_VV_20231118132210_20231118132214_preview.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "Preview image",
+      "roles": [
+        "overview"
+      ]
+    },
+    "thumbnail": {
+      "href": "https://capella-open-data.s3.amazonaws.com/data/2023/11/18/CAPELLA_C09_SM_GEO_VV_20231118132210_20231118132214/CAPELLA_C09_SM_GEO_VV_20231118132210_20231118132214_thumb.png",
+      "type": "image/png",
+      "title": "Thumbnail image",
+      "roles": [
+        "thumbnail"
+      ]
+    }
+  },
+  "bbox": [
+    -115.30064093,
+    32.84335589,
+    -115.08851413,
+    32.96880803
+  ],
+  "stac_extensions": [
+    "sat",
+    "view",
+    "sar",
+    "processing",
+    "proj"
+  ],
+  "collection": "capella-open-data-other"
+}

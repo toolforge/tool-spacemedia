@@ -324,7 +324,7 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
             count += videos.getLeft();
             uploadedMedia.addAll(videos.getRight());
         }
-        endUpdateMedia(count, uploadedMedia, uploadedMedia.stream().flatMap(Media::getMetadataStream).toList(),
+        endUpdateMedia(count, uploadedMedia, allMetadata(uploadedMedia),
                 start, LocalDate.now().minusYears(1), // NASA sometimes post old images dating a few months back
                 false /* tweets already posted - one by NASA center */);
     }

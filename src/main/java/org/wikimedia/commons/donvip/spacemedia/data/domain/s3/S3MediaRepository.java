@@ -13,10 +13,10 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 public interface S3MediaRepository extends MediaRepository<S3Media> {
 
     @Retention(RetentionPolicy.RUNTIME)
-    @CacheEvict(allEntries = true, cacheNames = { "s3Count", "s3CountByShare", "s3CountIgnored",
-            "s3CountIgnoredByShare", "s3CountMissing", "s3CountMissingImagesByShare", "s3CountMissingVideosByShare",
-            "s3CountMissingDocumentsByShare", "s3CountMissingByShare", "s3CountUploaded",
-            "s3CountUploadedByShare", "s3CountPhashNotNull", "s3CountPhashNotNullByShare" })
+    @CacheEvict(allEntries = true, cacheNames = { "s3Count", "s3CountByBucket", "s3CountIgnored",
+            "s3CountIgnoredByBucket", "s3CountMissing", "s3CountMissingImagesByBucket", "s3CountMissingVideosByBucket",
+            "s3CountMissingDocumentsByBucket", "s3CountMissingByBucket", "s3CountUploaded", "s3CountUploadedByBucket",
+            "s3CountPhashNotNull", "s3CountPhashNotNullByBucket" })
     @interface CacheEvictS3All {
 
     }
@@ -34,7 +34,7 @@ public interface S3MediaRepository extends MediaRepository<S3Media> {
     long count();
 
     @Override
-    @Cacheable("s3CountByShare")
+    @Cacheable("s3CountByBucket")
     long count(Set<String> buckets);
 
     @Override
@@ -42,7 +42,7 @@ public interface S3MediaRepository extends MediaRepository<S3Media> {
     long countByMetadata_IgnoredTrue();
 
     @Override
-    @Cacheable("s3CountIgnoredByShare")
+    @Cacheable("s3CountIgnoredByBucket")
     long countByMetadata_IgnoredTrue(Set<String> buckets);
 
     @Override
@@ -50,19 +50,19 @@ public interface S3MediaRepository extends MediaRepository<S3Media> {
     long countMissingInCommons();
 
     @Override
-    @Cacheable("s3CountMissingByShare")
+    @Cacheable("s3CountMissingByBucket")
     long countMissingInCommons(Set<String> buckets);
 
     @Override
-    @Cacheable("s3CountMissingImagesByShare")
+    @Cacheable("s3CountMissingImagesByBucket")
     long countMissingImagesInCommons(Set<String> buckets);
 
     @Override
-    @Cacheable("s3CountMissingVideosByShare")
+    @Cacheable("s3CountMissingVideosByBucket")
     long countMissingVideosInCommons(Set<String> buckets);
 
     @Override
-    @Cacheable("s3CountMissingDocumentsByShare")
+    @Cacheable("s3CountMissingDocumentsByBucket")
     long countMissingDocumentsInCommons(Set<String> buckets);
 
     @Override
@@ -70,7 +70,7 @@ public interface S3MediaRepository extends MediaRepository<S3Media> {
     long countUploadedToCommons();
 
     @Override
-    @Cacheable("s3CountUploadedByShare")
+    @Cacheable("s3CountUploadedByBucket")
     long countUploadedToCommons(Set<String> buckets);
 
     @Override
@@ -78,7 +78,7 @@ public interface S3MediaRepository extends MediaRepository<S3Media> {
     long countByMetadata_PhashNotNull();
 
     @Override
-    @Cacheable("s3CountPhashNotNullByShare")
+    @Cacheable("s3CountPhashNotNullByBucket")
     long countByMetadata_PhashNotNull(Set<String> buckets);
 
     // SAVE

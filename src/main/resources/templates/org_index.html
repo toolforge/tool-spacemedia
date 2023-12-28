@@ -37,8 +37,8 @@
 		      <tr th:each="media : ${medias}">
 		        <td>
 		          <a th:href="${org.getSourceUrl(media)}" class="imagelink">
-		            <canvas th:id="${media.id.mediaId}" width="210px" style="width:210px" th:alt="${media.id.mediaId}" th:if="${media.COG}" class="img_cog"></canvas>
-		            <img th:id="${media.id.mediaId}" width="210px" th:alt="${media.id.mediaId}" th:unless="${media.COG}" th:src="${media.PreviewUrl}">
+		            <canvas th:id="${media.id.mediaId}" width="210px" style="width:210px" th:alt="${media.id.mediaId}" th:if="${media.COG and #strings.contains(media.PreviewUrl,'.tif')}" class="img_cog"></canvas>
+		            <img th:id="${media.id.mediaId}" width="210px" th:alt="${media.id.mediaId}" th:unless="${media.COG and #strings.contains(media.PreviewUrl,'.tif')}" th:src="${media.PreviewUrl}">
 		            <img th:if="${media.video}" class="cornerimage" width="80px" src="/Antu_videoclip-amarok.svg" alt="">
 		            <img th:if="${media.audio}" class="cornerimage" width="80px" src="/Antu_audio-volume-high.svg" alt="">
 		          </a>

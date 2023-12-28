@@ -1,10 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import static java.util.Optional.ofNullable;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,13 +39,7 @@ public class DvidsCreditDeserializer extends StdDeserializer<List<DvidsCredit>> 
                     ofNullable(object.get("id")).ifPresent(x -> credit.setId(x.asInt()));
                     ofNullable(object.get("name")).ifPresent(x -> credit.setName(x.asText()));
                     ofNullable(object.get("rank")).ifPresent(x -> credit.setRank(x.asText()));
-                    ofNullable(object.get("url")).ifPresent(x -> {
-                        try {
-                            credit.setUrl(new URL(x.asText()));
-                        } catch (MalformedURLException e) {
-                            throw new IllegalArgumentException(e);
-                        }
-                    });
+                    ofNullable(object.get("url")).ifPresent(x -> credit.setUrl(newURL(x.asText())));
                 }
                 credits.add(credit);
             }

@@ -71,7 +71,7 @@ public class ExifMetadata {
 
     @Lob
     @JsonProperty("EXIF:ImageDescription")
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String exifImageDescription;
 
     @JsonProperty("EXIF:ImageHeight")

@@ -4,6 +4,7 @@ import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -71,7 +72,7 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     }
 
     @Override
-    protected S3Media enrichS3Media(S3Media media) throws IOException {
+    protected S3Media enrichS3Media(S3Media media) {
         CompositeMediaId id = media.getId();
         String[] items = id.getMediaId().split("/");
         if (items.length == 5) {
@@ -102,6 +103,8 @@ public class UmbraS3Service extends AbstractOrgS3Service {
             } else {
                 LOGGER.warn("No collect for {}", id);
             }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
         return media;
     }

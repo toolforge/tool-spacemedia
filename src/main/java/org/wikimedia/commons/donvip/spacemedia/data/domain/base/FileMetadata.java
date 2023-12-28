@@ -5,11 +5,11 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.findExtension;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getNormalizedExtension;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -128,8 +128,8 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
         updateFilenameAndExtension(assetUrl.getPath());
     }
 
-    public FileMetadata(String assetUrl) throws MalformedURLException {
-        this(new URL(assetUrl));
+    public FileMetadata(String assetUrl) {
+        this(newURL(assetUrl));
     }
 
     public boolean updateFilenameAndExtension(String assetPath) {

@@ -638,6 +638,18 @@
 								</configuration>
 							</execution>
 							<execution>
+								<id>job-stac</id>
+								<goals>
+									<goal>repackage</goal>
+								</goals>
+								<configuration>
+									<mainClass>
+										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaOrgStacUpdateJobApplication</mainClass>
+									<outputDirectory>
+										${project.build.directory}/job-stac</outputDirectory>
+								</configuration>
+							</execution>
+							<execution>
 								<id>job-stsci</id>
 								<goals>
 									<goal>repackage</goal>
