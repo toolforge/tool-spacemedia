@@ -30,6 +30,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
+import org.wikimedia.commons.donvip.spacemedia.service.InternetArchiveService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.NasaAsterService.AsterItem;
 
 /**
@@ -72,12 +73,25 @@ class NasaAsterServiceTest extends AbstractOrgServiceTest {
         basicChecks(id, 2);
     }
 
+    @ParameterizedTest
+    @CsvSource({ "tokyo-snow" })
+    void testFromInternetArchive(String id) throws Exception {
+        basicChecks(id, 1,
+                "https://web.archive.org/web/20060824092636/http://asterweb.jpl.nasa.gov:80/gallery-detail.asp?name=tokyo-snow",
+                false);
+    }
+
     private NasaAsterMedia basicChecks(String id, int size) throws MalformedURLException, IOException {
+        return basicChecks(id, size, "https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=" + id, true);
+    }
+
+    private NasaAsterMedia basicChecks(String id, int size, String url, boolean sizeAndDims)
+            throws MalformedURLException, IOException {
         NasaAsterMedia media = new NasaAsterMedia();
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         when(commonsService.isPermittedFileUrl(any())).thenReturn(true);
 
-        service.fillMediaWithHtml(Jsoup.parse(new File("src/test/resources/nasa/aster/" + id + ".html")), media);
+        service.fillMediaWithHtml(Jsoup.parse(new File("src/test/resources/nasa/aster/" + id + ".html")), media, url);
 
         assertFalse(media.getTitle().isEmpty());
         assertNotNull(media.getThumbnailUrl());
@@ -92,8 +106,10 @@ class NasaAsterServiceTest extends AbstractOrgServiceTest {
         Set<String> uploadTitles = new TreeSet<>();
         for (FileMetadata metadata : media.getMetadata()) {
             assertNotNull(metadata);
-            assertNotNull(metadata.getSize());
-            assertNotNull(metadata.getImageDimensions());
+            if (sizeAndDims) {
+                assertNotNull(metadata.getSize());
+                assertNotNull(metadata.getImageDimensions());
+            }
             UploadContext<NasaAsterMedia> uploadContext = new UploadContext<>(media, metadata, UploadMode.AUTO, 1999,
                     service::isPermittedFileType, false);
             assertTrue(uploadContext.shouldUpload());
@@ -112,6 +128,11 @@ class NasaAsterServiceTest extends AbstractOrgServiceTest {
     @Configuration
     @Import(DefaultOrgTestConfig.class)
     static class TestConfig {
+
+        @Bean
+        public InternetArchiveService internetArchive() {
+            return new InternetArchiveService();
+        }
 
         @Bean
         @Autowired

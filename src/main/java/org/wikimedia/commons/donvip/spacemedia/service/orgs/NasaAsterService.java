@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.regex.Pattern.compile;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.extractDate;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.restTemplateSupportingAll;
@@ -10,7 +11,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -43,6 +43,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterM
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
+import org.wikimedia.commons.donvip.spacemedia.service.InternetArchiveService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
@@ -111,6 +112,9 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
 
     @Autowired
     private GeometryService geometry;
+
+    @Autowired
+    private InternetArchiveService internetArchive;
 
     public NasaAsterService(NasaAsterMediaRepository repository) {
         super(repository, "nasa.aster", Set.of("aster"));
@@ -263,7 +267,22 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
         image.setIcon(item.icon());
         image.setLatitude(item.lat());
         image.setLongitude(item.lng());
-        fillMediaWithHtml(getWithJsoup(detailsUrl.replace("<id>", item.name()), 15_000, 3), image);
+        try {
+            String url = detailsUrl.replace("<id>", item.name());
+            Document document = getWithJsoup(url, 15_000, 3, false);
+            if ("Object moved".equals(document.getElementsByTag("head").text())) {
+                url = internetArchive.retrieveOldestUrl(url)
+                        .orElseThrow(() -> new IllegalStateException(
+                                item + " cannot be retrieved from ASTER website nor Internet Archive"))
+                        .toExternalForm();
+                fillMediaWithHtml(getWithJsoup(url, 15_000, 3, true), image, url);
+            } else {
+                fillMediaWithHtml(document, image, url);
+            }
+        } catch (IOException | RuntimeException e) {
+            LOGGER.error("Error while fetching {}: {}", image, e.getMessage());
+            throw e;
+        }
         return image;
     }
 
@@ -292,63 +311,84 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
         return null;
     }
 
-    static ZonedDateTime extractPublicationDate(Document html) {
-        String meta = html.getElementsByTag("tr").get(1).getElementsByTag("table").get(0).nextElementSibling()
+    ZonedDateTime extractPublicationDate(Document html, String url) {
+        String meta = html.getElementsByTag("center").first()
+                .getElementsByTag("tr").get(1).getElementsByTag("table").get(0).nextElementSibling()
                 .getElementsByTag("tr").first().nextElementSibling().nextElementSibling().getElementsByTag("tr").get(0)
                 .getElementsByTag("td").first().getElementsByTag("td").get(2).text();
-        for (Entry<DateTimeFormatter, Pattern> e : ADDED_PATTERNS.entrySet()) {
-            Matcher m = e.getValue().matcher(meta);
-            if (m.matches()) {
-                String text = m.group(1);
-                DateTimeFormatter format = e.getKey();
-                return format.toString().contains("Value(MinuteOfHour)")
-                        ? LocalDateTime.parse(text, format).atZone(ZoneId.systemDefault())
-                        : LocalDate.parse(text, format).atStartOfDay(ZoneId.systemDefault());
-            }
-        }
-        throw new IllegalStateException("No publication date found: " + meta);
+        return extractDate(meta, ADDED_PATTERNS).or(() -> {
+            return url.contains("://web.archive.org/web/") ? Optional.of(internetArchive.extractTimestamp(url))
+                    : Optional.empty();
+        }).orElseThrow(() -> new IllegalStateException("No publication date found for " + url + " => " + meta));
     }
 
-    void fillMediaWithHtml(Document html, NasaAsterMedia image) {
+    void fillMediaWithHtml(Document html, NasaAsterMedia image, String url) {
         Element bodyText = Objects.requireNonNull(html.getElementsByClass("BodyText").first(), "BodyText");
         Elements tables = bodyText.getElementsByTag("table");
-        image.setPublicationDateTime(extractPublicationDate(html));
+        Element img = tables.get(0).getElementsByTag("img").first();
+        image.setPublicationDateTime(extractPublicationDate(html, url));
         // Title
         image.setTitle(Objects.requireNonNull(bodyText.getElementsByTag("font").first(), "font").text());
         // Image at top is used as thumbnail
-        image.setThumbnailUrl(
-                newURL(tables.get(0).getElementsByTag("img").first().attr("src").replace("http://", "https://")));
+        image.setThumbnailUrl(newURL(img.attr("src").replace("http://", "https://")));
         // Description and acquisition date
-        image.setDescription(tables.get(1).getElementsByTag("td").text());
+        for (Element table : tables) {
+            if ("5".equals(table.attr("cellspacing"))) {
+                image.setDescription(table.getElementsByTag("td").text());
+                break;
+            }
+        }
         image.setCreationDate(extractAcquisitionDate(image));
-        // FIXME ASTER entries can be videos too
+        // FIXME ASTER entries can be MOV videos too
         // https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=fuji
         image.setMediaType(NasaMediaType.image);
-        tables.get(1).siblingElements();
         for (int i = 2; i < tables.size(); i++) {
             Element table = tables.get(i);
-            String meta = table.getElementsByTag("td").get(1).text();
-            Matcher mr = RESOLUTION.matcher(meta);
-            if (mr.matches()) {
-                FileMetadata metadata = addMetadata(image,
-                        table.getElementsByTag("a").first().attr("href").replace("http://", "https://"),
-                        md -> md.setImageDimensions(new ImageDimensions(intval(mr.group(1)), intval(mr.group(2)))));
+            Elements tds = table.getElementsByTag("td");
+            if (tds.size() > 1) {
+                String meta = tds.get(1).text();
+                Matcher mr = RESOLUTION.matcher(meta);
                 Matcher ms = SIZE.matcher(meta);
-                if (ms.matches()) {
-                    String unit = ms.groupCount() >= 2 ? ms.group(2) : null;
-                    Long size = "MB".equals(unit) ? 1024 * 1024 : "KB".equals(unit) ? 1024L : 1L;
-                    if (ms.group(1).contains(".")) {
-                        size = (long) (size * Double.valueOf(ms.group(1)));
-                    } else {
-                        size *= Long.valueOf(numval(ms.group(1)));
-                    }
-                    metadata.setSize(size);
+                if (mr.matches() || ms.matches()) {
+                    FileMetadata metadata = addMetadata(image,
+                            table.getElementsByTag("a").first().attr("href").replace("http://", "https://"),
+                            null);
+                    fillMetadataResolution(image, meta, mr, metadata);
+                    fillMetadataSize(image, meta, ms, metadata);
                 } else {
-                    throw new IllegalStateException("No size found: " + meta);
+                    LOGGER.warn("No size and no resolution found for {}: {}", image, meta);
                 }
-            } else {
-                throw new IllegalStateException("No resolution found: " + meta);
             }
+        }
+        if (!image.hasMetadata()) {
+            String href = img.parent().attr("href").replace("http://", "https://");
+            if (href.contains("://web.archive.org/web/")) {
+                href = href.substring(href.indexOf("/http") + 1);
+            }
+            addMetadata(image, href, null);
+        }
+    }
+
+    private static void fillMetadataResolution(NasaAsterMedia image, String meta, Matcher mr, FileMetadata metadata) {
+        if (mr.matches()) {
+            metadata.setImageDimensions(new ImageDimensions(intval(mr.group(1)), intval(mr.group(2))));
+        } else {
+            LOGGER.warn("No resolution found for {}: {}", image, meta);
+        }
+    }
+
+    private static void fillMetadataSize(NasaAsterMedia image, String meta, Matcher ms, FileMetadata metadata) {
+        if (ms.matches()) {
+            String unit = ms.groupCount() >= 2 ? ms.group(2) : null;
+            Long size = "MB".equals(unit) ? 1024 * 1024 : "KB".equals(unit) ? 1024L : 1L;
+            if (ms.group(1).contains(".")) {
+                size = (long) (size * Double.valueOf(ms.group(1)));
+            } else {
+                size *= Long.valueOf(numval(ms.group(1)));
+            }
+            metadata.setSize(size);
+        } else {
+            LOGGER.warn("No size found for {}: {}", image, meta);
         }
     }
 

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
+import org.wikimedia.commons.donvip.spacemedia.service.InternetArchiveService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
@@ -62,6 +63,11 @@ public class SpacemediaUpdateJobConfiguration {
             @Value("${twitter.api.oauth1.access-token}") String accessToken,
             @Value("${twitter.api.oauth1.access-secret}") String accessSecret) {
         return new TwitterService(consumerToken, consumerSecret, accessToken, accessSecret);
+    }
+
+    @Bean
+    public InternetArchiveService internetArchiveService() {
+        return new InternetArchiveService();
     }
 
     @Bean

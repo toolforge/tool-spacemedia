@@ -20,9 +20,11 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
@@ -31,11 +33,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -174,10 +180,15 @@ public final class Utils {
     }
 
     public static Document getWithJsoup(String pageUrl, int timeout, int nRetries) throws IOException {
+        return getWithJsoup(pageUrl, timeout, nRetries, true);
+    }
+
+    public static Document getWithJsoup(String pageUrl, int timeout, int nRetries, boolean followRedirects)
+            throws IOException {
         for (int i = 0; i < nRetries; i++) {
             try {
                 LOGGER.debug("Scrapping {}", pageUrl);
-                return Jsoup.connect(pageUrl).timeout(timeout).get();
+                return Jsoup.connect(pageUrl).timeout(timeout).followRedirects(followRedirects).get();
             } catch (SocketTimeoutException e) {
                 LOGGER.error("Timeout when scrapping {} => {}", pageUrl, e.getMessage());
             }
@@ -380,5 +391,19 @@ public final class Utils {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    public static Optional<ZonedDateTime> extractDate(String desc, Map<DateTimeFormatter, Pattern> patterns) {
+        for (Entry<DateTimeFormatter, Pattern> e : patterns.entrySet()) {
+            Matcher m = e.getValue().matcher(desc);
+            if (m.matches()) {
+                String text = m.group(1);
+                DateTimeFormatter format = e.getKey();
+                return Optional.of(format.toString().contains("Value(MinuteOfHour)")
+                        ? LocalDateTime.parse(text, format).atZone(ZoneId.systemDefault())
+                        : LocalDate.parse(text, format).atStartOfDay(ZoneId.systemDefault()));
+            }
+        }
+        return Optional.empty();
     }
 }
