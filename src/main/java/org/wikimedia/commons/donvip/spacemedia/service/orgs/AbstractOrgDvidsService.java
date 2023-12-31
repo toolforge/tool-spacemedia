@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 
 import java.io.IOException;
@@ -370,10 +369,8 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     @Override
     public Set<String> findCategories(DvidsMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (isNotEmpty(media.getKeywords())) {
-            result.addAll(media.getKeywords().stream().map(KEYWORDS_CATS::get).filter(StringUtils::isNotBlank)
-                    .flatMap(s -> Arrays.stream(s.split(";"))).collect(toSet()));
-        }
+        result.addAll(media.getKeywordStream().map(KEYWORDS_CATS::get).filter(StringUtils::isNotBlank)
+                .flatMap(s -> Arrays.stream(s.split(";"))).collect(toSet()));
         if (includeHidden) {
             result.add("Photographs by Defense Video and Imagery Distribution System");
         }

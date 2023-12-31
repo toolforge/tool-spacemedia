@@ -199,7 +199,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
 
     private static void appendKeywords(Collection<? extends Media> uploadedMedia, StringBuilder sb, int max) {
         List<String> keywords = uploadedMedia.stream().filter(WithKeywords.class::isInstance)
-                .flatMap(x -> ((WithKeywords) x).getKeywords().stream())
+                .flatMap(x -> ((WithKeywords) x).getKeywordStream())
                 .map(kw -> kw.replace(" ", "").replace("-", "").replace(".", ""))
                 .distinct().sorted().limit(max).toList();
         if (!keywords.isEmpty()) {

@@ -567,16 +567,22 @@ public class Media implements MediaProjection, MediaDescription {
     }
 
     /**
-     * Determines if the given string is included in title or description.
+     * Determines if the given string is included in title, description or keywords,
+     * ignoring spaces and dashes.
      *
      * @param string string to search
      * @return {@code true} if the given string is included in title or description
      */
-    public boolean containsInTitleOrDescription(String string) {
-        String lc = string.toLowerCase(ENGLISH);
-        return (title != null && title.toLowerCase(ENGLISH).contains(lc))
-                || (description != null && description.toLowerCase(ENGLISH).contains(lc)) || (hasMetadata()
-                        && getMetadataStream().map(FileMetadata::getDescription).filter(StringUtils::isNotBlank)
-                                .distinct().anyMatch(x -> x.toLowerCase(ENGLISH).contains(lc)));
+    public boolean containsInTitleOrDescriptionOrKeywords(String string) {
+        String lc = normalize(string);
+        return normalize(title).contains(lc) || normalize(description).contains(lc) || (hasMetadata()
+                        && getMetadataStream().map(x -> normalize(x.getDescription())).filter(StringUtils::isNotBlank)
+                        .distinct().anyMatch(x -> x.contains(lc)))
+                || (this instanceof WithKeywords mkw
+                        && mkw.getKeywordStream().map(Media::normalize).anyMatch(kw -> kw.contains(lc)));
+    }
+
+    private static String normalize(String s) {
+        return ofNullable(s).orElse("").toLowerCase(ENGLISH).replace(" ", "").replace("-", "");
     }
 }

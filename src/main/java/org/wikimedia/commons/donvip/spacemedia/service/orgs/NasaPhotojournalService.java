@@ -348,8 +348,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         if (media.getKeywords().contains("artist")) {
             result.add("Art from NASA");
         }
-        result.addAll(
-                media.getKeywords().stream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());
+        result.addAll(media.getKeywordStream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());
         findCategoryFromMapping(media.getInstrument(), "instrument", mappings.getNasaInstruments())
                 .ifPresent(result::add);
         findCategoryFromMapping(media.getMission(), "mission", mappings.getNasaMissions()).ifPresent(result::add);

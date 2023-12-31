@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -136,6 +137,9 @@ public abstract class AbstractOrgService<T extends Media>
 
     static final Pattern COPERNICUS_CREDIT = Pattern.compile(
             ".*Copernicus[ -](?:Sentinel[ -])?dat(?:a|en)(?:/ESA)? [\\(\\[](2\\d{3}(?:[-–/]\\d{2,4})?)[\\)\\]].*",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
+    private static final Pattern SENTINEL_SAT = Pattern.compile(".*Sentinel[ -]?[1-6].*",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private static final Map<String, String> LICENCES = Map.ofEntries(e("YouTube CC-BY", "Q14947546"),
@@ -1206,13 +1210,13 @@ public abstract class AbstractOrgService<T extends Media>
      */
     public Set<String> findCategories(T media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = new TreeSet<>();
-        if (media.containsInTitleOrDescription("360 Panorama")) {
+        if (media.containsInTitleOrDescriptionOrKeywords("360 Panorama")) {
             result.add("360° panoramas");
-        } else if (media.containsInTitleOrDescription("Land Surface Temperature")) {
+        } else if (media.containsInTitleOrDescriptionOrKeywords("Land Surface Temperature")) {
             result.add("Land surface temperature maps");
-        } else if (media.containsInTitleOrDescription("Sea Surface Temperature")) {
+        } else if (media.containsInTitleOrDescriptionOrKeywords("Sea Surface Temperature")) {
             result.add("Sea surface temperature maps");
-        } else if (media.containsInTitleOrDescription("Tropospheric Nitrogen Dioxide")) {
+        } else if (media.containsInTitleOrDescriptionOrKeywords("Tropospheric Nitrogen Dioxide")) {
             result.add("Nitrogen dioxide maps");
         }
         findCategoriesFromTitle(media.getTitle()).forEach(title -> {
@@ -1282,11 +1286,46 @@ public abstract class AbstractOrgService<T extends Media>
         return Optional.empty();
     }
 
+    protected boolean isFromSentinelSatellite(Media media) {
+        return SENTINEL_SAT.matcher(media.getTitle()).matches()
+                || (media.getDescription() != null && SENTINEL_SAT.matcher(media.getDescription()).matches())
+                || (media instanceof WithKeywords mkw
+                        && mkw.getKeywordStream().anyMatch(kw -> SENTINEL_SAT.matcher(kw).matches()));
+    }
+
+    protected void findCategoriesForSentinels(Media media, Set<String> result) {
+        if (isFromSentinelSatellite(media)) {
+            result.add(getCopernicusTemplate(media.getYear().getValue()));
+            if (media.containsInTitleOrDescriptionOrKeywords("fires") || media.containsInTitleOrDescriptionOrKeywords("burn scars")
+                    || media.containsInTitleOrDescriptionOrKeywords("wildfire")
+                    || media.containsInTitleOrDescriptionOrKeywords("forest fire")) {
+                result.add("Photos of wildfires by Sentinel satellites");
+            } else if (media.containsInTitleOrDescriptionOrKeywords("Phytoplankton")
+                    || media.containsInTitleOrDescriptionOrKeywords("algal bloom")) {
+                result.add("Satellite pictures of algal blooms");
+            } else if (media.containsInTitleOrDescriptionOrKeywords("hurricane")) {
+                result.add("Satellite pictures of hurricanes");
+            } else if (media.containsInTitleOrDescriptionOrKeywords("floods") || media.containsInTitleOrDescriptionOrKeywords("flooding")) {
+                result.add("Photos of floods by Sentinel satellites");
+            }
+        }
+        for (String num : new String[] { "1", "2", "3", "4", "5", "5P", "6" }) {
+            findCategoriesForSentinel(media, "Sentinel-" + num, result);
+        }
+    }
+
+    protected void findCategoriesForSentinel(Media media, String sentinel, Set<String> result) {
+        if (media.containsInTitleOrDescriptionOrKeywords(sentinel)) {
+            result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by " + sentinel,
+                    sentinel + " images"));
+        }
+    }
+
     protected Set<String> findCategoriesForEarthObservationImage(Media image, UnaryOperator<String> categorizer,
             String defaultCat) {
         Set<String> result = new TreeSet<>();
         for (String targetOrSubject : satellitePicturesCategories) {
-            if (image.containsInTitleOrDescription(targetOrSubject)) {
+            if (image.containsInTitleOrDescriptionOrKeywords(targetOrSubject)) {
                 findCategoryForEarthObservationTargetOrSubject(categorizer, targetOrSubject).ifPresent(result::add);
             }
         }
@@ -1373,7 +1412,11 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected static String getCopernicusTemplate(String text) {
         Matcher m = COPERNICUS_CREDIT.matcher(text);
-        return m.matches() ? "Attribution-Copernicus |year=" + m.group(1) : null;
+        return m.matches() ? getCopernicusTemplate(parseInt(m.group(1))) : null;
+    }
+
+    protected static String getCopernicusTemplate(int year) {
+        return "Attribution-Copernicus |year=" + year;
     }
 
     protected final String wikiLink(URL url, String text) {

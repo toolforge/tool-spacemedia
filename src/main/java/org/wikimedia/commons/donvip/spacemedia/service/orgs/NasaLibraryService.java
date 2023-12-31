@@ -368,7 +368,7 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
     @Override
     public Set<String> findCategories(NasaMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        result.addAll(media.getKeywords().stream().map(nasaKeywords::get).filter(Objects::nonNull).toList());
+        result.addAll(media.getKeywordStream().map(nasaKeywords::get).filter(Objects::nonNull).toList());
         String description = media.getDescription();
         Matcher idMatcher = ISS_PATTERN.matcher(media.getId().getMediaId());
         if (idMatcher.matches()) {

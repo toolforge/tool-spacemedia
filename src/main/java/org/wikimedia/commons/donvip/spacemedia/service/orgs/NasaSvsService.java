@@ -216,8 +216,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     @Override
     public Set<String> findCategories(NasaSvsMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        result.addAll(
-                media.getKeywords().stream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());
+        result.addAll(media.getKeywordStream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());
         media.getMissions().stream()
                 .forEach(x -> findCategoryFromMapping(x, "mission", mappings.getNasaMissions()).ifPresent(result::add));
         return result;

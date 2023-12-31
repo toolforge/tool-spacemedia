@@ -173,7 +173,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
         if (!media.isIgnored() && !forbiddenWordsInTitleOrDescription.isEmpty()
                 && (media.getTitle() != null || media.getDescription() != null)) {
             for (String forbiddenWord : forbiddenWordsInTitleOrDescription) {
-                if (media.containsInTitleOrDescription(forbiddenWord)) {
+                if (media.containsInTitleOrDescriptionOrKeywords(forbiddenWord)) {
                     save = mediaService.ignoreMedia(media,
                             "Forbidden keyword: " + forbiddenWord + ". " + IDENTIFIABLE_PERSON);
                     break;

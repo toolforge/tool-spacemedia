@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.CopernicusGalleryMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.copernicus.gallery.CopernicusGalleryMediaRepository;
 
@@ -117,33 +116,8 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     @Override
     public Set<String> findCategories(CopernicusGalleryMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (media.containsInTitleOrDescription("fires") || media.containsInTitleOrDescription("burn scars")
-                || media.containsInTitleOrDescription("wildfire")
-                || media.containsInTitleOrDescription("forest fire")) {
-            result.add("Photos of wildfires by Sentinel satellites");
-        } else if (media.containsInTitleOrDescription("Phytoplankton")
-                || media.containsInTitleOrDescription("algal bloom")) {
-            result.add("Satellite pictures of algal blooms");
-        } else if (media.containsInTitleOrDescription("hurricane")) {
-            result.add("Satellite pictures of hurricanes");
-        } else if (media.containsInTitleOrDescription("floods") || media.containsInTitleOrDescription("flooding")) {
-            result.add("Photos of floods by Sentinel satellites");
-        }
-        findCategoriesForSentinel(media, "Sentinel-1", result);
-        findCategoriesForSentinel(media, "Sentinel-2", result);
-        findCategoriesForSentinel(media, "Sentinel-3", result);
-        findCategoriesForSentinel(media, "Sentinel-4", result);
-        findCategoriesForSentinel(media, "Sentinel-5", result);
-        findCategoriesForSentinel(media, "Sentinel-5P", result);
-        findCategoriesForSentinel(media, "Sentinel-6", result);
+        findCategoriesForSentinels(media, result);
         return result;
-    }
-
-    private void findCategoriesForSentinel(Media media, String sentinel, Set<String> result) {
-        if (media.containsInTitleOrDescription(sentinel)) {
-            result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by " + sentinel,
-                    sentinel + " images"));
-        }
     }
 
     @Override

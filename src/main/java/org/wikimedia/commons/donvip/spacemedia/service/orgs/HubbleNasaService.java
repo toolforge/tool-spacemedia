@@ -52,10 +52,8 @@ public class HubbleNasaService extends AbstractOrgStsciService {
     @Override
     public Set<String> findCategories(StsciMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (media.getKeywords() != null) {
-            result.addAll(media.getKeywords().stream().map(hubbleCategories::get).filter(StringUtils::isNotBlank)
-                    .collect(toSet()));
-        }
+        result.addAll(
+                media.getKeywordStream().map(hubbleCategories::get).filter(StringUtils::isNotBlank).collect(toSet()));
         return result;
     }
 

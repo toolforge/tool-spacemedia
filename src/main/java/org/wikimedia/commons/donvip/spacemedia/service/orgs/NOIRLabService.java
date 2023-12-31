@@ -170,8 +170,8 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
     public Set<String> findCategories(DjangoplicityMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         if (result.contains("Gemini Observatory")) {
-            boolean north = media.containsInTitleOrDescription("Gemini North");
-            boolean south = media.containsInTitleOrDescription("Gemini South");
+            boolean north = media.containsInTitleOrDescriptionOrKeywords("Gemini North");
+            boolean south = media.containsInTitleOrDescriptionOrKeywords("Gemini South");
             if (north && !south) {
                 replace(result, "Gemini Observatory", "Gemini North Observatory");
             } else if (south && !north) {
