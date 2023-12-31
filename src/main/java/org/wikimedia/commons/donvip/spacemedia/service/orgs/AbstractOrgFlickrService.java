@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,6 +57,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgFlickrService.class);
     private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"(\\d+)\" not found \\(invalid ID\\)");
+    private static final Pattern ISO_DATE = Pattern.compile(".*(\\d{4}-\\d{2}-\\d{2}).*", Pattern.DOTALL);
 
     @Autowired
     protected FlickrMediaRepository flickrRepository;
@@ -328,7 +330,17 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             m.setAccuracy(geo.getAccuracy());
         });
         m.setPublicationDateTime(toZonedDateTime(p.getDatePosted()));
-        m.setCreationDateTime(toZonedDateTime(p.getDateTaken()));
+        Matcher matcher = ISO_DATE.matcher(p.getTitle());
+        if (matcher.matches()) {
+            m.setCreationDate(LocalDate.parse(matcher.group(1), DateTimeFormatter.ISO_LOCAL_DATE));
+        } else {
+            matcher = ISO_DATE.matcher(ofNullable(p.getDescription()).orElse(""));
+            if (matcher.matches()) {
+                m.setCreationDate(LocalDate.parse(matcher.group(1), DateTimeFormatter.ISO_LOCAL_DATE));
+            } else {
+                m.setCreationDateTime(toZonedDateTime(p.getDateTaken()));
+            }
+        }
         ofNullable(p.getTakenGranularity()).ifPresent(granu -> m.setDateTakenGranularity(parseInt(granu)));
         m.setDescription(p.getDescription());
         m.setId(new CompositeMediaId(getPathAlias(p, flickrAccount), p.getId()));
