@@ -89,9 +89,11 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                 try (CloseableHttpResponse response = httpclient.execute(newHttpGet(searchUrl));
                         InputStream in = response.getEntity().getContent()) {
                     NasaSvsSearchResultPage results = jackson.readValue(in, NasaSvsSearchResultPage.class);
+                    LOGGER.info("GET {}", searchUrl);
                     for (NasaSvsSearchResult result : results.results()) {
                         if (!"Gallery".equals(result.result_type())) {
                             try {
+                                LOGGER.debug("Updating {}", result.id());
                                 updateImage(newId(result.id), uploadedMedia);
                             } catch (RuntimeException e) {
                                 LOGGER.error("Error while processing {}", result, e);

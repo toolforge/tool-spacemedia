@@ -50,6 +50,7 @@ public final class HashHelper {
     }
 
     public static String computeSha1(URL httpUrl) throws IOException {
+        LOGGER.debug("Computing SHA1 for {} ...", httpUrl);
         URI uri = Utils.urlToUriUnchecked(httpUrl);
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
