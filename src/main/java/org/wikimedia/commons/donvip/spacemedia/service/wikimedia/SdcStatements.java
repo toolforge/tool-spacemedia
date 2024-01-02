@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -15,6 +17,11 @@ public class SdcStatements extends TreeMap<String, Pair<Object, Map<String, Obje
 
     public SdcStatements creator(String qid) {
         return addStatement(WikidataProperty.P170_CREATOR, qid);
+    }
+
+    public SdcStatements creator(String text, Pattern pattern, Map<String, String> map) {
+        Matcher m = pattern.matcher(text);
+        return m.matches() ? creator(map.get(m.group(1))) : this;
     }
 
     public SdcStatements depicts(String qid) {

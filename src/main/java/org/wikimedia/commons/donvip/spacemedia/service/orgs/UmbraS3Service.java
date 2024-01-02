@@ -10,7 +10,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -22,7 +21,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3MediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.UmbraS3Service.UmbraMetadata.Collect;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -45,9 +43,6 @@ public class UmbraS3Service extends AbstractOrgS3Service {
 
     @Autowired
     private ObjectMapper jackson;
-
-    @Autowired
-    private GeometryService geometry;
 
     @Autowired
     public UmbraS3Service(S3MediaRepository repository,
@@ -110,11 +105,8 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     }
 
     @Override
-    public Set<String> findCategories(S3Media media, FileMetadata metadata, boolean includeHidden) {
-        Set<String> result = super.findCategories(media, metadata, includeHidden);
-        String continent = geometry.getContinent(media.getLatitude(), media.getLongitude());
-        result.add(continent != null ? "Images of " + continent + " by Umbra" : "Images by Umbra");
-        return result;
+    protected boolean categorizeGeolocalizedByName() {
+        return true;
     }
 
     @Override
@@ -133,12 +125,9 @@ public class UmbraS3Service extends AbstractOrgS3Service {
 
     @Override
     protected SdcStatements getStatements(S3Media media, FileMetadata metadata) {
-        SdcStatements result = super.getStatements(media, metadata);
-        Matcher m = SAT_PATTERN.matcher(media.getId().getMediaId());
-        if (m.matches()) {
-            result.creator(SATS.get(m.group(1))); // Created by UMBRA-XX
-        }
-        return result.locationOfCreation("Q663611") // Created in low earth orbit
+        return super.getStatements(media, metadata)
+                .creator(media.getIdUsedInOrg(), SAT_PATTERN, SATS) // Created by UMBRA-XX
+                .locationOfCreation("Q663611") // Created in low earth orbit
                 .fabricationMethod("Q725252") // Satellite imagery
                 .capturedWith("Q740686"); // Taken with SAR
     }

@@ -19,7 +19,6 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3MediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.s3.S3Service;
 
 import com.amazonaws.regions.Regions;
@@ -29,9 +28,6 @@ class UmbraS3ServiceTest extends AbstractOrgServiceTest {
 
     @MockBean
     private S3MediaRepository repository;
-
-    @MockBean
-    private GeometryService geometry;
 
     @MockBean
     private S3Service s3;

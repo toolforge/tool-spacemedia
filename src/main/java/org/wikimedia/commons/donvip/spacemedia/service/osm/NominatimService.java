@@ -26,7 +26,7 @@ public class NominatimService {
     public ReverseResponse reverse(double lat, double lon, int zoom) throws IOException {
         return jackson.readValue(
                 newURL(String.format(
-                        "%s/reverse?lat=%f&lon=%f&format=jsonv2&addressdetails=0&accept-language=en-US&zoom=%d",
+                        "%s/reverse?lat=%f&lon=%f&format=jsonv2&addressdetails=1&accept-language=en-US&zoom=%d",
                         nominatimUrl.toExternalForm(), lat, lon, zoom)),
                 ReverseResponse.class);
     }
@@ -35,6 +35,12 @@ public class NominatimService {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record ReverseResponse(long place_id, String licence, String osm_type, long osm_id, double lat, double lon,
             int place_rank, String category, String type, double importance, String addresstype, String display_name,
-            String name) {
+            String name, Address address) {
+    }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Address(String road, String village, String state_district, String state, String postcode,
+            String country, String country_code) {
     }
 }

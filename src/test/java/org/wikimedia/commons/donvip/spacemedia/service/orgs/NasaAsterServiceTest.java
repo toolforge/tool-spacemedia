@@ -29,7 +29,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.InternetArchiveService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.NasaAsterService.AsterItem;
 
@@ -41,9 +40,6 @@ class NasaAsterServiceTest extends AbstractOrgServiceTest {
 
     @MockBean
     private NasaAsterMediaRepository repository;
-
-    @MockBean
-    private GeometryService geometryService;
 
     @Autowired
     private NasaAsterService service;

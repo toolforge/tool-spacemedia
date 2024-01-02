@@ -26,11 +26,13 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
+import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
+import org.wikimedia.commons.donvip.spacemedia.service.osm.NominatimService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
@@ -77,6 +79,12 @@ public abstract class AbstractOrgServiceTest {
 
     @MockBean
     protected WikidataService wikidata;
+
+    @MockBean
+    private GeometryService geometry;
+
+    @Autowired
+    protected NominatimService nominatim;
 
     @Autowired
     protected ObjectMapper jackson;
@@ -141,6 +149,11 @@ public abstract class AbstractOrgServiceTest {
         @Bean
         public ConversionService conversionService() {
             return ApplicationConversionService.getSharedInstance();
+        }
+
+        @Bean
+        public NominatimService nominatim() {
+            return new NominatimService();
         }
 
         @Bean

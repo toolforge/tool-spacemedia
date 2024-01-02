@@ -15,16 +15,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.service.osm.NominatimService;
 
 @SpringJUnitConfig(CapellaStacServiceTest.TestConfig.class)
 class CapellaStacServiceTest extends AbstractOrgServiceTest {
 
     @MockBean
     private StacMediaRepository repository;
-
-    @MockBean
-    private NominatimService nominatim;
 
     @Autowired
     private CapellaStacService service;

@@ -8,6 +8,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -91,6 +92,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
+import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
@@ -99,6 +101,8 @@ import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
 import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
 import org.wikimedia.commons.donvip.spacemedia.service.mastodon.MastodonService;
+import org.wikimedia.commons.donvip.spacemedia.service.osm.NominatimService;
+import org.wikimedia.commons.donvip.spacemedia.service.osm.NominatimService.Address;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
@@ -176,6 +180,10 @@ public abstract class AbstractOrgService<T extends Media>
     private GoogleTranslateService translateService;
     @Autowired
     private List<AbstractSocialMediaService<?, ?>> socialMediaServices;
+    @Autowired
+    private GeometryService geometry;
+    @Autowired
+    private NominatimService nominatim;
 
     @Autowired
     private Environment env;
@@ -1230,6 +1238,9 @@ public abstract class AbstractOrgService<T extends Media>
         if (isSatellitePicture(media, metadata)) {
             result.add(media.getYear() + " satellite pictures");
         }
+        if (media instanceof WithLatLon ll) {
+            result.addAll(findGeolocalizedCategories(ll));
+        }
         if (metadata.isVideo() && isNASA(media)) {
             result.add("NASA videos in " + media.getYear().getValue());
         }
@@ -1238,6 +1249,45 @@ public abstract class AbstractOrgService<T extends Media>
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
         }
         return result;
+    }
+
+    protected boolean categorizeGeolocalizedByName() {
+        return false;
+    }
+
+    protected Set<String> findGeolocalizedCategories(WithLatLon media) {
+        Set<String> result = new HashSet<>();
+        if (categorizeGeolocalizedByName()) {
+            boolean preciseCatAdded = false;
+            String name = getName();
+            try {
+                Address address = nominatim.reverse(media.getLatitude(), media.getLongitude(), 5).address();
+                if (address != null) {
+                    if (isNotBlank(address.state())
+                            && addCategoryIfExists(result, "Images of " + address.state() + " by " + name)) {
+                        preciseCatAdded = true;
+                    } else if (isNotBlank(address.country())) {
+                        result.add("Images of " + address.country() + " by " + name);
+                        preciseCatAdded = true;
+                    }
+                }
+            } catch (IOException e) {
+                LOGGER.error("Nominatim error: {}", e.getMessage());
+            }
+            String continent = geometry.getContinent(media.getLatitude(), media.getLongitude());
+            if (!preciseCatAdded) {
+                result.add("Images" + (continent != null ? " of " + continent : "") + " by " + name);
+            }
+        }
+        return result;
+    }
+
+    boolean addCategoryIfExists(Set<String> result, String cat) {
+        if (commonsService.existsCategoryPage(cat)) {
+            result.add(cat);
+            return true;
+        }
+        return false;
     }
 
     protected static Optional<String> findCategoryFromMapping(String value, String type,
