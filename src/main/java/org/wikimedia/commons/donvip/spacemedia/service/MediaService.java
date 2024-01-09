@@ -125,7 +125,8 @@ public class MediaService {
             result = true;
         }
         LOGGER.trace("updateMedia - findCommonsFiles - {}", media);
-        if (findCommonsFiles(media.getMetadata(), media.getSearchTermsInCommons(), includeByPerceptualHash)) {
+        if (media.hasAssetsToUpload()
+                && findCommonsFiles(media.getMetadata(), media.getSearchTermsInCommons(), includeByPerceptualHash)) {
             LOGGER.info("Commons files have been updated for {}", media);
             result = true;
         }

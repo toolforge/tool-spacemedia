@@ -197,7 +197,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
     @Transient
     public boolean shouldUpload() {
-        return isNotBlank(sha1) && isEmpty(getCommonsFileNames());
+        return Boolean.TRUE != ignored && isNotBlank(sha1) && isEmpty(getCommonsFileNames());
     }
 
     public Boolean isReadableImage() {
