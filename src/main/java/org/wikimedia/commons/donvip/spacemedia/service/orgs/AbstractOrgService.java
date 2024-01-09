@@ -80,7 +80,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDescription;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
@@ -136,6 +135,8 @@ public abstract class AbstractOrgService<T extends Media>
 
     private static final Pattern PATTERN_TWITTER_SEARCH = Pattern
             .compile("<a href=\"https://twitter.com/search?[^\"]+\">([^<]*)</a>");
+
+    private static final Pattern PATTERN_UNINTERESTING_TITLE = Pattern.compile("Picture \\d+");
 
     private static final Set<String> PD_US = Set.of("PD-US", "PD-NASA", "PD-Hubble", "PD-Webb");
 
@@ -1515,45 +1516,67 @@ public abstract class AbstractOrgService<T extends Media>
         MediaUpdateResult ur = mediaService.updateMedia(media, getStringsToRemove(media),
                 forceUpdate, getUrlResolver(), checkBlocklist(), includeByPerceptualHash(), ignoreExifMetadata(), null);
         boolean result = ur.getResult();
-        if (!media.isIgnored()) {
-            for (MediaDescription md : media.getDescriptionObjects()) {
-                String description = ofNullable(md.getDescription()).orElse("").toLowerCase(Locale.ENGLISH);
-                if (description.contains("courtesy")
-                        && (findLicenceTemplates(media, md instanceof FileMetadata fm ? fm : null).isEmpty()
-                                || courtesyOk.stream().noneMatch(description::contains))) {
-                    result = mediaService.ignoreMedia(media, "Probably non-free image (courtesy)");
-                    LOGGER.debug("Courtesy test has been trigerred for {}", media);
-                } else if (description.contains("citizen scien") || description.contains("citizenscien")) {
-                    result = mediaService.ignoreMedia(media, "Probably non-free image (citizen science)");
-                    LOGGER.debug("Citizen science test has been trigerred for {}", media);
+        if (!media.isIgnored() && media.hasMetadata()) {
+            LOGGER.trace("Start common update checks for {}", media);
+            for (FileMetadata fm : media.getMetadata()) {
+                if (Boolean.TRUE != fm.isIgnored()) {
+                    result |= doCheckNonFree(media, fm);
+                    result |= doCheckShortOrMissingTitleAndDescription(media, fm);
+                    result |= doCheckImageTooBigOrTooSmall(fm);
+                    result |= doCheckUninterestingTitle(media, fm);
                 }
             }
-            if (StringUtils.length(media.getTitle()) + StringUtils.length(media.getDescription()) <= 2) {
-                // To ignore https://www.dvidshub.net/image/6592675 (title and desc are '.')
-                result = mediaService.ignoreMedia(media, "Very short or missing title and description");
-                LOGGER.debug("Short title or description test has been trigerred for {}", media);
-            }
-            if (media.hasMetadata() && media.isImage()) {
-                for (FileMetadata fm : media.getMetadata()) {
-                    if (Boolean.TRUE != fm.isIgnored()) {
-                        if (fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000) {
-                            result = mediaService.ignoreAndSaveMetadata(fm, "Too small image");
-                            LOGGER.debug("Too small image test has been trigerred for {}", media);
-                        } else if (fm.getSize() != null && fm.getSize() > Integer.MAX_VALUE) {
-                            // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
-                            result = mediaService.ignoreAndSaveMetadata(fm, "Too big image");
-                            LOGGER.debug("Too big image test has been trigerred for {}", media);
-                        }
-                    }
-                }
-            }
-            if (isBlank(media.getDescription()) && media.getTitle() != null
-                    && media.getTitle().matches("Picture \\d+")) {
-                result = mediaService.ignoreMedia(media, "Media without description and with uninteresting title");
-                LOGGER.debug("No description and uninteresting title test has been trigerred for {}", media);
-            }
+            LOGGER.trace("Ended common update checks for {}", media);
         }
         return new MediaUpdateResult(result, ur.getException());
+    }
+
+    private boolean doCheckNonFree(T media, FileMetadata fm) {
+        String description = ofNullable(media.getDescription(fm)).orElse("").toLowerCase(Locale.ENGLISH);
+        if (description.contains("by-nc") || description.contains("by-nd")) {
+            LOGGER.debug("Non-free licence test has been trigerred for {}", fm);
+            return mediaService.ignoreAndSaveMetadata(fm, "Non-free licence");
+        } else if (description.contains("courtesy") && (findLicenceTemplates(media, fm).isEmpty()
+                || courtesyOk.stream().noneMatch(description::contains))) {
+            LOGGER.debug("Courtesy test has been trigerred for {}", fm);
+            return mediaService.ignoreAndSaveMetadata(fm, "Probably non-free file (courtesy)");
+        } else if (description.contains("citizen scien") || description.contains("citizenscien")) {
+            LOGGER.debug("Citizen science test has been trigerred for {}", fm);
+            return mediaService.ignoreAndSaveMetadata(fm, "Probably non-free file (citizen science)");
+        }
+        return false;
+    }
+
+    private boolean doCheckShortOrMissingTitleAndDescription(T media, FileMetadata fm) {
+        if (StringUtils.length(media.getTitle()) + StringUtils.length(media.getDescription(fm)) <= 2) {
+            // To ignore https://www.dvidshub.net/image/6592675 (title and desc are '.')
+            LOGGER.debug("Short title or description test has been trigerred for {}", fm);
+            return mediaService.ignoreAndSaveMetadata(fm, "Very short or missing title and description");
+        }
+        return false;
+    }
+
+    private boolean doCheckImageTooBigOrTooSmall(FileMetadata fm) {
+        if (fm.isImage()) {
+            if (fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000) {
+                LOGGER.debug("Too small image test has been trigerred for {}", fm);
+                return mediaService.ignoreAndSaveMetadata(fm, "Too small image");
+            } else if (fm.getSize() != null && fm.getSize() > Integer.MAX_VALUE) {
+                // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
+                LOGGER.debug("Too big image test has been trigerred for {}", fm);
+                return mediaService.ignoreAndSaveMetadata(fm, "Too big image");
+            }
+        }
+        return false;
+    }
+
+    private boolean doCheckUninterestingTitle(T media, FileMetadata fm) {
+        if (isBlank(media.getDescription(fm)) && media.getTitle() != null
+                && PATTERN_UNINTERESTING_TITLE.matcher(media.getTitle()).matches()) {
+            LOGGER.debug("No description and uninteresting title test has been trigerred for {}", fm);
+            return mediaService.ignoreAndSaveMetadata(fm, "Media without description and with uninteresting title");
+        }
+        return false;
     }
 
     protected boolean checkBlocklist() {
