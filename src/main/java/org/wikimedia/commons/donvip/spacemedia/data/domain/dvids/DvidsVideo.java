@@ -6,14 +6,14 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Transient;
-
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 
 @Entity
 @Indexed
@@ -140,15 +140,6 @@ public class DvidsVideo extends DvidsMedia {
         return aspectRatio == other.aspectRatio
                 && Objects.equals(duration, other.duration) && Objects.equals(video, other.video)
                 && Objects.equals(hlsUrl, other.hlsUrl) && Objects.equals(timeStart, other.timeStart);
-    }
-
-    @Override
-    public String toString() {
-        return "DvidsVideo ["
-                + (getId() != null ? "id=" + getId() + ", " : "")
-                + (getAspectRatio() != null ? "aspectRatio=" + getAspectRatio() + ", " : "")
-                + (getTitle() != null ? "title=" + getTitle() + ", " : "")
-                + (getDescription() != null ? "description=" + getDescription() : "") + "]";
     }
 
     @Override

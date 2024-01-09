@@ -2,13 +2,13 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Transient;
-
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 
 @Entity
 @Indexed
@@ -48,15 +48,6 @@ public class DvidsImage extends DvidsMedia {
     @JsonProperty("dimensions")
     public void setImageDimensions(ImageDimensions dimensions) {
         getUniqueMetadata().setImageDimensions(dimensions);
-    }
-
-    @Override
-    public String toString() {
-        return "DvidsImage ["
-                + (getId() != null ? "id=" + getId() + ", " : "")
-                + (getAspectRatio() != null ? "aspectRatio=" + getAspectRatio() + ", " : "")
-                + (getTitle() != null ? "title=" + getTitle() + ", " : "")
-                + (getDescription() != null ? "description=" + getDescription() : "") + "]";
     }
 
     @Override

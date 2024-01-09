@@ -258,10 +258,8 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
 
     @Override
     public String toString() {
-        return "DvidsMedia [" + (getId() != null ? "id=" + getId() + ", " : "")
-                + (title != null ? "title=" + title + ", " : "")
-                + (category != null ? "category=" + category + ", " : "")
-                + (getMetadata() != null ? "metadata=" + getMetadata() : "") + "]";
+        return getClass().getSimpleName() + " [" + (getId() != null ? "id=" + getId() + ", " : "") + "date="
+                + getBestTemporal() + ", " + (getTitle() != null ? "title=" + getTitle() + ", " : "") + ']';
     }
 
     @Override

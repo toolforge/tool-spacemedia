@@ -402,6 +402,11 @@ public class Media implements MediaProjection, MediaDescription {
     }
 
     @JsonIgnore
+    public boolean hasAssetsToUpload() {
+        return getMetadataStream().anyMatch(FileMetadata::shouldUpload);
+    }
+
+    @JsonIgnore
     public List<String> getAssetsToUpload() {
         return getMetadataStream().filter(FileMetadata::shouldUpload).map(FileMetadata::getSha1).toList();
     }

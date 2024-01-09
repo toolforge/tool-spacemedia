@@ -112,24 +112,29 @@ public class MediaService {
             boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist, boolean includeByPerceptualHash,
             boolean ignoreExifMetadata, Path localPath) throws IOException {
         boolean result = false;
+        LOGGER.trace("updateMedia - cleanupDescription - {}", media);
         if (cleanupDescription(media, stringsToRemove)) {
             LOGGER.info("Description has been cleaned up for {}", media);
             result = true;
         }
+        LOGGER.trace("updateMedia - updateReadableStateAndHashes - {}", media);
         MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, urlResolver, forceUpdate,
                 ignoreExifMetadata);
         if (ur.getResult()) {
             LOGGER.info("Readable state and/or hashes have been updated for {}", media);
             result = true;
         }
+        LOGGER.trace("updateMedia - findCommonsFiles - {}", media);
         if (findCommonsFiles(media.getMetadata(), media.getSearchTermsInCommons(), includeByPerceptualHash)) {
             LOGGER.info("Commons files have been updated for {}", media);
             result = true;
         }
+        LOGGER.trace("updateMedia - belongsToBlocklist - {}", media);
         if (checkBlocklist && !media.isIgnored() && belongsToBlocklist(media)) {
             LOGGER.info("Blocklist has been trigerred for {}", media);
             result = true;
         }
+        LOGGER.trace("updateMedia - done - {}", media);
         return new MediaUpdateResult(result, ur.getException());
     }
 
