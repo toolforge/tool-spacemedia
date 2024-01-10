@@ -1242,7 +1242,7 @@ public abstract class AbstractOrgService<T extends Media>
         if (media instanceof WithLatLon ll) {
             result.addAll(findGeolocalizedCategories(ll));
         }
-        if (metadata.isVideo() && isNASA(media)) {
+        if (metadata.isVideo() && isNASA(media) && addNASAVideoCategory()) {
             result.add("NASA videos in " + media.getYear().getValue());
         }
         if (includeHidden) {
@@ -1458,7 +1458,11 @@ public abstract class AbstractOrgService<T extends Media>
      * @return {@code true} if media has been produced by NASA
      */
     protected boolean isNASA(T media) {
-        return false;
+        return getClass().getSimpleName().toLowerCase(Locale.ENGLISH).contains("nasa");
+    }
+
+    protected boolean addNASAVideoCategory() {
+        return true;
     }
 
     protected static String getCopernicusTemplate(String text) {

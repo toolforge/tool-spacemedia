@@ -77,8 +77,9 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     @Override
-    protected boolean isNASA(NasaSdoMedia media) {
-        return true;
+    protected boolean addNASAVideoCategory() {
+        // SDO template adds more accurate categories for videos
+        return false;
     }
 
     @Override

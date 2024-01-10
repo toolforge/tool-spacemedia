@@ -53,11 +53,6 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
     }
 
     @Override
-    protected boolean isNASA(NasaModisMedia media) {
-        return true;
-    }
-
-    @Override
     protected Class<NasaModisMedia> getMediaClass() {
         return NasaModisMedia.class;
     }

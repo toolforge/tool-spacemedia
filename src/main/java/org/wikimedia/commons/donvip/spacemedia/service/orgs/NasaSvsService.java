@@ -60,11 +60,6 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     }
 
     @Override
-    protected boolean isNASA(NasaSvsMedia media) {
-        return true;
-    }
-
-    @Override
     public String getName() {
         return "NASA (SVS)";
     }

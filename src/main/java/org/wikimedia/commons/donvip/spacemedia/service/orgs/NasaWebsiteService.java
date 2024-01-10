@@ -254,11 +254,6 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
     }
 
     @Override
-    protected boolean isNASA(NasaWebsiteMedia media) {
-        return true;
-    }
-
-    @Override
     protected Set<String> getTwitterAccounts(NasaWebsiteMedia uploadedMedia) {
         return Set.of("@NASA");
     }
