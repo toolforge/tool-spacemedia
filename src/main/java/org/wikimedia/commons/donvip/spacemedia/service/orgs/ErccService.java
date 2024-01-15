@@ -225,6 +225,8 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
         media.setSources(item.SourceList());
         if (isNotEmpty(item.EventTypes())) {
             media.setEventTypes(item.EventTypes().stream().map(EventType::Name).collect(toSet()));
+        } else {
+            LOGGER.error("No EventTypes found for {} - {}", id, item);
         }
         ofNullable(item.Continent()).map(Continent::Name).ifPresent(media::setContinent);
         ofNullable(item.Country()).map(Country::Name).ifPresent(media::setMainCountry);

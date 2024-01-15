@@ -6,8 +6,11 @@ import java.util.List;
 
 import org.wikimedia.commons.donvip.spacemedia.utils.FlexibleDoubleDeserializer;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public record EchoFlash(URL Api, LocalDateTime ApprovedByErccOnDate, int ContentItemId, Continent Continent,
         List<Country> Countries, Country Country, User CreatedByUser, LocalDateTime CreatedOnDate, String Description,
         String DescriptionJRC, int DisplayOrder, List<Emergency> Emergencies, EventType EventType,
@@ -16,7 +19,7 @@ public record EchoFlash(URL Api, LocalDateTime ApprovedByErccOnDate, int Content
         List<String> ItemSources, User LastModifiedByUser, LocalDateTime LastModifiedOnDate,
         @JsonDeserialize(using = FlexibleDoubleDeserializer.class) double Latitude,
         URL Link, @JsonDeserialize(using = FlexibleDoubleDeserializer.class) double Longitude, List<String> Losses,
-        String NextEchoFlashID, String PreviousEchoFlashID,
+        List<String> AffectedAreas, String NextEchoFlashID, String PreviousEchoFlashID,
         String PublicationStatus, LocalDateTime PublishedOnDate, RelatedEchoFlash RelatedEchoFlash,
         String RelatedEchoFlashID, String Scope, String Section, String SourceList, String Sources, String SourcesJRC,
         String Title, User ValidatedByErccUser, String ValidatedByErccUserId) {

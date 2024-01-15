@@ -3,6 +3,10 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api;
 import java.net.URL;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public record Request(String Access, URL Api, String Contact, int ContentItemId, String Countries, User CreatedByUser,
         LocalDateTime CreatedOnDate, LocalDateTime DeadlineDate, String DeliveryHour, String Description,
         URL DownloadPath, URL DownloadPath2, URL DownloadPath3, boolean Editable, String FileExplanation,

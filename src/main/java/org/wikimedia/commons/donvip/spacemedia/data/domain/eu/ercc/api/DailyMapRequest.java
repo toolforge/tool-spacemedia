@@ -4,6 +4,10 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public record DailyMapRequest(List<String> Attachments, String ClosedByUser, String ClosedOnDate, int ContentItemId,
         Continent Continent, List<Country> Countries, Country Country, User CreatedByUser, LocalDateTime CreatedOnDate,
         LocalDateTime DeadlineDate, String DeadlineHour, String Description, List<String> Drafts,

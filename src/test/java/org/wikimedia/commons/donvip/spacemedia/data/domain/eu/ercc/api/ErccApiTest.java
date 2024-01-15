@@ -31,6 +31,17 @@ class ErccApiTest {
     }
 
     @Test
+    void testGetPagedMapsResponseMappingNew() throws Exception {
+        GetPagedMapsResponse response = readJson("response-new.json", GetPagedMapsResponse.class);
+        assertNotNull(response);
+        assertEquals(7, response.Items().size());
+        assertNull(response.LastItemIdentifier());
+        assertEquals(1, response.NumberOfPages());
+        assertEquals(1, response.PageIndex());
+        assertEquals(7, response.TotalCount());
+    }
+
+    @Test
     void testGetMapResponseMapping() throws Exception {
         MapsItem response = readJson("response-map.json", MapsItem.class);
         assertNotNull(response);

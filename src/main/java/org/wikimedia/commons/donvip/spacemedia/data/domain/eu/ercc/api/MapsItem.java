@@ -6,6 +6,10 @@ import java.util.List;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.EchoMapType;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public record MapsItem(String Access, URL Api, String CategoryCode, int ContentItemId, Continent Continent,
         List<Country> Countries, Country Country, String CreatedByUser, LocalDateTime CreatedOnDate,
         DailyMapRequest DailyMapRequest, String Description, EchoFlash EchoFlash, List<Emergency> Emergencies,
