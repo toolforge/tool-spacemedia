@@ -4,6 +4,8 @@ import static java.lang.Integer.parseInt;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.uriExists;
@@ -171,9 +173,26 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
         media.setThumbnailUrl(
                 newURL(content.getElementsByTag("figure").first().getElementsByTag("img").first().attr("src")));
         media.setDescription(content.getElementsByClass("entry-content").first().text());
-        int idx = media.getDescription().lastIndexOf("redit:");
-        if (idx > -1) {
-            media.setCredits(media.getDescription().substring(idx + 6).trim());
+        int idx = 0;
+        Element credits = content.getElementsByClass("hds-credits").first();
+        if (credits != null) {
+            media.setCredits(credits.text());
+            if (isNotBlank(media.getCredits())) {
+                idx = media.getCredits().lastIndexOf("redit:");
+                if (idx > -1) {
+                    media.setCredits(media.getCredits().substring(idx + 6).trim());
+                }
+            }
+        }
+        if (isBlank(media.getCredits())) {
+            idx = media.getDescription().lastIndexOf("redit:");
+            if (idx > -1) {
+                media.setCredits(media.getDescription().substring(idx + 6).trim());
+            }
+        }
+        if (isNotBlank(media.getCredits())
+                && media.getDescription().replace(';', ',').startsWith(media.getCredits().replace(';', ','))) {
+            media.setDescription(media.getDescription().substring(media.getCredits().length()).trim());
         }
         for (Element figure : content.getElementsByTag("figure")) {
             String src = figure.getElementsByTag("img").first().attr("src");
