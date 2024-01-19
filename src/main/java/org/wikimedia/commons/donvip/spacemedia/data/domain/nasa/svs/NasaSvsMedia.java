@@ -62,9 +62,7 @@ public class NasaSvsMedia extends Media implements WithKeywords {
 
     @Override
     protected String getUploadId(FileMetadata fileMetadata) {
-        String file = fileMetadata.getAssetUrl().getFile();
-        return "SVS" + super.getUploadId(fileMetadata) + " - "
-                + file.substring(file.lastIndexOf('/') + 1, file.lastIndexOf('.')).trim();
+        return "SVS" + super.getUploadId(fileMetadata);
     }
 
     public NasaSvsMedia copyDataFrom(NasaSvsMedia media) {

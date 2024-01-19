@@ -119,8 +119,9 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
                         "https://photojournal.jpl.nasa.gov/archive/PIA25889_FIGB_fullres.jpg"),
                 media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).toList());
 
-        assertEquals(List.of("PIA25889", "PIA25889", "PIA25889_figA", "PIA25889_figB", "PIA25889", "PIA25889_figA",
-                "PIA25889_figB"), media.getMetadata().stream().map(m -> media.getUploadId(m)).toList());
+        assertEquals(List.of("PIA25889", "PIA25889", "PIA25889_figA", "PIA25889_figB", "PIA25889_MAIN_fullres",
+                "PIA25889_figA", "PIA25889_figB"),
+                media.getMetadata().stream().map(m -> media.getUploadId(m)).toList());
     }
 
     private NasaPhotojournalMedia readXml(String id) throws IOException, UploadException {

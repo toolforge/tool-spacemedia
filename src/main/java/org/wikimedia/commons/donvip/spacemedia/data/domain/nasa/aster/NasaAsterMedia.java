@@ -9,7 +9,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -109,8 +108,8 @@ public class NasaAsterMedia extends Media implements WithLatLon {
 
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
-        return (getMetadataCount() < 2 ? CommonsService.normalizeFilename(title)
-                : Utils.getFilename(fileMetadata.getAssetUrl())) + " (ASTER)";
+        return (getMetadataCount() < 2 ? CommonsService.normalizeFilename(title) : fileMetadata.getFileName())
+                + " (ASTER)";
     }
 
     @Override

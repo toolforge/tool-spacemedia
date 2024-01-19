@@ -5,8 +5,6 @@ import java.util.Objects;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
-import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,9 +46,8 @@ public class NasaModisMedia extends SingleFileMedia {
     }
 
     @Override
-    public String getUploadTitle(FileMetadata fileMetadata) {
-        return (getMetadataCount() < 2 ? CommonsService.normalizeFilename(title)
-                : Utils.getFilename(fileMetadata.getAssetUrl())) + " (MODIS " + getPublicationDate() + ")";
+    public String getUploadId(FileMetadata fileMetadata) {
+        return "MODIS " + getPublicationDate();
     }
 
     @Override

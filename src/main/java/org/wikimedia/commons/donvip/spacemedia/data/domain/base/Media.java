@@ -210,8 +210,8 @@ public class Media implements MediaProjection, MediaDescription {
                 .replace(" at ", " ").replace(" by ", " ").replace(" for ", " ").replace(" from ", " ")
                 .replace(" in ", " ").replace(" is ", " ").replace(" of ", " ").replace(" off ", " ")
                 .replace(" on ", " ").replace(" the ", " ").replace(" to ", " ").replace(" with ", " ").replace("-", "")
-                .replace("_", "").replace("'", "").replace(",", "").replace(".", "").replace("“", "").replace("(", "")
-                .replace(")", "").replace(":", "").replace("’", "").replace("–", ""));
+                .replace("_", "").replace("'", "").replace(",", "").replace(".", "").replace("“", "").replace("”", "")
+                .replace("(", "").replace(")", "").replace(":", "").replace("’", "").replace("–", ""));
     }
 
     protected String getUploadTitle() {
@@ -219,7 +219,19 @@ public class Media implements MediaProjection, MediaDescription {
     }
 
     protected String getUploadId(FileMetadata fileMetadata) {
-        return normalizeFilename(getIdUsedInOrg());
+        String result = getIdUsedInOrg();
+        if (getMetadataStream().map(fm -> fm.getFileExtension()).filter(Objects::nonNull)
+                .filter(ext -> ext.equals(fileMetadata.getFileExtension())).count() > 1) {
+            String filename = fileMetadata.getFileName();
+            if (!strippedLower(result).equals(strippedLower(filename))) {
+                if (filename.contains(result)) {
+                    result = filename;
+                } else {
+                    result += " - " + filename;
+                }
+            }
+        }
+        return normalizeFilename(result);
     }
 
     protected static String getUploadTitle(String s, String id) {

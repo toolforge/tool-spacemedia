@@ -20,6 +20,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -311,6 +312,12 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
             return null;
         }
         return findExtension(getAssetUrl().toExternalForm());
+    }
+
+    @Transient
+    @JsonIgnore
+    public String getFileName() {
+        return Utils.getFilename(getAssetUrl());
     }
 
     @Transient

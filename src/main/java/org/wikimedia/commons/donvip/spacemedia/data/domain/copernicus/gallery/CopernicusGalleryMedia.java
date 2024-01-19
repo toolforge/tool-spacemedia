@@ -4,14 +4,14 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 @Entity
 public class CopernicusGalleryMedia extends SingleFileMedia implements WithKeywords {
@@ -48,7 +48,7 @@ public class CopernicusGalleryMedia extends SingleFileMedia implements WithKeywo
 
     @Override
     protected String getUploadId(FileMetadata fileMetadata) {
-        return "Copernicus";
+        return "Copernicus " + getPublicationDate();
     }
 
     @Override
