@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +23,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AsyncOrgUpdaterService;
 
-@WebMvcTest(TestOrgRestController.class)
+@WebMvcTest(controllers = TestOrgRestController.class, excludeAutoConfiguration = {
+        SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
 @ContextConfiguration(classes = OrgRestControllerTest.Config.class)
 class OrgRestControllerTest {
 
