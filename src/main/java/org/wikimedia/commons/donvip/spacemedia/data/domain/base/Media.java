@@ -591,12 +591,30 @@ public class Media implements MediaProjection, MediaDescription {
      * @return {@code true} if the given string is included in title or description
      */
     public boolean containsInTitleOrDescriptionOrKeywords(String string) {
+        return containsInTitleOrDescriptionOrKeywords(string, true, true, true);
+    }
+
+    /**
+     * Determines if the given string is included in title, description or keywords,
+     * ignoring spaces and dashes.
+     *
+     * @param string string to search
+     * @return {@code true} if the given string is included in title or description
+     */
+    public boolean containsInTitleOrDescriptionOrKeywords(String string, boolean lookInTitle, boolean lookInDescription,
+            boolean lookInKeywords) {
         String lc = normalize(string);
-        return normalize(title).contains(lc) || normalize(description).contains(lc) || (hasMetadata()
-                        && getMetadataStream().map(x -> normalize(x.getDescription())).filter(StringUtils::isNotBlank)
-                        .distinct().anyMatch(x -> x.contains(lc)))
-                || (this instanceof WithKeywords mkw
-                        && mkw.getKeywordStream().map(Media::normalize).anyMatch(kw -> kw.contains(lc)));
+        boolean result = lookInTitle && normalize(title).contains(lc);
+        if (!result) {
+            result = lookInDescription && normalize(description).contains(lc)
+                    || (hasMetadata() && getMetadataStream().map(x -> normalize(x.getDescription()))
+                            .filter(StringUtils::isNotBlank).distinct().anyMatch(x -> x.contains(lc)));
+        }
+        if (!result) {
+            result = lookInKeywords && this instanceof WithKeywords mkw
+                    && mkw.getKeywordStream().map(Media::normalize).anyMatch(kw -> kw.contains(lc));
+        }
+        return result;
     }
 
     private static String normalize(String s) {

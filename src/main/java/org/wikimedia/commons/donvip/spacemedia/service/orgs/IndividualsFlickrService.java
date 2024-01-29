@@ -94,7 +94,7 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
             for (String sentinel : new String[] { "Sentinel-1", "Sentinel-2", "Sentinel-3" }) {
                 if (result.contains(sentinel + " images")) {
                     result.addAll(findCategoriesForEarthObservationImage(media,
-                            x -> "Photos of " + x + " by " + sentinel, sentinel + " images"));
+                            x -> "Photos of " + x + " by " + sentinel, sentinel + " images", true, true, true));
                 }
             }
             break;

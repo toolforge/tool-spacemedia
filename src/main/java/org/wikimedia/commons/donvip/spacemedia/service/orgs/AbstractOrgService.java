@@ -1368,15 +1368,16 @@ public abstract class AbstractOrgService<T extends Media>
     protected void findCategoriesForSentinel(Media media, String sentinel, Set<String> result) {
         if (media.containsInTitleOrDescriptionOrKeywords(sentinel)) {
             result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by " + sentinel,
-                    sentinel + " images"));
+                    sentinel + " images", true, true, true));
         }
     }
 
     protected Set<String> findCategoriesForEarthObservationImage(Media image, UnaryOperator<String> categorizer,
-            String defaultCat) {
+            String defaultCat, boolean lookIntoTitle, boolean lookIntoDescription, boolean lookIntoKeywords) {
         Set<String> result = new TreeSet<>();
         for (String targetOrSubject : satellitePicturesCategories) {
-            if (image.containsInTitleOrDescriptionOrKeywords(targetOrSubject)) {
+            if (image.containsInTitleOrDescriptionOrKeywords(targetOrSubject, lookIntoTitle, lookIntoDescription,
+                    lookIntoKeywords)) {
                 findCategoryForEarthObservationTargetOrSubject(categorizer, targetOrSubject).ifPresent(result::add);
             }
         }

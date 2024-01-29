@@ -384,7 +384,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
             }
             if (mission.matches("Sentinel-\\d.?")) {
                 result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by " + mission,
-                        mission + " images"));
+                        mission + " images", true, true, true));
             }
         }
         if (media.getPeople() != null) {
