@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.time.Year;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Locale;
@@ -86,6 +87,7 @@ class NasaLibraryServiceTest extends AbstractOrgServiceTest {
     @Test
     void testIssCategories() throws IOException {
         NasaMedia media = new NasaImage();
+        media.setPublicationYear(Year.of(2022));
         media.setId(new CompositeMediaId("", "iss068e031231"));
         media.setDescription(
                 "iss068e031231 (Dec. 20, 2022) --- Expedition 68 Flight Engineer Anna Kikina and International Space Station Commander Sergey Prokopyev, both from Roscosmos, are pictured working together inside the Zvezda service module.");

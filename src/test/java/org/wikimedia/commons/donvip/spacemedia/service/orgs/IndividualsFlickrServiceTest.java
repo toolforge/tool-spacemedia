@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -157,6 +158,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
     @Test
     void testFindCategories() throws Exception {
         FlickrMedia media = new FlickrMedia();
+        media.setPublicationYear(Year.of(2020));
         media.setId(new CompositeMediaId("kevinmgill", "52935302219"));
         media.setTitle("MSL - Sol 3841 - MastCam");
         media.setDescription("NASA/JPL-Caltech/MSSS/Kevin M. Gill");

@@ -1221,14 +1221,16 @@ public abstract class AbstractOrgService<T extends Media>
         Set<String> result = new TreeSet<>();
         if (media.containsInTitleOrDescriptionOrKeywords("360 Panorama")) {
             result.add("360° panoramas");
-        } else if (media.containsInTitleOrDescriptionOrKeywords("Land Surface Temperature")) {
-            result.add("Land surface temperature maps");
-        } else if (media.containsInTitleOrDescriptionOrKeywords("Sea Surface Temperature")) {
-            result.add("Sea surface temperature maps");
-        } else if (media.containsInTitleOrDescriptionOrKeywords("Tropospheric Nitrogen Dioxide")) {
-            result.add("Nitrogen dioxide maps");
+        } else if (media.containsInTitleOrDescriptionOrKeywords("map")) {
+            if (media.containsInTitleOrDescriptionOrKeywords("Land Surface Temperature")) {
+                result.add("Land surface temperature maps");
+            } else if (media.containsInTitleOrDescriptionOrKeywords("Sea Surface Temperature")) {
+                result.add("Sea surface temperature maps");
+            } else if (media.containsInTitleOrDescriptionOrKeywords("Tropospheric Nitrogen Dioxide")) {
+                result.add("Nitrogen dioxide maps");
+            }
         }
-        findCategoriesFromTitle(media.getTitle()).forEach(title -> {
+        findCategoriesFromTitleAndYear(media.getTitle(), media.getYear().getValue()).forEach(title -> {
             if (isSatellitePicture(media, metadata)) {
                 findCategoryForEarthObservationTargetOrSubject(x -> "Satellite pictures of " + x, title)
                         .ifPresentOrElse(result::add, () -> result.add(title));
@@ -1307,25 +1309,30 @@ public abstract class AbstractOrgService<T extends Media>
         return Optional.empty();
     }
 
-    protected Set<String> findCategoriesFromTitle(String title) {
+    protected Set<String> findCategoriesFromTitleAndYear(String title, int year) {
         Set<String> result = new TreeSet<>();
         if (title != null) {
             String[] words = title.strip().split(" ");
             if (words.length >= 2) {
                 // Try first words
-                findCategoriesFromWords(words.length, n -> Arrays.copyOfRange(words, 0, words.length - n))
+                findCategoriesFromWords(words.length, n -> Arrays.copyOfRange(words, 0, words.length - n), year)
                         .ifPresent(result::add);
                 // Try last words
-                findCategoriesFromWords(words.length, n -> Arrays.copyOfRange(words, n, words.length))
+                findCategoriesFromWords(words.length, n -> Arrays.copyOfRange(words, n, words.length), year)
                         .ifPresent(result::add);
             }
         }
         return result;
     }
 
-    private Optional<String> findCategoriesFromWords(int len, IntFunction<String[]> words) {
+    private Optional<String> findCategoriesFromWords(int len, IntFunction<String[]> words, int year) {
+        String yearSuffix = " (" + year + ")";
         for (int n = 0; n <= len - 2; n++) {
             String firstWords = String.join(" ", words.apply(n));
+            String firstWordsWithYear = firstWords + yearSuffix;
+            if (commonsService.existsCategoryPage(firstWordsWithYear)) {
+                return Optional.of(firstWordsWithYear);
+            }
             if (commonsService.existsCategoryPage(firstWords)) {
                 return Optional.of(firstWords);
             }

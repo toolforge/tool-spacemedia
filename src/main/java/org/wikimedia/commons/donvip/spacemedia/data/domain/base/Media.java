@@ -389,7 +389,8 @@ public class Media implements MediaProjection, MediaDescription {
 
     public Temporal getBestTemporal() {
         return Stream
-                .<Temporal>of(getCreationDateTime(), getCreationDate(), getPublicationDateTime(), getPublicationDate())
+                .<Temporal>of(getCreationDateTime(), getCreationDate(), getPublicationDateTime(), getPublicationDate(),
+                        getPublicationYear())
                 .filter(Objects::nonNull).findFirst()
                 .orElseThrow(() -> new IllegalStateException("No best temporal found for " + this));
     }
