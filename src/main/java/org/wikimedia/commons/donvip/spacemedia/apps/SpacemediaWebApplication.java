@@ -1,8 +1,11 @@
 package org.wikimedia.commons.donvip.spacemedia.apps;
 
+import static org.springframework.security.authorization.AuthenticatedAuthorizationManager.authenticated;
+import static org.springframework.security.authorization.AuthorizationManagers.anyOf;
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.restTemplateSupportingAll;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -21,6 +24,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.web.client.RestTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.DomainDbConfiguration;
 
@@ -50,9 +54,12 @@ public class SpacemediaWebApplication {
 
     @Bean
     @Profile("web")
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper jackson) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper jackson,
+            @Value("${rest.api.access.spring.security.expression}") String securityExpression) throws Exception {
         return http.authorizeHttpRequests(
-                authz -> authz.requestMatchers("*/rest/**").authenticated().requestMatchers("/**").permitAll())
+                authz -> authz.requestMatchers("*/rest/**")
+                        .access(anyOf(authenticated(), new WebExpressionAuthorizationManager(securityExpression)))
+                        .requestMatchers("/**").permitAll())
                 .oauth2Login(
                         oauth2 -> oauth2
                                 .userInfoEndpoint(userInfo -> userInfo.userService(this.oauth2UserService(jackson))))
