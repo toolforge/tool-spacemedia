@@ -142,7 +142,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
         } else {
             throw new IllegalArgumentException(assetUrl);
         }
-        if (image.getCredits() != null && image.getCredits().toLowerCase(ENGLISH).contains("courtesy")
+        if (image.getCredits() != null && isCourtesy(image.getCredits().toLowerCase(ENGLISH))
                 && findLicenceTemplates(image, image.getUniqueMetadata()).isEmpty()) {
             mediaService.ignoreMedia(image, "Courtesy photo not free");
         }

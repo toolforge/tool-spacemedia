@@ -59,7 +59,7 @@ public final class UnitedStates {
 
     public static VirinTemplates getUsVirinTemplates(String virin, String url) {
         Matcher m = US_VIRIN.matcher(virin);
-        return m.matches() ? switch (m.group(2)) {
+        return m.matches() && !"ZZ999".equals(m.group(3)) ? switch (m.group(2)) {
             case "A" -> new VirinTemplates(vt(virin, "Army", url), "PD-USGov-Military-Army");
             case "D" -> new VirinTemplates(vt(virin, "Department of Defense", url), "PD-USGov-Military");
             case "F" -> new VirinTemplates(vt(virin, "Air Force", url), "PD-USGov-Military-Air Force");

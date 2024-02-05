@@ -154,6 +154,8 @@ public abstract class AbstractOrgService<T extends Media>
             e("KOGL", "Q12584618"), e("NOIRLab", "Q20007257"), e("ESA-Hubble", "Q20007257"),
             e("ESA-Webb", "Q20007257"));
 
+    private static final List<String> COURTESY_SPELLINGS = List.of("courtesy", "courtsey");
+
     protected final MediaRepository<T> repository;
 
     private final String id;
@@ -1548,7 +1550,7 @@ public abstract class AbstractOrgService<T extends Media>
         if (description.contains("by-nc") || description.contains("by-nd")) {
             LOGGER.debug("Non-free licence test has been trigerred for {}", fm);
             return mediaService.ignoreAndSaveMetadata(fm, "Non-free licence");
-        } else if (description.contains("courtesy") && (findLicenceTemplates(media, fm).isEmpty()
+        } else if (isCourtesy(description) && (findLicenceTemplates(media, fm).isEmpty()
                 || courtesyOk.stream().noneMatch(description::contains))) {
             LOGGER.debug("Courtesy test has been trigerred for {}", fm);
             return mediaService.ignoreAndSaveMetadata(fm, "Probably non-free file (courtesy)");
@@ -1589,6 +1591,10 @@ public abstract class AbstractOrgService<T extends Media>
             return mediaService.ignoreAndSaveMetadata(fm, "Media without description and with uninteresting title");
         }
         return false;
+    }
+
+    protected static boolean isCourtesy(String description) {
+        return COURTESY_SPELLINGS.stream().anyMatch(description::contains);
     }
 
     protected boolean checkBlocklist() {
