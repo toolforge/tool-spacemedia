@@ -154,7 +154,7 @@ public abstract class AbstractOrgService<T extends Media>
             e("KOGL", "Q12584618"), e("NOIRLab", "Q20007257"), e("ESA-Hubble", "Q20007257"),
             e("ESA-Webb", "Q20007257"));
 
-    private static final List<String> COURTESY_SPELLINGS = List.of("courtesy", "courtsey");
+    private static final List<String> COURTESY_SPELLINGS = List.of("courtesy", "courtsey", "contributed photo");
 
     protected final MediaRepository<T> repository;
 
