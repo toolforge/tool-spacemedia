@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -215,8 +216,13 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     private static <T> Optional<T> extractKeyword(String line, int index, Function<String, T> mapper) {
-        return index >= 0 ? Optional.of(mapper.apply(line.substring(index, line.indexOf(' ', index))))
+        try {
+            return index >= 0 ? Optional.of(mapper.apply(line.substring(index, line.indexOf(' ', index))))
                 : Optional.empty();
+        } catch (DateTimeParseException | NumberFormatException e) {
+            LOGGER.error("Cannot parse line: " + line, e);
+            return Optional.empty();
+        }
     }
 
     // First image of each day
@@ -341,7 +347,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     private static List<NasaSdoKeywords> filterKeywords(List<NasaSdoKeywords> keywords, int wavelength,
             ZonedDateTime time) {
         return keywords.stream()
-                .filter(kw -> (kw.getWavelength() == null || kw.getWavelength() == wavelength)
+                .filter(kw -> (kw.getWavelength() == null || kw.getWavelength() == wavelength) && kw.gettObs() != null
                         && kw.gettObs().getHour() == time.getHour() && kw.gettObs().getMinute() == time.getMinute()
                         && kw.gettObs().getSecond() == time.getSecond())
                 .toList();
