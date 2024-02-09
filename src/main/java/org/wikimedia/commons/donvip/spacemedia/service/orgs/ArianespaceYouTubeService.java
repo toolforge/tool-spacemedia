@@ -43,7 +43,7 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
         if (!video.isIgnored() && video.getDuration().compareTo(Duration.ofMinutes(6)) > 0) {
             result = mediaService.ignoreMedia(video, "Video longer than 6 minutes");
         }
-        if ("yMy9IfNqJ2k".equals(video.getId())) {
+        if ("yMy9IfNqJ2k".equals(video.getId().getMediaId())) {
             result = mediaService.ignoreMedia(video, "Video duplicated");
         }
         for (String toRemove : TO_REMOVE) {

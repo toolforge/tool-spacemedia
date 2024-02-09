@@ -98,7 +98,8 @@ public class YouTubeMediaProcessor {
                         if (title.endsWith(".ogv") || title.endsWith(".webm")) {
                             String id = findYouTubeId(commonsService.getPageContent(from));
                             if (StringUtils.isNotBlank(id)) {
-                                Optional<YouTubeMedia> opt = missingVideos.stream().filter(v -> v.getId().equals(id))
+                                Optional<YouTubeMedia> opt = missingVideos.stream()
+                                        .filter(v -> v.getId().getMediaId().equals(id))
                                         .findFirst();
                                 if (opt.isPresent()) {
                                     missingVideos.remove(self.updateYouTubeCommonsFileName(opt.get(), title));
