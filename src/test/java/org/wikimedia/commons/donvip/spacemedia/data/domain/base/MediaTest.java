@@ -23,9 +23,9 @@ class MediaTest {
         media.setTitle(
                 "Ein Kolbenkernprobenehmer (piston corer) hängt am Seil neben der Bordwand. Gleich wird er in 1300 mm Tiefe hinabgelassen, um viele Meter in das weiche Sediment auf dem Meeresboden einzudringen und einen entsprechend langen Sedimentkern zu entnehmen.");
         assertEquals(
-                "Ein Kolbenkernprobenehmer (piston corer) hängt am Seil neben der Bordwand_ Gleich wird er in 1300 mm Tiefe hinabgelassen, um viele Meter in das weiche Sediment auf dem Meeresboden einzudringen und einen entsprechend lang (25254739045)",
+                "Ein Kolbenkernprobenehmer (piston corer) hängt am Seil neben der Bordwand_ Gleich wird er in 1300 mm Tiefe hinabgelassen, um viele Meter in das weiche Sediment auf dem Meeresboden einzudringen und einen entsprechend lan (25254739045)",
                 media.getUploadTitle(null));
-        assertEquals(234, media.getUploadTitle(null).length());
+        assertEquals(233, media.getUploadTitle(null).length());
 
         media.setId(new CompositeMediaId("", "NHQ202304210018"));
         media.setTitle("NASA Leadership Meets with UK Space Agency (NHQ202304210018)");

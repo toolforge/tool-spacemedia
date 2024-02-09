@@ -14,6 +14,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchec
 
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -188,7 +189,7 @@ public class Media implements MediaProjection, MediaDescription {
                             normalizeFilename(
                                     getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata)))),
                             uid)
-                    : s.substring(0, Math.min(234, s.length()));
+                    : stringShortened(s, "");
         } else {
             return getUploadTitle(isTitleBlacklisted(s)
                     ? normalizeFilename(getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata))))
@@ -235,9 +236,18 @@ public class Media implements MediaProjection, MediaDescription {
     }
 
     protected static String getUploadTitle(String s, String id) {
-        String firstPart = s.substring(0, Math.min(234 - id.length() - 3, s.length()));
+        String firstPart = stringShortened(s, id);
         return firstPart.contains(id) ? firstPart
                 : new StringBuilder(firstPart).append(" (").append(id).append(')').toString();
+    }
+
+    private static String stringShortened(String s, String id) {
+        int maxLen = 234 - id.length() - 3;
+        String res = s.substring(0, Math.min(maxLen, s.length()));
+        while (res.getBytes(StandardCharsets.UTF_8).length > maxLen) {
+            res = res.substring(0, res.length() - 1);
+        }
+        return res;
     }
 
     public String getTitle() {
