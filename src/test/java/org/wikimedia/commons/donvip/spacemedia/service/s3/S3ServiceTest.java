@@ -15,7 +15,7 @@ class S3ServiceTest {
     @Test
     void testGetFiles() {
         assertFalse(
-                new S3Service().getFiles(Regions.US_WEST_2, "umbra-open-data-catalog", Function.identity(),
-                        f -> true, Comparator.comparing(S3ObjectSummary::getKey)).isEmpty());
+                new S3Service().getFiles(Regions.US_WEST_2, "umbra-open-data-catalog", null, S3Service.MEDIA_EXT,
+                        Function.identity(), f -> true, Comparator.comparing(S3ObjectSummary::getKey)).isEmpty());
     }
 }

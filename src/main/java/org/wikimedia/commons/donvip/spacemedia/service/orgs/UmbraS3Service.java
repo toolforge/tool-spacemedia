@@ -7,9 +7,12 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -26,6 +29,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -35,6 +39,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 public class UmbraS3Service extends AbstractOrgS3Service {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UmbraS3Service.class);
+
+    // Prefer GEC over CSI
+    private static final String CSI_TIF = "_csi.tif";
 
     private static final Map<String, String> SATS = Map.of("01", "Q121841901", "02", "Q121841939", "03", "Q121841944",
             "04", "Q121841948", "05", "Q121841953", "06", "Q121841955", "07", "Q121842030", "08", "Q121842041");
@@ -67,6 +74,15 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     }
 
     @Override
+    protected boolean skipMedia(S3Media media, List<S3Media> files) {
+        String key = media.getIdUsedInOrg();
+        return key.toLowerCase(Locale.ENGLISH).contains(CSI_TIF) && files.stream()
+                .anyMatch(f -> f.getIdUsedInOrg()
+                        .startsWith(key.substring(0, key.toLowerCase(Locale.ENGLISH).lastIndexOf(CSI_TIF)))
+                        && !f.getIdUsedInOrg().toLowerCase(Locale.ENGLISH).contains(CSI_TIF));
+    }
+
+    @Override
     protected S3Media enrichS3Media(S3Media media) {
         CompositeMediaId id = media.getId();
         String[] items = id.getMediaId().split("/");
@@ -84,9 +100,15 @@ public class UmbraS3Service extends AbstractOrgS3Service {
             LOGGER.error("Unrecognized object key: {}", id);
         }
         LOGGER.info("Enriching {}...", media);
-        try (InputStream in = getS3Object(id.getRepoId(),
-                id.getMediaId().replace("GEC.tif", "METADATA.json").replace(".tif", "_METADATA.json"))
-                .getObjectContent()) {
+        List<S3ObjectSummary> jsonFiles = s3.getFiles(region, id.getRepoId(),
+                id.getMediaId().substring(0, id.getMediaId().lastIndexOf('/')), Set.of("json"),
+                Function.identity(), x -> x.getKey().endsWith("METADATA.json"),
+                Comparator.comparing(S3ObjectSummary::getKey));
+        if (jsonFiles.size() != 1) {
+            throw new IllegalStateException("Did not find exactly one METADATA.json file: " + jsonFiles);
+        }
+        S3ObjectSummary jsonMetadata = jsonFiles.iterator().next();
+        try (InputStream in = getS3Object(id.getRepoId(), jsonMetadata.getKey()).getObjectContent()) {
             List<Collect> collects = jackson.readValue(in, UmbraMetadata.class).collects();
             if (isNotEmpty(collects)) {
                 Collect collect = collects.get(0);
