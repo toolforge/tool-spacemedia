@@ -26,6 +26,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.DomainDbConfiguration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,5 +74,16 @@ public class SpacemediaWebApplication {
         restHtml.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
         service.setRestOperations(restHtml);
         return service;
+    }
+
+    @Bean
+    public CommonsRequestLoggingFilter logFilter() {
+        CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
+        filter.setIncludeQueryString(true);
+        filter.setIncludePayload(true);
+        filter.setMaxPayloadLength(10000);
+        filter.setIncludeHeaders(true);
+        filter.setAfterMessagePrefix("REQUEST DATA: ");
+        return filter;
     }
 }
