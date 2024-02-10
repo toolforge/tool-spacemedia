@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoInstrument.AIA;
+import static org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoInstrument.EVE;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q115801008_MAGNETOGRAM;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q119021644_INTENSITYGRAM;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q125191_PHOTOGRAPH;
@@ -24,6 +25,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -67,10 +70,14 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     private static final String BASE_URL = "https://sdo.gsfc.nasa.gov";
     private static final String BASE_URL_IMG = BASE_URL + "/assets/img";
     private static final String JSOC_BASE_URL = "http://jsoc.stanford.edu/data";
+    private static final String SAM_BASE_URL = "https://lasp.colorado.edu/eve/data_access/eve_data/quicklook/L0CS/SAM";
 
     static final DateTimeFormatter IMG_NAME_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
     static final DateTimeFormatter AIA_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSX");
     static final DateTimeFormatter HMI_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy.MM.dd_HH:mm:ss.SSX");
+    static final DateTimeFormatter SAM_IMG_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy/DDD/01'h'");
+    static final DateTimeFormatter SAM_VID_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy");
+    static final DateTimeFormatter SAM_FIL_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyDDD");
 
     @Autowired
     private NasaSdoMediaRepository sdoRepository;
@@ -136,7 +143,10 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                 .locationOfCreation("Q472251") // Created in geosynchronous orbit
                 .fabricationMethod("Q725252") // Satellite imagery
                 .capturedWith(dataType.getInstrument().getQid()); // Taken with SDO instrument
-        result.put("P2808", Pair.of(Pair.of(dataType.getWavelength(), "Q81454"), null)); // Wavelength in ångström (Å)
+        int wavelength = dataType.getWavelength();
+        if (wavelength > 0) {
+            result.put("P2808", Pair.of(Pair.of(wavelength, "Q81454"), null)); // Wavelength in ångström (Å)
+        }
         addSdcKeywordsStatements(media.getKeywords(), result);
         return result;
     }
@@ -235,8 +245,9 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                 NasaMediaType.image, NasaSdoDataType.values(AIA), date) ? fetchAiaKeywords(date) : List.of();
         // HMI keywords are not fetched as it is not clear how to match level 0 keywords
         // with HMI 15 minutes catalog
-        return updateImagesOrVideos(dateStringPath, date, 4096, NasaMediaType.image, "browse", "jpg", aiaKeywords,
-                null, uploadedMedia, start, count, NasaSdoService::parseImageDateTime);
+        int eveCount = updateEveImagesOrVideos(date, NasaMediaType.image, "images", "png", uploadedMedia, start, count);
+        return updateAiaHmiImagesOrVideos(dateStringPath, date, 4096, NasaMediaType.image, "browse", "jpg", aiaKeywords,
+                null, uploadedMedia, start, count + eveCount, NasaSdoService::parseImageDateTime);
     }
 
     static ZonedDateTime parseImageDateTime(String filename) {
@@ -246,13 +257,15 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     // Daily movies
     private int updateVideos(String dateStringPath, LocalDate date, List<NasaSdoMedia> uploadedMedia,
             LocalDateTime start, int count) throws IOException {
-        // TODO other mpeg/mp4 videos at JSOC
+        // TODO other mpeg/mp4 videos at JSOC/LASP
         // http://jsoc.stanford.edu/HMI/hmiimage.html
         // http://jsoc.stanford.edu/data/hmi/images/2023/05/01/Ic_flat_2d.mpg
         // http://jsoc.stanford.edu/data/hmi/images/2023/05/01/M_2d.mpg
         // http://jsoc.stanford.edu/data/hmi/images/2023/05/01/M_color_2d.mpg
-        return updateImagesOrVideos(dateStringPath, date, 1024, NasaMediaType.video, "dailymov", "ogv", null, null,
-                uploadedMedia, start, count, NasaSdoService::parseMovieDateTime);
+        // https://lasp.colorado.edu/eve/data_access/eve_data/quicklook/L0CS/SAM/video/daily/2014/SAM_L2_2013365_2014001_004_01.mp4
+        int eveCount = updateEveImagesOrVideos(date, NasaMediaType.video, "video/daily", "mp4", uploadedMedia, start, count);
+        return updateAiaHmiImagesOrVideos(dateStringPath, date, 1024, NasaMediaType.video, "dailymov", "ogv", null,
+                null, uploadedMedia, start, count + eveCount, NasaSdoService::parseMovieDateTime);
     }
 
     static ZonedDateTime parseMovieDateTime(String filename) {
@@ -260,54 +273,81 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                 .atStartOfDay(ZoneId.of("UTC"));
     }
 
-    private int updateImagesOrVideos(String dateStringPath, LocalDate date, int dim, NasaMediaType mediaType,
+    private int updateEveImagesOrVideos(LocalDate date, NasaMediaType mediaType, String browse, String ext,
+            List<NasaSdoMedia> uploadedMedia, LocalDateTime start, int count) throws IOException {
+        return updateImagesOrVideos(date, LocalDate.of(2014, 7, 19),
+                mediaType == NasaMediaType.video ? 0 : 1 /* Only mp4 (TODO) */, new ImageDimensions(320, 240),
+                mediaType,
+                String.join("/", SAM_BASE_URL, browse,
+                        (mediaType == NasaMediaType.video ? SAM_VID_DATE_TIME_FORMAT : SAM_IMG_DATE_TIME_FORMAT)
+                                .format(date)),
+                "_" + SAM_FIL_DATE_TIME_FORMAT.format(date) + "_",
+                (i, dataType) -> i.startsWith(dataType.name()) && i.endsWith('.' + ext), ext,
+                uploadedMedia, start, count, x -> date);
+    }
+
+    private int updateAiaHmiImagesOrVideos(String dateStringPath, LocalDate date, int dim, NasaMediaType mediaType,
             String browse, String ext, List<NasaSdoKeywords> aiaKeywords, List<NasaSdoKeywords> hmiKeywords,
             List<NasaSdoMedia> uploadedMedia, LocalDateTime start, int count,
             Function<String, ZonedDateTime> dateTimeExtractor) throws IOException {
-        ImageDimensions dims = new ImageDimensions(dim, dim);
-        int localCount = 0;
         if (mediaType == NasaMediaType.image && date.getDayOfMonth() == 1) {
             LOGGER.info("Current update date: {} ...", date);
         }
-        long imagesUploadedInDatabase = sdoRepository.countUploadedByMediaTypeAndDimensionsAndDate(mediaType, dims, date);
-        int expectedCount = mediaType == NasaMediaType.video ? NasaSdoDataType.values().length - 1
-                : NasaSdoDataType.values().length;
-        if (imagesUploadedInDatabase < expectedCount) {
-            List<NasaSdoMedia> imagesNotUploadedInDatabase = sdoRepository
-                    .findMissingByMediaTypeAndDimensionsAndDate(mediaType, dims, date);
-            for (NasaSdoMedia media : imagesNotUploadedInDatabase) {
-                doUpdateMedia(media, false, uploadedMedia);
-                ongoingUpdateMedia(start, count + localCount++);
-            }
-            if (imagesNotUploadedInDatabase.size() < expectedCount) {
-                String browseUrl = String.join("/", BASE_URL_IMG, browse, dateStringPath);
-                LOGGER.info("Fetching {} ({}<{})", browseUrl, imagesNotUploadedInDatabase.size(), expectedCount);
-                try {
-                    List<String> files = Jsoup.connect(browseUrl).header("Accept", "text/html").timeout(30_000).get()
-                            .getElementsByTag("a").stream().filter(a -> !a.nextSibling().toString().endsWith(" 0"))
-                            .map(e -> e.attr("href"))
-                            .filter(href -> href.contains("_" + dims.getWidth() + "_")).sorted().toList();
-                    for (NasaSdoDataType dataType : NasaSdoDataType.values()) {
-                        Optional<String> opt = files.stream().filter(i -> i.endsWith(dataType.name() + '.' + ext))
-                                .findFirst();
-                        if (opt.isPresent()) {
-                            String firstFile = opt.get();
-                            updateMedia(
-                                    new CompositeMediaId(dataType.getInstrument().name(),
-                                            firstFile.replace("." + ext, "")),
-                                    dateTimeExtractor.apply(firstFile), dims, newURL(browseUrl + '/' + firstFile),
-                                    mediaType, dataType, uploadedMedia);
-                            ongoingUpdateMedia(start, count + localCount++);
+        ImageDimensions dims = new ImageDimensions(dim, dim);
+        int localCount = updateImagesOrVideos(date, LocalDate.now().plusDays(1),
+                mediaType == NasaMediaType.video ? NasaSdoDataType.values().length - 2
+                        : NasaSdoDataType.values().length - 1,
+                dims, mediaType, String.join("/", BASE_URL_IMG, browse, dateStringPath), "_" + dims.getWidth() + "_",
+                (i, dataType) -> i.endsWith(dataType.name() + '.' + ext), ext, uploadedMedia, start, count,
+                dateTimeExtractor);
+        updateKeywords(date, mediaType, aiaKeywords, hmiKeywords, dims);
+        return localCount;
+    }
+
+    private int updateImagesOrVideos(LocalDate date, LocalDate maxValidityDate, int expectedCount, ImageDimensions dims,
+            NasaMediaType mediaType, String browseUrl, String textToFind,
+            BiPredicate<String, NasaSdoDataType> fileFilter, String ext, List<NasaSdoMedia> uploadedMedia,
+            LocalDateTime start, int count, Function<String, ? extends Temporal> dateTimeExtractor) throws IOException {
+        int localCount = 0;
+        if (date.isBefore(maxValidityDate)) {
+            long imagesUploadedInDb = sdoRepository.countUploadedByMediaTypeAndDimensionsAndDate(mediaType, dims, date);
+            if (imagesUploadedInDb < expectedCount) {
+                List<NasaSdoMedia> imagesNotUploadedInDb = sdoRepository
+                        .findMissingByMediaTypeAndDimensionsAndDate(mediaType, dims, date);
+                for (NasaSdoMedia media : imagesNotUploadedInDb) {
+                    doUpdateMedia(media, false, uploadedMedia);
+                    ongoingUpdateMedia(start, count + localCount++);
+                }
+                if (imagesNotUploadedInDb.size() < expectedCount) {
+                    LOGGER.info("Fetching {} ({}<{})", browseUrl, imagesNotUploadedInDb.size(), expectedCount);
+                    try {
+                        List<String> files = fetchFiles(browseUrl, textToFind);
+                        for (NasaSdoDataType dataType : NasaSdoDataType.values()) {
+                            Optional<String> opt = files.stream().filter(i -> fileFilter.test(i, dataType)).findFirst();
+                            if (opt.isPresent()) {
+                                String firstFile = opt.get();
+                                updateMedia(
+                                        new CompositeMediaId(dataType.getInstrument().name(),
+                                                firstFile.replace("." + ext, "")),
+                                        dateTimeExtractor.apply(firstFile), dims, newURL(browseUrl + '/' + firstFile),
+                                        mediaType, dataType, uploadedMedia);
+                                ongoingUpdateMedia(start, count + localCount++);
+                            }
                         }
+                    } catch (HttpStatusException e) {
+                        // https://sdo.gsfc.nasa.gov/assets/img/browse/2016/12/25/ => HTTP 404
+                        LOGGER.error(e.getMessage(), e);
                     }
-                } catch (HttpStatusException e) {
-                    // https://sdo.gsfc.nasa.gov/assets/img/browse/2016/12/25/ => HTTP 404
-                    LOGGER.error(e.getMessage(), e);
                 }
             }
         }
-        updateKeywords(date, mediaType, aiaKeywords, hmiKeywords, dims);
         return localCount;
+    }
+
+    private static List<String> fetchFiles(String browseUrl, String textToFind) throws IOException {
+        return Jsoup.connect(browseUrl).header("Accept", "text/html").timeout(30_000).get().getElementsByTag("a")
+                .stream().filter(a -> !a.nextSibling().toString().endsWith(" 0")).map(e -> e.attr("href"))
+                .filter(href -> href.contains(textToFind)).sorted().toList();
     }
 
     private void updateKeywords(LocalDate date, NasaMediaType mediaType, List<NasaSdoKeywords> aiaKeywords,
@@ -315,8 +355,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         if (isNotEmpty(aiaKeywords) || isNotEmpty(hmiKeywords)) {
             for (NasaSdoMedia media : sdoRepository.findByMediaTypeAndDimensionsAndDateAndFsnIsNull(mediaType, dims,
                     date)) {
-                SdcStatements statements = updateKeywords(aiaKeywords, hmiKeywords,
-                        media);
+                SdcStatements statements = updateKeywords(aiaKeywords, hmiKeywords, media);
                 for (String uploadFileName : media.getUniqueMetadata().getCommonsFileNames()) {
                     LOGGER.info("Updating SDC keywords for {} : {}", media, uploadFileName);
                     try {
@@ -333,17 +372,20 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
             NasaSdoMedia media) {
         NasaSdoDataType type = media.getDataType();
         SdcStatements statements = new SdcStatements();
-        List<NasaSdoKeywords> keywords = AIA == type.getInstrument() ? aiaKeywords : hmiKeywords;
-        if (isNotEmpty(keywords)) {
-            List<NasaSdoKeywords> matches = filterKeywords(keywords, type.getWavelength(), media.getCreationDateTime());
-            if (matches.isEmpty()) {
-                LOGGER.warn("No keyword match found for {}", media);
-            } else if (matches.size() > 1) {
-                LOGGER.warn("Several keyword matches found for {} : {}", media, matches);
-            } else {
-                LOGGER.info("Found keyword match for {} : {}", media, matches);
-                media.setKeywords(matches.get(0));
-                addSdcKeywordsStatements(saveMedia(media).getKeywords(), statements);
+        if (type.getInstrument() != EVE) {
+            List<NasaSdoKeywords> keywords = AIA == type.getInstrument() ? aiaKeywords : hmiKeywords;
+            if (isNotEmpty(keywords)) {
+                List<NasaSdoKeywords> matches = filterKeywords(keywords, type.getWavelength(),
+                        media.getCreationDateTime());
+                if (matches.isEmpty()) {
+                    LOGGER.warn("No keyword match found for {}", media);
+                } else if (matches.size() > 1) {
+                    LOGGER.warn("Several keyword matches found for {} : {}", media, matches);
+                } else {
+                    LOGGER.info("Found keyword match for {} : {}", media, matches);
+                    media.setKeywords(matches.get(0));
+                    addSdcKeywordsStatements(saveMedia(media).getKeywords(), statements);
+                }
             }
         }
         return statements;
@@ -358,7 +400,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                 .toList();
     }
 
-    private NasaSdoMedia updateMedia(CompositeMediaId id, ZonedDateTime date, ImageDimensions dimensions, URL url,
+    private NasaSdoMedia updateMedia(CompositeMediaId id, Temporal temporal, ImageDimensions dimensions, URL url,
             NasaMediaType mediaType, NasaSdoDataType dataType, List<NasaSdoMedia> uploadedMedia)
             throws IOException {
         boolean save = false;
@@ -370,8 +412,13 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
             media = new NasaSdoMedia();
             media.setId(id);
             media.setTitle(id.getMediaId());
-            media.setCreationDateTime(date);
-            media.setPublicationDateTime(date);
+            if (temporal instanceof ZonedDateTime date) {
+                media.setCreationDateTime(date);
+                media.setPublicationDateTime(date);
+            } else if (temporal instanceof LocalDate date) {
+                media.setCreationDate(date);
+                media.setPublicationDate(date);
+            }
             media.setDataType(dataType);
             if (dimensions.getWidth() == 4096) {
                 media.setThumbnailUrl(newURL(url.toExternalForm().replace("_4096_", "_1024_")));

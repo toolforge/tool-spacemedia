@@ -17,14 +17,17 @@ public enum NasaSdoDataType {
     /** HMI intensitygram - colored */
     _HMIIC,
     /** HMI intensitygram - flattened */
-    _HMIIF;
+    _HMIIF,
+    /** EVE-SAM */
+    SAM;
 
     public NasaSdoInstrument getInstrument() {
-        return name().contains("HMI") ? NasaSdoInstrument.HMI : NasaSdoInstrument.AIA;
+        return SAM == this ? NasaSdoInstrument.EVE
+                : name().contains("HMI") ? NasaSdoInstrument.HMI : NasaSdoInstrument.AIA;
     }
 
     public int getWavelength() {
-        return name().contains("HMI") ? 6173 : Integer.parseInt(name().substring(1));
+        return SAM == this ? -1 : name().contains("HMI") ? 6173 : Integer.parseInt(name().substring(1));
     }
 
     public static List<NasaSdoDataType> values(NasaSdoInstrument instrument) {
