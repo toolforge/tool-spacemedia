@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoInstrument.AIA;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q115801008_MAGNETOGRAM;
@@ -24,6 +25,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -74,7 +76,8 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     private NasaSdoMediaRepository sdoRepository;
 
     public NasaSdoService(NasaSdoMediaRepository repository) {
-        super(repository, "nasa.sdo", Set.of("sdo"));
+        super(repository, "nasa.sdo",
+                Arrays.stream(NasaSdoInstrument.values()).map(NasaSdoInstrument::name).collect(toSet()));
     }
 
     @Override
@@ -289,7 +292,9 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                                 .findFirst();
                         if (opt.isPresent()) {
                             String firstFile = opt.get();
-                            updateMedia(new CompositeMediaId("sdo", firstFile.replace("." + ext, "")),
+                            updateMedia(
+                                    new CompositeMediaId(dataType.getInstrument().name(),
+                                            firstFile.replace("." + ext, "")),
                                     dateTimeExtractor.apply(firstFile), dims, newURL(browseUrl + '/' + firstFile),
                                     mediaType, dataType, uploadedMedia);
                             ongoingUpdateMedia(start, count + localCount++);
