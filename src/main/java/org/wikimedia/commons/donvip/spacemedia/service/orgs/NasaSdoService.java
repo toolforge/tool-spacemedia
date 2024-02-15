@@ -162,7 +162,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         List<NasaSdoMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
-        for (LocalDate date = LocalDate.now(); date.getYear() >= 2010
+        for (LocalDate date = getLocalDateFromArgs(args); date.getYear() >= 2010
                 && (doNotFetchEarlierThan == null || date.isAfter(doNotFetchEarlierThan)); date = date.minusDays(1)) {
             String dateStringPath = DateTimeFormatter.ISO_LOCAL_DATE.format(date).replace('-', '/');
             count += updateImages(dateStringPath, date, uploadedMedia, start, count);

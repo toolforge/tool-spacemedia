@@ -25,6 +25,7 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.util.AbstractMap.SimpleEntry;
@@ -495,6 +496,17 @@ public abstract class AbstractOrgService<T extends Media>
             }
         }
         return repoIds;
+    }
+
+    protected static LocalDate getLocalDateFromArgs(String[] args) {
+        if (args != null && args.length >= 1 && !isBlank(args[args.length - 1])) {
+            try {
+                return LocalDate.parse(args[args.length - 1]);
+            } catch (DateTimeParseException e) {
+                LOGGER.trace("Can't parse date", e);
+            }
+        }
+        return LocalDate.now();
     }
 
     public String getUiRepoId(String repoId) {

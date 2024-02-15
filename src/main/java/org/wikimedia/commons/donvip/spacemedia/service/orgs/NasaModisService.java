@@ -88,7 +88,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
         List<NasaModisMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
-        for (LocalDate date = LocalDate.now(); date.getYear() >= 1999
+        for (LocalDate date = getLocalDateFromArgs(args); date.getYear() >= 1999
                 && (doNotFetchEarlierThan == null || date.isAfter(doNotFetchEarlierThan)); date = date.minusDays(1)) {
             try {
                 updateImage(date, uploadedMedia);
