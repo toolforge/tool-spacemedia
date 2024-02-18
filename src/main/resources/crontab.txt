@@ -30,8 +30,9 @@
 15 12 * * * /bin/sh /data/project/spacemedia/run.sh custom ussf-webmil
 25 12 * * * /bin/sh /data/project/spacemedia/run.sh stac capella
 35 12 * * * /bin/sh /data/project/spacemedia/run.sh s3 umbra
-45 12 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-svs
-55 12 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-website
-05 13 * * * /bin/sh /data/project/spacemedia/run.sh custom ercc
+55 12 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-svs
+05 13 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-website
+15 13 * * * /bin/sh /data/project/spacemedia/run.sh custom ercc
+25 13 * * * /bin/sh /data/project/spacemedia/run.sh flickr noaa-flickr
 # Hashes
-15 13 * * * /bin/sh /data/project/spacemedia/run.sh web
+30 13 * * * /bin/sh /data/project/spacemedia/run.sh web
