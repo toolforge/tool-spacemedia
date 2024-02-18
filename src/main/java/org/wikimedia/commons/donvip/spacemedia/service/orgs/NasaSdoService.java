@@ -346,8 +346,8 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
 
     private static List<String> fetchFiles(String browseUrl, String textToFind) throws IOException {
         return Jsoup.connect(browseUrl).header("Accept", "text/html").timeout(30_000).get().getElementsByTag("a")
-                .stream().filter(a -> !a.nextSibling().toString().endsWith(" 0")).map(e -> e.attr("href"))
-                .filter(href -> href.contains(textToFind)).sorted().toList();
+                .stream().filter(a -> a.nextSibling() == null || !a.nextSibling().toString().endsWith(" 0"))
+                .map(e -> e.attr("href")).filter(href -> href.contains(textToFind)).sorted().toList();
     }
 
     private void updateKeywords(LocalDate date, NasaMediaType mediaType, List<NasaSdoKeywords> aiaKeywords,
