@@ -1254,6 +1254,9 @@ public abstract class AbstractOrgService<T extends Media>
         });
         if (isSatellitePicture(media, metadata)) {
             result.add(media.getYear() + " satellite pictures");
+            if (media.containsInTitleOrDescriptionOrKeywords("false color")) {
+                result.add("False-color satellite images");
+            }
         }
         if (media instanceof WithLatLon ll) {
             result.addAll(findGeolocalizedCategories(ll));
