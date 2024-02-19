@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 
@@ -25,6 +26,15 @@ public class NoaaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    public Set<String> findCategories(FlickrMedia media, FileMetadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        if (includeHidden && "noaasatellites".equals(media.getPathAlias())) {
+            result.add("Files from NOAA Satellites Flickr stream");
+        }
+        return result;
+    }
+
+    @Override
     protected String getNonFreeLicenceTemplate(FlickrMedia media) {
         return "PD-USGov-NOAA";
     }
@@ -35,6 +45,7 @@ public class NoaaFlickrService extends AbstractOrgFlickrService {
         result.add(media.getDescription() != null
                 && media.getDescription().toLowerCase(Locale.ENGLISH).contains("credit: nasa/") ? "PD-USGov-NASA"
                         : "PD-USGov-NOAA");
+        result.remove(FlickrLicense.Public_Domain_Mark.getWikiTemplate());
         return result;
     }
 

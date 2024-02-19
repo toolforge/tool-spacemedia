@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,8 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
 @Service
 public class NasaFlickrService extends AbstractOrgFlickrService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NasaFlickrService.class);
 
     private static final List<String> STRINGS_TO_REMOVE = List.of(
             "<a href=\"http://instagram.com/NASAWebbTelescp\" rel=\"nofollow\">Follow us on Instagram</a>",
@@ -70,6 +74,58 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
         List<IgnoreCriteria> result = super.getIgnoreCriteria();
         result.add(new IgnoreCriteriaOnTerms(List.of("Copyright 2010 Mars Institute"), List.of("Photo by", "(NASA")));
         result.add(new IgnoreCriteriaOnRepoId(List.of("nasa-jpl"), List.of("NASA")));
+        return result;
+    }
+
+    @Override
+    public Set<String> findCategories(FlickrMedia media, FileMetadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        if (includeHidden) {
+            try {
+                result.add("Files from " + switch (media.getPathAlias()) {
+                case "atmospheric-infrared-sounder" -> "Atmospheric Infrared Sounder";
+                case "ghrcdaac" -> "NASA Global Hydrology Resource Center DAAC";
+                case "nasawebbtelescope" -> "the James Webb Space Telescope";
+                case "40054892@N06" -> "NASA Analogs";
+                case "nasa_appel" -> "NASA APPEL Knowledge Services";
+                case "nasadfrc" -> "NASA Dryden Flight Research Center";
+                case "nasaearthobservatory" -> "NASA Earth Observatory";
+                case "earthrightnow" -> "NASA Earth Right Now";
+                case "nasaedge" -> "NASA EDGE";
+                case "nasafo" -> "NASA Flight Opportunities";
+                case "nasaglenn" -> "NASA Glenn Research Center";
+                case "gsfc", "nasa_goddard" -> "NASA Goddard Space Flight Center";
+                case "nasahqphoto" -> "NASA HQ";
+                case "nasahubble" -> "Hubble Space Telescope";
+                case "nasa_ice" -> "NASA ICE";
+                case "nasa2explore" -> "NASA Johnson";
+                case "nasa_jsc_photo" -> "JSC Office of STEM Engagement";
+                case "nasa_larss" -> "NASA LARSS";
+                case "nasacommons" -> "NASA on The Commons";
+                case "nasampcv", "nasaorion" -> "NASA Orion";
+                case "nasaspaceflightawareness" -> "NASA Space Flight Awareness";
+                case "nasa_langley", "larc-science" -> "NASA Langley";
+                case "nasamarshall", "nasamarshallphotos" -> "NASA Marshall Space Flight Center";
+                case "nasaarmstrong" -> "NASA Armstrong";
+                case "nasablueshift" -> "NASA Universe";
+                case "nasacolab" -> "NASA CoLab";
+                case "nasa-jpl" -> "Jet Propulsion Laboratory";
+                case "nasakennedy" -> "NASA Kennedy";
+                case "nasarobonaut" -> "NASA Robonaut";
+                case "oursolarsystem" -> "NASA Solar System Exploration";
+                case "nasa_hsf" -> "HSF Committee";
+                case "sdomission" -> "Solar Dynamics Observatory";
+                case "uahirise-mars" -> "UAHiRISE";
+                case "43066628@N07" -> "NASA X";
+                case "nasadesertrats" -> "NASA Desert RATS";
+                case "hmpresearchstation" -> "Haughton Mars Project Research Station";
+                case "morpheuslander" -> "NASA Project Morpheus";
+                default -> throw new IllegalStateException("Unsupported account: " + media.getPathAlias());
+                } + " Flickr stream");
+            } catch (IllegalStateException e) {
+                LOGGER.warn(e.getMessage());
+            }
+        }
         return result;
     }
 

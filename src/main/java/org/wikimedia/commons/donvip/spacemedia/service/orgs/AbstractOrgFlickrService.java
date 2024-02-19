@@ -156,25 +156,34 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             LOGGER.warn("Unknown Flickr licence for media {}: {}", media.getId(), e.getMessage());
             result.add("Flickrreview"); // Strange case
         }
+        final String publicDomainMark = FlickrLicense.Public_Domain_Mark.getWikiTemplate();
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(),
                 getSourceUrl(media, media.getUniqueMetadata()));
         if (t != null) {
             result.add(t.virinTemplate());
             if (StringUtils.isNotBlank(t.pdTemplate())) {
+                result.remove(publicDomainMark);
                 result.add(t.pdTemplate());
             }
         }
-        String description = media.getDescription();
+        final String description = media.getDescription();
         if (description != null) {
-            if (result.contains("Flickr-public domain mark") && UnitedStates.isClearPublicDomain(description)) {
-                result.remove("Flickr-public domain mark");
+            if (result.contains(publicDomainMark) && UnitedStates.isClearPublicDomain(description)) {
+                result.remove(publicDomainMark);
             }
-            if (description.contains("hoto by SpaceX") || description.contains("hoto/SpaceX")) {
+            final LocalDate pubDate = media.getPublicationDate();
+            if (pubDate != null && pubDate.isAfter(LocalDate.of(2015, 2, 1))
+                    && pubDate.isBefore(LocalDate.of(2019, 8, 31))
+                    && (description.contains("hoto by SpaceX") || description.contains("hoto/SpaceX"))) {
                 result.add("PD-SpaceX");
             }
-            if (description.contains("hoto by NASA") || description.contains("hoto/NASA")) {
+            if (description.contains("hoto by NASA") || description.contains("hoto/NASA")
+                    || description.contains("redit: NASA")) {
                 result.add("PD-USGov-NASA");
             }
+        }
+        if (result.contains(publicDomainMark) && result.stream().anyMatch(x -> x.startsWith("PD-"))) {
+            result.remove(publicDomainMark);
         }
         return result;
     }
@@ -197,6 +206,11 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
 
     private static final URL getPhotoUrl(FlickrMedia media) {
         return newURL(getUserPhotosUrl(media).toExternalForm() + '/' + media.getId().getMediaId());
+    }
+
+    @Override
+    protected boolean isSatellitePicture(FlickrMedia media, FileMetadata metadata) {
+        return super.isSatellitePicture(media, metadata) || media.getKeywords().contains("satelliteimagery");
     }
 
     protected boolean includeAllLicences() {
