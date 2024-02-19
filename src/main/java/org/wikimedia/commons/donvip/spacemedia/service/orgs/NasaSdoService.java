@@ -275,7 +275,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
 
     private int updateEveImagesOrVideos(LocalDate date, NasaMediaType mediaType, String browse, String ext,
             List<NasaSdoMedia> uploadedMedia, LocalDateTime start, int count) throws IOException {
-        return updateImagesOrVideos(date, LocalDate.of(2014, 7, 19),
+        return updateImagesOrVideos(date, LocalDate.of(2014, 5, 31),
                 mediaType == NasaMediaType.video ? 0 : 1 /* Only mp4 (TODO) */, new ImageDimensions(320, 240),
                 mediaType,
                 String.join("/", SAM_BASE_URL, browse,
