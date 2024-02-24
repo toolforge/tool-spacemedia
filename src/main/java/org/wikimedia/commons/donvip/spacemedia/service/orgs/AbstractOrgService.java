@@ -132,7 +132,7 @@ public abstract class AbstractOrgService<T extends Media>
 
     private static final Pattern PATTERN_SHORT = Pattern
             .compile(
-                    "(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{6,7}|youtu.be/[\\w\\-]{11}|flic.kr/[ps]/[0-9a-zA-Z]{6,10}|fb.me/e/[0-9a-zA-Z]{9}|ow.ly/[0-9a-zA-Z]{5}|tinyurl.com/[0-9a-zA-Z]{7,8}|goo.gl/[0-9a-zA-Z]{6})");
+                    "(?:https?://)?(?:bit.ly/[0-9a-zA-Z]{6,7}|youtu.be/[\\w\\-]{11}|flic.kr/[ps]/[0-9a-zA-Z]{6,10}|fb.me/e/[0-9a-zA-Z]{9}|ow.ly/[0-9a-zA-Z]{5}|tinyurl.com/[0-9a-zA-Z]{7,8}|goo.gl/[0-9a-zA-Z]{5,6})");
 
     private static final Pattern PATTERN_TWITTER_SEARCH = Pattern
             .compile("<a href=\"https://twitter.com/search?[^\"]+\">([^<]*)</a>");
