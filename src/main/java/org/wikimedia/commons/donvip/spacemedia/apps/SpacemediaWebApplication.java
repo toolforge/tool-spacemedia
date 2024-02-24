@@ -5,7 +5,6 @@ import static org.springframework.security.authorization.AuthorizationManagers.a
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.restTemplateSupportingAll;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -17,6 +16,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -24,10 +24,10 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.DomainDbConfiguration;
+import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twelvemonkeys.servlet.image.IIOProviderContextListener;
@@ -55,11 +55,14 @@ public class SpacemediaWebApplication {
 
     @Bean
     @Profile("web")
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper jackson,
-            @Value("${rest.api.access.spring.security.expression}") String securityExpression) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper jackson, RemoteService remote)
+            throws Exception {
         return http.authorizeHttpRequests(
                 authz -> authz.requestMatchers("*/rest/**")
-                        .access(anyOf(new WebExpressionAuthorizationManager(securityExpression), authenticated()))
+                        .access(anyOf(
+                                (authentication, ctx) -> new AuthorizationDecision(
+                                        remote.getUserAgent().equals(ctx.getRequest().getHeader("User-Agent"))),
+                                authenticated()))
                         .requestMatchers("/**").permitAll())
                 .oauth2Login(
                         oauth2 -> oauth2
