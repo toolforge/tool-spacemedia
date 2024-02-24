@@ -34,5 +34,6 @@
 05 13 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-website
 15 13 * * * /bin/sh /data/project/spacemedia/run.sh custom ercc
 25 13 * * * /bin/sh /data/project/spacemedia/run.sh flickr noaa-flickr
+30 13 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-lroc
 # Hashes
-30 13 * * * /bin/sh /data/project/spacemedia/run.sh web
+35 13 * * * /bin/sh /data/project/spacemedia/run.sh web

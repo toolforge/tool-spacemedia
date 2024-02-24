@@ -11,7 +11,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.uriExists;
 
 import java.io.IOException;
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -248,11 +247,6 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
                 media.setPublicationDate(LocalDate.of(parseInt(m.group(1)), parseInt(m.group(2)), 1));
             }
         }
-    }
-
-    @Override
-    public URL getSourceUrl(NasaWebsiteMedia media, FileMetadata metadata) {
-        return newURL(BASE_URL + media.getId().getRepoId() + "/" + media.getIdUsedInOrg());
     }
 
     @Override

@@ -3,7 +3,6 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.URL;
@@ -158,11 +157,6 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
     @Override
     protected final WebMilMedia refresh(WebMilMedia media) throws IOException {
         return media.copyDataFrom(fetchMedia(media.getId(), Optional.empty()));
-    }
-
-    @Override
-    public final URL getSourceUrl(WebMilMedia media, FileMetadata metadata) {
-        return newURL(getSourceUrl(media.getId()));
     }
 
     @Override

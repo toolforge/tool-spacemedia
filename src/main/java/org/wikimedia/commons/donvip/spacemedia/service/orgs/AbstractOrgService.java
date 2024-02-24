@@ -1200,6 +1200,12 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected Optional<String> getOtherFields(T media) {
+        if (media instanceof WithKeywords kw) {
+            StringBuilder sb = new StringBuilder();
+            addOtherField(sb, "Keyword", kw.getKeywords());
+            String s = sb.toString();
+            return s.isEmpty() ? Optional.empty() : Optional.of(s);
+        }
         return Optional.empty();
     }
 

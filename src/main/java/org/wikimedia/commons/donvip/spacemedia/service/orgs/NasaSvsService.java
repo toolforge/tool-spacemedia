@@ -204,14 +204,6 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     // https://svs.gsfc.nasa.gov/help/
 
     @Override
-    protected Optional<String> getOtherFields(NasaSvsMedia media) {
-        StringBuilder sb = new StringBuilder();
-        addOtherField(sb, "Keyword", media.getKeywords());
-        String s = sb.toString();
-        return s.isEmpty() ? Optional.empty() : Optional.of(s);
-    }
-
-    @Override
     public Set<String> findCategories(NasaSvsMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         result.addAll(media.getKeywordStream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());

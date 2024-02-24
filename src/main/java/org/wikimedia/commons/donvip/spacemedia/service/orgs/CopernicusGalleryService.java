@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -101,11 +100,6 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     @Override
     protected Elements getGalleryItems(Element html) {
         return html.getElementsByClass("search-results-item-details");
-    }
-
-    @Override
-    public URL getSourceUrl(CopernicusGalleryMedia media, FileMetadata metadata) {
-        return newURL(BASE_URL + "/en/media/image-day-gallery/" + media.getId().getMediaId());
     }
 
     @Override

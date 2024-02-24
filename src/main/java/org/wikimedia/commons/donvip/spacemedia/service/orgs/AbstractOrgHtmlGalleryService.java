@@ -1,8 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +21,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -42,6 +45,11 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
     }
 
     protected abstract String extractIdFromGalleryItem(Element result);
+
+    @Override
+    public final URL getSourceUrl(T media, FileMetadata metadata) {
+        return newURL(getSourceUrl(media.getId()));
+    }
 
     protected abstract String getSourceUrl(CompositeMediaId id);
 
