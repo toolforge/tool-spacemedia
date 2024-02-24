@@ -59,7 +59,7 @@ public class SpacemediaWebApplication {
             @Value("${rest.api.access.spring.security.expression}") String securityExpression) throws Exception {
         return http.authorizeHttpRequests(
                 authz -> authz.requestMatchers("*/rest/**")
-                        .access(anyOf(authenticated(), new WebExpressionAuthorizationManager(securityExpression)))
+                        .access(anyOf(new WebExpressionAuthorizationManager(securityExpression), authenticated()))
                         .requestMatchers("/**").permitAll())
                 .oauth2Login(
                         oauth2 -> oauth2
@@ -83,6 +83,7 @@ public class SpacemediaWebApplication {
         filter.setIncludePayload(true);
         filter.setMaxPayloadLength(10000);
         filter.setIncludeHeaders(true);
+        filter.setIncludeClientInfo(true);
         filter.setAfterMessagePrefix("REQUEST DATA: ");
         return filter;
     }
