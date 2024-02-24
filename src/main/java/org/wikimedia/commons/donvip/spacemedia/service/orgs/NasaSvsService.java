@@ -157,6 +157,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                 group.mediaItemsStream()
                         .filter(x -> x.media_type().shouldBeOkForCommons()
                                 && !x.url().toExternalForm().endsWith(".exr")
+                                && !x.alt_text().contains("stamp slate")
                                 && !x.alt_text().startsWith("Time slates for the multiple movies")
                                 && !x.alt_text().startsWith("This timeline is synchronized with"))
                         .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst().ifPresent(biggest -> {
