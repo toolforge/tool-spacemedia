@@ -61,7 +61,7 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
         // Remove "nasa" from ids displayed in UI to make the long list fit in screen
         return super.getUiRepoId(repoId).replaceAll("nasa[_-]?", "").replaceAll("_?photos?", "").replace("mission", "")
                 .replace("telescope", "").replace("-science", "").replace("-mars", "").replace("-infrared-sounder", "")
-                .replace("researchstation", "").replace("lander", "");
+                .replace("researchstation", "").replace("lander", "").replace("project", "").replace("archive", "");
     }
 
     @Override
