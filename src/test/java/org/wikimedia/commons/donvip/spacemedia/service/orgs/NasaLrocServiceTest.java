@@ -36,7 +36,10 @@ class NasaLrocServiceTest extends AbstractOrgServiceTest {
     private NasaLrocService service;
 
     @ParameterizedTest
-    @CsvSource({ "1358,JAXA SLIM Landing,0,[Robotic Spacecraft],3" })
+    @CsvSource(delimiter = ';', value = {
+            "157;LROC’s First Look at the Apollo Landing Sites;0;[Apollo, Robotic Spacecraft];15",
+            "1321;IM-1 Landing Region;0;[Robotic Spacecraft];3",
+            "1358;JAXA SLIM Landing;0;[Robotic Spacecraft];3" })
     void testFillMediaWithHtml(String id, String title, int descLen, String tags, int nFiles) throws IOException {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         NasaLrocMedia media = new NasaLrocMedia();
@@ -46,7 +49,9 @@ class NasaLrocServiceTest extends AbstractOrgServiceTest {
         assertEquals(descLen, Optional.ofNullable(media.getDescription()).orElse("").length());
         assertEquals(nFiles, media.getMetadataCount());
         for (FileMetadata fm : media.getMetadata()) {
-            assertFalse(fm.getDescription().isEmpty());
+            if (!fm.getAssetUri().toString().contains("/ptif/download_file?fName=")) {
+                assertFalse(fm.getDescription().isEmpty(), () -> fm.toString());
+            }
         }
     }
 

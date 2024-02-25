@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -20,15 +21,26 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends AbstractOrgService<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgHtmlGalleryService.class);
+
+    @Autowired
+    protected ObjectMapper jackson;
 
     protected AbstractOrgHtmlGalleryService(MediaRepository<T> repository, String id, Set<String> repoIds) {
         super(repository, id, repoIds);
@@ -159,6 +171,31 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
             return media;
         } catch (ReflectiveOperationException | IllegalArgumentException | SecurityException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    protected final void addZoomifyFileMetadata(T media, Element html, String baseUrl) throws JsonProcessingException {
+        for (Element e : html.getElementsByClass("olZoomify")) {
+            DataFiZoomify data = jackson.readValue(e.attr("data-fi-zoomify"), DataFiZoomify.class);
+            if (isNotBlank(data.ptifName())) {
+                String fName = data.ptifName() + ".tif";
+                addMetadata(media, baseUrl + "/ptif/download_file?fName=" + fName, fm -> {
+                    fm.setExtension("tif");
+                    fm.setOriginalFileName(fName);
+                    fm.setImageDimensions(new ImageDimensions(data.width(), data.height()));
+                });
+            } else {
+                LOGGER.error("Failed to retrieve ptifName in data-fi-zoomify from {}", e);
+            }
+        }
+    }
+
+    @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static record DataFiZoomify(String ptifName, int width, int height, int leftX, int rightX, int topY,
+            int bottomY, Point center, int zoomLevel) {
+
+        private static record Point(int x, int y) {
         }
     }
 }

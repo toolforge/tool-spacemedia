@@ -74,7 +74,7 @@ public class KariService extends AbstractOrgService<KariMedia> {
     }
 
     @Override
-    protected final String getAuthor(KariMedia media) {
+    protected final String getAuthor(KariMedia media, FileMetadata metadata) {
         return "{{Creator:KARI}}";
     }
 

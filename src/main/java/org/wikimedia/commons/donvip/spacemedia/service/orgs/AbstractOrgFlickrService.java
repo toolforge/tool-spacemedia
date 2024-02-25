@@ -103,7 +103,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
-    protected final String getAuthor(FlickrMedia media) {
+    protected final String getAuthor(FlickrMedia media, FileMetadata metadata) {
         URL userPhotosUrl = getUserPhotosUrl(media);
         try {
             User user = flickrService.findUser(userPhotosUrl);

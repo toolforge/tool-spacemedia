@@ -150,7 +150,7 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
     }
 
     @Override
-    protected String getAuthor(ErccMedia media) {
+    protected String getAuthor(ErccMedia media, FileMetadata metadata) {
         return "ERCC - Emergency Response Coordination Centre"
                 + (isBlank(media.getSources()) ? "" : "\n\nSources: " + media.getSources());
     }

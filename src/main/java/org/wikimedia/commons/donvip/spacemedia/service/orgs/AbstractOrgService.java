@@ -1064,7 +1064,7 @@ public abstract class AbstractOrgService<T extends Media>
         }
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
         sb.append("\n| source = ").append(getSource(media, metadata))
-          .append("\n| author = ").append(CommonsService.formatWikiCode(getAuthor(media)));
+                .append("\n| author = ").append(CommonsService.formatWikiCode(getAuthor(media, metadata)));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
         appendWikiOtherVersions(sb, media, metadata, "other versions");
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
@@ -1171,7 +1171,7 @@ public abstract class AbstractOrgService<T extends Media>
         return wikiLink(getSourceUrl(media, metadata), media.getTitle().replace('|', '-'));
     }
 
-    protected String getAuthor(T media) {
+    protected String getAuthor(T media, FileMetadata metadata) {
         return media.getCredits();
     }
 
@@ -1758,7 +1758,8 @@ public abstract class AbstractOrgService<T extends Media>
         StringBuilder sb = new StringBuilder("{{milim\n| description = ").append("{{").append(lang).append("|1=")
                 .append(CommonsService.formatWikiCode(desc)).append("}}");
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
-        sb.append("\n| source = ").append(getSource(media, metadata)).append("\n| author = ").append(getAuthor(media));
+        sb.append("\n| source = ").append(getSource(media, metadata)).append("\n| author = ")
+                .append(getAuthor(media, metadata));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
         location.ifPresent(l -> sb.append("\n| location = ").append(l));
         sb.append("\n| virin = ").append(virin).append("\n| dateposted = ").append(toIso8601(

@@ -1,8 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q125191_PHOTOGRAPH;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -10,6 +12,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -26,10 +30,12 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 @Service
 public class NasaLrocService extends AbstractOrgHtmlGalleryService<NasaLrocMedia> {
 
-    private static final String BASE_URL = "https://www.lroc.asu.edu/";
+    private static final String BASE_URL = "https://www.lroc.asu.edu";
 
     private static final DateTimeFormatter DATE_PATTERN = DateTimeFormatter.ofPattern("MMMM d, yyyy HH:mm z.",
             Locale.ENGLISH);
+
+    private static final Pattern CREDIT_PATTERN = Pattern.compile(".* \\[(.+)\\]");
 
     @Autowired
     private NasaMappingService mappings;
@@ -51,7 +57,7 @@ public class NasaLrocService extends AbstractOrgHtmlGalleryService<NasaLrocMedia
 
     @Override
     protected List<String> fetchGalleryUrls(String repoId) {
-        return List.of(BASE_URL + "posts");
+        return List.of(BASE_URL + "/posts");
     }
 
     @Override
@@ -65,8 +71,19 @@ public class NasaLrocService extends AbstractOrgHtmlGalleryService<NasaLrocMedia
     }
 
     @Override
+    protected String getAuthor(NasaLrocMedia media, FileMetadata metadata) {
+        if (metadata.getDescription() != null) {
+            Matcher m = CREDIT_PATTERN.matcher(metadata.getDescription());
+            if (m.matches()) {
+                return m.group(1);
+            }
+        }
+        return "NASA/GSFC/Arizona State University";
+    }
+
+    @Override
     protected String getSourceUrl(CompositeMediaId id) {
-        return BASE_URL + "posts/" + id.getMediaId();
+        return BASE_URL + "/posts/" + id.getMediaId();
     }
 
     @Override
@@ -83,7 +100,9 @@ public class NasaLrocService extends AbstractOrgHtmlGalleryService<NasaLrocMedia
     public Set<String> findCategories(NasaLrocMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         result.addAll(media.getKeywordStream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());
-        result.add("Photos of the Moon by Lunar Reconnaissance Orbiter");
+        if (media.getPublicationDate().isAfter(LocalDate.of(2009, 7, 1))) {
+            result.add("Photos of the Moon by Lunar Reconnaissance Orbiter");
+        }
         return result;
     }
 
@@ -91,8 +110,8 @@ public class NasaLrocService extends AbstractOrgHtmlGalleryService<NasaLrocMedia
     public Set<String> findAfterInformationTemplates(NasaLrocMedia media, FileMetadata metadata) {
         Set<String> result = super.findAfterInformationTemplates(media, metadata);
         result.add(
-                "{{Template:NASA Photojournal/attribution|class=LRO|mission=LRO|name=LRO|credit=NASA/GSFC/Arizona State University}}");
-        result.add("{{NASA-image|id=" + media.getId() + "|center=GSFC}}");
+                "Template:NASA Photojournal/attribution|class=LRO|mission=LRO|name=Lunar Reconnaissance Orbiter Camera|credit=LROC");
+        result.add("NASA-image|id=" + media.getId() + "|center=GSFC");
         return result;
     }
 
@@ -106,11 +125,13 @@ public class NasaLrocService extends AbstractOrgHtmlGalleryService<NasaLrocMedia
     @Override
     protected SdcStatements getStatements(NasaLrocMedia media, FileMetadata metadata) {
         SdcStatements result = super.getStatements(media, metadata).instanceOf(Q125191_PHOTOGRAPH);
-        result.creator("Q331778") // Created by LRO
-                .depicts("Q405") // Depicts the Moon
-                .locationOfCreation("Q210448") // Created in lunar orbit
-                .fabricationMethod("Q725252") // Satellite imagery
-                .capturedWith("Q124653753"); // Taken with LROC instrument
+        if (media.getPublicationDate().isAfter(LocalDate.of(2009, 7, 1))) {
+            result.creator("Q331778") // Created by LRO
+                    .depicts("Q405") // Depicts the Moon
+                    .locationOfCreation("Q210448") // Created in lunar orbit
+                    .fabricationMethod("Q725252") // Satellite imagery
+                    .capturedWith("Q124653753"); // Taken with LROC instrument
+        }
         return result;
     }
 
@@ -126,7 +147,8 @@ public class NasaLrocService extends AbstractOrgHtmlGalleryService<NasaLrocMedia
         media.setTitle(article.getElementsByTag("h1").first().text());
         String[] byline = article.getElementsByClass("byline").first().text().split(" on ");
         media.setPublicationDateTime(ZonedDateTime.parse(byline[byline.length - 1], DATE_PATTERN));
-        if (article.getElementsByTag("figcaption").isEmpty()) {
+        if (article.getElementsByTag("figcaption").isEmpty()
+                && article.getElementsByClass("serendipity_imageComment_txt").isEmpty()) {
             media.setDescription(article.getElementById("post-body").text());
         }
         Element tags = article.getElementsByClass("tags").first();
@@ -136,8 +158,17 @@ public class NasaLrocService extends AbstractOrgHtmlGalleryService<NasaLrocMedia
             }
         }
         for (Element e : article.getElementsByClass("img-polaroid")) {
-            addMetadata(media, BASE_URL + e.getElementsByTag("img").attr("src"),
-                    fm -> fm.setDescription(e.getElementsByTag("figcaption").text()));
+            String src = e.getElementsByTag("img").attr("src");
+            addMetadata(media, src.startsWith("http") ? src : BASE_URL + src,
+                    fm -> {
+                        String figcaption = e.getElementsByTag("figcaption").text();
+                        String imgComment = e.getElementsByClass("serendipity_imageComment_txt").text();
+                        fm.setDescription(isNotBlank(figcaption) ? figcaption
+                                : isNotBlank(imgComment) ? imgComment : e.getElementsByTag("font").text());
+                    });
+        }
+        for (Element e : article.getElementsByClass("olZoomify")) {
+            addZoomifyFileMetadata(media, e, BASE_URL);
         }
     }
 

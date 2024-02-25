@@ -75,7 +75,7 @@ public class NasaSirsService extends AbstractOrgService<NasaSirsMedia> {
     }
 
     @Override
-    protected String getAuthor(NasaSirsMedia media) {
+    protected String getAuthor(NasaSirsMedia media, FileMetadata metadata) {
         return wikiLink(homePage, sscName);
     }
 

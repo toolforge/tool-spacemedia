@@ -89,7 +89,7 @@ public class CapellaStacService extends AbstractOrgStacService {
     }
 
     @Override
-    protected String getAuthor(StacMedia media) {
+    protected String getAuthor(StacMedia media, FileMetadata metadata) {
         // https://registry.opendata.aws/capella_opendata/
         return "Capella Space";
     }

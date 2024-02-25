@@ -192,7 +192,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     }
 
     @Override
-    protected String getAuthor(NasaSvsMedia media) {
+    protected String getAuthor(NasaSvsMedia media, FileMetadata metadata) {
         return "NASA's Scientific Visualization Studio - " + media.getCredits();
     }
 
