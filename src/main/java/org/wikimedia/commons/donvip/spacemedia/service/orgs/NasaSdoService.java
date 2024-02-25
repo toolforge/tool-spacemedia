@@ -124,7 +124,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     @Override
-    protected String getAuthor(NasaSdoMedia media) {
+    protected String getAuthor(NasaSdoMedia media, FileMetadata metadata) {
         // https://sdo.gsfc.nasa.gov/data/rules.php
         return "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.";
     }

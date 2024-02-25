@@ -187,7 +187,7 @@ public abstract class AbstractOrgBoxService extends AbstractOrgService<BoxMedia>
     }
 
     @Override
-    protected final String getAuthor(BoxMedia media) {
+    protected final String getAuthor(BoxMedia media, FileMetadata metadata) {
         return boxService.getSharedItem(getSharedLink(media.getId())).getCreatedBy().getName();
     }
 }

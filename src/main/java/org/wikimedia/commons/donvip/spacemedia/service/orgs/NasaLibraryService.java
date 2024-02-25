@@ -335,7 +335,7 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
     }
 
     @Override
-    protected String getAuthor(NasaMedia media) {
+    protected String getAuthor(NasaMedia media, FileMetadata metadata) {
         String center = media.getId().getRepoId().toLowerCase(Locale.ENGLISH);
         URL homePage = env.getProperty("nasa." + center + ".home.page", URL.class);
         String name = env.getProperty("nasa." + center + ".name", String.class);

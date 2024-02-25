@@ -345,7 +345,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     }
 
     @Override
-    protected String getAuthor(EsaMedia media) {
+    protected String getAuthor(EsaMedia media, FileMetadata metadata) {
         if (media.getCredits().contains("/")) {
             String authors = media.getCredits().replace("CC BY-SA 3.0 IGO", "").trim();
             if (authors.endsWith(",") && authors.length() > 2) {

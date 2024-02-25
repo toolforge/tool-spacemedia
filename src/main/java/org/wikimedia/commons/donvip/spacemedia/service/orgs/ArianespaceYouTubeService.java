@@ -30,7 +30,7 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
     }
 
     @Override
-    protected String getAuthor(YouTubeMedia media) {
+    protected String getAuthor(YouTubeMedia media, FileMetadata metadata) {
         return "Arianespace";
     }
 

@@ -348,7 +348,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
-    protected final String getAuthor(DvidsMedia media) {
+    protected final String getAuthor(DvidsMedia media, FileMetadata metadata) {
         StringBuilder result = new StringBuilder();
         Matcher m = US_MEDIA_BY.matcher(media.getDescription());
         if (m.matches()) {

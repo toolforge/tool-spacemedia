@@ -141,7 +141,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
     }
 
     @Override
-    protected String getAuthor(NasaAsterMedia media) {
+    protected String getAuthor(NasaAsterMedia media, FileMetadata metadata) {
         return "NASA/METI/AIST/Japan Space Systems, and U.S./Japan ASTER Science Team";
     }
 

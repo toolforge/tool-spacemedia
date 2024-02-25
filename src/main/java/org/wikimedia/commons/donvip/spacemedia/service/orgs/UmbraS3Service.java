@@ -139,7 +139,7 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     }
 
     @Override
-    protected String getAuthor(S3Media media) {
+    protected String getAuthor(S3Media media, FileMetadata metadata) {
         // https://registry.opendata.aws/umbra-open-data/
         // https://umbra.space/terms-of-use
         return "Umbra Lab, Inc.";
