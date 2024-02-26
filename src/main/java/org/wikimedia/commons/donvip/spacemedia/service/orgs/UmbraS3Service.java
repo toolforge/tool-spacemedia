@@ -132,6 +132,15 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     }
 
     @Override
+    public Set<String> findCategories(S3Media media, FileMetadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        result.addAll(findCategoriesFromTitleAndAffixes(media.getTitle(),
+                new Affixes(List.of("Images of "), false),
+                new Affixes(List.of(" by Umbra"), false)));
+        return result;
+    }
+
+    @Override
     public Set<String> findLicenceTemplates(S3Media media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("Cc-by-4.0");

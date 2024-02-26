@@ -1,6 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.lang.Integer.parseInt;
+import static java.util.Arrays.copyOfRange;
+import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -9,6 +11,7 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.strip;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -30,7 +33,6 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -489,8 +491,7 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected Set<String> getRepoIdsFromArgs(String[] args) {
         if (args != null && args.length >= 1 && !isBlank(args[args.length - 1])) {
-            Set<String> ids = Arrays.stream(args[args.length - 1].split(",")).filter(repoIds::contains)
-                    .collect(toSet());
+            Set<String> ids = stream(args[args.length - 1].split(",")).filter(repoIds::contains).collect(toSet());
             if (!ids.isEmpty()) {
                 return ids;
             }
@@ -973,7 +974,7 @@ public abstract class AbstractOrgService<T extends Media>
         // Categories
         Set<String> cats = findCategories(media, metadata, false);
         for (Entry<String, String> e : categoriesStatements.entrySet()) {
-            if (Arrays.stream(e.getKey().split(";")).anyMatch(cats::contains)) {
+            if (stream(e.getKey().split(";")).anyMatch(cats::contains)) {
                 for (String statement : e.getValue().split(";")) {
                     String[] kv = statement.split("=");
                     result.put(kv[0], Pair.of(kv[1], null));
@@ -1332,36 +1333,68 @@ public abstract class AbstractOrgService<T extends Media>
         return Optional.empty();
     }
 
+    protected static record Affixes(Iterable<String> values, boolean areOptional) {
+    }
+
     protected Set<String> findCategoriesFromTitleAndYear(String title, int year) {
+        return findCategoriesFromTitleAndAffixes(title, new Affixes(List.of(year + " ", year + " in "), true),
+                new Affixes(List.of(" (" + year + ")", " in " + year), true));
+    }
+
+    protected Set<String> findCategoriesFromTitleAndAffixes(String title, Affixes prefixes, Affixes suffixes) {
         Set<String> result = new TreeSet<>();
         if (title != null) {
             String[] words = title.strip().split(" ");
             if (words.length >= 2) {
                 // Try first words
-                findCategoriesFromWords(words.length, n -> Arrays.copyOfRange(words, 0, words.length - n), year)
+                findCategoriesFromWords(words.length, n -> copyOfRange(words, 0, words.length - n), prefixes, suffixes)
                         .ifPresent(result::add);
                 // Try last words
-                findCategoriesFromWords(words.length, n -> Arrays.copyOfRange(words, n, words.length), year)
+                findCategoriesFromWords(words.length, n -> copyOfRange(words, n, words.length), prefixes, suffixes)
                         .ifPresent(result::add);
             }
         }
         return result;
     }
 
-    private Optional<String> findCategoriesFromWords(int len, IntFunction<String[]> words, int year) {
-        String yearSuffix = " (" + year + ")";
+    private Optional<String> findCategoriesFromWords(int len, IntFunction<String[]> words, Affixes prefixes,
+            Affixes suffixes) {
         for (int n = 0; n <= len - 2; n++) {
-            String firstWords = String.join(" ", words.apply(n));
-            String firstWordsWithYear = firstWords + yearSuffix;
-            if (commonsService.existsCategoryPage(firstWordsWithYear)) {
-                return Optional.of(firstWordsWithYear);
+            String firstWords = strip(String.join(" ", words.apply(n)), ",-");
+            if (prefixes != null && suffixes != null) {
+                for (String prefix : prefixes.values()) {
+                    for (String suffix : suffixes.values()) {
+                        String firstWordsWithPrefixAndSuffix = prefix + firstWords + suffix;
+                        if (commonsService.existsCategoryPage(firstWordsWithPrefixAndSuffix)) {
+                            return Optional.of(firstWordsWithPrefixAndSuffix);
+                        }
+                    }
+                }
             }
-            if (commonsService.existsCategoryPage(firstWords)) {
-                return Optional.of(firstWords);
+            if (prefixes != null && (suffixes == null || suffixes.areOptional())) {
+                for (String prefix : prefixes.values()) {
+                    String firstWordsWithPrefix = prefix + firstWords;
+                    if (commonsService.existsCategoryPage(firstWordsWithPrefix)) {
+                        return Optional.of(firstWordsWithPrefix);
+                    }
+                }
             }
-            String firstWordsWithoutComma = firstWords.replace(",", "");
-            if (commonsService.existsCategoryPage(firstWordsWithoutComma)) {
-                return Optional.of(firstWordsWithoutComma);
+            if (suffixes != null && (prefixes == null || prefixes.areOptional())) {
+                for (String suffix : suffixes.values()) {
+                    String firstWordsWithSuffix = firstWords + suffix;
+                    if (commonsService.existsCategoryPage(firstWordsWithSuffix)) {
+                        return Optional.of(firstWordsWithSuffix);
+                    }
+                }
+            }
+            if ((prefixes == null || prefixes.areOptional()) && (suffixes == null || suffixes.areOptional())) {
+                if (commonsService.existsCategoryPage(firstWords)) {
+                    return Optional.of(firstWords);
+                }
+                String firstWordsWithoutComma = firstWords.replace(",", "");
+                if (commonsService.existsCategoryPage(firstWordsWithoutComma)) {
+                    return Optional.of(firstWordsWithoutComma);
+                }
             }
         }
         return Optional.empty();
@@ -1703,7 +1736,7 @@ public abstract class AbstractOrgService<T extends Media>
                         if (catMapping != null) {
                             String cat = catMapping.get(s);
                             if (StringUtils.isNotBlank(cat)) {
-                                return Arrays.stream(cat.split(";"))
+                                return stream(cat.split(";"))
                                         .map(c -> "[[:Category:" + c + '|' + s + "]]")
                                         .collect(joining("; "));
                             }
