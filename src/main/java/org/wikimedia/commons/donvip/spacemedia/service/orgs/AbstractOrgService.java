@@ -1710,15 +1710,20 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected FileMetadata addMetadata(T media, URL assetUrl, Consumer<FileMetadata> consumer, boolean forceConsumer) {
-        FileMetadata fm = metadataRepository.findByAssetUrl(assetUrl).map(x -> {
-            if (forceConsumer && consumer != null) {
-                consumer.accept(x);
-                x = metadataRepository.save(x);
-            }
-            return x;
-        }).orElseGet(() -> metadataRepository.save(newFileMetadata(assetUrl, consumer)));
-        media.addMetadata(fm);
-        return fm;
+        try {
+            FileMetadata fm = metadataRepository.findByAssetUrl(assetUrl).map(x -> {
+                if (forceConsumer && consumer != null) {
+                    consumer.accept(x);
+                    x = metadataRepository.save(x);
+                }
+                return x;
+            }).orElseGet(() -> metadataRepository.save(newFileMetadata(assetUrl, consumer)));
+            media.addMetadata(fm);
+            return fm;
+        } catch (RuntimeException e) {
+            LOGGER.error("Error while adding metadata {} for media {}", assetUrl, media);
+            throw e;
+        }
     }
 
     protected static FileMetadata newFileMetadata(URL assetUrl, Consumer<FileMetadata> consumer) {
