@@ -58,7 +58,7 @@
 			<dependency>
 				<groupId>com.amazonaws</groupId>
 				<artifactId>aws-java-sdk-bom</artifactId>
-				<version>1.12.666</version>
+				<version>1.12.669</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -248,7 +248,7 @@
 		<dependency>
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-youtube</artifactId>
-			<version>v3-rev20231011-2.0.0</version>
+			<version>v3-rev20240225-2.0.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.google.oauth-client</groupId>
@@ -290,7 +290,7 @@
 		<dependency>
 			<groupId>com.box</groupId>
 			<artifactId>box-java-sdk</artifactId>
-			<version>4.7.0</version>
+			<version>4.8.0</version>
 			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
@@ -329,7 +329,7 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>bootstrap</artifactId>
-			<version>5.3.2</version>
+			<version>5.3.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
