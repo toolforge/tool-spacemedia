@@ -226,7 +226,8 @@ public final class Utils {
 
     public static String getFilename(URL url) {
         String file = url.getFile();
-        return file.substring(file.lastIndexOf('/') + 1, file.lastIndexOf('.')).trim();
+        String result = file.substring(file.lastIndexOf('/') + 1, file.lastIndexOf('.')).trim();
+        return result.contains("=") ? result.substring(result.lastIndexOf('=') + 1).trim() : result;
     }
 
     public static Pair<Path, Long> downloadFile(URI uri, String fileName) throws IOException {
