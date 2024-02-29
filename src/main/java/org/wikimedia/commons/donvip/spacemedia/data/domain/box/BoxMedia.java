@@ -1,15 +1,13 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.box;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+
 @Entity
-@Indexed
 public class BoxMedia extends SingleFileMedia {
 
     @Column(nullable = true)

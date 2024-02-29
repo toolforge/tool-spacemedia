@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
@@ -14,7 +13,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 
 @Entity
-@Indexed
 public class NasaLrocMedia extends Media implements WithKeywords {
 
     @ElementCollection(fetch = FetchType.EAGER)

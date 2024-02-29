@@ -3,17 +3,15 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sirs;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
-
 @Entity
-@Indexed
 public class NasaSirsMedia extends SingleFileMedia implements WithKeywords {
 
     @Column(nullable = false)

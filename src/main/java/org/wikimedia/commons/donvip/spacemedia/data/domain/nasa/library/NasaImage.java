@@ -1,15 +1,12 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+
 @Entity
-@Indexed
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NasaImage extends NasaMedia {
 

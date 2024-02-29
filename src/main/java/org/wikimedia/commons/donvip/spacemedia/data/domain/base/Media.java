@@ -34,9 +34,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +80,6 @@ public class Media implements MediaProjection, MediaDescription {
 
     @Id
     @Embedded
-    @DocumentId(identifierBridge = @IdentifierBridgeRef(type = CompositeMediaIdBridge.class))
     private CompositeMediaId id;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -95,12 +91,10 @@ public class Media implements MediaProjection, MediaDescription {
 
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
-    @FullTextField
     protected String title;
 
     @Lob
     @Column(nullable = true, columnDefinition = "MEDIUMTEXT")
-    @FullTextField
     protected String description;
 
     @Lob

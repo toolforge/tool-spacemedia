@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
@@ -16,7 +14,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 
 @Entity
-@Indexed
 public class DvidsVideo extends DvidsMedia {
 
     /**

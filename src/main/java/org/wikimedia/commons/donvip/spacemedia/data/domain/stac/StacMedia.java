@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.stac;
 
 import java.net.URL;
 
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
@@ -14,7 +13,6 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 
 @Entity
-@Indexed
 @Table(indexes = { @Index(columnList = "url") })
 public class StacMedia extends Media implements WithLatLon {
 

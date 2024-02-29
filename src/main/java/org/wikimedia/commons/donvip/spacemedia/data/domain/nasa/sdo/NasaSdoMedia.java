@@ -2,20 +2,18 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo;
 
 import java.util.Objects;
 
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
-import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
-
 @Entity
-@Indexed
 public class NasaSdoMedia extends SingleFileMedia {
 
     @Enumerated(EnumType.ORDINAL)

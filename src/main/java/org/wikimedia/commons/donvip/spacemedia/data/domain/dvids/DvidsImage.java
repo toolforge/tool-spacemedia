@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
 
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +10,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 
 @Entity
-@Indexed
 public class DvidsImage extends DvidsMedia {
 
     /**
