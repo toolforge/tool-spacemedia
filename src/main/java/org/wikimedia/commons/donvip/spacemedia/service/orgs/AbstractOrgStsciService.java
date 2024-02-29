@@ -20,6 +20,7 @@ import org.jsoup.HttpStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -42,6 +43,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     private final String detailEndpoint;
     private final String mission;
 
+    @Lazy
     @Autowired
     private StsciService stsci;
 

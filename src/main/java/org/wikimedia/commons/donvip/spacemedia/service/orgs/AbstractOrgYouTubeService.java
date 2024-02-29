@@ -28,6 +28,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
@@ -52,9 +53,11 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     private static final Pattern MERGING_DL = Pattern.compile("\\[ffmpeg\\] Merging formats into \"(\\S{11}\\.\\S{3,4})\"");
     private static final Pattern ALREADY_DL = Pattern.compile("\\[download\\] (\\S{11}\\.\\S{3,4}) has already been downloaded and merged");
 
+    @Lazy
     @Autowired
     private YouTubeApiService youtubeService;
 
+    @Lazy
     @Autowired
     private YouTubeMediaProcessor mediaProcessor;
 

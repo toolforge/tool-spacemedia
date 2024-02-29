@@ -12,7 +12,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.InternetArchiveService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
-import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.service.mastodon.MastodonService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 
@@ -69,10 +68,5 @@ public class SpacemediaUpdateJobConfiguration {
     @Bean
     public InternetArchiveService internetArchiveService() {
         return new InternetArchiveService();
-    }
-
-    @Bean
-    public TransactionService transactionService() {
-        return new TransactionService();
     }
 }

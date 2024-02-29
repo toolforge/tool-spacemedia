@@ -31,7 +31,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
-import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.service.osm.NominatimService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
@@ -67,9 +66,6 @@ public abstract class AbstractOrgServiceTest {
 
     @MockBean
     protected SearchService searchService;
-
-    @MockBean
-    protected TransactionService transactionService;
 
     @MockBean
     protected GoogleTranslateService translate;

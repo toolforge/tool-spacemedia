@@ -32,6 +32,7 @@ import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikidata.wdtk.datamodel.interfaces.EntityIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
@@ -44,6 +45,7 @@ import org.wikidata.wdtk.wikibaseapi.WbSearchEntitiesResult;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 
+@Lazy
 @Service
 public class WikidataService {
 

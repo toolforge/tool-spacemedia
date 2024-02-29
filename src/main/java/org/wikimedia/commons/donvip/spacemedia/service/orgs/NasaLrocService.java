@@ -19,6 +19,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -37,6 +38,7 @@ public class NasaLrocService extends AbstractOrgHtmlGalleryService<NasaLrocMedia
 
     private static final Pattern CREDIT_PATTERN = Pattern.compile(".* \\[(.+)\\]");
 
+    @Lazy
     @Autowired
     private NasaMappingService mappings;
 

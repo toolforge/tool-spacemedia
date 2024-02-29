@@ -14,8 +14,10 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+@Lazy
 @Service
 public class GeometryService {
 

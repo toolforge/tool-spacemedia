@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -35,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.annotation.PostConstruct;
 
+@Lazy
 @Service
 public class Video2CommonsService {
 

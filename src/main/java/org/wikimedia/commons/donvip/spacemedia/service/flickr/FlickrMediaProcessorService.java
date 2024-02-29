@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
@@ -45,6 +46,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.photos.PhotoSet;
 
+@Lazy
 @Service
 public class FlickrMediaProcessorService {
 

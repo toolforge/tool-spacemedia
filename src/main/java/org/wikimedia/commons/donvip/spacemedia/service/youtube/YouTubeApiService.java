@@ -7,6 +7,7 @@ import java.security.GeneralSecurityException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -18,6 +19,7 @@ import com.google.api.services.youtube.model.SearchResult;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 
+@Lazy
 @Service
 @SuppressWarnings("deprecation")
 public class YouTubeApiService {

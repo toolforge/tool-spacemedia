@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
+@Lazy
 @Service
 public class YouTubeMediaProcessor {
 

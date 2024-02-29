@@ -32,6 +32,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
@@ -61,8 +62,10 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
 
     @Autowired
     protected FlickrMediaRepository flickrRepository;
+    @Lazy
     @Autowired
     protected FlickrService flickrService;
+    @Lazy
     @Autowired
     protected FlickrMediaProcessorService processor;
 

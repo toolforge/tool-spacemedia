@@ -10,6 +10,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
@@ -19,6 +20,7 @@ import com.google.cloud.translate.v3.Translation;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
 
+@Lazy
 @Service
 public class GoogleTranslateService {
 

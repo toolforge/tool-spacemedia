@@ -70,6 +70,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -100,7 +101,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
-import org.wikimedia.commons.donvip.spacemedia.service.TransactionService;
 import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
 import org.wikimedia.commons.donvip.spacemedia.service.mastodon.MastodonService;
 import org.wikimedia.commons.donvip.spacemedia.service.osm.NominatimService;
@@ -166,16 +166,16 @@ public abstract class AbstractOrgService<T extends Media>
     private final Set<String> repoIds;
 
     @Autowired
-    protected TransactionService transactionService;
-
-    @Autowired
     private FileMetadataRepository metadataRepository;
     @Autowired
     protected RuntimeDataRepository runtimeDataRepository;
+    @Lazy
     @Autowired
     protected MediaService mediaService;
+    @Lazy
     @Autowired
     protected CommonsService commonsService;
+    @Lazy
     @Autowired
     protected WikidataService wikidata;
     @Autowired

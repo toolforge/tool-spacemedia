@@ -23,6 +23,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3Media;
@@ -42,6 +43,7 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgS3Service.class);
 
+    @Lazy
     @Autowired
     protected S3Service s3;
 

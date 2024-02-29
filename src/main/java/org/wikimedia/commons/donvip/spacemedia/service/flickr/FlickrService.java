@@ -18,6 +18,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
@@ -35,6 +36,7 @@ import com.flickr4java.flickr.photos.PhotoSet;
 import com.flickr4java.flickr.photos.SearchParameters;
 import com.flickr4java.flickr.urls.UrlsInterface;
 
+@Lazy
 @Service
 public class FlickrService {
 

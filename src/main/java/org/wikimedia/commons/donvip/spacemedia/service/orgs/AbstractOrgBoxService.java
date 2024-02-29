@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.box.BoxMedia;
@@ -42,6 +43,7 @@ public abstract class AbstractOrgBoxService extends AbstractOrgService<BoxMedia>
     @Autowired
     private BoxMediaRepository mediaRepository;
 
+    @Lazy
     @Autowired
     private BoxService boxService;
 

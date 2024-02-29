@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.amazonaws.SDKGlobalConfiguration;
@@ -20,6 +21,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 
+@Lazy
 @Service
 public class S3Service {
 

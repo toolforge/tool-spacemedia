@@ -13,6 +13,7 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -37,6 +38,7 @@ import io.github.redouane59.twitter.dto.tweet.TweetParameters.TweetParametersBui
 import io.github.redouane59.twitter.dto.tweet.UploadMediaResponse;
 import io.github.redouane59.twitter.signature.TwitterCredentials;
 
+@Lazy
 @Service
 public class TwitterService extends AbstractSocialMediaService<OAuth10aService, OAuth1AccessToken> {
 

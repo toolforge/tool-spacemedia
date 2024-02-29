@@ -13,6 +13,7 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageProjection;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -27,6 +28,7 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
+@Lazy
 @Service
 public class MastodonService extends AbstractSocialMediaService<OAuth20Service, OAuth2AccessToken> {
 

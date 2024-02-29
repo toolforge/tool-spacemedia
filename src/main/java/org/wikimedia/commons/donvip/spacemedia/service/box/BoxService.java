@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
@@ -45,6 +46,7 @@ import com.box.sdk.SharedLinkAPIConnection;
 
 import okhttp3.OkHttpClient;
 
+@Lazy
 @Service
 public class BoxService {
 

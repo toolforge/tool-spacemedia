@@ -5,9 +5,11 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 
+@Lazy
 @Service
 public class NasaMappingService {
 
