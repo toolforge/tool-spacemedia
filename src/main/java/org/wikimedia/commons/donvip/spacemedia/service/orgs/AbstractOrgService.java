@@ -1194,7 +1194,7 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected Optional<String> getOtherVersions(T media, FileMetadata metadata) {
         StringBuilder sb = new StringBuilder();
-        media.getMetadataStream().filter(m -> m != metadata && m.getAssetUrl() != null)
+        media.getMetadataStream().filter(m -> m != metadata && m.getAssetUrl() != null && m.isIgnored() != Boolean.TRUE)
                 .map(m -> media.getFirstCommonsFileNameOrUploadTitle(m) + '|'
                         + m.getFileExtension().toUpperCase(Locale.ENGLISH) + " version\n")
                 .distinct().forEach(sb::append);
