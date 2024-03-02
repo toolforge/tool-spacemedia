@@ -44,7 +44,7 @@ public final class UploadContext<T extends Media> {
     }
 
     public static boolean isForbiddenUpload(Media media, boolean isManual) {
-        return media.getMetadataStream().anyMatch(fm -> isForbiddenUpload(fm, isManual));
+        return media.getMetadataStream().allMatch(fm -> isForbiddenUpload(fm, isManual));
     }
 
     public static boolean isForbiddenUpload(FileMetadata fm, boolean isManual) {
