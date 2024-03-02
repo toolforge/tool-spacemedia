@@ -18,13 +18,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.lroc.NasaLrocMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.lroc.NasaLrocMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 
-@SpringJUnitConfig(NasaLrocServiceTest.TestConfig.class)
-class NasaLrocServiceTest extends AbstractOrgServiceTest {
+@SpringJUnitConfig(NasaLrocShadowCamServiceTest.TestConfig.class)
+class NasaLrocShadowCamServiceTest extends AbstractOrgServiceTest {
 
     @MockBean
     private NasaLrocMediaRepository repository;
@@ -33,17 +34,19 @@ class NasaLrocServiceTest extends AbstractOrgServiceTest {
     private NasaMappingService mapping;
 
     @Autowired
-    private NasaLrocService service;
+    private NasaLrocShadowCamService service;
 
     @ParameterizedTest
     @CsvSource(delimiter = ';', value = {
-            "157;LROC’s First Look at the Apollo Landing Sites;0;[Apollo, Robotic Spacecraft];15",
-            "1321;IM-1 Landing Region;0;[Robotic Spacecraft];3",
-            "1358;JAXA SLIM Landing;0;[Robotic Spacecraft];3" })
-    void testFillMediaWithHtml(String id, String title, int descLen, String tags, int nFiles) throws IOException {
+            "lroc;157;LROC’s First Look at the Apollo Landing Sites;0;[Apollo, Robotic Spacecraft];15",
+            "lroc;1321;IM-1 Landing Region;0;[Robotic Spacecraft];3",
+            "shadowcam;1357;Complicated Lighting;0;[Permanently Shadowed Regions];4",
+            "lroc;1358;JAXA SLIM Landing;0;[Robotic Spacecraft];3" })
+    void testFillMediaWithHtml(String repoId, String id, String title, int descLen, String tags, int nFiles) throws IOException {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         NasaLrocMedia media = new NasaLrocMedia();
-        service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/nasa/lroc/" + id + ".htm")), media);
+        media.setId(new CompositeMediaId(repoId, id));
+        service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/nasa/lroc-shadowcam/" + id + ".htm")), media);
         assertEquals(title, media.getTitle());
         assertEquals(tags, media.getKeywords().toString());
         assertEquals(descLen, Optional.ofNullable(media.getDescription()).orElse("").length());
@@ -61,8 +64,8 @@ class NasaLrocServiceTest extends AbstractOrgServiceTest {
 
         @Bean
         @Autowired
-        public NasaLrocService service(NasaLrocMediaRepository repository) {
-            return new NasaLrocService(repository);
+        public NasaLrocShadowCamService service(NasaLrocMediaRepository repository) {
+            return new NasaLrocShadowCamService(repository);
         }
     }
 }

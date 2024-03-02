@@ -83,7 +83,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
     }
 
     @Override
-    protected Elements getGalleryItems(Element html) {
+    protected Elements getGalleryItems(String repoId, Element html) {
         Elements elems = html.getElementsByClass("gallery_container");
         return elems.isEmpty() ? html.getElementsByClass("AF2ImageGallerylvItem") : elems;
     }

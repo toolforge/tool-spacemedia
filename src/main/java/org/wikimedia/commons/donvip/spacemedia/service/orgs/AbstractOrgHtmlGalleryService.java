@@ -50,7 +50,7 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
 
     protected abstract String getGalleryPageUrl(String repoId, int page);
 
-    protected abstract Elements getGalleryItems(Element html);
+    protected abstract Elements getGalleryItems(String repoId, Element html);
 
     protected Optional<ZonedDateTime> extractDateFromGalleryItem(Element result) {
         return Optional.empty();
@@ -95,7 +95,7 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
             LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
             String pageUrl = getGalleryPageUrl(galleryUrl, idx++);
             try {
-                Elements results = getGalleryItems(getWithJsoup(pageUrl, 10_000, 3));
+                Elements results = getGalleryItems(repoId, getWithJsoup(pageUrl, 10_000, 3));
                 for (Element result : results) {
                     CompositeMediaId id = new CompositeMediaId(repoId, extractIdFromGalleryItem(result));
                     Optional<ZonedDateTime> date = extractDateFromGalleryItem(result);

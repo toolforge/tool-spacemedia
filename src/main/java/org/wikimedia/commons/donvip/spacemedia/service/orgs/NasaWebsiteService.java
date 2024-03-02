@@ -77,7 +77,7 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
         do {
             String pageUrl = BASE_URL + "gallery/page/" + idx++;
             try {
-                Elements items = getGalleryItems(getWithJsoup(pageUrl, 30_000, 3));
+                Elements items = getGalleryItems(repoId, getWithJsoup(pageUrl, 30_000, 3));
                 items.forEach(item -> result.add(item.attr("href")));
                 loop = !items.isEmpty();
             } catch (HttpStatusException e) {
@@ -98,7 +98,7 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
     }
 
     @Override
-    protected Elements getGalleryItems(Element html) {
+    protected Elements getGalleryItems(String repoId, Element html) {
         Elements headings = html.getElementsByClass("hds-content-item-heading");
         return headings.isEmpty() ? html.getElementsByClass("hds-gallery-item-link") : headings;
     }

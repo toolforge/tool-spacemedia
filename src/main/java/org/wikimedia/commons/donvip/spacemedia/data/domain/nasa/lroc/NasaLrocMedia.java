@@ -30,12 +30,16 @@ public class NasaLrocMedia extends Media implements WithKeywords {
 
     @Override
     public List<String> getIdUsedInCommons() {
-        return List.of("LROC" + getIdUsedInOrg()); // Simple ids cannot be used as search discriminant
+        return List.of(getIdPrefix() + getIdUsedInOrg()); // Simple ids cannot be used as search discriminant
     }
 
     @Override
     protected String getUploadId(FileMetadata fileMetadata) {
-        return "LROC" + super.getUploadId(fileMetadata);
+        return getIdPrefix() + super.getUploadId(fileMetadata);
+    }
+
+    private String getIdPrefix() {
+        return "shadowcam".equals(getId().getRepoId()) ? "ShadowCam" : "LROC";
     }
 
     public NasaLrocMedia copyDataFrom(NasaLrocMedia other) {

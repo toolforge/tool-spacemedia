@@ -98,7 +98,7 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     }
 
     @Override
-    protected Elements getGalleryItems(Element html) {
+    protected Elements getGalleryItems(String repoId, Element html) {
         return html.getElementsByClass("search-results-item-details");
     }
 
