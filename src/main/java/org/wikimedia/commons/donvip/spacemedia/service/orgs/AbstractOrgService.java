@@ -89,6 +89,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
+import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
@@ -112,6 +113,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
+import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
 import jakarta.persistence.EntityManager;
@@ -1274,6 +1276,19 @@ public abstract class AbstractOrgService<T extends Media>
         if (includeHidden) {
             UnitedStates.getUsMilitaryCategory(media).ifPresent(result::add);
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
+            if ("gif".equals(metadata.getFileExtension())) {
+                try {
+                    int numImages = ImageUtils.readImage(metadata.getAssetUri(), true, false).numImages();
+                    if (numImages > 1) {
+                        long megaPixels = numImages * metadata.getImageDimensions().getPixelsNumber();
+                        result.add("Animated GIF files"
+                                + (megaPixels > 100_000_000 ? " exceeding the 100 MP limit"
+                                        : megaPixels > 50_000_000 ? " between 50 MP and 100 MP" : ""));
+                    }
+                } catch (IOException | ImageDecodingException e) {
+                    LOGGER.error("Failed to read GIF file: {}", e.getMessage());
+                }
+            }
         }
         return result;
     }

@@ -87,7 +87,7 @@ public class ImageUtils {
                     case "SVGImageReader" -> "svg";
                     case "TIFFImageReader" -> "tiff";
                     default -> null;
-            });
+                    }, reader.getNumImages(false));
         } finally {
             reader.dispose();
             stream.close();
@@ -126,9 +126,9 @@ public class ImageUtils {
             if (ok || isBlank(extension)) {
                 ImageAndMetadata result = readImage(in, readMetadata);
                 return new ImageAndMetadata(result.image(), contentLength, filename,
-                        isBlank(extension) ? result.extension() : extension);
+                        isBlank(extension) ? result.extension() : extension, result.numImages());
             } else if ("webp".equals(extension)) {
-                return new ImageAndMetadata(readWebp(uri, readMetadata).image(), contentLength, filename, extension);
+                return new ImageAndMetadata(readWebp(uri, readMetadata).image(), contentLength, filename, extension, 1);
             } else {
                 throw new ImageDecodingException(
                         "Unsupported format: " + extension + " / headers:"
