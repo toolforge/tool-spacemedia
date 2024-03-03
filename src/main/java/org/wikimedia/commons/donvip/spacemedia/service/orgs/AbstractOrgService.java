@@ -116,6 +116,8 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -171,6 +173,8 @@ public abstract class AbstractOrgService<T extends Media>
     private FileMetadataRepository metadataRepository;
     @Autowired
     protected RuntimeDataRepository runtimeDataRepository;
+    @Autowired
+    protected ObjectMapper jackson;
     @Lazy
     @Autowired
     protected MediaService mediaService;
@@ -180,18 +184,24 @@ public abstract class AbstractOrgService<T extends Media>
     @Lazy
     @Autowired
     protected WikidataService wikidata;
+    @Lazy
     @Autowired
     private SearchService searchService;
+    @Lazy
     @Autowired
     private RemoteService remoteService;
+    @Lazy
     @Autowired
     private GoogleTranslateService translateService;
+    @Lazy
     @Autowired
     private List<AbstractSocialMediaService<?, ?>> socialMediaServices;
+    @Lazy
     @Autowired
-    private GeometryService geometry;
+    protected GeometryService geometry;
+    @Lazy
     @Autowired
-    private NominatimService nominatim;
+    protected NominatimService nominatim;
 
     @Autowired
     private Environment env;

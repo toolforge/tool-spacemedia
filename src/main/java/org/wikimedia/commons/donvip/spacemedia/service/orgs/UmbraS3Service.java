@@ -31,7 +31,6 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -47,9 +46,6 @@ public class UmbraS3Service extends AbstractOrgS3Service {
             "04", "Q121841948", "05", "Q121841953", "06", "Q121841955", "07", "Q121842030", "08", "Q121842041");
 
     private static final Pattern SAT_PATTERN = Pattern.compile(".*_UMBRA-(\\d{2})/.*");
-
-    @Autowired
-    private ObjectMapper jackson;
 
     @Autowired
     public UmbraS3Service(S3MediaRepository repository,

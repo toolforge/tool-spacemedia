@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,9 +13,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationReposi
 @RestController
 public class HashController {
 
+    @Lazy
     @Autowired
     private RuntimeDataRepository runtimeRepo;
 
+    @Lazy
     @Autowired
     private HashAssociationRepository hashRepo;
 

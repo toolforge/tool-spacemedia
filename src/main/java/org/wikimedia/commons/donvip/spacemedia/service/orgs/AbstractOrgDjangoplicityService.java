@@ -41,7 +41,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -55,8 +54,6 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenExc
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Service fetching images from djangoplicity-powered website
@@ -85,9 +82,6 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
     private Map<String, String> dpCategories;
     private Map<String, String> dpNames;
     private Map<String, String> dpTypes;
-
-    @Autowired
-    private ObjectMapper jackson;
 
     protected AbstractOrgDjangoplicityService(DjangoplicityMediaRepository repository, String id, String searchLink) {
         super(repository, id, Set.of(id));

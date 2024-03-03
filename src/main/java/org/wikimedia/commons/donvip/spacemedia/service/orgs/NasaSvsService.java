@@ -39,8 +39,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsV
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 @Service
 public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
 
@@ -48,9 +46,6 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
 
     private static final String API_SEARCH_ENDPOINT = "https://svs.gsfc.nasa.gov/api/search/?sort_by_0=DESC";
     private static final String API_VIZUAL_ENDPOINT = "https://svs.gsfc.nasa.gov/api/";
-
-    @Autowired
-    private ObjectMapper jackson;
 
     @Lazy
     @Autowired

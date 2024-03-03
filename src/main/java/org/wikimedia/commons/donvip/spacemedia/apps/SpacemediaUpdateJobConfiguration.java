@@ -6,6 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Lazy;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.InternetArchiveService;
@@ -22,31 +23,37 @@ import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
         "org.wikimedia.commons.donvip.spacemedia.service.wikimedia" }, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".+Test.*"))
 public class SpacemediaUpdateJobConfiguration {
 
+    @Lazy
     @Bean
     public MediaService mediaService() {
         return new MediaService();
     }
 
+    @Lazy
     @Bean
     public RemoteService remoteService() {
         return new RemoteService();
     }
 
+    @Lazy
     @Bean
     public SearchService searchService() {
         return new SearchService();
     }
 
+    @Lazy
     @Bean
     public GeometryService geometryService() {
         return new GeometryService();
     }
 
+    @Lazy
     @Bean
     public GoogleTranslateService translateService() {
         return new GoogleTranslateService();
     }
 
+    @Lazy
     @Bean
     public MastodonService mastodonService(
             @Value("${mastodon.instance}") String instance,
@@ -56,6 +63,7 @@ public class SpacemediaUpdateJobConfiguration {
         return new MastodonService(instance, clientId, clientSecret, accessToken);
     }
 
+    @Lazy
     @Bean
     public TwitterService twitterService(
             @Value("${twitter.api.oauth1.consumer-token}") String consumerToken,
@@ -65,6 +73,7 @@ public class SpacemediaUpdateJobConfiguration {
         return new TwitterService(consumerToken, consumerSecret, accessToken, accessSecret);
     }
 
+    @Lazy
     @Bean
     public InternetArchiveService internetArchiveService() {
         return new InternetArchiveService();

@@ -30,7 +30,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -47,8 +46,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 @Service
 public class ErccService extends AbstractOrgService<ErccMedia> {
 
@@ -57,9 +54,6 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
     private static final String ERCC_MAPS_PATH = "ECHO-Products/Maps#/maps/";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ErccService.class);
-
-    @Autowired
-    private ObjectMapper jackson;
 
     public ErccService(ErccMediaRepository repository) {
         super(repository, "ercc", Arrays.stream(EchoMapType.values()).map(EchoMapType::name).collect(toSet()));

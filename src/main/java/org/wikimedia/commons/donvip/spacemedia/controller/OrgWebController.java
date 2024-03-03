@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -32,6 +33,7 @@ public class OrgWebController<T extends Media> {
     @Autowired
     private List<AbstractOrgService<? extends Media>> orgs;
 
+    @Lazy
     @Autowired
     private SearchService searchService;
 

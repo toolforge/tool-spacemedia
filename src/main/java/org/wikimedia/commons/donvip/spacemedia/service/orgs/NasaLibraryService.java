@@ -90,12 +90,15 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
 
     private final Set<String> nasaCenters;
 
+    @Lazy
     @Autowired
     private NasaAudioRepository audioRepository;
 
+    @Lazy
     @Autowired
     private NasaImageRepository imageRepository;
 
+    @Lazy
     @Autowired
     private NasaVideoRepository videoRepository;
 

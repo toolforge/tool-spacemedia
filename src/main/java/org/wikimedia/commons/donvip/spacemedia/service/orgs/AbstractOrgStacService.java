@@ -25,7 +25,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMedia;
@@ -35,7 +34,6 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -45,9 +43,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedia> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgStacService.class);
-
-    @Autowired
-    protected ObjectMapper jackson;
 
     private final StacMediaRepository stacRepository;
 

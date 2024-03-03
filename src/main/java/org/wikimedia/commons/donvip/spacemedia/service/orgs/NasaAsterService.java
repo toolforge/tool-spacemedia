@@ -43,14 +43,12 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterM
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.InternetArchiveService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
@@ -107,13 +105,6 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
 
     @Value("${nasa.aster.details.url}")
     private String detailsUrl;
-
-    @Autowired
-    private ObjectMapper jackson;
-
-    @Lazy
-    @Autowired
-    private GeometryService geometry;
 
     @Lazy
     @Autowired
