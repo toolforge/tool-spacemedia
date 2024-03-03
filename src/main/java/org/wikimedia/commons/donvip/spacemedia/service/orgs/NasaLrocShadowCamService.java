@@ -12,10 +12,13 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.PostConstruct;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -29,6 +32,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.lroc.NasaLrocMed
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.lroc.NasaLrocMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
+import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 
 @Service
 public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<NasaLrocMedia> {
@@ -45,9 +49,18 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     @Autowired
     private NasaMappingService mappings;
 
+    private Map<String, String> moonKeywords;
+
     @Autowired
     public NasaLrocShadowCamService(NasaLrocMediaRepository repository) {
         super(repository, "nasa.lroc.shadowcam", Set.of("lroc", "shadowcam"));
+    }
+
+    @Override
+    @PostConstruct
+    void init() throws IOException {
+        super.init();
+        moonKeywords = CsvHelper.loadCsvMapping("moon.keywords.csv");
     }
 
     @Override
@@ -112,14 +125,14 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     @Override
     public Set<String> findCategories(NasaLrocMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
+        result.addAll(media.getKeywordStream().map(moonKeywords::get).filter(Objects::nonNull).toList());
         result.addAll(media.getKeywordStream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());
         if (media.getPublicationDate().isAfter(LocalDate.of(2009, 7, 1))) {
             result.add("Photos of the Moon by "
                     + lrocOrShadowcam(media.getId().getRepoId(), "Lunar Reconnaissance Orbiter", "ShadowCam")
-                    + (metadata.getImageDimensions().getAspectRatio() < 0.25 ? " (raw frames)" : ""));
-        }
-        if (media.containsInTitleOrDescriptionOrKeywords("anaglyph")) {
-            result.add("Anaglyphs of the Moon");
+                    + (metadata.getImageDimensions() != null && metadata.getImageDimensions().getAspectRatio() < 0.25
+                            ? " (raw frames)"
+                            : ""));
         }
         return result;
     }

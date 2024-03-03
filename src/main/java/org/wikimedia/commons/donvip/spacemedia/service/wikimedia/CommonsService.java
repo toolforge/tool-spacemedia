@@ -191,6 +191,8 @@ public class CommonsService {
     private static final Pattern KNOWN_LARGE_CATS = Pattern.compile(
             "(\\d{4} births|Births in Philadelphia‎|Categories requiring permanent diffusion to zero|Categories which should only contain photographs|Churches by patron saint|Living people|Of \\(relation\\) \\(flat list\\)|Politicians of the United States by name)|Surnames");
 
+    private static final Set<String> UNWANTED_CATEGORIES = Set.of("One of", "Two of", "Three of", "Four of", "Five of");
+
     /**
      * Minimal delay between successive uploads, in seconds.
      */
@@ -731,6 +733,7 @@ public class CommonsService {
     public Set<String> cleanupCategories(Set<String> categories, Temporal date, boolean needsReview) {
         LocalDateTime start = now();
         LOGGER.info("Cleaning {} categories with depth {}...", categories.size(), catSearchDepth);
+        categories.removeAll(UNWANTED_CATEGORIES);
         followCategoryRedirects(categories);
         Set<String> result = new TreeSet<>();
         Set<String> lowerCategories = categories.stream().map(c -> c.toLowerCase(ENGLISH)).collect(toSet());

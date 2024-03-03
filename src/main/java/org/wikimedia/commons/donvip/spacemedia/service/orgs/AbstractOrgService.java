@@ -1190,12 +1190,12 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected final Optional<Temporal> getCreationDate(T media) {
         return Optional.<Temporal>ofNullable(media.getCreationDateTime())
-                .or(() -> Optional.<Temporal>ofNullable(media.getCreationDate()));
+                .or(() -> ofNullable(media.getCreationDate()));
     }
 
     protected final Optional<Temporal> getUploadDate(T media) {
         return Optional.<Temporal>ofNullable(media.getPublicationDateTime())
-                .or(() -> Optional.<Temporal>ofNullable(media.getPublicationDate()));
+                .or(() -> ofNullable(media.getPublicationDate()));
     }
 
     protected Optional<String> getPermission(T media) {
@@ -1206,7 +1206,7 @@ public abstract class AbstractOrgService<T extends Media>
         StringBuilder sb = new StringBuilder();
         media.getMetadataStream().filter(m -> m != metadata && m.getAssetUrl() != null && m.isIgnored() != Boolean.TRUE)
                 .map(m -> media.getFirstCommonsFileNameOrUploadTitle(m) + '|'
-                        + m.getFileExtension().toUpperCase(Locale.ENGLISH) + " version\n")
+                        + ofNullable(m.getFileExtension()).orElse("TBD").toUpperCase(Locale.ENGLISH) + " version\n")
                 .distinct().forEach(sb::append);
         String result = sb.toString();
         return result.isEmpty() ? Optional.empty() : Optional.of(result.trim());
