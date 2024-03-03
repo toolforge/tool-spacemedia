@@ -2,10 +2,10 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Transient;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Embeddable
 public class ImageDimensions {
@@ -72,5 +72,11 @@ public class ImageDimensions {
     @JsonIgnore
     public boolean isValid() {
         return height != null && width != null && height > 0 && width > 0;
+    }
+
+    @Transient
+    @JsonIgnore
+    public double getAspectRatio() {
+        return (double) width / (double) height;
     }
 }

@@ -58,6 +58,18 @@ class NasaLrocShadowCamServiceTest extends AbstractOrgServiceTest {
         }
     }
 
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = {
+            "Alan Shepard's view of space from Freedom 7 [NASA/JSC/Arizona State University]!;NASA/JSC/Arizona State University",
+            "Full size replica of Mercury Redstone rocket, with Mercury capsule, sitting on the pad at Launch Complex 5/6 at Cape Canaveral. Imagine being strapped in that tiny capsule (the base is only six feet in diameter) awaiting launch [Photo: Mark Robinson].;Photo: Mark Robinson" })
+    void testCredits(String description, String credit) {
+        FileMetadata metadata = new FileMetadata();
+        metadata.setDescription(description);
+        NasaLrocMedia media = new NasaLrocMedia();
+        media.setId(new CompositeMediaId("lroc", "foo"));
+        assertEquals(credit, service.getAuthor(media, metadata));
+    }
+
     @Configuration
     @Import(DefaultOrgTestConfig.class)
     static class TestConfig {

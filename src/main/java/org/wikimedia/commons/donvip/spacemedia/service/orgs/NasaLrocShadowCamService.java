@@ -39,7 +39,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     private static final DateTimeFormatter LROC_DATE_PATTERN = ofPattern("MMMM d, yyyy HH:mm z.", Locale.ENGLISH);
     private static final DateTimeFormatter SHAD_DATE_PATTERN = ofPattern("d MMMM yyyy", Locale.ENGLISH);
 
-    private static final Pattern CREDIT_PATTERN = Pattern.compile(".* \\[(.+)\\]");
+    private static final Pattern CREDIT_PATTERN = Pattern.compile(".* \\[(.+)\\].?");
 
     @Lazy
     @Autowired
@@ -115,7 +115,11 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
         result.addAll(media.getKeywordStream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());
         if (media.getPublicationDate().isAfter(LocalDate.of(2009, 7, 1))) {
             result.add("Photos of the Moon by "
-                    + lrocOrShadowcam(media.getId().getRepoId(), "Lunar Reconnaissance Orbiter", "ShadowCam"));
+                    + lrocOrShadowcam(media.getId().getRepoId(), "Lunar Reconnaissance Orbiter", "ShadowCam")
+                    + (metadata.getImageDimensions().getAspectRatio() < 0.25 ? " (raw frames)" : ""));
+        }
+        if (media.containsInTitleOrDescriptionOrKeywords("anaglyph")) {
+            result.add("Anaglyphs of the Moon");
         }
         return result;
     }

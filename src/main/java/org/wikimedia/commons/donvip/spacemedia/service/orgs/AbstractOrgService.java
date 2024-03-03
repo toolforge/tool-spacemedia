@@ -1375,7 +1375,7 @@ public abstract class AbstractOrgService<T extends Media>
     private Optional<String> findCategoriesFromWords(int len, IntFunction<String[]> words, Affixes prefixes,
             Affixes suffixes) {
         for (int n = 0; n <= len - 2; n++) {
-            String firstWords = strip(String.join(" ", words.apply(n)), ",-");
+            String firstWords = strip(String.join(" ", words.apply(n)), ",-.!?'\"");
             if (prefixes != null && suffixes != null) {
                 for (String prefix : prefixes.values()) {
                     for (String suffix : suffixes.values()) {
