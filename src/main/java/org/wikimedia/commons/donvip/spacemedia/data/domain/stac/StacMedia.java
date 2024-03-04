@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 @Table(indexes = { @Index(columnList = "url") })
 public class StacMedia extends Media implements WithLatLon {
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(nullable = false, unique = true, length = 380)
     private URL url;
 
     private double latitude;
