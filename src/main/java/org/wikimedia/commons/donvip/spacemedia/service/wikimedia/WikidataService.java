@@ -257,7 +257,7 @@ public class WikidataService {
                 WHERE
                 {
                   ?item wdt:P31/wdt:P279* wd:$natureQid;
-                        wdt:$namingProperty ?name FILTER(?name = "$name"@$lang).
+                { ?item wdt:$namingProperty ?name. } UNION { ?item wdt:P1813 ?name. } FILTER(?name = "$name"@$lang).
                   OPTIONAL { ?item wdt:P373 ?commonsCat }.
                   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
                 }

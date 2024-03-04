@@ -51,6 +51,11 @@ public enum WikidataProperty {
     P1705_NATIVE_LABEL(1705),
 
     /**
+     * short name of a place, organisation, person, journal, instrument, etc.
+     */
+    P1813_SHORT_NAME(1813),
+
+    /**
      * method, process or technique used to grow, cook, weave, build, assemble,
      * manufacture the item
      */

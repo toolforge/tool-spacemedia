@@ -83,7 +83,7 @@ class WikidataServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "Q209981,Wide Field Camera 3,Wide Field Camera 3" })
+    @CsvSource({ "Q209981,Wide Field Camera 3,Wide Field Camera 3", "Q506269,Advanced Camera for Surveys,ACS" })
     void testSearchInstrument(String qid, String cat, String name) {
         doWikidataSearchTest(qid, cat, service.searchInstrument(name));
     }
