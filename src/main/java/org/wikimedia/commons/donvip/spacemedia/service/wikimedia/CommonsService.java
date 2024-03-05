@@ -168,7 +168,6 @@ import com.github.scribejava.core.httpclient.multipart.FileByteArrayBodyPartPayl
 import com.github.scribejava.core.model.OAuth1AccessToken;
 import com.github.scribejava.core.oauth.OAuth10aService;
 
-@Lazy
 @Service
 public class CommonsService {
 
