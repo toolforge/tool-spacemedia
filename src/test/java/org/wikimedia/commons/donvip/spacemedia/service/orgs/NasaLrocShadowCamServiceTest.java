@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -22,6 +23,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.lroc.NasaLrocMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.lroc.NasaLrocMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.exception.IgnoreException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 
 @SpringJUnitConfig(NasaLrocShadowCamServiceTest.TestConfig.class)
@@ -60,14 +62,19 @@ class NasaLrocShadowCamServiceTest extends AbstractOrgServiceTest {
 
     @ParameterizedTest
     @CsvSource(delimiter = ';', value = {
-            "Alan Shepard's view of space from Freedom 7 [NASA/JSC/Arizona State University]!;NASA/JSC/Arizona State University",
-            "Full size replica of Mercury Redstone rocket, with Mercury capsule, sitting on the pad at Launch Complex 5/6 at Cape Canaveral. Imagine being strapped in that tiny capsule (the base is only six feet in diameter) awaiting launch [Photo: Mark Robinson].;Photo: Mark Robinson" })
-    void testCredits(String description, String credit) {
+            "Alan Shepard's view of space from Freedom 7 [NASA/JSC/Arizona State University]!;NASA/JSC/Arizona State University;false",
+            "Full size replica of Mercury Redstone rocket, with Mercury capsule, sitting on the pad at Launch Complex 5/6 at Cape Canaveral. Imagine being strapped in that tiny capsule (the base is only six feet in diameter) awaiting launch [Photo: Mark Robinson].;Photo: Mark Robinson;true" })
+    void testCredits(String description, String credit, boolean throwError) {
         FileMetadata metadata = new FileMetadata();
         metadata.setDescription(description);
         NasaLrocMedia media = new NasaLrocMedia();
         media.setId(new CompositeMediaId("lroc", "foo"));
-        assertEquals(credit, service.getAuthor(media, metadata));
+        if (throwError) {
+            assertEquals("Non-NASA picture: Photo: Mark Robinson",
+                    assertThrows(IgnoreException.class, () -> service.getAuthor(media, metadata)).getMessage());
+        } else {
+            assertEquals(credit, service.getAuthor(media, metadata));
+        }
     }
 
     @Configuration

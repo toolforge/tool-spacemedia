@@ -86,6 +86,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
+import org.wikimedia.commons.donvip.spacemedia.exception.IgnoreException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
@@ -866,6 +867,8 @@ public abstract class AbstractOrgService<T extends Media>
                 count += doUpload(media, metadata, checkUnicity, uploaded, isManual);
             } catch (ImageUploadForbiddenException | UploadException | IOException e) {
                 LOGGER.warn("File {} not uploaded: {}", metadata, e.getMessage());
+            } catch (IgnoreException e) {
+                mediaService.ignoreAndSaveMetadata(metadata, e.getMessage(), e);
             }
         }
         return count;

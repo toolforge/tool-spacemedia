@@ -30,6 +30,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.lroc.NasaLrocMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.lroc.NasaLrocMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.exception.IgnoreException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
@@ -97,7 +98,11 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
         if (metadata.getDescription() != null) {
             Matcher m = CREDIT_PATTERN.matcher(metadata.getDescription());
             if (m.matches()) {
-                return m.group(1);
+                String credit = m.group(1);
+                if (!credit.contains("NASA")) {
+                    throw new IgnoreException("Non-NASA picture: " + credit);
+                }
+                return credit;
             }
         }
         return "NASA/" + lrocOrShadowcam(media.getId().getRepoId(), "GSFC", "KARI") + "/Arizona State University";
