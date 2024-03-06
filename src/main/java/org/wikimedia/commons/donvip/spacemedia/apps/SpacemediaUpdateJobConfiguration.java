@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
+import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.InternetArchiveService;
@@ -27,6 +28,12 @@ public class SpacemediaUpdateJobConfiguration {
     @Bean
     public MediaService mediaService() {
         return new MediaService();
+    }
+
+    @Lazy
+    @Bean
+    public CategorizationService categorizationService() {
+        return new CategorizationService();
     }
 
     @Lazy

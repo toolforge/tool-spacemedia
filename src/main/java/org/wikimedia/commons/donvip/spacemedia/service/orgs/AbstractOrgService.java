@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
-import static java.lang.Integer.parseInt;
 import static java.util.Arrays.copyOfRange;
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
@@ -51,8 +50,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -95,6 +92,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenExc
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
 import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
@@ -111,7 +109,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
-import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -147,13 +144,6 @@ public abstract class AbstractOrgService<T extends Media>
 
     private static final Set<String> PD_US = Set.of("PD-US", "PD-NASA", "PD-Hubble", "PD-Webb");
 
-    static final Pattern COPERNICUS_CREDIT = Pattern.compile(
-            ".*Copernicus[ -](?:Sentinel[ -])?dat(?:a|en)(?:/ESA)? [\\(\\[](2\\d{3}(?:[-–/]\\d{2,4})?)[\\)\\]].*",
-            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-
-    private static final Pattern SENTINEL_SAT = Pattern.compile(".*Sentinel[ -]?[1-6].*",
-            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-
     private static final Map<String, String> LICENCES = Map.ofEntries(e("YouTube CC-BY", "Q14947546"),
             e("Cc-by-2.0", "Q19125117"), e("Cc-by-4.0", "Q20007257"), e("Cc-by-sa-2.0", "Q19068220"),
             e("Cc-zero", "Q6938433"),
@@ -178,6 +168,9 @@ public abstract class AbstractOrgService<T extends Media>
     @Lazy
     @Autowired
     protected MediaService mediaService;
+    @Lazy
+    @Autowired
+    protected CategorizationService categorizationService;
     @Lazy
     @Autowired
     protected CommonsService commonsService;
@@ -210,11 +203,6 @@ public abstract class AbstractOrgService<T extends Media>
     @PersistenceContext(unitName = "domain")
     private EntityManager entityManager;
 
-    @SuppressWarnings("unused")
-    private Set<String> ignoredCommonTerms;
-
-    private Set<String> satellitePicturesCategories;
-
     @Value("${courtesy.ok}")
     private Set<String> courtesyOk;
 
@@ -230,8 +218,6 @@ public abstract class AbstractOrgService<T extends Media>
     @Value("${videos.enabled}")
     protected boolean videosEnabled;
 
-    private Map<String, String> categoriesStatements;
-
     private UploadMode uploadMode;
 
     protected AbstractOrgService(MediaRepository<T> repository, String id, Set<String> repoIds) {
@@ -242,9 +228,6 @@ public abstract class AbstractOrgService<T extends Media>
 
     @PostConstruct
     void init() throws IOException {
-        ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/search.ignored.terms.csv"));
-        satellitePicturesCategories = CsvHelper.loadSet(getClass().getResource("/satellite.pictures.categories.txt"));
-        categoriesStatements = CsvHelper.loadCsvMapping("categories.statements.csv");
         uploadMode = UploadMode.valueOf(
                 env.getProperty(id + ".upload", String.class, UploadMode.DISABLED.name())
                     .toUpperCase(Locale.ENGLISH));
@@ -984,15 +967,7 @@ public abstract class AbstractOrgService<T extends Media>
                     .of(Triple.of(ll.getLatitude(), ll.getLongitude(), ll.getPrecision()), null));
         }
         // Categories
-        Set<String> cats = findCategories(media, metadata, false);
-        for (Entry<String, String> e : categoriesStatements.entrySet()) {
-            if (stream(e.getKey().split(";")).anyMatch(cats::contains)) {
-                for (String statement : e.getValue().split(";")) {
-                    String[] kv = statement.split("=");
-                    result.put(kv[0], Pair.of(kv[1], null));
-                }
-            }
-        }
+        categorizationService.findCategoriesStatements(result, findCategories(media, metadata, false));
         return result;
     }
 
@@ -1265,7 +1240,8 @@ public abstract class AbstractOrgService<T extends Media>
         }
         findCategoriesFromTitleAndYear(media.getTitle(), media.getYear().getValue()).forEach(title -> {
             if (isSatellitePicture(media, metadata)) {
-                findCategoryForEarthObservationTargetOrSubject(x -> "Satellite pictures of " + x, title)
+                categorizationService
+                        .findCategoryForEarthObservationTargetOrSubject(x -> "Satellite pictures of " + x, title)
                         .ifPresentOrElse(result::add, () -> result.add(title));
             } else {
                 result.add(title);
@@ -1425,75 +1401,6 @@ public abstract class AbstractOrgService<T extends Media>
         return Optional.empty();
     }
 
-    protected boolean isFromSentinelSatellite(Media media) {
-        return SENTINEL_SAT.matcher(media.getTitle()).matches()
-                || (media.getDescription() != null && SENTINEL_SAT.matcher(media.getDescription()).matches())
-                || (media instanceof WithKeywords mkw
-                        && mkw.getKeywordStream().anyMatch(kw -> SENTINEL_SAT.matcher(kw).matches()));
-    }
-
-    protected void findCategoriesForSentinels(Media media, Set<String> result) {
-        if (isFromSentinelSatellite(media)) {
-            result.add(getCopernicusTemplate(media.getYear().getValue()));
-            if (media.containsInTitleOrDescriptionOrKeywords("fires") || media.containsInTitleOrDescriptionOrKeywords("burn scars")
-                    || media.containsInTitleOrDescriptionOrKeywords("wildfire")
-                    || media.containsInTitleOrDescriptionOrKeywords("forest fire")) {
-                result.add("Photos of wildfires by Sentinel satellites");
-            } else if (media.containsInTitleOrDescriptionOrKeywords("Phytoplankton")
-                    || media.containsInTitleOrDescriptionOrKeywords("algal bloom")) {
-                result.add("Satellite pictures of algal blooms");
-            } else if (media.containsInTitleOrDescriptionOrKeywords("hurricane")) {
-                result.add("Satellite pictures of hurricanes");
-            } else if (media.containsInTitleOrDescriptionOrKeywords("floods") || media.containsInTitleOrDescriptionOrKeywords("flooding")) {
-                result.add("Photos of floods by Sentinel satellites");
-            }
-        }
-        for (String num : new String[] { "1", "2", "3", "4", "5", "5P", "6" }) {
-            findCategoriesForSentinel(media, "Sentinel-" + num, result);
-        }
-    }
-
-    protected void findCategoriesForSentinel(Media media, String sentinel, Set<String> result) {
-        if (media.containsInTitleOrDescriptionOrKeywords(sentinel)) {
-            result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by " + sentinel,
-                    sentinel + " images", true, true, true));
-        }
-    }
-
-    protected Set<String> findCategoriesForEarthObservationImage(Media image, UnaryOperator<String> categorizer,
-            String defaultCat, boolean lookIntoTitle, boolean lookIntoDescription, boolean lookIntoKeywords) {
-        Set<String> result = new TreeSet<>();
-        for (String targetOrSubject : satellitePicturesCategories) {
-            if (image.containsInTitleOrDescriptionOrKeywords(targetOrSubject, lookIntoTitle, lookIntoDescription,
-                    lookIntoKeywords)) {
-                findCategoryForEarthObservationTargetOrSubject(categorizer, targetOrSubject).ifPresent(result::add);
-            }
-        }
-        if (result.isEmpty()) {
-            result.add(defaultCat);
-        }
-        return result;
-    }
-
-    private Optional<String> findCategoryForEarthObservationTargetOrSubject(UnaryOperator<String> categorizer,
-            String targetOrSubject) {
-        String cat = categorizer.apply(targetOrSubject);
-        if (commonsService.existsCategoryPage(cat)) {
-            return Optional.of(cat);
-        } else {
-            String theCat = categorizer.apply("the " + targetOrSubject);
-            if (commonsService.existsCategoryPage(theCat)) {
-                return Optional.of(theCat);
-            } else {
-                String cats = categorizer.apply(targetOrSubject + "s");
-                if (commonsService.existsCategoryPage(cats)) {
-                    return Optional.of(cats);
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
     /**
      * Returns the list of information templates to apply to the given media, before
      * the main one.
@@ -1535,7 +1442,7 @@ public abstract class AbstractOrgService<T extends Media>
         Set<String> result = new LinkedHashSet<>();
         String description = media.getDescription(metadata);
         if (description != null) {
-            ofNullable(getCopernicusTemplate(description)).ifPresent(result::add);
+            ofNullable(CategorizationService.getCopernicusTemplate(description)).ifPresent(result::add);
         }
         return result;
     }
@@ -1552,15 +1459,6 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected boolean addNASAVideoCategory() {
         return true;
-    }
-
-    protected static String getCopernicusTemplate(String text) {
-        Matcher m = COPERNICUS_CREDIT.matcher(text);
-        return m.matches() ? getCopernicusTemplate(parseInt(m.group(1))) : null;
-    }
-
-    protected static String getCopernicusTemplate(int year) {
-        return "Attribution-Copernicus |year=" + year;
     }
 
     protected final String wikiLink(URL url, String text) {

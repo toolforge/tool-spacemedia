@@ -43,6 +43,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -383,8 +384,8 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 Arrays.stream(cats.split(";")).forEach(result::add);
             }
             if (mission.matches("Sentinel-\\d.?")) {
-                result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by " + mission,
-                        mission + " images", true, true, true));
+                result.addAll(categorizationService.findCategoriesForEarthObservationImage(media,
+                        x -> "Photos of " + x + " by " + mission, mission + " images", true, true, true));
             }
         }
         if (media.getPeople() != null) {
@@ -497,7 +498,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         for (String spelling : CC_BY_SA_SPELLINGS) {
             credit = credit.replace(", " + spelling, "").replace("; " + spelling, "").replace(" " + spelling, "").trim();
         }
-        String copernicusTemplate = getCopernicusTemplate(credit);
+        String copernicusTemplate = CategorizationService.getCopernicusTemplate(credit);
         if (copernicusTemplate != null) {
             result.add(copernicusTemplate);
             credit = getCopernicusProcessedBy(credit).orElse("ESA");

@@ -136,8 +136,8 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
     public Set<String> findCategories(NasaModisMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         String whichModis = terraOrAqua(media, () -> "Terra (satellite) MODIS", () -> "Aqua (satellite) MODIS");
-        result.addAll(findCategoriesForEarthObservationImage(media, x -> "Photos of " + x + " by the " + whichModis,
-                "Photos by the " + whichModis, true, false, true));
+        result.addAll(categorizationService.findCategoriesForEarthObservationImage(media,
+                x -> "Photos of " + x + " by the " + whichModis, "Photos by the " + whichModis, true, false, true));
         return result;
     }
 

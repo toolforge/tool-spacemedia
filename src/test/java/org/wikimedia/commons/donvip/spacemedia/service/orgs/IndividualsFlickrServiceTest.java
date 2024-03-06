@@ -34,6 +34,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
+import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
@@ -200,6 +201,11 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
         public IndividualsFlickrService service(FlickrMediaRepository repository,
                 @Value("${individuals.flickr.accounts}") Set<String> flickrAccounts) {
             return new IndividualsFlickrService(repository, flickrAccounts);
+        }
+
+        @Bean
+        public CategorizationService categorizationService() {
+            return new CategorizationService();
         }
     }
 }

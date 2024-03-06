@@ -110,7 +110,7 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     @Override
     public Set<String> findCategories(CopernicusGalleryMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        findCategoriesForSentinels(media, result);
+        categorizationService.findCategoriesForSentinels(media, result);
         return result;
     }
 

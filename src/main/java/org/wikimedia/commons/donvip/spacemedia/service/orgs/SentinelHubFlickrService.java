@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
 
 @Service
 public class SentinelHubFlickrService extends AbstractOrgFlickrService {
@@ -51,15 +52,15 @@ public class SentinelHubFlickrService extends AbstractOrgFlickrService {
         if (includeHidden) {
             result.add("Files from Sentinel Hub Flickr stream");
         }
-        findCategoriesForSentinels(media, result);
+        categorizationService.findCategoriesForSentinels(media, result);
         return result;
     }
 
     @Override
     public Set<String> findLicenceTemplates(FlickrMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
-        if (isFromSentinelSatellite(media)) {
-            result.add(getCopernicusTemplate(media.getYear().getValue()));
+        if (categorizationService.isFromSentinelSatellite(media)) {
+            result.add(CategorizationService.getCopernicusTemplate(media.getYear().getValue()));
         }
         return result;
     }
