@@ -1267,12 +1267,16 @@ public abstract class AbstractOrgService<T extends Media>
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
             if ("gif".equals(metadata.getFileExtension())) {
                 try {
-                    int numImages = ImageUtils.readImage(metadata.getAssetUri(), true, false).numImages();
+                    int numImages = ImageUtils.readImage(metadata.getAssetUri(), true, true).numImages();
+                    LOGGER.info("GIF file with {} image(s): {}", numImages, metadata.getAssetUri());
                     if (numImages > 1) {
                         long megaPixels = numImages * metadata.getImageDimensions().getPixelsNumber();
                         result.add("Animated GIF files"
                                 + (megaPixels > 100_000_000 ? " exceeding the 100 MP limit"
                                         : megaPixels > 50_000_000 ? " between 50 MP and 100 MP" : ""));
+                        if (isNASA(media)) {
+                            result.add("Animations from NASA");
+                        }
                     }
                 } catch (IOException | ImageDecodingException e) {
                     LOGGER.error("Failed to read GIF file: {}", e.getMessage());
