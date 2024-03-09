@@ -862,7 +862,7 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected int doUpload(T media, boolean checkUnicity, Collection<FileMetadata> uploaded, boolean isManual) {
         int count = 0;
-        for (FileMetadata metadata : media.getMetadata()) {
+        for (FileMetadata metadata : media.getMetadataStream().filter(FileMetadata::shouldUpload).toList()) {
             try {
                 count += doUpload(media, metadata, checkUnicity, uploaded, isManual);
             } catch (ImageUploadForbiddenException | UploadException | IOException e) {
