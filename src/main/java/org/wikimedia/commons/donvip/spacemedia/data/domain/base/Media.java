@@ -354,7 +354,8 @@ public class Media implements MediaProjection, MediaDescription {
     @Transient
     @JsonIgnore
     public List<String> getIgnoredReasons() {
-        return getMetadataStream().map(FileMetadata::getIgnoredReason).distinct().toList();
+        return getMetadataStream().map(FileMetadata::getIgnoredReason).filter(Objects::nonNull).distinct().sorted()
+                .toList();
     }
 
     @Override
