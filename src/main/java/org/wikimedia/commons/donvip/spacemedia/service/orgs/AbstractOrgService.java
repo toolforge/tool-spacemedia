@@ -146,7 +146,7 @@ public abstract class AbstractOrgService<T extends Media>
 
     private static final Map<String, String> LICENCES = Map.ofEntries(e("YouTube CC-BY", "Q14947546"),
             e("Cc-by-2.0", "Q19125117"), e("Cc-by-4.0", "Q20007257"), e("Cc-by-sa-2.0", "Q19068220"),
-            e("Cc-zero", "Q6938433"),
+            e("Cc-by-sa-4.0", "Q18199165"), e("Cc-zero", "Q6938433"),
             e("DLR-License", "Q62619894"), e("ESA|", "Q26259495"), e("ESO", "Q20007257"), e("IAU", "Q20007257"),
             e("KOGL", "Q12584618"), e("NOIRLab", "Q20007257"), e("ESA-Hubble", "Q20007257"),
             e("ESA-Webb", "Q20007257"));

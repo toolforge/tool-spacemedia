@@ -8,6 +8,7 @@
 20  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr spacex-flickr
 25  0 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-sirs
 30  0 * * * /bin/sh /data/project/spacemedia/run.sh custom kari
+35  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr inpe-flickr
 # Real ones
 55  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr sentinelhub-flickr
  0  1 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-library
@@ -37,5 +38,6 @@
 15 13 * * * /bin/sh /data/project/spacemedia/run.sh custom ercc
 25 13 * * * /bin/sh /data/project/spacemedia/run.sh flickr noaa-flickr
 30 13 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-lroc-shadowcam
+35 13 * * * /bin/sh /data/project/spacemedia/run.sh custom inpe-dpi
 # Hashes
-35 13 * * * /bin/sh /data/project/spacemedia/run.sh web
+50 13 * * * /bin/sh /data/project/spacemedia/run.sh web

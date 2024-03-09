@@ -58,7 +58,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgFlickrService.class);
     private static final Pattern DELETED_PHOTO = Pattern.compile("Photo \"(\\d+)\" not found \\(invalid ID\\)");
-    private static final Pattern ISO_DATE = Pattern.compile(".*(\\d{4}-\\d{2}-\\d{2}).*", Pattern.DOTALL);
+    private static final Pattern ISO_DATE = Pattern.compile(".*(\\d{4}-(?:0[1-9]|1[0-2])-\\d{2}).*", Pattern.DOTALL);
 
     @Autowired
     protected FlickrMediaRepository flickrRepository;
