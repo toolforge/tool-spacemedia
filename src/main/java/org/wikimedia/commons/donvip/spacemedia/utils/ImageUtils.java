@@ -5,6 +5,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -67,6 +69,27 @@ public class ImageUtils {
      * @throws IOException              if an error occurs during reading.
      */
     static ImageAndMetadata readImage(ImageInputStream stream, boolean readMetadata) throws IOException {
+        return readImage(stream, true, readMetadata, reader -> {
+            try {
+                return new ImageAndMetadata(reader.read(0, reader.getDefaultReadParam()), null, null,
+                        switch (reader.getClass().getSimpleName()) {
+                        case "BMPImageReader" -> "bmp";
+                        case "GIFImageReader" -> "gif";
+                        case "JPEGImageReader" -> "jpg";
+                        case "PNGImageReader" -> "png";
+                        case "SVGImageReader" -> "svg";
+                        case "TIFFImageReader" -> "tiff";
+                        default -> null;
+                        }, reader.getNumImages(false));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
+    private static <T> T readImage(ImageInputStream stream, boolean seekForwardOnly, boolean readMetadata,
+            Function<ImageReader, T> readFunction)
+            throws IOException {
         Iterator<ImageReader> iter = ImageIO.getImageReaders(stream);
         if (!iter.hasNext()) {
             throw new IOException("No image reader found");
@@ -76,18 +99,11 @@ public class ImageUtils {
         if (iter.hasNext()) {
             LOGGER.debug("At least another image reader is available and ignored: {}", iter.next());
         }
-        reader.setInput(stream, true, !readMetadata);
+        reader.setInput(stream, seekForwardOnly, !readMetadata);
         try {
-            return new ImageAndMetadata(reader.read(0, reader.getDefaultReadParam()), null, null,
-                    switch(reader.getClass().getSimpleName()) {
-                    case "BMPImageReader" -> "bmp";
-                    case "GIFImageReader" -> "gif";
-                    case "JPEGImageReader" -> "jpg";
-                    case "PNGImageReader" -> "png";
-                    case "SVGImageReader" -> "svg";
-                    case "TIFFImageReader" -> "tiff";
-                    default -> null;
-                    }, reader.getNumImages(false));
+            return readFunction.apply(reader);
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
         } finally {
             reader.dispose();
             stream.close();
@@ -136,6 +152,27 @@ public class ImageUtils {
                                         .sorted().toList());
             }
         }
+    }
+
+    public static int readNumberOfImages(URI uri, boolean log) throws IOException {
+        if (log) {
+            LOGGER.info("Reading number of images in {}", uri);
+        }
+        try (CloseableHttpClient httpclient = HttpClients.createDefault();
+                CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
+                InputStream in = response.getEntity().getContent()) {
+            return readNumberOfImages(ImageIO.createImageInputStream(in));
+        }
+    }
+
+    private static int readNumberOfImages(ImageInputStream stream) throws IOException {
+        return readImage(stream, false, true, reader -> {
+            try {
+                return reader.getNumImages(true);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
     }
 
     private static ImageAndMetadata readWebp(URI uri, boolean readMetadata)

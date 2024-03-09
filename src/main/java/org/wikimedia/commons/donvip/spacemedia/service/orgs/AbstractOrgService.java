@@ -87,7 +87,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepos
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.exception.IgnoreException;
-import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
@@ -1267,7 +1266,7 @@ public abstract class AbstractOrgService<T extends Media>
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
             if ("gif".equals(metadata.getFileExtension())) {
                 try {
-                    int numImages = ImageUtils.readImage(metadata.getAssetUri(), true, true).numImages();
+                    int numImages = ImageUtils.readNumberOfImages(metadata.getAssetUri(), true);
                     LOGGER.info("GIF file with {} image(s): {}", numImages, metadata.getAssetUri());
                     if (numImages > 1) {
                         long megaPixels = numImages * metadata.getImageDimensions().getPixelsNumber();
@@ -1277,8 +1276,10 @@ public abstract class AbstractOrgService<T extends Media>
                         if (isNASA(media)) {
                             result.add("Animations from NASA");
                         }
+                    } else if (numImages < 1) {
+                        LOGGER.error("Failed to read number of images in GIF file: {}", metadata.getAssetUri());
                     }
-                } catch (IOException | ImageDecodingException e) {
+                } catch (IOException e) {
                     LOGGER.error("Failed to read GIF file: {}", e.getMessage());
                 }
             }
