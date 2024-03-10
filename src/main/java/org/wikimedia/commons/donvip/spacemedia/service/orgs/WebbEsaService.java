@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 /**
@@ -45,6 +46,23 @@ public class WebbEsaService extends AbstractOrgDjangoplicityService {
     public Set<String> findLicenceTemplates(DjangoplicityMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("ESA-Webb|" + media.getCredits());
+        return result;
+    }
+
+    @Override
+    protected SdcStatements getStatements(DjangoplicityMedia media, FileMetadata metadata) {
+        SdcStatements sdc = super.getStatements(media, metadata).creator("Q186447"); // Created by JWST
+        // TODO multiple values for MIRI+NIRCam composite
+        WebbNasaService.switchForInstruments(media, "Q1881516", "Q29598269", null, "Q16153509")
+                .ifPresent(sdc::capturedWith);
+        return sdc.locationOfCreation("Q15725510"); // Created in L2-Earth-Sun
+    }
+
+    @Override
+    public Set<String> findCategories(DjangoplicityMedia media, FileMetadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        WebbNasaService.switchForInstruments(media, "Images by MIRI", "Images by NIRCam",
+                "NIRCam and MIRI composite images", "Spectra by NIRSpec").ifPresent(result::add);
         return result;
     }
 
