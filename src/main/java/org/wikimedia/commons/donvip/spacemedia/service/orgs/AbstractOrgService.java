@@ -638,11 +638,11 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected Set<String> getMastodonAccounts(T uploadedMedia) {
-        return Set.of();
+        return new HashSet<>();
     }
 
     protected Set<String> getTwitterAccounts(T uploadedMedia) {
-        return Set.of();
+        return new HashSet<>();
     }
 
     @Override
