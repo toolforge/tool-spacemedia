@@ -178,7 +178,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
         if (imgCount > 0) {
             mediaFrom.append(String.format("%d new picture%s", imgCount, imgCount > 1 ? "s" : ""));
             if (vidCount > 0) {
-                mediaFrom.append(" and");
+                mediaFrom.append(" and ");
             }
         }
         if (vidCount > 0) {
@@ -191,7 +191,8 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     }
 
     private static Optional<String> getLongestTitle(Collection<? extends Media> uploadedMedia) {
-        return uploadedMedia.stream().map(Media::getTitle)
+        return uploadedMedia.stream().filter(m -> !Objects.equals(m.getIdUsedInOrg(), m.getTitle()))
+                .map(Media::getTitle)
                 .filter(x -> x != null && x.length() > 3 && !x.matches("[a-z0-9]+"))
                 .map(x -> " " + x.replace(" (annotated)", "").replace(" (labeled)", "")).distinct()
                 .sorted(Comparator.comparingInt(String::length).reversed()).findFirst();

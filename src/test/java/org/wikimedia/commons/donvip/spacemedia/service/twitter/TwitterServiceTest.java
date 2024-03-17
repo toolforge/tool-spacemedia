@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsImageRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
@@ -54,6 +55,7 @@ class TwitterServiceTest {
         when(repo.findMaxTimestampBySha1In(any())).thenReturn("20230407000353");
 
         NasaImage image = new NasaImage();
+        image.setId(new CompositeMediaId("foo", "bar"));
         image.setMediaType(NasaMediaType.image);
 
         TweetRequest request = jackson.readValue(
