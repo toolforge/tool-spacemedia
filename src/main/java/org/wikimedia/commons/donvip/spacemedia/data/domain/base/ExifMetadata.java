@@ -95,7 +95,9 @@ public class ExifMetadata {
     @Column(columnDefinition = "TEXT")
     private String iptcCaptionAbstract;
 
+    @Lob
     @JsonProperty("IPTC:CopyrightNotice")
+    @Column(columnDefinition = "TEXT")
     private String iptcCopyrightNotice;
 
     @Lob
