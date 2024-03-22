@@ -310,7 +310,7 @@ public class CommonsPage implements Serializable {
                 + (isRedirect != null ? "isRedirect=" + isRedirect + ", " : "")
                 + (isNew != null ? "isNew=" + isNew + ", " : "") + "random=" + random + ", "
                 + (touched != null ? "touched=" + touched + ", " : "")
-                + (linksUpdated != null ? "linksUpdated=" + linksUpdated + ", " : "") + "latest=" + latest + ", len="
+                + (linksUpdated != null ? "linksUpdated=" + linksUpdated + ", " : "") + ", len="
                 + len + ", " + (contentModel != null ? "contentModel=" + contentModel + ", " : "")
                 + (lang != null ? "lang=" + lang : "") + "]";
     }
