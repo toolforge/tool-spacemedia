@@ -144,7 +144,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
             Pair<Object, Map<String, Object>> statement = statements.get(kv[0]);
             assertNotNull(statement, expectedStatement);
             if (statement.getKey() instanceof ZonedDateTime date) {
-                assertEquals(kv[1] + "Z[UTC]", Objects.toString(statement.getKey()));
+                assertEquals(kv[1] + "Z[UTC]", Objects.toString(date));
             } else {
                 assertEquals(kv[1], Objects.toString(statement.getKey()));
             }

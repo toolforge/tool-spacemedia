@@ -175,6 +175,7 @@ public class FlickrMediaProcessorService {
                 for (FlickrPhotoSet photoSet : media.getPhotosets()) {
                     if (ignoredPhotoAlbums.contains(photoSet.getId())) {
                         result |= ignoreMetadata(fm, "Photoset ignored: " + photoSet.getTitle());
+                        break;
                     }
                 }
             }

@@ -147,6 +147,7 @@ public class MediaService {
             sb.append(media.getTitle().toLowerCase(ENGLISH));
         }
         media.getDescriptions().stream().forEach(x -> sb.append(' ').append(x.toLowerCase(ENGLISH)));
+        media.getAlbumNames().stream().forEach(x -> sb.append(' ').append(x.toLowerCase(ENGLISH)));
         String titleAndDescription = sb.toString().trim();
         if (!titleAndDescription.isEmpty()) {
             titleAndDescription = titleAndDescription.replace("\r\n", " ").replace('\t', ' ').replace('\r', ' ')

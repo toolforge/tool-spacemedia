@@ -4,8 +4,14 @@ import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
+
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -16,13 +22,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Transient;
-
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -137,8 +136,8 @@ public abstract class NasaMedia extends SingleFileMedia implements WithKeywords 
     }
 
     @Override
-    public Optional<String> getAlbumName() {
-        return getAlbums().stream().findFirst();
+    public Set<String> getAlbumNames() {
+        return getAlbums();
     }
 
     @Override

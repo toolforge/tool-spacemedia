@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.esa;
 
 import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -111,6 +112,11 @@ public class EsaMedia extends Media implements WithKeywords {
 
     public void setPhotoSet(String photoSet) {
         this.photoSet = photoSet;
+    }
+
+    @Override
+    public List<String> getAlbumNames() {
+        return photoSet != null ? List.of(photoSet) : List.of();
     }
 
     @Override

@@ -191,8 +191,14 @@ public class Media implements MediaProjection, MediaDescription {
         }
     }
 
-    public Optional<String> getAlbumName() {
-        return Optional.empty();
+    @Transient
+    public Collection<String> getAlbumNames() {
+        return List.of();
+    }
+
+    @Transient
+    public final Optional<String> getAlbumName() {
+        return getAlbumNames().stream().findFirst();
     }
 
     public String getDescription(FileMetadata fileMetadata) {

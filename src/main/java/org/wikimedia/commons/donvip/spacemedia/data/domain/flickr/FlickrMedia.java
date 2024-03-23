@@ -256,8 +256,8 @@ public class FlickrMedia extends SingleFileMedia implements WithLatLon, WithKeyw
     }
 
     @Override
-    public Optional<String> getAlbumName() {
-        return getPhotosets().stream().map(FlickrPhotoSet::getTitle).findFirst();
+    public List<String> getAlbumNames() {
+        return getPhotosets().stream().map(FlickrPhotoSet::getTitle).toList();
     }
 
     @Override
