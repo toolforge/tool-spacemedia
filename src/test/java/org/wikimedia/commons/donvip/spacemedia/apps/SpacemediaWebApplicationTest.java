@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ActiveProfiles({ "test", "web" })
+@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(classes = SpacemediaWebApplication.class)
 class SpacemediaWebApplicationTest {
 
