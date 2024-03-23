@@ -23,6 +23,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.orgs.IndividualsFlickrService;
+import org.wikimedia.commons.donvip.spacemedia.service.orgs.NasaFlickrService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 @SpringJUnitConfig(MediaServiceTest.TestConfig.class)
@@ -61,7 +63,7 @@ class MediaServiceTest {
     }
 
     @Test
-    void testCleanupDescription() {
+    void testCleanupDescriptionPierreMarkuse() {
         FlickrMedia media = new FlickrMedia();
         media.setId(new CompositeMediaId("pierre_markuse", "52840868995"));
         media.setDescription(
@@ -76,12 +78,9 @@ class MediaServiceTest {
 
                         Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a href="https://mastodon.world/@pierre_markuse">Mastodon!</a>
                         """);
-        List<String> stringsToRemove = List.of("Follow me on Twitter:",
-                "<a href=\"https://twitter.com/Pierre_Markuse\" rel=\"nofollow\">twitter.com/Pierre_Markuse</a>",
-                "Do you want to support this collection of satellite images? Any donation, no matter how small, would be appreciated. <a href=\"https://www.paypal.com/paypalme/PierreMarkuse\">PayPal me!</a>",
-                "Follow me on <a href=\"https://twitter.com/Pierre_Markuse\">Twitter!</a> and <a href=\"https://mastodon.world/@pierre_markuse\">Mastodon!</a>");
 
-        MediaService.cleanupDescription(media, stringsToRemove);
+        MediaService.cleanupDescription(media, IndividualsFlickrService.PATTERNS_TO_REMOVE,
+                IndividualsFlickrService.STRINGS_TO_REMOVE);
 
         assertEquals(
                 """
@@ -90,6 +89,43 @@ class MediaServiceTest {
                         Fires in Western Australia (Lat: -15.925, Lng:124.468) - 20 April 2023
 
                         Image is about 16 kilometers wide
+                        """
+                        .trim(),
+                media.getDescription());
+    }
+
+    @Test
+    void testCleanupDescriptionNASA() {
+        FlickrMedia media = new FlickrMedia();
+        media.setId(new CompositeMediaId("nasawebbtelescope", "51329294265"));
+        media.setDescription("""
+                                This new image fresh from the Northrop Grumman cleanroom shows #NASAWebb nearly fully packed up into the same formation it will have for launch. Only a few tests remain before the team transitions into shipment operations.
+
+                More on Webb’s recent progress can be found here: <a href="https://go.nasa.gov/3hX7l2q">go.nasa.gov/3hX7l2q</a>
+
+                Credit: NASA/Chris Gunn
+
+                <a href="https://go.nasa.gov/3kJku0S">NASA Media Use Policy</a>
+
+                <a href="https://go.nasa.gov/3rqWK2W">Follow us on Twitter</a>
+
+                <a href="https://go.nasa.gov/3rtRUSP%e2%80%9d rel=">Like us on Facebook</a>
+
+                <a href="https://go.nasa.gov/3hX7rXQ">Subscribe to our YouTube channel</a>
+
+                <a href="https://go.nasa.gov/3xY33O3">Follow us on Instagram</a>
+                """);
+
+        MediaService.cleanupDescription(media, NasaFlickrService.PATTERNS_TO_REMOVE,
+                NasaFlickrService.STRINGS_TO_REMOVE);
+
+        assertEquals(
+                """
+                        This new image fresh from the Northrop Grumman cleanroom shows #NASAWebb nearly fully packed up into the same formation it will have for launch. Only a few tests remain before the team transitions into shipment operations.
+
+                        More on Webb’s recent progress can be found here: <a href="https://go.nasa.gov/3hX7l2q">go.nasa.gov/3hX7l2q</a>
+
+                        Credit: NASA/Chris Gunn
                         """
                         .trim(),
                 media.getDescription());

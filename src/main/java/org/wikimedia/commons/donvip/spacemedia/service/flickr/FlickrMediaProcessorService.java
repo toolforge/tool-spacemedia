@@ -17,6 +17,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
@@ -85,7 +86,8 @@ public class FlickrMediaProcessorService {
 
     @Transactional
     public Pair<FlickrMedia, Integer> processFlickrMedia(FlickrMedia media, String flickrAccount,
-            Supplier<Collection<String>> stringsToRemove, BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
+            Supplier<Collection<Pattern>> patternsToRemove, Supplier<Collection<String>> stringsToRemove,
+            BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<FileMetadata>, Integer>> uploader,
             UrlResolver<FlickrMedia> urlResolver, boolean checkBlocklist, UnaryOperator<FlickrMedia> saver,
             List<IgnoreCriteria> ignoreCriterias) throws IOException {
@@ -151,7 +153,9 @@ public class FlickrMediaProcessorService {
         }
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb, saver);
         savePhotoSets = false;
-        save = mediaService.updateMedia(media, stringsToRemove.get(), false, urlResolver, checkBlocklist).getResult();
+        save = mediaService
+                .updateMedia(media, patternsToRemove.get(), stringsToRemove.get(), false, urlResolver, checkBlocklist)
+                .getResult();
         int uploadCount = 0;
         if (shouldUploadAuto.test(media, false) && (videosEnabled || !media.isVideo())) {
             Triple<FlickrMedia, Collection<FileMetadata>, Integer> upload = uploader.apply(media);

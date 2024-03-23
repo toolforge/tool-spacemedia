@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
@@ -105,17 +106,19 @@ public class MediaService {
         photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.photographers.csv"));
     }
 
-    public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
-            boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist) throws IOException {
-        return updateMedia(media, stringsToRemove, forceUpdate, urlResolver, checkBlocklist, true, false, null);
+    public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<Pattern> patternsToRemove,
+            Iterable<String> stringsToRemove, boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist)
+            throws IOException {
+        return updateMedia(media, patternsToRemove, stringsToRemove, forceUpdate, urlResolver, checkBlocklist, true,
+                false, null);
     }
 
-    public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<String> stringsToRemove,
-            boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist, boolean includeByPerceptualHash,
-            boolean ignoreExifMetadata, Path localPath) throws IOException {
+    public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<Pattern> patternsToRemove,
+            Iterable<String> stringsToRemove, boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist,
+            boolean includeByPerceptualHash, boolean ignoreExifMetadata, Path localPath) throws IOException {
         boolean result = false;
         LOGGER.trace("updateMedia - cleanupDescription - {}", media);
-        if (cleanupDescription(media, stringsToRemove)) {
+        if (cleanupDescription(media, patternsToRemove, stringsToRemove)) {
             LOGGER.info("Description has been cleaned up for {}", media);
             result = true;
         }
@@ -384,12 +387,18 @@ public class MediaService {
         return true;
     }
 
-    public static boolean cleanupDescription(Media media, Iterable<String> stringsToRemove) {
+    public static boolean cleanupDescription(Media media, Iterable<Pattern> patternsToRemove,
+            Iterable<String> stringsToRemove) {
         boolean result = false;
         for (MediaDescription md : media.getDescriptionObjects()) {
             String description = md.getDescription();
             if (isNotBlank(description)) {
                 description = unescapeXml(description);
+                if (patternsToRemove != null) {
+                    for (Pattern toRemove : patternsToRemove) {
+                        description = toRemove.matcher(description).replaceAll("").trim();
+                    }
+                }
                 if (stringsToRemove != null) {
                     for (String toRemove : stringsToRemove) {
                         if (description.contains(toRemove)) {

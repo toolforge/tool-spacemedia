@@ -588,6 +588,11 @@ public abstract class AbstractOrgService<T extends Media>
         return List.of();
     }
 
+    protected Collection<Pattern> getPatternsToRemove(T media) {
+        // To be overriden if special strings have to be removed from description
+        return List.of();
+    }
+
     protected final void postSocialMedia(Collection<? extends T> uploadedMedia, Collection<FileMetadata> uploadedMetadata) {
         if (!uploadedMedia.isEmpty()) {
             LOGGER.info("Uploaded media: {} ({})", uploadedMedia.size(),
@@ -1512,7 +1517,7 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
-        MediaUpdateResult ur = mediaService.updateMedia(media, getStringsToRemove(media),
+        MediaUpdateResult ur = mediaService.updateMedia(media, getPatternsToRemove(media), getStringsToRemove(media),
                 forceUpdate, getUrlResolver(), checkBlocklist(), includeByPerceptualHash(), ignoreExifMetadata(), null);
         boolean result = ur.getResult();
         if (!media.isIgnored() && media.hasMetadata()) {

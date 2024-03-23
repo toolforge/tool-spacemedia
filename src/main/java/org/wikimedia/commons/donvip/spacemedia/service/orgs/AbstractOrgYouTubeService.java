@@ -195,8 +195,10 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
             save = true;
         }
         Path path = !video.getUniqueMetadata().hasSha1() ? downloadVideo(video) : null;
-        if (mediaService.updateMedia(video, getStringsToRemove(video), false, getUrlResolver(), checkBlocklist(),
-                includeByPerceptualHash(), ignoreExifMetadata(), path).getResult()) {
+        if (mediaService
+                .updateMedia(video, getPatternsToRemove(video), getStringsToRemove(video), false, getUrlResolver(),
+                        checkBlocklist(), includeByPerceptualHash(), ignoreExifMetadata(), path)
+                .getResult()) {
             save = true;
         }
         if (path != null) {
