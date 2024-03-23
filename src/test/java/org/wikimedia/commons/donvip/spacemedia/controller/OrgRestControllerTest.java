@@ -18,11 +18,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.wikimedia.commons.donvip.spacemedia.controller.OrgRestControllerTest.TestOrgRestController;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AsyncOrgUpdaterService;
 
+@Testcontainers(disabledWithoutDocker = true)
 @WebMvcTest(controllers = TestOrgRestController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
 @ContextConfiguration(classes = OrgRestControllerTest.Config.class)

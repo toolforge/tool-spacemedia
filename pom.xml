@@ -364,6 +364,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.wiremock</groupId>
 			<artifactId>wiremock</artifactId>
 			<version>3.4.2</version>
@@ -386,7 +391,7 @@
 		<repository>
 			<id>geosolutions</id>
 			<name>GeoSolutions Repository</name>
-			<url>http://maven.geo-solutions.it</url>
+			<url>https://maven.geo-solutions.it</url>
 		</repository>
 		<repository>
 			<id>jcenter</id>
