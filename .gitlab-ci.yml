@@ -1,74 +1,62 @@
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 image: docker-registry.wikimedia.org/releng/maven-java17:latest
-
 variables:
-  JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+  JAVA_HOME: "/usr/lib/jvm/java-17-openjdk-amd64"
   MAVEN_CLI_OPTS: "--batch-mode --no-transfer-progress -Dstyle.color=always"
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
-
 cache:
   paths:
-    - .m2/repository/
-    - target/
-
+  - ".m2/repository/"
+  - target/
 build:
   stage: build
   script:
-    - sed -i 's#/data/project/spacemedia/logs/#target/#g' src/main/resources/logback-spring-toolforge.xml
-    - export PATH=$PATH:.
-    - >
-      ./mvnw $MAVEN_CLI_OPTS -Pweb -Pjobs package
-      -Dspring.profiles.active=toolforge
-      -Ddomain.datasource.url=jdbc:mariadb://tools.db.svc.wikimedia.cloud:3306/${user}__spacemedia
-      -Ddomain.datasource.username=$user
-      -Ddomain.datasource.password=$password
-      -Dcommons.datasource.url=jdbc:mariadb://commonswiki.analytics.db.svc.wikimedia.cloud:3306/commonswiki_p
-      -Dcommons.datasource.username=$user
-      -Dcommons.datasource.password=$password
-      -Dhashes.datasource.url=jdbc:mariadb://ch76yv6gnf5.svc.trove.eqiad1.wikimedia.cloud:3306/hash_associations
-      -Dhashes.datasource.username=$hashes_datasource_username
-      -Dhashes.datasource.password=$hashes_datasource_password
-      -Dflickr.api.key=$flickr_api_key
-      -Dflickr.secret=$flickr_secret
-      -Dcommons.api.password=$commons_api_password
-      -Dcommons.api.oauth1.consumer-token=$commons_api_oauth1_consumer_token
-      -Dcommons.api.oauth1.consumer-secret=$commons_api_oauth1_consumer_secret
-      -Dcommons.api.oauth1.access-token=$commons_api_oauth1_access_token
-      -Dcommons.api.oauth1.access-secret=$commons_api_oauth1_access_secret
-      -Ddvids.api.key=$dvids_api_key
-      -Dyoutube.api.key=$youtube_api_key
-      -Dgoogle.translate.project=$google_translate_project
-      -Dgoogle.translate.privateKeyId=$google_translate_privateKeyId
-      -Dgoogle.translate.privateKey="$translatePrivateKey"
-      -Dgoogle.translate.clientEmail=$google_translate_clientEmail
-      -Dgoogle.translate.clientId=$google_translate_clientId
-      -Dtwitter.api.oauth1.consumer-token=$twitter_api_oauth1_consumer_token
-      -Dtwitter.api.oauth1.consumer-secret=$twitter_api_oauth1_consumer_secret
-      -Dtwitter.api.oauth1.access-token=$twitter_api_oauth1_access_token
-      -Dtwitter.api.oauth1.access-secret=$twitter_api_oauth1_access_secret
-      -Dmastodon.api.oauth2.access-token=$mastodon_api_oauth2_access_token
-      -Dmastodon.api.oauth2.client-id=$mastodon_api_oauth2_client_id
-      -Dmastodon.api.oauth2.client-secret=$mastodon_api_oauth2_client_secret
-      -Dbox.api.oauth2.client-id=$box_api_oauth2_client_id
-      -Dbox.api.oauth2.client-secret=$box_api_oauth2_client_secret
-      -Dbox.api.user-email=$box_api_user_email
-      -Dbox.api.user-password=$box_api_user_password
-      -Dspring.security.oauth2.client.registration.wikimedia.client-secret=$spring_security_oauth2_client_registration_wikimedia_client_secret
+  - sed -i 's#/data/project/spacemedia/logs/#target/#g' src/main/resources/logback-spring-toolforge.xml
+  - export PATH=$PATH:.
+  - './mvnw $MAVEN_CLI_OPTS -Pweb -Pjobs package -Dspring.profiles.active=toolforge
+    -Ddomain.datasource.url=jdbc:mariadb://tools.db.svc.wikimedia.cloud:3306/${user}__spacemedia
+    -Ddomain.datasource.username=$user -Ddomain.datasource.password=$password -Dcommons.datasource.url=jdbc:mariadb://commonswiki.analytics.db.svc.wikimedia.cloud:3306/commonswiki_p
+    -Dcommons.datasource.username=$user -Dcommons.datasource.password=$password -Dhashes.datasource.url=jdbc:mariadb://ch76yv6gnf5.svc.trove.eqiad1.wikimedia.cloud:3306/hash_associations
+    -Dhashes.datasource.username=$hashes_datasource_username -Dhashes.datasource.password=$hashes_datasource_password
+    -Dflickr.api.key=$flickr_api_key -Dflickr.secret=$flickr_secret -Dcommons.api.password=$commons_api_password
+    -Dcommons.api.oauth1.consumer-token=$commons_api_oauth1_consumer_token -Dcommons.api.oauth1.consumer-secret=$commons_api_oauth1_consumer_secret
+    -Dcommons.api.oauth1.access-token=$commons_api_oauth1_access_token -Dcommons.api.oauth1.access-secret=$commons_api_oauth1_access_secret
+    -Ddvids.api.key=$dvids_api_key -Dyoutube.api.key=$youtube_api_key -Dgoogle.translate.project=$google_translate_project
+    -Dgoogle.translate.privateKeyId=$google_translate_privateKeyId -Dgoogle.translate.privateKey="$translatePrivateKey"
+    -Dgoogle.translate.clientEmail=$google_translate_clientEmail -Dgoogle.translate.clientId=$google_translate_clientId
+    -Dtwitter.api.oauth1.consumer-token=$twitter_api_oauth1_consumer_token -Dtwitter.api.oauth1.consumer-secret=$twitter_api_oauth1_consumer_secret
+    -Dtwitter.api.oauth1.access-token=$twitter_api_oauth1_access_token -Dtwitter.api.oauth1.access-secret=$twitter_api_oauth1_access_secret
+    -Dmastodon.api.oauth2.access-token=$mastodon_api_oauth2_access_token -Dmastodon.api.oauth2.client-id=$mastodon_api_oauth2_client_id
+    -Dmastodon.api.oauth2.client-secret=$mastodon_api_oauth2_client_secret -Dbox.api.oauth2.client-id=$box_api_oauth2_client_id
+    -Dbox.api.oauth2.client-secret=$box_api_oauth2_client_secret -Dbox.api.user-email=$box_api_user_email
+    -Dbox.api.user-password=$box_api_user_password -Dspring.security.oauth2.client.registration.wikimedia.client-secret=$spring_security_oauth2_client_registration_wikimedia_client_secret
+
+    '
   artifacts:
     public: false
-    # access: 'developer' # requires gitlab 16.10
     when: always
     paths:
-      - target/spacemedia.log
-      - target/surefire-reports/*.txt
-      - target/surefire-reports/*.xml
+    - target/spacemedia.log
+    - target/surefire-reports/*.txt
+    - target/surefire-reports/*.xml
     reports:
       junit: target/surefire-reports/*.xml
-
 deploy:
   stage: deploy
   script:
-    - ./mvnw $MAVEN_CLI_OPTS deploy
+  - "./mvnw $MAVEN_CLI_OPTS deploy"
   only:
-    - master
-    - develop*
-
+  - master
+  - develop*
+stages:
+- test
+sast:
+  stage: test
+include:
+- template: Security/SAST.gitlab-ci.yml
