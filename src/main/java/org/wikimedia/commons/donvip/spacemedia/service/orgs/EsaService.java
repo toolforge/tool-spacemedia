@@ -140,6 +140,9 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         Element details = element.getElementById("modal__tab-content--details");
         image.setDescription(details.getElementsByClass("modal__tab-description").get(0).getElementsByTag("p").stream()
                 .map(Element::text).collect(Collectors.joining("<br>")));
+        Element metaLicence = element.getElementsByClass("modal__meta_licence").get(0);
+        image.setCredits(metaLicence.child(0).text().replace("CREDIT ", ""));
+        image.setLicence(metaLicence.child(1).text().replace("LICENCE ", ""));
         for (Element li : element.getElementsByClass("modal__meta").get(0).children()) {
             if (li.children().size() == 1 && li.child(0).children().size() > 1) {
                 // Weird HTML code for https://www.esa.int/ESA_Multimedia/Images/2015/12/MTG_combined_antenna
@@ -149,8 +152,6 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 String title = li.child(0).child(0).attr("title").toLowerCase(Locale.ENGLISH);
                 String label = li.child(1).text().trim();
                 switch (title) {
-                case "copyright":
-                    image.setCredits(label); break;
                 case "action":
                     image.setAction(label); break;
                 case "activity":
@@ -180,12 +181,14 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         }
     }
 
-    private static boolean isCopyrightOk(EsaMedia image) {
+    static boolean isCopyrightOk(EsaMedia image) {
         if (image.getCredits() == null)
             return false;
         String copyrightUppercase = image.getCredits().toUpperCase(Locale.ENGLISH);
         String descriptionUppercase = image.getDescription().toUpperCase(Locale.ENGLISH);
-        return (copyrightUppercase.contains("BY-SA") || copyrightUppercase.contains("COPERNICUS SENTINEL")
+        String licenceUppercase = Optional.ofNullable(image.getLicence()).orElse("").toUpperCase(Locale.ENGLISH);
+        return licenceUppercase.contains("BY-SA") || (copyrightUppercase.contains("BY-SA")
+                || copyrightUppercase.contains("COPERNICUS SENTINEL")
                 || (copyrightUppercase.contains("COPERNICUS DATA") && descriptionUppercase.contains(" SENTINEL")))
                 || ((copyrightUppercase.equals("ESA") || copyrightUppercase.equals("SEE BELOW"))
                         && (descriptionUppercase.contains("BY-SA") || (image.getMission() != null
@@ -241,42 +244,46 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         media.setUrl(url);
         try {
             Document html = getWithJsoup(url.toExternalForm(), 10_000, maxTries);
-            List<URL> files = new ArrayList<>();
-            Optional<URL> lowRes = Optional.empty();
-            for (Element element : html.getElementsByClass("dropdown__item")) {
-                String text = element.text().toUpperCase(Locale.ENGLISH);
-                if (text.startsWith("HI-RES") || text.startsWith("SOURCE")) {
-                    getImageUrl(element.attr("href"), url).ifPresent(files::add);
-                } else {
-                    lowRes = getImageUrl(element.attr("href"), url);
-                }
-            }
-            if (lowRes.isPresent()) {
-                if (files.isEmpty()) {
-                    // No hi-res for some missions (Gaia, Visual Monitoring Camera, OSIRIS...)
-                    files.add(lowRes.get());
-                }
-                if (media.getThumbnailUrl() == null) {
-                    media.setThumbnailUrl(lowRes.get());
-                }
-            }
-            int size = files.size();
-            if (size == 0) {
-                problem(media.getUrl(), "Image without any file");
-            }
-            for (URL file : files) {
-                addMetadata(media, file, null);
-            }
-            if (size > 1) {
-                checkAssetUrlCorrectness(media);
-            }
-            processHeader(media, html.getElementsByClass("modal__header").get(0));
-            processShare(media, html.getElementsByClass("modal__share").get(0));
-            processExtra(media, html.getElementsByClass("modal__extra").get(0));
+            fillMediaWithHtml(html, media, url);
         } catch (IOException | IllegalStateException e) {
             LOGGER.error(url.toExternalForm(), e);
         }
         return media;
+    }
+
+    void fillMediaWithHtml(Document html, EsaMedia media, URL url) {
+        List<URL> files = new ArrayList<>();
+        Optional<URL> lowRes = Optional.empty();
+        for (Element element : html.getElementsByClass("dropdown__item")) {
+            String text = element.text().toUpperCase(Locale.ENGLISH);
+            if (text.startsWith("HI-RES") || text.startsWith("SOURCE")) {
+                getImageUrl(element.attr("href"), url).ifPresent(files::add);
+            } else {
+                lowRes = getImageUrl(element.attr("href"), url);
+            }
+        }
+        if (lowRes.isPresent()) {
+            if (files.isEmpty()) {
+                // No hi-res for some missions (Gaia, Visual Monitoring Camera, OSIRIS...)
+                files.add(lowRes.get());
+            }
+            if (media.getThumbnailUrl() == null) {
+                media.setThumbnailUrl(lowRes.get());
+            }
+        }
+        int size = files.size();
+        if (size == 0) {
+            problem(media.getUrl(), "Image without any file");
+        }
+        for (URL file : files) {
+            addMetadata(media, file, null);
+        }
+        if (size > 1) {
+            checkAssetUrlCorrectness(media);
+        }
+        processHeader(media, html.getElementsByClass("modal__header").get(0));
+        processShare(media, html.getElementsByClass("modal__share").get(0));
+        processExtra(media, html.getElementsByClass("modal__extra").get(0));
     }
 
     private void checkAssetUrlCorrectness(EsaMedia media) {

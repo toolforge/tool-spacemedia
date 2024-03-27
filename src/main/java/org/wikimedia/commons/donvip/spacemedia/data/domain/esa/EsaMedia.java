@@ -39,6 +39,8 @@ public class EsaMedia extends Media implements WithKeywords {
     private Set<String> keywords = new HashSet<>();
     @Column(length = 70)
     private String photoSet;
+    @Column(length = 100, nullable = true)
+    private String licence;
 
     public URL getUrl() {
         return url;
@@ -114,6 +116,14 @@ public class EsaMedia extends Media implements WithKeywords {
         this.photoSet = photoSet;
     }
 
+    public String getLicence() {
+        return licence;
+    }
+
+    public void setLicence(String licence) {
+        this.licence = licence;
+    }
+
     @Override
     public List<String> getAlbumNames() {
         return photoSet != null ? List.of(photoSet) : List.of();
@@ -145,6 +155,7 @@ public class EsaMedia extends Media implements WithKeywords {
         this.mission = mediaFromApi.mission;
         this.people = mediaFromApi.people;
         this.action = mediaFromApi.action;
+        this.licence = mediaFromApi.licence;
         return this;
     }
 }
