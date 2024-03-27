@@ -207,8 +207,8 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 return Triple.of(Optional.empty(), emptyList(), 0);
             }
             if (!isCopyrightOk(media)) {
-                problem(media.getUrl(), "Invalid copyright: " + media.getCredits());
-                return Triple.of(Optional.empty(), emptyList(), 0);
+                mediaService.ignoreMedia(media, "Invalid copyright: " + media.getCredits());
+                return Triple.of(Optional.of(saveMedia(media)), emptyList(), 0);
             }
             save = true;
         }
