@@ -15,6 +15,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 @Entity
@@ -25,9 +26,11 @@ public class EsaMedia extends Media implements WithKeywords {
     private URL url;
     @Column(length = 64)
     private String activity;
-    @Column(length = 160)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String mission;
-    @Column(length = 70)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String people;
     @Column(length = 48)
     private String action;
@@ -39,7 +42,8 @@ public class EsaMedia extends Media implements WithKeywords {
     private Set<String> keywords = new HashSet<>();
     @Column(length = 70)
     private String photoSet;
-    @Column(length = 100, nullable = true)
+    @Lob
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String licence;
 
     public URL getUrl() {
