@@ -137,7 +137,8 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
 
     @Override
     protected boolean isSatellitePicture(FlickrMedia media, FileMetadata metadata) {
-        return Set.of("pierre_markuse", "harrystrangerphotography", "194849271@N04").contains(media.getPathAlias());
+        return Set.of("pierre_markuse", "harrystrangerphotography", "194849271@N04").contains(media.getPathAlias())
+                || super.isSatellitePicture(media, metadata);
     }
 
     @Override

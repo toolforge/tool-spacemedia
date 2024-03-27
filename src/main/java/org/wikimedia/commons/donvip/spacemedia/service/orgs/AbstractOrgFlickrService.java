@@ -211,11 +211,6 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         return newURL(getUserPhotosUrl(media).toExternalForm() + '/' + media.getId().getMediaId());
     }
 
-    @Override
-    protected boolean isSatellitePicture(FlickrMedia media, FileMetadata metadata) {
-        return super.isSatellitePicture(media, metadata) || media.getKeywords().contains("satelliteimagery");
-    }
-
     protected boolean includeAllLicences() {
         return false;
     }

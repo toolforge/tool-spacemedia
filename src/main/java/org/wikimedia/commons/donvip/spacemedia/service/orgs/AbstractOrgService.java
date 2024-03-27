@@ -153,6 +153,11 @@ public abstract class AbstractOrgService<T extends Media>
 
     private static final List<String> COURTESY_SPELLINGS = List.of("courtesy", "courtsey", "contributed photo");
 
+    private static final Set<String> MARS_KEYWORDS = Set.of("mars", "martian", "curiosity", "perseverance");
+
+    private static final Set<String> SATELLITE_KEYWORDS = Set.of("satelliteimagery", "landsat", "modis", "aster",
+            "sentinel1", "sentinel2", "sentinel3");
+
     protected final MediaRepository<T> repository;
 
     private final String id;
@@ -1208,8 +1213,12 @@ public abstract class AbstractOrgService<T extends Media>
         return Optional.empty();
     }
 
+    protected boolean isMarsPicture(T media, FileMetadata metadata) {
+        return media instanceof WithKeywords kw && kw.containsKeywords(MARS_KEYWORDS);
+    }
+
     protected boolean isSatellitePicture(T media, FileMetadata metadata) {
-        return false;
+        return media instanceof WithKeywords kw && kw.containsKeywords(SATELLITE_KEYWORDS);
     }
 
     /**
@@ -1234,9 +1243,7 @@ public abstract class AbstractOrgService<T extends Media>
      */
     public Set<String> findCategories(T media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = new TreeSet<>();
-        if (media.containsInTitleOrDescriptionOrKeywords("360 Panorama")) {
-            result.add("360° panoramas");
-        } else if (media.containsInTitleOrDescriptionOrKeywords("map")) {
+        if (media.containsInTitleOrDescriptionOrKeywords("map")) {
             if (media.containsInTitleOrDescriptionOrKeywords("Land Surface Temperature")) {
                 result.add("Land surface temperature maps");
             } else if (media.containsInTitleOrDescriptionOrKeywords("Sea Surface Temperature")) {
@@ -1441,7 +1448,17 @@ public abstract class AbstractOrgService<T extends Media>
      * @return the list of information templates to apply to {@code media}
      */
     public Set<String> findAfterInformationTemplates(T media, FileMetadata metadata) {
-        return new LinkedHashSet<>();
+        Set<String> result = new LinkedHashSet<>();
+        if (media.containsInTitleOrDescriptionOrKeywords("360 Panorama")) {
+            StringBuilder sb = new StringBuilder("Pano360");
+            getPano360Category(media, metadata).ifPresent(s -> sb.append("|cat=[[Category:").append(s).append("]]"));
+            result.add(sb.toString());
+        }
+        return result;
+    }
+
+    protected Optional<String> getPano360Category(T media, FileMetadata metadata) {
+        return isMarsPicture(media, metadata) ? Optional.of("360° panoramas of Mars") : Optional.empty();
     }
 
     /**
