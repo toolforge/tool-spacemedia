@@ -145,7 +145,8 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
                     LOGGER.error("Couldn't find by its SHA1 a file we've just uploaded: {}", metadata.getSha1());
                 }
             } catch (IOException | RuntimeException | URISyntaxException e) {
-                LOGGER.error("Unable to retrieve JPEG from Commons or upload it to Twitter: {}", e.getMessage(), e);
+                LOGGER.error("Unable to retrieve JPEG from Commons or upload it to Twitter: {}", e.getMessage());
+                LOGGER.debug("Unable to retrieve JPEG from Commons or upload it to Twitter: {}", e.getMessage(), e);
             }
         }
         // Don't return empty media object as it causes bad request in v2/tweet endpoint

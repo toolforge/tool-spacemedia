@@ -1204,7 +1204,8 @@ public class CommonsService {
                 try {
                     socialMedia.postStatus(status);
                 } catch (IOException e) {
-                    LOGGER.error("Failed to post status", e);
+                    LOGGER.error("Failed to post status: {}", e.getMessage());
+                    LOGGER.debug("Failed to post status: {}", e.getMessage(), e);
                 }
             });
         }

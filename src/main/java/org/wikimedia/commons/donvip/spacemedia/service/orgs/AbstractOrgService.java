@@ -610,7 +610,8 @@ public abstract class AbstractOrgService<T extends Media>
                     }
                     socialMedia.postStatus(uploadedMedia, uploadedMetadata, getEmojis(uploadedMedia), accounts);
                 } catch (IOException e) {
-                    LOGGER.error("Failed to post status", e);
+                    LOGGER.error("Failed to post status: {}", e.getMessage());
+                    LOGGER.debug("Failed to post status: {}", e.getMessage(), e);
                 }
             });
         }
