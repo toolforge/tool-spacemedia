@@ -18,6 +18,9 @@ stages:
 include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - project: "repos/ci-tools/sonarqube"
+    ref: main # use any branch, tag, or commit hash here
+    file: "templates/maven-sonar-ci.yml"
 
 build:
   stage: build
