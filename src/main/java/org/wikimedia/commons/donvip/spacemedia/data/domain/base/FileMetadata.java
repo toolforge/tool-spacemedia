@@ -81,7 +81,9 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JsonProperty("readable_image")
     private Boolean readableImage;
 
-    @Column(nullable = false, length = 380)
+    // 420 for
+    // https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2023/06/paris_air_show_2023_-_esa_astronaut_samantha_cristoforetti_and_teodoro_valente_president_of_asi_visit_esa_s_exhibition_with_esa_director_general_josef_aschbacher2/24936817-1-eng-GB/Paris_Air_Show_2023_-_ESA_astronaut_Samantha_Cristoforetti_and_Teodoro_Valente_President_of_ASI_visit_ESA_s_exhibition_with_ESA_Director_General_Josef_Aschbacher.jpg
+    @Column(nullable = false, length = 420)
     @JsonProperty("asset_url")
     private URL assetUrl;
 
