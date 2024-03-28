@@ -22,9 +22,13 @@ import jakarta.persistence.Table;
 @Table(indexes = { @Index(columnList = "url") })
 public class EsaMedia extends Media implements WithKeywords {
 
-    @Column(nullable = false, unique = true, length = 200)
+    // 220 for
+    // https://www.esa.int/ESA_Multimedia/Images/2023/06/Paris_Air_Show_2023_-_ESA_astronaut_Samantha_Cristoforetti_and_Teodoro_Valente_President_of_ASI_visit_ESA_s_exhibition_with_ESA_Director_General_Josef_Aschbacher2
+    @Column(nullable = false, unique = true, length = 220)
     private URL url;
-    @Column(length = 64)
+    // 80 for Navigation Observing the Earth Telecommunications & Integrated
+    // Applications
+    @Column(length = 80)
     private String activity;
     @Lob
     @Column(columnDefinition = "TEXT")
@@ -40,7 +44,9 @@ public class EsaMedia extends Media implements WithKeywords {
     private Set<String> locations = new HashSet<>();
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
-    @Column(length = 70)
+    // 90 for Human spaceflight and robotic explorations image of the week
+    // Technology image of the week
+    @Column(length = 90)
     private String photoSet;
     @Lob
     @Column(columnDefinition = "TEXT", nullable = true)
