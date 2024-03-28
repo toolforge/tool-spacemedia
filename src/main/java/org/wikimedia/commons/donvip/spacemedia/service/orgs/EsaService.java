@@ -191,17 +191,11 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         if (image.getCredits() == null)
             return false;
         String copyrightUppercase = image.getCredits().toUpperCase(Locale.ENGLISH);
-        String descriptionUppercase = image.getDescription().toUpperCase(Locale.ENGLISH);
         String licenceUppercase = Optional.ofNullable(image.getLicence()).orElse("").toUpperCase(Locale.ENGLISH);
         return !licenceUppercase.contains("PERMISSION MAY BE REQUIRED")
                 && ((licenceUppercase.contains("BY-SA") || licenceUppercase.contains("PUBLICDOMAIN")
                         || licenceUppercase.contains("PUBLIC DOMAIN"))
-                        || (copyrightUppercase.contains("BY-SA")
-                || copyrightUppercase.contains("COPERNICUS SENTINEL")
-                || (copyrightUppercase.contains("COPERNICUS DATA") && descriptionUppercase.contains(" SENTINEL")))
-                || ((copyrightUppercase.equals("ESA") || copyrightUppercase.equals("SEE BELOW"))
-                        && (descriptionUppercase.contains("BY-SA") || (image.getMission() != null
-                                        && image.getMission().toUpperCase(Locale.ENGLISH).contains("SENTINEL")))));
+                        || copyrightUppercase.contains("BY-SA"));
     }
 
     private Triple<Optional<EsaMedia>, Collection<FileMetadata>, Integer> checkEsaImage(URL url) {
