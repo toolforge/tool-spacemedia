@@ -117,6 +117,12 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         return false;
     }
 
+    @Override
+    protected boolean isSatellitePicture(EsaMedia media, FileMetadata metadata) {
+        return super.isSatellitePicture(media, metadata)
+                || (media.getMission() != null && media.getMission().toLowerCase(Locale.ENGLISH).contains("sentinel"));
+    }
+
     private static Optional<URL> getImageUrl(String src, URL imageUrl) {
         if (src.startsWith("http://") || src.startsWith("https://")) {
             return Optional.of(newURL(src.replace("esamultimeda.esa.int", "esamultimedia.esa.int")));
