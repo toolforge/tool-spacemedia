@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -26,6 +27,7 @@ class InternetArchiveServiceTest {
     private InternetArchiveService service;
 
     @Test
+    @Disabled("frequent random errors")
     void testRetrieveOldestUrl() throws Exception {
         assertEquals(
                 "http://web.archive.org/web/20080916024556/http://asterweb.jpl.nasa.gov/gallery/images/tokyo-snow.jpg",
