@@ -22,13 +22,12 @@ import jakarta.persistence.Table;
 @Table(indexes = { @Index(columnList = "url") })
 public class EsaMedia extends Media implements WithKeywords {
 
-    // 220 for
-    // https://www.esa.int/ESA_Multimedia/Images/2023/06/Paris_Air_Show_2023_-_ESA_astronaut_Samantha_Cristoforetti_and_Teodoro_Valente_President_of_ASI_visit_ESA_s_exhibition_with_ESA_Director_General_Josef_Aschbacher2
-    @Column(nullable = false, unique = true, length = 220)
+    // 250 for
+    // https://www.esa.int/ESA_Multimedia/Images/2014/05/Wspolne_zwiedzanie_wystawy_osiagniec_polskiego_sektora_kosmicznego_przez_wiceminister_gospodarki_Grazyne_Henclewska_i_szefa_Biura_Politycznego_Dyrektora_Generalnego_ESA_Dr_Karlheinza_Kreuzberga
+    @Column(nullable = false, unique = true, length = 250)
     private URL url;
-    // 80 for Navigation Observing the Earth Telecommunications & Integrated
-    // Applications
-    @Column(length = 80)
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String activity;
     @Lob
     @Column(columnDefinition = "TEXT")

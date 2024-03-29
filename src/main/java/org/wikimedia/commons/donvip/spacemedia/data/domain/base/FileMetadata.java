@@ -81,9 +81,9 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JsonProperty("readable_image")
     private Boolean readableImage;
 
-    // 420 for
-    // https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2023/06/paris_air_show_2023_-_esa_astronaut_samantha_cristoforetti_and_teodoro_valente_president_of_asi_visit_esa_s_exhibition_with_esa_director_general_josef_aschbacher2/24936817-1-eng-GB/Paris_Air_Show_2023_-_ESA_astronaut_Samantha_Cristoforetti_and_Teodoro_Valente_President_of_ASI_visit_ESA_s_exhibition_with_ESA_Director_General_Josef_Aschbacher.jpg
-    @Column(nullable = false, length = 420)
+    // 540 for
+    // https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2014/05/briefing_prasowy_z_udzialem_wiceminister_gospodarki_grazyny_henclewskiej_dr_karlheinza_kreuzberga_z_esa_dyrektora_cnk_roberta_firmhofera_oraz_dyrektora_zpsk_pawla_wojtkiewicza_przedstawiciela_polskiego_sektora_kosmicznego/14500198-1-eng-GB/Briefing_prasowy_z_udzialem_wiceminister_gospodarki_Grazyny_Henclewskiej_Dr_Karlheinza_Kreuzberga_z_ESA_dyrektora_CNK_Roberta_Firmhofera_oraz_dyrektora_ZPSK_Pawla_Wojtkiewicza_przedstawiciela_polskiego_sektora_kosmicznego.jpg
+    @Column(nullable = false, length = 540)
     @JsonProperty("asset_url")
     private URL assetUrl;
 
