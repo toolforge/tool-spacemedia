@@ -1,34 +1,42 @@
 image: docker-registry.wikimedia.org/releng/maven-java17:latest
 
-variables:
-  JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
-  MAVEN_CLI_OPTS: "--batch-mode --no-transfer-progress -Dstyle.color=always"
-  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - project: "repos/ci-tools/sonarqube"
+    ref: main
+    file: "templates/maven-sonar-ci.yml"
 
 cache:
+  key: maven
   paths:
-    - .m2/repository/
-    - target/
+    - .m2/repository
+    - target
 
 stages:
   - build
   - test
   - deploy
 
-include:
-  - template: Security/SAST.gitlab-ci.yml
-  - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - project: "repos/ci-tools/sonarqube"
-    ref: main # use any branch, tag, or commit hash here
-    file: "templates/maven-sonar-ci.yml"
+variables:
+  JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+  MAVEN_CLI_OPTS: "--batch-mode --no-transfer-progress -Dstyle.color=always"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
 
 build:
   stage: build
   script:
+    - >
+      ./mvnw $MAVEN_CLI_OPTS -Pweb -Pjobs package -DskipTests=true
+
+test:
+  stage: test
+  before_script:
     - sed -i 's#/data/project/spacemedia/logs/#target/#g' src/main/resources/logback-spring-toolforge.xml
     - export PATH=$PATH:.
+  script:
     - >
-      ./mvnw $MAVEN_CLI_OPTS -Pweb -Pjobs package
+      ./mvnw $MAVEN_CLI_OPTS -Pweb -Pjobs test
       -Dspring.profiles.active=toolforge
       -Dspring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MariaDBDialect
       -Ddomain.datasource.url=jdbc:mariadb://tools.db.svc.wikimedia.cloud:3306/${user}__spacemedia
@@ -74,14 +82,42 @@ build:
       - target/spacemedia.log
       - target/surefire-reports/*.txt
       - target/surefire-reports/*.xml
+    expire_in: 7 days
     reports:
       junit: target/surefire-reports/*.xml
 
-deploy:
+sonar-scanner:
+  cache:
+  - key: maven
+    policy: pull
+    paths:
+      - .m2/repository
+      - target
+  variables:
+    SONAR_MAVEN_BINARY: "./mvnw $MAVEN_CLI_OPTS"
+    SONAR_MAVEN_GOALS: "-Pweb -Pjobs verify sonar:sonar -DskipTests=true"
+    SONAR_PROJECT_KEY: "tool-spacemedia"
+  needs: ["test"]
+
+deploy_maven:
   stage: deploy
   script:
-    - ./mvnw $MAVEN_CLI_OPTS deploy
+    - ./mvnw $MAVEN_CLI_OPTS -s ci_settings.xml deploy -DskipTests=true
   only:
-    - master
-    - develop*
+    refs:
+      - main
+      - master
+      - /^develop.*/
 
+deploy_toolforge:
+  stage: deploy
+  script:
+    - echo "TODO Deploy to toolforge"
+  environment:
+    name: Toolforge
+    url: https://spacemedia.toolforge.org/
+  only:
+    refs:
+      - main
+      - master
+      - /^develop.*/

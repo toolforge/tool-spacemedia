@@ -20,7 +20,7 @@
 		<batik.version>1.17</batik.version>
 		<flickr4java-version>3.0.8</flickr4java-version>
 		<jettyhttp2-version>11.0.18</jettyhttp2-version>
-		<springboot-version>3.1.9</springboot-version>
+		<springboot-version>3.1.10</springboot-version>
 		<scribejava-version>8.3.3</scribejava-version>
 		<twelvemonkeys-version>3.10.1</twelvemonkeys-version>
 	</properties>
@@ -397,7 +397,22 @@
 			<id>jcenter</id>
 			<url>https://jcenter.bintray.com/</url>
 		</repository>
+		<repository>
+			<id>gitlab-maven</id>
+			<url>https://gitlab.wikimedia.org/api/v4</url>
+		</repository>
 	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>gitlab-maven</id>
+			<url>https://gitlab.wikimedia.org/api/v4/projects/608/packages/maven</url>
+		</repository>
+		<snapshotRepository>
+			<id>gitlab-maven</id>
+			<url>https://gitlab.wikimedia.org/api/v4/projects/608/packages/maven</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<build>
 		<resources>
@@ -437,7 +452,7 @@
 				<plugin>
 					<groupId>org.sonarsource.scanner.maven</groupId>
 					<artifactId>sonar-maven-plugin</artifactId>
-					<version>3.10.0.2594</version>
+					<version>3.11.0.3922</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -470,7 +485,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.12.1</version>
+				<version>3.13.0</version>
 				<configuration>
 					<compilerArgs>
 						<arg>-parameters</arg>
@@ -528,7 +543,7 @@
             <plugin>
                 <groupId>io.github.git-commit-id</groupId>
                 <artifactId>git-commit-id-maven-plugin</artifactId>
-                <version>7.0.0</version>
+                <version>8.0.2</version>
                 <executions>
                     <execution>
                         <id>get-the-git-infos</id>
@@ -566,7 +581,7 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<loaderImplementation>CLASSIC</loaderImplementation>
+									<!--<loaderImplementation>CLASSIC</loaderImplementation>-->
 									<mainClass>
 										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaWebApplication</mainClass>
 									<outputDirectory>
