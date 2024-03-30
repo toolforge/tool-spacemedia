@@ -133,13 +133,21 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
 
     private void processHeader(EsaMedia image, Element element) {
         image.setTitle(element.getElementsByClass("heading").get(0).text());
-        image.setPublicationDate(LocalDate.parse(
-                element.getElementsByClass("meta").get(0).getElementsByTag("span").get(0).text(), dateFormatter));
+        Elements spans = element.getElementsByClass("meta").get(0).getElementsByTag("span");
+        image.setPublicationDate(LocalDate.parse(spans.get(0).text(), dateFormatter));
+        if (image.getId() == null) {
+            image.setId(new CompositeMediaId("esa", spans.get(2).text().replace(" ID", "")));
+        }
     }
 
     private void processShare(EsaMedia image, Element element) {
-        String id = element.getElementsByClass("btn ezsr-star-rating-enabled").get(0).attr("id").replace("ezsr_", "");
-        image.setId(new CompositeMediaId("esa", id.substring(0, id.indexOf('_'))));
+        if (image.getId() == null) {
+            Elements buttons = element.getElementsByClass("btn ezsr-star-rating-enabled");
+            if (!buttons.isEmpty()) {
+                String id = buttons.get(0).attr("id").replace("ezsr_", "");
+                image.setId(new CompositeMediaId("esa", id.substring(0, id.indexOf('_'))));
+            }
+        }
     }
 
     private void processExtra(EsaMedia image, Element element) {

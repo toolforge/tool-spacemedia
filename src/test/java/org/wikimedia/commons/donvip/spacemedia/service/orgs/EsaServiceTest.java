@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.wikimedia.commons.donvip.spacemedia.service.orgs.EsaService.getCopernicusProcessedBy;
@@ -72,17 +73,20 @@ class EsaServiceTest extends AbstractOrgServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "Nuclear_explosions_on_a_neutron_star_feed_its_jets,https://www.esa.int/ESA_Multimedia/Images/2024/03/Nuclear_explosions_on_a_neutron_star_feed_its_jets" })
-    void testParseHtml(String filename, URL url) throws Exception {
+            "false,Friendly_Little_Robot,https://www.esa.int/ESA_Multimedia/Images/2014/09/Friendly_Little_Robot",
+            "true,Nuclear_explosions_on_a_neutron_star_feed_its_jets,https://www.esa.int/ESA_Multimedia/Images/2024/03/Nuclear_explosions_on_a_neutron_star_feed_its_jets" })
+    void testParseHtml(boolean copyrightOk, String filename, URL url) throws Exception {
         EsaMedia media = new EsaMedia();
         media.setUrl(url);
         service.fillMediaWithHtml(Jsoup.parse(new File("src/test/resources/esa/" + filename + ".htm")), media,
                 url);
+        assertNotNull(media.getId());
+        assertTrue(Integer.parseInt(media.getIdUsedInOrg()) > 0);
         assertTrue(isNotBlank(media.getCredits()));
         assertTrue(isNotBlank(media.getTitle()));
         assertTrue(isNotBlank(media.getDescription()));
         assertTrue(media.getMetadataCount() > 0);
-        assertTrue(isCopyrightOk(media), () -> media.getCredits());
+        assertEquals(copyrightOk, isCopyrightOk(media), () -> media.getCredits());
     }
 
     @Configuration
