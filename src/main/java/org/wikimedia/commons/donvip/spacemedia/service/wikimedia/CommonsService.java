@@ -887,7 +887,7 @@ public class CommonsService {
             boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error,
             boolean uploadByUrl) throws IOException, UploadException {
         if ("mp4".equals(ext) || url.getFile().endsWith(".mp4") || "www.youtube.com".equals(url.getHost())) {
-            return video2Commons.uploadVideo(wikiCode, filename, ext, url);
+            return video2Commons.uploadVideo(wikiCode, filename, url);
         } else if (!isPermittedFileExt(ext) && !isPermittedFileUrl(url)) {
             throw new UploadException("Neither extension " + ext + " nor URL " + url
                     + " match any supported file type: " + permittedFileTypes);
