@@ -43,8 +43,6 @@ public class DjangoplicityMedia extends Media {
     @JsonProperty("field_of_view")
     private String fieldOfView;
 
-    // 541 chars for
-    // https://noirlab.edu/public/images/Cerro-Tololo-Drone-Pano_12-CC/
     @Lob
     @Column(nullable = true, columnDefinition = "TEXT")
     private String name;

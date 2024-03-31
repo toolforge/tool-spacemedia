@@ -10,6 +10,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpPost;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 import org.apache.http.client.CookieStore;
@@ -31,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTaskRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +51,9 @@ public class Video2CommonsService {
 
     @Autowired
     private ObjectMapper jackson;
+
+    @Autowired
+    private Video2CommonsTaskRepository repository;
 
     @Value("${commons.api.account}")
     private String apiAccount;
@@ -111,7 +117,7 @@ public class Video2CommonsService {
         }
     }
 
-    public String uploadVideo(String wikiCode, String filename, URL url)
+    public Video2CommonsTask uploadVideo(String wikiCode, String filename, URL url)
             throws IOException {
         String filenameExt = requireNonNull(filename, "filename").replace(".mp4", "");
         HttpClientContext httpClientContext = getHttpClientContext();
@@ -130,33 +136,38 @@ public class Video2CommonsService {
                 }
             }
             LOGGER.info("Started video2commons task {} to upload {} as '{}.webm'", run.id(), url, filenameExt);
+            Video2CommonsTask task = repository.save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm"));
             // STEP 2 - check status and wait a few seconds (just to check logs, tasks can
             // be pending several hours)
             request = Utils.newHttpPost(URL_API + "/status-single",
                     Map.of("task", run.id(), "_csrf_token", requireNonNull(csrf, "v2c csrf token")));
             int n = 1;
             int max = 10;
-            int progress = -1;
-            while (progress < 100 && n++ < max) {
+            while (task.getProgress() < 100 && n++ < max) {
                 try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
                         InputStream in = response.getEntity().getContent()) {
                     TaskStatusValue status = jackson.readValue(in, TaskStatus.class).value();
                     LOGGER.info("{} => {}", url, status);
-                    progress = status.progress;
+                    task.setProgress(status.progress);
+                    task.setStatus(status.status());
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         LOGGER.error(e.getMessage(), e);
                         Thread.currentThread().interrupt();
                     }
+                } catch (IOException e) {
+                    LOGGER.warn("{}", e.getMessage());
                 }
+                task.setLastChecked(ZonedDateTime.now());
+                task = repository.save(task);
             }
-            if (progress < 100) {
+            if (task.getProgress() < 100) {
                 LOGGER.warn("video2commons did not complete upload of {} yet. Last progress of task {}: {}%", url,
-                        run.id(), progress);
+                        run.id(), task.getProgress());
             }
+            return task;
         }
-        return filenameExt;
     }
 
     private CloseableHttpResponse executeRequest(HttpRequestBase request, CloseableHttpClient httpclient,
