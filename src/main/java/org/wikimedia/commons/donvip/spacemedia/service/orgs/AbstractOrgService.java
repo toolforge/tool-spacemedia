@@ -1267,6 +1267,9 @@ public abstract class AbstractOrgService<T extends Media>
             if (media.containsInTitleOrDescriptionOrKeywords("false color")) {
                 result.add("False-color satellite images");
             }
+            if (metadata.isVideo()) {
+                result.add("Animations of satellite pictures");
+            }
         }
         if (media instanceof WithLatLon ll) {
             result.addAll(findGeolocalizedCategories(ll));
