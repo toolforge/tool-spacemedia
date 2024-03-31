@@ -16,6 +16,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
@@ -126,7 +127,11 @@ public interface Org<T extends Media> {
 
     Statistics getStatistics(boolean details);
 
-    T getById(String id) throws ImageNotFoundException;
+    T getById(CompositeMediaId id) throws ImageNotFoundException;
+
+    default T getById(String id) throws ImageNotFoundException {
+        return getById(new CompositeMediaId(id));
+    }
 
     void deleteById(String id) throws ImageNotFoundException;
 

@@ -32,8 +32,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTaskRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,6 +57,9 @@ public class Video2CommonsService {
 
     @Autowired
     private Video2CommonsTaskRepository repository;
+
+    @Autowired
+    private List<AbstractOrgService<?>> orgs;
 
     @Value("${commons.api.account}")
     private String apiAccount;
@@ -117,8 +123,8 @@ public class Video2CommonsService {
         }
     }
 
-    public Video2CommonsTask uploadVideo(String wikiCode, String filename, URL url)
-            throws IOException {
+    public Video2CommonsTask uploadVideo(String wikiCode, String filename, URL url, String orgId,
+            CompositeMediaId mediaId) throws IOException {
         String filenameExt = requireNonNull(filename, "filename").replace(".mp4", "");
         HttpClientContext httpClientContext = getHttpClientContext();
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
@@ -136,7 +142,8 @@ public class Video2CommonsService {
                 }
             }
             LOGGER.info("Started video2commons task {} to upload {} as '{}.webm'", run.id(), url, filenameExt);
-            Video2CommonsTask task = repository.save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm"));
+            Video2CommonsTask task = repository
+                    .save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm", orgId, mediaId));
             // STEP 2 - check status and wait a few seconds (just to check logs, tasks can
             // be pending several hours)
             request = Utils.newHttpGet(URL_API + "/status-single?task=" + run.id());
@@ -191,6 +198,11 @@ public class Video2CommonsService {
             for (Video2CommonsTask task : repository.findByStatusIn(Video2CommonsTask.Status.incompleteStates())) {
                 result.add(updateTask(task, Utils.newHttpGet(URL_API + "/status-single?task=" + task.getId()),
                         task.getUrl(), httpclient, httpClientContext));
+                if (task.getStatus() == Status.DONE) {
+                    orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst()
+                            .ifPresent(o -> o.editStructuredDataContent(task.getFilename(), task.getMediaId(),
+                                    task.getUrl()));
+                }
             }
         }
         return result;

@@ -713,9 +713,9 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     @Override
-    public T getById(String id) throws ImageNotFoundException {
+    public T getById(CompositeMediaId id) throws ImageNotFoundException {
         LOGGER.info("Looking for media by id: {}", id);
-        return repository.findById(new CompositeMediaId(id)).orElseThrow(() -> new ImageNotFoundException(id));
+        return repository.findById(id).orElseThrow(() -> new ImageNotFoundException(id.toString()));
     }
 
     @Override
@@ -897,13 +897,15 @@ public abstract class AbstractOrgService<T extends Media>
                         "Found existing smaller files with same id and perceptual hash on Commons, replacing them: {}",
                         smallerFiles);
                 for (String smallerFile : smallerFiles) {
-                    commonsService.uploadExistingFile(smallerFile, downloadUrl, metadata.getSha1());
+                    commonsService.uploadExistingFile(smallerFile, downloadUrl, metadata.getSha1(), getId(),
+                            media.getId());
                 }
                 metadata.setCommonsFileNames(new HashSet<>(smallerFiles));
             } else {
                 Pair<String, Map<String, String>> codeAndLegends = getWikiCode(media, metadata);
                 String uploadedFilename = commonsService.uploadNewFile(codeAndLegends.getLeft(),
-                        media.getUploadTitle(metadata), metadata.getFileExtension(), downloadUrl, metadata.getSha1());
+                        media.getUploadTitle(metadata), metadata.getFileExtension(), downloadUrl, metadata.getSha1(),
+                        getId(), media.getId());
                 metadata.setCommonsFileNames(new HashSet<>(Set.of(uploadedFilename)));
                 editStructuredDataContent(uploadedFilename, codeAndLegends.getRight(), media, metadata);
             }
@@ -916,6 +918,18 @@ public abstract class AbstractOrgService<T extends Media>
                         media.getId(), metadata, getUploadMode(), media.isIgnored(), isPermittedFileType(metadata));
             }
             return 0;
+        }
+    }
+
+    public void editStructuredDataContent(String uploadedFilename, CompositeMediaId mediaId, URL assetUrl) {
+        T media = getById(mediaId);
+        FileMetadata metadata = metadataRepository.findByAssetUrl(assetUrl)
+                .orElseThrow(() -> new IllegalStateException("Failed to retrieve metadata for asset URL " + assetUrl));
+        try {
+            editStructuredDataContent(uploadedFilename, getLegends(media, getWikiFileDesc(media, metadata).getValue()),
+                    media, metadata);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

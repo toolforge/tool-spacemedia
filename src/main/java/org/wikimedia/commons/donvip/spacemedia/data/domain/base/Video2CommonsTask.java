@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,6 +39,12 @@ public class Video2CommonsTask {
     @Column(nullable = true)
     private ZonedDateTime lastChecked;
 
+    @Column(nullable = false, length = 32)
+    private String orgId;
+
+    @Embedded
+    private CompositeMediaId mediaId;
+
     public enum Status {
         PENDING, PROGRESS, SUCCESS, FAIL, FAILURE, RETRY, ABORTED, DONE;
 
@@ -58,10 +65,12 @@ public class Video2CommonsTask {
 
     }
 
-    public Video2CommonsTask(String id, URL url, String filename) {
+    public Video2CommonsTask(String id, URL url, String filename, String orgId, CompositeMediaId mediaId) {
         setId(requireNonNull(id));
         setUrl(requireNonNull(url));
         setFilename(requireNonNull(filename));
+        setOrgId(requireNonNull(orgId));
+        setMediaId(requireNonNull(mediaId));
         setCreated(ZonedDateTime.now());
         setStatus(Status.PENDING);
         setProgress(-1);
@@ -117,6 +126,22 @@ public class Video2CommonsTask {
 
     public void setCreated(ZonedDateTime created) {
         this.created = created;
+    }
+
+    public String getOrgId() {
+        return orgId;
+    }
+
+    public void setOrgId(String orgId) {
+        this.orgId = orgId;
+    }
+
+    public CompositeMediaId getMediaId() {
+        return mediaId;
+    }
+
+    public void setMediaId(CompositeMediaId mediaId) {
+        this.mediaId = mediaId;
     }
 
     public ZonedDateTime getLastChecked() {

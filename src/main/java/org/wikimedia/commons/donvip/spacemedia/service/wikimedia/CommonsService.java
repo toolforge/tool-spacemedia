@@ -146,6 +146,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadApiRespons
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UploadResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UserInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.WikiPage;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask;
@@ -854,13 +855,15 @@ public class CommonsService {
         return text == null ? text : text.replaceAll("<a [^>]*href=\"([^\"]*)\"[^>]*>([^<]*)</a>", replacement);
     }
 
-    public String uploadNewFile(String wikiCode, String filename, String ext, URL url, String sha1)
-            throws IOException, UploadException {
-        return doUpload(requireNonNull(wikiCode), normalizeFilename(filename), ext, url, sha1, true, true, true, true);
+    public String uploadNewFile(String wikiCode, String filename, String ext, URL url, String sha1, String orgId,
+            CompositeMediaId mediaId) throws IOException, UploadException {
+        return doUpload(requireNonNull(wikiCode), normalizeFilename(filename), ext, url, sha1, orgId, mediaId, true,
+                true, true, true);
     }
 
-    public String uploadExistingFile(String filename, URL url, String sha1) throws IOException, UploadException {
-        return doUpload(null, filename, null, url, sha1, true, true, true, true);
+    public String uploadExistingFile(String filename, URL url, String sha1, String orgId, CompositeMediaId mediaId)
+            throws IOException, UploadException {
+        return doUpload(null, filename, null, url, sha1, orgId, mediaId, true, true, true, true);
     }
 
     public static String normalizeFilename(String filename) {
@@ -885,10 +888,10 @@ public class CommonsService {
     }
 
     private synchronized String doUpload(String wikiCode, String filename, String ext, URL url, String sha1,
-            boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error,
-            boolean uploadByUrl) throws IOException, UploadException {
+            String orgId, CompositeMediaId mediaId, boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl,
+            boolean retryAfterRandomProxy403error, boolean uploadByUrl) throws IOException, UploadException {
         if ("mp4".equals(ext) || url.getFile().endsWith(".mp4") || "www.youtube.com".equals(url.getHost())) {
-            Video2CommonsTask task = video2Commons.uploadVideo(wikiCode, filename, url);
+            Video2CommonsTask task = video2Commons.uploadVideo(wikiCode, filename, url, orgId, mediaId);
             if (task.getStatus().shouldSucceed()) {
                 return task.getFilename();
             } else {
@@ -933,8 +936,8 @@ public class CommonsService {
                         || msg.contains("upstream request timeout"))) {
                     LOGGER.warn("Unable to upload {} by URL ({}), fallback to upload in chunks...", url, msg);
                     // T334814 - upload by chunk for memory exhaustion or upstream request timeout
-                    return doUpload(wikiCode, filename, ext, url, sha1, renewTokenIfBadToken, retryWithSanitizedUrl,
-                            retryAfterRandomProxy403error, false);
+                    return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, renewTokenIfBadToken,
+                            retryWithSanitizedUrl, retryAfterRandomProxy403error, false);
                 }
                 throw e;
             }
@@ -951,12 +954,13 @@ public class CommonsService {
         if (error != null) {
             if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
                 token = queryTokens().getCsrftoken();
-                return doUpload(wikiCode, filename, ext, url, sha1, false, retryWithSanitizedUrl, true, uploadByUrl);
+                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, false, retryWithSanitizedUrl, true,
+                        uploadByUrl);
             }
             if (retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
                 try {
-                    return doUpload(wikiCode, filename, ext, urlToUri(url).toURL(), sha1, renewTokenIfBadToken, false,
-                            true, uploadByUrl);
+                    return doUpload(wikiCode, filename, ext, urlToUri(url).toURL(), sha1, orgId, mediaId,
+                            renewTokenIfBadToken, false, true, uploadByUrl);
                 } catch (URISyntaxException e) {
                     throw new UploadException(error.getCode(), e);
                 }
@@ -969,12 +973,13 @@ public class CommonsService {
             }
             if (retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
                     && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT".equals(error.getInfo())) {
-                return doUpload(wikiCode, filename, ext, url, sha1, renewTokenIfBadToken, true, false, uploadByUrl);
+                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, renewTokenIfBadToken, true, false,
+                        uploadByUrl);
             }
             if ("verification-error".equals(error.getCode())) {
                 Matcher m = FILE_EXT_MISMATCH.matcher(error.getInfo());
                 if (m.matches()) {
-                    return doUpload(wikiCode, filename, m.group(2), url, sha1, renewTokenIfBadToken,
+                    return doUpload(wikiCode, filename, m.group(2), url, sha1, orgId, mediaId, renewTokenIfBadToken,
                             retryWithSanitizedUrl, retryAfterRandomProxy403error, uploadByUrl);
                 }
             }
