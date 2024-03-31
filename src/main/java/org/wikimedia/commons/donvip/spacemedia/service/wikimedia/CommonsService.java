@@ -890,7 +890,8 @@ public class CommonsService {
     private synchronized String doUpload(String wikiCode, String filename, String ext, URL url, String sha1,
             String orgId, CompositeMediaId mediaId, boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl,
             boolean retryAfterRandomProxy403error, boolean uploadByUrl) throws IOException, UploadException {
-        if ("mp4".equals(ext) || url.getFile().endsWith(".mp4") || "www.youtube.com".equals(url.getHost())) {
+        if (Video2CommonsService.V2C_VIDEO_EXTENSIONS.stream().anyMatch(
+                e -> e.equals(ext) || url.getFile().endsWith('.' + e)) || "www.youtube.com".equals(url.getHost())) {
             Video2CommonsTask task = video2Commons.uploadVideo(wikiCode, filename, url, orgId, mediaId);
             if (task.getStatus().shouldSucceed()) {
                 return task.getFilename();

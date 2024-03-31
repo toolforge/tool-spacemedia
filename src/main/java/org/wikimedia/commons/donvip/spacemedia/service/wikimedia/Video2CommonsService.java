@@ -12,6 +12,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.CookieSpecs;
@@ -52,6 +53,8 @@ public class Video2CommonsService {
     private static final String URL_BASE = "https://video2commons.toolforge.org/";
     private static final String URL_API = URL_BASE + "api";
 
+    public static final Set<String> V2C_VIDEO_EXTENSIONS = Set.of("avi", "mp4");
+
     @Autowired
     private ObjectMapper jackson;
 
@@ -73,6 +76,10 @@ public class Video2CommonsService {
     void postConstruct() {
         csrf = getCsrfToken();
         LOGGER.info("Video2Commons CSRF token: {}", csrf);
+    }
+
+    public boolean isPermittedFileExt(String ext) {
+        return ext != null && V2C_VIDEO_EXTENSIONS.contains(ext);
     }
 
     private String getCsrfToken() {
@@ -117,7 +124,7 @@ public class Video2CommonsService {
                 return jackson.readValue(in, Csrf.class).csrf();
             }
         } catch (IOException e) {
-            LOGGER.error("Failed to initialize video2commons API. Upload of MP4 videos will not be possible: {}",
+            LOGGER.error("Failed to initialize video2commons API. Upload of some videos will not be possible: {}",
                     e.getMessage());
             return null;
         }
@@ -125,7 +132,10 @@ public class Video2CommonsService {
 
     public Video2CommonsTask uploadVideo(String wikiCode, String filename, URL url, String orgId,
             CompositeMediaId mediaId) throws IOException {
-        String filenameExt = requireNonNull(filename, "filename").replace(".mp4", "");
+        String filenameExt = requireNonNull(filename, "filename");
+        for (String ext : V2C_VIDEO_EXTENSIONS) {
+            filenameExt = filenameExt.replace('.' + ext, "");
+        }
         HttpClientContext httpClientContext = getHttpClientContext();
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             // STEP 1 - Run task

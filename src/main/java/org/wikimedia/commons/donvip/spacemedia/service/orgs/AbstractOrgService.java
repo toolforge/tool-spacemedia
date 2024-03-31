@@ -11,6 +11,7 @@ import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.strip;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.Video2CommonsService.V2C_VIDEO_EXTENSIONS;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -939,8 +940,8 @@ public abstract class AbstractOrgService<T extends Media>
         try {
             commonsService.editStructuredDataContent(uploadedFilename, legends, statements);
         } catch (MediaWikiApiErrorException | IOException | RuntimeException e) {
-            // Silent errors for .mp4 files uploaded long after by video2commons
-            if ("mp4".equals(metadata.getFileExtension())) {
+            // Silent errors for files uploaded long after by video2commons
+            if (V2C_VIDEO_EXTENSIONS.contains(metadata.getFileExtension())) {
                 LOGGER.info("Unable to add SDC data: {} => {}", statements, e.getMessage());
             } else {
                 LOGGER.error("Unable to add SDC data: {} => {}", statements, e.getMessage());
@@ -1661,9 +1662,11 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected boolean isPermittedFileType(FileMetadata metadata) {
-        return commonsService.isPermittedFileExt(metadata.getExtension()) || "mp4".equals(metadata.getExtension())
+        return commonsService.isPermittedFileExt(metadata.getExtension())
+                || V2C_VIDEO_EXTENSIONS.contains(metadata.getExtension())
                 || (metadata.getAssetUrl() != null && (commonsService.isPermittedFileUrl(metadata.getAssetUrl())
-                        || metadata.getAssetUrl().getFile().endsWith(".mp4")
+                        || V2C_VIDEO_EXTENSIONS.stream()
+                                .anyMatch(e -> metadata.getAssetUrl().getFile().endsWith('.' + e))
                         || "www.youtube.com".equals(metadata.getAssetUrl().getHost())));
     }
 

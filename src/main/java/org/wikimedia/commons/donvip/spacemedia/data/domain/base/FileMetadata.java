@@ -49,7 +49,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     private static final Set<String> AUDIO_EXTENSIONS = Set.of("wav", "mp3", "flac", "midi");
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("bmp", "jpg", "tiff", "png", "webp", "xcf", "gif",
             "svg", "exr");
-    private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg", "wmv");
+    private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg", "wmv", "avi");
     private static final Set<String> DOC_EXTENSIONS = Set.of("pdf", "stl", "epub", "ppt", "pptm", "pptx");
 
     @Id
