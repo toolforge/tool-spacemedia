@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.Locale;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,6 +29,7 @@ public class Video2CommonsTask {
     @Column(nullable = false, length = 8)
     private Status status;
 
+    @Column(nullable = false, columnDefinition = "TINYINT default 0")
     private int progress;
 
     @Column(nullable = false)
@@ -37,14 +39,18 @@ public class Video2CommonsTask {
     private ZonedDateTime lastChecked;
 
     public enum Status {
-        PENDING, PROGRESS, SUCCESS, FAILURE, RETRY, ABORTED, DONE;
+        PENDING, PROGRESS, SUCCESS, FAIL, FAILURE, RETRY, ABORTED, DONE;
 
         public boolean shouldSucceed() {
             return this == PENDING || this == PROGRESS || this == SUCCESS || this == RETRY || this == DONE;
         }
 
         public boolean isCompleted() {
-            return this == SUCCESS || this == FAILURE || this == DONE;
+            return this == SUCCESS || this == FAIL || this == FAILURE || this == DONE;
+        }
+
+        public static Set<Status> incompleteStates() {
+            return Set.of(PENDING, PROGRESS, RETRY);
         }
     }
 
