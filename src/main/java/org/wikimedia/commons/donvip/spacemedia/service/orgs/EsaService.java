@@ -516,7 +516,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         for (String spelling : CC_BY_SA_SPELLINGS) {
             credit = credit.replace(", " + spelling, "").replace("; " + spelling, "").replace(" " + spelling, "").trim();
         }
-        String copernicusTemplate = CategorizationService.getCopernicusTemplate(credit);
+        String copernicusTemplate = CategorizationService.extractCopernicusTemplate(credit);
         if (copernicusTemplate != null) {
             result.add(copernicusTemplate);
             credit = getCopernicusProcessedBy(credit).orElse("ESA");

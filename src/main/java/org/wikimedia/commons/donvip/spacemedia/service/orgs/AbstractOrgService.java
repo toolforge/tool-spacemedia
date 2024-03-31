@@ -1473,7 +1473,7 @@ public abstract class AbstractOrgService<T extends Media>
         Set<String> result = new LinkedHashSet<>();
         String description = media.getDescription(metadata);
         if (description != null) {
-            ofNullable(CategorizationService.getCopernicusTemplate(description)).ifPresent(result::add);
+            ofNullable(CategorizationService.extractCopernicusTemplate(description)).ifPresent(result::add);
         }
         return result;
     }

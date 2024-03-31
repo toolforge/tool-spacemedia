@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
-import static java.lang.Integer.parseInt;
 import static java.util.Arrays.stream;
 
 import java.io.IOException;
@@ -50,13 +49,17 @@ public class CategorizationService {
         categoriesStatements = CsvHelper.loadCsvMapping("categories.statements.csv");
     }
 
-    public static String getCopernicusTemplate(String text) {
+    public static String extractCopernicusTemplate(String text) {
         Matcher m = COPERNICUS_CREDIT.matcher(text);
-        return m.matches() ? getCopernicusTemplate(parseInt(m.group(1))) : null;
+        return m.matches() ? getCopernicusTemplate(m.group(1)) : null;
+    }
+
+    public static String getCopernicusTemplate(String year) {
+        return "Attribution-Copernicus |year=" + year;
     }
 
     public static String getCopernicusTemplate(int year) {
-        return "Attribution-Copernicus |year=" + year;
+        return getCopernicusTemplate(Integer.toString(year));
     }
 
     public void findCategoriesStatements(SdcStatements result, Set<String> cats) {

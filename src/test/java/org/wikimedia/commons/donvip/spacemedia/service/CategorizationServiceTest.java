@@ -1,6 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Arrays;
 
@@ -11,6 +11,7 @@ class CategorizationServiceTest {
     @Test
     void testCopernicusCredit() {
         for (String credit : Arrays.asList(
+                "Contains modified Copernicus Sentinel data [2018-2023], processed by Sentinel Hub/Pierre Markuse",
                 "Basierend auf von der ESA modifizierten Copernicus Sentinel Daten (2017), CC BY-SA 3.0 IGO",
                 "Contains Copernicus data (2014)/ESA/MyOcean/DMI, CC BY-SA 3.0 IGO",
                 "Contains Copernicus data (2015)/ESA/DLR Microwaves and Radar Institute/GFZ/e-GEOS/INGV–ESA SEOM INSARAP study, CC BY-SA 3.0 IGO",
@@ -95,7 +96,7 @@ class CategorizationServiceTest {
                 "Modifizierte und von der ESA bearbeitete Copernicus-Sentinel-Daten (2017), CC BY-SA 3.0 IGO",
                 "Contains modified Copernicus Sentinel data [2022], processed by <a href=\"https://twitter.com/Pierre_Markuse\">Pierre Markuse</a>",
                 "USGS/contains modified Copernicus Sentinel data (2019), processed by ESA, CC BY-SA 3.0 IGO")) {
-            assertTrue(CategorizationService.COPERNICUS_CREDIT.matcher(credit).matches(), credit);
+            assertNotNull(CategorizationService.extractCopernicusTemplate(credit));
         }
     }
 }
