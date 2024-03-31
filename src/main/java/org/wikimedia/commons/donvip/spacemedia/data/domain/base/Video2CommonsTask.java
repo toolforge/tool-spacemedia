@@ -25,7 +25,7 @@ public class Video2CommonsTask {
     private String filename;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true, length = 8)
+    @Column(nullable = false, length = 8)
     private Status status;
 
     private int progress;
@@ -42,6 +42,10 @@ public class Video2CommonsTask {
         public boolean shouldSucceed() {
             return this == PENDING || this == PROGRESS || this == SUCCESS || this == RETRY || this == DONE;
         }
+
+        public boolean isCompleted() {
+            return this == SUCCESS || this == FAILURE || this == DONE;
+        }
     }
 
     public Video2CommonsTask() {
@@ -53,6 +57,7 @@ public class Video2CommonsTask {
         setUrl(requireNonNull(url));
         setFilename(requireNonNull(filename));
         setCreated(ZonedDateTime.now());
+        setStatus(Status.PENDING);
         setProgress(-1);
     }
 
