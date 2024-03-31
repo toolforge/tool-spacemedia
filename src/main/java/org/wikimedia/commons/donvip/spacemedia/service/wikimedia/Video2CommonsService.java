@@ -137,8 +137,7 @@ public class Video2CommonsService {
             Video2CommonsTask task = repository.save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm"));
             // STEP 2 - check status and wait a few seconds (just to check logs, tasks can
             // be pending several hours)
-            request = Utils.newHttpPost(URL_API + "/status-single",
-                    Map.of("task", run.id(), "_csrf_token", requireNonNull(csrf, "v2c csrf token")));
+            request = Utils.newHttpGet(URL_API + "/status-single?task=" + run.id());
             int n = 1;
             int max = 10;
             while (task.getProgress() < 100 && n++ < max) {
