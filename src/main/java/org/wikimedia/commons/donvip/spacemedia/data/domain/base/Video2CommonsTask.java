@@ -56,6 +56,10 @@ public class Video2CommonsTask {
             return this == SUCCESS || this == FAIL || this == FAILURE || this == DONE;
         }
 
+        public boolean isFailed() {
+            return this == FAIL || this == FAILURE;
+        }
+
         public static Set<Status> incompleteStates() {
             return Set.of(PENDING, PROGRESS, RETRY);
         }

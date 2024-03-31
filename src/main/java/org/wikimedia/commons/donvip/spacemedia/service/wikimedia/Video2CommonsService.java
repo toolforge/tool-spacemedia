@@ -11,6 +11,7 @@ import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -175,7 +176,11 @@ public class Video2CommonsService {
         try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
                 InputStream in = response.getEntity().getContent()) {
             TaskStatusValue status = jackson.readValue(in, TaskStatus.class).value();
-            LOGGER.info("{} => {}", url, status);
+            if (Status.valueOf(status.status().toUpperCase(Locale.ENGLISH)).isFailed()) {
+                LOGGER.error("{} => {}", url, status);
+            } else {
+                LOGGER.info("{} => {}", url, status);
+            }
             task.setProgress(status.progress);
             task.setStatus(status.status());
             Thread.sleep(1000);
