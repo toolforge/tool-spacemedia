@@ -1,5 +1,6 @@
-# Duplicates check
-*/30 * * * * curl https://spacemedia.toolforge.org/checkDuplicates
+# Regular checks
+0,30 * * * * curl https://spacemedia.toolforge.org/checkDuplicates
+15,45 * * * * curl https://spacemedia.toolforge.org/checkVideos2Commons
 # No (more) free content
  0  0 * * * /bin/sh /data/project/spacemedia/run.sh youtube arianespace
  5  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr dlr-flickr

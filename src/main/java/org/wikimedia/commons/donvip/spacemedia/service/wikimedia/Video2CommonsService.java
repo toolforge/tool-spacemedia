@@ -15,6 +15,7 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -141,21 +142,7 @@ public class Video2CommonsService {
             int n = 1;
             int max = 10;
             while (!task.getStatus().isCompleted() && n++ < max) {
-                try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
-                        InputStream in = response.getEntity().getContent()) {
-                    TaskStatusValue status = jackson.readValue(in, TaskStatus.class).value();
-                    LOGGER.info("{} => {}", url, status);
-                    task.setProgress(status.progress);
-                    task.setStatus(status.status());
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    Thread.currentThread().interrupt();
-                } catch (IOException e) {
-                    LOGGER.warn("{}", e.getMessage());
-                }
-                task.setLastChecked(ZonedDateTime.now());
-                task = repository.save(task);
+                task = updateTask(task, request, url, httpclient, httpClientContext);
             }
             if (task.getProgress() < 100) {
                 LOGGER.info("video2commons did not complete upload of {} yet. Last progress of task {}: {}%", url,
@@ -163,6 +150,25 @@ public class Video2CommonsService {
             }
             return task;
         }
+    }
+
+    private Video2CommonsTask updateTask(Video2CommonsTask task, HttpRequestBase request, URL url,
+            CloseableHttpClient httpclient, HttpClientContext httpClientContext) {
+        try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
+                InputStream in = response.getEntity().getContent()) {
+            TaskStatusValue status = jackson.readValue(in, TaskStatus.class).value();
+            LOGGER.info("{} => {}", url, status);
+            task.setProgress(status.progress);
+            task.setStatus(status.status());
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage(), e);
+            Thread.currentThread().interrupt();
+        } catch (IOException e) {
+            LOGGER.warn("{}", e.getMessage());
+        }
+        task.setLastChecked(ZonedDateTime.now());
+        return repository.save(task);
     }
 
     private CloseableHttpResponse executeRequest(HttpRequestBase request, CloseableHttpClient httpclient,
@@ -175,6 +181,16 @@ public class Video2CommonsService {
         context.setCookieStore(cookieStore);
         context.setRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build());
         return context;
+    }
+
+    public void checkTasks() throws IOException {
+        HttpClientContext httpClientContext = getHttpClientContext();
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            for (Video2CommonsTask task : repository.findByStatusIn(Video2CommonsTask.Status.incompleteStates())) {
+                HttpGet request = Utils.newHttpGet(URL_API + "/status-single?task=" + task.getId());
+                updateTask(task, request, task.getUrl(), httpclient, httpClientContext);
+            }
+        }
     }
 
     private static record Csrf(String csrf) {
