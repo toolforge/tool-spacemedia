@@ -925,7 +925,12 @@ public abstract class AbstractOrgService<T extends Media>
         try {
             commonsService.editStructuredDataContent(uploadedFilename, legends, statements);
         } catch (MediaWikiApiErrorException | IOException | RuntimeException e) {
-            LOGGER.error("Unable to add SDC data: {}", statements, e);
+            // Silent errors for .mp4 files uploaded long after by video2commons
+            if ("mp4".equals(metadata.getFileExtension())) {
+                LOGGER.info("Unable to add SDC data: {} => {}", statements, e.getMessage());
+            } else {
+                LOGGER.error("Unable to add SDC data: {} => {}", statements, e.getMessage());
+            }
         }
     }
 

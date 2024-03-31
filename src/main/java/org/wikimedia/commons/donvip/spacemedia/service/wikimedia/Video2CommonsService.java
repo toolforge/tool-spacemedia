@@ -160,7 +160,7 @@ public class Video2CommonsService {
                 task = repository.save(task);
             }
             if (task.getProgress() < 100) {
-                LOGGER.warn("video2commons did not complete upload of {} yet. Last progress of task {}: {}%", url,
+                LOGGER.info("video2commons did not complete upload of {} yet. Last progress of task {}: {}%", url,
                         run.id(), task.getProgress());
             }
             return task;
