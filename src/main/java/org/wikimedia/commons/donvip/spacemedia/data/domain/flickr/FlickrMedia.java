@@ -242,7 +242,7 @@ public class FlickrMedia extends SingleFileMedia implements WithLatLon, WithKeyw
 
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
-        if (title.isEmpty() || (UnitedStates.isVirin(title) || UnitedStates.isFakeVirin(title))
+        if ((title.isEmpty() || UnitedStates.isVirin(title) || UnitedStates.isFakeVirin(title))
                 && CollectionUtils.isNotEmpty(getPhotosets())) {
             String albumTitle = getPhotosets().iterator().next().getTitle();
             if (StringUtils.isNotBlank(albumTitle)) {
