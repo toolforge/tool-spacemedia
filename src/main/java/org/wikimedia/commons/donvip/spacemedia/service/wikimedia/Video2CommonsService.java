@@ -1,7 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
+import static java.net.URLEncoder.encode;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.checkResponse;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpPost;
@@ -110,20 +111,16 @@ public class Video2CommonsService {
         }
     }
 
-    public String uploadVideo(String wikiCode, String filename, String ext, URL url)
+    public String uploadVideo(String wikiCode, String filename, URL url)
             throws IOException {
-        String filenameExt = requireNonNull(filename, "filename");
-        if (isNotBlank(ext) && !filenameExt.endsWith('.' + ext)) {
-            filenameExt += '.' + ext;
-        }
-        filenameExt = filenameExt.replace(".mp4", ".webm");
+        String filenameExt = requireNonNull(filename, "filename").replace(".mp4", "");
         HttpClientContext httpClientContext = getHttpClientContext();
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             // STEP 1 - Run task
             RunResponse run;
             HttpRequestBase request = Utils.newHttpPost(URL_API + "/task/run",
-                    Map.of("url", url, "extractor", "", "subtitles", false, "filename", filenameExt, "filedesc",
-                            wikiCode, "format", "webm (VP9/Opus)", "_csrf_token",
+                    Map.of("url", url, "extractor", "", "subtitles", false, "filename", encode(filenameExt, UTF_8),
+                            "filedesc", encode(wikiCode, UTF_8), "format", "webm (VP9/Opus)", "_csrf_token",
                             requireNonNull(csrf, "v2c csrf token")));
             try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
                     InputStream in = response.getEntity().getContent()) {
@@ -132,7 +129,7 @@ public class Video2CommonsService {
                     throw new IOException(run.toString());
                 }
             }
-            LOGGER.info("Started video2commons task {} to upload {} as '{}'", run.id(), url, filenameExt);
+            LOGGER.info("Started video2commons task {} to upload {} as '{}.webm'", run.id(), url, filenameExt);
             // STEP 2 - check status and wait a few seconds (just to check logs, tasks can
             // be pending several hours)
             request = Utils.newHttpPost(URL_API + "/status-single",
