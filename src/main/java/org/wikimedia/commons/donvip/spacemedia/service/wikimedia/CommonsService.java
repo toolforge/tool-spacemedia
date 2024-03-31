@@ -148,6 +148,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.commons.api.UserInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.api.WikiPage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
@@ -887,7 +888,12 @@ public class CommonsService {
             boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl, boolean retryAfterRandomProxy403error,
             boolean uploadByUrl) throws IOException, UploadException {
         if ("mp4".equals(ext) || url.getFile().endsWith(".mp4") || "www.youtube.com".equals(url.getHost())) {
-            return video2Commons.uploadVideo(wikiCode, filename, url);
+            Video2CommonsTask task = video2Commons.uploadVideo(wikiCode, filename, url);
+            if (task.getStatus().shouldSucceed()) {
+                return task.getFilename();
+            } else {
+                throw new UploadException(task.toString());
+            }
         } else if (!isPermittedFileExt(ext) && !isPermittedFileUrl(url)) {
             throw new UploadException("Neither extension " + ext + " nor URL " + url
                     + " match any supported file type: " + permittedFileTypes);
