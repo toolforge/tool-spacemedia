@@ -42,6 +42,10 @@ public class Video2CommonsTask {
         public boolean shouldSucceed() {
             return this == PENDING || this == PROGRESS || this == SUCCESS || this == RETRY || this == DONE;
         }
+
+        public boolean isCompleted() {
+            return this == SUCCESS || this == FAILURE || this == DONE;
+        }
     }
 
     public Video2CommonsTask() {

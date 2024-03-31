@@ -140,19 +140,17 @@ public class Video2CommonsService {
             request = Utils.newHttpGet(URL_API + "/status-single?task=" + run.id());
             int n = 1;
             int max = 10;
-            while (task.getProgress() < 100 && n++ < max) {
+            while (!task.getStatus().isCompleted() && n++ < max) {
                 try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
                         InputStream in = response.getEntity().getContent()) {
                     TaskStatusValue status = jackson.readValue(in, TaskStatus.class).value();
                     LOGGER.info("{} => {}", url, status);
                     task.setProgress(status.progress);
                     task.setStatus(status.status());
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        LOGGER.error(e.getMessage(), e);
-                        Thread.currentThread().interrupt();
-                    }
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    Thread.currentThread().interrupt();
                 } catch (IOException e) {
                     LOGGER.warn("{}", e.getMessage());
                 }
