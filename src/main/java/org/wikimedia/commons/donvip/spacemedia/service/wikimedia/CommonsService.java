@@ -1204,7 +1204,7 @@ public class CommonsService {
                         }
                     }
                 } catch (RuntimeException e) {
-                    LOGGER.error("Failed to handle {}", title, e);
+                    LOGGER.error("Failed to handle {} => {}", title, e.getMessage());
                 }
             }
         }
