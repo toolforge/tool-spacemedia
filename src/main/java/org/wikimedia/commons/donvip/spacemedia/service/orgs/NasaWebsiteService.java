@@ -127,6 +127,10 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
         if (uriExists(url)) {
             return url;
         }
+        url = BASE_URL + VIDEO_DETAIL + '/' + id.getMediaId() + '/';
+        if (uriExists(url)) {
+            return url;
+        }
         return null;
     }
 
