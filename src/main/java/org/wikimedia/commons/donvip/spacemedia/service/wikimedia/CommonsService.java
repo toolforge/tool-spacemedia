@@ -892,7 +892,8 @@ public class CommonsService {
             boolean retryAfterRandomProxy403error, boolean uploadByUrl) throws IOException, UploadException {
         if (Video2CommonsService.V2C_VIDEO_EXTENSIONS.stream().anyMatch(
                 e -> e.equals(ext) || url.getFile().endsWith('.' + e)) || "www.youtube.com".equals(url.getHost())) {
-            Video2CommonsTask task = video2Commons.uploadVideo(wikiCode, filename, url, orgId, mediaId);
+            Video2CommonsTask task = video2Commons.uploadVideo(wikiCode, filename, url, orgId, mediaId,
+                    "webm (VP9/Opus)");
             if (task.getStatus().shouldSucceed()) {
                 return task.getFilename();
             } else {

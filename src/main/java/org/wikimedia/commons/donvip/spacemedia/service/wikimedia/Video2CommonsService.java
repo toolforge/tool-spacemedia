@@ -137,7 +137,7 @@ public class Video2CommonsService {
     }
 
     public Video2CommonsTask uploadVideo(String wikiCode, String filename, URL url, String orgId,
-            CompositeMediaId mediaId) throws IOException {
+            CompositeMediaId mediaId, String format) throws IOException {
         String filenameExt = requireNonNull(filename, "filename");
         for (String ext : V2C_VIDEO_EXTENSIONS) {
             filenameExt = filenameExt.replace('.' + ext, "");
@@ -145,34 +145,45 @@ public class Video2CommonsService {
         HttpClientContext httpClientContext = getHttpClientContext();
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             // STEP 1 - Run task
-            RunResponse run;
-            HttpRequestBase request = Utils.newHttpPost(URL_API + "/task/run",
-                    Map.of("url", url, "extractor", "", "subtitles", false, "filename", filenameExt, "filedesc",
-                            wikiCode, "format", "webm (VP9/Opus)", "_csrf_token",
-                            requireNonNull(csrf, "v2c csrf token")));
-            try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
-                    InputStream in = response.getEntity().getContent()) {
-                run = jackson.readValue(in, RunResponse.class);
-                if (run.error() != null) {
-                    throw new IOException(run.toString());
-                }
+            RunResponse run = submitTaskRun(wikiCode, url, filenameExt, httpClientContext, httpclient, format);
+            if (run.error() != null) {
+                throw new IOException(run.toString());
             }
-            LOGGER.info("Started video2commons task {} to upload {} as '{}.webm'", run.id(), url, filenameExt);
             Video2CommonsTask task = repository
                     .save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm", orgId, mediaId));
             // STEP 2 - check status and wait a few seconds (just to check logs, tasks can
             // be pending several hours)
-            request = Utils.newHttpGet(URL_API + "/status-single?task=" + run.id());
+            HttpRequestBase request = Utils.newHttpGet(URL_API + "/status-single?task=" + run.id());
             int n = 1;
             int max = 10;
             while (!task.getStatus().isCompleted() && n++ < max) {
                 task = updateTask(task, request, url, httpclient, httpClientContext);
+                // If there is no audio track, can't you just deal with it?!
+                if ("webm (VP9/Opus)".equals(format) && task.getStatus().isFailed()
+                        && task.getText().contains("Audio is asked to be kept but the file has no audio")) {
+                    LOGGER.info("No audio, fallback to webm (VP9) format");
+                    return uploadVideo(wikiCode, filenameExt, url, orgId, mediaId, "webm (VP9)");
+                }
             }
             if (task.getProgress() < 100) {
                 LOGGER.info("video2commons did not complete upload of {} yet. Last progress of task {}: {}%", url,
                         run.id(), task.getProgress());
             }
             return task;
+        }
+    }
+
+    private RunResponse submitTaskRun(String wikiCode, URL url, String filenameExt, HttpClientContext httpClientContext,
+            CloseableHttpClient httpclient, String format) throws IOException {
+        HttpRequestBase request = Utils.newHttpPost(URL_API + "/task/run",
+                Map.of("url", url, "extractor", "", "subtitles", false, "filename", filenameExt, "filedesc",
+                        wikiCode, "format", format, "_csrf_token", requireNonNull(csrf, "v2c csrf token")));
+        try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
+                InputStream in = response.getEntity().getContent()) {
+            RunResponse run = jackson.readValue(in, RunResponse.class);
+            LOGGER.info("video2commons task {} submitted to upload {} as '{}.webm' ({})", run.id(), url, filenameExt,
+                    format);
+            return run;
         }
     }
 
@@ -243,7 +254,7 @@ public class Video2CommonsService {
     private static record Csrf(String csrf) {
     }
 
-    private static record RunResponse(String error, String id, String step) {
+    private static record RunResponse(String error, String id, String step, String traceback) {
     }
 
     private static record TaskStatus(TaskStatusValue value) {

@@ -50,23 +50,24 @@ public class Video2CommonsTask {
     @Embedded
     private CompositeMediaId mediaId;
 
+    // https://github.com/toolforge/video2commons/blob/master/video2commons/frontend/api.py#L152
     public enum Status {
-        PENDING, PROGRESS, SUCCESS, FAIL, FAILURE, RETRY, ABORTED, DONE;
+        PROGRESS, FAIL, ABORT, NEEDSSU, DONE;
 
         public boolean shouldSucceed() {
-            return this == PENDING || this == PROGRESS || this == SUCCESS || this == RETRY || this == DONE;
+            return this == PROGRESS || this == DONE;
         }
 
         public boolean isCompleted() {
-            return this == SUCCESS || this == FAIL || this == FAILURE || this == DONE;
+            return this == FAIL || this == DONE;
         }
 
         public boolean isFailed() {
-            return this == FAIL || this == FAILURE;
+            return this == FAIL;
         }
 
         public static Set<Status> incompleteStates() {
-            return Set.of(PENDING, PROGRESS, RETRY);
+            return Set.of(PROGRESS);
         }
     }
 
@@ -81,7 +82,7 @@ public class Video2CommonsTask {
         setOrgId(requireNonNull(orgId));
         setMediaId(requireNonNull(mediaId));
         setCreated(ZonedDateTime.now());
-        setStatus(Status.PENDING);
+        setStatus(Status.PROGRESS);
         setProgress(-1);
     }
 
