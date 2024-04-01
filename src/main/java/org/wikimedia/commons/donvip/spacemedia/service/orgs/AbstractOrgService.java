@@ -1467,10 +1467,12 @@ public abstract class AbstractOrgService<T extends Media>
      */
     public Set<String> findBeforeInformationTemplates(T media, FileMetadata metadata) {
         Set<String> result = new LinkedHashSet<>();
-        Long size = metadata.getSize();
-        ImageDimensions dims = metadata.getImageDimensions();
-        if (size != null && size >= LOTS_OF_MP || (dims != null && dims.getPixelsNumber() >= LOTS_OF_MP)) {
-            result.add("LargeImage");
+        if (metadata.isImage()) {
+            Long size = metadata.getSize();
+            ImageDimensions dims = metadata.getImageDimensions();
+            if (size != null && size >= LOTS_OF_MP || (dims != null && dims.getPixelsNumber() >= LOTS_OF_MP)) {
+                result.add("LargeImage");
+            }
         }
         return result;
     }
