@@ -154,6 +154,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
+import org.wikimedia.commons.donvip.spacemedia.exception.IgnoreException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
@@ -896,6 +897,8 @@ public class CommonsService {
                     "webm (VP9/Opus)");
             if (task.getStatus().shouldSucceed()) {
                 return task.getFilename();
+            } else if (task.getText().contains("The file format could not be recognized")) {
+                throw new IgnoreException(task.toString());
             } else {
                 throw new UploadException(task.toString());
             }
