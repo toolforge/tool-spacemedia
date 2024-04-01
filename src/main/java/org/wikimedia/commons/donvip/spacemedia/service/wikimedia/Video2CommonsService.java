@@ -35,9 +35,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTaskRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -64,6 +66,9 @@ public class Video2CommonsService {
 
     @Autowired
     private List<AbstractOrgService<?>> orgs;
+
+    @Autowired
+    private MediaService mediaService;
 
     @Value("${commons.api.account}")
     private String apiAccount;
@@ -206,7 +211,7 @@ public class Video2CommonsService {
         return context;
     }
 
-    public List<Video2CommonsTask> checkTasks() throws IOException {
+    public List<Video2CommonsTask> checkTasks(boolean forceDone) throws IOException {
         List<Video2CommonsTask> result = new ArrayList<>();
         HttpClientContext httpClientContext = getHttpClientContext();
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
@@ -218,6 +223,17 @@ public class Video2CommonsService {
                             .ifPresent(o -> o.editStructuredDataContent(task.getFilename(), task.getMediaId(),
                                     task.getUrl()));
                 }
+            }
+        }
+        if (forceDone) {
+            for (Video2CommonsTask task : repository.findByStatusIn(Set.of(Video2CommonsTask.Status.DONE))) {
+                orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst()
+                        .ifPresent(o -> {
+                            FileMetadata metadata = o.retrieveMetadata(task.getMediaId(), task.getUrl());
+                            if (metadata.getCommonsFileNames().isEmpty()) {
+                                mediaService.saveNewMetadataCommonsFileNames(metadata, Set.of(task.getFilename()));
+                            }
+                        });
             }
         }
         return result;

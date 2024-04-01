@@ -923,7 +923,7 @@ public abstract class AbstractOrgService<T extends Media>
         }
     }
 
-    public void editStructuredDataContent(String uploadedFilename, CompositeMediaId mediaId, URL assetUrl) {
+    public FileMetadata retrieveMetadata(CompositeMediaId mediaId, URL assetUrl) {
         T media = getById(mediaId);
         FileMetadata metadata = metadataRepository.findByAssetUrl(assetUrl).orElse(null);
         if (metadata == null && media instanceof SingleFileMedia sfm) {
@@ -932,6 +932,12 @@ public abstract class AbstractOrgService<T extends Media>
         if (metadata == null) {
             throw new IllegalStateException("Failed to retrieve metadata for " + mediaId + " / " + assetUrl);
         }
+        return metadata;
+    }
+
+    public void editStructuredDataContent(String uploadedFilename, CompositeMediaId mediaId, URL assetUrl) {
+        T media = getById(mediaId);
+        FileMetadata metadata = retrieveMetadata(mediaId, assetUrl);
         try {
             editStructuredDataContent(uploadedFilename, getLegends(media, getWikiFileDesc(media, metadata).getValue()),
                     media, metadata);
