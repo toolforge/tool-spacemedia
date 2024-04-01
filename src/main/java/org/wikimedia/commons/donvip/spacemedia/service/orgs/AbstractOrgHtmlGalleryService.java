@@ -1,8 +1,9 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.URL;
@@ -27,6 +28,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,14 +50,14 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
     protected abstract Elements getGalleryItems(String repoId, Element html);
 
     protected Optional<ZonedDateTime> extractDateFromGalleryItem(Element result) {
-        return Optional.empty();
+        return empty();
     }
 
     protected abstract String extractIdFromGalleryItem(Element result);
 
     @Override
     public final URL getSourceUrl(T media, FileMetadata metadata) {
-        return newURL(getSourceUrl(media.getId()));
+        return ofNullable(getSourceUrl(media.getId())).map(Utils::newURL).orElse(null);
     }
 
     protected abstract String getSourceUrl(CompositeMediaId id);
