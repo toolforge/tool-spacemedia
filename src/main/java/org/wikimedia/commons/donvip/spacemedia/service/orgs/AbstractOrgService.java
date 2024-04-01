@@ -85,6 +85,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.exception.IgnoreException;
@@ -924,8 +925,13 @@ public abstract class AbstractOrgService<T extends Media>
 
     public void editStructuredDataContent(String uploadedFilename, CompositeMediaId mediaId, URL assetUrl) {
         T media = getById(mediaId);
-        FileMetadata metadata = metadataRepository.findByAssetUrl(assetUrl)
-                .orElseThrow(() -> new IllegalStateException("Failed to retrieve metadata for asset URL " + assetUrl));
+        FileMetadata metadata = metadataRepository.findByAssetUrl(assetUrl).orElse(null);
+        if (metadata == null && media instanceof SingleFileMedia sfm) {
+            metadata = sfm.getUniqueMetadata();
+        }
+        if (metadata == null) {
+            throw new IllegalStateException("Failed to retrieve metadata for " + mediaId + " / " + assetUrl);
+        }
         try {
             editStructuredDataContent(uploadedFilename, getLegends(media, getWikiFileDesc(media, metadata).getValue()),
                     media, metadata);
