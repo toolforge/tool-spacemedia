@@ -13,7 +13,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 
 @Entity
 public class Video2CommonsTask {
@@ -21,8 +20,7 @@ public class Video2CommonsTask {
     @Id
     private String id;
 
-    @Lob
-    @Column(nullable = false, columnDefinition = "MEDIUMTEXT")
+    @Column(nullable = false, length = 2000)
     private URL url;
 
     @Column(nullable = false, length = 255)
