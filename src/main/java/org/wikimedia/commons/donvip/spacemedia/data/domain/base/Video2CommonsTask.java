@@ -13,6 +13,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 
 @Entity
 public class Video2CommonsTask {
@@ -32,6 +33,10 @@ public class Video2CommonsTask {
 
     @Column(nullable = false, columnDefinition = "TINYINT default 0")
     private int progress;
+
+    @Lob
+    @Column(nullable = true, columnDefinition = "MEDIUMTEXT")
+    private String text;
 
     @Column(nullable = false)
     private ZonedDateTime created;
@@ -130,6 +135,14 @@ public class Video2CommonsTask {
 
     public void setCreated(ZonedDateTime created) {
         this.created = created;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 
     public String getOrgId() {

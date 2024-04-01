@@ -188,6 +188,7 @@ public class Video2CommonsService {
             }
             task.setProgress(status.progress);
             task.setStatus(status.status());
+            task.setText(status.text());
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage(), e);
