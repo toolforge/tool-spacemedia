@@ -1588,7 +1588,13 @@ public abstract class AbstractOrgService<T extends Media>
             }
             LOGGER.trace("Ended common update checks for {}", media);
         }
-        return new MediaUpdateResult(result, ur.getException());
+        ur = new MediaUpdateResult(result, ur.getException());
+        postDoCommonUpdate(media, ur);
+        return ur;
+    }
+
+    protected void postDoCommonUpdate(T media, MediaUpdateResult ur) {
+        // Override if custom behaviour has to be performed after a common update
     }
 
     private boolean doCheckNonFree(T media, FileMetadata fm) {
