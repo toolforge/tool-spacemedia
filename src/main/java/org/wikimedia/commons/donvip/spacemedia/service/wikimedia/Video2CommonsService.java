@@ -142,6 +142,9 @@ public class Video2CommonsService {
         for (String ext : V2C_VIDEO_EXTENSIONS) {
             filenameExt = filenameExt.replace('.' + ext, "");
         }
+        if (!wikiCode.contains("[[Category:Uploaded with video2commons]]")) {
+            wikiCode += "\n[[Category:Uploaded with video2commons]]";
+        }
         HttpClientContext httpClientContext = getHttpClientContext();
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             // STEP 1 - Run task
