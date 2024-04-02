@@ -36,6 +36,7 @@ import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.EchoMapType;
@@ -47,6 +48,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.EventType
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.GetPagedMapsResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.MapsItem;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -278,6 +280,17 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
                     return media;
                 }
                 return media.copyDataFrom(mapMedia(jackson.readValue(in, MapsItem.class), media.getId()));
+            }
+        }
+    }
+
+    @Override
+    protected void postDoCommonUpdate(ErccMedia media, MediaUpdateResult ur) {
+        if (ur.getException() instanceof RestClientException e && "500 HTTP/1.1 500".equals(e.getMessage())) {
+            for (FileMetadata metadata : media.getMetadata()) {
+                if (!metadata.hasSha1()) {
+                    mediaService.ignoreAndSaveMetadata(metadata, e.getMessage(), e);
+                }
             }
         }
     }
