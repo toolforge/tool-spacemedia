@@ -953,7 +953,8 @@ public abstract class AbstractOrgService<T extends Media>
             commonsService.editStructuredDataContent(uploadedFilename, legends, statements);
         } catch (MediaWikiApiErrorException | IOException | RuntimeException e) {
             // Silent errors for files uploaded long after by video2commons
-            if (V2C_VIDEO_EXTENSIONS.contains(metadata.getFileExtension())) {
+            if (V2C_VIDEO_EXTENSIONS.contains(metadata.getFileExtension())
+                    || metadata.getAssetUri().toString().startsWith("https://www.youtube.com/")) {
                 LOGGER.info("Unable to add SDC data: {} => {}", statements, e.getMessage());
             } else {
                 LOGGER.error("Unable to add SDC data: {} => {}", statements, e.getMessage());
