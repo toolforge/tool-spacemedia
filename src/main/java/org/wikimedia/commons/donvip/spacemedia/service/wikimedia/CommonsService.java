@@ -897,7 +897,8 @@ public class CommonsService {
                     "webm (VP9/Opus)");
             if (task.getStatus().shouldSucceed()) {
                 return task.getFilename();
-            } else if (task.getText().contains("The file format could not be recognized")) {
+            } else if (task.getText().contains("The file format could not be recognized")
+                    || task.getText().contains("Did not get any data blocks")) {
                 throw new IgnoreException(task.toString());
             } else {
                 throw new UploadException(task.toString());
