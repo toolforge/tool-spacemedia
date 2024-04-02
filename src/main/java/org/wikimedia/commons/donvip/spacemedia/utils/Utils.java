@@ -51,11 +51,16 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -170,6 +175,11 @@ public final class Utils {
         if (consumer != null) {
             form.getElementsByTag(tag).forEach(elem -> consumer.accept(elem, params));
         }
+    }
+
+    public static CloseableHttpResponse executeRequest(HttpRequestBase request, CloseableHttpClient httpclient,
+            HttpClientContext context) throws IOException {
+        return checkResponse(request, httpclient.execute(request, context));
     }
 
     public static <T extends HttpResponse> T checkResponse(HttpRequest request, T response) throws IOException {
@@ -406,5 +416,12 @@ public final class Utils {
             }
         }
         return Optional.empty();
+    }
+
+    public static HttpClientContext getHttpClientContext(CookieStore cookieStore) {
+        HttpClientContext context = new HttpClientContext();
+        context.setCookieStore(cookieStore);
+        context.setRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build());
+        return context;
     }
 }

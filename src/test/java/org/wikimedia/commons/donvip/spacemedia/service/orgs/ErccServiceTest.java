@@ -61,9 +61,21 @@ class ErccServiceTest extends AbstractOrgServiceTest {
                 media.getThumbnailUrl());
     }
 
+    @Test
+    void testRefreshMedia() throws IOException {
+        ErccMedia media = new ErccMedia();
+        media.setId(new CompositeMediaId("Daily", "420"));
+        assertEquals(1, service.refresh(media).getMetadataCount());
+    }
+
     @Configuration
     @Import(DefaultOrgTestConfig.class)
     static class TestConfig {
+
+        @Bean
+        public ObjectMapper jackson() {
+            return new ObjectMapper().registerModules(new Jdk8Module(), new JavaTimeModule());
+        }
 
         @Bean
         @Autowired

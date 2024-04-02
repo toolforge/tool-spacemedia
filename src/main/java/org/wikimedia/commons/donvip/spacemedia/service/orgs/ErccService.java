@@ -6,7 +6,8 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getHttpClientContext;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -24,10 +25,14 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -54,6 +59,8 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
     private static final String ERCC_MAPS_PATH = "ECHO-Products/Maps#/maps/";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ErccService.class);
+
+    private final CookieStore cookieStore = new BasicCookieStore();
 
     public ErccService(ErccMediaRepository repository) {
         super(repository, "ercc", Arrays.stream(EchoMapType.values()).map(EchoMapType::name).collect(toSet()));
@@ -252,19 +259,26 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
 
     @Override
     protected ErccMedia refresh(ErccMedia media) throws IOException {
-        HttpGet request = newHttpGet(
-                newURL(ERCC_BASE_URL + "API/ERCC/Maps/GetMap?mapID=" + media.getId().getMediaId()));
-        request.setHeader("RequestVerificationToken",
-                getWithJsoup(ERCC_BASE_URL + ERCC_MAPS_PATH + media.getIdUsedInOrg(), 15_000, 3)
+        try (CloseableHttpClient httpclient = HttpClientBuilder.create().build()) {
+            HttpClientContext context = getHttpClientContext(cookieStore);
+            // STEP 1 - Request item page
+            HttpRequestBase request = newHttpGet(ERCC_BASE_URL + ERCC_MAPS_PATH + media.getIdUsedInOrg());
+            try (CloseableHttpResponse response = executeRequest(request, httpclient, context);
+                    InputStream in = response.getEntity().getContent()) {
+                request = newHttpGet(
+                        newURL(ERCC_BASE_URL + "API/ERCC/Maps/GetMap?mapID=" + media.getId().getMediaId()));
+                request.setHeader("RequestVerificationToken", Jsoup.parse(in, "UTF-8", ERCC_BASE_URL)
                         .getElementsByAttributeValue("name", "__RequestVerificationToken").first().attr("value"));
-        try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(request);
-                InputStream in = response.getEntity().getContent()) {
-            if (response.getStatusLine().getStatusCode() >= 400) {
-                LOGGER.error("{} => {}", request, response.getStatusLine());
-                return media;
             }
-            return media.copyDataFrom(mapMedia(jackson.readValue(in, MapsItem.class), media.getId()));
+            // STEP 2 - Call API using token and cookies
+            try (CloseableHttpResponse response = executeRequest(request, httpclient, context);
+                    InputStream in = response.getEntity().getContent()) {
+                if (response.getStatusLine().getStatusCode() >= 400) {
+                    LOGGER.error("{} => {}", request, response.getStatusLine());
+                    return media;
+                }
+                return media.copyDataFrom(mapMedia(jackson.readValue(in, MapsItem.class), media.getId()));
+            }
         }
     }
 

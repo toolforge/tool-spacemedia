@@ -1,7 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 import static java.util.Objects.requireNonNull;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.checkResponse;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getHttpClientContext;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpPost;
 
@@ -16,8 +17,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -91,13 +90,13 @@ public class Video2CommonsService {
     private String getCsrfToken() {
         try (CloseableHttpClient httpclient = HttpClientBuilder.create().setRedirectStrategy(new LaxRedirectStrategy())
                 .build()) {
-            HttpClientContext context = getHttpClientContext();
+            HttpClientContext context = getHttpClientContext(cookieStore);
             // STEP 1 - Request login page
             HttpRequestBase request = newHttpGet(URL_BASE + "oauthinit?returnto=" + URL_BASE);
             try (CloseableHttpResponse response = executeRequest(request, httpclient, context);
                     InputStream in = response.getEntity().getContent()) {
                 request = newHttpPost(
-                        Jsoup.parse(in, "UTF-8", CommonsService.BASE_URL).getElementsByTag("form").first(),
+                        Jsoup.parse(in, "UTF-8", URL_BASE).getElementsByTag("form").first(),
                         action -> CommonsService.BASE_URL + action,
                         (input, params) -> {
                             String name = input.attr("name");
@@ -145,7 +144,7 @@ public class Video2CommonsService {
         if (!wikiCode.contains("[[Category:Uploaded with video2commons]]")) {
             wikiCode += "\n[[Category:Uploaded with video2commons]]";
         }
-        HttpClientContext httpClientContext = getHttpClientContext();
+        HttpClientContext httpClientContext = getHttpClientContext(cookieStore);
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             // STEP 1 - Run task
             RunResponse run = submitTaskRun(wikiCode, url, filenameExt, httpClientContext, httpclient, format);
@@ -214,21 +213,9 @@ public class Video2CommonsService {
         return repository.save(task);
     }
 
-    private CloseableHttpResponse executeRequest(HttpRequestBase request, CloseableHttpClient httpclient,
-            HttpClientContext context) throws IOException {
-        return checkResponse(request, httpclient.execute(request, context));
-    }
-
-    private HttpClientContext getHttpClientContext() {
-        HttpClientContext context = new HttpClientContext();
-        context.setCookieStore(cookieStore);
-        context.setRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build());
-        return context;
-    }
-
     public List<Video2CommonsTask> checkTasks(boolean forceDone) throws IOException {
         List<Video2CommonsTask> result = new ArrayList<>();
-        HttpClientContext httpClientContext = getHttpClientContext();
+        HttpClientContext httpClientContext = getHttpClientContext(cookieStore);
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             for (Video2CommonsTask task : repository.findByStatusIn(Video2CommonsTask.Status.incompleteStates())) {
                 result.add(updateTask(task, Utils.newHttpGet(URL_API + "/status-single?task=" + task.getId()),
@@ -261,10 +248,8 @@ public class Video2CommonsService {
     }
 
     private static record TaskStatus(TaskStatusValue value) {
-
     }
 
     private static record TaskStatusValue(String id, int progress, String status, String text, String title, URL url) {
-
     }
 }
