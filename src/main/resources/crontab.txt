@@ -40,5 +40,6 @@
 25 13 * * * /bin/sh /data/project/spacemedia/run.sh flickr noaa-flickr
 30 13 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-lroc-shadowcam
 35 13 * * * /bin/sh /data/project/spacemedia/run.sh custom inpe-dpi
+50 13 * * * /bin/sh /data/project/spacemedia/run.sh youtube nasa-youtube
 # Hashes
-50 13 * * * /bin/sh /data/project/spacemedia/run.sh web
+00 14 * * * /bin/sh /data/project/spacemedia/run.sh web

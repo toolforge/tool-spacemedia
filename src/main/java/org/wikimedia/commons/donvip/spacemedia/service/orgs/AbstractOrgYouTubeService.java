@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.execOutput;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -17,6 +18,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -61,8 +63,11 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     @Autowired
     private YouTubeMediaProcessor mediaProcessor;
 
+    private final Map<String, String> userNamesByRepoIds;
+
     protected AbstractOrgYouTubeService(YouTubeMediaRepository repository, String id, Set<String> youtubeChannels) {
-        super(repository, id, youtubeChannels);
+        super(repository, id, youtubeChannels.stream().map(x -> x.split(":")[1]).collect(toSet()));
+        userNamesByRepoIds = youtubeChannels.stream().map(x -> x.split(":")).collect(toMap(x -> x[1], x -> x[0]));
     }
 
     @Override
@@ -78,6 +83,11 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     @Override
     protected boolean includeByPerceptualHash() {
         return false;
+    }
+
+    @Override
+    public String getUiRepoId(String repoId) {
+        return userNamesByRepoIds.get(repoId);
     }
 
     @Override

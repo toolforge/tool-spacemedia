@@ -237,7 +237,7 @@ public class MediaService {
                     && metadata.updateFilenameAndExtension(assetUrl.getPath());
             if (shouldReadFile(assetUrl, metadata, forceUpdateOfHashes)) {
                 try {
-                    ContentsAndMetadata<?> img = readFile(assetUrl, false, true);
+                    ContentsAndMetadata<?> img = readFile(assetUrl, metadata.getFileExtension(), false, true);
                     contents = img.contents();
                     result |= updateReadableStateAndDims(metadata, img);
                     result |= updateFileSize(metadata, img);

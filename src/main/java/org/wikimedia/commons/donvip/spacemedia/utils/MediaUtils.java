@@ -40,18 +40,20 @@ public class MediaUtils {
         // Hide default constructor
     }
 
-    public static <T> ContentsAndMetadata<T> readFile(URL url, boolean readMetadata, boolean log)
+    public static <T> ContentsAndMetadata<T> readFile(URL url, String extension, boolean readMetadata, boolean log)
             throws IOException, FileDecodingException {
-        return readFile(Utils.urlToUriUnchecked(url), readMetadata, log);
+        return readFile(Utils.urlToUriUnchecked(url), extension, readMetadata, log);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> ContentsAndMetadata<T> readFile(URI uri, boolean readMetadata, boolean log)
+    public static <T> ContentsAndMetadata<T> readFile(URI uri, String extension, boolean readMetadata, boolean log)
             throws IOException, FileDecodingException {
         if (log) {
             LOGGER.info("Reading file {}", uri);
         }
-        String extension = Utils.findExtension(uri.toString());
+        if (isBlank(extension)) {
+            extension = Utils.findExtension(uri.toString());
+        }
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
                 InputStream in = response.getEntity().getContent()) {
