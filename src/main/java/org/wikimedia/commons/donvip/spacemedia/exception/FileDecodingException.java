@@ -1,14 +1,14 @@
 package org.wikimedia.commons.donvip.spacemedia.exception;
 
-public class ImageDecodingException extends Exception {
+public class FileDecodingException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    public ImageDecodingException(String message) {
+    public FileDecodingException(String message) {
         super(message);
     }
 
-    public ImageDecodingException(Throwable cause) {
+    public FileDecodingException(Throwable cause) {
         super(cause);
     }
 }

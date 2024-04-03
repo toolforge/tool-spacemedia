@@ -1,20 +1,17 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -23,14 +20,12 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
+import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
@@ -39,9 +34,6 @@ import com.drew.metadata.Metadata;
 public class ImageUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageUtils.class);
-
-    private static final Set<String> IMAGE_EXTENSIONS = Set.of("bmp", "gif", "jpe", "jpg", "jpeg", "png", "svg", "tif",
-            "tiff");
 
     private ImageUtils() {
         // Hide default constructor
@@ -68,10 +60,11 @@ public class ImageUtils {
      * @throws IllegalArgumentException if <code>stream</code> is <code>null</code>.
      * @throws IOException              if an error occurs during reading.
      */
-    static ImageAndMetadata readImage(ImageInputStream stream, boolean readMetadata) throws IOException {
+    static ContentsAndMetadata<BufferedImage> readImage(ImageInputStream stream, boolean readMetadata)
+            throws IOException {
         return readImage(stream, true, readMetadata, reader -> {
             try {
-                return new ImageAndMetadata(reader.read(0, reader.getDefaultReadParam()), null, null,
+                return new ContentsAndMetadata<>(reader.read(0, reader.getDefaultReadParam()), null, null,
                         switch (reader.getClass().getSimpleName()) {
                         case "BMPImageReader" -> "bmp";
                         case "GIFImageReader" -> "gif";
@@ -110,50 +103,6 @@ public class ImageUtils {
         }
     }
 
-    public static ImageAndMetadata readImage(URL url, boolean readMetadata, boolean log)
-            throws IOException, ImageDecodingException {
-        return readImage(Utils.urlToUriUnchecked(url), readMetadata, log);
-    }
-
-    public static ImageAndMetadata readImage(URI uri, boolean readMetadata, boolean log)
-            throws IOException, ImageDecodingException {
-        if (log) {
-            LOGGER.info("Reading image {}", uri);
-        }
-        String extension = Utils.findExtension(uri.toString());
-        try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
-                InputStream in = response.getEntity().getContent()) {
-            boolean ok = extension != null && IMAGE_EXTENSIONS.contains(extension);
-            String filename = null;
-            if (!ok) {
-                Header[] disposition = response.getHeaders("Content-Disposition");
-                if (ArrayUtils.isNotEmpty(disposition)) {
-                    String value = disposition[0].getValue();
-                    if (value.startsWith("attachment;filename=")) {
-                        filename = URLDecoder.decode(value.split("=")[1], "UTF-8").replace(";filename*", "")
-                                .replace("\"", "");
-                    }
-                    extension = Utils.findExtension(value);
-                    ok = extension != null && IMAGE_EXTENSIONS.contains(extension);
-                }
-            }
-            long contentLength = response.getEntity().getContentLength();
-            if (ok || isBlank(extension)) {
-                ImageAndMetadata result = readImage(in, readMetadata);
-                return new ImageAndMetadata(result.image(), contentLength, filename,
-                        isBlank(extension) ? result.extension() : extension, result.numImages());
-            } else if ("webp".equals(extension)) {
-                return new ImageAndMetadata(readWebp(uri, readMetadata).image(), contentLength, filename, extension, 1);
-            } else {
-                throw new ImageDecodingException(
-                        "Unsupported format: " + extension + " / headers:"
-                                + Arrays.stream(response.getAllHeaders()).map(h -> h.getName() + ": " + h.getValue())
-                                        .sorted().toList());
-            }
-        }
-    }
-
     public static int readNumberOfImages(URI uri, boolean log) throws IOException {
         if (log) {
             LOGGER.info("Reading number of images in {}", uri);
@@ -175,8 +124,8 @@ public class ImageUtils {
         });
     }
 
-    private static ImageAndMetadata readWebp(URI uri, boolean readMetadata)
-            throws IOException, ImageDecodingException {
+    static ContentsAndMetadata<BufferedImage> readWebp(URI uri, boolean readMetadata)
+            throws IOException, FileDecodingException {
         Path file = Utils.downloadFile(uri, uri.getPath().replace('/', '_')).getKey();
         try {
             Path pngFile = Path.of(file.toString().replace(".webp", ".png"));
@@ -196,11 +145,12 @@ public class ImageUtils {
         }
     }
 
-    private static ImageAndMetadata readImage(InputStream in, boolean readMetadata) throws ImageDecodingException {
+    static ContentsAndMetadata<BufferedImage> readImage(InputStream in, boolean readMetadata)
+            throws FileDecodingException {
         try {
             return readImage(ImageIO.createImageInputStream(in), readMetadata);
         } catch (IOException | RuntimeException e) {
-            throw new ImageDecodingException(e);
+            throw new FileDecodingException(e);
         }
     }
 

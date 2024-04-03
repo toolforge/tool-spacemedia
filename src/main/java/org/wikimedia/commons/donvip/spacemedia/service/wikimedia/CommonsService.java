@@ -154,15 +154,15 @@ import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.CategoryPageNotFoundException;
+import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.IgnoreException;
-import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
-import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
+import org.wikimedia.commons.donvip.spacemedia.utils.MediaUtils;
 
 import com.github.scribejava.apis.MediaWikiApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
@@ -1389,7 +1389,7 @@ public class CommonsService {
             BufferedImage bi = null;
             try {
                 URL url = getImageUrl(name);
-                bi = ImageUtils.readImage(url, false, false).image();
+                bi = (BufferedImage) MediaUtils.readFile(url, false, false).contents();
                 if (bi == null) {
                     throw new IOException("Failed to read image from " + url);
                 }
@@ -1399,7 +1399,7 @@ public class CommonsService {
                     remote.putHashAssociation(hash);
                 }
                 return hash;
-            } catch (IOException | ImageDecodingException | RuntimeException e) {
+            } catch (IOException | FileDecodingException | RuntimeException e) {
                 LOGGER.error("Failed to compute/save hash of {}: {}", name, e.toString());
             } finally {
                 if (bi != null) {
