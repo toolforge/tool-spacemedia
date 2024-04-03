@@ -6,10 +6,12 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.text.StringEscapeUtils.unescapeXml;
-import static org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils.readImage;
 import static org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils.readImageMetadata;
+import static org.wikimedia.commons.donvip.spacemedia.utils.MediaUtils.readFile;
 
+import java.awt.geom.Dimension2D;
 import java.awt.image.BufferedImage;
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -33,6 +35,8 @@ import javax.imageio.ImageIO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.sl.usermodel.SlideShow;
+import org.apache.poi.util.Units;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,11 +55,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDescription;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationRepository;
-import org.wikimedia.commons.donvip.spacemedia.exception.ImageDecodingException;
+import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.utils.ContentsAndMetadata;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
-import org.wikimedia.commons.donvip.spacemedia.utils.ImageAndMetadata;
 
 @Lazy
 @Service
@@ -225,35 +229,33 @@ public class MediaService {
 
     private <M extends Media> MediaUpdateResult updateReadableStateAndHashes(M media, FileMetadata metadata,
             Path localPath, UrlResolver<M> urlResolver, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
-        boolean isImage = metadata.isImage();
         boolean result = false;
-        BufferedImage bi = null;
+        Object contents = null;
         try {
             URL assetUrl = urlResolver.resolveDownloadUrl(media, metadata);
             result |= isBlank(metadata.getOriginalFileName())
                     && metadata.updateFilenameAndExtension(assetUrl.getPath());
-            if (isImage && shouldReadImage(assetUrl, metadata, forceUpdateOfHashes)) {
+            if (shouldReadFile(assetUrl, metadata, forceUpdateOfHashes)) {
                 try {
-                    ImageAndMetadata img = readImage(assetUrl, false, true);
-                    bi = img.image();
-                    result |= updateReadableStateAndDims(metadata, bi);
+                    ContentsAndMetadata<?> img = readFile(assetUrl, false, true);
+                    contents = img.contents();
+                    result |= updateReadableStateAndDims(metadata, img);
                     result |= updateFileSize(metadata, img);
                     result |= updateExtensionAndFilename(metadata, img);
-                } catch (IOException | RestClientException | ImageDecodingException e) {
+                } catch (IOException | RestClientException | FileDecodingException e) {
                     result = ignoreMetadata(metadata, "Unreadable file", e);
-                    metadata.setReadableImage(Boolean.FALSE);
+                    metadata.setReadable(Boolean.FALSE);
                     LOGGER.info("Readable state has been updated to {} for {}", Boolean.FALSE, metadata);
                 }
             }
-            boolean isReadableImage = isImage && Boolean.TRUE == metadata.isReadableImage();
-            if (isReadableImage && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
+            boolean isImage = metadata.isImage();
+            boolean isReadableImage = isImage && Boolean.TRUE == metadata.isReadable();
+            if (isReadableImage && contents instanceof BufferedImage bi
+                    && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
                 LOGGER.info("Perceptual hash has been updated for {}", metadata);
                 result = true;
             }
-            if (bi != null) {
-                bi.flush();
-                bi = null;
-            }
+            contents = flushOrClose(contents);
             if ((!isImage || isReadableImage)
                     && updateSha1(media, metadata, localPath, urlResolver, forceUpdateOfHashes)) {
                 LOGGER.info("SHA1 hash has been updated for {}", metadata);
@@ -270,14 +272,25 @@ public class MediaService {
             LOGGER.error("Error while computing hashes for {}", media, e);
             return new MediaUpdateResult(result, e);
         } finally {
-            if (bi != null) {
-                bi.flush();
-            }
+            contents = flushOrClose(contents);
         }
         if (result) {
             saveMetadata(metadata);
         }
         return new MediaUpdateResult(result, null);
+    }
+
+    private static Object flushOrClose(Object contents) {
+        if (contents instanceof BufferedImage bi) {
+            bi.flush();
+        } else if (contents instanceof Closeable c) {
+            try {
+                c.close();
+            } catch (IOException e) {
+                LOGGER.error("Failed to close {}", contents, e);
+            }
+        }
+        return null;
     }
 
     public boolean saveMetadata(FileMetadata metadata) {
@@ -286,34 +299,39 @@ public class MediaService {
         return true;
     }
 
-    private static boolean updateReadableStateAndDims(FileMetadata metadata, BufferedImage bi) {
+    private static boolean updateReadableStateAndDims(FileMetadata metadata, ContentsAndMetadata<?> img) {
         boolean result = false;
-        if (bi != null) {
-            if (!Boolean.TRUE.equals(metadata.isReadableImage())) {
-                metadata.setReadableImage(Boolean.TRUE);
-                LOGGER.info("Readable state has been updated to {} for {}", Boolean.TRUE, metadata);
-                result = true;
-            }
-            if (bi.getWidth() > 0 && bi.getHeight() > 0 && !metadata.hasValidDimensions()) {
+        if (img.contents() != null && !Boolean.TRUE.equals(metadata.isReadable())) {
+            metadata.setReadable(Boolean.TRUE);
+            LOGGER.info("Readable state has been updated to {} for {}", Boolean.TRUE, metadata);
+            result = true;
+        }
+        if (!metadata.isAudio() && !metadata.hasValidDimensions()) {
+            if (img.contents() instanceof BufferedImage bi && bi.getWidth() > 0 && bi.getHeight() > 0) {
                 metadata.setImageDimensions(new ImageDimensions(bi.getWidth(), bi.getHeight()));
                 LOGGER.info("Image dimensions have been updated for {}", metadata);
+                result = true;
+            } else if (img.contents() instanceof SlideShow<?, ?> ppt) {
+                Dimension2D dim = Units.pointsToPixel(ppt.getPageSize());
+                metadata.setImageDimensions(new ImageDimensions((int) dim.getWidth(), (int) dim.getHeight()));
+                LOGGER.info("PowerPoint dimensions have been updated for {}", metadata);
                 result = true;
             }
         }
         return result;
     }
 
-    private static boolean updateFileSize(FileMetadata metadata, ImageAndMetadata img) {
+    private static boolean updateFileSize(FileMetadata metadata, ContentsAndMetadata<?> img) {
         if (!metadata.hasSize()) {
             if (img.contentLength() > 0) {
                 metadata.setSize(img.contentLength());
                 LOGGER.info("Size has been updated from contentLength for {}", metadata);
                 return true;
-            } else if (img.image() != null && isNotBlank(img.extension())) {
+            } else if (img.contents() instanceof BufferedImage bi && isNotBlank(img.extension())) {
                 try {
                     Path tempFile = Files.createTempFile("sm", img.extension());
                     try {
-                        if (ImageIO.write(img.image(), img.extension(), tempFile.toFile())) {
+                        if (ImageIO.write(bi, img.extension(), tempFile.toFile())) {
                             metadata.setSize(Files.size(tempFile));
                             LOGGER.info("Size has been updated from file size for {}", metadata);
                             return true;
@@ -331,7 +349,7 @@ public class MediaService {
         return false;
     }
 
-    private static boolean updateExtensionAndFilename(FileMetadata metadata, ImageAndMetadata img) {
+    private static boolean updateExtensionAndFilename(FileMetadata metadata, ContentsAndMetadata<?> img) {
         boolean result = false;
         if (isNotBlank(img.extension()) && isBlank(metadata.getExtension())) {
             metadata.setExtension(img.extension());
@@ -346,12 +364,8 @@ public class MediaService {
         return result;
     }
 
-    private static boolean shouldReadImage(URL assetUrl, FileMetadata metadata, boolean forceUpdateOfHashes) {
-        return assetUrl != null
-                && (metadata.isReadableImage() == null || (Boolean.TRUE.equals(metadata.isReadableImage())
-                        && (!metadata.hasPhash() || !metadata.hasSha1() || !metadata.hasValidDimensions()
-                                || !metadata.hasSize() || isBlank(metadata.getExtension())
-                                || isBlank(metadata.getOriginalFileName()) || forceUpdateOfHashes)));
+    private static boolean shouldReadFile(URL assetUrl, FileMetadata metadata, boolean forceUpdateOfHashes) {
+        return assetUrl != null && (forceUpdateOfHashes || metadata.shouldRead());
     }
 
     public boolean ignoreMedia(Media media, String reason) {
