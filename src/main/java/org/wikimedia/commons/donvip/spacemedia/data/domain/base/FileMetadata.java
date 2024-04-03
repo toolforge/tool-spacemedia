@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
 import static jakarta.persistence.GenerationType.SEQUENCE;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.findExtension;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getNormalizedExtension;
@@ -70,16 +71,16 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     private String phash;
 
     /**
-     * Determines if the image is readable:
+     * Determines if the file is readable:
      * <ul>
-     * <li>TRUE: image is readable</li>
-     * <li>FALSE: image is not readable (error occured during reading)</li>
-     * <li>NULL: status not determined yet, or not an image</li>
+     * <li>TRUE: file is readable</li>
+     * <li>FALSE: file is not readable (error occured during reading)</li>
+     * <li>NULL: status not determined yet, or not a file of the expected type</li>
      * </ul>
      */
     @Column(nullable = true)
-    @JsonProperty("readable_image")
-    private Boolean readableImage;
+    @JsonProperty("readable")
+    private Boolean readable;
 
     // 540 for
     // https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2014/05/briefing_prasowy_z_udzialem_wiceminister_gospodarki_grazyny_henclewskiej_dr_karlheinza_kreuzberga_z_esa_dyrektora_cnk_roberta_firmhofera_oraz_dyrektora_zpsk_pawla_wojtkiewicza_przedstawiciela_polskiego_sektora_kosmicznego/14500198-1-eng-GB/Briefing_prasowy_z_udzialem_wiceminister_gospodarki_Grazyny_Henclewskiej_Dr_Karlheinza_Kreuzberga_z_ESA_dyrektora_CNK_Roberta_Firmhofera_oraz_dyrektora_ZPSK_Pawla_Wojtkiewicza_przedstawiciela_polskiego_sektora_kosmicznego.jpg
@@ -203,12 +204,12 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
         return Boolean.TRUE != ignored && isNotBlank(sha1) && isEmpty(getCommonsFileNames());
     }
 
-    public Boolean isReadableImage() {
-        return readableImage;
+    public Boolean isReadable() {
+        return readable;
     }
 
-    public void setReadableImage(Boolean readableImage) {
-        this.readableImage = readableImage;
+    public void setReadable(Boolean readable) {
+        this.readable = readable;
     }
 
     @Transient
@@ -390,6 +391,14 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
         return isOf(DOC_EXTENSIONS, "/document/");
     }
 
+    @Transient
+    @JsonIgnore
+    public boolean shouldRead() {
+        return readable == null || (Boolean.TRUE == readable
+                && (!hasSha1() || !hasSize() || isBlank(getExtension()) || isBlank(getOriginalFileName())
+                        || (isImage() && !hasPhash()) || (!isAudio() && !hasValidDimensions())));
+    }
+
     private boolean isOf(Set<String> extensions, String type) {
         String ext = getFileExtension();
         return ext != null ? extensions.contains(ext) : assetUrl.toString().contains(type);
@@ -397,7 +406,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
     @Override
     public int hashCode() {
-        return Objects.hash(phash, sha1, readableImage, assetUrl, size, commonsFileNames, exif, dimensions, extension,
+        return Objects.hash(phash, sha1, readable, assetUrl, size, commonsFileNames, exif, dimensions, extension,
                 description, originalFileName);
     }
 
@@ -409,7 +418,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
             return false;
         FileMetadata other = (FileMetadata) obj;
         return size == other.size && Objects.equals(phash, other.phash) && Objects.equals(sha1, other.sha1)
-                && Objects.equals(readableImage, other.readableImage) && Objects.equals(assetUrl, other.assetUrl)
+                && Objects.equals(readable, other.readable) && Objects.equals(assetUrl, other.assetUrl)
                 && Objects.equals(commonsFileNames, other.commonsFileNames) && Objects.equals(exif, other.exif)
                 && Objects.equals(dimensions, other.dimensions) && Objects.equals(extension, other.extension)
                 && Objects.equals(description, other.description)
@@ -422,7 +431,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
                 + (phash != null ? "phash=" + phash + ", " : "")
                 + (dimensions != null ? "dimensions=" + dimensions + ", " : "")
                 + (extension != null ? "extension=" + extension + ", " : "")
-                + (readableImage != null ? "readableImage=" + readableImage + ", " : "")
+                + (readable != null ? "readable=" + readable + ", " : "")
                 + (assetUrl != null ? "assetUrl=" + assetUrl + ", " : "") + (size != null ? "size=" + size + ", " : "")
                 + (exif != null ? "exif=" + exif + ", " : "")
                 + (originalFileName != null ? "originalFileName=" + originalFileName + ", " : "")

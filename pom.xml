@@ -20,6 +20,7 @@
 		<batik.version>1.17</batik.version>
 		<flickr4java-version>3.0.8</flickr4java-version>
 		<jettyhttp2-version>11.0.18</jettyhttp2-version>
+		<poi-version>5.2.5</poi-version>
 		<springboot-version>3.1.10</springboot-version>
 		<scribejava-version>8.3.3</scribejava-version>
 		<twelvemonkeys-version>3.10.1</twelvemonkeys-version>
@@ -93,6 +94,16 @@
 				<groupId>org.eclipse.jetty.http2</groupId>
 				<artifactId>http2-hpack</artifactId>
 				<version>${jettyhttp2-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-scratchpad</artifactId>
+				<version>${poi-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml</artifactId>
+				<version>${poi-version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -309,6 +320,20 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
+		</dependency>
+		<!-- PPT(M) / PDF -->
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-scratchpad</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
 		</dependency>
 		<!-- Web -->
 		<dependency>

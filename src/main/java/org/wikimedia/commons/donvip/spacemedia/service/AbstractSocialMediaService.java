@@ -212,7 +212,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
     protected Collection<FileMetadata> determineMediaToUploadToSocialMedia(Collection<FileMetadata> uploadedMedia) {
         // https://developer.twitter.com/en/docs/twitter-api/v1/media/upload-media/uploading-media/media-best-practices
         // attach up to 4 photos
-        return determineAtMost(4, uploadedMedia.stream().filter(x -> x.isReadableImage() == Boolean.TRUE
+        return determineAtMost(4, uploadedMedia.stream().filter(x -> x.isReadable() == Boolean.TRUE
                 && x.hasPhash() && x.getMime() != null && x.getMime().startsWith("image/")
                 && !"image/gif".equals(x.getMime())).toList());
     }
