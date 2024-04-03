@@ -219,7 +219,7 @@ public final class Utils {
         if (len < 3 || len > 4) {
             return null;
         }
-        return getNormalizedExtension(ext);
+        return getNormalizedExtension(ext.replace("\"", ""));
     }
 
     public static String getNormalizedExtension(String ext) {
