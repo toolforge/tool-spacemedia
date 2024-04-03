@@ -61,7 +61,8 @@ public class YouTubeApiService {
     }
 
     public VideoListResponse listVideos(List<String> videoIds) throws IOException {
-        return executeRequest(youtube.videos().list(List.of("contentDetails", "snippet", "status")).setId(videoIds));
+        return videoIds.isEmpty() ? new VideoListResponse()
+                : executeRequest(youtube.videos().list(List.of("contentDetails", "snippet", "status")).setId(videoIds));
     }
 
     public Video getVideo(String videoId) throws IOException {

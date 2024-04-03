@@ -340,6 +340,12 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 		</dependency>
+		<!-- Video -->
+		<dependency>
+			<groupId>org.openpnp</groupId>
+			<artifactId>opencv</artifactId>
+			<version>4.9.0-0</version>
+		</dependency>
 		<!-- Web -->
 		<dependency>
 			<groupId>org.webjars</groupId>

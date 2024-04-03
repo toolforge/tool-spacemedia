@@ -2,27 +2,22 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.execOutput;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -37,6 +32,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeApiService;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeMediaProcessor;
+import org.wikimedia.commons.donvip.spacemedia.utils.MediaUtils;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.youtube.model.SearchListResponse;
@@ -50,9 +46,6 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgYouTubeService.class);
 
-    private static final Pattern MERGING_DL = Pattern.compile("\\[ffmpeg\\] Merging formats into \"(\\S{11}\\.\\S{3,4})\"");
-    private static final Pattern ALREADY_DL = Pattern.compile("\\[download\\] (\\S{11}\\.\\S{3,4}) has already been downloaded and merged");
-
     @Lazy
     @Autowired
     private YouTubeApiService youtubeService;
@@ -61,8 +54,11 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     @Autowired
     private YouTubeMediaProcessor mediaProcessor;
 
+    private final Map<String, String> userNamesByRepoIds;
+
     protected AbstractOrgYouTubeService(YouTubeMediaRepository repository, String id, Set<String> youtubeChannels) {
-        super(repository, id, youtubeChannels);
+        super(repository, id, youtubeChannels.stream().map(x -> x.split(":")[1]).collect(toSet()));
+        userNamesByRepoIds = youtubeChannels.stream().map(x -> x.split(":")).collect(toMap(x -> x[1], x -> x[0]));
     }
 
     @Override
@@ -78,6 +74,11 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     @Override
     protected boolean includeByPerceptualHash() {
         return false;
+    }
+
+    @Override
+    public String getUiRepoId(String repoId) {
+        return userNamesByRepoIds.get(repoId);
     }
 
     @Override
@@ -211,22 +212,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     }
 
     private Path downloadVideo(YouTubeMedia video) {
-        try {
-            String url = video.getUniqueMetadata().getAssetUrl().toExternalForm();
-            String[] output = execOutput(List.of(
-                "youtube-dl", "--no-progress", "--id", "--write-auto-sub", "--convert-subs", "srt", url),
-                30, TimeUnit.MINUTES).split("\n");
-            Optional<Matcher> matcher = Arrays.stream(output).map(ALREADY_DL::matcher).filter(Matcher::matches).findFirst();
-            if (matcher.isEmpty()) {
-                matcher = Arrays.stream(output).map(MERGING_DL::matcher).filter(Matcher::matches).findFirst();
-            }
-            if (matcher.isPresent()) {
-                return Paths.get(matcher.get().group(1));
-            }
-        } catch (IOException | ExecutionException | InterruptedException e) {
-            LOGGER.error("Error while downloading YouTube video: {}", e.getMessage());
-        }
-        return null;
+        return MediaUtils.downloadYoutubeVideo(video.getUniqueMetadata().getAssetUrl().toExternalForm());
     }
 
     @Override
