@@ -586,13 +586,17 @@ public class MediaService {
         boolean result = false;
         for (String text : texts) {
             if (StringUtils.isNotBlank(text)) {
-                Collection<WikiPage> images = commonsService.searchImages(text.strip());
-                if (!images.isEmpty()) {
-                    for (FileMetadata metadata : metadatas) {
-                        if (findCommonsFilesWithIdAndPhash(images, metadata)) {
-                            result = true;
+                try {
+                    Collection<WikiPage> images = commonsService.searchImages(text.strip());
+                    if (!images.isEmpty()) {
+                        for (FileMetadata metadata : metadatas) {
+                            if (findCommonsFilesWithIdAndPhash(images, metadata)) {
+                                result = true;
+                            }
                         }
                     }
+                } catch (IOException e) {
+                    LOGGER.error("Failed to search images: {}", e.getMessage());
                 }
             }
         }
@@ -602,8 +606,12 @@ public class MediaService {
     public List<String> findSmallerCommonsFilesWithIdAndPhash(Media media, FileMetadata metadata) throws IOException {
         List<String> result = new ArrayList<>();
         for (String idUsedInCommons : media.getIdUsedInCommons()) {
-            result.addAll(findCommonsFilesWithIdAndPhashFiltered(commonsService.searchImages(idUsedInCommons), metadata,
-                    MediaService::filterBySameMimeAndSmallerSize));
+            try {
+                result.addAll(findCommonsFilesWithIdAndPhashFiltered(commonsService.searchImages(idUsedInCommons),
+                        metadata, MediaService::filterBySameMimeAndSmallerSize));
+            } catch (IOException e) {
+                LOGGER.error("Failed to search images: {}", e.getMessage());
+            }
         }
         return result;
     }
