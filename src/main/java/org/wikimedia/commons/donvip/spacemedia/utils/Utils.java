@@ -343,16 +343,18 @@ public final class Utils {
      */
     public static String execOutput(List<String> command, long timeout, TimeUnit unit)
             throws IOException, ExecutionException, InterruptedException {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.join(" ", command));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(String.join(" ", command));
         }
         Path out = Files.createTempFile("spacemedia_exec_" + command.get(0) + "_", ".txt");
         try {
             Process p = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(out.toFile()).start();
-            if (!p.waitFor(timeout, unit) || p.exitValue() != 0) {
-                throw new ExecutionException(command.toString(), null);
+            boolean error = !p.waitFor(timeout, unit) || p.exitValue() != 0;
+            String output = String.join("\n", Files.readAllLines(out)).trim();
+            if (error) {
+                throw new ExecutionException(command.toString() + " => " + output, null);
             }
-            return String.join("\n", Files.readAllLines(out)).trim();
+            return output;
         } finally {
             try {
                 Files.delete(out);
