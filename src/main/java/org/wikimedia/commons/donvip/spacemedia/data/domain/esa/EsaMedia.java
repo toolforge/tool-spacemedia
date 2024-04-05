@@ -22,9 +22,9 @@ import jakarta.persistence.Table;
 @Table(indexes = { @Index(columnList = "url") })
 public class EsaMedia extends Media implements WithKeywords {
 
-    // 250 for
-    // https://www.esa.int/ESA_Multimedia/Images/2014/05/Wspolne_zwiedzanie_wystawy_osiagniec_polskiego_sektora_kosmicznego_przez_wiceminister_gospodarki_Grazyne_Henclewska_i_szefa_Biura_Politycznego_Dyrektora_Generalnego_ESA_Dr_Karlheinza_Kreuzberga
-    @Column(nullable = false, unique = true, length = 250)
+    // 275 for
+    // https://www.esa.int/ESA_Multimedia/Images/2014/05/Briefing_prasowy_z_udzialem_wiceminister_gospodarki_Grazyny_Henclewskiej_Dr_Karlheinza_Kreuzberga_z_ESA_dyrektora_CNK_Roberta_Firmhofera_oraz_dyrektora_ZPSK_Pawla_Wojtkiewicza_przedstawiciela_polskiego_sektora_kosmicznego
+    @Column(nullable = false, unique = true, length = 275)
     private URL url;
     @Lob
     @Column(columnDefinition = "TEXT")
