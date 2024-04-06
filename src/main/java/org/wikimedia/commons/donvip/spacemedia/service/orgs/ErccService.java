@@ -278,11 +278,14 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
             // STEP 2 - Call API using token and cookies
             try (CloseableHttpResponse response = executeRequest(request, httpclient, context);
                     InputStream in = response.getEntity().getContent()) {
-                if (response.getStatusLine().getStatusCode() >= 400) {
-                    LOGGER.error("{} => {}", request, response.getStatusLine());
-                    return media;
-                }
                 return media.copyDataFrom(mapMedia(jackson.readValue(in, MapsItem.class), media.getId()));
+            } catch (IOException e) {
+                LOGGER.error("{} => {}", request, e.getMessage());
+                if (e.getMessage() != null && e.getMessage().endsWith("403 Forbidden")) {
+                    return null;
+                } else {
+                    throw e;
+                }
             }
         }
     }
