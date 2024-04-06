@@ -114,7 +114,8 @@ public class FlickrService {
         return flickr.getPhotosInterface().getAllContexts(photoId).getPhotoSetList();
     }
 
-    // TODO: create a pull request at https://github.com/boncey/Flickr4Java
+    // TODO: to remove after upgrading to a new version including
+    // https://github.com/boncey/Flickr4Java/pull/724
     static class UrlsInterfacePatched extends UrlsInterface {
 
         private final String apiKey;
