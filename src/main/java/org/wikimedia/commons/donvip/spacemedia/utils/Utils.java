@@ -247,7 +247,7 @@ public final class Utils {
     public static Pair<Path, Long> downloadFile(URL url, String fileName) throws IOException {
         Path output = Files.createDirectories(Path.of("files")).resolve(fileName);
         Long size = 0L;
-        LOGGER.info("Downloading file {}", url);
+        LOGGER.info("Downloading file {} as {}", url, fileName);
         try (ReadableByteChannel rbc = Channels.newChannel(url.openStream());
                 FileOutputStream fos = new FileOutputStream(output.toString())) {
             size = fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
