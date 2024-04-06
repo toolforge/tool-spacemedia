@@ -19,6 +19,7 @@ import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeStringValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeTimeValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeWikidataItemIdValue;
 import static org.wikidata.wdtk.datamodel.helpers.Datamodel.makeWikidataPropertyIdValue;
+import static org.wikimedia.commons.donvip.spacemedia.utils.MediaUtils.convertPowerpointFileToPdf;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.appendChildElement;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.downloadFile;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
@@ -174,6 +175,8 @@ import com.github.scribejava.core.oauth.OAuth10aService;
 @Service
 public class CommonsService {
 
+    private static final String SUCCESS = "Success";
+
     public static final String BASE_URL = "https://commons.wikimedia.org";
 
     private static final String DUPLICATE = "Duplicate";
@@ -196,6 +199,8 @@ public class CommonsService {
     private static final Set<String> UNWANTED_CATEGORIES = Set.of("One of", "Two of", "Three of", "Four of", "Five of");
     private static final List<Pattern> UNWANTED_CATEGORIES_PATTERNS = List.of(Pattern
             .compile("(January|February|March|April|May|June|July|August|September|October|November|December) \\d{4}"));
+
+    private static final Set<String> PPT_EXTENSIONS = Set.of("ppt", "pptm", "pptx");
 
     /**
      * Minimal delay between successive uploads, in seconds.
@@ -893,23 +898,16 @@ public class CommonsService {
             boolean retryAfterRandomProxy403error, boolean uploadByUrl) throws IOException, UploadException {
         if (Video2CommonsService.V2C_VIDEO_EXTENSIONS.stream().anyMatch(
                 e -> e.equals(ext) || url.getFile().endsWith('.' + e)) || "www.youtube.com".equals(url.getHost())) {
-            Video2CommonsTask task = video2Commons.uploadVideo(wikiCode, filename, url, orgId, mediaId,
-                    "webm (VP9/Opus)");
-            if (task.getStatus().shouldSucceed()) {
-                return task.getFilename();
-            } else if (task.getText().contains("The file format could not be recognized")
-                    || task.getText().contains("Did not get any data blocks")) {
-                throw new IgnoreException(task.toString());
-            } else {
-                throw new UploadException(task.toString());
-            }
+            return doUploadVideo(wikiCode, filename, url, orgId, mediaId);
         } else if (!isPermittedFileExt(ext) && !isPermittedFileUrl(url)) {
             throw new UploadException("Neither extension " + ext + " nor URL " + url
                     + " match any supported file type: " + permittedFileTypes);
         }
+        boolean isPpt = ext != null && PPT_EXTENSIONS.contains(ext);
         String filenameExt = requireNonNull(filename, "filename");
-        if (isNotBlank(ext) && !filenameExt.endsWith('.' + ext)) {
-            filenameExt += '.' + ext;
+        String targetExt = isPpt ? "pdf" : ext;
+        if (isNotBlank(ext) && !filenameExt.endsWith('.' + targetExt)) {
+            filenameExt += '.' + targetExt;
         }
         Map<String, String> params = new TreeMap<>(Map.of(
                 "action", "upload",
@@ -923,16 +921,22 @@ public class CommonsService {
             params.put("text", wikiCode);
         }
         Pair<Path, Long> localFile = null;
-        if (uploadByUrl && hasUploadByUrlRight()) {
+        boolean doUploadByUrl = !isPpt && uploadByUrl && hasUploadByUrlRight();
+        if (doUploadByUrl) {
             params.put("url", url.toExternalForm());
         } else {
-            localFile = downloadFile(url, filenameExt);
+            localFile = downloadFile(url,
+                    isNotBlank(ext) && !filename.endsWith('.' + ext) ? filename + '.' + ext : filename);
+            if (isPpt) {
+                localFile = convertPowerpointFileToPdf(localFile.getKey());
+                LOGGER.info("Powerpoint file converted to PDF: {}", localFile.getKey());
+            }
         }
 
         ensureUploadRate();
 
         UploadApiResponse apiResponse = null;
-        if (uploadByUrl && hasUploadByUrlRight()) {
+        if (doUploadByUrl) {
             try {
                 LOGGER.info("Uploading {} by URL as {}..", url, filenameExt);
                 apiResponse = apiHttpPost(params, UploadApiResponse.class);
@@ -949,7 +953,7 @@ public class CommonsService {
             }
         } else if (localFile != null) {
             LOGGER.info("Uploading {} in chunks as {}..", url, filenameExt);
-            apiResponse = doUploadInChunks(ext, params, localFile, 5_242_880);
+            apiResponse = doUploadInChunks(targetExt, params, localFile, 5_242_880);
         }
         LOGGER.info("Upload of {} as {}: {}", url, filenameExt, apiResponse);
         if (apiResponse == null) {
@@ -990,13 +994,30 @@ public class CommonsService {
                 }
             }
             throw new UploadException(error.toString());
-        } else if (!"Success".equals(upload.getResult())) {
+        } else if (!SUCCESS.equals(upload.getResult())) {
             throw new UploadException(apiResponse.toString());
         }
         if (!sha1.equalsIgnoreCase(upload.getImageInfo().getSha1())) {
             LOGGER.warn("SHA1 mismatch for {} ! Expected {}, got {}", url, sha1, upload.getImageInfo().getSha1());
         }
+        if (localFile != null) {
+            Files.deleteIfExists(localFile.getKey());
+        }
         return upload.getFilename();
+    }
+
+    private String doUploadVideo(String wikiCode, String filename, URL url, String orgId, CompositeMediaId mediaId)
+            throws IOException, UploadException {
+        Video2CommonsTask task = video2Commons.uploadVideo(wikiCode, filename, url, orgId, mediaId,
+                "webm (VP9/Opus)");
+        if (task.getStatus().shouldSucceed()) {
+            return task.getFilename();
+        } else if (task.getText().contains("The file format could not be recognized")
+                || task.getText().contains("Did not get any data blocks")) {
+            throw new IgnoreException(task.toString());
+        } else {
+            throw new UploadException(task.toString());
+        }
     }
 
     public void editStructuredDataContent(String filename, Map<String, String> legends,
@@ -1118,10 +1139,7 @@ public class CommonsService {
             int index = 0;
             byte[] bytes = in.readNBytes(16_384);
             UploadApiResponse apiResponse = apiHttpPost(params, UploadApiResponse.class,
-                    newChunkPayload(bytes, index++, ext));
-            if (apiResponse.getError() != null || !"Continue".equals(apiResponse.getUpload().getResult())) {
-                throw new IOException(apiResponse.toString());
-            }
+                    newChunkPayload(bytes, index++, ext)).checkStatus();
 
             // #2: Pass filekey parameter for second and further chunks
             params.put("filekey", apiResponse.getUpload().getFilekey());
@@ -1129,10 +1147,8 @@ public class CommonsService {
                 params.put("offset", Long.toString(apiResponse.getUpload().getOffset()));
                 bytes = in.readNBytes(chunkSize);
                 if (bytes.length > 0) {
-                    apiResponse = apiHttpPost(params, UploadApiResponse.class, newChunkPayload(bytes, index++, ext));
-                    if (apiResponse.getError() != null || !"Continue".equals(apiResponse.getUpload().getResult())) {
-                        throw new IOException(apiResponse.toString());
-                    }
+                    apiResponse = apiHttpPost(params, UploadApiResponse.class, newChunkPayload(bytes, index++, ext))
+                            .checkStatus();
                 }
             }
 
@@ -1141,10 +1157,7 @@ public class CommonsService {
             params.remove("stash");
             params.put("comment", comment);
             params.put("text", text);
-            return apiHttpPost(params, UploadApiResponse.class);
-
-        } finally {
-            Files.delete(localFile.getKey());
+            return apiHttpPost(params, UploadApiResponse.class).checkStatus();
         }
     }
 
@@ -1259,7 +1272,7 @@ public class CommonsService {
     private int edit(Map<String, String> params, boolean retryAttempt) throws IOException {
         EditApiResponse response = apiHttpPost(params, EditApiResponse.class);
         if (response.getEdit() == null || response.getError() != null
-                || !"Success".equalsIgnoreCase(response.getEdit().getResult())) {
+                || !SUCCESS.equalsIgnoreCase(response.getEdit().getResult())) {
             if ("badtoken".equals(response.getError().getCode())) {
                 LOGGER.error("API rejected our CSRF token {}", token);
                 // Renew it and try again once
