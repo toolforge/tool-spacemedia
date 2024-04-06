@@ -485,7 +485,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     protected Pair<String, Map<String, String>> getWikiFileDesc(NasaSdoMedia media, FileMetadata metadata)
             throws IOException {
         return Pair.of("{{NASA SDO|instrument=" + media.getDataType().getInstrument() + "|band="
-                + media.getDataType().name().replace("_", "") + "|type=" + metadata.getFileExtension() + "|id="
+                + media.getDataType().name().replace("_", "") + "|type=" + metadata.getFileExtensionOnCommons() + "|id="
                 + media.getId().getMediaId() + "}}", Map.of());
     }
 

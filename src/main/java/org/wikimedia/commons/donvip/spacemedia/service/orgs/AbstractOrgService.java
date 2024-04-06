@@ -1195,7 +1195,7 @@ public abstract class AbstractOrgService<T extends Media>
                 result = result.replaceAll(
                         "<a href=\"" + metadata.getAssetUrl() + "\"><img src=\"[^\"]+\" alt=\"[^\"]*\"></a>",
                         "[[File:" + CommonsService.normalizeFilename(media.getUploadTitle(metadata)) + '.'
-                                + metadata.getFileExtension() + "|120px]]");
+                                + metadata.getFileExtensionOnCommons() + "|120px]]");
             }
             return result;
         }
@@ -1227,7 +1227,8 @@ public abstract class AbstractOrgService<T extends Media>
         StringBuilder sb = new StringBuilder();
         media.getMetadataStream().filter(m -> m != metadata && m.getAssetUrl() != null && m.isIgnored() != Boolean.TRUE)
                 .map(m -> media.getFirstCommonsFileNameOrUploadTitle(m) + '|'
-                        + ofNullable(m.getFileExtension()).orElse("TBD").toUpperCase(Locale.ENGLISH) + " version\n")
+                        + ofNullable(m.getFileExtensionOnCommons()).orElse("TBD").toUpperCase(Locale.ENGLISH)
+                        + " version\n")
                 .distinct().forEach(sb::append);
         String result = sb.toString();
         return result.isEmpty() ? Optional.empty() : Optional.of(result.trim());
@@ -1313,7 +1314,7 @@ public abstract class AbstractOrgService<T extends Media>
         if (includeHidden) {
             UnitedStates.getUsMilitaryCategory(media).ifPresent(result::add);
             result.add("Spacemedia files uploaded by " + commonsService.getAccount());
-            if ("gif".equals(metadata.getFileExtension())) {
+            if ("gif".equals(metadata.getFileExtensionOnCommons())) {
                 try {
                     int numImages = ImageUtils.readNumberOfImages(metadata.getAssetUri(), true);
                     LOGGER.info("GIF file with {} image(s): {}", numImages, metadata.getAssetUri());

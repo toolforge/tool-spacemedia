@@ -319,6 +319,17 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
     @Transient
     @JsonIgnore
+    public String getFileExtensionOnCommons() {
+        String ext = getFileExtension();
+        return ext == null ? ext : switch (ext) {
+        case "mp4" -> "webm";
+        case "ppt", "pptm", "pptx" -> "pdf";
+        default -> ext;
+        };
+    }
+
+    @Transient
+    @JsonIgnore
     public String getFileName() {
         return Utils.getFilename(getAssetUrl());
     }

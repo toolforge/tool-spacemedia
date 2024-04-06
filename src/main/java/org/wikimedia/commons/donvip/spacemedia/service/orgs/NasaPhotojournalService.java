@@ -299,7 +299,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         String desc = getDescription(media, metadata);
         StringBuilder sb = new StringBuilder("{{NASA Photojournal\n| catalog = ").append(media.getId().getMediaId())
                 .append("\n| image= ").append(media.isImage()).append("\n| video= ").append(media.isVideo())
-                .append("\n| animation= ").append("gif".equals(metadata.getFileExtension()))
+                .append("\n| animation= ").append("gif".equals(metadata.getFileExtensionOnCommons()))
                 .append("\n| mission= ").append(media.getMission())
                 .append("\n| instrument= ").append(media.getInstrument()).append("\n| caption = ").append("{{")
                 .append(lang).append("|1=").append(CommonsService.formatWikiCode(desc))
@@ -336,7 +336,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         if (media.getKeywords().contains("anaglyph")) {
             result.add("Moon".equalsIgnoreCase(media.getTarget()) ? "Anaglyphs of the Moon" : "Anaglyphs");
         }
-        if (media.getKeywords().contains("animation") && "gif".equals(metadata.getFileExtension())) {
+        if (media.getKeywords().contains("animation") && "gif".equals(metadata.getFileExtensionOnCommons())) {
             result.add("Mars".equalsIgnoreCase(media.getTarget()) ? "Animated GIF of Mars" : "Animated GIF files");
         }
         if (media.getKeywords().contains("qtvr") && "mov".equals(metadata.getFileExtension())) {

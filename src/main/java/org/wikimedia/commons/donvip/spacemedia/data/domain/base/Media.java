@@ -221,8 +221,8 @@ public class Media implements MediaProjection, MediaDescription {
 
     protected String getUploadId(FileMetadata fileMetadata) {
         String result = getIdUsedInOrg();
-        if (getMetadataStream().map(fm -> fm.getFileExtension()).filter(Objects::nonNull)
-                .filter(ext -> ext.equals(fileMetadata.getFileExtension())).count() > 1) {
+        if (getMetadataStream().map(fm -> fm.getFileExtensionOnCommons()).filter(Objects::nonNull)
+                .filter(ext -> ext.equals(fileMetadata.getFileExtensionOnCommons())).count() > 1) {
             String filename = fileMetadata.getFileName();
             if (!strippedLower(result).equals(strippedLower(filename))) {
                 if (filename.contains(result)) {
@@ -534,7 +534,7 @@ public class Media implements MediaProjection, MediaDescription {
      */
     public final String getFirstCommonsFileNameOrUploadTitle(FileMetadata metadata) {
         Set<String> commonsFileNames = metadata.getCommonsFileNames();
-        return isEmpty(commonsFileNames) ? getUploadTitle(metadata) + '.' + metadata.getFileExtension()
+        return isEmpty(commonsFileNames) ? getUploadTitle(metadata) + '.' + metadata.getFileExtensionOnCommons()
                 : commonsFileNames.iterator().next();
     }
 
