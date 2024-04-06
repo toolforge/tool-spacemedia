@@ -85,11 +85,15 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
     public Set<String> findCategories(ErccMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         int year = media.getYear().getValue();
-        boolean yearMapCatAdded = addLocationMapCat(result, year, media.getMainCountry());
+        String mainCountry = media.getMainCountry();
+        if (isBlank(mainCountry) && media.getCountries().size() == 1) {
+            mainCountry = media.getCountries().iterator().next();
+        }
+        boolean yearMapCatAdded = addLocationMapCat(result, year, mainCountry);
         for (String country : media.getCountries()) {
             yearMapCatAdded |= addLocationMapCat(result, year, country);
         }
-        if (isBlank(media.getMainCountry()) || media.getCountries().size() >= 3) {
+        if (isBlank(mainCountry) || media.getCountries().size() >= 3) {
             yearMapCatAdded |= addLocationMapCat(result, year, media.getContinent());
         }
         if (!yearMapCatAdded) {
@@ -100,8 +104,8 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
             result.add(cat);
         } else {
             result.add(cat + " of " + year);
-            if (isNotBlank(media.getMainCountry())) {
-                result.add(cat + " of " + media.getMainCountry());
+            if (isNotBlank(mainCountry)) {
+                result.add(cat + " of " + mainCountry);
             }
             media.getEventTypes().forEach(event -> ofNullable(switch (event) {
             case "Cold Wave" -> "cold waves";
