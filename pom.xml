@@ -340,6 +340,11 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>de.rototor.pdfbox</groupId>
+			<artifactId>graphics2d</artifactId>
+			<version>3.0.1</version>
+		</dependency>
 		<!-- Video -->
 		<dependency>
 			<groupId>org.openpnp</groupId>
