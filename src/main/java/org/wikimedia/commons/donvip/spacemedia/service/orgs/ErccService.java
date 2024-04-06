@@ -100,6 +100,9 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
             result.add(cat);
         } else {
             result.add(cat + " of " + year);
+            if (isNotBlank(media.getMainCountry())) {
+                result.add(cat + " of " + media.getMainCountry());
+            }
             media.getEventTypes().forEach(event -> ofNullable(switch (event) {
             case "Cold Wave" -> "cold waves";
             case "Assault", "Conflict" -> "conflicts";
@@ -111,7 +114,7 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
             case "Heat Wave" -> "heatwaves";
             case "Landslide", "Mud Slide" -> "landslides";
             case "Meteo Warning" -> "weather warnings";
-            case "Population Displacement" -> "displaced persons";
+            case "Population Displacement" -> "population displacements";
             case "Extratropical Cyclone", "Storm Surge", "Tornado", "Tropical Cyclone" -> "storms";
             case "Tsunami" -> "tsunamis";
             case "Volcanic eruption" -> "volcanic eruptions";
