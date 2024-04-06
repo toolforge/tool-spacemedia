@@ -7,7 +7,6 @@ import static org.wikimedia.commons.donvip.spacemedia.service.MediaService.ignor
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -36,7 +35,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
@@ -76,12 +74,11 @@ public class FlickrMediaProcessorService {
     }
 
     public URL getVideoUrl(FlickrMedia media) {
-        return newURL(flickrVideoDownloadUrl.replace("<id>", media.getId().getMediaId()));
+        return getVideoUrl(media.getIdUsedInOrg());
     }
 
-    public boolean isBadVideoEntry(FlickrMedia media) throws URISyntaxException {
-        return FlickrMediaType.video == media.getMedia()
-                && !getVideoUrl(media).toURI().equals(media.getUniqueMetadata().getAssetUrl().toURI());
+    public URL getVideoUrl(String id) {
+        return newURL(flickrVideoDownloadUrl.replace("<id>", id));
     }
 
     @Transactional
@@ -106,11 +103,11 @@ public class FlickrMediaProcessorService {
             save = true;
             try {
                 FlickrLicense license = FlickrLicense.of(media.getLicense());
-                if (license == FlickrLicense.Public_Domain_Mark
-                        && !media.isIgnored()
+                if (license == FlickrLicense.Public_Domain_Mark && !media.isIgnored()
                         && !UnitedStates.isClearPublicDomain(media.getDescription())) {
-                    saveMetadata = ignoreMetadata(media.getUniqueMetadata(),
-                            "Public Domain Mark is not a legal license");
+                    for (FileMetadata metadata : media.getMetadata()) {
+                        saveMetadata = ignoreMetadata(metadata, "Public Domain Mark is not a legal license");
+                    }
                 } else if (!license.isFree()) {
                     LOGGER.debug("Non-free Flickr licence for media {}: {}", media, license);
                 }
@@ -128,18 +125,10 @@ public class FlickrMediaProcessorService {
                     save = true;
                 }
             } catch (FlickrException e) {
-                LOGGER.error("Failed to retrieve photosets of image " + media.getId(), e);
+                LOGGER.error("Failed to retrieve photosets of image {}: {}", media.getId(), e.getMessage());
             }
         }
-        try {
-            if (isBadVideoEntry(media)) {
-                save = handleBadVideo(media);
-            }
-        } catch (URISyntaxException e) {
-            LOGGER.error("URISyntaxException for video " + media.getId(), e);
-        }
-        if ((!isPresentInDb || isEmpty(media.getUniqueMetadata().getCommonsFileNames()))
-                && media.getPhotosets() != null) {
+        if ((!isPresentInDb || isEmpty(media.getAllCommonsFileNames())) && media.getPhotosets() != null) {
             for (FlickrPhotoSet photoSet : media.getPhotosets()) {
                 if (StringUtils.isBlank(photoSet.getPathAlias())) {
                     photoSet.setPathAlias(flickrAccount);
@@ -149,7 +138,9 @@ public class FlickrMediaProcessorService {
         }
         saveMetadata |= checkIgnoredCriteria(media, ignoreCriterias);
         if (saveMetadata) {
-            mediaService.saveMetadata(media.getUniqueMetadata());
+            for (FileMetadata metadata : media.getMetadata()) {
+                mediaService.saveMetadata(metadata);
+            }
         }
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb, saver);
         savePhotoSets = false;
@@ -168,18 +159,19 @@ public class FlickrMediaProcessorService {
 
     public boolean checkIgnoredCriteria(FlickrMedia media, List<IgnoreCriteria> ignoreCriterias) {
         boolean result = false;
-        FileMetadata fm = media.getUniqueMetadata();
-        if (Boolean.TRUE != fm.isIgnored()) {
-            for (IgnoreCriteria c : ignoreCriterias) {
-                if (c.match(media)) {
-                    result |= ignoreMetadata(fm, "Ignored criteria: " + c);
+        for (FileMetadata fm : media.getMetadata()) {
+            if (Boolean.TRUE != fm.isIgnored()) {
+                for (IgnoreCriteria c : ignoreCriterias) {
+                    if (c.match(media)) {
+                        result |= ignoreMetadata(fm, "Ignored criteria: " + c);
+                    }
                 }
-            }
-            if (!result && media.getPhotosets() != null) {
-                for (FlickrPhotoSet photoSet : media.getPhotosets()) {
-                    if (ignoredPhotoAlbums.contains(photoSet.getId())) {
-                        result |= ignoreMetadata(fm, "Photoset ignored: " + photoSet.getTitle());
-                        break;
+                if (!result && media.getPhotosets() != null) {
+                    for (FlickrPhotoSet photoSet : media.getPhotosets()) {
+                        if (ignoredPhotoAlbums.contains(photoSet.getId())) {
+                            result |= ignoreMetadata(fm, "Photoset ignored: " + photoSet.getTitle());
+                            break;
+                        }
                     }
                 }
             }
@@ -200,15 +192,6 @@ public class FlickrMediaProcessorService {
             media.getPhotosets().forEach(flickrPhotoSetRepository::save);
         }
         return media;
-    }
-
-    private boolean handleBadVideo(FlickrMedia media) {
-        LOGGER.warn("Handling bad video {}", media);
-        FileMetadata metadata = media.getUniqueMetadata();
-        metadata.setCommonsFileNames(null);
-        metadata.setSha1(null);
-        metadata.setAssetUrl(getVideoUrl(media));
-        return true;
     }
 
     private Set<FlickrPhotoSet> getPhotoSets(FlickrMedia media, String flickrAccount) throws FlickrException {
@@ -232,23 +215,25 @@ public class FlickrMediaProcessorService {
         try {
             FlickrLicense license = FlickrLicense.of(media.getLicense());
             if (!license.isFree() && !mediaInRepo.isIgnored()) {
-                String message = String.format("Flickr license for picture %d of %s is no longer free!", media.getId(),
+                String message = String.format("Flickr license for picture %s of %s is no longer free!", media.getId(),
                         flickrAccount);
-                mediaInRepo.setIgnored(Boolean.TRUE);
-                mediaInRepo.setIgnoredReason(message);
+                mediaService.ignoreMedia(mediaInRepo, message);
                 LOGGER.warn(message);
-            } else if (license.isFree() && mediaInRepo.isIgnored()
-                    && mediaInRepo.getIgnoredReason() != null
-                    && mediaInRepo.getIgnoredReason().endsWith("is no longer free!")) {
+            } else if (license.isFree()) {
                 LOGGER.info("Flickr license for picture {} of {} is free again!", media.getId(), flickrAccount);
-                mediaInRepo.setIgnored(Boolean.FALSE);
-                mediaInRepo.setIgnoredReason(null);
+                for (FileMetadata metadata : media.getMetadata()) {
+                    if (Boolean.TRUE == metadata.isIgnored() && metadata.getIgnoredReason() != null
+                            && metadata.getIgnoredReason().endsWith("is no longer free!")) {
+                        metadata.setIgnored(Boolean.FALSE);
+                        metadata.setIgnoredReason(null);
+                        mediaService.saveMetadata(metadata);
+                    }
+                }
             }
         } catch (IllegalArgumentException e) {
-            String message = String.format("Flickr license for picture %d of %s is unknown!",
+            String message = String.format("Flickr license for picture %s of %s is unknown!",
                     media.getId(), flickrAccount);
-            mediaInRepo.setIgnored(Boolean.TRUE);
-            mediaInRepo.setIgnoredReason(message);
+            mediaService.ignoreMedia(mediaInRepo, message);
             LOGGER.warn(message);
         }
         mediaInRepo.setLicense(media.getLicense());

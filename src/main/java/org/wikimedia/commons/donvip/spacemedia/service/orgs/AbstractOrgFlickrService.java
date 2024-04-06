@@ -160,8 +160,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             result.add("Flickrreview"); // Strange case
         }
         final String publicDomainMark = FlickrLicense.Public_Domain_Mark.getWikiTemplate();
-        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(),
-                getSourceUrl(media, media.getUniqueMetadata()));
+        VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media, null));
         if (t != null) {
             result.add(t.virinTemplate());
             if (StringUtils.isNotBlank(t.pdTemplate())) {
@@ -195,9 +194,6 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     protected void checkUploadPreconditions(FlickrMedia media, boolean checkUnicity, boolean isManual)
             throws URISyntaxException {
         super.checkUploadPreconditions(media, checkUnicity, isManual);
-        if (processor.isBadVideoEntry(media)) {
-            throw new ImageUploadForbiddenException("Bad video download link: " + media);
-        }
         if (!"ready".equals(media.getMediaStatus()) && StringUtils.isNotBlank(media.getMediaStatus())) {
             throw new ImageUploadForbiddenException("Media is not ready: " + media);
         }
@@ -237,7 +233,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
                 uploadedMedia.addAll(localUploadedImages);
                 count += result.getLeft();
                 postSocialMedia(localUploadedImages,
-                        localUploadedImages.stream().map(m -> m.getUniqueMetadata()).toList());
+                        localUploadedImages.stream().flatMap(m -> m.getMetadataStream()).toList());
                 if (minUploadDate == null) {
                     // Only delete pictures not found in complete updates
                     Set<FlickrMedia> noLongerFreePictures = flickrRepository.findNotIn(Set.of(flickrAccount),
@@ -326,7 +322,9 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             media.copyDataFrom(
                     mapPhoto(flickrService.findPhoto(media.getId().getMediaId()), media.getPathAlias()));
             if (processor.checkIgnoredCriteria(media, getIgnoreCriteria())) {
-                mediaService.saveMetadata(media.getUniqueMetadata());
+                for (FileMetadata metadata : media.getMetadata()) {
+                    mediaService.saveMetadata(metadata);
+                }
             }
             return media;
         } catch (FlickrException e) {
@@ -360,13 +358,20 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         m.setMedia(FlickrMediaType.valueOf(p.getMedia()));
         m.setMediaStatus(p.getMediaStatus());
         m.setOriginalFormat(p.getOriginalFormat());
+        ImageDimensions dimensions = new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight());
         try {
             addMetadata(m, p.getOriginalUrl(), md -> {
-                md.setImageDimensions(new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight()));
+                md.setImageDimensions(dimensions);
                 md.setExtension(p.getOriginalFormat());
             });
         } catch (FlickrException e) {
             LOGGER.error("Flickr error : {}", e.getMessage(), e);
+        }
+        if ("jpg".equals(p.getOriginalFormat()) && "video".equals(p.getMedia())) {
+            addMetadata(m, processor.getVideoUrl(p.getId()), md -> {
+                md.setImageDimensions(dimensions);
+                md.setExtension("mp4");
+            });
         }
         m.setTags(p.getTags().stream().map(Tag::getValue).collect(toSet()));
         m.setThumbnailUrl(newURL(p.getThumbnailUrl()));

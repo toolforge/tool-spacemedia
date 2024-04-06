@@ -50,7 +50,7 @@ class NasaFlickrServiceTest extends AbstractOrgServiceTest {
         assertEquals(
                 "[https://www.flickr.com/photos/nasahqphoto/52867079337 Czech Republic Artemis Accords Signing (NHQ202305030019)]\n"
                         + "{{NASA-image|id=NHQ202305030019|center=HQ}}",
-                service.getSource(media, media.getUniqueMetadata()));
+                service.getSource(media, media.getMetadata().iterator().next()));
     }
 
     @Test

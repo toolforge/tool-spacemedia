@@ -18,7 +18,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -38,7 +38,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Transient;
 
 @Entity
-public class FlickrMedia extends SingleFileMedia implements WithLatLon, WithKeywords {
+public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
 
     private static final String STATICFLICKR_COM = ".staticflickr.com";
 

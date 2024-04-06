@@ -189,7 +189,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
                         + "Compare with 2016 image here <a href=\"https://flic.kr/p/2o5r23p\">flic.kr/p/2o5r23p</a>\r\n"
                         + "\r\n" + "Image is about 129 kilometers wide");
         assertEquals(Set.of("Flickrreview", "Attribution-Copernicus |year=2022", "Cc-by-2.0"),
-                service.findLicenceTemplates(media, media.getUniqueMetadata()));
+                service.findLicenceTemplates(media, media.getMetadata().iterator().next()));
     }
 
     @Configuration
