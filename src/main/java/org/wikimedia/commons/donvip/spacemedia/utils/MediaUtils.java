@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -33,7 +34,9 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.poi.hslf.usermodel.HSLFSlideShow;
+import org.apache.poi.sl.usermodel.SlideShow;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
+import org.apache.poi.xslf.util.PPTX2PNG;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 import org.slf4j.Logger;
@@ -128,12 +131,8 @@ public class MediaUtils {
                 PDDocument pdf = Loader.loadPDF(new RandomAccessReadBuffer(in));
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(pdf, contentLength, filename, extension,
                         pdf.getNumberOfPages());
-            } else if (POI_HSLF_EXTENSIONS.contains(extension)) {
-                HSLFSlideShow ppt = new HSLFSlideShow(in);
-                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(ppt, contentLength, filename, extension,
-                        ppt.getSlides().size());
-            } else if (POI_XSLF_EXTENSIONS.contains(extension)) {
-                XMLSlideShow ppt = new XMLSlideShow(in);
+            } else if (POI_HSLF_EXTENSIONS.contains(extension) || POI_XSLF_EXTENSIONS.contains(extension)) {
+                SlideShow<?, ?> ppt = readPowerpointFile(in, extension);
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(ppt, contentLength, filename, extension,
                         ppt.getSlides().size());
             } else {
@@ -171,5 +170,29 @@ public class MediaUtils {
             LOGGER.error("Error while downloading YouTube video: {}", e.getMessage());
         }
         return null;
+    }
+
+    public static SlideShow<?, ?> readPowerpointFile(InputStream in, String ext) throws IOException {
+        if (POI_HSLF_EXTENSIONS.contains(ext)) {
+            return new HSLFSlideShow(in);
+        } else if (POI_XSLF_EXTENSIONS.contains(ext)) {
+            return new XMLSlideShow(in);
+        }
+        throw new UnsupportedOperationException("Unsupported Powerpoint extension: " + ext);
+    }
+
+    public static Pair<Path, Long> convertPowerpointFileToPdf(Path path) throws IOException {
+        Path pdf = Paths.get(path + ".pdf");
+        try {
+            PPTX2PNG.main(new String[] { "-format", "pdf", "-charset", "UTF-8", "-outfile", pdf.toString(),
+                    path.toString() });
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException(e);
+        } finally {
+            Files.delete(path);
+        }
+        return Pair.of(pdf, Files.size(pdf));
     }
 }
