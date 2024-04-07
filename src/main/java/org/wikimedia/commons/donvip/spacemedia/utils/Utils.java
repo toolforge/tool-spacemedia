@@ -13,6 +13,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -166,7 +167,7 @@ public final class Utils {
     public static HttpPost newHttpPost(String uri, List<? extends NameValuePair> params)
             throws UnsupportedEncodingException {
         HttpPost post = new HttpPost(uri);
-        post.setEntity(new UrlEncodedFormEntity(params));
+        post.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
         return post;
     }
 
