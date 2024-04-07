@@ -8,6 +8,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,25 +107,18 @@ public class MediaUtils {
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(result.contents(), contentLength, filename,
                         isBlank(extension) ? result.extension() : extension, result.numImagesOrPages());
             } else if ("www.youtube.com".equals(uri.getHost())) {
-                if (localPath != null) {
-                    return (ContentsAndMetadata<T>) readVideo(localPath, contentLength, filename, extension);
-                } else {
-                    Path tempFile = ofNullable(downloadYoutubeVideo(uri.toString()))
-                            .orElseThrow(() -> new FileDecodingException("Failed to download video from " + uri));
-                    try {
-                        return (ContentsAndMetadata<T>) readVideo(tempFile, contentLength, filename, extension);
-                    } finally {
-                        Files.delete(tempFile);
-                    }
-                }
+                return (ContentsAndMetadata<T>) readVideo(localPath, contentLength, filename, extension, uri,
+                        x -> ofNullable(downloadYoutubeVideo(x.toString())));
             } else if (FileMetadata.VIDEO_EXTENSIONS.contains(extension)) {
                 Path tempFile = Files.createTempFile("sm", "." + extension);
-                try {
-                    FileUtils.copyInputStreamToFile(in, tempFile.toFile());
-                    return (ContentsAndMetadata<T>) readVideo(tempFile, contentLength, filename, extension);
-                } finally {
-                    Files.delete(tempFile);
-                }
+                return (ContentsAndMetadata<T>) readVideo(localPath, contentLength, filename, extension, uri, x -> {
+                    try {
+                        FileUtils.copyInputStreamToFile(in, tempFile.toFile());
+                        return ofNullable(tempFile);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
             } else if ("webp".equals(extension)) {
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(
                         ImageUtils.readWebp(uri, readMetadata).contents(), contentLength, filename, extension, 1);
@@ -139,6 +134,22 @@ public class MediaUtils {
                 throw new FileDecodingException(
                         "Unsupported format: " + extension + " / headers:" + Arrays.stream(response.getAllHeaders())
                                 .map(h -> h.getName() + ": " + h.getValue()).sorted().toList());
+            }
+        }
+    }
+
+    private static ContentsAndMetadata<VideoCapture> readVideo(Path localPath, long contentLength, String filename,
+            String extension, URI uri, Function<URI, Optional<Path>> downloader)
+            throws FileDecodingException, IOException {
+        if (localPath != null) {
+            return readVideo(localPath, contentLength, filename, extension);
+        } else {
+            Path tempFile = downloader.apply(uri)
+                    .orElseThrow(() -> new FileDecodingException("Failed to download video from " + uri));
+            try {
+                return readVideo(tempFile, contentLength, filename, extension);
+            } finally {
+                Files.delete(tempFile);
             }
         }
     }
