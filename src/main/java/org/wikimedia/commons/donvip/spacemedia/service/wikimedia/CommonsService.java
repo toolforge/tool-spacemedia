@@ -1287,7 +1287,7 @@ public class CommonsService {
         return 1;
     }
 
-    private CommonsImageProjection findImage(String title) {
+    public CommonsImageProjection findImage(String title) {
         Optional<CommonsImageProjection> imageOpt = imageRepository.findByName(title);
         if (imageOpt.isEmpty()) {
             // Check if it's a redirect
