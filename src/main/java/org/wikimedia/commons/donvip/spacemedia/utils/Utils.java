@@ -353,6 +353,7 @@ public final class Utils {
             if (error) {
                 throw new ExecutionException(command.toString() + " => " + output, null);
             }
+            LOGGER.info(output);
             return output;
         } finally {
             try {
