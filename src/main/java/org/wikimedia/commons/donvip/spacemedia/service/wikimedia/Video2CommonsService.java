@@ -168,6 +168,7 @@ public class Video2CommonsService {
                 if ("webm (VP9/Opus)".equals(format) && task.getStatus().isFailed()
                         && task.getText().contains("Audio is asked to be kept but the file has no audio")) {
                     LOGGER.info("No audio, fallback to webm (VP9) format");
+                    repository.delete(task);
                     return uploadVideo(wikiCode, filenameExt, url, orgId, mediaId, "webm (VP9)");
                 }
             }
