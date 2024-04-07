@@ -120,6 +120,7 @@ public class MediaUtils {
                 Path tempFile = Files.createTempFile("sm", "." + extension);
                 try {
                     FileUtils.copyInputStreamToFile(in, tempFile.toFile());
+                    LOGGER.info("Video downloaded to {} ({} bytes)", tempFile, Files.size(tempFile));
                     return (ContentsAndMetadata<T>) readVideo(tempFile, contentLength, filename, extension);
                 } finally {
                     Files.delete(tempFile);

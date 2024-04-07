@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
@@ -9,4 +10,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTas
 public interface Video2CommonsTaskRepository extends CrudRepository<Video2CommonsTask, String> {
 
     List<Video2CommonsTask> findByStatusIn(Set<Status> states);
+
+    boolean existsByStatusAndUrl(Status state, URL url);
 }
