@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -68,6 +69,9 @@ public class Video2CommonsService {
 
     @Autowired
     private MediaService mediaService;
+
+    @Autowired
+    private CommonsService commonsService;
 
     @Value("${commons.api.account}")
     private String apiAccount;
@@ -214,6 +218,14 @@ public class Video2CommonsService {
     }
 
     public List<Video2CommonsTask> checkTasks(boolean forceDone) throws IOException {
+        removeFilenamesOfFailedTasks();
+        if (forceDone) {
+            addFilenamesOfSucceededTasks();
+        }
+        return editSdcOfSucceededTasks();
+    }
+
+    private List<Video2CommonsTask> editSdcOfSucceededTasks() throws IOException {
         List<Video2CommonsTask> result = new ArrayList<>();
         HttpClientContext httpClientContext = getHttpClientContext(cookieStore);
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
@@ -227,18 +239,39 @@ public class Video2CommonsService {
                 }
             }
         }
-        if (forceDone) {
-            for (Video2CommonsTask task : repository.findByStatusIn(Set.of(Video2CommonsTask.Status.DONE))) {
-                orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst()
-                        .ifPresent(o -> {
-                            FileMetadata metadata = o.retrieveMetadata(task.getMediaId(), task.getUrl());
-                            if (metadata.getCommonsFileNames().isEmpty()) {
-                                mediaService.saveNewMetadataCommonsFileNames(metadata, Set.of(task.getFilename()));
-                            }
-                        });
-            }
-        }
         return result;
+    }
+
+    private void addFilenamesOfSucceededTasks() {
+        for (Video2CommonsTask task : repository.findByStatusIn(Set.of(Video2CommonsTask.Status.DONE))) {
+            orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst()
+                    .ifPresent(o -> {
+                        FileMetadata metadata = o.retrieveMetadata(task.getMediaId(), task.getUrl());
+                        if (metadata.getCommonsFileNames().isEmpty()) {
+                            mediaService.saveNewMetadataCommonsFileNames(metadata, Set.of(task.getFilename()));
+                        }
+                    });
+        }
+    }
+
+    private void removeFilenamesOfFailedTasks() {
+        for (Video2CommonsTask task : repository.findByStatusIn(Set.of(Video2CommonsTask.Status.FAIL))) {
+            orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst().ifPresent(o -> {
+                FileMetadata metadata = o.retrieveMetadata(task.getMediaId(), task.getUrl());
+                Set<String> filenames = new TreeSet<>(metadata.getCommonsFileNames());
+                for (String filename : metadata.getCommonsFileNames()) {
+                    if (commonsService.findImage(filename) == null) {
+                        LOGGER.warn("Removing {} file association from {}", filename, metadata);
+                        filenames.remove(filename);
+                    }
+                }
+                if (false) {
+                if (!filenames.equals(metadata.getCommonsFileNames())) {
+                    mediaService.saveNewMetadataCommonsFileNames(metadata, filenames);
+                }
+                }
+            });
+        }
     }
 
     private static record Csrf(String csrf) {
