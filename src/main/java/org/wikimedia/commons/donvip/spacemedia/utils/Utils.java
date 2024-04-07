@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
@@ -13,6 +12,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -158,15 +158,14 @@ public final class Utils {
         return newHttpPost(actionFunction.apply(form.attr("action")), params);
     }
 
-    public static HttpPost newHttpPost(String uri, Map<String, Object> params) throws UnsupportedEncodingException {
+    public static HttpPost newHttpPost(String uri, Map<String, Object> params) {
         return newHttpPost(uri, params.entrySet().stream()
                 .map(e -> new BasicNameValuePair(e.getKey(), Objects.toString(e.getValue()))).toList());
     }
 
-    public static HttpPost newHttpPost(String uri, List<? extends NameValuePair> params)
-            throws UnsupportedEncodingException {
+    public static HttpPost newHttpPost(String uri, List<? extends NameValuePair> params) {
         HttpPost post = new HttpPost(uri);
-        post.setEntity(new UrlEncodedFormEntity(params));
+        post.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
         return post;
     }
 
