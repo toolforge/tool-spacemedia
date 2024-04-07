@@ -32,21 +32,19 @@ import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.poi.hslf.usermodel.HSLFSlideShow;
 import org.apache.poi.sl.usermodel.SlideShow;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xslf.util.PPTX2PNG;
+import org.bytedeco.opencv.opencv_java;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
-
-import nu.pattern.OpenCV;
 
 public class MediaUtils {
 
@@ -65,7 +63,7 @@ public class MediaUtils {
     private static final Pattern DESTINATION = Pattern.compile("\\[download\\] Destination: (\\S{11}\\.\\S{3,4})");
 
     static {
-        OpenCV.loadLocally();
+        org.bytedeco.javacpp.Loader.load(opencv_java.class);
     }
 
     private MediaUtils() {
@@ -124,7 +122,7 @@ public class MediaUtils {
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(
                         ImageUtils.readWebp(uri, readMetadata).contents(), contentLength, filename, extension, 1);
             } else if ("pdf".equals(extension)) {
-                PDDocument pdf = Loader.loadPDF(new RandomAccessReadBuffer(in));
+                PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(new RandomAccessReadBuffer(in));
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(pdf, contentLength, filename, extension,
                         pdf.getNumberOfPages());
             } else if (POI_HSLF_EXTENSIONS.contains(extension) || POI_XSLF_EXTENSIONS.contains(extension)) {
