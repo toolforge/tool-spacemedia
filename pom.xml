@@ -345,11 +345,11 @@
 			<artifactId>graphics2d</artifactId>
 			<version>3.0.1</version>
 		</dependency>
-		<!-- Video -->
+		<!-- MP4 Video -->
 		<dependency>
-			<groupId>org.bytedeco</groupId>
-			<artifactId>opencv-platform</artifactId>
-			<version>4.9.0-1.5.10</version>
+			<groupId>org.mp4parser</groupId>
+			<artifactId>isoparser</artifactId>
+			<version>1.9.56</version>
 		</dependency>
 		<!-- Web -->
 		<dependency>

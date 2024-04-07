@@ -38,9 +38,8 @@ import org.apache.poi.hslf.usermodel.HSLFSlideShow;
 import org.apache.poi.sl.usermodel.SlideShow;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xslf.util.PPTX2PNG;
-import org.bytedeco.opencv.opencv_java;
-import org.opencv.videoio.VideoCapture;
-import org.opencv.videoio.Videoio;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso14496.part12.MovieBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -61,10 +60,6 @@ public class MediaUtils {
     private static final Pattern ALREADY_DL = Pattern
             .compile("\\[download\\] (\\S{11}\\.\\S{3,4}) has already been downloaded(?: and merged)?");
     private static final Pattern DESTINATION = Pattern.compile("\\[download\\] Destination: (\\S{11}\\.\\S{3,4})");
-
-    static {
-        org.bytedeco.javacpp.Loader.load(opencv_java.class);
-    }
 
     private MediaUtils() {
         // Hide default constructor
@@ -137,7 +132,7 @@ public class MediaUtils {
         }
     }
 
-    private static ContentsAndMetadata<VideoCapture> readVideo(Path localPath, long contentLength, String filename,
+    private static ContentsAndMetadata<IsoFile> readVideo(Path localPath, long contentLength, String filename,
             String extension, URI uri, Function<URI, Optional<Path>> downloader)
             throws FileDecodingException, IOException {
         if (localPath != null) {
@@ -153,14 +148,15 @@ public class MediaUtils {
         }
     }
 
-    private static ContentsAndMetadata<VideoCapture> readVideo(Path path, long contentLength, String filename,
-            String extension) throws FileDecodingException {
-        VideoCapture vc = new VideoCapture();
-        if (!vc.open(path.toString())) {
-            throw new FileDecodingException("Failed to open video from " + path);
+    private static ContentsAndMetadata<IsoFile> readVideo(Path path, long contentLength, String filename,
+            String extension) throws IOException, FileDecodingException {
+        try (IsoFile mp4 = new IsoFile(path.toFile())) {
+            MovieBox movieBox = mp4.getMovieBox();
+            if (movieBox == null) {
+                throw new FileDecodingException("Failed to open MP4 video from " + path);
+            }
+            return new ContentsAndMetadata<>(mp4, contentLength, filename, extension, movieBox.getTrackCount());
         }
-        return new ContentsAndMetadata<>(vc, contentLength, filename, extension,
-                (int) vc.get(Videoio.CAP_PROP_FRAME_COUNT));
     }
 
     public static Path downloadYoutubeVideo(String url) {
