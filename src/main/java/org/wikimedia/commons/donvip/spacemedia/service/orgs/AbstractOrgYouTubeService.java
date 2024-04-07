@@ -67,6 +67,11 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     }
 
     @Override
+    protected String getSource(YouTubeMedia media, FileMetadata metadata) {
+        return "{{From YouTube |1= " + media.getIdUsedInOrg() + "}}";
+    }
+
+    @Override
     public URL getSourceUrl(YouTubeMedia video, FileMetadata metadata) {
         return metadata.getAssetUrl();
     }
@@ -239,7 +244,6 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     @Override
     public Set<String> findLicenceTemplates(YouTubeMedia video, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(video, metadata);
-        result.add("From YouTube |1= " + video.getIdUsedInOrg());
         result.add("YouTube CC-BY |1= " + video.getChannelTitle());
         result.add("LicenseReview");
         return result;
