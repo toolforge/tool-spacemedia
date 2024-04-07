@@ -62,6 +62,7 @@ public class MediaUtils {
             .compile("\\[ffmpeg\\] Merging formats into \"(\\S{11}\\.\\S{3,4})\"");
     private static final Pattern ALREADY_DL = Pattern
             .compile("\\[download\\] (\\S{11}\\.\\S{3,4}) has already been downloaded and merged");
+    private static final Pattern DESTINATION = Pattern.compile("\\[download\\] Destination: (\\S{11}\\.\\S{3,4})");
 
     static {
         OpenCV.loadLocally();
@@ -173,6 +174,9 @@ public class MediaUtils {
                     .findFirst();
             if (matcher.isEmpty()) {
                 matcher = Arrays.stream(output).map(MERGING_DL::matcher).filter(Matcher::matches).findFirst();
+            }
+            if (matcher.isEmpty() && Arrays.stream(output).anyMatch("[download] Download completed"::equals)) {
+                matcher = Arrays.stream(output).map(DESTINATION::matcher).filter(Matcher::matches).findFirst();
             }
             if (matcher.isPresent()) {
                 return Paths.get(matcher.get().group(1));
