@@ -177,6 +177,7 @@ public class MediaUtils {
             if (matcher.isPresent()) {
                 return Paths.get(matcher.get().group(1));
             }
+            LOGGER.warn("Youtube video not downloaded?");
         } catch (IOException | ExecutionException | InterruptedException e) {
             LOGGER.error("Error while downloading YouTube video: {}", e.getMessage());
         }

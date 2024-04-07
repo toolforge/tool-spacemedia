@@ -350,6 +350,7 @@ public final class Utils {
             Process p = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(out.toFile()).start();
             boolean error = !p.waitFor(timeout, unit) || p.exitValue() != 0;
             String output = String.join("\n", Files.readAllLines(out)).trim();
+            LOGGER.info(output);
             if (error) {
                 throw new ExecutionException(command.toString() + " => " + output, null);
             }
