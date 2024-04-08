@@ -921,89 +921,93 @@ public class CommonsService {
             params.put("text", wikiCode);
         }
         Pair<Path, Long> localFile = null;
-        boolean doUploadByUrl = !isPpt && uploadByUrl && hasUploadByUrlRight();
-        if (doUploadByUrl) {
-            params.put("url", url.toExternalForm());
-        } else {
-            localFile = downloadFile(url,
-                    isNotBlank(ext) && !filename.endsWith('.' + ext) ? filename + '.' + ext : filename);
-            if (isPpt) {
-                localFile = convertPowerpointFileToPdf(localFile.getKey());
-                LOGGER.info("Powerpoint file converted to PDF: {}", localFile.getKey());
-            }
-        }
-
-        ensureUploadRate();
-
-        UploadApiResponse apiResponse = null;
-        if (doUploadByUrl) {
-            try {
-                LOGGER.info("Uploading {} by URL as {}..", url, filenameExt);
-                apiResponse = apiHttpPost(params, UploadApiResponse.class);
-            } catch (IOException e) {
-                String msg = e.getMessage();
-                if (msg != null && (msg.contains("bytes exhausted (tried to allocate")
-                        || msg.contains("upstream request timeout"))) {
-                    LOGGER.warn("Unable to upload {} by URL ({}), fallback to upload in chunks...", url, msg);
-                    // T334814 - upload by chunk for memory exhaustion or upstream request timeout
-                    return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, renewTokenIfBadToken,
-                            retryWithSanitizedUrl, retryAfterRandomProxy403error, false);
+        try {
+            boolean doUploadByUrl = !isPpt && uploadByUrl && hasUploadByUrlRight();
+            if (doUploadByUrl) {
+                params.put("url", url.toExternalForm());
+            } else {
+                localFile = downloadFile(url,
+                        isNotBlank(ext) && !filename.endsWith('.' + ext) ? filename + '.' + ext : filename);
+                if (isPpt) {
+                    localFile = convertPowerpointFileToPdf(localFile.getKey());
+                    LOGGER.info("Powerpoint file converted to PDF: {}", localFile.getKey());
                 }
-                throw e;
             }
-        } else if (localFile != null) {
-            LOGGER.info("Uploading {} in chunks as {}..", url, filenameExt);
-            apiResponse = doUploadInChunks(targetExt, params, localFile, 5_242_880);
-        }
-        LOGGER.info("Upload of {} as {}: {}", url, filenameExt, apiResponse);
-        if (apiResponse == null) {
-            throw new UploadException("No upload response");
-        }
-        UploadResponse upload = apiResponse.getUpload();
-        ApiError error = apiResponse.getError();
-        if (error != null) {
-            if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
-                token = queryTokens().getCsrftoken();
-                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, false, retryWithSanitizedUrl, true,
-                        uploadByUrl);
-            }
-            if (retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
+
+            ensureUploadRate();
+
+            UploadApiResponse apiResponse = null;
+            if (doUploadByUrl) {
                 try {
-                    return doUpload(wikiCode, filename, ext, urlToUri(url).toURL(), sha1, orgId, mediaId,
-                            renewTokenIfBadToken, false, true, uploadByUrl);
-                } catch (URISyntaxException e) {
-                    throw new UploadException(error.getCode(), e);
+                    LOGGER.info("Uploading {} by URL as {}..", url, filenameExt);
+                    apiResponse = apiHttpPost(params, UploadApiResponse.class);
+                } catch (IOException e) {
+                    String msg = e.getMessage();
+                    if (msg != null && (msg.contains("bytes exhausted (tried to allocate")
+                            || msg.contains("upstream request timeout"))) {
+                        LOGGER.warn("Unable to upload {} by URL ({}), fallback to upload in chunks...", url, msg);
+                        // T334814 - upload by chunk for memory exhaustion or upstream request timeout
+                        return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, renewTokenIfBadToken,
+                                retryWithSanitizedUrl, retryAfterRandomProxy403error, false);
+                    }
+                    throw e;
                 }
+            } else if (localFile != null) {
+                LOGGER.info("Uploading {} in chunks as {}..", url, filenameExt);
+                apiResponse = doUploadInChunks(targetExt, params, localFile, 5_242_880);
             }
-            if ("fileexists-no-change".equals(error.getCode())) {
-                Matcher m = EXACT_DUPE_ERROR.matcher(error.getInfo());
-                if (m.matches()) {
-                    return m.group(1);
+            LOGGER.info("Upload of {} as {}: {}", url, filenameExt, apiResponse);
+            if (apiResponse == null) {
+                throw new UploadException("No upload response");
+            }
+            UploadResponse upload = apiResponse.getUpload();
+            ApiError error = apiResponse.getError();
+            if (error != null) {
+                if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
+                    token = queryTokens().getCsrftoken();
+                    return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, false, retryWithSanitizedUrl,
+                            true, uploadByUrl);
                 }
-            }
-            if (retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
-                    && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT".equals(error.getInfo())) {
-                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, renewTokenIfBadToken, true, false,
-                        uploadByUrl);
-            }
-            if ("verification-error".equals(error.getCode())) {
-                Matcher m = FILE_EXT_MISMATCH.matcher(error.getInfo());
-                if (m.matches()) {
-                    return doUpload(wikiCode, filename, m.group(2), url, sha1, orgId, mediaId, renewTokenIfBadToken,
-                            retryWithSanitizedUrl, retryAfterRandomProxy403error, uploadByUrl);
+                if (retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
+                    try {
+                        return doUpload(wikiCode, filename, ext, urlToUri(url).toURL(), sha1, orgId, mediaId,
+                                renewTokenIfBadToken, false, true, uploadByUrl);
+                    } catch (URISyntaxException e) {
+                        throw new UploadException(error.getCode(), e);
+                    }
                 }
+                if ("fileexists-no-change".equals(error.getCode())) {
+                    Matcher m = EXACT_DUPE_ERROR.matcher(error.getInfo());
+                    if (m.matches()) {
+                        return m.group(1);
+                    }
+                }
+                if (retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
+                        && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT"
+                                .equals(error.getInfo())) {
+                    return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, renewTokenIfBadToken, true,
+                            false, uploadByUrl);
+                }
+                if ("verification-error".equals(error.getCode())) {
+                    Matcher m = FILE_EXT_MISMATCH.matcher(error.getInfo());
+                    if (m.matches()) {
+                        return doUpload(wikiCode, filename, m.group(2), url, sha1, orgId, mediaId, renewTokenIfBadToken,
+                                retryWithSanitizedUrl, retryAfterRandomProxy403error, uploadByUrl);
+                    }
+                }
+                throw new UploadException(error.toString());
+            } else if (!SUCCESS.equals(upload.getResult())) {
+                throw new UploadException(apiResponse.toString());
             }
-            throw new UploadException(error.toString());
-        } else if (!SUCCESS.equals(upload.getResult())) {
-            throw new UploadException(apiResponse.toString());
+            if (!sha1.equalsIgnoreCase(upload.getImageInfo().getSha1())) {
+                LOGGER.warn("SHA1 mismatch for {} ! Expected {}, got {}", url, sha1, upload.getImageInfo().getSha1());
+            }
+            return upload.getFilename();
+        } finally {
+            if (localFile != null) {
+                Files.deleteIfExists(localFile.getKey());
+            }
         }
-        if (!sha1.equalsIgnoreCase(upload.getImageInfo().getSha1())) {
-            LOGGER.warn("SHA1 mismatch for {} ! Expected {}, got {}", url, sha1, upload.getImageInfo().getSha1());
-        }
-        if (localFile != null) {
-            Files.deleteIfExists(localFile.getKey());
-        }
-        return upload.getFilename();
     }
 
     private String doUploadVideo(String wikiCode, String filename, URL url, String orgId, CompositeMediaId mediaId)
