@@ -159,6 +159,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                                 && !x.alt_text().startsWith("Color bar")
                                 && !x.alt_text().startsWith("Video slate")
                                 && !x.alt_text().startsWith("Descriptive image")
+                                && !x.alt_text().startsWith("The color key")
                                 && !x.alt_text().startsWith("Time slates for the multiple movies")
                                 && !x.alt_text().startsWith("This timeline is synchronized with"))
                         .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst().ifPresent(biggest -> {
