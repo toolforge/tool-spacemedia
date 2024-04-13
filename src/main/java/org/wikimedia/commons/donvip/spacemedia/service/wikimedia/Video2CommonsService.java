@@ -78,6 +78,9 @@ public class Video2CommonsService {
     @Value("${commons.api.password}")
     private String apiPassword;
 
+    @Value("${video2commons.max.attempts:30}")
+    private int maxAttempts;
+
     private final CookieStore cookieStore = new BasicCookieStore();
     private String csrf;
 
@@ -161,8 +164,7 @@ public class Video2CommonsService {
             // be pending several hours)
             HttpRequestBase request = Utils.newHttpGet(URL_API + "/status-single?task=" + run.id());
             int n = 1;
-            int max = 10;
-            while (!task.getStatus().isCompleted() && n++ < max) {
+            while (!task.getStatus().isCompleted() && n++ < maxAttempts) {
                 task = updateTask(task, request, url, httpclient, httpClientContext);
                 // If there is no audio track, can't you just deal with it?!
                 if ("webm (VP9/Opus)".equals(format) && task.getStatus().isFailed()
