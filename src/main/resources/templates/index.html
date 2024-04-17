@@ -66,7 +66,7 @@
         "rowCallback": function( row, data ) {
             if (data.missing_images == 0 && data.missing_videos == 0 && data.missing_documents == 0) {
                 $('td:eq(0)', row).css('background-color', 'Green');
-            } else if (data.missing_images > "20") {
+            } else if (data.missing_images > "20" || data.missing_videos > "20" || data.missing_documents > "20") {
                 $('td:eq(0)', row).css('background-color', 'Red');
             } else {
                 $('td:eq(0)', row).css('background-color', 'Orange');
@@ -80,13 +80,17 @@
             }
             if (data.missing_videos == 0) {
                 $('td:eq(5)', row).css('background-color', 'Green');
+            } else if (data.missing_videos <= "20") {
+                $('td:eq(4)', row).css('background-color', 'Orange');
             } else {
-                $('td:eq(5)', row).css('background-color', 'Orange');
+                $('td:eq(5)', row).css('background-color', 'Red');
             }
             if (data.missing_documents == 0) {
                 $('td:eq(6)', row).css('background-color', 'Green');
+            } else if (data.missing_documents <= "20") {
+                $('td:eq(4)', row).css('background-color', 'Orange');
             } else {
-                $('td:eq(6)', row).css('background-color', 'Orange');
+                $('td:eq(6)', row).css('background-color', 'Red');
             }
             if (!data.last_update) {
                 $('td:eq(7)', row).css('background-color', 'Red');
