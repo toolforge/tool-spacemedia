@@ -12,6 +12,7 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -156,6 +157,17 @@ public class MediaUtils {
                 throw new FileDecodingException("Failed to open MP4 video from " + path);
             }
             return new ContentsAndMetadata<>(mp4, contentLength, filename, extension, movieBox.getTrackCount());
+        } catch (RuntimeException e) {
+            if ("box size of zero means 'till end of file. That is not yet supported".equals(e.getMessage())) {
+                // Ignore https://github.com/sannies/mp4parser/issues/427
+                return new ContentsAndMetadata<>(
+                        // Return sample data from
+                        // https://github.com/mathiasbynens/small/blob/master/mp4-with-audio.mp4
+                        new IsoFile(Channels.newChannel(MediaUtils.class.getResourceAsStream("/mp4-with-audio.mp4"))),
+                        contentLength, filename, extension, 1);
+            } else {
+                throw e;
+            }
         }
     }
 
