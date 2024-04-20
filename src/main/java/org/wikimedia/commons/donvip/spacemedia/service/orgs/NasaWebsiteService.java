@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -132,6 +133,11 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
             return url;
         }
         return null;
+    }
+
+    @Override
+    protected String getAuthor(NasaWebsiteMedia media, FileMetadata metadata) {
+        return Optional.ofNullable(media.getCredits()).orElse("NASA");
     }
 
     @Override

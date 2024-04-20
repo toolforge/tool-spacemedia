@@ -11,6 +11,8 @@ import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.strip;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.formatWikiCode;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.normalizeFilename;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.Video2CommonsService.V2C_VIDEO_EXTENSIONS;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
@@ -1097,8 +1099,8 @@ public abstract class AbstractOrgService<T extends Media>
             descriptions.put("en", englishDescription);
         }
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
-        sb.append("\n| source = ").append(getSource(media, metadata))
-                .append("\n| author = ").append(CommonsService.formatWikiCode(getAuthor(media, metadata)));
+        sb.append("\n| source = ").append(getSource(media, metadata));
+        ofNullable(formatWikiCode(getAuthor(media, metadata))).ifPresent(s -> sb.append("\n| author = ").append(s));
         getPermission(media).ifPresent(s -> sb.append("\n| permission = ").append(s));
         appendWikiOtherVersions(sb, media, metadata, "other versions");
         getOtherFields(media).ifPresent(s -> sb.append("\n| other fields = ").append(s));
@@ -1117,7 +1119,7 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected final void appendWikiDescriptionInLanguage(StringBuilder sb, String language, String description) {
-        sb.append("{{").append(language).append("|1=").append(CommonsService.formatWikiCode(description)).append("}}");
+        sb.append("{{").append(language).append("|1=").append(formatWikiCode(description)).append("}}");
     }
 
     protected final Optional<String> getWikiDate(T media) {
@@ -1194,7 +1196,7 @@ public abstract class AbstractOrgService<T extends Media>
             for (FileMetadata metadata : media.getMetadata()) {
                 result = result.replaceAll(
                         "<a href=\"" + metadata.getAssetUrl() + "\"><img src=\"[^\"]+\" alt=\"[^\"]*\"></a>",
-                        "[[File:" + CommonsService.normalizeFilename(media.getUploadTitle(metadata)) + '.'
+                        "[[File:" + normalizeFilename(media.getUploadTitle(metadata)) + '.'
                                 + metadata.getFileExtensionOnCommons() + "|120px]]");
             }
             return result;
@@ -1795,7 +1797,7 @@ public abstract class AbstractOrgService<T extends Media>
         String lang = getLanguage(media);
         String desc = getDescription(media, metadata);
         StringBuilder sb = new StringBuilder("{{milim\n| description = ").append("{{").append(lang).append("|1=")
-                .append(CommonsService.formatWikiCode(desc)).append("}}");
+                .append(formatWikiCode(desc)).append("}}");
         getWikiDate(media).ifPresent(s -> sb.append("\n| date = ").append(s));
         sb.append("\n| source = ").append(getSource(media, metadata)).append("\n| author = ")
                 .append(getAuthor(media, metadata));
