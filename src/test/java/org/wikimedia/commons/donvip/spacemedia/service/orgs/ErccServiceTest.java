@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.EchoMapType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.ErccMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.ErccMediaRepository;
@@ -41,6 +44,7 @@ class ErccServiceTest extends AbstractOrgServiceTest {
 
     @Test
     void testMapMedia() throws Exception {
+        when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         CompositeMediaId id = new CompositeMediaId("Daily", "10");
         ErccMedia media = service.mapMedia(readJson("response-map.json", MapsItem.class), id);
         assertEquals(id, media.getId());
@@ -63,6 +67,7 @@ class ErccServiceTest extends AbstractOrgServiceTest {
 
     @Test
     void testRefreshMedia() throws IOException {
+        when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         ErccMedia media = new ErccMedia();
         media.setId(new CompositeMediaId("Daily", "420"));
         assertEquals(1, service.refresh(media).getMetadataCount());

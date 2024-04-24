@@ -27,7 +27,7 @@ public class WebMilMedia extends SingleFileMedia {
     }
 
     @Override
-    protected String getUploadId(FileMetadata fileMetadata) {
+    public String getUploadId(FileMetadata fileMetadata) {
         return Optional.ofNullable(getVirin()).orElseGet(() -> super.getUploadId(fileMetadata));
     }
 

@@ -59,7 +59,7 @@ public class NasaSvsMedia extends Media implements WithKeywords {
     }
 
     @Override
-    protected String getUploadId(FileMetadata fileMetadata) {
+    public String getUploadId(FileMetadata fileMetadata) {
         return "SVS" + super.getUploadId(fileMetadata);
     }
 

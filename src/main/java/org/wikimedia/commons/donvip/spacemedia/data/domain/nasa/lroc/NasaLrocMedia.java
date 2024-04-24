@@ -34,7 +34,7 @@ public class NasaLrocMedia extends Media implements WithKeywords {
     }
 
     @Override
-    protected String getUploadId(FileMetadata fileMetadata) {
+    public String getUploadId(FileMetadata fileMetadata) {
         return getIdPrefix() + super.getUploadId(fileMetadata);
     }
 

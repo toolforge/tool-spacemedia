@@ -219,7 +219,7 @@ public class Media implements MediaProjection, MediaDescription {
         return normalizeFilename(title);
     }
 
-    protected String getUploadId(FileMetadata fileMetadata) {
+    public String getUploadId(FileMetadata fileMetadata) {
         String result = getIdUsedInOrg();
         if (getMetadataStream().map(fm -> fm.getFileExtensionOnCommons()).filter(Objects::nonNull)
                 .filter(ext -> ext.equals(fileMetadata.getFileExtensionOnCommons())).count() > 1) {

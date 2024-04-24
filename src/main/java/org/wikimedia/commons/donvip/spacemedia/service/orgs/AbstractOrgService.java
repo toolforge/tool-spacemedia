@@ -1721,7 +1721,7 @@ public abstract class AbstractOrgService<T extends Media>
                 }
                 return x;
             }).orElseGet(() -> metadataRepository.save(newFileMetadata(assetUrl, consumer)));
-            media.addMetadata(fm);
+            media.addMetadata(requireNonNull(fm));
             return fm;
         } catch (RuntimeException e) {
             LOGGER.error("Error while adding metadata {} for media {}", assetUrl, media);

@@ -116,7 +116,7 @@ public class StsciMedia extends Media implements WithKeywords {
     }
 
     @Override
-    protected String getUploadId(FileMetadata fileMetadata) {
+    public String getUploadId(FileMetadata fileMetadata) {
         String uid = super.getUploadId(fileMetadata).replace("-Image", "");
         return HORRIBLE_ID_FORMAT.matcher(uid).matches() ? uid.substring(0, uid.lastIndexOf('-')) : uid;
     }

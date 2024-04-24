@@ -51,7 +51,7 @@ public class S3Media extends SingleFileMedia implements WithLatLon {
     }
 
     @Override
-    protected String getUploadId(FileMetadata fileMetadata) {
+    public String getUploadId(FileMetadata fileMetadata) {
         return getUploadTitle();
     }
 

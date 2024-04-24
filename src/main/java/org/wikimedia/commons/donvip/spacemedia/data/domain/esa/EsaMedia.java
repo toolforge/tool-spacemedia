@@ -153,8 +153,13 @@ public class EsaMedia extends Media implements WithKeywords {
     }
 
     @Override
+    public String getUploadId(FileMetadata fileMetadata) {
+        return "ESA" + super.getUploadId(fileMetadata);
+    }
+
+    @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
-        return CommonsService.normalizeFilename(title) + " ESA" + getUploadId(fileMetadata);
+        return CommonsService.normalizeFilename(title) + ' ' + getUploadId(fileMetadata);
     }
 
     public EsaMedia copyDataFrom(EsaMedia mediaFromApi) {

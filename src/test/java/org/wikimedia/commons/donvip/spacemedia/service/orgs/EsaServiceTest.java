@@ -1,9 +1,10 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.wikimedia.commons.donvip.spacemedia.service.orgs.EsaService.getCopernicusProcessedBy;
 import static org.wikimedia.commons.donvip.spacemedia.service.orgs.EsaService.isCopyrightOk;
 
@@ -21,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 
@@ -73,19 +75,23 @@ class EsaServiceTest extends AbstractOrgServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "false,Friendly_Little_Robot,https://www.esa.int/ESA_Multimedia/Images/2014/09/Friendly_Little_Robot",
-            "true,Nuclear_explosions_on_a_neutron_star_feed_its_jets,https://www.esa.int/ESA_Multimedia/Images/2024/03/Nuclear_explosions_on_a_neutron_star_feed_its_jets" })
-    void testParseHtml(boolean copyrightOk, String filename, URL url) throws Exception {
+            "false,322928,Friendly_Little_Robot,https://www.esa.int/ESA_Multimedia/Images/2014/09/Friendly_Little_Robot",
+            "true,495693,Nuclear_explosions_on_a_neutron_star_feed_its_jets,https://www.esa.int/ESA_Multimedia/Images/2024/03/Nuclear_explosions_on_a_neutron_star_feed_its_jets",
+            "true,496653,Barcelona_captured_by_Copernicus_Sentinel-2,https://www.esa.int/ESA_Multimedia/Images/2022/07/Barcelona_captured_by_Copernicus_Sentinel-2" })
+    void testParseHtml(boolean copyrightOk, String id, String filename, URL url) throws Exception {
+        when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
+
         EsaMedia media = new EsaMedia();
         media.setUrl(url);
         service.fillMediaWithHtml(Jsoup.parse(new File("src/test/resources/esa/" + filename + ".htm")), media,
                 url);
-        assertNotNull(media.getId());
+        assertEquals(id, media.getIdUsedInOrg());
         assertTrue(Integer.parseInt(media.getIdUsedInOrg()) > 0);
         assertTrue(isNotBlank(media.getCredits()));
         assertTrue(isNotBlank(media.getTitle()));
         assertTrue(isNotBlank(media.getDescription()));
         assertTrue(media.getMetadataCount() > 0);
+        assertEquals("ESA" + id, media.getUploadId(media.getMetadata().iterator().next()));
         assertEquals(copyrightOk, isCopyrightOk(media), () -> media.getCredits());
     }
 

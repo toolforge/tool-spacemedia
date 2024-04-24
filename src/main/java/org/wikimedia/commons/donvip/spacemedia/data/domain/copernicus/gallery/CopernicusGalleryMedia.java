@@ -47,7 +47,7 @@ public class CopernicusGalleryMedia extends SingleFileMedia implements WithKeywo
     }
 
     @Override
-    protected String getUploadId(FileMetadata fileMetadata) {
+    public String getUploadId(FileMetadata fileMetadata) {
         return "Copernicus " + getPublicationDate();
     }
 

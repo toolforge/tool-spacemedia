@@ -136,7 +136,8 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         Elements spans = element.getElementsByClass("meta").get(0).getElementsByTag("span");
         image.setPublicationDate(LocalDate.parse(spans.get(0).text(), dateFormatter));
         if (image.getId() == null) {
-            image.setId(new CompositeMediaId("esa", spans.get(2).text().replace(" ID", "")));
+            spans.stream().map(Element::text).filter(s -> s.endsWith(" ID")).findFirst().map(x -> x.replace(" ID", ""))
+                    .ifPresent(id -> image.setId(new CompositeMediaId("esa", id)));
         }
     }
 
