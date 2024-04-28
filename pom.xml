@@ -18,7 +18,7 @@
 		<sonar.projectKey>tool-spacemedia</sonar.projectKey>
 
 		<batik.version>1.17</batik.version>
-		<flickr4java-version>3.0.8</flickr4java-version>
+		<flickr4java-version>3.0.9</flickr4java-version>
 		<jettyhttp2-version>11.0.18</jettyhttp2-version>
 		<poi-version>5.2.5</poi-version>
 		<springboot-version>3.1.10</springboot-version>

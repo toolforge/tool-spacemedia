@@ -8,10 +8,8 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -20,21 +18,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.REST;
-import com.flickr4java.flickr.Response;
-import com.flickr4java.flickr.Transport;
 import com.flickr4java.flickr.people.User;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.photos.PhotoList;
 import com.flickr4java.flickr.photos.PhotoSet;
 import com.flickr4java.flickr.photos.SearchParameters;
-import com.flickr4java.flickr.urls.UrlsInterface;
 
 @Lazy
 @Service
@@ -58,7 +51,7 @@ public class FlickrService {
 
     @Cacheable("usersByUrl")
     public User findUser(URL url) throws FlickrException {
-        return new UrlsInterfacePatched(flickr).lookupUserPatched(url.toExternalForm());
+        return flickr.getUrlsInterface().lookupUserByURL(url.toExternalForm());
     }
 
     @Cacheable("userNamesByNsid")
@@ -112,46 +105,5 @@ public class FlickrService {
 
     public List<PhotoSet> findPhotoSets(String photoId) throws FlickrException {
         return flickr.getPhotosInterface().getAllContexts(photoId).getPhotoSetList();
-    }
-
-    // TODO: to remove after upgrading to a new version including
-    // https://github.com/boncey/Flickr4Java/pull/724
-    static class UrlsInterfacePatched extends UrlsInterface {
-
-        private final String apiKey;
-        private final String sharedSecret;
-        private final Transport transport;
-
-        public UrlsInterfacePatched(Flickr flickr) {
-            super(flickr.getApiKey(), flickr.getSharedSecret(), flickr.getTransport());
-            this.apiKey = flickr.getApiKey();
-            this.sharedSecret = flickr.getSharedSecret();
-            this.transport = flickr.getTransport();
-        }
-
-        /**
-         * Lookup the userid and username for the specified User URL.
-         *
-         * @param url The user profile URL
-         * @return The userid and username
-         * @throws FlickrException
-         */
-        public User lookupUserPatched(String url) throws FlickrException {
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("method", METHOD_LOOKUP_USER);
-            parameters.put("url", url);
-
-            Response response = transport.get(transport.getPath(), parameters, apiKey, sharedSecret);
-            if (response.isError()) {
-                throw new FlickrException(response.getErrorCode(), response.getErrorMessage());
-            }
-
-            Element payload = response.getPayload();
-            Element groupnameElement = (Element) payload.getElementsByTagName("username").item(0);
-            User user = new User();
-            user.setId(payload.getAttribute("id"));
-            user.setUsername(((Text) groupnameElement.getFirstChild()).getData());
-            return user;
-        }
     }
 }
