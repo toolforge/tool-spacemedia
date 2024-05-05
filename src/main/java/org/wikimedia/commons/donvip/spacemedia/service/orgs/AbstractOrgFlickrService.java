@@ -5,7 +5,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.toZonedDateTime;
 
 import java.io.IOException;
@@ -133,12 +132,13 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
+    protected String hiddenUploadCategory() {
+        return "Spacemedia Flickr files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public Set<String> findCategories(FlickrMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (includeHidden) {
-            replace(result, "Spacemedia files uploaded by " + commonsService.getAccount(),
-                    "Spacemedia Flickr files uploaded by " + commonsService.getAccount());
-        }
         mediaService.useMapping(result, media.getPathAlias(), media.getPhotosets(), flickrPhotoSets,
                 FlickrPhotoSet::getTitle);
         mediaService.useMapping(result, media.getPathAlias(), media.getTags(), flickrTags, Function.identity());

@@ -232,13 +232,8 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     protected abstract List<String> getOrgCategories();
 
     @Override
-    public Set<String> findCategories(YouTubeMedia media, FileMetadata metadata, boolean includeHidden) {
-        Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (includeHidden) {
-            // To import by hand from personal account
-            result.remove("Spacemedia files uploaded by " + commonsService.getAccount());
-        }
-        return result;
+    protected String hiddenUploadCategory() {
+        return "Spacemedia YouTube files uploaded by " + commonsService.getAccount();
     }
 
     @Override

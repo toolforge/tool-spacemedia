@@ -1315,7 +1315,7 @@ public abstract class AbstractOrgService<T extends Media>
         }
         if (includeHidden) {
             UnitedStates.getUsMilitaryCategory(media).ifPresent(result::add);
-            result.add("Spacemedia files uploaded by " + commonsService.getAccount());
+            result.add(hiddenUploadCategory());
             if ("gif".equals(metadata.getFileExtensionOnCommons())) {
                 try {
                     int numImages = ImageUtils.readNumberOfImages(metadata.getAssetUri(), true);
@@ -1337,6 +1337,10 @@ public abstract class AbstractOrgService<T extends Media>
             }
         }
         return result;
+    }
+
+    protected String hiddenUploadCategory() {
+        return "Spacemedia files uploaded by " + commonsService.getAccount();
     }
 
     protected boolean categorizeGeolocalizedByName() {
