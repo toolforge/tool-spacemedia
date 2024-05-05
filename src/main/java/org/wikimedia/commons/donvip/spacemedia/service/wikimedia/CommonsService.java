@@ -658,7 +658,7 @@ public class CommonsService {
     }
 
     private static String sanitizeCategory(String category) {
-        return category.replace(' ', '_').split("#")[0];
+        return category.replace(' ', '_').split("#")[0].split("\\|")[0];
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")
@@ -835,15 +835,15 @@ public class CommonsService {
         String inYear2 = " (" + CAT_YEAR.format(date) + ')';
         return cats.parallelStream().map(c -> {
             try {
-                return self.getCategoryPage(c + inMonthYear).getTitle();
+                return catWithSuffix(c, inMonthYear);
             } catch (CategoryNotFoundException | CategoryPageNotFoundException e1) {
                 LOGGER.trace(e1.getMessage(), e1);
                 try {
-                    return self.getCategoryPage(c + inYear1).getTitle();
+                    return catWithSuffix(c, inYear1);
                 } catch (CategoryNotFoundException | CategoryPageNotFoundException e2) {
                     LOGGER.trace(e2.getMessage(), e2);
                     try {
-                        return self.getCategoryPage(c + inYear2).getTitle();
+                        return catWithSuffix(c, inYear2);
                     } catch (CategoryNotFoundException | CategoryPageNotFoundException e3) {
                         LOGGER.trace(e3.getMessage(), e3);
                     }
@@ -851,6 +851,11 @@ public class CommonsService {
                 return c;
             }
         }).collect(toCollection(TreeSet::new));
+    }
+
+    private String catWithSuffix(String cat, String suffix) {
+        int idx = cat.indexOf('|');
+        return self.getCategoryPage(cat + suffix).getTitle() + (idx > -1 ? cat.substring(idx) : "");
     }
 
     public static String formatWikiCode(String badWikiCode) {

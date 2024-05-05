@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -249,6 +250,16 @@ Follow me on <a href="https://twitter.com/Pierre_Markuse">Twitter!</a> and <a hr
         assertEquals("foo", CommonsService.findRedirect("{{Category redirect| foo }}").get());
         assertEquals("foo", CommonsService.findRedirect("{{Category redirect|1=foo}}").get());
         assertEquals("foo", CommonsService.findRedirect("{{Category redirect|1=foo|reason=bar}}").get());
+    }
+
+    @Test
+    void testGetCategoryPage() {
+        when(commonsCategoryRepository.findByTitle("NASA_Photojournal_entries_from_2023"))
+                .thenReturn(Optional.of(new CommonsCategory()));
+        when(commonsPageRepository.findByCategoryTitle(any()))
+                .thenReturn(Optional.of(new CommonsPage()));
+        assertNotNull(service.getCategoryPage("NASA Photojournal entries from 2023"));
+        assertNotNull(service.getCategoryPage("NASA Photojournal entries from 2023|PIA25799"));
     }
 
     private void mockCategoryLinks() {
