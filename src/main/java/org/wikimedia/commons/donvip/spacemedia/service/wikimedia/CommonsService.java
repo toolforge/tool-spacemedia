@@ -658,7 +658,7 @@ public class CommonsService {
     }
 
     private static String sanitizeCategory(String category) {
-        return category.replace(' ', '_').split("#")[0];
+        return category.replace(' ', '_').split("#")[0].split("\\|")[0];
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")
