@@ -414,25 +414,32 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         if (imageInDb.isPresent()) {
             media = imageInDb.get();
         } else {
-            media = new NasaSdoMedia();
-            media.setId(id);
-            media.setTitle(id.getMediaId());
-            if (temporal instanceof ZonedDateTime date) {
-                media.setCreationDateTime(date);
-                media.setPublicationDateTime(date);
-            } else if (temporal instanceof LocalDate date) {
-                media.setCreationDate(date);
-                media.setPublicationDate(date);
-            }
-            media.setDataType(dataType);
-            if (dimensions.getWidth() == 4096) {
-                media.setThumbnailUrl(newURL(url.toExternalForm().replace("_4096_", "_1024_")));
-            }
-            addMetadata(media, url, fm -> fm.setImageDimensions(dimensions));
-            media.setMediaType(mediaType);
+            media = newMedia(id, temporal, dimensions, url, mediaType, dataType);
             save = true;
         }
         return doUpdateMedia(media, save, uploadedMedia);
+    }
+
+    private NasaSdoMedia newMedia(CompositeMediaId id, Temporal temporal, ImageDimensions dimensions, URL url,
+            NasaMediaType mediaType, NasaSdoDataType dataType) {
+        NasaSdoMedia media;
+        media = new NasaSdoMedia();
+        media.setId(id);
+        media.setTitle(id.getMediaId());
+        if (temporal instanceof ZonedDateTime date) {
+            media.setCreationDateTime(date);
+            media.setPublicationDateTime(date);
+        } else if (temporal instanceof LocalDate date) {
+            media.setCreationDate(date);
+            media.setPublicationDate(date);
+        }
+        media.setDataType(dataType);
+        if (dimensions.getWidth() == 4096) {
+            media.setThumbnailUrl(newURL(url.toExternalForm().replace("_4096_", "_1024_")));
+        }
+        addMetadata(media, url, fm -> fm.setImageDimensions(dimensions));
+        media.setMediaType(mediaType);
+        return media;
     }
 
     private NasaSdoMedia doUpdateMedia(NasaSdoMedia media, boolean shouldSave, List<NasaSdoMedia> uploadedMedia)
@@ -503,7 +510,10 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
 
     @Override
     protected NasaSdoMedia refresh(NasaSdoMedia media) throws IOException {
-        throw new UnsupportedOperationException(); // TODO
+        FileMetadata fm = media.getMetadata().iterator().next();
+        return media.copyDataFrom(newMedia(media.getId(),
+                Optional.<Temporal>ofNullable(media.getCreationDateTime()).orElse(media.getCreationDate()),
+                fm.getImageDimensions(), fm.getAssetUrl(), media.getMediaType(), media.getDataType()));
     }
 
     @Override

@@ -66,6 +66,14 @@ public class NasaSdoMedia extends SingleFileMedia {
         return String.format("SDO_%s (%s)", CommonsService.normalizeFilename(title), dataType.getInstrument().name());
     }
 
+    public NasaSdoMedia copyDataFrom(NasaSdoMedia other) {
+        super.copyDataFrom(other);
+        this.mediaType = other.mediaType;
+        this.dataType = other.dataType;
+        this.keywords = other.keywords;
+        return this;
+    }
+
     @Override
     public int hashCode() {
         return 31 * super.hashCode() + Objects.hash(dataType, mediaType, keywords);
