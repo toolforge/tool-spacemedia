@@ -868,13 +868,14 @@ public class CommonsService {
 
     public String uploadNewFile(String wikiCode, String filename, String ext, URL url, String sha1, String orgId,
             CompositeMediaId mediaId) throws IOException, UploadException {
-        return doUpload(requireNonNull(wikiCode), normalizeFilename(filename), ext, url, sha1, orgId, mediaId, true,
-                true, true, true);
+        return doUpload(requireNonNull(wikiCode), normalizeFilename(filename), ext, url, sha1, orgId, mediaId,
+                new UploadErrorPolicy(true, true, true, true), true);
     }
 
     public String uploadExistingFile(String filename, URL url, String sha1, String orgId, CompositeMediaId mediaId)
             throws IOException, UploadException {
-        return doUpload(null, filename, null, url, sha1, orgId, mediaId, true, true, true, true);
+        return doUpload(null, filename, null, url, sha1, orgId, mediaId, new UploadErrorPolicy(true, true, true, true),
+                true);
     }
 
     public static String normalizeFilename(String filename) {
@@ -899,8 +900,8 @@ public class CommonsService {
     }
 
     private synchronized String doUpload(String wikiCode, String filename, String ext, URL url, String sha1,
-            String orgId, CompositeMediaId mediaId, boolean renewTokenIfBadToken, boolean retryWithSanitizedUrl,
-            boolean retryAfterRandomProxy403error, boolean uploadByUrl) throws IOException, UploadException {
+            String orgId, CompositeMediaId mediaId, UploadErrorPolicy errorPolicy, boolean uploadByUrl)
+            throws IOException, UploadException {
         if (Video2CommonsService.V2C_VIDEO_EXTENSIONS.stream().anyMatch(
                 e -> e.equals(ext) || url.getFile().endsWith('.' + e)) || "www.youtube.com".equals(url.getHost())) {
             return doUploadVideo(wikiCode, filename, url, orgId, mediaId);
@@ -952,8 +953,7 @@ public class CommonsService {
                             || msg.contains("upstream request timeout"))) {
                         LOGGER.warn("Unable to upload {} by URL ({}), fallback to upload in chunks...", url, msg);
                         // T334814 - upload by chunk for memory exhaustion or upstream request timeout
-                        return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, renewTokenIfBadToken,
-                                retryWithSanitizedUrl, retryAfterRandomProxy403error, false);
+                        return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, errorPolicy, false);
                     }
                     throw e;
                 }
@@ -965,54 +965,73 @@ public class CommonsService {
             if (apiResponse == null) {
                 throw new UploadException("No upload response");
             }
-            UploadResponse upload = apiResponse.getUpload();
-            ApiError error = apiResponse.getError();
-            if (error != null) {
-                if (renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
-                    token = queryTokens().getCsrftoken();
-                    return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, false, retryWithSanitizedUrl,
-                            true, uploadByUrl);
-                }
-                if (retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
-                    try {
-                        return doUpload(wikiCode, filename, ext, urlToUri(url).toURL(), sha1, orgId, mediaId,
-                                renewTokenIfBadToken, false, true, uploadByUrl);
-                    } catch (URISyntaxException e) {
-                        throw new UploadException(error.getCode(), e);
-                    }
-                }
-                if ("fileexists-no-change".equals(error.getCode())) {
-                    Matcher m = EXACT_DUPE_ERROR.matcher(error.getInfo());
-                    if (m.matches()) {
-                        return m.group(1);
-                    }
-                }
-                if (retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
-                        && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT"
-                                .equals(error.getInfo())) {
-                    return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, renewTokenIfBadToken, true,
-                            false, uploadByUrl);
-                }
-                if ("verification-error".equals(error.getCode())) {
-                    Matcher m = FILE_EXT_MISMATCH.matcher(error.getInfo());
-                    if (m.matches()) {
-                        return doUpload(wikiCode, filename, m.group(2), url, sha1, orgId, mediaId, renewTokenIfBadToken,
-                                retryWithSanitizedUrl, retryAfterRandomProxy403error, uploadByUrl);
-                    }
-                }
-                throw new UploadException(error.toString());
-            } else if (!SUCCESS.equals(upload.getResult())) {
-                throw new UploadException(apiResponse.toString());
-            }
-            if (!sha1.equalsIgnoreCase(upload.getImageInfo().getSha1())) {
-                LOGGER.warn("SHA1 mismatch for {} ! Expected {}, got {}", url, sha1, upload.getImageInfo().getSha1());
-            }
-            return upload.getFilename();
+            return handleUploadResponse(wikiCode, filename, ext, url, sha1, orgId, mediaId, errorPolicy, uploadByUrl,
+                    apiResponse);
         } finally {
             if (localFile != null) {
                 Files.deleteIfExists(localFile.getKey());
             }
         }
+    }
+
+    private String handleUploadResponse(String wikiCode, String filename, String ext, URL url, String sha1,
+            String orgId, CompositeMediaId mediaId, UploadErrorPolicy errorPolicy, boolean uploadByUrl,
+            UploadApiResponse apiResponse) throws IOException, UploadException {
+        ApiError error = apiResponse.getError();
+        UploadResponse upload = apiResponse.getUpload();
+        if (error != null) {
+            if (errorPolicy.renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
+                token = queryTokens().getCsrftoken();
+                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId,
+                        new UploadErrorPolicy(false, errorPolicy.retryWithSanitizedUrl, true, true), uploadByUrl);
+            }
+            if (errorPolicy.retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
+                try {
+                    return doUpload(wikiCode, filename, ext, urlToUri(url).toURL(), sha1, orgId, mediaId,
+                            new UploadErrorPolicy(errorPolicy.renewTokenIfBadToken, false, true, true), uploadByUrl);
+                } catch (URISyntaxException e) {
+                    throw new UploadException(error.getCode(), e);
+                }
+            }
+            if ("fileexists-no-change".equals(error.getCode())) {
+                Matcher m = EXACT_DUPE_ERROR.matcher(error.getInfo());
+                if (m.matches()) {
+                    return m.group(1);
+                }
+            }
+            if (errorPolicy.retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
+                    && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT"
+                            .equals(error.getInfo())) {
+                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId,
+                        new UploadErrorPolicy(errorPolicy.renewTokenIfBadToken, true, false, true), uploadByUrl);
+            }
+            if (errorPolicy.retryOnDbReadOnly && "readonly".equals(error.getCode())) {
+                // Infinite retries on readonly errors, it's meant to become available again
+                // soon
+                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, errorPolicy, uploadByUrl);
+            }
+            if ("verification-error".equals(error.getCode())) {
+                Matcher m = FILE_EXT_MISMATCH.matcher(error.getInfo());
+                if (m.matches()) {
+                    return doUpload(wikiCode, filename, m.group(2), url, sha1, orgId, mediaId, errorPolicy,
+                            uploadByUrl);
+                }
+            }
+            throw new UploadException(error.toString());
+        } else if (!SUCCESS.equals(upload.getResult())) {
+            throw new UploadException(apiResponse.toString());
+        }
+        if (!sha1.equalsIgnoreCase(upload.getImageInfo().getSha1())) {
+            LOGGER.warn("SHA1 mismatch for {} ! Expected {}, got {}", url, sha1, upload.getImageInfo().getSha1());
+        }
+        return upload.getFilename();
+    }
+
+    static record UploadErrorPolicy(
+            boolean renewTokenIfBadToken,
+            boolean retryWithSanitizedUrl,
+            boolean retryAfterRandomProxy403error,
+            boolean retryOnDbReadOnly) {
     }
 
     private String doUploadVideo(String wikiCode, String filename, URL url, String orgId, CompositeMediaId mediaId)
