@@ -64,6 +64,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -112,6 +113,7 @@ import org.wikidata.wdtk.wikibaseapi.WikibaseDataEditor;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategory;
+import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLink;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkId;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.commons.CommonsCategoryLinkType;
@@ -1239,7 +1241,8 @@ public class CommonsService {
                 try {
                     if (numberOfFiles > 1 && (!dpla || numberOfFiles < dplaMaxDuplicates)
                             && duplicates.stream().noneMatch(
-                                    d -> ignoredDuplicatesName.contains(d.getName()) || self.isInIgnoredCategory(d))) {
+                                    d -> ignoredDuplicatesName.contains(d.getName())
+                                            || self.isInIgnoredCategory(d.getName()))) {
                         CommonsImageProjection olderImage = duplicates.get(0);
                         for (int i = 1; i < duplicates.size(); i++) {
                             count += handleDuplicateFile(olderImage, duplicates.get(i), count);
@@ -1270,13 +1273,17 @@ public class CommonsService {
     }
 
     @Transactional(transactionManager = "commonsTransactionManager")
-    public boolean isInIgnoredCategory(CommonsImageProjection d) {
+    public boolean isInIgnoredCategory(String filename) {
+        return self.isInCategory(filename, c -> ignoredDuplicatesCategories.stream()
+                .anyMatch(x -> c.getId().getTo().startsWith(x.replace(' ', '_'))));
+    }
+
+    @Transactional(transactionManager = "commonsTransactionManager")
+    public boolean isInCategory(String filename, Predicate<CommonsCategoryLink> catPredicate) {
         return categoryLinkRepository
-                .findByIdFrom(pageRepository.findByFileTitle(d.getName())
-                        .orElseThrow(() -> new IllegalStateException("No page named " + d.getName())))
-                .stream()
-                .anyMatch(c -> ignoredDuplicatesCategories.stream()
-                        .anyMatch(x -> c.getId().getTo().startsWith(x.replace(' ', '_'))));
+                .findByIdFrom(pageRepository.findByFileTitle(filename)
+                        .orElseThrow(() -> new IllegalStateException("No page named " + filename)))
+                .stream().anyMatch(catPredicate);
     }
 
     private int handleDuplicateFile(CommonsImageProjection olderImage, CommonsImageProjection dupe, int count)

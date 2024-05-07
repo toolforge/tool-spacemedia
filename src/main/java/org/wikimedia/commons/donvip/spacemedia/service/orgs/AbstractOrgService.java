@@ -764,6 +764,19 @@ public abstract class AbstractOrgService<T extends Media>
         return result;
     }
 
+    @Override
+    public T syncAndSave(T media) throws IOException {
+        String hiddenCat = hiddenUploadCategory().replace(' ', '_');
+        media.getMetadataStream().forEach(fm -> {
+            for (String filename : fm.getCommonsFileNames()) {
+                if (!commonsService.isInCategory(filename, c -> hiddenCat.equals(c.getId().getTo()))) {
+                    LOGGER.warn("{} should belong to Category:{}", filename, hiddenCat);
+                }
+            }
+        });
+        return media;
+    }
+
     protected final void checkRemoteMedia(T media) {
         if (executionMode == ExecutionMode.REMOTE
                 && remoteService.getMedia(getId(), media.getId().toString(), media.getClass()) == null) {

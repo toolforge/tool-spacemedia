@@ -158,6 +158,8 @@ public interface Org<T extends Media> {
 
     T refreshAndSave(T media) throws IOException;
 
+    T syncAndSave(T media) throws IOException;
+
     String getWikiHtmlPreview(String sha1) throws TooManyResultsException;
 
     String getWikiCode(String sha1) throws TooManyResultsException;

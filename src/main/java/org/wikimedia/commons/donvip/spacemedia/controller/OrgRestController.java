@@ -12,6 +12,8 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.slf4j.Logger;
@@ -242,38 +244,79 @@ public abstract class OrgRestController<T extends Media> {
     }
 
     @GetMapping("/refreshmissing")
-    public final void refreshMissingMedia() throws IOException {
+    public final void refreshMissingMedia() {
         refreshMissingMedia(m -> true);
     }
 
     @GetMapping("/refreshmissing/images")
-    public final void refreshMissingImages() throws IOException {
+    public final void refreshMissingImages() {
         refreshMissingMedia(T::isImage);
     }
 
     @GetMapping("/refreshmissing/videos")
-    public final void refreshMissingVideos() throws IOException {
+    public final void refreshMissingVideos() {
         refreshMissingMedia(T::isVideo);
     }
 
     @GetMapping("/refreshmissing/documents")
-    public final void refreshMissingDocuments() throws IOException {
+    public final void refreshMissingDocuments() {
         refreshMissingMedia(T::isDocument);
     }
 
-    private final void refreshMissingMedia(Predicate<T> mustRefresh) throws IOException {
+    @GetMapping("/syncuploaded")
+    public final void syncUploadedMedia() {
+        syncUploadedMedia(m -> true);
+    }
+
+    @GetMapping("/syncuploaded/images")
+    public final void syncUploadedImages() {
+        syncUploadedMedia(T::isImage);
+    }
+
+    @GetMapping("/syncuploaded/videos")
+    public final void syncUploadedVideos() {
+        syncUploadedMedia(T::isVideo);
+    }
+
+    @GetMapping("/syncuploaded/documents")
+    public final void syncUploadedDocuments() {
+        syncUploadedMedia(T::isDocument);
+    }
+
+    private final void refreshMissingMedia(Predicate<T> mustRefresh) {
+        batchProcess(mustRefresh, service::listMissingMedia, media -> {
+            try {
+                service.refreshAndSave(media);
+            } catch (IOException e) {
+                LOGGER.error("Failed to refresh {}: {}", media, e.getMessage());
+            }
+        });
+    }
+
+    private final void syncUploadedMedia(Predicate<T> mustSync) {
+        batchProcess(mustSync, service::listUploadedMedia, media -> {
+            try {
+                service.syncAndSave(media);
+            } catch (IOException e) {
+                LOGGER.error("Failed to sync {}: {}", media, e.getMessage());
+            }
+        });
+    }
+
+    private final void batchProcess(Predicate<T> mustProcess, Function<Pageable, Page<T>> fetcher,
+            Consumer<T> processor) {
         Pageable page = PageRequest.of(0, SIZE, DESC, SORT);
         while (true) {
-            Page<T> medias = service.listMissingMedia(page);
+            Page<T> medias = fetcher.apply(page);
             if (medias.isEmpty()) {
                 return;
             }
             for (T media : medias) {
-                if (mustRefresh.test(media)) {
+                if (mustProcess.test(media)) {
                     try {
-                        service.refreshAndSave(media);
-                    } catch (IOException e) {
-                        LOGGER.error("Failed to refresh {}: {}", media, e.getMessage());
+                        processor.accept(media);
+                    } catch (RuntimeException e) {
+                        LOGGER.error("Failed to process {}: {} => {}", media, e.getClass(), e.getMessage());
                     }
                 }
             }
