@@ -1329,12 +1329,13 @@ public abstract class AbstractOrgService<T extends Media>
         if (includeHidden) {
             UnitedStates.getUsMilitaryCategory(media).ifPresent(result::add);
             result.add(hiddenUploadCategory());
+            ImageDimensions dims = metadata.getImageDimensions();
             if ("gif".equals(metadata.getFileExtensionOnCommons())) {
                 try {
                     int numImages = ImageUtils.readNumberOfImages(metadata.getAssetUri(), true);
                     LOGGER.info("GIF file with {} image(s): {}", numImages, metadata.getAssetUri());
                     if (numImages > 1) {
-                        long megaPixels = numImages * metadata.getImageDimensions().getPixelsNumber();
+                        long megaPixels = numImages * dims.getPixelsNumber();
                         result.add("Animated GIF files"
                                 + (megaPixels > 100_000_000 ? " exceeding the 100 MP limit"
                                         : megaPixels > 50_000_000 ? " between 50 MP and 100 MP" : ""));
@@ -1347,6 +1348,9 @@ public abstract class AbstractOrgService<T extends Media>
                 } catch (IOException e) {
                     LOGGER.error("Failed to read GIF file: {}", e.getMessage());
                 }
+            }
+            if (metadata.isVideo() && dims != null) {
+                result.add(String.format("Video display resolution %d x %d", dims.getWidth(), dims.getHeight()));
             }
         }
         return result;
