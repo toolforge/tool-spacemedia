@@ -62,6 +62,10 @@ public class MediaUtils {
             .compile("\\[download\\] (\\S{11}\\.\\S{3,4}) has already been downloaded(?: and merged)?");
     private static final Pattern DESTINATION = Pattern.compile("\\[download\\] Destination: (\\S{11}\\.\\S{3,4})");
 
+    private static final Set<String> IGNORED_MP4_ERRORS = Set.of(
+            "box size of zero means 'till end of file. That is not yet supported",
+            "A cast to int has gone wrong. Please contact the mp4parser discussion group (");
+
     private MediaUtils() {
         // Hide default constructor
     }
@@ -158,7 +162,7 @@ public class MediaUtils {
             }
             return new ContentsAndMetadata<>(mp4, contentLength, filename, extension, movieBox.getTrackCount());
         } catch (RuntimeException e) {
-            if ("box size of zero means 'till end of file. That is not yet supported".equals(e.getMessage())) {
+            if (e.getMessage() != null && IGNORED_MP4_ERRORS.stream().anyMatch(x -> e.getMessage().startsWith(x))) {
                 // Ignore https://github.com/sannies/mp4parser/issues/427
                 return new ContentsAndMetadata<>(
                         // Return sample data from
