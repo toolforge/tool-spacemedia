@@ -1240,7 +1240,9 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected Optional<String> getOtherVersions(T media, FileMetadata metadata) {
         StringBuilder sb = new StringBuilder();
-        media.getMetadataStream().filter(m -> m != metadata && m.getAssetUrl() != null && m.isIgnored() != Boolean.TRUE)
+        media.getMetadataStream()
+                .filter(m -> m != metadata && m.getAssetUrl() != null && m.isIgnored() != Boolean.TRUE
+                        && !Objects.equals(m.getAssetUrl(), metadata.getAssetUrl()))
                 .map(m -> media.getFirstCommonsFileNameOrUploadTitle(m) + '|'
                         + ofNullable(m.getFileExtensionOnCommons()).orElse("TBD").toUpperCase(Locale.ENGLISH)
                         + " version\n")
