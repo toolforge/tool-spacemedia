@@ -373,6 +373,13 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         result.addAll(media.getKeywordStream().map(KEYWORDS_CATS::get).filter(StringUtils::isNotBlank)
                 .flatMap(s -> Arrays.stream(s.split(";"))).collect(toSet()));
+        if (metadata.isVideo()) {
+            VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(),
+                    media.getUniqueMetadata().getAssetUrl());
+            if (t != null && StringUtils.isNotBlank(t.videoCategory())) {
+                result.add(t.videoCategory());
+            }
+        }
         if (includeHidden) {
             result.add("Photographs by Defense Video and Imagery Distribution System");
         }

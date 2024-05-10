@@ -50,7 +50,7 @@ public final class UnitedStates {
         return US_VIRIN.matcher(identifier).matches();
     }
 
-    public static record VirinTemplates(String virinTemplate, String pdTemplate) {
+    public static record VirinTemplates(String virinTemplate, String pdTemplate, String videoCategory) {
     }
 
     public static VirinTemplates getUsVirinTemplates(String virin, URL url) {
@@ -60,24 +60,28 @@ public final class UnitedStates {
     public static VirinTemplates getUsVirinTemplates(String virin, String url) {
         Matcher m = US_VIRIN.matcher(virin);
         return m.matches() && !"ZZ999".equals(m.group(3)) ? switch (m.group(2)) {
-            case "A" -> new VirinTemplates(vt(virin, "Army", url), "PD-USGov-Military-Army");
-            case "D" -> new VirinTemplates(vt(virin, "Department of Defense", url), "PD-USGov-Military");
-            case "F" -> new VirinTemplates(vt(virin, "Air Force", url), "PD-USGov-Military-Air Force");
-            case "G" -> new VirinTemplates(vt(virin, "Coast Guard", url), "PD-USCG");
-            case "H" -> new VirinTemplates(vt(virin, "Department of Homeland Security", url), "PD-USGov-DHS");
-            case "M" -> new VirinTemplates(vt(virin, "Marine Corps", url), "PD-USGov-Military-Marines");
-            case "N" -> new VirinTemplates(vt(virin, "Navy", url), "PD-USGov-Military-Navy");
-            case "O" -> new VirinTemplates(vt(virin, "Other", url), null);
-            case "P" -> new VirinTemplates(vt(virin, "Executive Office of the President", url), "PD-USGov-POTUS");
-            case "S" -> new VirinTemplates(vt(virin, "Department of State", url), "PD-USGov-DOS");
-            case "X" -> new VirinTemplates(vt(virin, "Space Force", url), "PD-USGov-Military-Space Force");
-            case "Z" -> new VirinTemplates(vt(virin, "National Guard", url), "PD-USGov-Military-National Guard");
-            default -> new VirinTemplates(vt(virin, "Armed Forces", url), null);
+            case "A" -> new VirinTemplates(vt(virin, "Army", url), "PD-USGov-Military-Army", vd("Army"));
+            case "D" -> new VirinTemplates(vt(virin, "Department of Defense", url), "PD-USGov-Military", "Videos from Defense.Gov");
+            case "F" -> new VirinTemplates(vt(virin, "Air Force", url), "PD-USGov-Military-Air Force", vd("Air Force"));
+            case "G" -> new VirinTemplates(vt(virin, "Coast Guard", url), "PD-USCG", vd("Coast Guard"));
+            case "H" -> new VirinTemplates(vt(virin, "Department of Homeland Security", url), "PD-USGov-DHS", vd("Department of Homeland Security"));
+            case "M" -> new VirinTemplates(vt(virin, "Marine Corps", url), "PD-USGov-Military-Marines", vd("Marine Corps"));
+            case "N" -> new VirinTemplates(vt(virin, "Navy", url), "PD-USGov-Military-Navy", vd("Navy"));
+            case "O" -> new VirinTemplates(vt(virin, "Other", url), null, null);
+            case "P" -> new VirinTemplates(vt(virin, "Executive Office of the President", url), "PD-USGov-POTUS", "White House videos");
+            case "S" -> new VirinTemplates(vt(virin, "Department of State", url), "PD-USGov-DOS", vd("State Department"));
+            case "X" -> new VirinTemplates(vt(virin, "Space Force", url), "PD-USGov-Military-Space Force", vd("Space Force"));
+            case "Z" -> new VirinTemplates(vt(virin, "National Guard", url), "PD-USGov-Military-National Guard", vd("National Guard"));
+            default -> new VirinTemplates(vt(virin, "Armed Forces", url), null, vd("Armed Forces"));
         } : null;
     }
 
     private static String vt(String virin, String organization, String url) {
         return "ID-USMil |1=" + virin + " |2= " + organization + "|url= " + url;
+    }
+
+    private static String vd(String organization) {
+        return "Videos of the United States " + organization;
     }
 
     public static Optional<String> getUsMilitaryCategory(Media media) {

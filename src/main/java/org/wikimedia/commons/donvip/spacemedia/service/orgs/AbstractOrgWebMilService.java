@@ -177,6 +177,19 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
     }
 
     @Override
+    public Set<String> findCategories(WebMilMedia media, FileMetadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        if (metadata.isVideo()) {
+            VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(),
+                    media.getUniqueMetadata().getAssetUrl());
+            if (t != null && StringUtils.isNotBlank(t.videoCategory())) {
+                result.add(t.videoCategory());
+            }
+        }
+        return result;
+    }
+
+    @Override
     public Set<String> findLicenceTemplates(WebMilMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(),

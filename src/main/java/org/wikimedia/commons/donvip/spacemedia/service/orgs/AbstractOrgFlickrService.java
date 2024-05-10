@@ -142,6 +142,12 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         mediaService.useMapping(result, media.getPathAlias(), media.getPhotosets(), flickrPhotoSets,
                 FlickrPhotoSet::getTitle);
         mediaService.useMapping(result, media.getPathAlias(), media.getTags(), flickrTags, Function.identity());
+        if (metadata.isVideo()) {
+            VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getTitle(), getSourceUrl(media, null));
+            if (t != null && StringUtils.isNotBlank(t.videoCategory())) {
+                result.add(t.videoCategory());
+            }
+        }
         return result;
     }
 
