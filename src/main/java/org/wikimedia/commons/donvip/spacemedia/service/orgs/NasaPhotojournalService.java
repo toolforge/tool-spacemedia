@@ -64,6 +64,9 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     static final Pattern ANIMATION_PATTERN = Pattern.compile(
             ".*<a href=\"(https?://[^\"]+\\.(?:gif|mp4))\".*");
 
+    static final Pattern AUDIO_PATTERN = Pattern.compile(
+            ".*<a href=\"(https?://[^\"]+\\.(?:wav|mp3|flac|midi))\".*");
+
     static final Pattern QTVR_PATTERN = Pattern.compile(
             ".*<a href=\"(https?://[^\"]+\\.mov)\".*");
 
@@ -223,12 +226,10 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
             boolean isAnimation = media.getKeywords().contains("animation");
             boolean isQtvr = media.getKeywords().contains("qtvr");
             if (isAnimation || isQtvr) {
-                Matcher m = (isAnimation ? ANIMATION_PATTERN : QTVR_PATTERN).matcher(caption);
-                if (m.matches()) {
-                    addMetadata(media, m.group(1), null);
-                }
+                addMetadataFromPattern(isAnimation ? ANIMATION_PATTERN : QTVR_PATTERN, caption, media);
             }
         }
+        addMetadataFromPattern(AUDIO_PATTERN, caption, media);
         detectFigures(media);
         detectCreationDate(media);
         return media;
@@ -242,20 +243,22 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         return (Integer) doc.getFirstValue(key);
     }
 
-    boolean detectFigures(NasaPhotojournalMedia media) {
+    private boolean addMetadataFromPattern(Pattern pattern, String caption, NasaPhotojournalMedia media) {
         boolean result = false;
-        String caption = media.getDescription();
-        if (caption.contains("<img ")) {
-            Matcher m = FIGURE_PATTERN.matcher(caption);
-            while (m.find()) {
-                String url = m.group(1);
-                if (!media.containsMetadata(url)) {
-                    addMetadata(media, url, null);
-                    result = true;
-                }
+        Matcher m = pattern.matcher(caption);
+        while (m.find()) {
+            String url = m.group(1);
+            if (!media.containsMetadata(url)) {
+                addMetadata(media, url, null);
+                result = true;
             }
         }
         return result;
+    }
+
+    boolean detectFigures(NasaPhotojournalMedia media) {
+        String caption = media.getDescription();
+        return caption.contains("<img ") && addMetadataFromPattern(FIGURE_PATTERN, caption, media);
     }
 
     static boolean detectCreationDate(NasaPhotojournalMedia media) {
@@ -385,10 +388,9 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         String legend = result.get("en");
         if (legend != null && legend.startsWith("<")) {
             if (legend.contains("Today's")) {
-                result.put("en", legend = legend.substring(legend.indexOf("Today's")));
-            }
-            if (legend.contains("This VIS ")) {
-                result.put("en", legend = legend.substring(legend.indexOf("This VIS ")));
+                result.put("en", legend.substring(legend.indexOf("Today's")));
+            } else if (legend.contains("This VIS ")) {
+                result.put("en", legend.substring(legend.indexOf("This VIS ")));
             }
         }
         return result;

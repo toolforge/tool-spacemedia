@@ -149,7 +149,7 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
     }
 
     private static QueryResponse solrResponse(String id) throws IOException {
-        try (Reader reader = Files.newBufferedReader(Paths.get("src/test/resources/photojournal", id + ".xml"),
+        try (Reader reader = Files.newBufferedReader(Paths.get("src/test/resources/nasa/photojournal", id + ".xml"),
                 StandardCharsets.UTF_8)) {
             return new QueryResponse(new XMLResponseWithoutContentTypeParser().processResponse(reader), null);
         }

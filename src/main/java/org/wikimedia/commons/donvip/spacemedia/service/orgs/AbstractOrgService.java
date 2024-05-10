@@ -1211,6 +1211,8 @@ public abstract class AbstractOrgService<T extends Media>
                         "<a href=\"" + metadata.getAssetUrl() + "\"><img src=\"[^\"]+\" alt=\"[^\"]*\"></a>",
                         "[[File:" + normalizeFilename(media.getUploadTitle(metadata)) + '.'
                                 + metadata.getFileExtensionOnCommons() + "|120px]]");
+                result = result.replaceAll(
+                        "<p><a href=\"" + metadata.getAssetUrl() + "\" target=\"new\"><b>[^<]+</b></a></p>", "");
             }
             return result;
         }
