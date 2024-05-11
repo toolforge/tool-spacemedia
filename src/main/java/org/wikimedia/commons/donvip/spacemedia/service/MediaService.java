@@ -30,6 +30,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -243,10 +244,21 @@ public class MediaService {
                     result |= updateReadableStateAndDims(metadata, img);
                     result |= updateFileSize(metadata, img);
                     result |= updateExtensionAndFilename(metadata, img);
-                } catch (IOException | RestClientException | FileDecodingException e) {
-                    result = ignoreMetadata(metadata, "Unreadable file", e);
-                    metadata.setReadable(Boolean.FALSE);
-                    LOGGER.info("Readable state has been updated to {} for {}", Boolean.FALSE, metadata);
+                } catch (FileDecodingException e) {
+                    if (e.getCause() instanceof IIOException iioe
+                            && "Unknown TIFF SampleFormat (expected 1, 2, 3 or 4): 5".equals(iioe.getMessage())) {
+                        // TODO remove when https://github.com/haraldk/TwelveMonkeys/issues/884 is fixed
+                        LOGGER.error("TIFF decoding error: {}", e.getMessage());
+                        if (!Boolean.TRUE.equals(metadata.isReadable())) {
+                            metadata.setReadable(Boolean.TRUE);
+                            LOGGER.warn("Readable state has been FORCED to {} for {}", Boolean.TRUE, metadata);
+                            result = true;
+                        }
+                    } else {
+                        result = handleFileReadingError(metadata, e);
+                    }
+                } catch (IOException | RestClientException e) {
+                    result = handleFileReadingError(metadata, e);
                 }
             }
             if (contents instanceof BufferedImage bi && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
@@ -278,6 +290,13 @@ public class MediaService {
             saveMetadata(metadata);
         }
         return new MediaUpdateResult(result, null);
+    }
+
+    private static boolean handleFileReadingError(FileMetadata metadata, Exception e) {
+        boolean result = ignoreMetadata(metadata, "Unreadable file", e);
+        metadata.setReadable(Boolean.FALSE);
+        LOGGER.info("Readable state has been updated to {} for {}", Boolean.FALSE, metadata);
+        return result;
     }
 
     private static Object flushOrClose(Object contents) {
