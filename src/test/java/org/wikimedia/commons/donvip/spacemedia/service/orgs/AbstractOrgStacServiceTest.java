@@ -1,28 +1,72 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
-import java.io.File;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.Set;
 
-import org.junit.jupiter.api.Test;
-import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgStacService.StacItem;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMediaRepository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+@SpringJUnitConfig(AbstractOrgStacServiceTest.TestConfig.class)
+class AbstractOrgStacServiceTest extends AbstractOrgServiceTest {
 
-class AbstractOrgStacServiceTest {
+    @MockBean
+    private StacMediaRepository repository;
 
-    @Test
-    void testJsonDeserialisation() throws Exception {
-        String string = new ObjectMapper().registerModules(new Jdk8Module(), new JavaTimeModule())
-                .readValue(
-                        new File("src/test/resources/capella/CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214.json"),
-                        StacItem.class)
-                .toString();
-        assertTrue(string.startsWith(
-                "StacItem[type=Feature, stacVersion=1.0.0, id=CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214, properties=StacProperties[datetime=2023-11-18T13:22:12.698788Z, startDatetime=2023-11-18T13:22:10.528436Z, endDatetime=2023-11-18T13:22:14.869140Z, platform=capella-9, constellation=capella, instruments=[capella-radar-9], projCentroid=[-115.19457753, 32.906081959999995], projEpsg=32611, projShape=[20211, 27193], projTransform=[0.8, 0.0, 657965.5598879671, 0.0, -0.8, 3650407.901766273, 0.0, 0.0, 1.0], sarCenterFrequency=9.65, sarFrequencyBand=X, sarInstrumentMode=stripmap, sarLooksAzimuth=1, sarLooksEquivalentNumber=1, sarLooksRange=1, sarObservationDirection=right, sarPixelSpacingAzimuth=0.8, sarPixelSpacingRange=0.8, sarPolarizations=[VV], sarProductType=GEC, sarResolutionAzimuth=1.27, sarResolutionRange=0.95, satOrbitState=ascending, viewIncidenceAngle=33.7, viewLookAngle=30.5], geometry=StacGeometry[type=Polygon, coordinates=[[[-115.30064093, 32.8831782], [-115.27502894, 32.84335589], [-115.08851413, 32.92893387], [-115.11405004, 32.96880803], [-115.30064093, 32.8831782]]]], links=[StacLink[rel=root, href=../../../catalog.json, type=application/json, title=Capella Open Data], StacLink[rel=collection, href=../collection.json, type=application/json, title=Other], StacLink[rel=parent, href=../collection.json, type=application/json, title=Other]], assets=StacAssets[HH=null, VV=StacAsset[href=https://capella-open-data.s3.amazonaws.com/data/2023/11/18/CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214/CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214.tif, type=image/tiff; application=geotiff, title=Data file, sarPolarizations=[VV], roles=[data]], HV=null, VH=null, metadata=StacAsset[href=https://capella-open-data.s3.amazonaws.com/data/2023/11/18/CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214/CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214_extended.json, type=application/json, title=Extended Metadata, sarPolarizations=null, roles=[metadata]], preview=StacAsset[href=https://capella-open-data.s3.amazonaws.com/data/2023/11/18/CAPELLA_C09_SM_GEO_VV_20231118132210_20231118132214/CAPELLA_C09_SM_GEO_VV_20231118132210_20231118132214_preview.tif, type=image/tiff; application=geotiff; profile=cloud-optimized, title=Preview image, sarPolarizations=null, roles=[overview]], thumbnail=StacAsset[href=https://capella-open-data.s3.amazonaws.com/data/2023/11/18/CAPELLA_C09_SM_GEO_VV_20231118132210_20231118132214/CAPELLA_C09_SM_GEO_VV_20231118132210_20231118132214_thumb.png, type=image/png, title=Thumbnail image, sarPolarizations=null, roles=[thumbnail]]], bbox=["));
-        assertTrue(string.endsWith(
-                ", stacExtensions=[sat, view, sar, processing, proj], collection=capella-open-data-other]"));
+    @Autowired
+    private AbstractOrgStacService service;
+
+    @ParameterizedTest
+    @CsvSource({ "CAPELLA_C09_SM_GEC_VV_20231118132210_20231118132214",
+            "CAPELLA_C14_SP_SLC_VV_20240414014317_20240414014346" })
+    void testFetchMedia(String id) throws MalformedURLException {
+        when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
+        assertNotNull(service.fetchStacMedia("capella",
+                Path.of("src/test/resources/capella/" + id + ".json").toUri().toURL()));
+    }
+
+    @Configuration
+    @Import(DefaultOrgTestConfig.class)
+    static class TestConfig {
+
+        @Bean
+        @Autowired
+        public AbstractOrgStacService service(StacMediaRepository repository) {
+            return new AbstractOrgStacService(repository, "test", Set.of()) {
+
+                @Override
+                public String getName() {
+                    return "test";
+                }
+
+                @Override
+                protected void enrichStacMedia(StacMedia media) {
+                }
+
+                @Override
+                protected boolean isStacItemBefore(String itemHref, LocalDate doNotFetchEarlierThan) {
+                    return false;
+                }
+
+                @Override
+                protected boolean isStacItemIgnored(String itemHref) {
+                    return false;
+                }
+            };
+        }
     }
 }

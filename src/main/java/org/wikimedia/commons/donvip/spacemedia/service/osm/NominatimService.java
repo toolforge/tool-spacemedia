@@ -4,6 +4,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +28,7 @@ public class NominatimService {
 
     public ReverseResponse reverse(double lat, double lon, int zoom) throws IOException {
         return jackson.readValue(
-                newURL(String.format(
+                newURL(String.format(Locale.US,
                         "%s/reverse?lat=%f&lon=%f&format=jsonv2&addressdetails=1&accept-language=en-US&zoom=%d",
                         nominatimUrl.toExternalForm(), lat, lon, zoom)),
                 ReverseResponse.class);

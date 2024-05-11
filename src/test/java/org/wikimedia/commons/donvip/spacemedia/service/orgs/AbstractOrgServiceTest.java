@@ -37,6 +37,8 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import jakarta.persistence.EntityManagerFactory;
 
@@ -154,7 +156,7 @@ public abstract class AbstractOrgServiceTest {
 
         @Bean
         public ObjectMapper jackson() {
-            return new ObjectMapper();
+            return new ObjectMapper().registerModules(new Jdk8Module(), new JavaTimeModule());
         }
     }
 }

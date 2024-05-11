@@ -7,10 +7,10 @@
     "instruments": [
       "capella-radar-9"
     ],
-    "proj:centroid": [
-      -115.19457753,
-      32.906081959999995
-    ],
+    "proj:centroid": {
+      "lon": -115.19457753,
+      "lat": 32.906081959999995
+    },
     "proj:shape": [
       20211,
       27193
@@ -51,7 +51,6 @@
     "capella:resolution_ground_range": 1.72,
     "sar:resolution_azimuth": 1.27,
     "view:incidence_angle": 33.7,
-    "view:look_angle": 30.5,
     "capella:squint_angle": 0,
     "capella:orbital_plane": 45,
     "sar:observation_direction": "right",
@@ -61,7 +60,8 @@
     "capella:image_width": 5025.347056392928,
     "processing:software": {
       "Capella SAR Processor": "2.50.2"
-    }
+    },
+    "capella:look_angle": 30.5
   },
   "geometry": {
     "type": "Polygon",
@@ -93,21 +93,21 @@
   "links": [
     {
       "rel": "root",
-      "href": "../../../catalog.json",
+      "href": "../../../../../catalog.json",
       "type": "application/json",
       "title": "Capella Open Data"
     },
     {
       "rel": "collection",
-      "href": "../collection.json",
+      "href": "../../../../../capella-open-data-by-industry/capella-open-data-other/collection.json",
       "type": "application/json",
       "title": "Other"
     },
     {
       "rel": "parent",
-      "href": "../collection.json",
+      "href": "../catalog.json",
       "type": "application/json",
-      "title": "Other"
+      "title": "Capella Open Data 2023-11-18"
     }
   ],
   "assets": {
@@ -154,11 +154,10 @@
     32.96880803
   ],
   "stac_extensions": [
-    "sat",
-    "view",
-    "sar",
-    "processing",
-    "proj"
+    "https://stac-extensions.github.io/sat/v1.0.0/schema.json",
+    "https://stac-extensions.github.io/view/v1.0.0/schema.json",
+    "https://stac-extensions.github.io/processing/v1.1.0/schema.json",
+    "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
   ],
   "collection": "capella-open-data-other"
 }

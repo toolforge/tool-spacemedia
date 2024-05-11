@@ -180,7 +180,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
         return Pair.of(media, uploadCount);
     }
 
-    private StacMedia fetchStacMedia(String repoId, URL itemUrl) {
+    protected StacMedia fetchStacMedia(String repoId, URL itemUrl) {
         try {
             StacItem item = jackson.readValue(itemUrl, StacItem.class);
             StacProperties properties = item.properties();
@@ -189,8 +189,8 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
             media.setId(new CompositeMediaId(repoId, item.id()));
             media.setCreationDateTime(properties.datetime());
             media.setPublicationDateTime(properties.endDatetime());
-            media.setLongitude(properties.projCentroid().get(0));
-            media.setLatitude(properties.projCentroid().get(1));
+            media.setLongitude(properties.projCentroid().lon());
+            media.setLatitude(properties.projCentroid().lat());
             StacAssets assets = item.assets();
             Arrays.stream(new StacAsset[] { assets.HH(), assets.HV(), assets.VV(), assets.VH(), assets.thumbnail() })
                     .filter(x -> x != null && IMAGE_EXTENSIONS.contains(Utils.findExtension(x.href().toExternalForm())))
@@ -241,7 +241,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
     @JsonIgnoreProperties(ignoreUnknown = true)
     protected static record StacProperties(ZonedDateTime datetime, ZonedDateTime startDatetime,
             ZonedDateTime endDatetime, String platform, String constellation, List<String> instruments,
-            @JsonProperty("proj:centroid") List<Double> projCentroid,
+            @JsonProperty("proj:centroid") StacCoordinate projCentroid,
             @JsonProperty("proj:epsg") Integer projEpsg,
             @JsonProperty("proj:shape") List<Integer> projShape,
             @JsonProperty("proj:transform") List<Double> projTransform,
@@ -265,6 +265,10 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     protected static record StacGeometry(String type, List<List<List<Double>>> coordinates) {
+    }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    protected static record StacCoordinate(Double lon, Double lat) {
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
