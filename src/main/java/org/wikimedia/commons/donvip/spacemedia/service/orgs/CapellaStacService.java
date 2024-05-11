@@ -36,7 +36,7 @@ public class CapellaStacService extends AbstractOrgStacService {
     private static final Map<String, String> SATS = Map.ofEntries(e("01", "Q124124084"), e("02", "Q124124108"),
             e("03", "Q124124120"), e("04", "Q124124133"), e("05", "Q124124202"), e("06", "Q124124533"),
             e("07", "Q124126674"), e("08", "Q124126687"), e("09", "Q124126690"), e("10", "Q124126999"),
-            e("11", "Q124127134"));
+            e("11", "Q124127134"), e("14", "Q125885260"));
 
     private static final Pattern SAT_PATTERN = Pattern.compile("CAPELLA_C(\\d{2})_.*");
 
