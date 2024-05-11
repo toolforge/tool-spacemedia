@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
+import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata.IMAGE_EXTENSIONS;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -190,8 +192,8 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
             media.setLongitude(properties.projCentroid().get(0));
             media.setLatitude(properties.projCentroid().get(1));
             StacAssets assets = item.assets();
-            Arrays.stream(new StacAsset[] { assets.HH(), assets.HV(), assets.VV(), assets.VH() })
-                    .filter(x -> x != null && x.href().toExternalForm().contains(".tif"))
+            Arrays.stream(new StacAsset[] { assets.HH(), assets.HV(), assets.VV(), assets.VH(), assets.thumbnail() })
+                    .filter(x -> x != null && IMAGE_EXTENSIONS.contains(Utils.findExtension(x.href().toExternalForm())))
                     .forEach(x -> addMetadata(media, x.href(), null));
             if (!media.hasMetadata() && assets.preview() != null) {
                 addMetadata(media, assets.preview().href(), null);
