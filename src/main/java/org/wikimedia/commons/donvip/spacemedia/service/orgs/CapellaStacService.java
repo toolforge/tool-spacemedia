@@ -2,10 +2,12 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -81,6 +83,18 @@ public class CapellaStacService extends AbstractOrgStacService {
     public Set<String> findLicenceTemplates(StacMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("Cc-by-4.0");
+        return result;
+    }
+
+    @Override
+    public Set<String> findCategories(StacMedia media, FileMetadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        result.addAll(findCategoriesFromTitleAndAffixes(media.getTitle(),
+                new Affixes(List.of("Images of "), false),
+                new Affixes(List.of(" by Capella"), false)));
+        if (replace(result, media.getYear() + " satellite pictures", media.getYear() + " Capella images")) {
+            result.remove("Images by Capella");
+        }
         return result;
     }
 

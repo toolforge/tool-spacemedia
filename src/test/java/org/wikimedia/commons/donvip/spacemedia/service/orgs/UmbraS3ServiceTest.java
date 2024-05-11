@@ -39,7 +39,7 @@ class UmbraS3ServiceTest extends AbstractOrgServiceTest {
     void testFindCategories() throws Exception {
         S3Media media = new S3Media();
         media.setCreationDate(LocalDate.of(2023, 1, 1));
-        assertEquals(Set.of("Images by Umbra", "2023 satellite pictures"),
+        assertEquals(Set.of("2023 Umbra images"),
                 service.findCategories(media, new FileMetadata(new URL("https://foo"))));
     }
 

@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +34,6 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-
 @Service
 public class UmbraS3Service extends AbstractOrgS3Service {
 
@@ -133,6 +133,9 @@ public class UmbraS3Service extends AbstractOrgS3Service {
         result.addAll(findCategoriesFromTitleAndAffixes(media.getTitle(),
                 new Affixes(List.of("Images of "), false),
                 new Affixes(List.of(" by Umbra"), false)));
+        if (replace(result, media.getYear() + " satellite pictures", media.getYear() + " Umbra images")) {
+            result.remove("Images by Umbra");
+        }
         return result;
     }
 
