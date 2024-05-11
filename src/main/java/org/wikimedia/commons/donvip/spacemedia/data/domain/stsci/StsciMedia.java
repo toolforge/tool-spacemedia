@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.stsci;
 
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -97,22 +96,6 @@ public class StsciMedia extends Media implements WithKeywords {
     public String toString() {
         return "StsciMedia [id=" + getId() + ", newsId=" + newsId + ", objectName=" + objectName
                 + ", constellation=" + constellation + ']';
-    }
-
-    @Override
-    public boolean isAudio() {
-        return false;
-    }
-
-    @Override
-    public boolean isImage() {
-        return getMetadataStream().map(FileMetadata::getAssetUrl)
-                .anyMatch(url -> url != null && !url.toExternalForm().toLowerCase(Locale.ENGLISH).endsWith(".pdf"));
-    }
-
-    @Override
-    public boolean isVideo() {
-        return false;
     }
 
     @Override

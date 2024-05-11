@@ -34,16 +34,6 @@ public class NasaModisMedia extends SingleFileMedia {
     }
 
     @Override
-    public boolean isImage() {
-        return true;
-    }
-
-    @Override
-    public boolean isVideo() {
-        return false;
-    }
-
-    @Override
     public String getUploadId(FileMetadata fileMetadata) {
         return "MODIS " + getPublicationDate();
     }

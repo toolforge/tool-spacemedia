@@ -6,13 +6,10 @@ import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithLatLon;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 
 @Entity
 public class NasaAsterMedia extends Media implements WithLatLon {
@@ -31,10 +28,6 @@ public class NasaAsterMedia extends Media implements WithLatLon {
 
     @Column(nullable = false, length = 16)
     private String icon;
-
-    @Enumerated(EnumType.ORDINAL)
-    @Column(nullable = false, columnDefinition = "TINYINT default 0")
-    private NasaMediaType mediaType;
 
     @Override
     public double getLatitude() {
@@ -85,25 +78,6 @@ public class NasaAsterMedia extends Media implements WithLatLon {
         this.icon = icon;
     }
 
-
-    public NasaMediaType getMediaType() {
-        return mediaType;
-    }
-
-    public void setMediaType(NasaMediaType mediaType) {
-        this.mediaType = mediaType;
-    }
-
-    @Override
-    public boolean isImage() {
-        return mediaType == NasaMediaType.image;
-    }
-
-    @Override
-    public boolean isVideo() {
-        return mediaType == NasaMediaType.video;
-    }
-
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
         return (getMetadataCount() < 2 ? CommonsService.normalizeFilename(title) : fileMetadata.getFileName())
@@ -113,7 +87,7 @@ public class NasaAsterMedia extends Media implements WithLatLon {
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(latitude, longitude, longName, category, icon, mediaType);
+                + Objects.hash(latitude, longitude, longName, category, icon);
     }
 
     @Override
@@ -125,19 +99,18 @@ public class NasaAsterMedia extends Media implements WithLatLon {
         NasaAsterMedia other = (NasaAsterMedia) obj;
         return latitude == other.latitude && longitude == other.longitude
                 && Objects.equals(longName, other.longName) && Objects.equals(category, other.category)
-                && Objects.equals(icon, other.icon) && mediaType == other.mediaType;
+                && Objects.equals(icon, other.icon);
     }
 
     @Override
     public String toString() {
         return "NasaAsterMedia [id=" + getId() + ", latitude="
                 + latitude + ", longitude=" + longitude + ", longName=" + longName
-                + ", category=" + category + ", icon=" + icon + ", mediaType=" + mediaType + ']';
+                + ", category=" + category + ", icon=" + icon + ']';
     }
 
     public NasaAsterMedia copyDataFrom(NasaAsterMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
-        this.mediaType = mediaFromApi.mediaType;
         this.longName = mediaFromApi.longName;
         this.category = mediaFromApi.category;
         this.icon = mediaFromApi.icon;

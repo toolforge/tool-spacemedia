@@ -41,7 +41,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.InternetArchiveService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
@@ -330,7 +329,6 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
         image.setCreationDate(extractAcquisitionDate(image));
         // FIXME ASTER entries can be MOV videos too
         // https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=fuji
-        image.setMediaType(NasaMediaType.image);
         for (int i = 2; i < tables.size(); i++) {
             Element table = tables.get(i);
             Elements tds = table.getElementsByTag("td");
