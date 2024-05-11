@@ -105,7 +105,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
         return result;
     }
 
-    protected Pair<Integer, Collection<StacMedia>> updateStacMedia(String repoId) throws MalformedURLException {
+    protected Pair<Integer, Collection<StacMedia>> updateStacMedia(String repoId) {
         List<StacMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         Set<String> processedItems = new HashSet<>();

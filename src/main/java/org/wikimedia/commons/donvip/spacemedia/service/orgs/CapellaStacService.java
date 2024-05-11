@@ -6,7 +6,9 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URL;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,9 +19,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
@@ -44,6 +49,48 @@ public class CapellaStacService extends AbstractOrgStacService {
     @Override
     public String getName() {
         return "Capella";
+    }
+
+    private static boolean isGec(StacMedia media) {
+        return media.getId().getMediaId().contains("_GEC_");
+    }
+
+    @Override
+    protected boolean shouldUploadAuto(StacMedia media, boolean isManual) {
+        return super.shouldUploadAuto(media, isManual) && !isGec(media);
+    }
+
+    @Override
+    protected int processStacCatalog(URL catalogUrl, LocalDateTime start, LocalDate doNotFetchEarlierThan,
+            String repoId, List<StacMedia> uploadedMedia, Set<String> processedItems, int startCount)
+            throws IOException {
+        int result = super.processStacCatalog(catalogUrl, start, doNotFetchEarlierThan, repoId, uploadedMedia,
+                processedItems, startCount);
+        for (StacMedia media : listMissingMedia()) {
+            if (isGec(media)) {
+                postProcessGecItem(uploadedMedia, media);
+            }
+        }
+        return result;
+    }
+
+    private void postProcessGecItem(List<StacMedia> uploadedMedia, StacMedia media) {
+        if (repository.findById(
+                new CompositeMediaId(media.getId().getRepoId(), media.getId().getMediaId().replace("_GEC_", "_GEO_")))
+                .map(Media::isIgnored).orElse(true)) {
+            // GEO ignored or missing, upload GEC
+            if (super.shouldUploadAuto(media, false)) {
+                try {
+                    media = upload(media, true, false).getLeft();
+                    uploadedMedia.add(media);
+                } catch (UploadException e) {
+                    LOGGER.error("Failed to upload {}: {}", media, e);
+                }
+                saveMedia(media);
+            }
+        } else {
+            mediaService.ignoreMedia(media, "Ignored GEC over GEO version");
+        }
     }
 
     @Override
