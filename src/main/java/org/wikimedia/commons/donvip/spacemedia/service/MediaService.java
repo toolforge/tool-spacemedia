@@ -73,6 +73,11 @@ public class MediaService {
     private static final Map<String, String> STRINGS_TO_REPLACE = Map.of("&nbsp;", " ", "  ", " ", "â€™", "’", "ÔÇÖ",
             "’", "ÔÇ£", "«", "ÔÇØ", "»");
 
+    // TODO update when https://github.com/haraldk/TwelveMonkeys/issues/884 is fixed
+    private static final Set<String> IGNORED_IIO_ERRORS = Set.of(
+            "Unknown TIFF SampleFormat (expected 1, 2, 3 or 4): ",
+            "destination width * height > Integer.MAX_VALUE: ");
+
     @Autowired
     private CommonsService commonsService;
 
@@ -245,10 +250,9 @@ public class MediaService {
                     result |= updateFileSize(metadata, img);
                     result |= updateExtensionAndFilename(metadata, img);
                 } catch (FileDecodingException e) {
-                    if (e.getCause() instanceof IIOException iioe
-                            && "Unknown TIFF SampleFormat (expected 1, 2, 3 or 4): 5".equals(iioe.getMessage())) {
-                        // TODO remove when https://github.com/haraldk/TwelveMonkeys/issues/884 is fixed
-                        LOGGER.error("TIFF decoding error: {}", e.getMessage());
+                    if (e.getCause() instanceof IIOException iioe && iioe.getMessage() != null
+                            && IGNORED_IIO_ERRORS.stream().anyMatch(x -> iioe.getMessage().startsWith(x))) {
+                        LOGGER.error("Image decoding error: {}", e.getMessage());
                         if (!Boolean.TRUE.equals(metadata.isReadable())) {
                             metadata.setReadable(Boolean.TRUE);
                             LOGGER.warn("Readable state has been FORCED to {} for {}", Boolean.TRUE, metadata);
