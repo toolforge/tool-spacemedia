@@ -130,6 +130,9 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
             case "semeion":
                 result.add("Files from Simeon Schmauß Flickr stream");
                 break;
+            case "194849271@N04":
+                result.add("Files from SpaceFromSpace Flickr stream");
+                break;
             }
         }
         return result;
