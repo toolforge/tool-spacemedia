@@ -82,6 +82,14 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JsonProperty("readable")
     private Boolean readable;
 
+    /**
+     * Determines if the file is assumed importable to Commons even if not readable
+     * by Java libraries
+     */
+    @Column(nullable = true)
+    @JsonProperty("assumed_readable")
+    private Boolean assumedReadable;
+
     // 540 for
     // https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2014/05/briefing_prasowy_z_udzialem_wiceminister_gospodarki_grazyny_henclewskiej_dr_karlheinza_kreuzberga_z_esa_dyrektora_cnk_roberta_firmhofera_oraz_dyrektora_zpsk_pawla_wojtkiewicza_przedstawiciela_polskiego_sektora_kosmicznego/14500198-1-eng-GB/Briefing_prasowy_z_udzialem_wiceminister_gospodarki_Grazyny_Henclewskiej_Dr_Karlheinza_Kreuzberga_z_ESA_dyrektora_CNK_Roberta_Firmhofera_oraz_dyrektora_ZPSK_Pawla_Wojtkiewicza_przedstawiciela_polskiego_sektora_kosmicznego.jpg
     @Column(nullable = false, length = 540)
@@ -210,6 +218,14 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
     public void setReadable(Boolean readable) {
         this.readable = readable;
+    }
+
+    public Boolean isAssumedReadable() {
+        return assumedReadable;
+    }
+
+    public void setAssumedReadable(Boolean assumedReadable) {
+        this.assumedReadable = assumedReadable;
     }
 
     @Transient
@@ -407,7 +423,9 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     public boolean shouldRead() {
         return readable == null || (Boolean.TRUE == readable
                 && (!hasSha1() || !hasSize() || isBlank(getExtension()) || isBlank(getOriginalFileName())
-                        || (isImage() && !hasPhash()) || (!isAudio() && !hasValidDimensions())));
+                        || (isImage() && !hasPhash()) || (!isAudio() && !hasValidDimensions())))
+                || (Boolean.TRUE == assumedReadable
+                        && (!hasSize() || isBlank(getExtension()) || isBlank(getOriginalFileName())));
     }
 
     private boolean isOf(Set<String> extensions, String type) {
@@ -418,7 +436,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @Override
     public int hashCode() {
         return Objects.hash(phash, sha1, readable, assetUrl, size, commonsFileNames, exif, dimensions, extension,
-                description, originalFileName);
+                description, originalFileName, assumedReadable);
     }
 
     @Override
@@ -433,7 +451,8 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
                 && Objects.equals(commonsFileNames, other.commonsFileNames) && Objects.equals(exif, other.exif)
                 && Objects.equals(dimensions, other.dimensions) && Objects.equals(extension, other.extension)
                 && Objects.equals(description, other.description)
-                && Objects.equals(originalFileName, other.originalFileName);
+                && Objects.equals(originalFileName, other.originalFileName)
+                && Objects.equals(assumedReadable, other.assumedReadable);
     }
 
     @Override

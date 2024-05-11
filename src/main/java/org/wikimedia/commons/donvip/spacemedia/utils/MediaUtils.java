@@ -26,6 +26,8 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.imageio.IIOException;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -102,9 +104,16 @@ public class MediaUtils {
             }
             long contentLength = response.getEntity().getContentLength();
             if (imageio || isBlank(extension)) {
-                ContentsAndMetadata<BufferedImage> result = ImageUtils.readImage(in, readMetadata);
-                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(result.contents(), contentLength, filename,
-                        isBlank(extension) ? result.extension() : extension, result.numImagesOrPages());
+                try {
+                    ContentsAndMetadata<BufferedImage> result = ImageUtils.readImage(in, readMetadata);
+                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(result.contents(), contentLength,
+                            filename, isBlank(extension) ? result.extension() : extension, result.numImagesOrPages(),
+                            null);
+                } catch (IIOException e) {
+                    LOGGER.error("Image I/O error while reading {}: {}", uri, e.getMessage());
+                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(null, contentLength, filename, extension,
+                            1, e);
+                }
             } else if ("www.youtube.com".equals(uri.getHost())) {
                 return (ContentsAndMetadata<T>) readVideo(localPath, contentLength, filename, extension, uri,
                         x -> ofNullable(downloadYoutubeVideo(x.toString())));
@@ -120,15 +129,15 @@ public class MediaUtils {
                 });
             } else if ("webp".equals(extension)) {
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(
-                        ImageUtils.readWebp(uri, readMetadata).contents(), contentLength, filename, extension, 1);
+                        ImageUtils.readWebp(uri, readMetadata).contents(), contentLength, filename, extension, 1, null);
             } else if ("pdf".equals(extension)) {
                 PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(new RandomAccessReadBuffer(in));
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(pdf, contentLength, filename, extension,
-                        pdf.getNumberOfPages());
+                        pdf.getNumberOfPages(), null);
             } else if (POI_HSLF_EXTENSIONS.contains(extension) || POI_XSLF_EXTENSIONS.contains(extension)) {
                 SlideShow<?, ?> ppt = readPowerpointFile(in, extension);
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(ppt, contentLength, filename, extension,
-                        ppt.getSlides().size());
+                        ppt.getSlides().size(), null);
             } else {
                 throw new FileDecodingException(
                         "Unsupported format: " + extension + " / headers:" + Arrays.stream(response.getAllHeaders())
@@ -160,7 +169,7 @@ public class MediaUtils {
             if (movieBox == null) {
                 throw new FileDecodingException("Failed to open MP4 video from " + path);
             }
-            return new ContentsAndMetadata<>(mp4, contentLength, filename, extension, movieBox.getTrackCount());
+            return new ContentsAndMetadata<>(mp4, contentLength, filename, extension, movieBox.getTrackCount(), null);
         } catch (RuntimeException e) {
             if (e.getMessage() != null && IGNORED_MP4_ERRORS.stream().anyMatch(x -> e.getMessage().startsWith(x))) {
                 // Ignore https://github.com/sannies/mp4parser/issues/427
@@ -168,7 +177,7 @@ public class MediaUtils {
                         // Return sample data from
                         // https://github.com/mathiasbynens/small/blob/master/mp4-with-audio.mp4
                         new IsoFile(Channels.newChannel(MediaUtils.class.getResourceAsStream("/mp4-with-audio.mp4"))),
-                        contentLength, filename, extension, 1);
+                        contentLength, filename, extension, 1, null);
             } else {
                 throw e;
             }

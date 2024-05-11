@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -73,7 +74,7 @@ public class ImageUtils {
                         case "SVGImageReader" -> "svg";
                         case "TIFFImageReader" -> "tiff";
                         default -> null;
-                        }, reader.getNumImages(false));
+                        }, reader.getNumImages(false), null);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -146,9 +147,11 @@ public class ImageUtils {
     }
 
     static ContentsAndMetadata<BufferedImage> readImage(InputStream in, boolean readMetadata)
-            throws FileDecodingException {
+            throws FileDecodingException, IIOException {
         try {
             return readImage(ImageIO.createImageInputStream(in), readMetadata);
+        } catch (IIOException e) {
+            throw e;
         } catch (IOException | RuntimeException e) {
             throw new FileDecodingException(e);
         }
