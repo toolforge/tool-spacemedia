@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -27,7 +29,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMediaReposit
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
-
 @Service
 public class CapellaStacService extends AbstractOrgStacService {
 
@@ -51,13 +52,35 @@ public class CapellaStacService extends AbstractOrgStacService {
         return "Capella";
     }
 
-    private static boolean isGec(StacMedia media) {
-        return media.getId().getMediaId().contains("_GEC_");
+    @Override
+    protected String getSource(StacMedia media, FileMetadata metadata) {
+        URL itemUrl = getSourceUrl(media, metadata);
+        return "{{en|1=" + wikiLink(metadata.getAssetUrl(), "Capella Space")
+                + " via their AWS S3 Bucket. Further data via " + wikiLink(itemUrl, "STAC API") + ". View in "
+                + wikiLink(newURL(itemUrl.toExternalForm().replace("://",
+                        "://radiantearth.github.io/stac-browser/#/external/")), "STAC Browser")
+                + ".}}";
+    }
+
+    @Override
+    protected Optional<String> getPermission(StacMedia media) {
+        return Optional.of("{{en|See "
+                + wikiLink(newURL("https://www.capellaspace.com/products/product-documentation/data-licensing/"),
+                        "Capella-Open-Data Image Collection data license")
+                + ". Reverse geocoding in description and category: "
+                + wikiLink(newURL("https://www.openstreetmap.org/copyright"),
+                        "Data © OpenStreetMap contributors, ODbL 1.0")
+                + ". }}");
+    }
+
+    private static boolean isGecOrSlc(StacMedia media) {
+        String id = media.getId().getMediaId();
+        return id.contains("_GEC_") || id.contains("_SLC_");
     }
 
     @Override
     protected boolean shouldUploadAuto(StacMedia media, boolean isManual) {
-        return super.shouldUploadAuto(media, isManual) && !isGec(media);
+        return super.shouldUploadAuto(media, isManual) && !isGecOrSlc(media);
     }
 
     @Override
@@ -67,18 +90,19 @@ public class CapellaStacService extends AbstractOrgStacService {
         int result = super.processStacCatalog(catalogUrl, start, doNotFetchEarlierThan, repoId, uploadedMedia,
                 processedItems, startCount);
         for (StacMedia media : listMissingMedia()) {
-            if (isGec(media)) {
-                postProcessGecItem(uploadedMedia, media);
+            if (isGecOrSlc(media)) {
+                postProcessGecSlcItem(uploadedMedia, media);
             }
         }
         return result;
     }
 
-    private void postProcessGecItem(List<StacMedia> uploadedMedia, StacMedia media) {
+    private void postProcessGecSlcItem(List<StacMedia> uploadedMedia, StacMedia media) {
         if (repository.findById(
-                new CompositeMediaId(media.getId().getRepoId(), media.getId().getMediaId().replace("_GEC_", "_GEO_")))
+                new CompositeMediaId(media.getId().getRepoId(),
+                        media.getId().getMediaId().replace("_GEC_", "_GEO_").replace("_SLC_", "_GEO_")))
                 .map(Media::isIgnored).orElse(true)) {
-            // GEO ignored or missing, upload GEC
+            // GEO ignored or missing, upload GEC/SLC
             if (super.shouldUploadAuto(media, false)) {
                 try {
                     media = upload(media, true, false).getLeft();

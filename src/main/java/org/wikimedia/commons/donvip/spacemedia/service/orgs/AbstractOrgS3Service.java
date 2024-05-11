@@ -16,7 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -149,7 +149,7 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
         return m;
     }
 
-    protected Pair<S3Media, Integer> processS3Media(S3Media mediaFromApi, Function<S3Media, S3Media> worker)
+    protected Pair<S3Media, Integer> processS3Media(S3Media mediaFromApi, UnaryOperator<S3Media> worker)
             throws IOException, UploadException {
         S3Media media = null;
         boolean save = false;
