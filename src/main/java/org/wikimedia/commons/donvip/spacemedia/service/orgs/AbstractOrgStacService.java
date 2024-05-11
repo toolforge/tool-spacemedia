@@ -36,6 +36,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -98,6 +99,24 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
     @Override
     protected Class<StacMedia> getMediaClass() {
         return StacMedia.class;
+    }
+
+    @Override
+    protected Optional<String> getOtherFields(StacMedia media) {
+        return getOtherFieldBoundingBox(jackson, media.getUrl());
+    }
+
+    public static Optional<String> getOtherFieldBoundingBox(ObjectMapper jackson, URL stacItemUrl) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            Double[] bb = jackson.readValue(stacItemUrl, StacItem.class).bbox();
+            addOtherField(sb, "Bounding box",
+                    "{{Map/bbox|longitude=" + bb[0] + "/" + bb[2] + "|latitude=" + bb[1] + "/" + bb[3] + "}}");
+        } catch (IOException | RuntimeException e) {
+            LOGGER.error("Unable to parse STAC item at URL {}: {}", stacItemUrl, e.getMessage());
+        }
+        String s = sb.toString();
+        return s.isEmpty() ? Optional.empty() : Optional.of(s);
     }
 
     @Override

@@ -1,19 +1,24 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgStacService.getOtherFieldBoundingBox;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.URL;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -34,6 +39,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 @Service
 public class UmbraS3Service extends AbstractOrgS3Service {
 
@@ -47,6 +53,9 @@ public class UmbraS3Service extends AbstractOrgS3Service {
 
     private static final Pattern SAT_PATTERN = Pattern.compile(".*_UMBRA-(\\d{2})/.*");
 
+    private static final Pattern UUID_REGEX = Pattern
+            .compile(".+/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/.+");
+
     @Autowired
     public UmbraS3Service(S3MediaRepository repository,
             @Value("${umbra.s3.region}") Regions region,
@@ -57,6 +66,46 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     @Override
     public String getName() {
         return "Umbra";
+    }
+
+    @Override
+    protected String getSource(S3Media media, FileMetadata metadata) {
+        StringBuilder sb = new StringBuilder("{{en|1=").append(wikiLink(metadata.getAssetUrl(), "Umbra Space"))
+                .append(" via their AWS S3 Bucket");
+        getStacItemUrl(media).ifPresent(itemUrl -> sb.append(". Further data via ")
+                .append(wikiLink(itemUrl, "STAC API")).append(". View in ")
+                .append(wikiLink(newURL(
+                        itemUrl.toExternalForm().replace("://", "://radiantearth.github.io/stac-browser/#/external/")),
+                        "STAC Browser")));
+        return sb.append(".}}").toString();
+    }
+
+    @Override
+    protected Optional<String> getOtherFields(S3Media media) {
+        return getStacItemUrl(media).map(itemUrl -> getOtherFieldBoundingBox(jackson, itemUrl))
+                .orElse(Optional.empty());
+    }
+
+    private static Optional<URL> getStacItemUrl(S3Media media) {
+        Matcher m = UUID_REGEX.matcher(media.getUniqueMetadata().getAssetUrl().toExternalForm());
+        if (m.matches()) {
+            String uuid = m.group(1);
+            return Optional.of(newURL("https://s3.us-west-2.amazonaws.com/umbra-open-data-catalog/stac/"
+                    + media.getPublicationYear() + "/" + media.getPublicationMonth() + "/" + media.getPublicationDate()
+                    + "/" + uuid + "/" + uuid + ".json"));
+        }
+        LOGGER.warn("No UUID found in image URL for {}", media);
+        return Optional.empty();
+    }
+
+    @Override
+    protected Optional<String> getPermission(S3Media media) {
+        return Optional.of("{{en|See "
+                + wikiLink(newURL("https://umbra.space/open-data/"), "Umbra-Open-Data Image Collection data license")
+                + ". Reverse geocoding in description and category: "
+                + wikiLink(newURL("https://www.openstreetmap.org/copyright"),
+                        "Data © OpenStreetMap contributors, ODbL 1.0")
+                + ". }}");
     }
 
     @Override
