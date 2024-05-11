@@ -263,21 +263,6 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
     }
 
     @Override
-    public final boolean isAudio() {
-        return getMediaType() == DvidsMediaType.audio;
-    }
-
-    @Override
-    public final boolean isImage() {
-        return DvidsMediaType.images().contains(getId().getRepoId());
-    }
-
-    @Override
-    public final boolean isVideo() {
-        return DvidsMediaType.videos().contains(getId().getRepoId());
-    }
-
-    @Override
     public final String getUploadTitle(FileMetadata fileMetadata) {
         String normalizedTitle = CommonsService.normalizeFilename(title);
         if (isTitleBlacklisted(normalizedTitle)) {
