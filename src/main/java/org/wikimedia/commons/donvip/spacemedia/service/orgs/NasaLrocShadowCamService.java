@@ -8,7 +8,6 @@ import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.Wikidata
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -41,8 +40,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     private static final String LROC_BASE_URL = "https://www.lroc.asu.edu";
     private static final String SHAD_BASE_URL = "https://www.shadowcam.asu.edu";
 
-    private static final DateTimeFormatter LROC_DATE_PATTERN = ofPattern("MMMM d, yyyy HH:mm z.", Locale.ENGLISH);
-    private static final DateTimeFormatter SHAD_DATE_PATTERN = ofPattern("d MMMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter DATE_PATTERN = ofPattern("d MMMM yyyy", Locale.ENGLISH);
 
     private static final Pattern CREDIT_PATTERN = Pattern.compile(".* \\[(.+)\\].?");
 
@@ -90,7 +88,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
 
     @Override
     protected Elements getGalleryItems(String repoId, Element html) {
-        return html.getElementsByClass(lrocOrShadowcam(repoId, "post-card", "img-link"));
+        return html.getElementsByClass(lrocOrShadowcam(repoId, "block-link", "img-link"));
     }
 
     @Override
@@ -109,7 +107,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     }
 
     private String getBaseUrl(String repoId) {
-        return lrocOrShadowcam(repoId, LROC_BASE_URL + "/posts", SHAD_BASE_URL + "/images");
+        return lrocOrShadowcam(repoId, LROC_BASE_URL, SHAD_BASE_URL) + "/images";
     }
 
     @Override
@@ -176,7 +174,8 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
 
     @Override
     protected String extractIdFromGalleryItem(Element result) {
-        String[] items = result.getElementsByTag("a").first().attr("href").split("/");
+        String[] items = (result.hasAttr("href") ? result.attr("href")
+                : result.getElementsByTag("a").first().attr("href")).split("/");
         return items[items.length - 1];
     }
 
@@ -184,14 +183,10 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     void fillMediaWithHtml(String url, Document html, NasaLrocMedia media) throws IOException {
         String repoId = media.getId().getRepoId();
         Element article = ofNullable(html.getElementsByTag("article").first()).orElse(html);
-        media.setTitle(article.getElementsByTag("h1").first().text());
-        String[] byline = article.getElementsByClass(lrocOrShadowcam(repoId, "byline", "mt-2")).first().text()
+        media.setTitle(html.getElementsByTag("header").first().getElementsByTag("h1").first().text());
+        String[] byline = article.getElementsByClass(lrocOrShadowcam(repoId, "mx-5", "mt-2")).first().text()
                 .split(" on ");
-        if ("shadowcam".equals(repoId)) {
-            media.setPublicationDate(LocalDate.parse(byline[byline.length - 1], SHAD_DATE_PATTERN));
-        } else {
-            media.setPublicationDateTime(ZonedDateTime.parse(byline[byline.length - 1], LROC_DATE_PATTERN));
-        }
+        media.setPublicationDate(LocalDate.parse(byline[byline.length - 1], DATE_PATTERN));
         if (article.getElementsByTag("figcaption").isEmpty()
                 && article.getElementsByClass("serendipity_imageComment_txt").isEmpty()) {
             media.setDescription(article.getElementById("post-body").text());
