@@ -43,7 +43,8 @@ class NasaLrocShadowCamServiceTest extends AbstractOrgServiceTest {
             "lroc;157;LROC’s First Look at the Apollo Landing Sites;0;[Apollo, Robotic Spacecraft];15",
             "lroc;1321;IM-1 Landing Region;0;[Robotic Spacecraft];3",
             "shadowcam;1357;Complicated Lighting;0;[Permanently Shadowed Regions];4",
-            "lroc;1358;JAXA SLIM Landing;0;[Robotic Spacecraft];3" })
+            "lroc;1358;JAXA SLIM Landing;0;[Robotic Spacecraft];3",
+            "lroc;1368;2024 Eclipse as Seen From The Moon;0;[Earth];2" })
     void testFillMediaWithHtml(String repoId, String id, String title, int descLen, String tags, int nFiles) throws IOException {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         NasaLrocMedia media = new NasaLrocMedia();
