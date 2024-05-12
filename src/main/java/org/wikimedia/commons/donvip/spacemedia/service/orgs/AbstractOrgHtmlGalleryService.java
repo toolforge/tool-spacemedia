@@ -93,6 +93,10 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
             String pageUrl = getGalleryPageUrl(galleryUrl, idx++);
             try {
                 Elements results = getGalleryItems(repoId, getWithJsoup(pageUrl, 10_000, 3));
+                LOGGER.debug("Detected {} {} gallery items at {}", results.size(), repoId, pageUrl);
+                if (idx == 2 && results.isEmpty()) {
+                    LOGGER.warn("First {} gallery page is empty! {}", repoId, pageUrl);
+                }
                 for (Element result : results) {
                     CompositeMediaId id = new CompositeMediaId(repoId, extractIdFromGalleryItem(result));
                     Optional<ZonedDateTime> date = extractDateFromGalleryItem(result);
