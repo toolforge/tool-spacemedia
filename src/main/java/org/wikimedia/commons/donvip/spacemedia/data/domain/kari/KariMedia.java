@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -13,7 +13,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 
 @Entity
-public class KariMedia extends SingleFileMedia {
+public class KariMedia extends Media {
 
     private static final Pattern ID_REGEX = Pattern.compile("P_[^_]*_([^_]*)_(\\d{2})(\\d{2})(\\d{2})_(\\d{2})(\\d{2})",
             Pattern.CASE_INSENSITIVE);
