@@ -7,6 +7,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -89,20 +90,28 @@ public class CapellaStacService extends AbstractOrgStacService {
             throws IOException {
         int result = super.processStacCatalog(catalogUrl, start, doNotFetchEarlierThan, repoId, uploadedMedia,
                 processedItems, startCount);
-        for (StacMedia media : listMissingMedia()) {
-            if (isGecOrSlc(media)) {
-                postProcessGecSlcItem(uploadedMedia, media);
+        try {
+            if (catalogUrl.toURI().equals(catalogUrls.get(repoId).toURI())) {
+                LOGGER.info("Post-processing of GEC/SLC files of repo {}", repoId);
+                for (StacMedia media : listMissingMedia()) {
+                    if (isGecOrSlc(media)) {
+                        postProcessGecSlcItem(uploadedMedia, media);
+                    }
+                }
             }
+        } catch (URISyntaxException e) {
+            throw new IOException(e);
         }
         return result;
     }
 
     private void postProcessGecSlcItem(List<StacMedia> uploadedMedia, StacMedia media) {
+        LOGGER.debug("Post-processing of {}", media);
         if (repository.findById(
                 new CompositeMediaId(media.getId().getRepoId(),
                         media.getId().getMediaId().replace("_GEC_", "_GEO_").replace("_SLC_", "_GEO_")))
                 .map(Media::isIgnored).orElse(true)) {
-            // GEO ignored or missing, upload GEC/SLC
+            LOGGER.info("GEO ignored or missing, check to upload {}", media);
             if (super.shouldUploadAuto(media, false)) {
                 try {
                     media = upload(media, true, false).getLeft();
@@ -113,7 +122,11 @@ public class CapellaStacService extends AbstractOrgStacService {
                 saveMedia(media);
             }
         } else {
-            mediaService.ignoreMedia(media, "Ignored GEC/SLC over GEO version");
+            LOGGER.debug("Ignore GEC/SLC over GEO version for {}", media);
+            media.getMetadataStream()
+                    .filter(x -> x.isIgnored() != Boolean.TRUE && ("tiff".equals(x.getExtension())
+                            || ("png".equals(x.getExtension()) && !x.getAssetUrl().toExternalForm().contains("_GEO_"))))
+                    .forEach(x -> mediaService.ignoreAndSaveMetadata(x, "Ignored GEC/SLC over GEO version"));
         }
     }
 
