@@ -88,6 +88,8 @@ public interface StacMediaRepository extends MediaRepository<StacMedia> {
 
     Optional<StacMedia> findByUrl(URL mediaUrl);
 
+    Optional<StacMedia> findByProductTypeAndCollectId(String productType, String collectId);
+
     // SAVE
 
     @Override

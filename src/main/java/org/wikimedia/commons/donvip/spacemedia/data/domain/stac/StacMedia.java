@@ -13,7 +13,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(indexes = { @Index(columnList = "url") })
+@Table(indexes = { @Index(columnList = "url"), @Index(columnList = "productType"), @Index(columnList = "collectId") })
 public class StacMedia extends Media implements WithLatLon {
 
     @Column(nullable = false, unique = true, length = 380)
@@ -22,6 +22,12 @@ public class StacMedia extends Media implements WithLatLon {
     private double latitude;
 
     private double longitude;
+
+    @Column(nullable = true, length = 3)
+    private String productType;
+
+    @Column(nullable = true, length = 36)
+    private String collectId;
 
     public URL getUrl() {
         return url;
@@ -51,6 +57,22 @@ public class StacMedia extends Media implements WithLatLon {
         this.longitude = longitude;
     }
 
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
+    }
+
+    public String getCollectId() {
+        return collectId;
+    }
+
+    public void setCollectId(String collectId) {
+        this.collectId = collectId;
+    }
+
     @Override
     public double getPrecision() {
         return GlobeCoordinatesValue.PREC_DECI_DEGREE;
@@ -65,6 +87,8 @@ public class StacMedia extends Media implements WithLatLon {
     public StacMedia copyDataFrom(StacMedia other) {
         super.copyDataFrom(other);
         this.url = other.url;
+        this.productType = other.productType;
+        this.collectId = other.collectId;
         return this;
     }
 

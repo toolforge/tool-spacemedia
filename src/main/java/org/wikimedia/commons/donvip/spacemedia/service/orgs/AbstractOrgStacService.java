@@ -47,7 +47,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgStacService.class);
 
-    private final StacMediaRepository stacRepository;
+    protected final StacMediaRepository stacRepository;
 
     protected final Map<String, URL> catalogUrls;
 
@@ -210,6 +210,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
             media.setPublicationDateTime(properties.endDatetime());
             media.setLongitude(properties.projCentroid().lon());
             media.setLatitude(properties.projCentroid().lat());
+            media.setProductType(properties.sarProductType());
             StacAssets assets = item.assets();
             Arrays.stream(new StacAsset[] { assets.HH(), assets.HV(), assets.VV(), assets.VH(), assets.thumbnail() })
                     .filter(x -> x != null && IMAGE_EXTENSIONS.contains(Utils.findExtension(x.href().toExternalForm())))
@@ -218,14 +219,14 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
                 addMetadata(media, assets.preview().href(), null);
             }
             ofNullable(assets.thumbnail()).ifPresent(x -> media.setThumbnailUrl(x.href()));
-            enrichStacMedia(media);
+            enrichStacMedia(media, item);
             return media;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    protected abstract void enrichStacMedia(StacMedia media);
+    protected abstract void enrichStacMedia(StacMedia media, StacItem item);
 
     protected abstract boolean isStacItemBefore(String itemHref, LocalDate doNotFetchEarlierThan);
 
@@ -260,6 +261,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
     @JsonIgnoreProperties(ignoreUnknown = true)
     protected static record StacProperties(ZonedDateTime datetime, ZonedDateTime startDatetime,
             ZonedDateTime endDatetime, String platform, String constellation, List<String> instruments,
+            @JsonProperty("capella:collect_id") String capellaCollectId,
             @JsonProperty("proj:centroid") StacCoordinate projCentroid,
             @JsonProperty("proj:epsg") Integer projEpsg,
             @JsonProperty("proj:shape") List<Integer> projShape,

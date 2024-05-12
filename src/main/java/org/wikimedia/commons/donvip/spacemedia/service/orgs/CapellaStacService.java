@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMedia;
@@ -41,6 +40,8 @@ public class CapellaStacService extends AbstractOrgStacService {
             e("11", "Q124127134"), e("14", "Q125885260"));
 
     private static final Pattern SAT_PATTERN = Pattern.compile("CAPELLA_C(\\d{2})_.*");
+
+    private static final Set<String> GEC_SLC = Set.of("GEC", "SLC");
 
     @Autowired
     public CapellaStacService(StacMediaRepository repository,
@@ -75,8 +76,7 @@ public class CapellaStacService extends AbstractOrgStacService {
     }
 
     private static boolean isGecOrSlc(StacMedia media) {
-        String id = media.getId().getMediaId();
-        return id.contains("_GEC_") || id.contains("_SLC_");
+        return GEC_SLC.contains(media.getProductType());
     }
 
     @Override
@@ -107,11 +107,9 @@ public class CapellaStacService extends AbstractOrgStacService {
 
     private void postProcessGecSlcItem(List<StacMedia> uploadedMedia, StacMedia media) {
         LOGGER.debug("Post-processing of {}", media);
-        if (repository.findById(
-                new CompositeMediaId(media.getId().getRepoId(),
-                        media.getId().getMediaId().replace("_GEC_", "_GEO_").replace("_SLC_", "_GEO_")))
-                .map(Media::isIgnored).orElse(true)) {
-            LOGGER.info("GEO ignored or missing, check to upload {}", media);
+        if (stacRepository.findByProductTypeAndCollectId("GEO", media.getCollectId()).map(Media::isIgnored)
+                .orElse(true)) {
+            LOGGER.debug("GEO ignored or missing, check to upload {}", media);
             if (super.shouldUploadAuto(media, false)) {
                 try {
                     media = upload(media, true, false).getLeft();
@@ -131,8 +129,9 @@ public class CapellaStacService extends AbstractOrgStacService {
     }
 
     @Override
-    protected void enrichStacMedia(StacMedia media) {
+    protected void enrichStacMedia(StacMedia media, StacItem item) {
         try {
+            media.setCollectId(item.properties().capellaCollectId());
             media.setTitle(nominatim.reverse(media.getLatitude(), media.getLongitude(), 10).display_name());
             if (isBlank(media.getTitle())) {
                 LOGGER.warn("Nominatim empty response for /reverse lat={}, lon={}", media.getLatitude(),

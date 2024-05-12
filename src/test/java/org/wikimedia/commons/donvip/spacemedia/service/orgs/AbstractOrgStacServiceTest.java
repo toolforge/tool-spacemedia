@@ -54,7 +54,7 @@ class AbstractOrgStacServiceTest extends AbstractOrgServiceTest {
                 }
 
                 @Override
-                protected void enrichStacMedia(StacMedia media) {
+                protected void enrichStacMedia(StacMedia media, StacItem item) {
                 }
 
                 @Override
