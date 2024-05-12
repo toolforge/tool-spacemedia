@@ -113,7 +113,10 @@ public class CapellaStacService extends AbstractOrgStacService {
                 saveMedia(media);
             }
         } else {
-            mediaService.ignoreMedia(media, "Ignored GEC/SLC over GEO version");
+            media.getMetadataStream()
+                    .filter(x -> "tiff".equals(x.getExtension())
+                            || ("png".equals(x.getExtension()) && !x.getAssetUrl().toExternalForm().contains("_GEO_")))
+                    .forEach(x -> mediaService.ignoreAndSaveMetadata(x, "Ignored GEC/SLC over GEO version"));
         }
     }
 
