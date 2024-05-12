@@ -75,6 +75,11 @@ public class CapellaStacService extends AbstractOrgStacService {
                 + ". }}");
     }
 
+    @Override
+    protected String hiddenUploadCategory() {
+        return "Files from Capella Space uploaded by " + commonsService.getAccount();
+    }
+
     private static boolean isGecOrSlc(StacMedia media) {
         return GEC_SLC.contains(media.getProductType());
     }
