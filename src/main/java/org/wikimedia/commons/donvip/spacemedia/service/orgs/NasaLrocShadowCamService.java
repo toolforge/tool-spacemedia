@@ -90,7 +90,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
 
     @Override
     protected Elements getGalleryItems(String repoId, Element html) {
-        return html.getElementsByClass(lrocOrShadowcam(repoId, "post-card", "img-link"));
+        return html.getElementsByClass(lrocOrShadowcam(repoId, "block-link", "img-link"));
     }
 
     @Override
@@ -176,7 +176,8 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
 
     @Override
     protected String extractIdFromGalleryItem(Element result) {
-        String[] items = result.getElementsByTag("a").first().attr("href").split("/");
+        String[] items = (result.hasAttr("href") ? result.attr("href")
+                : result.getElementsByTag("a").first().attr("href")).split("/");
         return items[items.length - 1];
     }
 
