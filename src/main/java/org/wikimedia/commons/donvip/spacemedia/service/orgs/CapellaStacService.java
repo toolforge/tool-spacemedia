@@ -7,6 +7,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -89,10 +90,16 @@ public class CapellaStacService extends AbstractOrgStacService {
             throws IOException {
         int result = super.processStacCatalog(catalogUrl, start, doNotFetchEarlierThan, repoId, uploadedMedia,
                 processedItems, startCount);
-        for (StacMedia media : listMissingMedia()) {
-            if (isGecOrSlc(media)) {
-                postProcessGecSlcItem(uploadedMedia, media);
+        try {
+            if (catalogUrl.toURI().equals(catalogUrls.get(repoId).toURI())) {
+                for (StacMedia media : listMissingMedia()) {
+                    if (isGecOrSlc(media)) {
+                        postProcessGecSlcItem(uploadedMedia, media);
+                    }
+                }
             }
+        } catch (URISyntaxException e) {
+            throw new IOException(e);
         }
         return result;
     }
@@ -113,7 +120,10 @@ public class CapellaStacService extends AbstractOrgStacService {
                 saveMedia(media);
             }
         } else {
-            mediaService.ignoreMedia(media, "Ignored GEC/SLC over GEO version");
+            media.getMetadataStream()
+                    .filter(x -> x.isIgnored() != Boolean.TRUE && ("tiff".equals(x.getExtension())
+                            || ("png".equals(x.getExtension()) && !x.getAssetUrl().toExternalForm().contains("_GEO_"))))
+                    .forEach(x -> mediaService.ignoreAndSaveMetadata(x, "Ignored GEC/SLC over GEO version"));
         }
     }
 

@@ -49,7 +49,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
 
     private final StacMediaRepository stacRepository;
 
-    private final Map<String, URL> catalogUrls;
+    protected final Map<String, URL> catalogUrls;
 
     protected AbstractOrgStacService(StacMediaRepository repository, String id, Set<String> catalogs) {
         super(repository, id, decodeMap(catalogs).keySet());
