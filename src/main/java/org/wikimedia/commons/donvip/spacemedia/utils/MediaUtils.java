@@ -41,6 +41,7 @@ import org.apache.poi.hslf.usermodel.HSLFSlideShow;
 import org.apache.poi.sl.usermodel.SlideShow;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xslf.util.PPTX2PNG;
+import org.gagravarr.ogg.OggFile;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.MovieBox;
 import org.slf4j.Logger;
@@ -114,12 +115,14 @@ public class MediaUtils {
                     return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(null, contentLength, filename, extension,
                             1, e);
                 }
+            } else if ("ogv".equals(extension)) {
+                return (ContentsAndMetadata<T>) readOgvVideo(in, contentLength, filename, extension, uri);
             } else if ("www.youtube.com".equals(uri.getHost())) {
-                return (ContentsAndMetadata<T>) readVideo(localPath, contentLength, filename, extension, uri,
+                return (ContentsAndMetadata<T>) readMp4Video(localPath, contentLength, filename, extension, uri,
                         x -> ofNullable(downloadYoutubeVideo(x.toString())));
             } else if (FileMetadata.VIDEO_EXTENSIONS.contains(extension)) {
                 Path tempFile = Files.createTempFile("sm", "." + extension);
-                return (ContentsAndMetadata<T>) readVideo(localPath, contentLength, filename, extension, uri, x -> {
+                return (ContentsAndMetadata<T>) readMp4Video(localPath, contentLength, filename, extension, uri, x -> {
                     try {
                         FileUtils.copyInputStreamToFile(in, tempFile.toFile());
                         return ofNullable(tempFile);
@@ -146,23 +149,33 @@ public class MediaUtils {
         }
     }
 
-    private static ContentsAndMetadata<IsoFile> readVideo(Path localPath, long contentLength, String filename,
+    private static ContentsAndMetadata<OggFile> readOgvVideo(InputStream in, long contentLength, String filename,
+            String extension, URI uri) throws FileDecodingException, IOException {
+        try (OggFile ogg = new OggFile(in)) {
+            if (ogg.getPacketReader().getNextPacket() == null) {
+                throw new FileDecodingException("Failed to open OGV video from " + uri);
+            }
+            return new ContentsAndMetadata<>(ogg, contentLength, filename, extension, 1, null);
+        }
+    }
+
+    private static ContentsAndMetadata<IsoFile> readMp4Video(Path localPath, long contentLength, String filename,
             String extension, URI uri, Function<URI, Optional<Path>> downloader)
             throws FileDecodingException, IOException {
         if (localPath != null) {
-            return readVideo(localPath, contentLength, filename, extension);
+            return readMp4Video(localPath, contentLength, filename, extension);
         } else {
             Path tempFile = downloader.apply(uri)
                     .orElseThrow(() -> new FileDecodingException("Failed to download video from " + uri));
             try {
-                return readVideo(tempFile, contentLength, filename, extension);
+                return readMp4Video(tempFile, contentLength, filename, extension);
             } finally {
                 Files.delete(tempFile);
             }
         }
     }
 
-    private static ContentsAndMetadata<IsoFile> readVideo(Path path, long contentLength, String filename,
+    private static ContentsAndMetadata<IsoFile> readMp4Video(Path path, long contentLength, String filename,
             String extension) throws IOException, FileDecodingException {
         try (IsoFile mp4 = new IsoFile(path.toFile())) {
             MovieBox movieBox = mp4.getMovieBox();
