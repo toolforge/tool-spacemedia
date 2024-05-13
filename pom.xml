@@ -345,6 +345,12 @@
 			<artifactId>graphics2d</artifactId>
 			<version>3.0.1</version>
 		</dependency>
+		<!-- OGG Video -->
+		<dependency>
+			<groupId>org.gagravarr</groupId>
+			<artifactId>vorbis-java-core</artifactId>
+			<version>0.8</version>
+		</dependency>
 		<!-- MP4 Video -->
 		<dependency>
 			<groupId>org.mp4parser</groupId>
