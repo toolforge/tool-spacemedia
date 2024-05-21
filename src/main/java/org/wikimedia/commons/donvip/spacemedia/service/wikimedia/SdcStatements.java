@@ -15,6 +15,10 @@ public class SdcStatements extends TreeMap<String, Pair<Object, Map<String, Obje
         return addStatement(WikidataProperty.P4082_CAPTURED_WITH, qid);
     }
 
+    public SdcStatements constellation(String qid) {
+        return addStatement(WikidataProperty.P59_CONSTELLATION, qid);
+    }
+
     public SdcStatements creator(String qid) {
         return addStatement(WikidataProperty.P170_CREATOR, qid);
     }
