@@ -87,7 +87,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     }
 
     @Override
-    protected Elements getGalleryItems(String repoId, Element html) {
+    protected Elements getGalleryItems(String repoId, String url, Element html) {
         return html.getElementsByClass(lrocOrShadowcam(repoId, "block-link", "img-link"));
     }
 
@@ -173,14 +173,14 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     }
 
     @Override
-    protected String extractIdFromGalleryItem(Element result) {
+    protected String extractIdFromGalleryItem(String url, Element result) {
         String[] items = (result.hasAttr("href") ? result.attr("href")
                 : result.getElementsByTag("a").first().attr("href")).split("/");
         return items[items.length - 1];
     }
 
     @Override
-    void fillMediaWithHtml(String url, Document html, NasaLrocMedia media) throws IOException {
+    List<NasaLrocMedia> fillMediaWithHtml(String url, Document html, NasaLrocMedia media) throws IOException {
         String repoId = media.getId().getRepoId();
         Element article = ofNullable(html.getElementsByTag("article").first()).orElse(html);
         media.setTitle(html.getElementsByTag("header").first().getElementsByTag("h1").first().text());
@@ -211,6 +211,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
         for (Element e : article.getElementsByClass("olZoomify")) {
             addZoomifyFileMetadata(media, e, baseUrl);
         }
+        return List.of(media);
     }
 
     @Override

@@ -78,7 +78,7 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
         do {
             String pageUrl = BASE_URL + "gallery/page/" + idx++;
             try {
-                Elements items = getGalleryItems(repoId, getWithJsoup(pageUrl, 30_000, 3));
+                Elements items = getGalleryItems(repoId, pageUrl, getWithJsoup(pageUrl, 30_000, 3));
                 items.forEach(item -> result.add(item.attr("href")));
                 loop = !items.isEmpty();
             } catch (HttpStatusException e) {
@@ -99,13 +99,13 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
     }
 
     @Override
-    protected Elements getGalleryItems(String repoId, Element html) {
+    protected Elements getGalleryItems(String repoId, String url, Element html) {
         Elements headings = html.getElementsByClass("hds-content-item-heading");
         return headings.isEmpty() ? html.getElementsByClass("hds-gallery-item-link") : headings;
     }
 
     @Override
-    protected String extractIdFromGalleryItem(Element result) {
+    protected String extractIdFromGalleryItem(String url, Element result) {
         String href = result.attr("href");
         if (href.endsWith("/")) {
             href = href.substring(0, href.length() - 1);
@@ -141,17 +141,18 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
     }
 
     @Override
-    protected void fillMediaWithHtml(String url, Document html, NasaWebsiteMedia media) throws IOException {
+    protected List<NasaWebsiteMedia> fillMediaWithHtml(String url, Document html, NasaWebsiteMedia media)
+            throws IOException {
         try {
             if (url.startsWith(BASE_URL + IMAGE_ARTICLE + '/')) {
                 Element detail = html.getElementsByAttributeValueMatching("href", BASE_URL + IMAGE_DETAIL + "/.*")
                         .first();
                 if (detail != null) {
-                    fillMediaWithHtmlDetail(IMAGE_DETAIL, detail, media);
+                    fillMediaWithHtmlDetail(IMAGE_DETAIL, url, detail, media);
                 } else {
                     detail = html.getElementsByAttributeValueMatching("href", BASE_URL + VIDEO_DETAIL + "/.*").first();
                     if (detail != null) {
-                        fillMediaWithHtmlDetail(VIDEO_DETAIL, detail, media);
+                        fillMediaWithHtmlDetail(VIDEO_DETAIL, url, detail, media);
                     } else {
                         fillMediaWithHtmlImageArticle(html, media);
                     }
@@ -159,14 +160,16 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
             } else {
                 fillMediaWithHtmlImageDetail(html, media);
             }
+            return List.of(media);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to parse HTML for {} => {}", media, html.html());
             throw e;
         }
     }
 
-    private void fillMediaWithHtmlDetail(String repoId, Element detail, NasaWebsiteMedia media) throws IOException {
-        media.setId(new CompositeMediaId(repoId, extractIdFromGalleryItem(detail)));
+    private void fillMediaWithHtmlDetail(String repoId, String pageUrl, Element detail, NasaWebsiteMedia media)
+            throws IOException {
+        media.setId(new CompositeMediaId(repoId, extractIdFromGalleryItem(pageUrl, detail)));
         String url = detail.attr("href");
         if (uriExists(url)) {
             fillMediaWithHtmlImageDetail(getWithJsoup(url, 10_000, 5), media);

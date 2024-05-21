@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -98,7 +99,7 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     }
 
     @Override
-    protected Elements getGalleryItems(String repoId, Element html) {
+    protected Elements getGalleryItems(String repoId, String url, Element html) {
         return html.getElementsByClass("search-results-item-details");
     }
 
@@ -130,12 +131,12 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     }
 
     @Override
-    protected Optional<ZonedDateTime> extractDateFromGalleryItem(Element result) {
+    protected Optional<Temporal> extractDateFromGalleryItem(Element result) {
         return Optional.of(ZonedDateTime.parse(result.getElementsByTag("time").first().attr("datetime")));
     }
 
     @Override
-    protected String extractIdFromGalleryItem(Element result) {
+    protected String extractIdFromGalleryItem(String url, Element result) {
         String href = result.getElementsByTag("a").first().attr("href");
         return href.substring(href.lastIndexOf('/') + 1);
     }
@@ -146,7 +147,7 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     }
 
     @Override
-    void fillMediaWithHtml(String url, Document html, CopernicusGalleryMedia media) {
+    List<CopernicusGalleryMedia> fillMediaWithHtml(String url, Document html, CopernicusGalleryMedia media) {
         Element section = html.getElementsByTag("main")
                 .first().getElementsByTag("section").first();
         media.setTitle(section.getElementsByTag("h1").first().text());
@@ -171,6 +172,7 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
         media.setCreationDate(extractAcquisitionDate(media));
         String href = section.getElementsByClass("card-body").get(1).getElementsByTag("a").first().attr("href");
         addMetadata(media, BASE_URL + href.substring(href.lastIndexOf('=') + 1), null);
+        return List.of(media);
     }
 
     LocalDate extractAcquisitionDate(CopernicusGalleryMedia image) {

@@ -422,10 +422,14 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JsonIgnore
     public boolean shouldRead() {
         return readable == null || (Boolean.TRUE == readable
-                && (!hasSha1() || !hasSize() || isBlank(getExtension()) || isBlank(getOriginalFileName())
+                && (!hasSha1() || hasMissingSize() || isBlank(getExtension()) || isBlank(getOriginalFileName())
                         || (isImage() && !hasPhash()) || (!isAudio() && !hasValidDimensions())))
                 || (Boolean.TRUE == assumedReadable
-                        && (!hasSize() || isBlank(getExtension()) || isBlank(getOriginalFileName())));
+                        && (hasMissingSize() || isBlank(getExtension()) || isBlank(getOriginalFileName())));
+    }
+
+    private boolean hasMissingSize() {
+        return !hasSize() && !"stl".equals(getExtension());
     }
 
     private boolean isOf(Set<String> extensions, String type) {
