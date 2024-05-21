@@ -146,7 +146,7 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     }
 
     @Override
-    void fillMediaWithHtml(String url, Document html, CopernicusGalleryMedia media) {
+    List<CopernicusGalleryMedia> fillMediaWithHtml(String url, Document html, CopernicusGalleryMedia media) {
         Element section = html.getElementsByTag("main")
                 .first().getElementsByTag("section").first();
         media.setTitle(section.getElementsByTag("h1").first().text());
@@ -171,6 +171,7 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
         media.setCreationDate(extractAcquisitionDate(media));
         String href = section.getElementsByClass("card-body").get(1).getElementsByTag("a").first().attr("href");
         addMetadata(media, BASE_URL + href.substring(href.lastIndexOf('=') + 1), null);
+        return List.of(media);
     }
 
     LocalDate extractAcquisitionDate(CopernicusGalleryMedia image) {
