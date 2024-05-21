@@ -180,7 +180,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     }
 
     @Override
-    void fillMediaWithHtml(String url, Document html, NasaLrocMedia media) throws IOException {
+    List<NasaLrocMedia> fillMediaWithHtml(String url, Document html, NasaLrocMedia media) throws IOException {
         String repoId = media.getId().getRepoId();
         Element article = ofNullable(html.getElementsByTag("article").first()).orElse(html);
         media.setTitle(html.getElementsByTag("header").first().getElementsByTag("h1").first().text());
@@ -211,6 +211,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
         for (Element e : article.getElementsByClass("olZoomify")) {
             addZoomifyFileMetadata(media, e, baseUrl);
         }
+        return List.of(media);
     }
 
     @Override
