@@ -147,6 +147,11 @@ public class MediaUtils {
                 SlideShow<?, ?> ppt = readPowerpointFile(in, extension);
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(ppt, contentLength, filename, extension,
                         ppt.getSlides().size(), null);
+            } else if ("stl".equals(extension)) {
+                // Assume readable
+                in.readAllBytes();
+                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(new Object(), contentLength, filename,
+                        extension, 1, null);
             } else {
                 throw new FileDecodingException(
                         "Unsupported format: " + extension + " / headers:" + Arrays.stream(response.getAllHeaders())
