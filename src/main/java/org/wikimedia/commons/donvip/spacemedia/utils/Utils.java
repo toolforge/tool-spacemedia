@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -198,8 +197,8 @@ public final class Utils {
             try {
                 LOGGER.debug("Scrapping {}", pageUrl);
                 return Jsoup.connect(pageUrl).timeout(timeout).followRedirects(followRedirects).get();
-            } catch (SocketTimeoutException e) {
-                LOGGER.error("Timeout when scrapping {} => {}", pageUrl, e.getMessage());
+            } catch (IOException e) {
+                LOGGER.warn("Error when scrapping {} => {}", pageUrl, e.getMessage());
             }
         }
         throw new IOException("Unable to scrap " + pageUrl);
