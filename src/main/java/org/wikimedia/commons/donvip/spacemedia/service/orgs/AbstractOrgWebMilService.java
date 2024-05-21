@@ -99,7 +99,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
     }
 
     @Override
-    void fillMediaWithHtml(String url, Document html, WebMilMedia image) {
+    List<WebMilMedia> fillMediaWithHtml(String url, Document html, WebMilMedia image) {
         Element div = html.getElementsByClass("details-content").first();
         if (div == null) {
             div = html.getElementsByClass("AF2ImageDiv").first();
@@ -145,6 +145,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
                 && findLicenceTemplates(image, image.getUniqueMetadata()).isEmpty()) {
             mediaService.ignoreMedia(image, "Courtesy photo not free");
         }
+        return List.of(image);
     }
 
     private static void mapField(Element div, String id, Consumer<String> setter) {
