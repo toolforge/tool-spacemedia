@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -19,14 +18,23 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
+import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.chrono.ChronoLocalDate;
+import java.time.chrono.ChronoLocalDateTime;
+import java.time.chrono.ChronoZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQuery;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -88,7 +96,7 @@ public final class Utils {
 
     public static URL newURL(String url) {
         try {
-            return new URL(url);
+            return new URL(url.replace("//", "/").replace(":/", "://"));
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException(e);
         }
@@ -198,8 +206,8 @@ public final class Utils {
             try {
                 LOGGER.debug("Scrapping {}", pageUrl);
                 return Jsoup.connect(pageUrl).timeout(timeout).followRedirects(followRedirects).get();
-            } catch (SocketTimeoutException e) {
-                LOGGER.error("Timeout when scrapping {} => {}", pageUrl, e.getMessage());
+            } catch (IOException e) {
+                LOGGER.warn("Error when scrapping {} => {}", pageUrl, e.getMessage());
             }
         }
         throw new IOException("Unable to scrap " + pageUrl);
@@ -418,6 +426,45 @@ public final class Utils {
             }
         }
         return Optional.empty();
+    }
+
+    public static Optional<Temporal> extractDate(String text, List<DateTimeFormatter> dtfs) {
+        if (!text.isEmpty()) {
+            for (DateTimeFormatter dtf : dtfs) {
+                try {
+                    TemporalAccessor accessor = dtf.parse(text);
+                    for (TemporalQuery<Temporal> query : List.<TemporalQuery<Temporal>>of(ZonedDateTime::from,
+                            LocalDateTime::from, LocalDate::from, YearMonth::from, Year::from)) {
+                        try {
+                            Temporal temporal = accessor.query(query);
+                            if (temporal != null) {
+                                return Optional.of(temporal);
+                            }
+                        } catch (DateTimeException | ArithmeticException e) {
+                            LOGGER.trace(e.getMessage());
+                        }
+                    }
+                } catch (DateTimeParseException e) {
+                    LOGGER.trace(e.getMessage());
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static boolean isTemporalBefore(Temporal t, LocalDate date) {
+        if (t instanceof ChronoLocalDate cld) {
+            return cld.isBefore(date);
+        } else if (t instanceof ChronoLocalDateTime<?> cldt) {
+            return cldt.toLocalDate().isBefore(date);
+        } else if (t instanceof ChronoZonedDateTime<?> czdt) {
+            return czdt.toLocalDate().isBefore(date);
+        } else if (t instanceof YearMonth ym) {
+            return ym.isBefore(YearMonth.of(date.getYear(), date.getMonth()));
+        } else if (t instanceof Year y) {
+            return y.isBefore(Year.of(date.getYear()));
+        }
+        throw new IllegalArgumentException("Unsupported temporal: " + t);
     }
 
     public static HttpClientContext getHttpClientContext(CookieStore cookieStore) {

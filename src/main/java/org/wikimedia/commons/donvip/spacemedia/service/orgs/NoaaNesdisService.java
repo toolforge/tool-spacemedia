@@ -54,7 +54,7 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     private List<String> fetchGalleryUrls(String repoId, String path) {
         String pageUrl = BASE_URL + path;
         try {
-            return getGalleryItems(repoId, getWithJsoup(pageUrl, 30_000, 3)).stream()
+            return getGalleryItems(repoId, pageUrl, getWithJsoup(pageUrl, 30_000, 3)).stream()
                     .map(item -> item.getElementsByTag("a").first().attr("href"))
                     .filter(x -> !x.contains("://") || x.startsWith(BASE_URL))
                     .toList();
@@ -70,13 +70,13 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     }
 
     @Override
-    protected Elements getGalleryItems(String repoId, Element html) {
+    protected Elements getGalleryItems(String repoId, String url, Element html) {
         Element itemList = html.getElementsByClass("item-list").first();
         return itemList == null ? html.getElementsByClass("cards--media") : itemList.getElementsByTag("li");
     }
 
     @Override
-    protected String extractIdFromGalleryItem(Element result) {
+    protected String extractIdFromGalleryItem(String url, Element result) {
         String href = result.getElementsByTag("a").first().attr("href");
         if (href.endsWith("/")) {
             href = href.substring(0, href.length() - 1);
@@ -99,7 +99,8 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     }
 
     @Override
-    protected void fillMediaWithHtml(String url, Document html, NoaaNesdisMedia media) throws IOException {
+    protected List<NoaaNesdisMedia> fillMediaWithHtml(String url, Document html, NoaaNesdisMedia media)
+            throws IOException {
         try {
             media.setTitle(html.getElementsByTag("h1").first().text());
             media.setPublicationDate(
@@ -116,6 +117,7 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
                 descItem = html.getElementsByClass("paragraph--type--text-block").first();
             }
             media.setDescription(descItem.text());
+            return List.of(media);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to parse HTML for {} => {}", media, html.html());
             throw e;
