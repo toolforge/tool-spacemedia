@@ -62,7 +62,7 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
 
     protected abstract String getSourceUrl(CompositeMediaId id);
 
-    abstract void fillMediaWithHtml(String url, Document html, T media) throws IOException;
+    abstract List<T> fillMediaWithHtml(String url, Document html, T media) throws IOException;
 
     @Override
     public final void updateMedia(String[] args) throws IOException, UploadException {
@@ -106,9 +106,9 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                     }
                     if (loop) {
                         try {
-                            T media = updateImage(id, date, uploadedMedia);
-                            if (doNotFetchEarlierThan != null && media != null
-                                    && media.getPublicationDate().isBefore(doNotFetchEarlierThan)) {
+                            List<T> medias = updateImages(id, date, uploadedMedia);
+                            if (doNotFetchEarlierThan != null && medias.stream()
+                                    .anyMatch(media -> media.getPublicationDate().isBefore(doNotFetchEarlierThan))) {
                                 loop = false;
                             }
                         } catch (IOException | RuntimeException e) {
@@ -131,18 +131,18 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
         return count;
     }
 
-    private T updateImage(CompositeMediaId id, Optional<ZonedDateTime> date, List<T> uploadedMedia)
+    private List<T> updateImages(CompositeMediaId id, Optional<ZonedDateTime> date, List<T> uploadedMedia)
             throws IOException, UploadException {
         boolean save = false;
-        T media = null;
+        List<T> medias = null;
         Optional<T> imageInDb = repository.findById(id);
         if (imageInDb.isPresent()) {
-            media = imageInDb.get();
+            medias = List.of(imageInDb.get());
         } else {
-            media = fetchMedia(id, date);
-            save = media != null;
+            medias = fetchMedias(id, date);
+            save = !medias.isEmpty();
         }
-        if (media != null) {
+        for (T media : medias) {
             if (doCommonUpdate(media)) {
                 save = true;
             }
@@ -155,10 +155,14 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                 media = saveMedia(media);
             }
         }
-        return media;
+        return medias;
     }
 
     protected T fetchMedia(CompositeMediaId id, Optional<ZonedDateTime> date) throws IOException {
+        return fetchMedias(id, date).stream().filter(m -> m.getId().equals(id)).findFirst().orElseThrow();
+    }
+
+    protected List<T> fetchMedias(CompositeMediaId id, Optional<ZonedDateTime> date) throws IOException {
         try {
             String url = getSourceUrl(id);
             if (url == null) {
@@ -168,11 +172,14 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
             T media = getMediaClass().getConstructor().newInstance();
             media.setId(id);
             date.ifPresent(media::setPublicationDateTime);
-            fillMediaWithHtml(url, getWithJsoup(url, 10_000, 5), media);
-            return media;
+            return fillMediaWithHtml(url, fetchUrl(url), media);
         } catch (ReflectiveOperationException | IllegalArgumentException | SecurityException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    protected Document fetchUrl(String url) throws IOException {
+        return getWithJsoup(url, 10_000, 5);
     }
 
     protected final void addZoomifyFileMetadata(T media, Element html, String baseUrl) throws JsonProcessingException {
