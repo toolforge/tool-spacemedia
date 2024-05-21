@@ -4,13 +4,17 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.isTemporalBefore;
 
 import java.io.IOException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,13 +51,13 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
 
     protected abstract String getGalleryPageUrl(String repoId, int page);
 
-    protected abstract Elements getGalleryItems(String repoId, Element html);
+    protected abstract Elements getGalleryItems(String repoId, String url, Element html);
 
-    protected Optional<ZonedDateTime> extractDateFromGalleryItem(Element result) {
+    protected Optional<Temporal> extractDateFromGalleryItem(Element result) {
         return empty();
     }
 
-    protected abstract String extractIdFromGalleryItem(Element result);
+    protected abstract String extractIdFromGalleryItem(String url, Element result);
 
     @Override
     public final URL getSourceUrl(T media, FileMetadata metadata) {
@@ -62,7 +66,7 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
 
     protected abstract String getSourceUrl(CompositeMediaId id);
 
-    abstract void fillMediaWithHtml(String url, Document html, T media) throws IOException;
+    abstract List<T> fillMediaWithHtml(String url, Document html, T media) throws IOException;
 
     @Override
     public final void updateMedia(String[] args) throws IOException, UploadException {
@@ -92,23 +96,23 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
             LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
             String pageUrl = getGalleryPageUrl(galleryUrl, idx++);
             try {
-                Elements results = getGalleryItems(repoId, getWithJsoup(pageUrl, 10_000, 3));
+                Elements results = getGalleryItems(repoId, pageUrl, getWithJsoup(pageUrl, 10_000, 3));
                 LOGGER.debug("Detected {} {} gallery items at {}", results.size(), repoId, pageUrl);
                 if (idx == 2 && results.isEmpty()) {
                     LOGGER.warn("First {} gallery page is empty! {}", repoId, pageUrl);
                 }
                 for (Element result : results) {
-                    CompositeMediaId id = new CompositeMediaId(repoId, extractIdFromGalleryItem(result));
-                    Optional<ZonedDateTime> date = extractDateFromGalleryItem(result);
+                    CompositeMediaId id = new CompositeMediaId(repoId, extractIdFromGalleryItem(pageUrl, result));
+                    Optional<Temporal> date = extractDateFromGalleryItem(result);
                     if (date.isPresent() && doNotFetchEarlierThan != null
-                            && date.get().toLocalDate().isBefore(doNotFetchEarlierThan)) {
+                            && isTemporalBefore(date.get(), doNotFetchEarlierThan)) {
                         loop = false;
                     }
                     if (loop) {
                         try {
-                            T media = updateImage(id, date, uploadedMedia);
-                            if (doNotFetchEarlierThan != null && media != null
-                                    && media.getPublicationDate().isBefore(doNotFetchEarlierThan)) {
+                            List<T> medias = updateImages(id, date, uploadedMedia);
+                            if (doNotFetchEarlierThan != null && medias.stream()
+                                    .anyMatch(media -> media.getPublicationDate().isBefore(doNotFetchEarlierThan))) {
                                 loop = false;
                             }
                         } catch (IOException | RuntimeException e) {
@@ -131,18 +135,18 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
         return count;
     }
 
-    private T updateImage(CompositeMediaId id, Optional<ZonedDateTime> date, List<T> uploadedMedia)
+    private List<T> updateImages(CompositeMediaId id, Optional<Temporal> date, List<T> uploadedMedia)
             throws IOException, UploadException {
         boolean save = false;
-        T media = null;
+        List<T> medias = null;
         Optional<T> imageInDb = repository.findById(id);
         if (imageInDb.isPresent()) {
-            media = imageInDb.get();
+            medias = List.of(imageInDb.get());
         } else {
-            media = fetchMedia(id, date);
-            save = media != null;
+            medias = fetchMedias(id, date);
+            save = !medias.isEmpty();
         }
-        if (media != null) {
+        for (T media : medias) {
             if (doCommonUpdate(media)) {
                 save = true;
             }
@@ -155,10 +159,14 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                 media = saveMedia(media);
             }
         }
-        return media;
+        return medias;
     }
 
-    protected T fetchMedia(CompositeMediaId id, Optional<ZonedDateTime> date) throws IOException {
+    protected T fetchMedia(CompositeMediaId id, Optional<Temporal> date) throws IOException {
+        return fetchMedias(id, date).stream().filter(m -> m.getId().equals(id)).findFirst().orElseThrow();
+    }
+
+    protected List<T> fetchMedias(CompositeMediaId id, Optional<Temporal> date) throws IOException {
         try {
             String url = getSourceUrl(id);
             if (url == null) {
@@ -167,12 +175,27 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
             }
             T media = getMediaClass().getConstructor().newInstance();
             media.setId(id);
-            date.ifPresent(media::setPublicationDateTime);
-            fillMediaWithHtml(url, getWithJsoup(url, 10_000, 5), media);
-            return media;
+            date.ifPresent(t -> {
+                if (t instanceof LocalDate d) {
+                    media.setPublicationDate(d);
+                } else if (t instanceof ZonedDateTime dt) {
+                    media.setPublicationDateTime(dt);
+                } else if (t instanceof YearMonth m) {
+                    media.setPublicationMonth(m);
+                } else if (t instanceof Year y) {
+                    media.setPublicationYear(y);
+                } else {
+                    throw new IllegalArgumentException("Unsupported temporal: " + t);
+                }
+            });
+            return fillMediaWithHtml(url, fetchUrl(url), media);
         } catch (ReflectiveOperationException | IllegalArgumentException | SecurityException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    protected Document fetchUrl(String url) throws IOException {
+        return getWithJsoup(url, 10_000, 5);
     }
 
     protected final void addZoomifyFileMetadata(T media, Element html, String baseUrl) throws JsonProcessingException {
