@@ -83,13 +83,13 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
     }
 
     @Override
-    protected Elements getGalleryItems(String repoId, Element html) {
+    protected Elements getGalleryItems(String repoId, String url, Element html) {
         Elements elems = html.getElementsByClass("gallery_container");
         return elems.isEmpty() ? html.getElementsByClass("AF2ImageGallerylvItem") : elems;
     }
 
     @Override
-    protected String extractIdFromGalleryItem(Element result) {
+    protected String extractIdFromGalleryItem(String url, Element result) {
         Elements links = result.getElementsByClass("gallery-image-details-link");
         if (links.isEmpty()) {
             links = result.getElementsByClass("aImageDetailsImgLink");
@@ -99,7 +99,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
     }
 
     @Override
-    void fillMediaWithHtml(String url, Document html, WebMilMedia image) {
+    List<WebMilMedia> fillMediaWithHtml(String url, Document html, WebMilMedia image) {
         Element div = html.getElementsByClass("details-content").first();
         if (div == null) {
             div = html.getElementsByClass("AF2ImageDiv").first();
@@ -145,6 +145,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
                 && findLicenceTemplates(image, image.getUniqueMetadata()).isEmpty()) {
             mediaService.ignoreMedia(image, "Courtesy photo not free");
         }
+        return List.of(image);
     }
 
     private static void mapField(Element div, String id, Consumer<String> setter) {
