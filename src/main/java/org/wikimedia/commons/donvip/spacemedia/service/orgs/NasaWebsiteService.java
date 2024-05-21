@@ -141,7 +141,8 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
     }
 
     @Override
-    protected void fillMediaWithHtml(String url, Document html, NasaWebsiteMedia media) throws IOException {
+    protected List<NasaWebsiteMedia> fillMediaWithHtml(String url, Document html, NasaWebsiteMedia media)
+            throws IOException {
         try {
             if (url.startsWith(BASE_URL + IMAGE_ARTICLE + '/')) {
                 Element detail = html.getElementsByAttributeValueMatching("href", BASE_URL + IMAGE_DETAIL + "/.*")
@@ -159,6 +160,7 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
             } else {
                 fillMediaWithHtmlImageDetail(html, media);
             }
+            return List.of(media);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to parse HTML for {} => {}", media, html.html());
             throw e;
