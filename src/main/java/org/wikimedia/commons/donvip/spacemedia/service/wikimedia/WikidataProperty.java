@@ -11,6 +11,12 @@ public enum WikidataProperty {
     P31_INSTANCE_OF(31),
 
     /**
+     * the area of the celestial sphere of which the subject is a part (from a
+     * scientific standpoint, not an astrological one)
+     */
+    P59_CONSTELLATION(59),
+
+    /**
      * maker of this creative work or other object (where no more specific property
      * exists)
      */
