@@ -167,7 +167,13 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     protected SdcStatements getStatements(StsciMedia media, FileMetadata metadata) {
         SdcStatements result = super.getStatements(media, metadata);
         if (isNotBlank(media.getObjectName())) {
-            wikidata.searchAstronomicalObject(media.getObjectName()).map(Pair::getKey).ifPresent(result::depicts);
+            wikidata.searchAstronomicalObject(media.getObjectName()).map(Pair::getKey).ifPresentOrElse(result::depicts,
+                    () -> {
+                        if (isNotBlank(media.getConstellation())) {
+                            wikidata.searchConstellation(media.getConstellation()).map(Pair::getValue)
+                                    .ifPresent(result::constellation);
+                        }
+                    });
         }
         return result;
     }
