@@ -99,7 +99,8 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     }
 
     @Override
-    protected void fillMediaWithHtml(String url, Document html, NoaaNesdisMedia media) throws IOException {
+    protected List<NoaaNesdisMedia> fillMediaWithHtml(String url, Document html, NoaaNesdisMedia media)
+            throws IOException {
         try {
             media.setTitle(html.getElementsByTag("h1").first().text());
             media.setPublicationDate(
@@ -116,6 +117,7 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
                 descItem = html.getElementsByClass("paragraph--type--text-block").first();
             }
             media.setDescription(descItem.text());
+            return List.of(media);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to parse HTML for {} => {}", media, html.html());
             throw e;
