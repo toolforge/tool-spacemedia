@@ -15,6 +15,6 @@ class MediaUtilsTest {
         ContentsAndMetadata<Object> img = MediaUtils.readFile(new URL(
                 "https://capella-open-data.s3.amazonaws.com/data/2023/7/14/CAPELLA_C08_SP_SLC_HH_20230714095227_20230714095245/CAPELLA_C08_SP_SLC_HH_20230714095227_20230714095245.tif"),
                 "tif", null, false, false);
-        assertNotNull(img.iioException());
+        assertNotNull(img.ioException());
     }
 }

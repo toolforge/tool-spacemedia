@@ -30,7 +30,6 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
-import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -76,9 +75,10 @@ public class MediaService {
             "’", "ÔÇ£", "«", "ÔÇØ", "»");
 
     // TODO update when https://github.com/haraldk/TwelveMonkeys/issues/884 is fixed
-    private static final Set<String> IGNORED_IIO_ERRORS = Set.of(
+    private static final Set<String> IGNORED_IO_ERRORS = Set.of(
             "Unknown TIFF SampleFormat (expected 1, 2, 3 or 4): ",
-            "destination width * height > Integer.MAX_VALUE: ");
+            "destination width * height > Integer.MAX_VALUE: ",
+            "Error: End-of-File, expected line at offset ");
 
     @Autowired
     private CommonsService commonsService;
@@ -251,11 +251,11 @@ public class MediaService {
                     result |= updateReadableStateAndDims(metadata, img);
                     result |= updateFileSize(metadata, img);
                     result |= updateExtensionAndFilename(metadata, img);
-                    if (img.iioException() != null) {
-                        IIOException e = img.iioException();
+                    if (img.ioException() != null) {
+                        IOException e = img.ioException();
                         if (e.getMessage() != null
-                                && IGNORED_IIO_ERRORS.stream().anyMatch(x -> e.getMessage().startsWith(x))) {
-                            LOGGER.error("Image I/O decoding error for {}: {}", assetUrl, e.getMessage());
+                                && IGNORED_IO_ERRORS.stream().anyMatch(x -> e.getMessage().startsWith(x))) {
+                            LOGGER.error("I/O decoding error for {}: {}", assetUrl, e.getMessage());
                             if (metadata.isReadable() == null || metadata.isAssumedReadable() == null) {
                                 metadata.setReadable(Boolean.FALSE);
                                 metadata.setAssumedReadable(Boolean.TRUE);

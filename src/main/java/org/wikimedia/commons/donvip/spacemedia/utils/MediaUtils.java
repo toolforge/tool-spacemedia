@@ -134,9 +134,15 @@ public class MediaUtils {
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(
                         ImageUtils.readWebp(uri, readMetadata).contents(), contentLength, filename, extension, 1, null);
             } else if ("pdf".equals(extension)) {
-                PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(new RandomAccessReadBuffer(in));
-                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(pdf, contentLength, filename, extension,
-                        pdf.getNumberOfPages(), null);
+                try {
+                    PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(new RandomAccessReadBuffer(in));
+                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(pdf, contentLength, filename, extension,
+                            pdf.getNumberOfPages(), null);
+                } catch (IOException e) {
+                    LOGGER.error("PDF I/O error while reading {}: {}", uri, e.getMessage());
+                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(null, contentLength, filename, extension,
+                            1, e);
+                }
             } else if (POI_HSLF_EXTENSIONS.contains(extension) || POI_XSLF_EXTENSIONS.contains(extension)) {
                 SlideShow<?, ?> ppt = readPowerpointFile(in, extension);
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(ppt, contentLength, filename, extension,

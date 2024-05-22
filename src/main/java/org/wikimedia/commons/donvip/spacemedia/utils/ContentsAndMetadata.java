@@ -1,7 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
-import javax.imageio.IIOException;
+import java.io.IOException;
 
 public record ContentsAndMetadata<T>(T contents, Long contentLength, String filename, String extension,
-        int numImagesOrPages, IIOException iioException) {
+        int numImagesOrPages, IOException ioException) {
 }
