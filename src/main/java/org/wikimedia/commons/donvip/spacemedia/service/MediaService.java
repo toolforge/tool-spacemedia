@@ -36,6 +36,8 @@ import javax.imageio.ImageIO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.poi.sl.usermodel.SlideShow;
 import org.apache.poi.util.Units;
 import org.slf4j.Logger;
@@ -341,6 +343,11 @@ public class MediaService {
                 Dimension2D dim = Units.pointsToPixel(ppt.getPageSize());
                 metadata.setImageDimensions(new ImageDimensions((int) dim.getWidth(), (int) dim.getHeight()));
                 LOGGER.info("PowerPoint dimensions have been updated for {}", metadata);
+                result = true;
+            } else if (img.contents() instanceof PDDocument pdf) {
+                PDRectangle box = pdf.getPage(0).getMediaBox();
+                metadata.setImageDimensions(new ImageDimensions((int) box.getWidth(), (int) box.getHeight()));
+                LOGGER.info("PDF dimensions have been updated for {}", metadata);
                 result = true;
             }
         }
