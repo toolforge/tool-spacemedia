@@ -42,7 +42,8 @@ class NoaaNesdisServiceTest extends AbstractOrgServiceTest {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         NoaaNesdisMedia media = new NoaaNesdisMedia();
         media.setId(new CompositeMediaId("nesdis", id));
-        service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/noaa/nesdis/" + id + ".html")), media);
+        service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/noaa/nesdis/" + id + ".html")), null,
+                media);
         assertEquals(title, media.getTitle());
         assertEquals(descLen, Optional.ofNullable(media.getDescription()).orElse("").length());
         assertEquals(nFiles, media.getMetadataCount());
