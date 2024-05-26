@@ -341,6 +341,20 @@ public class Media implements MediaProjection, MediaDescription {
         setPublicationDate(publicationDateTime != null ? publicationDateTime.toLocalDate() : null);
     }
 
+    public void setPublication(Temporal t) {
+        if (t instanceof LocalDate d) {
+            setPublicationDate(d);
+        } else if (t instanceof ZonedDateTime dt) {
+            setPublicationDateTime(dt);
+        } else if (t instanceof YearMonth m) {
+            setPublicationMonth(m);
+        } else if (t instanceof Year y) {
+            setPublicationYear(y);
+        } else {
+            throw new IllegalArgumentException("Unsupported temporal: " + t);
+        }
+    }
+
     private static LocalDate getLocalDate(LocalDate localDate, ZonedDateTime zonedDateTime) {
         return localDate != null ? localDate : zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
     }
@@ -627,6 +641,19 @@ public class Media implements MediaProjection, MediaDescription {
                     && mkw.getKeywordStream().map(Media::normalize).anyMatch(kw -> kw.contains(lc));
         }
         return result;
+    }
+
+    public Optional<LocalDate> deduceApproximatePublicationDate() {
+        if (getPublicationDate() != null) {
+            return Optional.of(getPublicationDate());
+        } else if (getPublicationDateTime() != null) {
+            return Optional.of(getPublicationDateTime().toLocalDate());
+        } else if (getPublicationMonth() != null) {
+            return Optional.of(LocalDate.of(getPublicationMonth().getYear(), getPublicationMonth().getMonth(), 1));
+        } else if (getPublicationYear() != null) {
+            return Optional.of(LocalDate.of(getPublicationYear().getValue(), 1, 1));
+        }
+        return Optional.empty();
     }
 
     private static String normalize(String s) {

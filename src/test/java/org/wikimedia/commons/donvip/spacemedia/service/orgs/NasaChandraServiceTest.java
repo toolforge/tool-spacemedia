@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,6 +14,8 @@ import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +50,7 @@ class NasaChandraServiceTest extends AbstractOrgServiceTest {
             "1;2004/ss433;Jets Spout Far Closer to Black Hole Than Thought, Scientists Say;4886;2;true;true;true",
             "5;2005/mkn421;Mkn 421: Lost and Found: X-ray Telescope Locates Missing Matter;2358;5;true;true;true",
             "1;2006/xrf;Cosmic Blasts Much More Common, Astronomers Discover;3925;2;true;true;true",
+            "5;2006/n5746;NGC 5746: Detection of Hot Halo Gets Theory Out of Hot Water;1506;5;false;true;true",
             "2;2008/bh_spin;Spinning Black Holes Survey (NGC 4374): Chandra Data Reveal Rapidly Whirling Black Holes;1963;6;true;true;true",
             "5;2010/4c0058;4C+00.58: Black Hole Jerked Around Twice;3161;6;true;false;true",
             "1;2011/dcluster;NASA Telescopes Help Identify Most Distant Galaxy Cluster;4864;1;false;true;true",
@@ -74,7 +78,7 @@ class NasaChandraServiceTest extends AbstractOrgServiceTest {
         char c = id.charAt(0);
         List<NasaChandraMedia> medias = service.fillMediaWithHtml(
                 "https://chandra.si.edu/" + (c == '1' || c == '2' ? "photo/" : "resources/") + id,
-                Jsoup.parse(new File(SRC_TEST_RESOURCES_NASA_CHANDRA + id.replace('/', '_') + ".htm")), media);
+                Jsoup.parse(new File(SRC_TEST_RESOURCES_NASA_CHANDRA + id.replace('/', '_') + ".htm")), null, media);
         assertEquals(nMedia, medias.size());
         for (NasaChandraMedia m : medias) {
             assertNotNull(m.getTitle());
@@ -101,6 +105,19 @@ class NasaChandraServiceTest extends AbstractOrgServiceTest {
         assertNotNull(media.getDescription());
         if (checkPublicationDate) {
             assertNotNull(media.getPublicationDate());
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = { "47;handouts/lithos/index", "9;illustrations/3d_files",
+            "3;illustrations/ACIS", "4;illustrations/misc" })
+    void testGalleryItems(int nItems, String id) throws IOException {
+        String url = "https://chandra.si.edu/resources" + id + ".html";
+        Elements items = service.getGalleryItems("chandra", url,
+                Jsoup.parse(new File(SRC_TEST_RESOURCES_NASA_CHANDRA + id.replace('/', '_') + ".htm")));
+        assertEquals(nItems, items.size());
+        for (Element item : items) {
+            assertTrue(isNotBlank(service.extractIdFromGalleryItem(url, item)));
         }
     }
 

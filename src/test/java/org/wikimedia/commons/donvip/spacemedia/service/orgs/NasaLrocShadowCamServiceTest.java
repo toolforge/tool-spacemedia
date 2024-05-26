@@ -49,7 +49,8 @@ class NasaLrocShadowCamServiceTest extends AbstractOrgServiceTest {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         NasaLrocMedia media = new NasaLrocMedia();
         media.setId(new CompositeMediaId(repoId, id));
-        service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/nasa/lroc-shadowcam/" + id + ".htm")), media);
+        service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/nasa/lroc-shadowcam/" + id + ".htm")),
+                null, media);
         assertEquals(title, media.getTitle());
         assertEquals(tags, media.getKeywords().toString());
         assertEquals(descLen, Optional.ofNullable(media.getDescription()).orElse("").length());
