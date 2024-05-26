@@ -157,6 +157,16 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     }
 
     @Override
+    protected List<NasaChandraMedia> fillMediaWithHtml(String url, NasaChandraMedia media) throws IOException {
+        if (url.contains(".htm") || url.lastIndexOf('.') < url.lastIndexOf('/')) {
+            return fillMediaWithHtml(url, fetchUrl(url), media);
+        } else {
+            addMetadata(media, url, null);
+            return List.of(media);
+        }
+    }
+
+    @Override
     protected List<NasaChandraMedia> fillMediaWithHtml(String url, Document html, NasaChandraMedia media)
             throws IOException {
         try {
@@ -215,6 +225,9 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
                     }
                     media.setPublicationDate(parseReleaseDate(text.replace("For Release:", "").trim()));
                 }
+            }
+            if (media.getPublicationDate() == null) {
+                media.deduceApproximatePublicationDate().ifPresent(media::setPublicationDate);
             }
             addMetadataFromLinks(url, ofNullable(photoRightBox).or(() -> ofNullable(content))
                     .orElseGet(() -> html.getElementById("wrapper_big")).getElementsByTag("a"), media);
@@ -358,6 +371,9 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
                 case "Obs. ID", "Obs. IDs":
                     media.setObservationIds(text);
                     break;
+                case "Orientation":
+                    media.setOrientation(text);
+                    break;
                 case "Instrument":
                     media.setInstruments(Arrays.stream(text.split(",")).map(String::trim).collect(toSet()));
                     break;
@@ -429,6 +445,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
         addOtherField(sb, "Constellation", media.getConstellation());
         addOtherField(sb, "Coordinates (J2000)", media.getCoordinates());
         addOtherField(sb, "Distance Estimate", media.getDistance());
+        addOtherField(sb, "Orientation", media.getOrientation());
         addOtherField(sb, "Note", media.getNote());
         addOtherField(sb, "Observation Date(s)", media.getObservationDate());
         addOtherField(sb, "Observation ID(s)", media.getObservationIds());
