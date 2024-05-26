@@ -107,7 +107,9 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
         }
         if (text.isEmpty()) {
             Element link = result.getElementsByClass("boldgray").first().getElementsByTag("a").first();
-            text = link.attr("href").replace(BASE_URL, "").replace("/resources", "");
+            if (link != null) {
+                text = link.attr("href").replace(BASE_URL, "").replace("/resources", "");
+            }
         }
         return StringUtils.strip(text, "/");
     }
@@ -157,8 +159,27 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     }
 
     @Override
-    protected List<NasaChandraMedia> fillMediaWithHtml(String url, Document html, NasaChandraMedia media)
+    protected List<NasaChandraMedia> fillMediaWithHtml(String url, Element galleryItem, NasaChandraMedia media)
             throws IOException {
+        if (url.contains(".htm") || url.lastIndexOf('.') < url.lastIndexOf('/')) {
+            return fillMediaWithHtml(url, fetchUrl(url), galleryItem, media);
+        } else {
+            Element resourcesText = galleryItem.getElementsByClass("resources_text").first();
+            if (resourcesText != null) {
+                media.setTitle(resourcesText.getElementsByClass("a").first().text());
+                media.setDescription(resourcesText.ownText());
+            }
+            addMetadata(media, url, null);
+            if (media.getPublicationDate() == null) {
+                media.deduceApproximatePublicationDate().ifPresent(media::setPublicationDate);
+            }
+            return List.of(media);
+        }
+    }
+
+    @Override
+    protected List<NasaChandraMedia> fillMediaWithHtml(String url, Document html, Element galleryItem,
+            NasaChandraMedia media) throws IOException {
         try {
             Element pageTitle = html.getElementsByClass("page_title").first();
             media.setTitle(ofNullable(html.getElementById("image_title"))
@@ -213,8 +234,12 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
                         releaseDate = content.getElementsByTag("strong").first().parent();
                         text = releaseDate.text().replace(text, "").trim();
                     }
-                    media.setPublicationDate(parseReleaseDate(text.replace("For Release:", "").trim()));
+                    ofNullable(parseReleaseDate(text.replace("For Release:", "").trim()))
+                            .ifPresent(media::setPublicationDate);
                 }
+            }
+            if (media.getPublicationDate() == null) {
+                media.deduceApproximatePublicationDate().ifPresent(media::setPublicationDate);
             }
             addMetadataFromLinks(url, ofNullable(photoRightBox).or(() -> ofNullable(content))
                     .orElseGet(() -> html.getElementById("wrapper_big")).getElementsByTag("a"), media);
@@ -358,6 +383,9 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
                 case "Obs. ID", "Obs. IDs":
                     media.setObservationIds(text);
                     break;
+                case "Orientation":
+                    media.setOrientation(text);
+                    break;
                 case "Instrument":
                     media.setInstruments(Arrays.stream(text.split(",")).map(String::trim).collect(toSet()));
                     break;
@@ -429,6 +457,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
         addOtherField(sb, "Constellation", media.getConstellation());
         addOtherField(sb, "Coordinates (J2000)", media.getCoordinates());
         addOtherField(sb, "Distance Estimate", media.getDistance());
+        addOtherField(sb, "Orientation", media.getOrientation());
         addOtherField(sb, "Note", media.getNote());
         addOtherField(sb, "Observation Date(s)", media.getObservationDate());
         addOtherField(sb, "Observation ID(s)", media.getObservationIds());

@@ -99,7 +99,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
     }
 
     @Override
-    List<WebMilMedia> fillMediaWithHtml(String url, Document html, WebMilMedia image) {
+    List<WebMilMedia> fillMediaWithHtml(String url, Document html, Element galleryItem, WebMilMedia image) {
         Element div = html.getElementsByClass("details-content").first();
         if (div == null) {
             div = html.getElementsByClass("AF2ImageDiv").first();
