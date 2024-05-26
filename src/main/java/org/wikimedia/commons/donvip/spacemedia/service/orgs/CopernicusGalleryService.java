@@ -147,7 +147,8 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     }
 
     @Override
-    List<CopernicusGalleryMedia> fillMediaWithHtml(String url, Document html, CopernicusGalleryMedia media) {
+    List<CopernicusGalleryMedia> fillMediaWithHtml(String url, Document html, Element galleryItem,
+            CopernicusGalleryMedia media) {
         Element section = html.getElementsByTag("main")
                 .first().getElementsByTag("section").first();
         media.setTitle(section.getElementsByTag("h1").first().text());
