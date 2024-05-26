@@ -39,6 +39,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.poi.sl.usermodel.SlideShow;
 import org.apache.poi.util.Units;
+import org.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.ContentsAndMetadata;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
+import org.wikimedia.commons.donvip.spacemedia.utils.Mp4File;
 
 @Lazy
 @Service
@@ -349,6 +351,14 @@ public class MediaService {
                 metadata.setImageDimensions(new ImageDimensions((int) box.getWidth(), (int) box.getHeight()));
                 LOGGER.info("PDF dimensions have been updated for {}", metadata);
                 result = true;
+            } else if (img.contents() instanceof Mp4File mp4) {
+                List<TrackHeaderBox> boxes = mp4.getBoxes(TrackHeaderBox.class, true);
+                if (!boxes.isEmpty()) {
+                    TrackHeaderBox box = boxes.get(0);
+                    metadata.setImageDimensions(new ImageDimensions((int) box.getWidth(), (int) box.getHeight()));
+                    LOGGER.info("MP4 dimensions have been updated for {}", metadata);
+                    result = true;
+                }
             }
         }
         return result;

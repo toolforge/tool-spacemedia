@@ -46,7 +46,8 @@ class CopernicusGalleryServiceTest extends AbstractOrgServiceTest {
     void testFillMediaWithHtml(String id) throws IOException {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         CopernicusGalleryMedia media = new CopernicusGalleryMedia();
-        service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/copernicus/" + id + ".html")), media);
+        service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/copernicus/" + id + ".html")), null,
+                media);
         assertEquals("European Union, Copernicus Sentinel-3 imagery", media.getCredits());
         assertEquals("Baltic Sea", media.getLocation());
         assertEquals("Smoke from Québec wildfires reaches the Baltic Sea", media.getTitle());

@@ -66,7 +66,11 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
 
     protected abstract String getSourceUrl(CompositeMediaId id);
 
-    abstract List<T> fillMediaWithHtml(String url, Document html, T media) throws IOException;
+    protected List<T> fillMediaWithHtml(String url, Element galleryItem, T media) throws IOException {
+        return fillMediaWithHtml(url, fetchUrl(url), galleryItem, media);
+    }
+
+    abstract List<T> fillMediaWithHtml(String url, Document html, Element galleryItem, T media) throws IOException;
 
     @Override
     public final void updateMedia(String[] args) throws IOException, UploadException {
@@ -102,22 +106,27 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                     LOGGER.warn("First {} gallery page is empty! {}", repoId, pageUrl);
                 }
                 for (Element result : results) {
-                    CompositeMediaId id = new CompositeMediaId(repoId, extractIdFromGalleryItem(pageUrl, result));
-                    Optional<Temporal> date = extractDateFromGalleryItem(result);
-                    if (date.isPresent() && doNotFetchEarlierThan != null
-                            && isTemporalBefore(date.get(), doNotFetchEarlierThan)) {
-                        loop = false;
-                    }
-                    if (loop) {
-                        try {
-                            List<T> medias = updateImages(id, date, uploadedMedia);
-                            if (doNotFetchEarlierThan != null && medias.stream()
-                                    .anyMatch(media -> media.getPublicationDate().isBefore(doNotFetchEarlierThan))) {
-                                loop = false;
-                            }
-                        } catch (IOException | RuntimeException e) {
-                            LOGGER.error("Error while updating {}", id, e);
+                    String extractedId = extractIdFromGalleryItem(pageUrl, result);
+                    if (isNotBlank(extractedId)) {
+                        CompositeMediaId id = new CompositeMediaId(repoId, extractedId);
+                        Optional<Temporal> date = extractDateFromGalleryItem(result);
+                        if (date.isPresent() && doNotFetchEarlierThan != null
+                                && isTemporalBefore(date.get(), doNotFetchEarlierThan)) {
+                            loop = false;
                         }
+                        if (loop) {
+                            try {
+                                List<T> medias = updateImages(id, date, result, uploadedMedia);
+                                if (doNotFetchEarlierThan != null && medias.stream().anyMatch(
+                                        media -> media.getPublicationDate().isBefore(doNotFetchEarlierThan))) {
+                                    loop = false;
+                                }
+                            } catch (IOException | RuntimeException e) {
+                                LOGGER.error("Error while updating {} => {}", id, e.getMessage(), e);
+                            }
+                        }
+                    } else {
+                        LOGGER.warn("Failed to extract item id from {}", result);
                     }
                     ongoingUpdateMedia(start, startCount + count++);
                 }
@@ -135,15 +144,15 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
         return count;
     }
 
-    private List<T> updateImages(CompositeMediaId id, Optional<Temporal> date, List<T> uploadedMedia)
-            throws IOException, UploadException {
+    private List<T> updateImages(CompositeMediaId id, Optional<Temporal> date, Element galleryItem,
+            List<T> uploadedMedia) throws IOException, UploadException {
         boolean save = false;
         List<T> medias = null;
         Optional<T> imageInDb = repository.findById(id);
         if (imageInDb.isPresent()) {
             medias = List.of(imageInDb.get());
         } else {
-            medias = fetchMedias(id, date);
+            medias = fetchMedias(id, date, galleryItem);
             save = !medias.isEmpty();
         }
         for (T media : medias) {
@@ -163,15 +172,15 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
     }
 
     protected T fetchMedia(CompositeMediaId id, Optional<Temporal> date) throws IOException {
-        return fetchMedias(id, date).stream().filter(m -> m.getId().equals(id)).findFirst().orElseThrow();
+        return fetchMedias(id, date, null).stream().filter(m -> m.getId().equals(id)).findFirst().orElseThrow();
     }
 
-    protected List<T> fetchMedias(CompositeMediaId id, Optional<Temporal> date) throws IOException {
+    protected List<T> fetchMedias(CompositeMediaId id, Optional<Temporal> date, Element galleryItem)
+            throws IOException {
         try {
             String url = getSourceUrl(id);
             if (url == null) {
-                LOGGER.error("Can't find valid source URL for {}", id);
-                return null;
+                throw new IllegalArgumentException("Can't find valid source URL for " + id);
             }
             T media = getMediaClass().getConstructor().newInstance();
             media.setId(id);
@@ -188,7 +197,7 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                     throw new IllegalArgumentException("Unsupported temporal: " + t);
                 }
             });
-            return fillMediaWithHtml(url, fetchUrl(url), media);
+            return fillMediaWithHtml(url, galleryItem, media);
         } catch (ReflectiveOperationException | IllegalArgumentException | SecurityException e) {
             throw new IllegalStateException(e);
         }

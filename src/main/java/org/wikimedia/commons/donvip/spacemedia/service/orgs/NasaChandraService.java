@@ -19,8 +19,10 @@ import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.IntStream;
 
@@ -47,10 +49,14 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     private static final String BASE_URL = "https://chandra.si.edu";
     private static final String PHOTO_URL = BASE_URL + "/photo";
 
+    private static final Map<String, List<String>> GALLERY_URLS = new TreeMap<>();
+
     private static final List<DateTimeFormatter> DATE_FORMATTERS = List.of(
             ofPattern("dd MMM yy", ENGLISH), ofPattern("MMMM dd, yyyy", ENGLISH), ofPattern("MMMM d, yyyy", ENGLISH),
             ofPattern("MMM dd, yyyy", ENGLISH), ofPattern("MMMM dd , yyyy", ENGLISH), ofPattern("MMMM yyyy", ENGLISH),
             ofPattern("yyyy", ENGLISH));
+
+    private LocalDate lastResourcePublicationDate;
 
     public NasaChandraService(NasaChandraMediaRepository repository) {
         super(repository, "nasa.chandra", Set.of("chandra"));
@@ -68,6 +74,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
         int to = Year.now().getValue();
         result.addAll(IntStream.rangeClosed(from, to).map(x -> ((to - x + from - 2000) % 100 + 100) % 100)
                 .mapToObj(x -> String.format("%s/chronological%02d.html", PHOTO_URL, x)).toList());
+
         try {
             Set<String> resources = new TreeSet<>();
             String url = BASE_URL + "/resources/chandraMission.html";
@@ -86,6 +93,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
         } catch (IOException e) {
             LOGGER.error("Failed to parse mission page: {}", e.getMessage());
         }
+        GALLERY_URLS.put(repoId, result);
         return result;
     }
 
@@ -106,10 +114,30 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
             text = result.getElementsByTag("a").first().attr("href").replace("/photo/", "");
         }
         if (text.isEmpty()) {
-            Element link = result.getElementsByClass("boldgray").first().getElementsByTag("a").first();
-            text = link.attr("href").replace(BASE_URL, "").replace("/resources", "");
+            Element boldgray = result.getElementsByClass("boldgray").first();
+            Element link = boldgray.getElementsByTag("a").first();
+            if (link != null) {
+                text = hrefWithoutLeadingResourcs(link.attr("href"));
+            } else {
+                text = boldgray.text();
+                int idx = text.indexOf(". ");
+                if (idx > 0) {
+                    text = text.substring(idx + 2);
+                }
+                if (!text.isEmpty()) {
+                    text = hrefWithoutLeadingResourcs(url).replace(".html", "/") + text.replace(' ', '_');
+                }
+            }
         }
         return StringUtils.strip(text, "/");
+    }
+
+    private static String hrefWithoutLeadingResourcs(String href) {
+        String result = href.replace(BASE_URL, "");
+        if (result.startsWith("/resources")) {
+            result = result.replace("/resources", "");
+        }
+        return result;
     }
 
     @Override
@@ -119,12 +147,9 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
         if (pageGray != null) {
             text = pageGray.text();
         } else {
-            Element caption = result.getElementsByClass("resources_text").first().getElementsByClass("caption").first();
-            if (caption != null) {
-                text = caption.text();
-                if (text.contains("(")) {
-                    text = text.substring(text.indexOf('(') + 1, text.indexOf(')'));
-                }
+            text = result.getElementsByClass("resources_text").first().getElementsByClass("caption").text();
+            if (text.contains("(")) {
+                text = text.substring(text.indexOf('(') + 1, text.indexOf(')'));
             }
         }
         return Utils.extractDate(text, DATE_FORMATTERS);
@@ -137,7 +162,19 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
             String url = PHOTO_URL + '/' + id.getMediaId();
             return url.contains("/more/") ? url.replaceAll("/more/\\d+", "/more.html") : url;
         } else {
-            return BASE_URL + "/resources/" + id.getMediaId();
+            String url = BASE_URL + '/' + id.getMediaId();
+            if (Utils.uriExists(url)) {
+                return url;
+            }
+            url = BASE_URL + "/resources/" + id.getMediaId();
+            if (Utils.uriExists(url)) {
+                return url;
+            }
+            url = url.replace(url.substring(url.lastIndexOf('/')), ".html");
+            if (Utils.uriExists(url)) {
+                return url;
+            }
+            return null;
         }
     }
 
@@ -157,8 +194,33 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     }
 
     @Override
-    protected List<NasaChandraMedia> fillMediaWithHtml(String url, Document html, NasaChandraMedia media)
+    protected List<NasaChandraMedia> fillMediaWithHtml(String url, Element galleryItem, NasaChandraMedia media)
             throws IOException {
+        if ((url.contains(".htm") || url.lastIndexOf('.') < url.lastIndexOf('/'))
+                && !GALLERY_URLS.get(media.getId().getRepoId()).contains(url)) {
+            return fillMediaWithHtml(url, fetchUrl(url), galleryItem, media);
+        } else {
+            Element resourcesText = galleryItem.getElementsByClass("resources_text").first();
+            if (resourcesText != null) {
+                media.setTitle(resourcesText.getElementsByTag("a").first().text());
+                media.setDescription(resourcesText.ownText());
+            }
+            addMetadataFromLinks(url, galleryItem.getElementsByTag("a"), media);
+            if (media.getPublicationDate() == null) {
+                media.deduceApproximatePublicationDate().ifPresent(media::setPublicationDate);
+            }
+            if (media.getPublicationDate() == null && lastResourcePublicationDate != null) {
+                media.setPublicationDate(lastResourcePublicationDate);
+                LOGGER.warn("Setting an arbitrary publication date to {} with {}", media, lastResourcePublicationDate);
+            }
+            lastResourcePublicationDate = media.getPublicationDate();
+            return List.of(media);
+        }
+    }
+
+    @Override
+    protected List<NasaChandraMedia> fillMediaWithHtml(String url, Document html, Element galleryItem,
+            NasaChandraMedia media) throws IOException {
         try {
             Element pageTitle = html.getElementsByClass("page_title").first();
             media.setTitle(ofNullable(html.getElementById("image_title"))
@@ -213,8 +275,12 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
                         releaseDate = content.getElementsByTag("strong").first().parent();
                         text = releaseDate.text().replace(text, "").trim();
                     }
-                    media.setPublicationDate(parseReleaseDate(text.replace("For Release:", "").trim()));
+                    ofNullable(parseReleaseDate(text.replace("For Release:", "").trim()))
+                            .ifPresent(media::setPublicationDate);
                 }
+            }
+            if (media.getPublicationDate() == null) {
+                media.deduceApproximatePublicationDate().ifPresent(media::setPublicationDate);
             }
             addMetadataFromLinks(url, ofNullable(photoRightBox).or(() -> ofNullable(content))
                     .orElseGet(() -> html.getElementById("wrapper_big")).getElementsByTag("a"), media);
@@ -358,6 +424,9 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
                 case "Obs. ID", "Obs. IDs":
                     media.setObservationIds(text);
                     break;
+                case "Orientation":
+                    media.setOrientation(text);
+                    break;
                 case "Instrument":
                     media.setInstruments(Arrays.stream(text.split(",")).map(String::trim).collect(toSet()));
                     break;
@@ -404,7 +473,9 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     static String newChandraUrl(String url, String href) {
         return (href.contains("://") ? href
                 : href.startsWith("/press/") || href.startsWith("/photo/") || href.startsWith("/graphics/")
-                        || href.startsWith("/resources/") || href.startsWith("/fifth/")
+                        || href.startsWith("/resources/") || href.startsWith("/fifth/") || href.startsWith("/ten/")
+                        || href.startsWith("/corps/") || href.startsWith("/blackhole/") || href.startsWith("/deadstar/")
+                        || href.startsWith("/edu/")
                         ? BASE_URL + href
                                 : url.replace("more.html", "") + '/' + href)
                 .replace("//", "/").replace(":/", "://");
@@ -429,6 +500,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
         addOtherField(sb, "Constellation", media.getConstellation());
         addOtherField(sb, "Coordinates (J2000)", media.getCoordinates());
         addOtherField(sb, "Distance Estimate", media.getDistance());
+        addOtherField(sb, "Orientation", media.getOrientation());
         addOtherField(sb, "Note", media.getNote());
         addOtherField(sb, "Observation Date(s)", media.getObservationDate());
         addOtherField(sb, "Observation ID(s)", media.getObservationIds());
