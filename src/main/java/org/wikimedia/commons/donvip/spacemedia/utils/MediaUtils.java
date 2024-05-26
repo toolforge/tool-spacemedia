@@ -188,7 +188,7 @@ public class MediaUtils {
 
     private static ContentsAndMetadata<IsoFile> readMp4Video(Path path, long contentLength, String filename,
             String extension) throws IOException, FileDecodingException {
-        try (IsoFile mp4 = new IsoFile(path.toFile())) {
+        try (IsoFile mp4 = new Mp4File(path.toFile())) {
             MovieBox movieBox = mp4.getMovieBox();
             if (movieBox == null) {
                 throw new FileDecodingException("Failed to open MP4 video from " + path);
@@ -200,7 +200,7 @@ public class MediaUtils {
                 return new ContentsAndMetadata<>(
                         // Return sample data from
                         // https://github.com/mathiasbynens/small/blob/master/mp4-with-audio.mp4
-                        new IsoFile(Channels.newChannel(MediaUtils.class.getResourceAsStream("/mp4-with-audio.mp4"))),
+                        new Mp4File(Channels.newChannel(MediaUtils.class.getResourceAsStream("/mp4-with-audio.mp4"))),
                         contentLength, filename, extension, 1, null);
             } else {
                 throw e;
