@@ -141,8 +141,8 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
     }
 
     @Override
-    protected List<NasaWebsiteMedia> fillMediaWithHtml(String url, Document html, NasaWebsiteMedia media)
-            throws IOException {
+    protected List<NasaWebsiteMedia> fillMediaWithHtml(String url, Document html, Element galleryItem,
+            NasaWebsiteMedia media) throws IOException {
         try {
             if (url.startsWith(BASE_URL + IMAGE_ARTICLE + '/')) {
                 Element detail = html.getElementsByAttributeValueMatching("href", BASE_URL + IMAGE_DETAIL + "/.*")
