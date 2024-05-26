@@ -30,10 +30,13 @@ public class NasaChandraMedia extends Media {
     @Column(nullable = true, length = 127)
     private String distance;
 
+    @Column(nullable = true, length = 127)
+    private String orientation;
+
     @Column(nullable = true, length = 255)
     private String observationDate;
 
-    @Column(nullable = true, length = 127)
+    @Column(nullable = true, length = 255)
     private String observationTime;
 
     @Lob
@@ -100,6 +103,14 @@ public class NasaChandraMedia extends Media {
 
     public void setDistance(String distance) {
         this.distance = distance;
+    }
+
+    public String getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(String orientation) {
+        this.orientation = orientation;
     }
 
     public String getObservationDate() {
@@ -178,7 +189,7 @@ public class NasaChandraMedia extends Media {
     public int hashCode() {
         return 31 * super.hashCode() + Objects.hash(category, colorCode, constellation, coordinates, distance,
                 instruments, observationDate, observationIds, observationTime, references, scale, alsoKnownAs,
-                aboutTheSound, note);
+                aboutTheSound, note, orientation);
     }
 
     @Override
@@ -196,7 +207,7 @@ public class NasaChandraMedia extends Media {
                 && Objects.equals(observationTime, other.observationTime)
                 && Objects.equals(references, other.references) && Objects.equals(scale, other.scale)
                 && Objects.equals(alsoKnownAs, other.alsoKnownAs) && Objects.equals(aboutTheSound, other.aboutTheSound)
-                && Objects.equals(note, other.note);
+                && Objects.equals(note, other.note) && Objects.equals(orientation, other.orientation);
     }
 
     @Override
@@ -217,6 +228,7 @@ public class NasaChandraMedia extends Media {
         setObservationDate(other.getObservationDate());
         setObservationIds(other.getObservationIds());
         setObservationTime(other.getObservationTime());
+        setOrientation(other.getOrientation());
         setReferences(other.getReferences());
         setScale(other.getScale());
         setNote(other.getNote());
