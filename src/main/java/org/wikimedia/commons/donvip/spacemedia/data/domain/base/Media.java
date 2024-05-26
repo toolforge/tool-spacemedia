@@ -629,6 +629,19 @@ public class Media implements MediaProjection, MediaDescription {
         return result;
     }
 
+    public Optional<LocalDate> deduceApproximatePublicationDate() {
+        if (getPublicationDate() != null) {
+            return Optional.of(getPublicationDate());
+        } else if (getPublicationDateTime() != null) {
+            return Optional.of(getPublicationDateTime().toLocalDate());
+        } else if (getPublicationMonth() != null) {
+            return Optional.of(LocalDate.of(getPublicationMonth().getYear(), getPublicationMonth().getMonth(), 1));
+        } else if (getPublicationYear() != null) {
+            return Optional.of(LocalDate.of(getPublicationYear().getValue(), 1, 1));
+        }
+        return Optional.empty();
+    }
+
     private static String normalize(String s) {
         return ofNullable(s).orElse("").toLowerCase(ENGLISH).replace(" ", "").replace("-", "");
     }
