@@ -42,7 +42,8 @@ class AbstractOrgWebMilServiceTest extends AbstractOrgServiceTest {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         when(commonsService.isPermittedFileUrl(any())).thenReturn(true);
 
-        service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/webmil/" + virin + ".htm")), media);
+        service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/webmil/" + virin + ".htm")), null,
+                media);
 
         assertNotNull(media.getTitle());
         assertNotNull(media.getDescription());

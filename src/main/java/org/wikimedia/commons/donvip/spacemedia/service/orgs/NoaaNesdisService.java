@@ -99,8 +99,8 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     }
 
     @Override
-    protected List<NoaaNesdisMedia> fillMediaWithHtml(String url, Document html, NoaaNesdisMedia media)
-            throws IOException {
+    protected List<NoaaNesdisMedia> fillMediaWithHtml(String url, Document html, Element galleryItem,
+            NoaaNesdisMedia media) throws IOException {
         try {
             media.setTitle(html.getElementsByTag("h1").first().text());
             media.setPublicationDate(

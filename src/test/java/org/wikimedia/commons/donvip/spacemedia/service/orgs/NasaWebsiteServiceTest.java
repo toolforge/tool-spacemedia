@@ -63,7 +63,7 @@ class NasaWebsiteServiceTest extends AbstractOrgServiceTest {
         when(commonsService.isPermittedFileUrl(any())).thenReturn(true);
 
         service.fillMediaWithHtml("https://www.nasa.gov/" + repo + '/' + id,
-                Jsoup.parse(new File("src/test/resources/nasa/website/" + repo + '/' + id + ".htm")), media);
+                Jsoup.parse(new File("src/test/resources/nasa/website/" + repo + '/' + id + ".htm")), null, media);
 
         assertEquals(title, media.getTitle());
         if (descriptionLength == 0) {
