@@ -66,6 +66,10 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
 
     protected abstract String getSourceUrl(CompositeMediaId id);
 
+    protected List<T> fillMediaWithHtml(String url, T media) throws IOException {
+        return fillMediaWithHtml(url, fetchUrl(url), media);
+    }
+
     abstract List<T> fillMediaWithHtml(String url, Document html, T media) throws IOException;
 
     @Override
@@ -188,7 +192,7 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                     throw new IllegalArgumentException("Unsupported temporal: " + t);
                 }
             });
-            return fillMediaWithHtml(url, fetchUrl(url), media);
+            return fillMediaWithHtml(url, media);
         } catch (ReflectiveOperationException | IllegalArgumentException | SecurityException e) {
             throw new IllegalStateException(e);
         }
