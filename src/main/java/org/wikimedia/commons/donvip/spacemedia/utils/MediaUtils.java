@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.LongSupplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -103,20 +104,20 @@ public class MediaUtils {
                     imageio = extension != null && IMAGEIO_EXTENSIONS.contains(extension);
                 }
             }
-            long contentLength = response.getEntity().getContentLength();
+            LongSupplier contentLength = () -> response.getEntity().getContentLength();
             if (imageio || isBlank(extension)) {
                 try {
                     ContentsAndMetadata<BufferedImage> result = ImageUtils.readImage(in, readMetadata);
-                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(result.contents(), contentLength,
-                            filename, isBlank(extension) ? result.extension() : extension, result.numImagesOrPages(),
-                            null);
+                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(result.contents(),
+                            contentLength(contentLength, result::contentLength), filename,
+                            isBlank(extension) ? result.extension() : extension,
+                            result.numImagesOrPages(), null);
                 } catch (IIOException e) {
                     LOGGER.error("Image I/O error while reading {}: {}", uri, e.getMessage());
-                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(null, contentLength, filename, extension,
-                            1, e);
+                    return new ContentsAndMetadata<>(null, contentLength.getAsLong(), filename, extension, 1, e);
                 }
             } else if ("ogv".equals(extension)) {
-                return (ContentsAndMetadata<T>) readOgvVideo(in, contentLength, filename, extension, uri);
+                return (ContentsAndMetadata<T>) readOgvVideo(in, contentLength.getAsLong(), filename, extension, uri);
             } else if ("www.youtube.com".equals(uri.getHost())) {
                 return (ContentsAndMetadata<T>) readMp4Video(localPath, contentLength, filename, extension, uri,
                         x -> ofNullable(downloadYoutubeVideo(x.toString())));
@@ -131,33 +132,51 @@ public class MediaUtils {
                     }
                 });
             } else if ("webp".equals(extension)) {
-                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(
-                        ImageUtils.readWebp(uri, readMetadata).contents(), contentLength, filename, extension, 1, null);
+                ContentsAndMetadata<BufferedImage> result = ImageUtils.readWebp(uri, readMetadata);
+                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(result.contents(),
+                        contentLength(contentLength, result::contentLength), filename, extension, 1, null);
             } else if ("pdf".equals(extension)) {
                 try {
-                    PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(new RandomAccessReadBuffer(in));
-                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(pdf, contentLength, filename, extension,
-                            pdf.getNumberOfPages(), null);
+                    PdfRandomAccessReadBuffer reader = new PdfRandomAccessReadBuffer(in);
+                    PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(reader);
+                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(pdf,
+                            contentLength(contentLength, reader::size), filename, extension, pdf.getNumberOfPages(),
+                            null);
                 } catch (IOException e) {
                     LOGGER.error("PDF I/O error while reading {}: {}", uri, e.getMessage());
-                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(null, contentLength, filename, extension,
-                            1, e);
+                    return new ContentsAndMetadata<>(null, contentLength.getAsLong(), filename, extension, 1, e);
                 }
             } else if (POI_HSLF_EXTENSIONS.contains(extension) || POI_XSLF_EXTENSIONS.contains(extension)) {
                 SlideShow<?, ?> ppt = readPowerpointFile(in, extension);
-                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(ppt, contentLength, filename, extension,
-                        ppt.getSlides().size(), null);
+                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(ppt, contentLength.getAsLong(), filename,
+                        extension, ppt.getSlides().size(), null);
             } else if ("stl".equals(extension) || "mp3".equals(extension)) {
                 // Assume readable
-                in.readAllBytes();
-                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(new Object(), contentLength, filename,
-                        extension, 1, null);
+                byte[] bytes = in.readAllBytes();
+                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(new Object(),
+                        contentLength(contentLength, () -> bytes.length), filename, extension, 1, null);
             } else {
                 throw new FileDecodingException(
                         "Unsupported format: " + extension + " / headers:" + Arrays.stream(response.getAllHeaders())
                                 .map(h -> h.getName() + ": " + h.getValue()).sorted().toList());
             }
         }
+    }
+
+    private static class PdfRandomAccessReadBuffer extends RandomAccessReadBuffer {
+
+        public PdfRandomAccessReadBuffer(InputStream input) throws IOException {
+            super(input);
+        }
+
+        public long size() {
+            return size;
+        }
+    }
+
+    private static long contentLength(LongSupplier first, LongSupplier second) {
+        long result = first.getAsLong();
+        return result > -1 ? result : second.getAsLong();
     }
 
     private static ContentsAndMetadata<OggFile> readOgvVideo(InputStream in, long contentLength, String filename,
@@ -170,8 +189,8 @@ public class MediaUtils {
         }
     }
 
-    private static ContentsAndMetadata<IsoFile> readMp4Video(Path localPath, long contentLength, String filename,
-            String extension, URI uri, Function<URI, Optional<Path>> downloader)
+    private static ContentsAndMetadata<IsoFile> readMp4Video(Path localPath, LongSupplier contentLength,
+            String filename, String extension, URI uri, Function<URI, Optional<Path>> downloader)
             throws FileDecodingException, IOException {
         if (localPath != null) {
             return readMp4Video(localPath, contentLength, filename, extension);
@@ -186,14 +205,15 @@ public class MediaUtils {
         }
     }
 
-    private static ContentsAndMetadata<IsoFile> readMp4Video(Path path, long contentLength, String filename,
+    private static ContentsAndMetadata<IsoFile> readMp4Video(Path path, LongSupplier contentLength, String filename,
             String extension) throws IOException, FileDecodingException {
         try (IsoFile mp4 = new Mp4File(path.toFile())) {
             MovieBox movieBox = mp4.getMovieBox();
             if (movieBox == null) {
                 throw new FileDecodingException("Failed to open MP4 video from " + path);
             }
-            return new ContentsAndMetadata<>(mp4, contentLength, filename, extension, movieBox.getTrackCount(), null);
+            return new ContentsAndMetadata<>(mp4, contentLength(contentLength, mp4::getSize), filename, extension,
+                    movieBox.getTrackCount(), null);
         } catch (RuntimeException e) {
             if (e.getMessage() != null && IGNORED_MP4_ERRORS.stream().anyMatch(x -> e.getMessage().startsWith(x))) {
                 // Ignore https://github.com/sannies/mp4parser/issues/427
@@ -201,7 +221,7 @@ public class MediaUtils {
                         // Return sample data from
                         // https://github.com/mathiasbynens/small/blob/master/mp4-with-audio.mp4
                         new Mp4File(Channels.newChannel(MediaUtils.class.getResourceAsStream("/mp4-with-audio.mp4"))),
-                        contentLength, filename, extension, 1, null);
+                        contentLength.getAsLong(), filename, extension, 1, null);
             } else {
                 throw e;
             }
