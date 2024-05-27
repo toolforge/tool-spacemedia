@@ -65,7 +65,8 @@ public class ImageUtils {
             throws IOException {
         return readImage(stream, true, readMetadata, reader -> {
             try {
-                return new ContentsAndMetadata<>(reader.read(0, reader.getDefaultReadParam()), null, null,
+                return new ContentsAndMetadata<>(reader.read(0, reader.getDefaultReadParam()),
+                        stream.getStreamPosition(), null,
                         switch (reader.getClass().getSimpleName()) {
                         case "BMPImageReader" -> "bmp";
                         case "GIFImageReader" -> "gif";
@@ -82,8 +83,7 @@ public class ImageUtils {
     }
 
     private static <T> T readImage(ImageInputStream stream, boolean seekForwardOnly, boolean readMetadata,
-            Function<ImageReader, T> readFunction)
-            throws IOException {
+            Function<ImageReader, T> readFunction) throws IOException {
         Iterator<ImageReader> iter = ImageIO.getImageReaders(stream);
         if (!iter.hasNext()) {
             throw new IOException("No image reader found");
