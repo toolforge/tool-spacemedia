@@ -534,7 +534,22 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     @Override
     public Set<String> findCategories(NasaChandraMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        result.add("Chandra images");
+        boolean instrumentCat = false;
+        if (media.getInstruments().contains("ACIS")) {
+            instrumentCat = result.add("ACIS images");
+        }
+        if (media.getInstruments().contains("HRC")) {
+            instrumentCat = result.add("HRC images");
+        }
+        if (media.getInstruments().contains("HETG") || media.getInstruments().contains("HETGS")) {
+            instrumentCat = result.add("HETGS images");
+        }
+        if (media.getInstruments().contains("LETG") || media.getInstruments().contains("LETGS")) {
+            instrumentCat = result.add("LETGS images");
+        }
+        if (!instrumentCat) {
+            result.add("Images by the Chandra X-ray Observatory");
+        }
         return result;
     }
 
