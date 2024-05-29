@@ -130,6 +130,11 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     }
 
     @Override
+    protected boolean isSatellitePicture(NoaaNesdisMedia media, FileMetadata metadata) {
+        return true;
+    }
+
+    @Override
     public Set<String> findLicenceTemplates(NoaaNesdisMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("PD-USGov-NOAA");
