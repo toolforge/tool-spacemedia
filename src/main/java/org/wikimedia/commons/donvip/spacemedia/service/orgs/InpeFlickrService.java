@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
+
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +62,7 @@ public class InpeFlickrService extends AbstractOrgFlickrService {
         doForSatellites(() -> media.getPhotosets().stream().map(FlickrPhotoSet::getTitle),
                 p -> result.creator(p.getKey()));
         return result.locationOfCreation("Q663611") // Created in low earth orbit
-                .fabricationMethod("Q725252"); // Satellite imagery
+                .fabricationMethod(Q725252_SATELLITE_IMAGERY);
     }
 
     @Override

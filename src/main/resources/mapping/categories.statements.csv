@@ -26,3 +26,4 @@
 "Photos of extratropical cyclones by VIIRS","P4082=Q16948273;P180=Q1063457"
 "Photos of tropical cyclones by VIIRS","P4082=Q16948273;P180=Q8092"
 "Photos of wildfires by VIIRS","P4082=Q16948273;P180=Q169950"
+".*satellite pictures.*","P31=Q125191;P2079=Q725252"

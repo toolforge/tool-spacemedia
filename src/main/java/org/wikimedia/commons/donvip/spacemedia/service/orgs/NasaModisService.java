@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -168,7 +169,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
         SdcStatements result = super.getStatements(media, metadata);
         terraOrAqua(media, () -> result.creator("Q584697"), () -> result.creator("Q17397")); // Created by Terra or Aqua
         return result.locationOfCreation("Q663611") // Created in low earth orbit
-                .fabricationMethod("Q725252") // Satellite imagery
+                .fabricationMethod(Q725252_SATELLITE_IMAGERY)
                 .capturedWith("Q676840"); // Taken with MODIS instrument
     }
 

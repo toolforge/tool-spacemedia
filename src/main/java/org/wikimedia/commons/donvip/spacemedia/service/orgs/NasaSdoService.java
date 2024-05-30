@@ -9,6 +9,7 @@ import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.Wikidata
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q119021644_INTENSITYGRAM;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q125191_PHOTOGRAPH;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q5297355_DOPPLERGRAM;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q98069877_VIDEO;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -146,7 +147,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         result.creator("Q382494") // Created by SDO
                 .depicts("Q525") // Depicts the Sun
                 .locationOfCreation("Q472251") // Created in geosynchronous orbit
-                .fabricationMethod("Q725252") // Satellite imagery
+                .fabricationMethod(Q725252_SATELLITE_IMAGERY)
                 .capturedWith(dataType.getInstrument().getQid()); // Taken with SDO instrument
         int wavelength = dataType.getWavelength();
         if (wavelength > 0) {

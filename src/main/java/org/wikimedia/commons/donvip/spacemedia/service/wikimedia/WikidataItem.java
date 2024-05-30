@@ -28,6 +28,12 @@ public enum WikidataItem {
     Q125191_PHOTOGRAPH(125191),
 
     /**
+     * imagery of the Earth or another astronomical object taken from an artificial
+     * satellite
+     */
+    Q725252_SATELLITE_IMAGERY(725252),
+
+    /**
      * equipment specifically designed to facilitate the acquisition of scientific
      * data
      */

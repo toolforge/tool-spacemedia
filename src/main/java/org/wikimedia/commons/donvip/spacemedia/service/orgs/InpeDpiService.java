@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -36,7 +38,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
-import com.nimbusds.oauth2.sdk.util.StringUtils;
 @Service
 public class InpeDpiService extends AbstractOrgService<InpeDpiMedia> {
 
@@ -82,7 +83,7 @@ public class InpeDpiService extends AbstractOrgService<InpeDpiMedia> {
         InpeFlickrService.doForSatellites(() -> Stream.of(metadata.getOriginalFileName()),
                 p -> result.creator(p.getKey()));
         return result.locationOfCreation("Q663611") // Created in low earth orbit
-                .fabricationMethod("Q725252"); // Satellite imagery
+                .fabricationMethod(Q725252_SATELLITE_IMAGERY);
     }
 
     @Override
@@ -151,7 +152,7 @@ public class InpeDpiService extends AbstractOrgService<InpeDpiMedia> {
         LOGGER.info("{}Scrapping {} ...", ">".repeat(level), pageUrl);
         for (Element link : getWithJsoup(pageUrl, 30_000, 3).getElementsByTag("a")) {
             String href = link.attr("href");
-            if (StringUtils.isNotBlank(href)) {
+            if (isNotBlank(href)) {
                 href = href.replace("http:", "https:");
                 if (!href.startsWith("http")) {
                     String part = href;

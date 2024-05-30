@@ -64,7 +64,8 @@ public class CategorizationService {
 
     public void findCategoriesStatements(SdcStatements result, Set<String> cats) {
         for (Entry<String, String> e : categoriesStatements.entrySet()) {
-            if (stream(e.getKey().split(";")).anyMatch(cats::contains)) {
+            if (stream(e.getKey().split(";")).map(r -> Pattern.compile(r, Pattern.CASE_INSENSITIVE))
+                    .anyMatch(p -> cats.stream().anyMatch(c -> p.matcher(c).matches()))) {
                 for (String statement : e.getValue().split(";")) {
                     String[] kv = statement.split("=");
                     result.put(kv[0], Pair.of(kv[1], null));

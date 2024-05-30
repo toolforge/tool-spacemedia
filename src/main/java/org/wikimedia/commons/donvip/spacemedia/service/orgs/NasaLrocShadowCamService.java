@@ -5,6 +5,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q125191_PHOTOGRAPH;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -166,7 +167,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
             result.creator(lrocOrShadowcam(repoId, "Q331778", "Q30749609")) // Created by LRO / Danuri
                     .depicts("Q405") // Depicts the Moon
                     .locationOfCreation("Q210448") // Created in lunar orbit
-                    .fabricationMethod("Q725252") // Satellite imagery
+                    .fabricationMethod(Q725252_SATELLITE_IMAGERY)
                     .capturedWith(lrocOrShadowcam(repoId, "Q124653753", "Q106473449")); // Taken with LROC / ShadowCam
         }
         return result;

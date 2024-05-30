@@ -32,6 +32,10 @@ public class SdcStatements extends TreeMap<String, Pair<Object, Map<String, Obje
         return addStatement(WikidataProperty.P180_DEPICTS, qid);
     }
 
+    public SdcStatements fabricationMethod(WikidataItem item) {
+        return fabricationMethod(item.toString());
+    }
+
     public SdcStatements fabricationMethod(String qid) {
         return addStatement(WikidataProperty.P2079_FABRICATION_METHOD, qid);
     }

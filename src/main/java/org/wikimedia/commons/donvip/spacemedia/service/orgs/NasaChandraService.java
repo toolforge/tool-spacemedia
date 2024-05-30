@@ -7,6 +7,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q125191_PHOTOGRAPH;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q98069877_VIDEO;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -577,7 +578,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
             result.instanceOf(metadata.isVideo() ? Q98069877_VIDEO : Q125191_PHOTOGRAPH)
                     .creator("Q49002") // Created by Chandra
                     .locationOfCreation("Q218056") // Created in high Earth orbit
-                    .fabricationMethod("Q725252"); // Satellite imagery
+                    .fabricationMethod(Q725252_SATELLITE_IMAGERY);
         }
         if (isNotBlank(media.getConstellation())) {
             wikidata.searchConstellation(media.getConstellation()).map(Pair::getKey).ifPresent(result::constellation);
