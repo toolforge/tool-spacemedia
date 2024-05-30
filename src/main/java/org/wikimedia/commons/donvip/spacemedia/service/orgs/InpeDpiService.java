@@ -97,6 +97,11 @@ public class InpeDpiService extends AbstractOrgService<InpeDpiMedia> {
     }
 
     @Override
+    protected String hiddenUploadCategory() {
+        return "Spacemedia INPE files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected String getAuthor(InpeDpiMedia media, FileMetadata metadata) {
         return "INPE/OBT/DPI: Divisão de Processamento de Imagens, Coordenação Geral de Observação da Terra, Instituto Nacional de Pesquisas Espaciais";
     }
