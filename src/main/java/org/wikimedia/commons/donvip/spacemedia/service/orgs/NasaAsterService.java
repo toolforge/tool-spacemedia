@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.regex.Pattern.compile;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.extractDate;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -226,7 +227,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
     protected SdcStatements getStatements(NasaAsterMedia media, FileMetadata metadata) {
         return super.getStatements(media, metadata).creator("Q584697") // Created by Terra
                 .locationOfCreation("Q663611") // Created in low earth orbit
-                .fabricationMethod("Q725252") // Satellite imagery
+                .fabricationMethod(Q725252_SATELLITE_IMAGERY)
                 .capturedWith("Q298019"); // Taken with ASTER instrument
     }
 

@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.regex.Pattern.compile;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
 
 import java.util.Collection;
 import java.util.List;
@@ -196,7 +197,7 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
             result.creator("Q183160") // Created by MRO
                     .depicts("Q111") // Depicts Mars
                     .locationOfCreation("Q111") // Created in Mars orbit
-                    .fabricationMethod("Q725252") // Satellite imagery
+                    .fabricationMethod(Q725252_SATELLITE_IMAGERY)
                     .capturedWith("Q1036092"); // Taken with HiRISE
         }
         return result;

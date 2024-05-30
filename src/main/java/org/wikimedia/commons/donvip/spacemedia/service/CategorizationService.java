@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,8 @@ public class CategorizationService {
 
     private static final Pattern SENTINEL_SAT = Pattern.compile(".*Sentinel[ -]?[1-6].*",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CategorizationService.class);
 
     private Set<String> satellitePicturesCategories;
 
@@ -64,10 +68,15 @@ public class CategorizationService {
 
     public void findCategoriesStatements(SdcStatements result, Set<String> cats) {
         for (Entry<String, String> e : categoriesStatements.entrySet()) {
-            if (stream(e.getKey().split(";")).anyMatch(cats::contains)) {
+            if (stream(e.getKey().split(";")).map(r -> Pattern.compile(r, Pattern.CASE_INSENSITIVE))
+                    .anyMatch(p -> cats.stream().anyMatch(c -> p.matcher(c).matches()))) {
+                LOGGER.info("SDC category match: {}", e);
                 for (String statement : e.getValue().split(";")) {
                     String[] kv = statement.split("=");
-                    result.put(kv[0], Pair.of(kv[1], null));
+                    Pair<Object, Map<String, Object>> old = result.put(kv[0], Pair.of(kv[1], null));
+                    if (old != null) {
+                        LOGGER.warn("Replaced old SDC: {}", old);
+                    }
                 }
             }
         }

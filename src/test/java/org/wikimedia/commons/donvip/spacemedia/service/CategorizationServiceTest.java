@@ -1,12 +1,27 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
+@SpringJUnitConfig(CategorizationServiceTest.TestConfig.class)
+@TestPropertySource("/application-test.properties")
 class CategorizationServiceTest {
+
+    @Autowired
+    private CategorizationService service;
 
     @Test
     void testCopernicusCredit() {
@@ -97,6 +112,31 @@ class CategorizationServiceTest {
                 "Contains modified Copernicus Sentinel data [2022], processed by <a href=\"https://twitter.com/Pierre_Markuse\">Pierre Markuse</a>",
                 "USGS/contains modified Copernicus Sentinel data (2019), processed by ESA, CC BY-SA 3.0 IGO")) {
             assertNotNull(CategorizationService.extractCopernicusTemplate(credit));
+        }
+    }
+
+    @CsvSource(delimiter = '|', value = { "Photos by JunoCam|P170=Q48546;P1071=Q319;P4082=Q6314027",
+            "Photos by WATSON;Self-portrait photos of the Perseverance rover|P170=Q87749354;P1071=Q111;P4082=Q118464949",
+            "Satellite pictures|P31=Q125191;P2079=Q725252", "2024 satellite pictures|P31=Q125191;P2079=Q725252",
+            "Satellite pictures of 2024 storms|P31=Q125191;P2079=Q725252" })
+    @ParameterizedTest
+    void testFindCategoriesStatements(String scats, String sprops) {
+        for (String cat : scats.split(";")) {
+            SdcStatements sdc = new SdcStatements();
+            service.findCategoriesStatements(sdc, Set.of(cat));
+            for (String prop : sprops.split(";")) {
+                String[] kv = prop.split("=");
+                assertEquals(kv[1], sdc.get(kv[0]).getKey().toString());
+            }
+        }
+    }
+
+    @Configuration
+    public static class TestConfig {
+
+        @Bean
+        public CategorizationService service() {
+            return new CategorizationService();
         }
     }
 }

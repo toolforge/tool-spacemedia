@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
@@ -29,6 +30,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMediaReposit
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
+
 @Service
 public class CapellaStacService extends AbstractOrgStacService {
 
@@ -197,7 +199,7 @@ public class CapellaStacService extends AbstractOrgStacService {
         return super.getStatements(media, metadata)
                 .creator(media.getIdUsedInOrg(), SAT_PATTERN, SATS) // Created by Capella-XX
                 .locationOfCreation("Q663611") // Created in low earth orbit
-                .fabricationMethod("Q725252") // Satellite imagery
+                .fabricationMethod(Q725252_SATELLITE_IMAGERY)
                 .capturedWith("Q740686"); // Taken with SAR
     }
 

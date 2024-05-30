@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgStacService.getOtherFieldBoundingBox;
+import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
@@ -207,7 +208,7 @@ public class UmbraS3Service extends AbstractOrgS3Service {
         return super.getStatements(media, metadata)
                 .creator(media.getIdUsedInOrg(), SAT_PATTERN, SATS) // Created by UMBRA-XX
                 .locationOfCreation("Q663611") // Created in low earth orbit
-                .fabricationMethod("Q725252") // Satellite imagery
+                .fabricationMethod(Q725252_SATELLITE_IMAGERY)
                 .capturedWith("Q740686"); // Taken with SAR
     }
 
