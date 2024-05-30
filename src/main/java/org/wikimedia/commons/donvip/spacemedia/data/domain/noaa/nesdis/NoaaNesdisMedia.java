@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.noaa.nesdis;
 
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 
 import jakarta.persistence.Entity;
@@ -10,6 +11,11 @@ public class NoaaNesdisMedia extends Media {
     @Override
     public String toString() {
         return "NoaaNesdisMedia [publicationDate=" + getPublicationDate() + ", id=" + getId() + ']';
+    }
+
+    @Override
+    public String getUploadId(FileMetadata fileMetadata) {
+        return "NESDIS " + getPublicationDate();
     }
 
     public NoaaNesdisMedia copyDataFrom(NoaaNesdisMedia other) {
