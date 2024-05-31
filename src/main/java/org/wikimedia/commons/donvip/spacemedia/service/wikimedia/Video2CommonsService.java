@@ -201,14 +201,14 @@ public class Video2CommonsService {
         try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
                 InputStream in = response.getEntity().getContent()) {
             TaskStatusValue status = jackson.readValue(in, TaskStatus.class).value();
-            if (Status.valueOf(status.status().toUpperCase(Locale.ENGLISH)).isFailed()) {
+            if (status == null || Status.valueOf(status.status().toUpperCase(Locale.ENGLISH)).isFailed()) {
                 LOGGER.error("{} => {}", url, status);
             } else {
                 LOGGER.info("{} => {}", url, status);
+                task.setProgress(status.progress);
+                task.setStatus(status.status());
+                task.setText(status.text());
             }
-            task.setProgress(status.progress);
-            task.setStatus(status.status());
-            task.setText(status.text());
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage(), e);
