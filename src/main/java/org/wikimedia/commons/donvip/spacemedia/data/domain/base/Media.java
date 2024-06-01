@@ -23,6 +23,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -610,14 +611,15 @@ public class Media implements MediaProjection, MediaDescription {
     }
 
     /**
-     * Determines if the given string is included in title, description or keywords,
-     * ignoring spaces and dashes.
+     * Determines if at least one of the given strings is included in title,
+     * description or keywords, ignoring spaces and dashes.
      *
-     * @param string string to search
-     * @return {@code true} if the given string is included in title or description
+     * @param strings strings to search
+     * @return {@code true} if one of the given strings is included in title or
+     *         description
      */
-    public boolean containsInTitleOrDescriptionOrKeywords(String string) {
-        return containsInTitleOrDescriptionOrKeywords(string, true, true, true);
+    public boolean containsInTitleOrDescriptionOrKeywords(String... strings) {
+        return Arrays.stream(strings).anyMatch(s -> containsInTitleOrDescriptionOrKeywords(s, true, true, true));
     }
 
     /**

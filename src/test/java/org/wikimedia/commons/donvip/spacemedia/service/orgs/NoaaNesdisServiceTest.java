@@ -35,7 +35,9 @@ class NoaaNesdisServiceTest extends AbstractOrgServiceTest {
     @CsvSource(delimiter = ';', value = {
             "fanning-the-flames-goes-west-monitors-smoke-the-alisal-fire;Fanning the Flames: GOES West Monitors Smoke from the Alisal Fire;1341;1",
             "slow-moving-storms-flood-texas;Slow Moving Storms Flood Texas;748;1",
-            "cyclone-yaas-makes-landfall-northeastern-india; Cyclone Yaas Makes Landfall In Northeastern India;1504;1"
+            "cyclone-yaas-makes-landfall-northeastern-india; Cyclone Yaas Makes Landfall In Northeastern India;1504;1",
+            "120-years-ago-today-the-great-galveston-hurricane-made-landfall;120 Years Ago Today, the Great Galveston Hurricane Made Landfall;1507;2",
+            "go-goes-s;Go GOES-S!;0;9"
     })
     void testFillMediaWithHtml(String id, String title, int descLen, int nFiles)
             throws IOException {
