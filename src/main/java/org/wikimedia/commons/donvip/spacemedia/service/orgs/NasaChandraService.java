@@ -483,7 +483,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
                     && !href.endsWith("_low.pdf") && !href.endsWith("_lores.pdf")) {
                 String fileUrl = newChandraUrl(url, href);
                 if (fileUrl.startsWith(BASE_URL) && fileUrl.lastIndexOf('.') > fileUrl.lastIndexOf('/')
-                        && media.getMetadataStream().noneMatch(x -> fileUrl.equals(x.getAssetUri().toString()))) {
+                        && !media.containsMetadata(fileUrl)) {
                     addMetadata(media, fileUrl, null);
                 }
             }
