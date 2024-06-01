@@ -1346,6 +1346,9 @@ public abstract class AbstractOrgService<T extends Media>
                         if (isNASA(media)) {
                             result.add("Animations from NASA");
                         }
+                        if (isSatellitePicture(media, metadata)) {
+                            result.add("Animations of satellite pictures");
+                        }
                     } else if (numImages < 1) {
                         LOGGER.error("Failed to read number of images in GIF file: {}", metadata.getAssetUri());
                     }
