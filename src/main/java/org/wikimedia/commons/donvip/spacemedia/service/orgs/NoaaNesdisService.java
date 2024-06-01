@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.uriExists;
 
@@ -12,6 +13,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -33,13 +36,16 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ENGLISH);
 
+    private static final Pattern WEBP_PATTERN = Pattern
+            .compile("https://www\\.nesdis\\.noaa\\.gov/s3/styles/webp/s3/(.+\\..+)\\.webp");
+
     public NoaaNesdisService(NoaaNesdisMediaRepository repository) {
         super(repository, "noaa.nesdis", Set.of("nesdis"));
     }
 
     @Override
     public String getName() {
-        return "NOAAA (NESDIS)";
+        return "NOAA (NESDIS)";
     }
 
     @Override
@@ -52,7 +58,7 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     }
 
     private List<String> fetchGalleryUrls(String repoId, String path) {
-        String pageUrl = BASE_URL + path;
+        String pageUrl = (path.startsWith("http") ? "" : BASE_URL) + path;
         try {
             return getGalleryItems(repoId, pageUrl, getWithJsoup(pageUrl, 30_000, 3)).stream()
                     .map(item -> item.getElementsByTag("a").first().attr("href"))
@@ -66,7 +72,7 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
 
     @Override
     protected String getGalleryPageUrl(String galleryUrl, int page) {
-        return BASE_URL + galleryUrl + "?page=" + (page - 1);
+        return (galleryUrl.startsWith("http") ? "" : BASE_URL) + galleryUrl + "?page=" + (page - 1);
     }
 
     @Override
@@ -107,8 +113,14 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
                     LocalDate.parse(html.getElementsByClass("news-date").first().text(), dateFormatter));
             html.getElementsByClass("call-to-action blue")
                     .stream().filter(x -> x.text().contains("Download"))
-                    .forEach(x -> addMetadata(media,
-                            x.attr("href").contains("://") ? x.attr("href") : BASE_URL + x.attr("href"), null));
+                    .forEach(x -> addMetadata(media, nesdisUrl(x.attr("href")), null));
+            html.getElementsByClass("paragraph--type--image").forEach(img -> {
+                String imgUrl = nesdisUrl(img.getElementsByTag("img").first().attr("src").split("\\?")[0]);
+                if (!media.containsMetadata(imgUrl)) {
+                    addMetadata(media, imgUrl, fm -> ofNullable(img.getElementsByClass("caption").first())
+                            .ifPresent(c -> fm.setDescription(c.text())));
+                }
+            });
             Element descItem = html.getElementsByClass("field--type-text-long").first();
             if (descItem == null) {
                 descItem = html.getElementsByClass("paragraph--type--map-locator").first();
@@ -122,6 +134,13 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
             LOGGER.error("Failed to parse HTML for {} => {}", media, html.html());
             throw e;
         }
+    }
+
+    private static String nesdisUrl(String href) {
+        String result = href.contains("://") ? href : (BASE_URL + href).replace("//", "/").replace(":/", "://");
+        Matcher m = WEBP_PATTERN.matcher(result);
+        return m.matches() ? "https://nesdis-prod.s3.amazonaws.com/" + m.group(1)
+                : result.replace("/s3dl?path=/s3/", "/s3/");
     }
 
     @Override
