@@ -128,7 +128,9 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
             if (descItem == null) {
                 descItem = html.getElementsByClass("paragraph--type--text-block").first();
             }
-            media.setDescription(descItem.text());
+            if (descItem != null) {
+                media.setDescription(descItem.text());
+            }
             return List.of(media);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to parse HTML for {} => {}", media, html.html());
