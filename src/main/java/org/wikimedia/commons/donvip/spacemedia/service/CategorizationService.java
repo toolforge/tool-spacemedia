@@ -92,18 +92,13 @@ public class CategorizationService {
     public void findCategoriesForSentinels(Media media, Set<String> result) {
         if (isFromSentinelSatellite(media)) {
             result.add(getCopernicusTemplate(media.getYear().getValue()));
-            if (media.containsInTitleOrDescriptionOrKeywords("fires")
-                    || media.containsInTitleOrDescriptionOrKeywords("burn scars")
-                    || media.containsInTitleOrDescriptionOrKeywords("wildfire")
-                    || media.containsInTitleOrDescriptionOrKeywords("forest fire")) {
+            if (media.containsInTitleOrDescriptionOrKeywords("fires", "burn scars", "wildfire", "forest fire")) {
                 result.add("Photos of wildfires by Sentinel satellites");
-            } else if (media.containsInTitleOrDescriptionOrKeywords("Phytoplankton")
-                    || media.containsInTitleOrDescriptionOrKeywords("algal bloom")) {
+            } else if (media.containsInTitleOrDescriptionOrKeywords("Phytoplankton", "algal bloom")) {
                 result.add("Satellite pictures of algal blooms");
             } else if (media.containsInTitleOrDescriptionOrKeywords("hurricane")) {
                 result.add("Satellite pictures of hurricanes");
-            } else if (media.containsInTitleOrDescriptionOrKeywords("floods")
-                    || media.containsInTitleOrDescriptionOrKeywords("flooding")) {
+            } else if (media.containsInTitleOrDescriptionOrKeywords("floods", "flooding")) {
                 result.add("Photos of floods by Sentinel satellites");
             }
         }

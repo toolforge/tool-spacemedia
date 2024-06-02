@@ -156,6 +156,59 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     }
 
     @Override
+    public Set<String> findCategories(NoaaNesdisMedia media, FileMetadata metadata, boolean includeHidden) {
+        Set<String> result = super.findCategories(media, metadata, includeHidden);
+        boolean viirs = media.containsInTitleOrDescriptionOrKeywords("VIIRS",
+                "Visible Infrared Imaging Radiometer Suite");
+        boolean npp = media.containsInTitleOrDescriptionOrKeywords("NPP", "National Polar-orbiting");
+        boolean noaa20 = media.containsInTitleOrDescriptionOrKeywords("NOAA-20");
+        boolean noaa21 = media.containsInTitleOrDescriptionOrKeywords("NOAA-21");
+        if (viirs) {
+            if (!npp && !noaa20 && !noaa21) {
+                result.add("Photos by VIIRS");
+            }
+            if (npp) {
+                result.add("Photos by VIIRS (Suomi NPP)");
+            }
+            if (noaa20) {
+                result.add("Photos by VIIRS (NOAA-20)");
+            }
+            if (noaa21) {
+                result.add("Photos by VIIRS (NOAA-21)");
+            }
+        } else {
+            if (npp) {
+                result.add("Photos by Suomi NPP");
+            }
+            if (noaa20) {
+                result.add("Satellite pictures by NOAA-20");
+            }
+            if (noaa21) {
+                result.add("Satellite pictures by NOAA-21");
+            }
+        }
+        if (media.containsInTitleOrDescriptionOrKeywords("GOES")) {
+            result.add("GOES pictures");
+            for (int i = 1; i <= 20; i++) {
+                if (media.containsInTitleOrDescriptionOrKeywords("GOES " + i, "GOES-" + i)) {
+                    result.add("GOES " + i + " pictures");
+                    result.remove("GOES pictures");
+                }
+            }
+        }
+        if (media.containsInTitleOrDescriptionOrKeywords("Himawari")) {
+            result.add("Images by Himawari satellites");
+            for (int i = 1; i <= 10; i++) {
+                if (media.containsInTitleOrDescriptionOrKeywords("Himawari " + i, "Himawari-" + i)) {
+                    result.add("Himawari " + i + " images");
+                    result.remove("Images by Himawari satellites");
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
     public Set<String> findLicenceTemplates(NoaaNesdisMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("PD-USGov-NOAA");
