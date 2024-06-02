@@ -355,9 +355,13 @@ public class MediaService {
                 List<TrackHeaderBox> boxes = mp4.getBoxes(TrackHeaderBox.class, true);
                 if (!boxes.isEmpty()) {
                     TrackHeaderBox box = boxes.get(0);
-                    metadata.setImageDimensions(new ImageDimensions((int) box.getWidth(), (int) box.getHeight()));
-                    LOGGER.info("MP4 dimensions have been updated for {}", metadata);
-                    result = true;
+                    if (box.getWidth() > 0 && box.getHeight() > 0) {
+                        metadata.setImageDimensions(new ImageDimensions((int) box.getWidth(), (int) box.getHeight()));
+                        LOGGER.info("MP4 dimensions have been updated for {}", metadata);
+                        result = true;
+                    } else {
+                        LOGGER.warn("MP4 track header box with invalid dimensions: {} => {}", metadata, box);
+                    }
                 }
             }
         }
