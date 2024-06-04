@@ -166,6 +166,10 @@ public class Media implements MediaProjection, MediaDescription {
         return getMetadataStream().anyMatch(m -> m.getAssetUrl() != null && uri.equals(m.getAssetUri()));
     }
 
+    public boolean containsMetadataWithFilename(String filename) {
+        return filename != null && getMetadataStream().anyMatch(m -> filename.equals(m.getOriginalFileName()));
+    }
+
     public URL getThumbnailUrl() {
         return thumbnailUrl;
     }

@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getFilename;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.uriExists;
 
@@ -116,7 +117,7 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
                     .forEach(x -> addMetadata(media, nesdisUrl(x.attr("href")), null));
             html.getElementsByClass("paragraph--type--image").forEach(img -> {
                 String imgUrl = nesdisUrl(img.getElementsByTag("img").first().attr("src").split("\\?")[0]);
-                if (!media.containsMetadata(imgUrl)) {
+                if (!media.containsMetadata(imgUrl) && !media.containsMetadataWithFilename(getFilename(imgUrl))) {
                     addMetadata(media, imgUrl, fm -> ofNullable(img.getElementsByClass("caption").first())
                             .ifPresent(c -> fm.setDescription(c.text())));
                 }

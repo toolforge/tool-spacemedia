@@ -241,6 +241,10 @@ public final class Utils {
         } : null;
     }
 
+    public static String getFilename(String url) {
+        return getFilename(newURL(url));
+    }
+
     public static String getFilename(URL url) {
         String file = url.getFile();
         String result = file.substring(file.lastIndexOf('/') + 1, file.lastIndexOf('.')).trim();
