@@ -207,7 +207,7 @@ public final class Utils {
                 LOGGER.debug("Scrapping {}", pageUrl);
                 return Jsoup.connect(pageUrl).timeout(timeout).followRedirects(followRedirects).get();
             } catch (IOException e) {
-                LOGGER.warn("Error when scrapping {} => {}", pageUrl, e.getMessage());
+                LOGGER.warn("{} when scrapping {} => {}", pageUrl, e.getClass().getSimpleName(), e.getMessage());
             }
         }
         throw new IOException("Unable to scrap " + pageUrl);
