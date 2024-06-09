@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
@@ -108,10 +109,10 @@ public class Media implements MediaProjection, MediaDescription {
     @Column(nullable = true)
     protected ZonedDateTime creationDateTime;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     protected LocalDate publicationDate;
 
-    @Column(nullable = false, columnDefinition = "CHAR(7)")
+    @Column(nullable = true, columnDefinition = "CHAR(7)")
     @Convert(converter = YearMonthAttributeConverter.class)
     protected YearMonth publicationMonth;
 
@@ -349,6 +350,8 @@ public class Media implements MediaProjection, MediaDescription {
     public void setPublication(Temporal t) {
         if (t instanceof LocalDate d) {
             setPublicationDate(d);
+        } else if (t instanceof LocalDateTime lt) {
+            setPublicationDateTime(lt.atZone(ZoneOffset.UTC));
         } else if (t instanceof ZonedDateTime dt) {
             setPublicationDateTime(dt);
         } else if (t instanceof YearMonth m) {
@@ -356,7 +359,7 @@ public class Media implements MediaProjection, MediaDescription {
         } else if (t instanceof Year y) {
             setPublicationYear(y);
         } else {
-            throw new IllegalArgumentException("Unsupported temporal: " + t);
+            throw new IllegalArgumentException("Unsupported temporal: " + t.getClass().getSimpleName() + " => " + t);
         }
     }
 
