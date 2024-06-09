@@ -93,13 +93,13 @@ public class MediaUtils {
                 InputStream in = response.getEntity().getContent()) {
             boolean imageio = extension != null && IMAGEIO_EXTENSIONS.contains(extension);
             String filename = null;
-            if (!imageio) {
-                Header[] disposition = response.getHeaders("Content-Disposition");
-                if (ArrayUtils.isNotEmpty(disposition)) {
-                    String value = disposition[0].getValue().replace("\"", "");
-                    if (value.startsWith("attachment;filename=")) {
-                        filename = URLDecoder.decode(value.split("=")[1], "UTF-8").replace(";filename*", "");
-                    }
+            Header[] disposition = response.getHeaders("Content-Disposition");
+            if (ArrayUtils.isNotEmpty(disposition)) {
+                String value = disposition[0].getValue().replace("\"", "");
+                if (value.startsWith("attachment;") && value.contains("filename=")) {
+                    filename = URLDecoder.decode(value.split("=")[1], "UTF-8").replace(";filename*", "");
+                }
+                if (!imageio) {
                     extension = Utils.findExtension(value);
                     imageio = extension != null && IMAGEIO_EXTENSIONS.contains(extension);
                 }
