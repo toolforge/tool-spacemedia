@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.webmil;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -40,6 +41,21 @@ public class WebMilMedia extends SingleFileMedia {
         super.copyDataFrom(mediaFromApi);
         setVirin(mediaFromApi.getVirin());
         return this;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * super.hashCode() + Objects.hash(virin);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj) || getClass() != obj.getClass())
+            return false;
+        WebMilMedia other = (WebMilMedia) obj;
+        return Objects.equals(virin, other.virin);
     }
 
     @Override
