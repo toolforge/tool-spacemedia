@@ -1,7 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
-import static java.time.format.DateTimeFormatter.ofPattern;
-import static java.util.Locale.ENGLISH;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
@@ -15,7 +13,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Year;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,11 +48,6 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     private static final String PHOTO_URL = BASE_URL + "/photo";
 
     private static final Map<String, List<String>> GALLERY_URLS = new TreeMap<>();
-
-    private static final List<DateTimeFormatter> DATE_FORMATTERS = List.of(
-            ofPattern("dd MMM yy", ENGLISH), ofPattern("MMMM dd, yyyy", ENGLISH), ofPattern("MMMM d, yyyy", ENGLISH),
-            ofPattern("MMM dd, yyyy", ENGLISH), ofPattern("MMMM dd , yyyy", ENGLISH), ofPattern("MMMM yyyy", ENGLISH),
-            ofPattern("yyyy", ENGLISH));
 
     public NasaChandraService(NasaChandraMediaRepository repository) {
         super(repository, "nasa.chandra", Set.of("chandra"));
