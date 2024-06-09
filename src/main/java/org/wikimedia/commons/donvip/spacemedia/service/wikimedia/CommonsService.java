@@ -46,6 +46,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
@@ -832,26 +833,20 @@ public class CommonsService {
     }
 
     protected Set<String> mapCategoriesByDate(Set<String> cats, Temporal date) {
-        String inMonthYear = " in " + CAT_MONTH_YEAR.format(date);
+        String inMonthYear = date.isSupported(ChronoField.MONTH_OF_YEAR) ? " in " + CAT_MONTH_YEAR.format(date) : null;
         String inYear1 = " in " + CAT_YEAR.format(date);
         String inYear2 = " (" + CAT_YEAR.format(date) + ')';
         return cats.parallelStream().map(c -> {
-            try {
-                return catWithSuffix(c, inMonthYear);
-            } catch (CategoryNotFoundException | CategoryPageNotFoundException e1) {
-                LOGGER.trace(e1.getMessage(), e1);
-                try {
-                    return catWithSuffix(c, inYear1);
-                } catch (CategoryNotFoundException | CategoryPageNotFoundException e2) {
-                    LOGGER.trace(e2.getMessage(), e2);
+            for (String in : new String[] { inMonthYear, inYear1, inYear2 }) {
+                if (in != null) {
                     try {
-                        return catWithSuffix(c, inYear2);
-                    } catch (CategoryNotFoundException | CategoryPageNotFoundException e3) {
-                        LOGGER.trace(e3.getMessage(), e3);
+                        return catWithSuffix(c, in);
+                    } catch (CategoryNotFoundException | CategoryPageNotFoundException e) {
+                        LOGGER.trace(e.getMessage(), e);
                     }
                 }
-                return c;
             }
+            return c;
         }).collect(toCollection(TreeSet::new));
     }
 
