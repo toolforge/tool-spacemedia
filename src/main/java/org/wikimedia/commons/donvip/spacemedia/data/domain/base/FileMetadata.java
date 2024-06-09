@@ -247,7 +247,8 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     }
 
     public void setOriginalFileName(String originalFileName) {
-        this.originalFileName = originalFileName;
+        this.originalFileName = originalFileName != null ? originalFileName.replace("-ezgif.com", "")
+                : originalFileName;
     }
 
     public String getExtension() {
