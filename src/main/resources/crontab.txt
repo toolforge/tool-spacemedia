@@ -43,5 +43,6 @@
 35 13 * * * /bin/sh /data/project/spacemedia/run.sh custom inpe-dpi
 50 13 * * * /bin/sh /data/project/spacemedia/run.sh youtube nasa-youtube
 00 14 * * * /bin/sh /data/project/spacemedia/run.sh custom noaa-nesdis
+05 14 * * * /bin/sh /data/project/spacemedia/run.sh custom noaa-library
 # Hashes
 10 14 * * * /bin/sh /data/project/spacemedia/run.sh web
