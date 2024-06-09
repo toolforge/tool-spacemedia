@@ -72,6 +72,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
@@ -206,8 +207,13 @@ public final class Utils {
             try {
                 LOGGER.debug("Scrapping {}", pageUrl);
                 return Jsoup.connect(pageUrl).timeout(timeout).followRedirects(followRedirects).get();
+            } catch (HttpStatusException e) {
+                LOGGER.warn("{} when scrapping {} => {}", e.getClass().getSimpleName(), pageUrl, e.getMessage());
+                if (e.getStatusCode() >= 400 && e.getStatusCode() < 500) {
+                    throw e;
+                }
             } catch (IOException e) {
-                LOGGER.warn("Error when scrapping {} => {}", pageUrl, e.getMessage());
+                LOGGER.warn("{} when scrapping {} => {}", e.getClass().getSimpleName(), pageUrl, e.getMessage());
             }
         }
         throw new IOException("Unable to scrap " + pageUrl);
@@ -434,9 +440,10 @@ public final class Utils {
 
     public static Optional<Temporal> extractDate(String text, List<DateTimeFormatter> dtfs) {
         if (!text.isEmpty()) {
+            String cleanText = text.replace(", ", " ").replace("  ", " ");
             for (DateTimeFormatter dtf : dtfs) {
                 try {
-                    TemporalAccessor accessor = dtf.parse(text);
+                    TemporalAccessor accessor = dtf.parse(cleanText);
                     for (TemporalQuery<Temporal> query : List.<TemporalQuery<Temporal>>of(ZonedDateTime::from,
                             LocalDateTime::from, LocalDate::from, YearMonth::from, Year::from)) {
                         try {
