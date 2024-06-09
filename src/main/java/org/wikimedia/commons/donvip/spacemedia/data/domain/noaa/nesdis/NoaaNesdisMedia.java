@@ -16,7 +16,8 @@ public class NoaaNesdisMedia extends Media {
     @Override
     public String getUploadId(FileMetadata fileMetadata) {
         return "NESDIS " + getPublicationDate()
-                + (getMetadataCount() < 2 ? "" : " " + fileMetadata.getOriginalFileName().split("\\.")[0]);
+                + (getMetadataCount() < 2 ? ""
+                        : " " + fileMetadata.getOriginalFileName().replace("-ezgif.com", "").split("\\.")[0]);
     }
 
     public NoaaNesdisMedia copyDataFrom(NoaaNesdisMedia other) {
