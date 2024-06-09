@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Locale.ENGLISH;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -11,6 +13,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +42,13 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends AbstractOrgService<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgHtmlGalleryService.class);
+
+    protected static final List<DateTimeFormatter> DATE_FORMATTERS = List.of(ofPattern("yyyy MMMM dd HHmm z", ENGLISH),
+            ofPattern("yyyy MMMM dd, HHmm z", ENGLISH), ofPattern("yyyy MMMM d HHmm", ENGLISH),
+            ofPattern("dd MMM yy", ENGLISH), ofPattern("MMMM dd, yyyy", ENGLISH), ofPattern("MMMM d, yyyy", ENGLISH),
+            ofPattern("MMM dd, yyyy", ENGLISH), ofPattern("MMMM dd , yyyy", ENGLISH),
+            ofPattern("yyyy MMMM dd", ENGLISH), ofPattern("yyyy, MMMM dd", ENGLISH), ofPattern("yyyy MMMM d", ENGLISH),
+            ofPattern("MMMM yyyy", ENGLISH), ofPattern("yyyy", ENGLISH));
 
     protected AbstractOrgHtmlGalleryService(MediaRepository<T> repository, String id, Set<String> repoIds) {
         super(repository, id, repoIds);
