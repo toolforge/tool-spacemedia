@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Locale.ENGLISH;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -11,6 +13,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +42,14 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends AbstractOrgService<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgHtmlGalleryService.class);
+
+    protected static final List<DateTimeFormatter> DATE_FORMATTERS = List.of(ofPattern("yyyy MMMM dd HHmmz", ENGLISH),
+            ofPattern("yyyy MMMM dd HHmm z", ENGLISH), ofPattern("yyyy MMMM d HHmm z", ENGLISH),
+            ofPattern("yyyy MMMM d HHmmss", ENGLISH), ofPattern("yyyy MMMM d HHmm", ENGLISH),
+            ofPattern("yyyy MMMM dd hhmm a", ENGLISH), ofPattern("dd MMM yy", ENGLISH),
+            ofPattern("MMMM dd yyyy", ENGLISH), ofPattern("MMMM d yyyy", ENGLISH), ofPattern("MMM dd yyyy", ENGLISH),
+            ofPattern("yyyy MMMM dd", ENGLISH), ofPattern("yyyy MMMM d", ENGLISH), ofPattern("MMMM yyyy", ENGLISH),
+            ofPattern("yyyy MMMM", ENGLISH), ofPattern("yyyy", ENGLISH));
 
     protected AbstractOrgHtmlGalleryService(MediaRepository<T> repository, String id, Set<String> repoIds) {
         super(repository, id, repoIds);
@@ -103,27 +114,35 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                     LOGGER.warn("First {} gallery page is empty! {}", repoId, pageUrl);
                 }
                 for (Element result : results) {
-                    String extractedId = extractIdFromGalleryItem(pageUrl, result);
-                    if (isNotBlank(extractedId)) {
-                        CompositeMediaId id = new CompositeMediaId(repoId, extractedId);
-                        Optional<Temporal> date = extractDateFromGalleryItem(result);
-                        if (date.isPresent() && doNotFetchEarlierThan != null
-                                && isTemporalBefore(date.get(), doNotFetchEarlierThan)) {
-                            loop = false;
-                        }
-                        if (loop) {
-                            try {
-                                List<T> medias = updateImages(id, date, result, uploadedMedia);
-                                if (doNotFetchEarlierThan != null && medias.stream().anyMatch(
-                                        media -> media.getPublicationDate().isBefore(doNotFetchEarlierThan))) {
-                                    loop = false;
-                                }
-                            } catch (IOException | RuntimeException e) {
-                                LOGGER.error("Error while updating {} => {}", id, e.getMessage(), e);
+                    try {
+                        String extractedId = extractIdFromGalleryItem(pageUrl, result);
+                        if (isNotBlank(extractedId)) {
+                            CompositeMediaId id = new CompositeMediaId(repoId, extractedId);
+                            Optional<Temporal> date = extractDateFromGalleryItem(result);
+                            if (date.isPresent() && doNotFetchEarlierThan != null
+                                    && isTemporalBefore(date.get(), doNotFetchEarlierThan)) {
+                                loop = false;
                             }
+                            if (loop) {
+                                try {
+                                    List<T> medias = updateImages(id, date, result, uploadedMedia);
+                                    if (doNotFetchEarlierThan != null && medias.stream().anyMatch(
+                                            media -> media.getPublicationDate().isBefore(doNotFetchEarlierThan))) {
+                                        loop = false;
+                                    }
+                                } catch (IOException | RuntimeException e) {
+                                    LOGGER.error("Error while updating {} => {} => {}", id,
+                                            e.getClass().getSimpleName(), e.getMessage());
+                                    LOGGER.debug("Error stacktrace:", e);
+                                }
+                            }
+                        } else {
+                            LOGGER.warn("Failed to extract item id from {}", pageUrl);
                         }
-                    } else {
-                        LOGGER.warn("Failed to extract item id from {}", result);
+                    } catch (RuntimeException e) {
+                        LOGGER.error("Failed to extract item id from {} => {} => {}", pageUrl,
+                                e.getClass().getSimpleName(), e.getMessage());
+                        LOGGER.debug("Error stacktrace:", e);
                     }
                     ongoingUpdateMedia(start, startCount + count++);
                 }
