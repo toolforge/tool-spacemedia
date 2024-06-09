@@ -108,10 +108,10 @@ public class Media implements MediaProjection, MediaDescription {
     @Column(nullable = true)
     protected ZonedDateTime creationDateTime;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     protected LocalDate publicationDate;
 
-    @Column(nullable = false, columnDefinition = "CHAR(7)")
+    @Column(nullable = true, columnDefinition = "CHAR(7)")
     @Convert(converter = YearMonthAttributeConverter.class)
     protected YearMonth publicationMonth;
 
@@ -356,7 +356,7 @@ public class Media implements MediaProjection, MediaDescription {
         } else if (t instanceof Year y) {
             setPublicationYear(y);
         } else {
-            throw new IllegalArgumentException("Unsupported temporal: " + t);
+            throw new IllegalArgumentException("Unsupported temporal: " + t.getClass().getSimpleName() + " => " + t);
         }
     }
 
