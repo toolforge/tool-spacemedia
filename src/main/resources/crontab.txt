@@ -7,7 +7,6 @@
 10  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr esa-flickr
 15  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr potential-flickr
 20  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr spacex-flickr
-25  0 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-sirs
 30  0 * * * /bin/sh /data/project/spacemedia/run.sh custom kari
 35  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr inpe-flickr
 # Real ones
