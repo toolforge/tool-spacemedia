@@ -1,65 +1,48 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.lang.Double.parseDouble;
-import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.text.StringEscapeUtils.unescapeHtml4;
-import static org.apache.commons.text.StringEscapeUtils.unescapeXml;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.util.Optional.empty;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.extractDate;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
+import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrQuery.ORDER;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
-import org.apache.solr.client.solrj.impl.Http2SolrClient;
-import org.apache.solr.client.solrj.impl.XMLResponseParser;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
 @Service
-public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournalMedia> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NasaPhotojournalService.class);
+public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaPhotojournalMedia> {
 
     static final Pattern ANIMATION_PATTERN = Pattern.compile(
             ".*<a href=\"(https?://[^\"]+\\.(?:gif|mp4))\".*");
@@ -81,21 +64,11 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
 
     private static final DateTimeFormatter ACQ_DATE_FORMAT = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.US);
 
-    @Autowired
-    private NasaPhotojournalService self;
+    private static final String BASE_URL = "https://photojournal.jpl.nasa.gov";
 
     @Lazy
     @Autowired
     private NasaMappingService mappings;
-
-    @Value("${nasa.photojournal.solr.retries}")
-    private int solrRetries;
-
-    @Value("${nasa.photojournal.solr.page:50}")
-    private int solrPage;
-
-    @Value("${nasa.photojournal.solr.host}")
-    private String host;
 
     @Value("${nasa.photojournal.geohack.globes}")
     private Set<String> globes;
@@ -103,30 +76,6 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     @Autowired
     public NasaPhotojournalService(NasaPhotojournalMediaRepository repository) {
         super(repository, "nasa.photojournal", Set.of("photojournal"));
-    }
-
-    private SolrQuery buildSolrQuery(int start) {
-        return new SolrQuery("*:*").setSort("publication-date", ORDER.desc).setRows(solrPage).setStart(start);
-    }
-
-    private QueryResponse queryWithRetries(SolrQuery query) throws IOException {
-        for (int i = 0; i < solrRetries; i++) {
-            try {
-                return solrClient(host).query(query);
-            } catch (RemoteSolrException | SolrServerException e) {
-                LOGGER.warn("{}", e.getMessage());
-                LOGGER.warn("Retry {} on {}", i, solrRetries);
-                LOGGER.debug("Retry {} on {}", i, solrRetries, e);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    LOGGER.error(e.getMessage(), ex);
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-        LOGGER.error("Exhausted {} retries", solrRetries);
-        return null;
     }
 
     @Override
@@ -140,107 +89,109 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     }
 
     @Override
-    public void updateMedia(String[] args) throws IOException, UploadException {
-        processResponse(queryWithRetries(buildSolrQuery(0)));
+    protected List<String> fetchGalleryUrls(String repoId) throws IOException {
+        return getWithJsoup(BASE_URL + "/Help/ImageGallery.html", 10_000, 3).getElementById("middle_2_border")
+                .getElementsByTag("h2").first().nextElementSibling().nextElementSibling()
+                .getElementsByTag("a").stream().map(a -> BASE_URL + a.attr("href")).toList();
     }
 
-    protected List<NasaPhotojournalMedia> processResponse(QueryResponse response) throws IOException, UploadException {
-        List<NasaPhotojournalMedia> result = new ArrayList<>();
-        if (response != null) {
-            final long total = response.getResults().getNumFound();
-            LOGGER.info("Found {} documents", total);
-            result.addAll(processDocuments(response.getResults()));
-            for (int start = solrPage; start < total; start += solrPage) {
-                response = queryWithRetries(buildSolrQuery(start));
-                if (response != null) {
-                    result.addAll(processDocuments(response.getResults()));
-                }
-            }
+    @Override
+    protected String getGalleryPageUrl(String galleryUrl, int page) {
+        return galleryUrl + "?start=" + 100 * (page - 1);
+    }
+
+    @Override
+    protected Elements getGalleryItems(String repoId, String url, Element html) {
+        Elements result = new Elements();
+        Elements trs = html.getElementById("ppj_header").nextElementSibling().getElementsByTag("caption").first()
+                .nextElementSibling().getElementsByTag("tr");
+        for (int i = 1; i < trs.size() - 1; i += 2) {
+            Element item = new Element("fake");
+            item.appendChildren(List.of(trs.get(i), trs.get(i + 1)));
+            result.add(item);
         }
         return result;
     }
 
-    private List<NasaPhotojournalMedia> processDocuments(SolrDocumentList documents)
-            throws IOException, UploadException {
-        List<NasaPhotojournalMedia> result = new ArrayList<>();
-        for (SolrDocument document : documents) {
-            result.add(self.processMedia((String) document.getFirstValue("id"), document));
-        }
-        return result;
+    @Override
+    protected Optional<Temporal> extractDateFromGalleryItem(Element result) {
+        return extractDate(result.child(0).child(1).text(), List.of(ISO_LOCAL_DATE));
     }
 
-    @Transactional
-    public NasaPhotojournalMedia processMedia(String id, SolrDocument document) throws IOException, UploadException {
-        Optional<NasaPhotojournalMedia> mediaInRepo = repository.findById(new CompositeMediaId("photojournal", id));
-        NasaPhotojournalMedia media;
-        boolean save = false;
-        if (mediaInRepo.isPresent()) {
-            media = mediaInRepo.get();
-            // To remove after all previous files have been correctly identified
-            save |= detectFigures(media);
-            save |= detectCreationDate(media);
-        } else {
-            media = solrDocumentToMedia(document);
-            save = true;
-        }
-        save |= doCommonUpdate(media);
-        save |= ignoreNonFreeFiles(media);
-        if (shouldUploadAuto(media, false)) {
-            media = saveMedia(upload(save ? saveMedia(media) : media, true, false).getLeft());
-            save = false;
-        }
-        return save ? saveMedia(media) : media;
+    @Override
+    protected String extractIdFromGalleryItem(String url, Element result) {
+        return result.child(1).child(1).getElementsByTag("dt").first().text().replace(":", "");
     }
 
-    private boolean ignoreNonFreeFiles(NasaPhotojournalMedia media) {
+    @Override
+    protected boolean ignoreNonFreeFiles(NasaPhotojournalMedia media) {
         String credit = media.getCredits();
         return !media.isIgnored() && !credit.contains("NASA") && !credit.contains("JPL")
                 && !credit.contains("Jet Propulsion Laboratory") && !credit.contains("USSF")
                 && mediaService.ignoreMedia(media, "Non-free content");
     }
 
-    private NasaPhotojournalMedia solrDocumentToMedia(SolrDocument doc) {
-        sanityChecks(doc);
-        NasaPhotojournalMedia media = new NasaPhotojournalMedia();
-        String caption = getString(doc, "original-caption");
+    @Override
+    List<NasaPhotojournalMedia> fillMediaWithHtml(String url, Document doc, Element galleryItem,
+            NasaPhotojournalMedia media) throws IOException {
+        Elements dds = doc.getElementsByTag("dd");
+        String caption = dds.get(0).html();
         media.setDescription(caption);
-        media.setId(new CompositeMediaId("photojournal", getString(doc, "id")));
-        media.setNasaId(getString(doc, "nasa-id"));
-        media.setPublicationDateTime(((Date) doc.getFirstValue("publication-date")).toInstant().atZone(ZoneOffset.UTC));
-        media.setTarget(getString(doc, "target"));
-        media.setMission(getString(doc, "mission"));
-        media.setSpacecraft(getString(doc, "spacecraft"));
-        media.setInstrument(getString(doc, "instrument"));
-        media.setProducer(getString(doc, "producer"));
-        media.setThumbnailUrl(newURL(getString(doc, "browse-url")));
-        media.setTitle(getString(doc, "image-title"));
-        media.setBig("YES".equals(doc.getFirstValue("big-flag")));
-        media.setCredits(getString(doc, "credit"));
-        media.setLegend(getString(doc, "alt-tag"));
-        ImageDimensions dims = new ImageDimensions(getInt(doc, "x-dim"), getInt(doc, "y-dim"));
-        addMetadata(media, getString(doc, "full-res-jpeg"), m -> m.setImageDimensions(dims));
-        addMetadata(media, getString(doc, "full-res-tiff"), m -> m.setImageDimensions(dims));
-        Collection<Object> keywords = doc.getFieldValues("keywords");
-        if (keywords != null) {
-            media.setKeywords(keywords.stream().map(String.class::cast).collect(toSet()));
-            boolean isAnimation = media.getKeywords().contains("animation");
-            boolean isQtvr = media.getKeywords().contains("qtvr");
-            if (isAnimation || isQtvr) {
-                addMetadataFromPattern(isAnimation ? ANIMATION_PATTERN : QTVR_PATTERN, caption, media);
+        media.setCredits(dds.get(1).text());
+        Element cap = doc.getElementsByTag("caption").first();
+        media.setTitle(cap.text().split(":")[1].trim());
+        media.setThumbnailUrl(newURL(BASE_URL + "/thumb/" + media.getIdUsedInOrg() + ".jpg"));
+        ImageDimensions dims = null;
+        for (Element tr : cap.nextElementSibling().child(0).child(1)
+                .getElementsByTag("tr")) {
+            String key = tr.child(0).text().replaceAll("[\\h:\\-]", "");
+            String val = StringUtils.strip(tr.child(1).text());
+            switch (key) {
+            case "TargetName":
+                media.setTarget(val);
+                break;
+            case "Mission":
+                media.setMission(val);
+                break;
+            case "Spacecraft":
+                media.setSpacecraft(val);
+                break;
+            case "Instrument":
+                media.setInstrument(val);
+                break;
+            case "ProducedBy":
+                media.setProducer(val);
+                break;
+            case "ProductSize":
+                String[] tab = val.split(" ");
+                dims = new ImageDimensions(Integer.parseInt(tab[0]), Integer.parseInt(tab[2]));
+                break;
+            case "FullResTIFF", "FullResJPEG":
+                ImageDimensions idims = dims;
+                addMetadata(media, BASE_URL + tr.child(1).getElementsByTag("a").first().attr("href"),
+                        m -> m.setImageDimensions(idims));
+                break;
             }
+        }
+        boolean isAnimation = media.containsInTitleOrDescriptionOrKeywords("animation");
+        boolean isQtvr = media.containsInTitleOrDescriptionOrKeywords("qtvr");
+        if (isAnimation || isQtvr) {
+            addMetadataFromPattern(isAnimation ? ANIMATION_PATTERN : QTVR_PATTERN, caption, media);
         }
         addMetadataFromPattern(AUDIO_PATTERN, caption, media);
         detectFigures(media);
         detectCreationDate(media);
-        return media;
-    }
-
-    private static String getString(SolrDocument doc, String key) {
-        return unescapeHtml4(unescapeXml((String) doc.getFirstValue(key)));
-    }
-
-    private static Integer getInt(SolrDocument doc, String key) {
-        return (Integer) doc.getFirstValue(key);
+        String href = doc.getElementsByClass("browseView").first().getElementsByTag("a").first().attr("href");
+        if (href.contains("/animation/")) {
+            getWithJsoup(href.startsWith("/") ? BASE_URL + href : href, 10_000, 3).getElementsByTag("li").stream()
+                    .map(li -> li.getElementsByTag("a").first().attr("href")).forEach(link -> {
+                        String animUrl = link.startsWith("/") ? BASE_URL + link : link;
+                        if (!media.containsMetadata(animUrl)) {
+                            addMetadata(media, animUrl, null);
+                        }
+                    });
+        }
+        return List.of(media);
     }
 
     private boolean addMetadataFromPattern(Pattern pattern, String caption, NasaPhotojournalMedia media) {
@@ -273,25 +224,9 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
         return result;
     }
 
-    private void sanityChecks(SolrDocument doc) {
-        String catalogUrl = (String) doc.getFirstValue("catalog-url");
-        if (!"IMAGE".equals(doc.getFirstValue("data-type")) || !"image".equals(doc.getFieldValue("image-type"))) {
-            problem(catalogUrl, "Not an image: " + doc);
-        }
-        if ("YES".equals(doc.getFirstValue("proprietary"))) {
-            problem(catalogUrl, "Proprietary image: " + doc);
-        }
-        if (!"YES".equals(doc.getFirstValue("ready-flag"))) {
-            throw new IllegalArgumentException("Image not ready: " + doc);
-        }
-        if (!"YES".equals(doc.getFirstValue("release-flag"))) {
-            throw new IllegalArgumentException("Image not released: " + doc);
-        }
-    }
-
     @Override
-    public URL getSourceUrl(NasaPhotojournalMedia media, FileMetadata metadata) {
-        return newURL("https://photojournal.jpl.nasa.gov/catalog/" + media.getId().getMediaId());
+    protected String getSourceUrl(CompositeMediaId id) {
+        return "https://photojournal.jpl.nasa.gov/catalog/" + id.getMediaId();
     }
 
     @Override
@@ -336,19 +271,15 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     public Set<String> findCategories(NasaPhotojournalMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         result.add("NASA Photojournal entries from " + media.getYear() + '|' + media.getId().getMediaId());
-        if (media.getKeywords().contains("anaglyph")) {
+        if (media.containsInTitleOrDescriptionOrKeywords("anaglyph")) {
             result.add("Moon".equalsIgnoreCase(media.getTarget()) ? "Anaglyphs of the Moon" : "Anaglyphs");
         }
-        if (media.getKeywords().contains("animation") && "gif".equals(metadata.getFileExtensionOnCommons())) {
+        if ("gif".equals(metadata.getFileExtensionOnCommons())) {
             result.add("Mars".equalsIgnoreCase(media.getTarget()) ? "Animated GIF of Mars" : "Animated GIF files");
         }
-        if (media.getKeywords().contains("qtvr") && "mov".equals(metadata.getFileExtension())) {
+        if ("mov".equals(metadata.getFileExtension())) {
             // Not sure what to do about these files
         }
-        if (media.getKeywords().contains("artist")) {
-            result.add("Art from NASA");
-        }
-        result.addAll(media.getKeywordStream().map(mappings.getNasaKeywords()::get).filter(Objects::nonNull).toList());
         findCategoryFromMapping(media.getInstrument(), "instrument", mappings.getNasaInstruments())
                 .ifPresent(result::add);
         findCategoryFromMapping(media.getMission(), "mission", mappings.getNasaMissions()).ifPresent(result::add);
@@ -368,10 +299,7 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
 
     @Override
     protected NasaPhotojournalMedia refresh(NasaPhotojournalMedia media) throws IOException {
-        QueryResponse response = queryWithRetries(new SolrQuery(media.getId().getMediaId()));
-        return response != null && response.getResults().getNumFound() == 1
-                ? media.copyDataFrom(solrDocumentToMedia(response.getResults().get(0)))
-                : media;
+        return media.copyDataFrom(fetchMedia(media.getId(), empty()));
     }
 
     @Override
@@ -382,9 +310,6 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
     @Override
     protected Map<String, String> getLegends(NasaPhotojournalMedia media, Map<String, String> descriptions) {
         Map<String, String> result = new TreeMap<>(super.getLegends(media, descriptions));
-        if (isNotBlank(media.getLegend())) {
-            result.put("en", media.getLegend());
-        }
         String legend = result.get("en");
         if (legend != null && legend.startsWith("<")) {
             if (legend.contains("Today's")) {
@@ -394,19 +319,6 @@ public class NasaPhotojournalService extends AbstractOrgService<NasaPhotojournal
             }
         }
         return result;
-    }
-
-    protected static SolrClient solrClient(String host) {
-        return new Http2SolrClient.Builder(host).useHttp1_1(true)
-                .withResponseParser(new XMLResponseWithoutContentTypeParser()).build();
-    }
-
-    protected static final class XMLResponseWithoutContentTypeParser extends XMLResponseParser {
-        @Override
-        public String getContentType() {
-            // Photojournal nginx returns text/plain instead of application/json
-            return null;
-        }
     }
 
     @Override

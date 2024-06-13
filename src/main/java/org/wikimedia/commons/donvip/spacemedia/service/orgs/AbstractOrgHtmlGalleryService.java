@@ -57,9 +57,9 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
         super(repository, id, repoIds);
     }
 
-    protected abstract List<String> fetchGalleryUrls(String repoId);
+    protected abstract List<String> fetchGalleryUrls(String repoId) throws IOException;
 
-    protected abstract String getGalleryPageUrl(String repoId, int page);
+    protected abstract String getGalleryPageUrl(String galleryUrl, int page);
 
     protected abstract Elements getGalleryItems(String repoId, String url, Element html);
 
@@ -174,9 +174,8 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
             save = !medias.isEmpty();
         }
         for (T media : medias) {
-            if (doCommonUpdate(media)) {
-                save = true;
-            }
+            save |= doCommonUpdate(media);
+            save |= ignoreNonFreeFiles(media);
             if (shouldUploadAuto(media, false)) {
                 media = saveMedia(upload(save ? saveMedia(media) : media, true, false).getLeft());
                 uploadedMedia.add(media);
@@ -187,6 +186,10 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
             }
         }
         return medias;
+    }
+
+    protected boolean ignoreNonFreeFiles(T media) {
+        return false;
     }
 
     protected T fetchMedia(CompositeMediaId id, Optional<Temporal> date) throws IOException {
