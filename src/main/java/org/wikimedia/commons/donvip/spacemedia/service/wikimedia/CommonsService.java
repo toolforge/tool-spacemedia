@@ -856,7 +856,7 @@ public class CommonsService {
     }
 
     public static String formatWikiCode(String badWikiCode) {
-        return replaceLinks(badWikiCode, "[$1 $2]");
+        return replaceLinks(badWikiCode, "[$1 $2]").replace("|", "{{!}}");
     }
 
     private static String replaceLinks(String text, String replacement) {
