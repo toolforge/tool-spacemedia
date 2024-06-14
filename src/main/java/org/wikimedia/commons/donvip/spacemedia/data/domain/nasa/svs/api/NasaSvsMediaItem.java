@@ -3,6 +3,8 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api;
 import java.net.URL;
 
 public record NasaSvsMediaItem(
+        /** The id number of this media item. */
+        int id,
         /** The url that this media item can be found at. */
         URL url,
         /** The filename of this media item */
@@ -22,8 +24,7 @@ public record NasaSvsMediaItem(
          */
         int height,
         /**
-         * The total number of pixels in this image (= width x height). This is used
-         * internally and can probably be ignored.
+         * The total number of pixels in this image (= width x height).
          */
         long pixels) {
 }
