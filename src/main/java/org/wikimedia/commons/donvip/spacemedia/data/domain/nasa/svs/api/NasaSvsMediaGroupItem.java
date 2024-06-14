@@ -15,5 +15,5 @@ public record NasaSvsMediaGroupItem(
         /** media/link: An optional caption used when displaying this item. */
         String caption,
         /** link: The URL that this item points to. */
-        URL target) {
+        URL target, NasaSvsExtraData extra_data) {
 }

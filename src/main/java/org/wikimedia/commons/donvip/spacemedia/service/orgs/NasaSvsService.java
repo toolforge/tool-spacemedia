@@ -31,10 +31,10 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.NasaSvsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.NasaSvsMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsCredits;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsMediaGroup;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsMediaItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsMediaType;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsPeople;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsVizualisation;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
@@ -137,13 +137,15 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
         return new CompositeMediaId("svs", Integer.toString(id));
     }
 
-    private NasaSvsMedia mapMedia(NasaSvsVizualisation viz) {
+    NasaSvsMedia mapMedia(NasaSvsVizualisation viz) {
         NasaSvsMedia media = new NasaSvsMedia();
         media.setId(newId(viz.id()));
         media.setTitle(viz.title());
         media.setStudio(viz.studio());
         media.setPublicationDateTime(viz.release_date());
-        ofNullable(viz.credits()).map(x -> x.stream().map(NasaSvsCredits::person).distinct().collect(joining(", ")))
+        ofNullable(viz.credits())
+                .map(x -> x.stream().flatMap(c -> c.people().stream()).map(NasaSvsPeople::toString).distinct()
+                        .collect(joining(", ")))
                 .ifPresent(media::setCredits);
         ofNullable(viz.keywords()).map(TreeSet::new).ifPresent(media::setKeywords);
         ofNullable(viz.missions()).map(TreeSet::new).ifPresent(media::setMissions);

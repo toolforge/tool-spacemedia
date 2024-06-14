@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api;
 
+import java.util.List;
+
 public record NasaSvsDataset(
         /** The full name of this dataset. */
         String name,
@@ -16,13 +18,15 @@ public record NasaSvsDataset(
         /** What type of dataset this is. */
         String type,
         /**
-         * The orginization responsible for maintaining this dataset (if applicable).
+         * The organizations responsible for maintaining this dataset (if applicable).
          */
-        String orginization,
+        List<String> organizations,
         /** A description of this dataset. */
         String description,
         /** Who should be credited for this dataset. */
         String credit,
         /** A URL that this dataset can be found at (if applicable). */
-        String url) {
+        String url,
+        /** The range of dates used from this dataset. */
+        Object date_range) {
 }

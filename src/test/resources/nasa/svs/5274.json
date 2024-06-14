@@ -1,0 +1,655 @@
+{
+    "id": 5274,
+    "url": "https://svs.gsfc.nasa.gov/5274/",
+    "page_type": "Visualization",
+    "title": "An M9.5 flare from Active Region 13654 - April 30, 2024",
+    "description": "Solar Dynamics Observatory (SDO) operates in a geosynchronous orbit around Earth to obtain a continuous view of the Sun. The particular instrument in this visualization records imagery in the ultraviolet portion of the spectrum at wavelengths normally absorbed by Earth's atmosphere - so we need to observe them from space.Active Region 13654 near the right solar limb launches an M9.6 class solar flare on April 30, 2024.  More details of this event can be found at the Space Weather Database entry.For more information on the classification of solar flares, see Solar Flares: What Does It Take to Be X-Class? or X-Class: A Guide to Solar Flares. The point-spread function correction (PSF) has been applied to all this imagery. || ",
+    "release_date": "2024-06-13T00:00:00-04:00",
+    "update_date": "2024-06-06T13:17:36.139989-04:00",
+    "main_image": {
+        "id": 1093143,
+        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA131_PSF_stamped.000380_print.jpg",
+        "filename": "20240430_AR13654M95_AIA131_PSF_stamped.000380_print.jpg",
+        "media_type": "Image",
+        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+        "width": 1024,
+        "height": 1024,
+        "pixels": 1048576
+    },
+    "main_video": null,
+    "progress": "Complete",
+    "media_groups": [
+        {
+            "id": 374081,
+            "url": "https://svs.gsfc.nasa.gov/5274/#media_group_374081",
+            "widget": "Basic text with HTML",
+            "title": "",
+            "caption": "",
+            "description": "Solar Dynamics Observatory (SDO) operates in a geosynchronous orbit around Earth to obtain a continuous view of the Sun. The particular instrument in this visualization records imagery in the ultraviolet portion of the spectrum at wavelengths normally absorbed by Earth's atmosphere - so we need to observe them from space.<br><br>Active Region 13654 near the right solar limb launches an M9.6 class solar flare on April 30, 2024.  More details of this event can be found at the <a href=\"https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/FLR/30357/2\" target=\"_blank\">Space Weather Database</a> entry.<br><br>For more information on the classification of solar flares, see <a href=\"https://www.nasa.gov/mission_pages/sunearth/news/X-class-flares.html\" target=\"_blank\">Solar Flares: What Does It Take to Be X-Class?</a> or <a href=\"https://svs.gsfc.nasa.gov/10109\" target=\"_blank\">X-Class: A Guide to Solar Flares</a>. The point-spread function correction (PSF) has been applied to all this imagery.<br>",
+            "items": [],
+            "extra_data": {}
+        },
+        {
+            "id": 374252,
+            "url": "https://svs.gsfc.nasa.gov/5274/#media_group_374252",
+            "widget": "Video player",
+            "title": "",
+            "caption": "",
+            "description": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+            "items": [
+                {
+                    "id": 429913,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1093143,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA131_PSF_stamped.000380_print.jpg",
+                        "filename": "20240430_AR13654M95_AIA131_PSF_stamped.000380_print.jpg",
+                        "media_type": "Image",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+                        "width": 1024,
+                        "height": 1024,
+                        "pixels": 1048576
+                    }
+                },
+                {
+                    "id": 429914,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1093144,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA131_PSF_stamped.000380_searchweb.png",
+                        "filename": "20240430_AR13654M95_AIA131_PSF_stamped.000380_searchweb.png",
+                        "media_type": "Image",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+                        "width": 320,
+                        "height": 180,
+                        "pixels": 57600
+                    }
+                },
+                {
+                    "id": 429915,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1093145,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA131_PSF_stamped.000380_thm.png",
+                        "filename": "20240430_AR13654M95_AIA131_PSF_stamped.000380_thm.png",
+                        "media_type": "Image",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+                        "width": 80,
+                        "height": 40,
+                        "pixels": 3200
+                    }
+                },
+                {
+                    "id": 427502,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092278,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA131-Frames.PSF/",
+                        "filename": "AIA131-Frames.PSF",
+                        "media_type": "Frames",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 427503,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092279,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA131-Time.PSF/",
+                        "filename": "AIA131-Time.PSF",
+                        "media_type": "Frames",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 427504,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092280,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA131-Frames.PSF_stamped/",
+                        "filename": "AIA131-Frames.PSF_stamped",
+                        "media_type": "Frames",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 428434,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092628,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA131_PSF_stamped_1024p30.mp4",
+                        "filename": "20240430_AR13654M95_AIA131_PSF_stamped_1024p30.mp4",
+                        "media_type": "Movie",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 428433,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092627,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA131.PSF_2048p30.mp4",
+                        "filename": "20240430_AR13654M95_AIA131.PSF_2048p30.mp4",
+                        "media_type": "Movie",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 428435,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092629,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA131_PSF_stamped_2048p30.mp4",
+                        "filename": "20240430_AR13654M95_AIA131_PSF_stamped_2048p30.mp4",
+                        "media_type": "Movie",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 131 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                }
+            ],
+            "extra_data": {}
+        },
+        {
+            "id": 374253,
+            "url": "https://svs.gsfc.nasa.gov/5274/#media_group_374253",
+            "widget": "Video player",
+            "title": "",
+            "caption": "",
+            "description": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 171 angstrom filter.",
+            "items": [
+                {
+                    "id": 429916,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1093146,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA171_PSF_stamped.000380_print.jpg",
+                        "filename": "20240430_AR13654M95_AIA171_PSF_stamped.000380_print.jpg",
+                        "media_type": "Image",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 171 angstrom filter.",
+                        "width": 1024,
+                        "height": 1024,
+                        "pixels": 1048576
+                    }
+                },
+                {
+                    "id": 427505,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092281,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA171-Frames.PSF/",
+                        "filename": "AIA171-Frames.PSF",
+                        "media_type": "Frames",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 171 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 427506,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092282,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA171-Time.PSF/",
+                        "filename": "AIA171-Time.PSF",
+                        "media_type": "Frames",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 171 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 427507,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092283,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA171-Frames.PSF_stamped/",
+                        "filename": "AIA171-Frames.PSF_stamped",
+                        "media_type": "Frames",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 171 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 428437,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092631,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA171_PSF_stamped_1024p30.mp4",
+                        "filename": "20240430_AR13654M95_AIA171_PSF_stamped_1024p30.mp4",
+                        "media_type": "Movie",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 171 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 428436,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092630,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA171.PSF_2048p30.mp4",
+                        "filename": "20240430_AR13654M95_AIA171.PSF_2048p30.mp4",
+                        "media_type": "Movie",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 171 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 428438,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092632,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA171_PSF_stamped_2048p30.mp4",
+                        "filename": "20240430_AR13654M95_AIA171_PSF_stamped_2048p30.mp4",
+                        "media_type": "Movie",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 171 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                }
+            ],
+            "extra_data": {}
+        },
+        {
+            "id": 374254,
+            "url": "https://svs.gsfc.nasa.gov/5274/#media_group_374254",
+            "widget": "Video player",
+            "title": "",
+            "caption": "",
+            "description": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 304 angstrom filter.",
+            "items": [
+                {
+                    "id": 429917,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1093147,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA304_PSF_stamped.000380_print.jpg",
+                        "filename": "20240430_AR13654M95_AIA304_PSF_stamped.000380_print.jpg",
+                        "media_type": "Image",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 304 angstrom filter.",
+                        "width": 1024,
+                        "height": 1024,
+                        "pixels": 1048576
+                    }
+                },
+                {
+                    "id": 427508,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092284,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA304-Time.PSF/",
+                        "filename": "AIA304-Time.PSF",
+                        "media_type": "Frames",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 304 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 427509,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092285,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA304-Frames.PSF/",
+                        "filename": "AIA304-Frames.PSF",
+                        "media_type": "Frames",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 304 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 427510,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092286,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA304-Frames.PSF_stamped/",
+                        "filename": "AIA304-Frames.PSF_stamped",
+                        "media_type": "Frames",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 304 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 428440,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092634,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA304_PSF_stamped_1024p30.mp4",
+                        "filename": "20240430_AR13654M95_AIA304_PSF_stamped_1024p30.mp4",
+                        "media_type": "Movie",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 304 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 428439,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092633,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA304.PSF_2048p30.mp4",
+                        "filename": "20240430_AR13654M95_AIA304.PSF_2048p30.mp4",
+                        "media_type": "Movie",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 304 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 428441,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092635,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/20240430_AR13654M95_AIA304_PSF_stamped_2048p30.mp4",
+                        "filename": "20240430_AR13654M95_AIA304_PSF_stamped_2048p30.mp4",
+                        "media_type": "Movie",
+                        "alt_text": "Active Region 13654 (near the right limb) launches an M9.5 flare in this view through the SDO AIA 304 angstrom filter.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                }
+            ],
+            "extra_data": {}
+        },
+        {
+            "id": 374578,
+            "url": "https://svs.gsfc.nasa.gov/5274/#media_group_374578",
+            "widget": "Basic text with HTML",
+            "title": "",
+            "caption": "",
+            "description": "<br><br><br><h2>What is the PSF (Point Spread-Function)?</h2>Many telescopes, especially reflecting telescopes such as the ones used on SDO (<a href=\"https://en.wikipedia.org/wiki/Reflecting_telescope\" target=\"_blank\">Wikipedia</a>), have internal structures that support various optical components. These components can result in incoming light being scattered to other parts of the image. This can appear in the image as a faint haze, brightening dark areas and dimming bright areas. The point-spread function (<a href=\"https://en.wikipedia.org/wiki/Point_spread_function\" target=\"_blank\">Wikipedia</a>) is a measure of how light that would normally be received by a single camera pixel, gets scattered onto other pixels. This is often seen as the \"spikes\" seen in images of bright stars. For SDO, it manifests as a double-X shape centered over a bright flare (see <a href=\"https://svs.gsfc.nasa.gov/11383\" target=\"_blank\">Sun Emits Third Solar Flare in Two Days</a>). The effect of this scattered light can be computed, and removed, by a process called deconvolution (<a href=\"https://en.wikipedia.org/wiki/Deconvolution\" target=\"_blank\">Wikipedia</a>). This is often a very compute-intensive process which can be sped up by using a computers graphics-processing unit (GPU) for the computation.<br><br>",
+            "items": [],
+            "extra_data": {}
+        },
+        {
+            "id": 374255,
+            "url": "https://svs.gsfc.nasa.gov/5274/#media_group_374255",
+            "widget": "Single image",
+            "title": "",
+            "caption": "",
+            "description": "Time slates for the multiple movies above, for custom compositing. Make sure to match the event and frame tag for the SDO frames you are using.",
+            "items": [
+                {
+                    "id": 429918,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1093148,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/slate_20240430_AR13654M95_AIA131_000380_print.jpg",
+                        "filename": "slate_20240430_AR13654M95_AIA131_000380_print.jpg",
+                        "media_type": "Image",
+                        "alt_text": "Time slates for the multiple movies above, for custom compositing. Make sure to match the event and frame tag for the SDO frames you are using.",
+                        "width": 1024,
+                        "height": 95,
+                        "pixels": 97280
+                    }
+                },
+                {
+                    "id": 427511,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092287,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA171-Slates/",
+                        "filename": "AIA171-Slates",
+                        "media_type": "Frames",
+                        "alt_text": "Time slates for the multiple movies above, for custom compositing. Make sure to match the event and frame tag for the SDO frames you are using.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 427512,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092288,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA304-Slates/",
+                        "filename": "AIA304-Slates",
+                        "media_type": "Frames",
+                        "alt_text": "Time slates for the multiple movies above, for custom compositing. Make sure to match the event and frame tag for the SDO frames you are using.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                },
+                {
+                    "id": 427513,
+                    "type": "media",
+                    "extra_data": null,
+                    "title": null,
+                    "caption": null,
+                    "instance": {
+                        "id": 1092289,
+                        "url": "https://svs.gsfc.nasa.gov/vis/a000000/a005200/a005274/frames/4096x4096_1x1_30p/AIA131-Slates/",
+                        "filename": "AIA131-Slates",
+                        "media_type": "Frames",
+                        "alt_text": "Time slates for the multiple movies above, for custom compositing. Make sure to match the event and frame tag for the SDO frames you are using.",
+                        "width": 0,
+                        "height": 0,
+                        "pixels": null
+                    }
+                }
+            ],
+            "extra_data": {}
+        }
+    ],
+    "studio": "svs",
+    "funding_sources": [
+        "NASA Heliophysics"
+    ],
+    "credits": [
+        {
+            "role": "Visualizer",
+            "people": [
+                {
+                    "name": "Tom Bridgman",
+                    "employer": "Global Science and Technology, Inc."
+                }
+            ]
+        },
+        {
+            "role": "Producer",
+            "people": [
+                {
+                    "name": "Scott Wiessinger",
+                    "employer": "KBR Wyle Services, LLC"
+                }
+            ]
+        },
+        {
+            "role": "Technical support",
+            "people": [
+                {
+                    "name": "Laurence Schuler",
+                    "employer": "ADNET Systems, Inc."
+                },
+                {
+                    "name": "Ian Jones",
+                    "employer": "ADNET Systems, Inc."
+                }
+            ]
+        }
+    ],
+    "missions": [
+        "SDO"
+    ],
+    "series": [
+        "SDO - Footage"
+    ],
+    "tapes": [],
+    "papers": [],
+    "datasets": [
+        {
+            "name": "304 Filter",
+            "common_name": "AIA 304",
+            "platform": "SDO",
+            "sensor": "AIA",
+            "type": "Other",
+            "organizations": [],
+            "description": "",
+            "credit": "",
+            "url": "http://jsoc.stanford.edu/",
+            "date_range": "2024-04-30T22:30:00 TAI to 2024-05-01T02:30:00 TAI"
+        },
+        {
+            "name": "171 Filter",
+            "common_name": "AIA 171",
+            "platform": "SDO",
+            "sensor": "AIA",
+            "type": "Other",
+            "organizations": [],
+            "description": "",
+            "credit": "",
+            "url": "http://jsoc.stanford.edu/",
+            "date_range": "2024-04-30T22:30:00 TAI to 2024-05-01T02:30:00 TAI"
+        },
+        {
+            "name": "131 Filter",
+            "common_name": "AIA 131",
+            "platform": "SDO",
+            "sensor": "AIA",
+            "type": "Other",
+            "organizations": [],
+            "description": "",
+            "credit": "",
+            "url": "http://jsoc.stanford.edu/",
+            "date_range": "2024-04-30T22:30:00 TAI to 2024-05-01T02:30:00 TAI"
+        }
+    ],
+    "nasa_science_categories": [
+        "Sun"
+    ],
+    "keywords": [
+        "Corona",
+        "Earth Science",
+        "EUV Imaging",
+        "Extreme Ultraviolet Imaging",
+        "Heliophysics",
+        "Point-Spread-Function (PSF)",
+        "SDO",
+        "Solar Active Regions",
+        "Solar Activity",
+        "Solar Cycle 25",
+        "Solar Dynamics Observatory",
+        "Solar Flares",
+        "Space Weather",
+        "Sun-earth Interactions"
+    ],
+    "recommended_pages": [],
+    "related": [],
+    "sources": [],
+    "products": [],
+    "newer_versions": [],
+    "older_versions": [],
+    "alternate_versions": []
+}
