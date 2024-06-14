@@ -1,5 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api;
 
+import java.util.Arrays;
+import java.util.List;
+
 public enum NasaSvsMediaType {
     /** An image file. */
     Image,
@@ -22,5 +25,9 @@ public enum NasaSvsMediaType {
 
     public boolean shouldBeOkForCommons() {
         return this != Frames && this != Captions;
+    }
+
+    public static List<NasaSvsMediaType> typesOkForCommons() {
+        return Arrays.stream(values()).filter(NasaSvsMediaType::shouldBeOkForCommons).toList();
     }
 }

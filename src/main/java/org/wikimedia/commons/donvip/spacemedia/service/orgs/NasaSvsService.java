@@ -151,31 +151,33 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
         ofNullable(viz.missions()).map(TreeSet::new).ifPresent(media::setMissions);
         if (viz.media_groups() != null) {
             for (NasaSvsMediaGroup group : viz.media_groups()) {
-                // For each group only consider the biggest media (unless we have a webm file at
-                // the same resolution)
-                group.mediaItemsStream()
-                        .filter(x -> x.media_type().shouldBeOkForCommons()
-                                && !x.url().toExternalForm().endsWith(".exr")
-                                && !x.alt_text().contains("stamp slate")
-                                && !x.alt_text().contains("colorbar")
-                                && !x.alt_text().startsWith("Color bar")
-                                && !x.alt_text().startsWith("Video slate")
-                                && !x.alt_text().startsWith("Descriptive image")
-                                && !x.alt_text().startsWith("The color key")
-                                && !x.alt_text().startsWith("Time slates for the multiple movies")
-                                && !x.alt_text().startsWith("This timeline is synchronized with"))
-                        .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst().ifPresent(biggest -> {
-                            NasaSvsMediaItem item = group.mediaItemsStream()
-                                    .filter(x -> x.url().toExternalForm().endsWith(".webm")
-                                            && ((x.width() >= biggest.width() && x.height() >= biggest.height())
-                                                    || (x.width() == 0 && x.height() == 0)))
-                                    .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst()
-                                    .orElse(biggest);
-                            addMetadata(media, item.url(), fm -> {
-                                fm.setDescription(item.alt_text());
-                                fm.setImageDimensions(new ImageDimensions(item.width(), item.height()));
+                // For each group and media type, only consider the biggest media (unless we
+                // have a webm file at the same resolution)
+                for (NasaSvsMediaType mediaType : NasaSvsMediaType.typesOkForCommons()) {
+                    group.mediaItemsStream()
+                            .filter(x -> x.media_type() == mediaType
+                                    && !x.url().toExternalForm().endsWith(".exr")
+                                    && !x.alt_text().contains("stamp slate")
+                                    && !x.alt_text().contains("colorbar")
+                                    && !x.alt_text().startsWith("Color bar")
+                                    && !x.alt_text().startsWith("Video slate")
+                                    && !x.alt_text().startsWith("Descriptive image")
+                                    && !x.alt_text().startsWith("The color key")
+                                    && !x.alt_text().startsWith("Time slates for the multiple movies")
+                                    && !x.alt_text().startsWith("This timeline is synchronized with"))
+                            .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst().ifPresent(biggest -> {
+                                NasaSvsMediaItem item = group.mediaItemsStream()
+                                        .filter(x -> x.url().toExternalForm().endsWith(".webm")
+                                                && ((x.width() >= biggest.width() && x.height() >= biggest.height())
+                                                        || (x.width() == 0 && x.height() == 0)))
+                                        .sorted(comparingLong(NasaSvsMediaItem::pixels).reversed()).findFirst()
+                                        .orElse(biggest);
+                                addMetadata(media, item.url(), fm -> {
+                                    fm.setDescription(item.alt_text());
+                                    fm.setImageDimensions(new ImageDimensions(item.width(), item.height()));
+                                });
                             });
-                        });
+                }
             }
             viz.media_groups().stream().flatMap(x -> x.mediaItemsStream())
                     .filter(x -> x.media_type() == NasaSvsMediaType.Image)
