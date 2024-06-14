@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -28,12 +29,13 @@ class NasaSvsServiceTest extends AbstractOrgServiceTest {
     @Autowired
     private NasaSvsService service;
 
-    @CsvSource(delimiter = ';', value = { "5274" })
+    @CsvSource(delimiter = ';', value = { "5274;6" })
     @ParameterizedTest
-    void testMapMedia(int id) throws IOException {
+    void testMapMedia(int id, int nFiles) throws IOException {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         NasaSvsMedia media = service.mapMedia(json("nasa/svs/" + id + ".json", NasaSvsVizualisation.class));
         assertNotNull(media);
+        assertEquals(nFiles, media.getMetadataCount());
     }
 
     @Configuration
