@@ -6,7 +6,7 @@ public enum NasaSvsStudio {
     /** NASA's Goddard Media Studios. */
     GMS,
     /** NASA's Conceptual Image Lab. */
-    CILab,
+    CILab, cil,
     /** NASA Hyperwall. */
     HW
 }
