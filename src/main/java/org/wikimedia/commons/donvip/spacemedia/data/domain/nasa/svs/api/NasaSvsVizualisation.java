@@ -9,13 +9,12 @@ public record NasaSvsVizualisation(
         int id,
         /** The url that this visualization page can be found at. */
         URL url,
-        /**
-         * The base url of media items in this visualization. This is used internally,
-         * and can probably be ignored.
-         */
-        String media_root,
+        /** What type of page this is. */
+        NasaSvsPageType page_type,
         /** The title of the visualization. */
         String title,
+        /** A brief description of the visualization. */
+        String description,
         /**
          * Indicates which studio created the material, or what product the material was
          * created for.
@@ -41,6 +40,11 @@ public record NasaSvsVizualisation(
          * items.
          */
         NasaSvsMediaItem main_video,
+        /**
+         * What stage this visualization is at in the development process. This will
+         * always be Complete for visualizations publicly released on this site.
+         */
+        NasaSvsProgress progress,
         /**
          * Media items on the SVS website are organized into groups for display
          * purposes. These are essentially the "blocks" that compose a visualization

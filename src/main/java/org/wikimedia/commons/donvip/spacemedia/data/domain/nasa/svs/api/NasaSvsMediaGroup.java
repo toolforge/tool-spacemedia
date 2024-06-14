@@ -4,10 +4,11 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public record NasaSvsMediaGroup(
-        /**
-         * The widget used for this media item. This is used for internal purposes, and
-         * can probably be ignored.
-         */
+        /** The ID of this media group. */
+        int id,
+        /** A link to this particular media group. */
+        String url,
+        /** The widget used for this media item. */
         String widget,
         /** The title of this media group. */
         String title,
@@ -25,7 +26,13 @@ public record NasaSvsMediaGroup(
          * A list of media items contained in this media group. For more information on
          * media items, see the section on media items.
          */
-        List<NasaSvsMediaGroupItem> items) {
+        List<NasaSvsMediaGroupItem> items,
+        /**
+         * Additional data used the generate the media group. The most common piece of
+         * information contained in this block is page_list, which is a full list of
+         * pages linked to this media group.
+         */
+        NasaSvsExtraData extra_data) {
 
     public Stream<NasaSvsMediaItem> mediaItemsStream() {
         return items().stream().filter(x -> x.type() == NasaSvsMediaGroupItemType.media).map(x -> x.instance());
