@@ -182,34 +182,49 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
                 ZonedDateTime.parse((html.getElementsByAttributeValue("name", "parsely-pub-date").attr("content"))));
         media.setTitle(section.getElementsByTag("h1").first().text());
         Element content = section.getElementsByClass("usa-article-content").first();
-        media.setThumbnailUrl(
-                newURL(content.getElementsByTag("figure").first().getElementsByTag("img").first().attr("src")));
+        ofNullable(content.getElementsByTag("figure").first()).map(f -> f.getElementsByTag("img").first())
+                .ifPresent(img -> media.setThumbnailUrl(newURL(img.attr("src"))));
         media.setDescription(content.getElementsByClass("entry-content").first().text());
-        int idx = 0;
-        Element credits = content.getElementsByClass("hds-credits").first();
-        if (credits != null) {
-            media.setCredits(credits.text());
-            if (isNotBlank(media.getCredits())) {
-                idx = media.getCredits().lastIndexOf("redit:");
-                if (idx > -1) {
-                    media.setCredits(media.getCredits().substring(idx + 6).trim());
-                }
-            }
+        ofNullable(content.getElementsByClass("hds-credits").first()).map(Element::text).ifPresent(media::setCredits);
+        if (isNotBlank(media.getCredits())) {
+            setCleanedCredits(media.getCredits(), media);
         }
         if (isBlank(media.getCredits())) {
-            idx = media.getDescription().lastIndexOf("redit:");
-            if (idx > -1) {
-                media.setCredits(media.getDescription().substring(idx + 6).trim());
-            }
+            ofNullable(content.getElementsByClass("hds-caption-text").first()).map(Element::text)
+                    .ifPresent(x -> setCleanedCredits(x, media));
+        }
+        if (isBlank(media.getCredits())) {
+            setCleanedCredits(media.getDescription(), media);
         }
         if (isNotBlank(media.getCredits())
                 && media.getDescription().replace(';', ',').startsWith(media.getCredits().replace(';', ','))) {
             media.setDescription(media.getDescription().substring(media.getCredits().length()).trim());
         }
         for (Element figure : content.getElementsByTag("figure")) {
-            String src = figure.getElementsByTag("img").first().attr("src");
-            idx = src.indexOf('?');
+            ofNullable(figure.getElementsByTag("img").first()).ifPresent(img -> addMetadataFromSource(img, media));
+        }
+        for (Element source : content.getElementsByTag("source")) {
+            addMetadataFromSource(source, media);
+        }
+    }
+
+    private void addMetadataFromSource(Element source, NasaWebsiteMedia media) {
+        String src = source.attr("src");
+        if (isNotBlank(src)) {
+            int idx = src.indexOf('?');
             addMetadata(media, idx > -1 ? src.substring(0, idx) : src, null);
+        }
+    }
+
+    private static void setCleanedCredits(String text, NasaWebsiteMedia media) {
+        int idx = text.lastIndexOf("redit:");
+        if (idx > -1) {
+            media.setCredits(text.substring(idx + 6).trim());
+        } else {
+            idx = text.lastIndexOf("redits:");
+            if (idx > -1) {
+                media.setCredits(text.substring(idx + 7).trim());
+            }
         }
     }
 

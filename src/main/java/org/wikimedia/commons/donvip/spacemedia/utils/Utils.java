@@ -99,7 +99,7 @@ public final class Utils {
         try {
             return new URL(url.replace("//", "/").replace(":/", "://"));
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(url, e);
         }
     }
 
