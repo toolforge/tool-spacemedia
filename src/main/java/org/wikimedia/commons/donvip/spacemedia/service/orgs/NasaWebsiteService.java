@@ -207,9 +207,12 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
             media.setDescription(media.getDescription().substring(media.getCredits().length()).trim());
         }
         for (Element figure : content.getElementsByTag("figure")) {
-            String src = figure.getElementsByTag("img").first().attr("src");
-            idx = src.indexOf('?');
-            addMetadata(media, idx > -1 ? src.substring(0, idx) : src, null);
+            Element img = figure.getElementsByTag("img").first();
+            if (img != null) {
+                String src = img.attr("src");
+                idx = src.indexOf('?');
+                addMetadata(media, idx > -1 ? src.substring(0, idx) : src, null);
+            }
         }
     }
 
