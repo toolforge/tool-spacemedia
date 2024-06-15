@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
@@ -121,14 +123,16 @@ public class MediaService {
     }
 
     public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<Pattern> patternsToRemove,
-            Iterable<String> stringsToRemove, boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist)
+            Iterable<String> stringsToRemove, boolean forceUpdate, UrlResolver<M> urlResolver,
+            Function<LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist)
             throws IOException {
-        return updateMedia(media, patternsToRemove, stringsToRemove, forceUpdate, urlResolver, checkBlocklist, true,
-                false, null);
+        return updateMedia(media, patternsToRemove, stringsToRemove, forceUpdate, urlResolver, similarCandidateMedia,
+                checkBlocklist, true, false, null);
     }
 
     public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<Pattern> patternsToRemove,
-            Iterable<String> stringsToRemove, boolean forceUpdate, UrlResolver<M> urlResolver, boolean checkBlocklist,
+            Iterable<String> stringsToRemove, boolean forceUpdate, UrlResolver<M> urlResolver,
+            Function<LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist,
             boolean includeByPerceptualHash, boolean ignoreExifMetadata, Path localPath) throws IOException {
         boolean result = false;
         LOGGER.trace("updateMedia - cleanupDescription - {}", media);
@@ -145,7 +149,9 @@ public class MediaService {
         }
         LOGGER.trace("updateMedia - findCommonsFiles - {}", media);
         if (media.hasAssetsToUpload()
-                && findCommonsFiles(media.getMetadata(), media.getSearchTermsInCommons(), includeByPerceptualHash)) {
+                && findCommonsFiles(media.getMetadata(), media.getSearchTermsInCommons(),
+                        () -> similarCandidateMedia.apply(media.getPublicationDate()),
+                        includeByPerceptualHash)) {
             LOGGER.info("Commons files have been updated for {}", media);
             result = true;
         }
@@ -559,10 +565,11 @@ public class MediaService {
     }
 
     public boolean findCommonsFiles(Collection<FileMetadata> metadata, Collection<String> searchTermsInCommons,
-            boolean includeByPerceptualHash) throws IOException {
+            Supplier<List<? extends Media>> similarCandidateMedia, boolean includeByPerceptualHash) throws IOException {
         return findCommonsFilesWithSha1(metadata) || (includeByPerceptualHash
                 && (findCommonsFilesWithPhash(metadata, true)
-                        || findCommonsFilesWithTextAndPhash(metadata, searchTermsInCommons)));
+                        || findCommonsFilesWithTextAndPhash(metadata, searchTermsInCommons)
+                        || findCommonsFilesWithPublicationDateAndPhash(metadata, similarCandidateMedia)));
     }
 
     /**
@@ -650,6 +657,42 @@ public class MediaService {
         return result;
     }
 
+    public boolean findCommonsFilesWithPublicationDateAndPhash(Collection<FileMetadata> metadatas,
+            Supplier<List<? extends Media>> similarCandidateMedia) {
+        boolean result = false;
+        List<FileMetadata> similarCandidateFiles = similarCandidateMedia.get().stream()
+                .flatMap(Media::getMetadataStream).distinct().toList();
+        for (FileMetadata metadata : metadatas) {
+            if (metadata.hasSize()) {
+                result |= findCommonsFilesWithPublicationDateAndPhash(metadata, similarCandidateFiles);
+            } else {
+                LOGGER.warn("File without size, skipping: {}", metadata);
+            }
+        }
+        return result;
+    }
+
+    private boolean findCommonsFilesWithPublicationDateAndPhash(FileMetadata metadata,
+            List<FileMetadata> similarCandidateFiles) {
+        Set<String> filenames = new HashSet<>();
+        for (FileMetadata similarCandidateFile : similarCandidateFiles) {
+            if (!similarCandidateFile.hasSize() || !similarCandidateFile.hasValidDimensions()
+                    || isBlank(similarCandidateFile.getMime())
+                    || similarCandidateFile.getCommonsFileNames().isEmpty()) {
+                LOGGER.warn("Invalid candidate file, skipping: {}", similarCandidateFile);
+                continue;
+            }
+            if (StringUtils.equals(metadata.getMime(), similarCandidateFile.getMime())
+                    && (metadata.getSize() <= similarCandidateFile.getSize() || areLargerOrEqualDimensions(
+                            metadata.getImageDimensions(), similarCandidateFile.getImageDimensions()))
+                    && phashMatches(metadata, similarCandidateFile.getCommonsFileNames().iterator().next(),
+                            similarCandidateFile.getPhash())) {
+                filenames.addAll(similarCandidateFile.getCommonsFileNames());
+            }
+        }
+        return !filenames.isEmpty() && saveNewMetadataCommonsFileNames(metadata, filenames);
+    }
+
     public List<String> findSmallerCommonsFilesWithIdAndPhash(Media media, FileMetadata metadata) throws IOException {
         List<String> result = new ArrayList<>();
         for (String idUsedInCommons : media.getIdUsedInCommons()) {
@@ -683,19 +726,26 @@ public class MediaService {
                     hash = Optional.ofNullable(commonsService.computeAndSaveHash(sha1base36, filename,
                             FileMetadata.getMime(filename.substring(filename.lastIndexOf('.') + 1))));
                 }
-                String phash = hash.orElseThrow(() -> new IllegalStateException("No hash for " + sha1base36)).getPhash();
-                if (phash != null) {
-                    double score = HashHelper.similarityScore(metadata.getPhash(), phash);
-                    if (score <= perceptualThresholdIdenticalId) {
-                        LOGGER.info("Found match ({}) between {} and {}", score, metadata, image);
-                        filenames.add(filename);
-                    } else if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("No match between {} and {} / {} -> {}", metadata, image, hash, score);
-                    }
+                if (phashMatches(metadata, filename,
+                        hash.orElseThrow(() -> new IllegalStateException("No hash for " + sha1base36)).getPhash())) {
+                    filenames.add(filename);
                 }
             }
         }
         return filenames;
+    }
+
+    private boolean phashMatches(FileMetadata metadata, String filename, String phash) {
+        if (phash != null) {
+            double score = HashHelper.similarityScore(metadata.getPhash(), phash);
+            if (score <= perceptualThresholdIdenticalId) {
+                LOGGER.info("Found match ({}) between {} and {} / {}", score, metadata, filename, phash);
+                return true;
+            } else if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("No match between {} and {} / {} -> {}", metadata, filename, phash, score);
+            }
+        }
+        return false;
     }
 
     private boolean shouldSearchByPhash(FileMetadata metadata) {
@@ -716,7 +766,15 @@ public class MediaService {
     }
 
     private static boolean areLargerOrEqualDimensions(ImageDimensions dims, ImageInfo imageInfo) {
-        return dims != null && dims.getWidth() <= imageInfo.getWidth() && dims.getHeight() <= imageInfo.getHeight();
+        return areLargerOrEqualDimensions(dims, imageInfo.getWidth(), imageInfo.getHeight());
+    }
+
+    private static boolean areLargerOrEqualDimensions(ImageDimensions dims, ImageDimensions other) {
+        return areLargerOrEqualDimensions(dims, other.getWidth(), other.getHeight());
+    }
+
+    private static boolean areLargerOrEqualDimensions(ImageDimensions dims, int width, int height) {
+        return dims != null && dims.getWidth() <= width && dims.getHeight() <= height;
     }
 
     private static boolean filterBySameMimeAndSmallerSize(FileMetadata metadata, ImageInfo imageInfo) {
