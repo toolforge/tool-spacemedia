@@ -8,7 +8,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.toZonedDateTime;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -197,8 +196,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
-    protected void checkUploadPreconditions(FlickrMedia media, boolean checkUnicity, boolean isManual)
-            throws URISyntaxException {
+    protected void checkUploadPreconditions(FlickrMedia media, boolean checkUnicity, boolean isManual) {
         super.checkUploadPreconditions(media, checkUnicity, isManual);
         if (!"ready".equals(media.getMediaStatus()) && StringUtils.isNotBlank(media.getMediaStatus())) {
             throw new ImageUploadForbiddenException("Media is not ready: " + media);
@@ -306,7 +304,8 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             try {
                 Pair<FlickrMedia, Integer> result = processor.processFlickrMedia(media, flickrAccount,
                         () -> getPatternsToRemove(media), () -> getStringsToRemove(media), this::shouldUploadAuto,
-                        this::uploadWrapped, getUrlResolver(), checkBlocklist(), this::saveMedia, getIgnoreCriteria());
+                        this::uploadWrapped, getUrlResolver(), this::getSimilarUploadedMediaByDate, checkBlocklist(),
+                        this::saveMedia, getIgnoreCriteria());
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
                 }

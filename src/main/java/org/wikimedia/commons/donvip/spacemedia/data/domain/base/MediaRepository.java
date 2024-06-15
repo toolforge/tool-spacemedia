@@ -213,6 +213,9 @@ public interface MediaRepository<T extends Media> extends JpaRepository<T, Compo
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId in ?1 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")
     Page<T> findUploadedToCommons(Set<String> repos, Pageable page);
 
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where exists elements (md.commonsFileNames) and m.id.repoId in ?1 and m.publicationDate = ?2 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")
+    List<T> findUploadedToCommonsByPublicationDate(Set<String> repos, LocalDate date);
+
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where md.phash is not null and m.id.repoId in ?1 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")
     Page<T> findByMetadata_PhashNotNull(Set<String> repos, Pageable page);
 }

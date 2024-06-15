@@ -191,6 +191,14 @@ class StsciServiceTest {
         assertEquals("NASA and L. Hustak (STScI)", media.getCredits());
     }
 
+    @Test
+    void testNPE() throws Exception {
+        String urlLink = "https://hubblesite.org/contents/media/images/4652-Image";
+        StsciMedia media = service.getImageDetailsByScrapping("4652-Image", urlLink, new URL(urlLink),
+                html("nasahubble/4652-Image.htm"));
+        assertNotNull(media);
+    }
+
     @Configuration
     static class TestConfig {
 
