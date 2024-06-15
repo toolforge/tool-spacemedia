@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.apps;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,13 +25,15 @@ abstract class AbstractSpacemediaOrgUpdateJobApplication implements ApplicationL
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSpacemediaOrgUpdateJobApplication.class);
 
     @Autowired
-    private Org<?> org;
+    private List<Org<?>> orgs;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         try {
             if (!Arrays.asList(event.getApplicationContext().getEnvironment().getActiveProfiles()).contains("test")) {
-                org.updateMedia(event.getArgs());
+                for (Org<?> org : orgs) {
+                    org.updateMedia(event.getArgs());
+                }
             }
         } catch (IOException | UploadException e) {
             LOGGER.error(e.getMessage(), e);

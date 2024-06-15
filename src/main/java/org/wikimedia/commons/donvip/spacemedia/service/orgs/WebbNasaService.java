@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -14,6 +15,7 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
@@ -30,6 +32,10 @@ public class WebbNasaService extends AbstractOrgStsciService {
 
     private Map<String, String> webbCategories;
 
+    @Lazy
+    @Autowired
+    private WebbEsaService esaService;
+
     @Autowired
     public WebbNasaService(StsciMediaRepository repository,
             @Value("${webb.nasa.search.link}") String searchEndpoint,
@@ -42,6 +48,11 @@ public class WebbNasaService extends AbstractOrgStsciService {
     void init() throws IOException {
         super.init();
         webbCategories = loadCsvMapping("webbnasa.categories.csv");
+    }
+
+    @Override
+    protected List<AbstractOrgService<?>> getSimilarOrgServices() {
+        return List.of(esaService);
     }
 
     @Override
