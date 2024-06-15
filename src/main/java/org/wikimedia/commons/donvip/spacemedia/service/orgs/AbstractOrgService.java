@@ -20,7 +20,6 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -440,6 +439,11 @@ public abstract class AbstractOrgService<T extends Media>
     @Override
     public Page<T> listUploadedMedia(Pageable page) {
         return repository.findUploadedToCommons(getRepoIds(), page);
+    }
+
+    @Override
+    public List<T> listUploadedMediaByDate(LocalDate date) {
+        return repository.findUploadedToCommonsByPublicationDate(getRepoIds(), date);
     }
 
     @Override
@@ -882,7 +886,7 @@ public abstract class AbstractOrgService<T extends Media>
             checkUploadPreconditions(media, checkUnicity, isManual);
             List<FileMetadata> uploaded = new ArrayList<>();
             return Triple.of(media, uploaded, doUpload(media, checkUnicity, uploaded, isManual));
-        } catch (RuntimeException | URISyntaxException e) {
+        } catch (RuntimeException e) {
             throw new UploadException(e);
         }
     }
@@ -1566,8 +1570,7 @@ public abstract class AbstractOrgService<T extends Media>
                 + requireNonNull(text, "text") + ']';
     }
 
-    protected void checkUploadPreconditions(T media, boolean checkUnicity, boolean isManual)
-            throws URISyntaxException {
+    protected void checkUploadPreconditions(T media, boolean checkUnicity, boolean isManual) {
         if (UploadContext.isForbiddenUpload(media, isManual)) {
             throw new ImageUploadForbiddenException(media + " is marked as ignored (manual: " + isManual + ")");
         }
@@ -1586,7 +1589,7 @@ public abstract class AbstractOrgService<T extends Media>
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
         if (mediaService.findCommonsFiles(List.of(metadata), media.getSearchTermsInCommons(),
-                includeByPerceptualHash())) {
+                () -> getSimilarUploadedMediaByDate(media.getPublicationDate()), includeByPerceptualHash())) {
             metadata = metadataRepository.save(metadata);
             throw new ImageUploadForbiddenException(
                     media + " is already on Commons: " + metadata.getCommonsFileNames());
@@ -1605,7 +1608,8 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
         MediaUpdateResult ur = mediaService.updateMedia(media, getPatternsToRemove(media), getStringsToRemove(media),
-                forceUpdate, getUrlResolver(), checkBlocklist(), includeByPerceptualHash(), ignoreExifMetadata(), null);
+                forceUpdate, getUrlResolver(), this::getSimilarUploadedMediaByDate, checkBlocklist(),
+                includeByPerceptualHash(), ignoreExifMetadata(), null);
         boolean result = ur.getResult();
         if (!media.isIgnored() && media.hasMetadata()) {
             LOGGER.trace("Start common update checks for {}", media);
@@ -1730,6 +1734,14 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected UrlResolver<T> getUrlResolver() {
         return (media, metadata) -> metadata.getAssetUrl();
+    }
+
+    protected List<AbstractOrgService<?>> getSimilarOrgServices() {
+        return List.of();
+    }
+
+    protected final List<? extends Media> getSimilarUploadedMediaByDate(LocalDate date) {
+        return getSimilarOrgServices().stream().flatMap(x -> x.listUploadedMediaByDate(date).stream()).toList();
     }
 
     protected FileMetadata addMetadata(T media, String assetUrl, Consumer<FileMetadata> consumer) {

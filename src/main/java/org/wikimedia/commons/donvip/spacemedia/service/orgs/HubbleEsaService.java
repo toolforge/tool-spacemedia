@@ -4,12 +4,14 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.replace;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
@@ -26,10 +28,19 @@ public class HubbleEsaService extends AbstractOrgDjangoplicityService {
     private static final Pattern PATTERN_LOCALIZED_URL = Pattern
             .compile(HUB_BASE_PUBLIC_URL + "([a-z]+/)" + HUB_IMAGES_PATH + ".*");
 
+    @Lazy
+    @Autowired
+    private HubbleNasaService nasaService;
+
     @Autowired
     public HubbleEsaService(DjangoplicityMediaRepository repository,
             @Value("${hubble.esa.search.link}") String searchLink) {
         super(repository, "hubble.esa", searchLink);
+    }
+
+    @Override
+    protected List<AbstractOrgService<?>> getSimilarOrgServices() {
+        return List.of(nasaService);
     }
 
     @Override

@@ -101,6 +101,8 @@ public interface Org<T extends Media> {
 
     Page<T> listUploadedMedia(String repo, Pageable page);
 
+    List<T> listUploadedMediaByDate(LocalDate date);
+
     List<T> listDuplicateMedia();
 
     List<T> listIgnoredMedia();

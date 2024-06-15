@@ -8,6 +8,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
@@ -86,8 +88,9 @@ public class FlickrMediaProcessorService {
             Supplier<Collection<Pattern>> patternsToRemove, Supplier<Collection<String>> stringsToRemove,
             BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<FileMetadata>, Integer>> uploader,
-            UrlResolver<FlickrMedia> urlResolver, boolean checkBlocklist, UnaryOperator<FlickrMedia> saver,
-            List<IgnoreCriteria> ignoreCriterias) throws IOException {
+            UrlResolver<FlickrMedia> urlResolver, Function<LocalDate, List<? extends Media>> similarCandidateMedia,
+            boolean checkBlocklist, UnaryOperator<FlickrMedia> saver, List<IgnoreCriteria> ignoreCriterias)
+            throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
         final Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
@@ -145,7 +148,8 @@ public class FlickrMediaProcessorService {
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb, saver);
         savePhotoSets = false;
         save = mediaService
-                .updateMedia(media, patternsToRemove.get(), stringsToRemove.get(), false, urlResolver, checkBlocklist)
+                .updateMedia(media, patternsToRemove.get(), stringsToRemove.get(), false, urlResolver,
+                        similarCandidateMedia, checkBlocklist)
                 .getResult();
         int uploadCount = 0;
         if (shouldUploadAuto.test(media, false) && (videosEnabled || !media.isVideo())) {

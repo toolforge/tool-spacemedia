@@ -2,6 +2,8 @@ package org.wikimedia.commons.donvip.spacemedia.service.stsci;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -20,7 +22,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -80,7 +81,7 @@ public class StsciService {
         result.setTitle(main.getElementsByTag("h1").first().text());
         // First attempt
         result.setCredits(extractCredits(md8));
-        if (StringUtils.isBlank(result.getCredits())) {
+        if (isBlank(result.getCredits())) {
             // Second attempt with another possible horrible format
             // https://webbtelescope.org/contents/media/images/2023/112/01GYJ7H5VSDMPRWX0R0Z6R87EC
             StringBuilder sb = new StringBuilder();
@@ -88,7 +89,7 @@ public class StsciService {
                     .append(h4.nextSibling().outerHtml()));
             result.setCredits(sb.toString().replace("  ", " ").trim());
         }
-        if (StringUtils.isBlank(result.getCredits())) {
+        if (isBlank(result.getCredits())) {
             LOGGER.warn("Unable to find credits for {}", urlLink);
         }
         result.setDescription(md8.getElementsByTag("p").eachText().stream().filter(s -> !s.equals(result.getCredits()))
@@ -132,8 +133,11 @@ public class StsciService {
     }
 
     private static String extractCredits(Element md8) {
-        String text = md8.getElementsByTag("h3").select(":contains(" + CREDITS + ")").first().parent().text();
-        text = text.substring(text.indexOf(CREDITS) + CREDITS.length()).trim();
+        Element h3 = md8.getElementsByTag("h3").select(":contains(" + CREDITS + ")").first();
+        String text = h3 != null ? h3.parent().text() : "";
+        if (isNotBlank(text)) {
+            text = text.substring(text.indexOf(CREDITS) + CREDITS.length()).trim();
+        }
         int idx = text.indexOf(KEYWORDS);
         if (idx > -1) {
             text = text.substring(0, idx).trim();
