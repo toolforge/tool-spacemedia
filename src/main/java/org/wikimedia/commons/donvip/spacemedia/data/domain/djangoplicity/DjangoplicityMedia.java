@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithInstruments;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -18,7 +19,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Lob;
 
 @Entity
-public class DjangoplicityMedia extends Media {
+public class DjangoplicityMedia extends Media implements WithInstruments {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true, length = 16)
@@ -192,10 +193,12 @@ public class DjangoplicityMedia extends Media {
         this.telescopes = telescopes;
     }
 
+    @Override
     public Set<String> getInstruments() {
         return instruments;
     }
 
+    @Override
     public void setInstruments(Set<String> instruments) {
         this.instruments = instruments;
     }

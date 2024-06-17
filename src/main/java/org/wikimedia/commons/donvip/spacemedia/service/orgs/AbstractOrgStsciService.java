@@ -27,6 +27,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.stsci.StsciService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
@@ -46,6 +47,10 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     @Lazy
     @Autowired
     private StsciService stsci;
+
+    @Lazy
+    @Autowired
+    private NasaMappingService mappings;
 
     protected AbstractOrgStsciService(StsciMediaRepository repository, String mission, String searchEndpoint,
             String detailEndpoint) {
@@ -175,6 +180,9 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
                         }
                     });
         }
+        for (String instrument : media.getInstruments()) {
+            wikidataStatementMapping(instrument, mappings.getNasaInstruments(), "P4082", result); // Taken with
+        }
         return result;
     }
 
@@ -190,6 +198,9 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
                                     .map(Pair::getValue).ifPresent(result::add);
                         }
                     });
+        }
+        for (String instrument : media.getInstruments()) {
+            findCategoryFromMapping(instrument, "instrument", mappings.getNasaInstruments()).ifPresent(result::add);
         }
         return result;
     }

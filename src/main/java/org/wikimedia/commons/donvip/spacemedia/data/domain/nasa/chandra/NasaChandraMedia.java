@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithInstruments;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -13,7 +14,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Lob;
 
 @Entity
-public class NasaChandraMedia extends Media {
+public class NasaChandraMedia extends Media implements WithInstruments {
 
     @Column(nullable = true, length = 255)
     private String scale;
@@ -137,10 +138,12 @@ public class NasaChandraMedia extends Media {
         this.observationIds = observationIds;
     }
 
+    @Override
     public Set<String> getInstruments() {
         return instruments;
     }
 
+    @Override
     public void setInstruments(Set<String> instruments) {
         this.instruments = instruments;
     }

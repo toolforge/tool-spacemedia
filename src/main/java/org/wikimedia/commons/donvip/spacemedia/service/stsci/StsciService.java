@@ -13,6 +13,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +108,8 @@ public class StsciService {
         Elements tds = html.getElementsByTag("td");
         findTd(tds, "Object Name").ifPresent(result::setObjectName);
         findTd(tds, "Constellation").ifPresent(result::setConstellation);
+        findTd(tds, "Instrument").map(x -> Arrays.stream(x.split(",")).map(String::trim).collect(toSet()))
+                .ifPresent(result::setInstruments);
         findTd(tds, "Exposure Dates").ifPresent(dates -> {
             try {
                 result.setCreationDate(LocalDate.parse(dates, exposureDateformatter));

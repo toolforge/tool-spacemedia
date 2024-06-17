@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithInstruments;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,7 +20,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Transient;
 
 @Entity
-public class StsciMedia extends Media implements WithKeywords {
+public class StsciMedia extends Media implements WithKeywords, WithInstruments {
 
     private static final Pattern HORRIBLE_ID_FORMAT = Pattern.compile("\\d{4}-\\d{3}-[A-Z0-9]{26}");
 
@@ -35,6 +36,10 @@ public class StsciMedia extends Media implements WithKeywords {
 
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> keywords = new HashSet<>();
+
+    @Column(nullable = true, length = 63)
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> instruments = new HashSet<>();
 
     public String getNewsId() {
         return newsId;
@@ -77,8 +82,18 @@ public class StsciMedia extends Media implements WithKeywords {
     }
 
     @Override
+    public Set<String> getInstruments() {
+        return instruments;
+    }
+
+    @Override
+    public void setInstruments(Set<String> instruments) {
+        this.instruments = instruments;
+    }
+
+    @Override
     public int hashCode() {
-        return 31 * super.hashCode() + Objects.hash(newsId, keywords, objectName, constellation);
+        return 31 * super.hashCode() + Objects.hash(newsId, keywords, objectName, constellation, instruments);
     }
 
     @Override
@@ -89,13 +104,14 @@ public class StsciMedia extends Media implements WithKeywords {
             return false;
         StsciMedia other = (StsciMedia) obj;
         return Objects.equals(newsId, other.newsId) && Objects.equals(keywords, other.keywords)
-                && Objects.equals(objectName, other.objectName) && Objects.equals(constellation, other.constellation);
+                && Objects.equals(objectName, other.objectName) && Objects.equals(constellation, other.constellation)
+                && Objects.equals(instruments, other.instruments);
     }
 
     @Override
     public String toString() {
         return "StsciMedia [id=" + getId() + ", newsId=" + newsId + ", objectName=" + objectName
-                + ", constellation=" + constellation + ']';
+                + ", constellation=" + constellation + ", instruments=" + instruments + ']';
     }
 
     @Override
@@ -109,6 +125,7 @@ public class StsciMedia extends Media implements WithKeywords {
         this.newsId = mediaFromApi.newsId;
         this.objectName = mediaFromApi.objectName;
         this.constellation = mediaFromApi.constellation;
+        this.instruments = mediaFromApi.instruments;
         return this;
     }
 }
