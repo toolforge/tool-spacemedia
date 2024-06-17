@@ -86,8 +86,10 @@ public class ExifMetadata {
     @JsonProperty("EXIF:SerialNumber")
     private String exifSerialNumber;
 
+    @Lob
     @JsonDeserialize(using = StringArrayAsStringDeserializer.class)
     @JsonProperty("IPTC:By-line")
+    @Column(columnDefinition = "TEXT")
     private String iptcByLine;
 
     @Lob
