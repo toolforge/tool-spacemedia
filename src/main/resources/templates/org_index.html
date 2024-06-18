@@ -43,7 +43,7 @@
 		            <img th:if="${media.audio}" class="cornerimage" width="80px" src="/Antu_audio-volume-high.svg" alt="">
 		          </a>
                   <a th:href="@{/{id}/rest/refreshmedia/{mid}(id=${org.id},mid=${media.id})}" target="_blank">
-                    <img width="24" height="24" th:alt="'refresh ' + ${media.id}" th:src="@{/Gtk-refresh.svg}">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.id}" th:src="@{/Gtk-refresh-green.svg}">
                   </a>
                   <a th:href="@{/{id}/rest/uploadmedia/{mid}(id=${org.id},mid=${media.id})}" target="_blank" th:if="${org.uploadEnabled}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.id}" th:src="@{/Wlm-icon-upload-green.svg}" />
@@ -94,6 +94,7 @@
 		          <a th:text="${media.publicationDate}" th:if="${media.publicationDate} != null"></a>
 		          <a th:text="${media.publicationMonth}" th:if="${media.publicationDate} == null and ${media.publicationMonth} != null"></a>
 		          <a th:text="${media.publicationYear}" th:if="${media.publicationDate} == null and ${media.publicationMonth} == null"></a>
+		          <br>
                   <!-- uploads by date -->
                   <a th:href="@{/{id}/rest/uploadbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="${org.uploadEnabled} and 'missing' == ${tab} and ${media.publicationDate} != null">
                     <img width="24" height="24" th:alt="'upload ' + ${media.publicationDate}" th:src="@{/Wlm-icon-upload-green.svg}">
@@ -132,6 +133,46 @@
                   </a>
                   <a th:href="@{/{id}/rest/uploaddocumentsbyyear/{year}(id=${org.id},repo=${repo},year=${media.publicationYear})}" target="_blank" th:if="${org.uploadEnabled} and 'missing/documents' == ${tab}">
                     <img width="24" height="24" th:alt="'upload ' + ${media.publicationYear}" th:src="@{/Wlm-icon-upload-red.svg}">
+                  </a>
+		          <br>
+                  <!-- refreshs by date -->
+                  <a th:href="@{/{id}/rest/refreshbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="'missing' == ${tab} and ${media.publicationDate} != null">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationDate}" th:src="@{/Gtk-refresh-green.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/refreshimagesbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="'missing/images' == ${tab} and ${media.publicationDate} != null">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationDate}" th:src="@{/Gtk-refresh-green.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/refreshvideosbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="'missing/videos' == ${tab} and ${media.publicationDate} != null">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationDate}" th:src="@{/Gtk-refresh-green.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/refreshdocumentsbydate/{date}(id=${org.id},repo=${repo},date=${media.publicationDate})}" target="_blank" th:if="'missing/documents' == ${tab} and ${media.publicationDate} != null">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationDate}" th:src="@{/Gtk-refresh-green.svg}">
+                  </a>
+                  <!-- refreshs by month -->
+                  <a th:href="@{/{id}/rest/refreshbymonth/{month}(id=${org.id},repo=${repo},month=${media.publicationMonth})}" target="_blank" th:if="'missing' == ${tab} and ${media.publicationMonth} != null">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationMonth}" th:src="@{/Gtk-refresh-blue.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/refreshimagesbymonth/{month}(id=${org.id},repo=${repo},month=${media.publicationMonth})}" target="_blank" th:if="'missing/images' == ${tab} and ${media.publicationMonth} != null">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationMonth}" th:src="@{/Gtk-refresh-blue.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/refreshvideosbymonth/{month}(id=${org.id},repo=${repo},month=${media.publicationMonth})}" target="_blank" th:if="'missing/videos' == ${tab} and ${media.publicationMonth} != null">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationMonth}" th:src="@{/Gtk-refresh-blue.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/refreshdocumentsbymonth/{month}(id=${org.id},repo=${repo},month=${media.publicationMonth})}" target="_blank" th:if="'missing/documents' == ${tab} and ${media.publicationMonth} != null">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationMonth}" th:src="@{/Gtk-refresh-blue.svg}">
+                  </a>
+                  <!-- refreshs by year -->
+                  <a th:href="@{/{id}/rest/refreshbyyear/{year}(id=${org.id},repo=${repo},year=${media.publicationYear})}" target="_blank" th:if="'missing' == ${tab}">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationYear}" th:src="@{/Gtk-refresh-red.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/refreshimagesbyyear/{year}(id=${org.id},repo=${repo},year=${media.publicationYear})}" target="_blank" th:if="'missing/images' == ${tab}">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationYear}" th:src="@{/Gtk-refresh-red.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/refreshvideosbyyear/{year}(id=${org.id},repo=${repo},year=${media.publicationYear})}" target="_blank" th:if="'missing/videos' == ${tab}">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationYear}" th:src="@{/Gtk-refresh-red.svg}">
+                  </a>
+                  <a th:href="@{/{id}/rest/refreshdocumentsbyyear/{year}(id=${org.id},repo=${repo},year=${media.publicationYear})}" target="_blank" th:if="'missing/documents' == ${tab}">
+                    <img width="24" height="24" th:alt="'refresh ' + ${media.publicationYear}" th:src="@{/Gtk-refresh-red.svg}">
                   </a>
 		        </td>
 		        <td th:utext="${#strings.abbreviate(media.description,2000)}"></td>

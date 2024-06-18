@@ -243,6 +243,81 @@ public abstract class OrgRestController<T extends Media> {
         return service.refreshAndSaveById(extractId(request, "refreshmedia"));
     }
 
+    @GetMapping("/refreshbydate/{date}")
+    public final List<T> refreshByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByDate(date, repo, x -> true);
+    }
+
+    @GetMapping("/refreshimagesbydate/{date}")
+    public final List<T> refreshImagesByDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByDate(date, repo, Media::isImage);
+    }
+
+    @GetMapping("/refreshvideosbydate/{date}")
+    public final List<T> refreshVideosByDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByDate(date, repo, Media::isVideo);
+    }
+
+    @GetMapping("/refreshdocumentsbydate/{date}")
+    public final List<T> refreshDocumentsByDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByDate(date, repo, Media::isDocument);
+    }
+
+    @GetMapping("/refreshbymonth/{month}")
+    public final List<T> refreshByMonth(@PathVariable YearMonth month,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByMonth(month, repo, x -> true);
+    }
+
+    @GetMapping("/refreshimagesbymonth/{month}")
+    public final List<T> refreshImagesByMonth(@PathVariable YearMonth month,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByMonth(month, repo, Media::isImage);
+    }
+
+    @GetMapping("/refreshvideosbymonth/{month}")
+    public final List<T> refreshVideosByMonth(@PathVariable YearMonth month,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByMonth(month, repo, Media::isVideo);
+    }
+
+    @GetMapping("/refreshdocumentsbymonth/{month}")
+    public final List<T> refreshDocumentsByMonth(@PathVariable YearMonth month,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByMonth(month, repo, Media::isDocument);
+    }
+
+    @GetMapping("/refreshbyyear/{year}")
+    public final List<T> refreshByYear(@PathVariable Year year,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByYear(year, repo, x -> true);
+    }
+
+    @GetMapping("/refreshimagesbyyear/{year}")
+    public final List<T> refreshImagesByYear(@PathVariable Year year,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByYear(year, repo, Media::isImage);
+    }
+
+    @GetMapping("/refreshvideosbyyear/{year}")
+    public final List<T> refreshVideosByYear(@PathVariable Year year,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByYear(year, repo, Media::isVideo);
+    }
+
+    @GetMapping("/refreshdocumentsbyyear/{year}")
+    public final List<T> refreshDocumentsByYear(@PathVariable Year year,
+            @RequestParam(name = "repo", required = false) String repo) throws ImageNotFoundException, IOException {
+        return service.refreshAndSaveByYear(year, repo, Media::isDocument);
+    }
+
     @GetMapping("/refreshmissing")
     public final void refreshMissingMedia() {
         refreshMissingMedia(m -> true);
