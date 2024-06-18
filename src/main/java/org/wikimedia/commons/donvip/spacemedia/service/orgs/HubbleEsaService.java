@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -31,6 +33,10 @@ public class HubbleEsaService extends AbstractOrgDjangoplicityService {
     @Lazy
     @Autowired
     private HubbleNasaService nasaService;
+
+    @Lazy
+    @Autowired
+    private NasaMappingService mappings;
 
     @Autowired
     public HubbleEsaService(DjangoplicityMediaRepository repository,
@@ -49,23 +55,31 @@ public class HubbleEsaService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
+    protected SdcStatements getStatements(DjangoplicityMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata).creator("Q2513"); // Created by Hubble
+        for (String instrument : media.getInstruments()) {
+            wikidataStatementMapping(instrument, mappings.getNasaInstruments(), "P4082", result); // Taken with
+        }
+        return result;
+    }
+
+    @Override
     public Set<String> findCategories(DjangoplicityMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
         replace(result, "Galaxies", "Hubble images of galaxies");
         replace(result, "Nebulae", "Hubble images of nebulae");
         replace(result, "Solar System", "Hubble Solar System images");
         replace(result, "Star clusters", "Hubble images of star clusters");
+        for (String instrument : media.getInstruments()) {
+            findCategoryFromMapping(instrument, "instrument", mappings.getNasaInstruments()).ifPresent(result::add);
+        }
         return result;
     }
 
     @Override
     public Set<String> findLicenceTemplates(DjangoplicityMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
-        if (media.getYear().getValue() < 2009) {
-            result.add("PD-Hubble");
-        } else {
-            result.add("ESA-Hubble");
-        }
+        result.add(media.getYear().getValue() < 2009 ? "PD-Hubble" : "ESA-Hubble");
         return result;
     }
 

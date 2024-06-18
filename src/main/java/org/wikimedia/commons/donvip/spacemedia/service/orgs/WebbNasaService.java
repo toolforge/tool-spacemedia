@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithInstruments;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
@@ -82,18 +83,20 @@ public class WebbNasaService extends AbstractOrgStsciService {
         return result;
     }
 
-    static Optional<String> switchForInstruments(Media media, String miri, String nircam, String composite,
-            String nirspec) {
+    <T extends Media & WithInstruments> Optional<String> switchForInstruments(T media, String miri, String nircam,
+            String composite, String nirspec) {
         String title = media.getTitle().toLowerCase(Locale.ENGLISH);
-        if (title.contains("nircam and miri composite") || title.contains("nircam + miri imag")) {
+        Set<String> instr = media.getInstruments().stream().map(s -> s.toLowerCase(Locale.ENGLISH)).collect(toSet());
+        if (title.contains("nircam and miri composite") || title.contains("nircam + miri imag")
+                || instr.containsAll(List.of("nircam", "miri"))) {
             return Optional.ofNullable(composite);
         } else if (title.contains("miri image") || title.contains("miri annotated image")
-                || title.contains("miri compass image")) {
+                || title.contains("miri compass image") || instr.contains("miri")) {
             return Optional.of(miri);
         } else if (title.contains("nircam image") || title.contains("nircam annotated image")
-                || title.contains("nircam compass image")) {
+                || title.contains("nircam compass image") || instr.contains("nircam")) {
             return Optional.of(nircam);
-        } else if (title.contains("nirspec")) {
+        } else if (title.contains("nirspec") || instr.contains("nirspec")) {
             return Optional.of(nirspec);
         }
         return Optional.empty();

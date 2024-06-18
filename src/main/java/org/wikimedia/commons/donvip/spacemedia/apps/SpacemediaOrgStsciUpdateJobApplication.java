@@ -16,7 +16,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.Org;
 
-@ComponentScan(basePackages = "org.wikimedia.commons.donvip.spacemedia.service.stsci", excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".+Test.*"))
+@ComponentScan(basePackages = { "org.wikimedia.commons.donvip.spacemedia.service.nasa",
+        "org.wikimedia.commons.donvip.spacemedia.service.stsci" }, excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".+Test.*"))
 @EnableJpaRepositories(entityManagerFactoryRef = "domainEntityManagerFactory", transactionManagerRef = "domainTransactionManager", basePackageClasses = {
         Media.class, StsciMedia.class, DjangoplicityMedia.class })
 public class SpacemediaOrgStsciUpdateJobApplication extends AbstractSpacemediaOrgUpdateJobApplication {
