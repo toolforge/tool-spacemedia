@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 /**
@@ -58,6 +59,12 @@ public class HubbleNasaService extends AbstractOrgStsciService {
 
     public void checkHubbleCategories() {
         checkCommonsCategories(hubbleCategories);
+    }
+
+    @Override
+    protected SdcStatements getStatements(StsciMedia media, FileMetadata metadata) {
+        return super.getStatements(media, metadata).creator("Q2513") // Created by Hubble
+                .locationOfCreation("Q663611"); // Created in low earth orbit
     }
 
     @Override

@@ -64,7 +64,7 @@ public class WebbEsaService extends AbstractOrgDjangoplicityService {
     protected SdcStatements getStatements(DjangoplicityMedia media, FileMetadata metadata) {
         SdcStatements sdc = super.getStatements(media, metadata).creator("Q186447"); // Created by JWST
         // TODO multiple values for MIRI+NIRCam composite
-        WebbNasaService.switchForInstruments(media, "Q1881516", "Q29598269", null, "Q16153509")
+        nasaService.switchForInstruments(media, "Q1881516", "Q29598269", null, "Q16153509")
                 .ifPresent(sdc::capturedWith);
         return sdc.locationOfCreation("Q15725510"); // Created in L2-Earth-Sun
     }
@@ -72,7 +72,7 @@ public class WebbEsaService extends AbstractOrgDjangoplicityService {
     @Override
     public Set<String> findCategories(DjangoplicityMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        WebbNasaService.switchForInstruments(media, "Images by MIRI", "Images by NIRCam",
+        nasaService.switchForInstruments(media, "Images by MIRI", "Images by NIRCam",
                 "NIRCam and MIRI composite images", "Spectra by NIRSpec").ifPresent(result::add);
         return result;
     }
