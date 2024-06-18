@@ -737,6 +737,35 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     @Override
+    public List<T> refreshAndSaveByDate(LocalDate date, String repo, Predicate<Media> predicate)
+            throws ImageNotFoundException, IOException {
+        return refreshAndSaveMedias(listMissingMediaByDate(date, repo).stream().filter(predicate));
+    }
+
+    @Override
+    public List<T> refreshAndSaveByMonth(YearMonth month, String repo, Predicate<Media> predicate)
+            throws ImageNotFoundException, IOException {
+        return refreshAndSaveMedias(listMissingMediaByMonth(month, repo).stream().filter(predicate));
+    }
+
+    @Override
+    public List<T> refreshAndSaveByYear(Year year, String repo, Predicate<Media> predicate)
+            throws ImageNotFoundException, IOException {
+        return refreshAndSaveMedias(listMissingMediaByYear(year, repo).stream().filter(predicate));
+    }
+
+    private List<T> refreshAndSaveMedias(Stream<T> medias) {
+        return medias.map(media -> {
+            try {
+                return refreshAndSave(media);
+            } catch (IOException e) {
+                LOGGER.error("Failed to refresh {}", media, e);
+                return null;
+            }
+        }).filter(Objects::nonNull).toList();
+    }
+
+    @Override
     public T refreshAndSave(T media) throws IOException {
         T refreshedMedia = null;
         try {

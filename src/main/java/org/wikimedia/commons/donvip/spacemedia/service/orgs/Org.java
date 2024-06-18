@@ -158,6 +158,15 @@ public interface Org<T extends Media> {
 
     T refreshAndSaveById(String id) throws ImageNotFoundException, IOException;
 
+    List<T> refreshAndSaveByDate(LocalDate date, String repo, Predicate<Media> predicate)
+            throws ImageNotFoundException, IOException;
+
+    List<T> refreshAndSaveByMonth(YearMonth month, String repo, Predicate<Media> predicate)
+            throws ImageNotFoundException, IOException;
+
+    List<T> refreshAndSaveByYear(Year year, String repo, Predicate<Media> predicate)
+            throws ImageNotFoundException, IOException;
+
     T refreshAndSave(T media) throws IOException;
 
     T syncAndSave(T media) throws IOException;
