@@ -369,6 +369,10 @@ public class MediaService {
                         LOGGER.warn("MP4 track header box with invalid dimensions: {} => {}", metadata, box);
                     }
                 }
+            } else if (img.contents() instanceof ImageDimensions dims) {
+                metadata.setImageDimensions(dims);
+                LOGGER.info("Dimensions have been updated for {}", metadata);
+                result = true;
             }
         }
         return result;
