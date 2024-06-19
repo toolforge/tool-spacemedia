@@ -1278,12 +1278,15 @@ public abstract class AbstractOrgService<T extends Media>
         media.getMetadataStream()
                 .filter(m -> m != metadata && m.getAssetUrl() != null && m.isIgnored() != Boolean.TRUE
                         && !Objects.equals(m.getAssetUrl(), metadata.getAssetUrl()))
-                .map(m -> media.getFirstCommonsFileNameOrUploadTitle(m) + '|'
-                        + ofNullable(m.getFileExtensionOnCommons()).orElse("TBD").toUpperCase(Locale.ENGLISH)
-                        + " version\n")
-                .distinct().forEach(sb::append);
+                .map(m -> otherVersion(media, m)).distinct().filter(s -> !s.equals(otherVersion(media, metadata)))
+                .forEach(sb::append);
         String result = sb.toString();
         return result.isEmpty() ? Optional.empty() : Optional.of(result.trim());
+    }
+
+    private static String otherVersion(Media media, FileMetadata m) {
+        return media.getFirstCommonsFileNameOrUploadTitle(m) + '|'
+                + ofNullable(m.getFileExtensionOnCommons()).orElse("TBD").toUpperCase(Locale.ENGLISH) + " version\n";
     }
 
     protected Optional<String> getOtherFields(T media) {
