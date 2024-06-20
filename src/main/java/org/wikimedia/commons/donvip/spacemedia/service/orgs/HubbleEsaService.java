@@ -26,6 +26,7 @@ public class HubbleEsaService extends AbstractOrgDjangoplicityService {
     private static final String HUB_BASE_PUBLIC_URL = "https://esahubble.org/";
 
     private static final String HUB_IMAGES_PATH = "images/";
+    private static final String HUB_VIDEOS_PATH = "videos/";
 
     private static final Pattern PATTERN_LOCALIZED_URL = Pattern
             .compile(HUB_BASE_PUBLIC_URL + "([a-z]+/)" + HUB_IMAGES_PATH + ".*");
@@ -84,8 +85,9 @@ public class HubbleEsaService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
-    public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata) {
-        return newURL(HUB_BASE_PUBLIC_URL + HUB_IMAGES_PATH + media.getIdUsedInOrg());
+    public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata, String ext) {
+        return newURL(
+                HUB_BASE_PUBLIC_URL + imageOrVideo(ext, HUB_IMAGES_PATH, HUB_VIDEOS_PATH) + media.getIdUsedInOrg());
     }
 
     @Override

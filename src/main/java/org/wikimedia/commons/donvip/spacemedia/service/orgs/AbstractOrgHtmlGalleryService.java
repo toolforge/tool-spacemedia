@@ -70,7 +70,7 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
     protected abstract String extractIdFromGalleryItem(String url, Element result);
 
     @Override
-    public final URL getSourceUrl(T media, FileMetadata metadata) {
+    public final URL getSourceUrl(T media, FileMetadata metadata, String ext) {
         return ofNullable(getSourceUrl(media.getId())).map(Utils::newURL).orElse(null);
     }
 

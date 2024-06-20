@@ -72,7 +72,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     }
 
     @Override
-    public URL getSourceUrl(YouTubeMedia video, FileMetadata metadata) {
+    public URL getSourceUrl(YouTubeMedia video, FileMetadata metadata, String ext) {
         return metadata.getAssetUrl();
     }
 
@@ -186,7 +186,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
             try {
                 result.add(processYouTubeVideo(video));
             } catch (IOException e) {
-                problem(getSourceUrl(video, video.getUniqueMetadata()), e);
+                problem(getSourceUrl(video, video.getUniqueMetadata(), video.getUniqueMetadata().getExtension()), e);
             }
         }
         return result;

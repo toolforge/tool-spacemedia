@@ -125,7 +125,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     @Override
-    public URL getSourceUrl(NasaSdoMedia media, FileMetadata metadata) {
+    public URL getSourceUrl(NasaSdoMedia media, FileMetadata metadata, String ext) {
         return metadata.getAssetUrl();
     }
 

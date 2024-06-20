@@ -478,6 +478,28 @@ public final class Utils {
         throw new IllegalArgumentException("Unsupported temporal: " + t);
     }
 
+    public static Optional<Integer> extractFileSize(Pattern pattern, String text) {
+        Matcher m = pattern.matcher(text);
+        if (m.matches()) {
+            double size = Double.parseDouble(m.group(1));
+            switch (m.group(2)) {
+            case "KB":
+                size *= 1024;
+                break;
+            case "MB":
+                size *= 1024 * 1024;
+                break;
+            case "GB":
+                size *= 1024 * 1024 * 1024;
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported file size unit: '" + m.group(2) + "'");
+            }
+            return Optional.of((int) size);
+        }
+        return Optional.empty();
+    }
+
     public static HttpClientContext getHttpClientContext(CookieStore cookieStore) {
         HttpClientContext context = new HttpClientContext();
         context.setCookieStore(cookieStore);

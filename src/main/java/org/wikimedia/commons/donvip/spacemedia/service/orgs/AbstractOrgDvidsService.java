@@ -333,7 +333,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
-    public final URL getSourceUrl(DvidsMedia media, FileMetadata metadata) {
+    public final URL getSourceUrl(DvidsMedia media, FileMetadata metadata, String ext) {
         try {
             String[] typedId = media.getId().getMediaId().split(":");
             return mediaUrl.expand(Map.of("type", typedId[0], "id", typedId[1])).toURL();
@@ -344,7 +344,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
 
     @Override
     protected final String getSource(DvidsMedia media, FileMetadata metadata) {
-        URL sourceUrl = getSourceUrl(media, metadata);
+        URL sourceUrl = getSourceUrl(media, metadata, metadata.getExtension());
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), sourceUrl);
         return t != null ? "{{" + t.virinTemplate() + "}}" : sourceUrl.toExternalForm();
     }

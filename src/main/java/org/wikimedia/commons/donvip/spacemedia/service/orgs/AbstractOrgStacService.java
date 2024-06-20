@@ -86,7 +86,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
     }
 
     @Override
-    public URL getSourceUrl(StacMedia media, FileMetadata metadata) {
+    public URL getSourceUrl(StacMedia media, FileMetadata metadata, String ext) {
         return media.getUrl();
     }
 

@@ -184,7 +184,7 @@ public abstract class AbstractOrgBoxService extends AbstractOrgService<BoxMedia>
     }
 
     @Override
-    public final URL getSourceUrl(BoxMedia media, FileMetadata metadata) {
+    public final URL getSourceUrl(BoxMedia media, FileMetadata metadata, String ext) {
         return metadata.getAssetUrl();
     }
 

@@ -67,7 +67,7 @@ class AbstractOrgDjangoplicityServiceTest extends AbstractOrgServiceTest {
 
     private void doTestProcessAboutTheImageType(String type, DjangoplicityMediaType mediaType) {
         DjangoplicityMedia media = new DjangoplicityMedia();
-        service.processAboutTheImage(null, null, null, media, "Type:", null, type);
+        service.processAboutTheImageOrVideo(null, null, null, media, "Type:", null, type);
         assertEquals(mediaType, media.getImageType());
     }
 
@@ -87,7 +87,7 @@ class AbstractOrgDjangoplicityServiceTest extends AbstractOrgServiceTest {
             }
 
             @Override
-            public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata) {
+            public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata, String ext) {
                 return newURL("https://esahubble.org/images/potw2251a/");
             }
 

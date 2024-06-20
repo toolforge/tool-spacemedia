@@ -130,7 +130,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
     }
 
     @Override
-    public URL getSourceUrl(NasaAsterMedia media, FileMetadata metadata) {
+    public URL getSourceUrl(NasaAsterMedia media, FileMetadata metadata, String ext) {
         return newURL(detailsUrl.replace("<id>", media.getId().getMediaId()));
     }
 

@@ -153,7 +153,7 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
     }
 
     @Override
-    public URL getSourceUrl(ErccMedia media, FileMetadata metadata) {
+    public URL getSourceUrl(ErccMedia media, FileMetadata metadata, String ext) {
         return newURL(ERCC_BASE_URL + ERCC_MAPS_PATH + media.getIdUsedInOrg());
     }
 

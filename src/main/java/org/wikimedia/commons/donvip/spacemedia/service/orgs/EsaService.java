@@ -355,7 +355,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     }
 
     @Override
-    public URL getSourceUrl(EsaMedia media, FileMetadata metadata) {
+    public URL getSourceUrl(EsaMedia media, FileMetadata metadata, String ext) {
         URL url = media.getUrl();
         String externalForm = url.toExternalForm();
         if (externalForm.contains("://www.esa.int/spaceinimages/layout/set/html_npl/Images/")) {

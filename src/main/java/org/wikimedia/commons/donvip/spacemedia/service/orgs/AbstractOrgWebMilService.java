@@ -167,7 +167,7 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
 
     @Override
     protected final String getSource(WebMilMedia media, FileMetadata metadata) {
-        URL sourceUrl = getSourceUrl(media, metadata);
+        URL sourceUrl = getSourceUrl(media, metadata, metadata.getExtension());
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), sourceUrl);
         return t != null ? "{{" + t.virinTemplate() + "}}" : sourceUrl.toExternalForm();
     }
