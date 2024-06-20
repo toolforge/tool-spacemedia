@@ -127,7 +127,7 @@ public class InpeDpiService extends AbstractOrgService<InpeDpiMedia> {
     }
 
     @Override
-    public URL getSourceUrl(InpeDpiMedia media, FileMetadata metadata) {
+    public URL getSourceUrl(InpeDpiMedia media, FileMetadata metadata, String ext) {
         return newURL(GALERIA_URL);
     }
 

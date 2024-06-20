@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.extractFileSize;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -199,24 +200,7 @@ public class StsciService {
                 file.setWidth(Integer.parseInt(m.group(1)));
                 file.setHeight(Integer.parseInt(m.group(2)));
             } else {
-                m = FILE_TYPE_SIZE.matcher(segment);
-                if (m.matches()) {
-                    double size = Double.parseDouble(m.group(1));
-                    switch (m.group(2)) {
-                    case "KB":
-                        size *= 1024;
-                        break;
-                    case "MB":
-                        size *= 1024 * 1024;
-                        break;
-                    case "GB":
-                        size *= 1024 * 1024 * 1024;
-                        break;
-                    default:
-                        throw new IOException("Unsupported file size unit: '" + m.group(2) + "' at " + urlLink);
-                    }
-                    file.setFileSize((int) size);
-                }
+                extractFileSize(FILE_TYPE_SIZE, segment).ifPresent(file::setFileSize);
             }
         }
         return file;

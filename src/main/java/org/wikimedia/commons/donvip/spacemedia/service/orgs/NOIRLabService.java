@@ -33,6 +33,7 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
     private static final String BASE_PUBLIC_URL = BASE_URL + PUBLIC_PATH;
 
     private static final String IMAGES_PATH = "images/";
+    private static final String VIDEOS_PATH = "videos/";
 
     private static final Pattern PATTERN_LOCALIZED_URL = Pattern
             .compile(BASE_PUBLIC_URL + "([a-z]+/)" + IMAGES_PATH + ".*");
@@ -142,8 +143,8 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
-    public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata) {
-        return newURL(BASE_PUBLIC_URL + IMAGES_PATH + media.getIdUsedInOrg());
+    public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata, String ext) {
+        return newURL(BASE_PUBLIC_URL + imageOrVideo(ext, IMAGES_PATH, VIDEOS_PATH) + media.getIdUsedInOrg());
     }
 
     @Override

@@ -1014,7 +1014,8 @@ public abstract class AbstractOrgService<T extends Media>
         SdcStatements result = new SdcStatements();
         // Source: file available on the internet
         result.put("P7482", Pair.of("Q74228490",
-                new TreeMap<>(Map.of("P973", getSourceUrl(media, metadata), "P2699", metadata.getAssetUrl()))));
+                new TreeMap<>(Map.of("P973", getSourceUrl(media, metadata, metadata.getExtension()), "P2699",
+                        metadata.getAssetUrl()))));
         // Licences
         Set<String> licences = findLicenceTemplates(media, metadata);
         if (PD_US.stream().anyMatch(pd -> licences.stream().anyMatch(l -> l.startsWith(pd)))) {
@@ -1252,7 +1253,7 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected String getSource(T media, FileMetadata metadata) {
-        return wikiLink(getSourceUrl(media, metadata), media.getTitle().replace('|', '-'));
+        return wikiLink(getSourceUrl(media, metadata, metadata.getExtension()), media.getTitle().replace('|', '-'));
     }
 
     protected String getAuthor(T media, FileMetadata metadata) {

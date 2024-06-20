@@ -180,10 +180,11 @@ public interface Org<T extends Media> {
     default URL getSourceUrl(T media) {
         // Used in web app
         Iterator<FileMetadata> iterator = media.getMetadata().iterator();
-        return getSourceUrl(media, iterator.hasNext() ? iterator.next() : null);
+        FileMetadata fm = iterator.hasNext() ? iterator.next() : null;
+        return getSourceUrl(media, fm, fm != null ? fm.getExtension() : null);
     }
 
-    URL getSourceUrl(T media, FileMetadata metadata);
+    URL getSourceUrl(T media, FileMetadata metadata, String ext);
 
     List<T> searchMedia(String q);
 

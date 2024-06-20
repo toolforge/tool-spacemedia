@@ -188,7 +188,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     }
 
     @Override
-    public URL getSourceUrl(NasaSvsMedia media, FileMetadata metadata) {
+    public URL getSourceUrl(NasaSvsMedia media, FileMetadata metadata, String ext) {
         return newURL("https://svs.gsfc.nasa.gov/" + media.getIdUsedInOrg());
     }
 

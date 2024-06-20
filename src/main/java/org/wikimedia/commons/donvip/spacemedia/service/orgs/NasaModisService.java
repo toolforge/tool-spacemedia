@@ -79,7 +79,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
     }
 
     @Override
-    public URL getSourceUrl(NasaModisMedia media, FileMetadata metadata) {
+    public URL getSourceUrl(NasaModisMedia media, FileMetadata metadata, String ext) {
         return newURL(detailsUrl.replace("<date>", media.getPublicationDate().toString()));
     }
 

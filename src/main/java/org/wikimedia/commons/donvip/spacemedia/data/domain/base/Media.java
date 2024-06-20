@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -574,6 +575,22 @@ public class Media implements MediaProjection, MediaDescription {
         setPublicationDateTime(mediaFromApi.getPublicationDateTime());
         setPublicationDate(mediaFromApi.getPublicationDate());
         setThumbnailUrl(mediaFromApi.getThumbnailUrl());
+        synchronizeMetadataWith(mediaFromApi);
+        if (this instanceof WithKeywords kw && mediaFromApi instanceof WithKeywords kwApi) {
+            kw.setKeywords(kwApi.getKeywords());
+        }
+        if (this instanceof WithLatLon ll && mediaFromApi instanceof WithLatLon llApi) {
+            ll.setLatitude(llApi.getLatitude());
+            ll.setLongitude(llApi.getLongitude());
+        }
+    }
+
+    public final void synchronizeMetadataWith(Media mediaFromApi) {
+        removeMetadataNotFoundIn(mediaFromApi);
+        addMetadataNewlyFoundIn(mediaFromApi, null);
+    }
+
+    public final void removeMetadataNotFoundIn(Media mediaFromApi) {
         if (mediaFromApi.hasMetadata()) {
             for (Iterator<FileMetadata> it = getMetadata().iterator(); it.hasNext();) {
                 FileMetadata m = it.next();
@@ -583,20 +600,21 @@ public class Media implements MediaProjection, MediaDescription {
                     it.remove();
                 }
             }
+        }
+    }
+
+    public final void addMetadataNewlyFoundIn(Media mediaFromApi, Consumer<FileMetadata> modifier) {
+        if (mediaFromApi.hasMetadata()) {
             for (FileMetadata apiMetadata : mediaFromApi.getMetadata()) {
                 if (getMetadataStream().map(FileMetadata::getAssetUri)
                         .noneMatch(x -> areSameUris(x, apiMetadata.getAssetUri()))) {
                     LOGGER.info("Add API metadata not yet found in database by asset URI: {}", apiMetadata);
+                    if (modifier != null) {
+                        modifier.accept(apiMetadata);
+                    }
                     addMetadata(apiMetadata);
                 }
             }
-        }
-        if (this instanceof WithKeywords kw && mediaFromApi instanceof WithKeywords kwApi) {
-            kw.setKeywords(kwApi.getKeywords());
-        }
-        if (this instanceof WithLatLon ll && mediaFromApi instanceof WithLatLon llApi) {
-            ll.setLatitude(llApi.getLatitude());
-            ll.setLongitude(llApi.getLongitude());
         }
     }
 

@@ -58,7 +58,7 @@ public class CapellaStacService extends AbstractOrgStacService {
 
     @Override
     protected String getSource(StacMedia media, FileMetadata metadata) {
-        URL itemUrl = getSourceUrl(media, metadata);
+        URL itemUrl = getSourceUrl(media, metadata, metadata.getExtension());
         return "{{en|1=" + wikiLink(metadata.getAssetUrl(), "Capella Space")
                 + " via their AWS S3 Bucket. Further data via " + wikiLink(itemUrl, "STAC API") + ". View in "
                 + wikiLink(newURL(itemUrl.toExternalForm().replace("://",

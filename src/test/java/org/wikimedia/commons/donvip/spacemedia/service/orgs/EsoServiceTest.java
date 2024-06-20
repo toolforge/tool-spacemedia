@@ -39,18 +39,19 @@ class EsoServiceTest extends AbstractOrgServiceTest {
 
     @ParameterizedTest
     @CsvSource(delimiter = '|', value = {
-            "eso2215a|Observation|2022-11-10T14:00|1639|1682|Cone Nebula, NGC 2264|Milky Way : Nebula : Type : Star Formation|Nebulae|ESO|https://cdn.eso.org/images/original/eso2215a.tif,https://cdn.eso.org/images/large/eso2215a.jpg|ESO’s 60th anniversary image: the Cone Nebula as seen by the VLT|The Cone Nebula is part of a star-forming region of space, NGC 2264, about 2500 light-years away. Its pillar-like appearance is a perfect example of the shapes that can develop in giant clouds of cold molecular gas and dust, known for creating new stars. This dramatic new view of the nebula was captured with the <a href=\"https://www.eso.org/public/teles-instr/paranal-observatory/vlt/vlt-instr/fors/\">FOcal Reducer and low dispersion Spectrograph 2</a> (FORS2) instrument on ESO’s <a href=\"https://www.eso.org/public/teles-instr/paranal-observatory/vlt/\">Very Large Telescope</a> (VLT), and released on the occasion of ESO’s 60th anniversary.&nbsp;|FORS2, Very Large Telescope" })
-    void testReadHtml(String id, DjangoplicityMediaType imageType, String date, int width, int height, String name,
+            "eso2215a|images|Observation|2022-11-10T14:00|1639|1682|Cone Nebula, NGC 2264|Milky Way : Nebula : Type : Star Formation|Nebulae|ESO|https://cdn.eso.org/images/original/eso2215a.tif,https://cdn.eso.org/images/large/eso2215a.jpg|ESO’s 60th anniversary image: the Cone Nebula as seen by the VLT|The Cone Nebula is part of a star-forming region of space, NGC 2264, about 2500 light-years away. Its pillar-like appearance is a perfect example of the shapes that can develop in giant clouds of cold molecular gas and dust, known for creating new stars. This dramatic new view of the nebula was captured with the <a href=\"https://www.eso.org/public/teles-instr/paranal-observatory/vlt/vlt-instr/fors/\">FOcal Reducer and low dispersion Spectrograph 2</a> (FORS2) instrument on ESO’s <a href=\"https://www.eso.org/public/teles-instr/paranal-observatory/vlt/\">Very Large Telescope</a> (VLT), and released on the occasion of ESO’s 60th anniversary.&nbsp;|FORS2, Very Large Telescope",
+            "eso2215a|videos||2022-11-10T14:00|0|0|Cone Nebula, NGC 2264|Milky Way : Nebula : Appearance : Emission : H II Region|Nebulae|ESO/L.Calçada, ESO/Digitized Sky Survey 2. Acknowledgement: D. De Martin. Music: Azul Cobalto|https://www.eso.org/public/archives/videos/ultra_hd_broadcast/eso2215a.avi,https://www.eso.org/public/archives/videos/ultra_hd_h265/eso2215a.mp4|Zooming in on the Cone Nebula|This video starts from our location in the galaxy, showing the stellar and dusty band of the Milky Way. Zooming in towards it, we move to the constellation Monoceros (The Unicorn), next to Orion, where the large star-forming region of the NGC 2264 cluster can be found. Within this cluster, we find the pillar-like shape of the Cone Nebula. The dramatic new view of the nebula shown at the end of the video, showcases its dark and impenetrable cloudy appearance. The image was captured with the <a href=\"https://www.eso.org/public/teles-instr/paranal-observatory/vlt/vlt-instr/fors/\">FOcal Reducer and low dispersion Spectrograph 2</a> (FORS2) instrument on ESO’s <a href=\"https://www.eso.org/public/teles-instr/paranal-observatory/vlt/\">Very Large Telescope</a> (VLT), and was released on the occasion of ESO’s 60th anniversary.|" })
+    void testReadHtml(String id, String type, DjangoplicityMediaType imageType, String date, int w, int h, String name,
             @ConvertWith(SetArgumentConverter.class) Set<String> types,
             @ConvertWith(SetArgumentConverter.class) Set<String> categories, String credit,
             @ConvertWith(ListArgumentConverter.class) List<String> assetUrls, String title, String description,
             @ConvertWith(SetArgumentConverter.class) Set<String> telescopes)
             throws Exception {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
-        doDjangoplicityMediaTest(service.newMediaFromHtml(html("eso/" + id + ".html"),
-                new URL("https://www.eso.org/public/images/" + id + "/"), id, null), id, imageType, date,
-                new ImageDimensions(width, height), name, types, categories, credit, assetUrls, title, description,
-                telescopes);
+        doDjangoplicityMediaTest(service.newMediaFromHtml(html("eso/" + type + '_' + id + ".html"),
+                new URL("https://www.eso.org/public/" + type + "/" + id + "/"), id, null), id, imageType, date,
+                w > 0 && h > 0 ? new ImageDimensions(w, h) : null, name, types, categories, credit, assetUrls, title,
+                description, telescopes);
     }
 
     @Test

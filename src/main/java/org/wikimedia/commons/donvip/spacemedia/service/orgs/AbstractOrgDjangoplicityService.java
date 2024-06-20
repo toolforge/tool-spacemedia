@@ -1,9 +1,11 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.extractFileSize;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -26,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,6 +57,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenExc
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 /**
  * Service fetching images from djangoplicity-powered website
@@ -67,6 +71,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgDjangoplicityService.class);
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+) x (\\d+) px");
+    private static final Pattern FILE_SIZE_PATTERN = Pattern.compile("(\\d+\\.\\d+) (KB|MB|GB)");
 
     private final String searchLink;
 
@@ -85,7 +90,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
 
     protected AbstractOrgDjangoplicityService(DjangoplicityMediaRepository repository, String id, String searchLink) {
         super(repository, id, Set.of(id));
-        this.searchLink = Objects.requireNonNull(searchLink);
+        this.searchLink = requireNonNull(searchLink);
     }
 
     @Override
@@ -148,6 +153,9 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
             media = fetchMedia(url, id, imgUrlLink);
             if (media == null) {
                 return Triple.of(Optional.empty(), emptyList(), 0);
+            }
+            if (videosEnabled) {
+                addVideos(media, newURL(url.toExternalForm().replace("/images/", "/videos/")));
             }
             save = true;
         }
@@ -228,6 +236,8 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
 
         ImageDimensions dimensions = processObjectInfos(url, imgUrlLink, id, media, html);
 
+        Map<String, List<Pair<String, Integer>>> videoUrlsAndSizeByFormat = new TreeMap<>();
+
         for (Element link : html.getElementsByClass("archive_dl_text")) {
             Elements innerLinks = link.getElementsByTag("a");
             if (innerLinks.isEmpty()) {
@@ -235,6 +245,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
                 innerLinks = link.parent().nextElementSiblings();
             }
             String assetUrlLink = innerLinks.get(0).attr("href");
+            String assetUrlExt = Utils.findExtension(assetUrlLink);
             if (assetUrlLink.endsWith(".psb")) {
                 // format not supported by Wikimedia Commons
             } else if (assetUrlLink.contains("/screen/")) {
@@ -245,15 +256,42 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
                             && !assetUrlLink.contains("/publication"))) {
                 addMetadata(media, buildAssetUrl(assetUrlLink, url),
                         m -> m.setImageDimensions(assetUrlLink.contains("/original/") ? dimensions : null));
+            } else if (assetUrlExt != null && FileMetadata.VIDEO_EXTENSIONS.contains(assetUrlExt)) {
+                String text = link.nextElementSibling().child(0).text().replace(" checksum", "");
+                videoUrlsAndSizeByFormat.computeIfAbsent(assetUrlExt, k -> new ArrayList<>())
+                        .add(Pair.of(assetUrlLink, extractFileSize(FILE_SIZE_PATTERN, text)
+                        .orElseThrow(() -> new IllegalStateException(assetUrlLink + " => " + text))));
+            } else {
+                LOGGER.trace("Ignored link: {}", assetUrlLink);
             }
         }
+
+        for (List<Pair<String, Integer>> videos : videoUrlsAndSizeByFormat.values()) {
+            Pair<String, Integer> biggestVideo = videos.stream()
+                    .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue())).findFirst().orElseThrow();
+            addMetadata(media, buildAssetUrl(biggestVideo.getKey(), url), null);
+        }
+
         return media;
     }
 
     @Override
     protected DjangoplicityMedia refresh(DjangoplicityMedia media) throws IOException {
-        URL url = getSourceUrl(media, null);
-        return media.copyDataFrom(fetchMedia(url, media.getIdUsedInOrg(), url.toExternalForm()));
+        URL url = getSourceUrl(media, null, "jpg");
+        DjangoplicityMedia result = media.copyDataFrom(fetchMedia(url, media.getIdUsedInOrg(), url.toExternalForm()));
+        if (videosEnabled) {
+            addVideos(result, getSourceUrl(media, null, "mp4"));
+        }
+        return result;
+    }
+
+    private void addVideos(DjangoplicityMedia media, URL url) throws IOException {
+        try {
+            DjangoplicityMedia video = fetchMedia(url, media.getIdUsedInOrg(), url.toExternalForm());
+            media.addMetadataNewlyFoundIn(video, fm -> fm.setDescription(video.getDescription()));
+        } catch (HttpStatusException e) {
+            LOGGER.trace("No video found at {} => {}", url, e.toString());
+        }
     }
 
     protected Collection<String> getForbiddenCategories() {
@@ -337,8 +375,8 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
                     String html = sibling.html();
                     String text = sibling.text();
                     switch (h3.text()) {
-                    case "About the Image":
-                        result = processAboutTheImage(url, imgUrlLink, id, media, title.text(), sibling, text);
+                    case "About the Image", "About the Video":
+                        result = processAboutTheImageOrVideo(url, imgUrlLink, id, media, title.text(), sibling, text);
                         break;
                     case "About the Object":
                         processAboutTheObject(imgUrlLink, media, title, sibling, html, text);
@@ -361,7 +399,8 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
         return result;
     }
 
-    protected ImageDimensions processAboutTheImage(URL url, String imgUrlLink, String id, DjangoplicityMedia media,
+    protected ImageDimensions processAboutTheImageOrVideo(URL url, String imgUrlLink, String id,
+            DjangoplicityMedia media,
             String titleText, Element sibling, String text) {
         ImageDimensions result = null;
         switch (titleText) {
@@ -389,14 +428,13 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
         case "Field of View:":
             media.setFieldOfView(text);
             break;
-        case "Related announcements:":
-        case "Related science announcements:":
+        case "Related announcements:", "Related science announcements:":
             media.setRelatedAnnouncements(parseExternalLinks(sibling, url));
             break;
         case "Related releases:":
             media.setRelatedReleases(parseExternalLinks(sibling, url));
             break;
-        case "Language:":
+        case "Language:", "Duration:", "Frame rate:":
             // Ignored
             break;
         default:
@@ -601,5 +639,9 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
     @Override
     protected Set<String> getEmojis(DjangoplicityMedia uploadedMedia) {
         return new HashSet<>(Set.of(Emojis.TELESCCOPE));
+    }
+
+    protected static String imageOrVideo(String ext, String image, String video) {
+        return FileMetadata.VIDEO_EXTENSIONS.contains(ext) ? video : image;
     }
 }

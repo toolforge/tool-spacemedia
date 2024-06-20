@@ -23,6 +23,7 @@ public class EsoService extends AbstractOrgDjangoplicityService {
     private static final String ESO_BASE_PUBLIC_URL = "https://www.eso.org/public/";
 
     private static final String ESO_IMAGES_PATH = "images/";
+    private static final String ESO_VIDEOS_PATH = "videos/";
 
     private static final Pattern PATTERN_LOCALIZED_URL = Pattern
             .compile(ESO_BASE_PUBLIC_URL + "([a-z]+/)" + ESO_IMAGES_PATH + ".*");
@@ -50,8 +51,9 @@ public class EsoService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
-    public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata) {
-        return newURL(ESO_BASE_PUBLIC_URL + ESO_IMAGES_PATH + media.getIdUsedInOrg());
+    public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata, String ext) {
+        return newURL(
+                ESO_BASE_PUBLIC_URL + imageOrVideo(ext, ESO_IMAGES_PATH, ESO_VIDEOS_PATH) + media.getIdUsedInOrg());
     }
 
     @Override

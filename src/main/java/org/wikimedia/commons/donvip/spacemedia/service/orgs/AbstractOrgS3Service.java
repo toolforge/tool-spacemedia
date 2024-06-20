@@ -180,7 +180,7 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
     }
 
     @Override
-    public final URL getSourceUrl(S3Media media, FileMetadata metadata) {
+    public final URL getSourceUrl(S3Media media, FileMetadata metadata, String ext) {
         return metadata.getAssetUrl();
     }
 }

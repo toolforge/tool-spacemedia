@@ -335,7 +335,7 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
     }
 
     @Override
-    public URL getSourceUrl(NasaMedia media, FileMetadata metadata) {
+    public URL getSourceUrl(NasaMedia media, FileMetadata metadata, String ext) {
         return newURL(detailsLink.replace("<id>", media.getId().getMediaId()));
     }
 

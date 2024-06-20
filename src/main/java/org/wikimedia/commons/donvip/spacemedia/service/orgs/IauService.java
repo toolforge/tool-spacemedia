@@ -32,6 +32,7 @@ public class IauService extends AbstractOrgDjangoplicityService {
     private static final String IAU_BASE_PUBLIC_URL = IAU_BASE_URL + IAU_PUBLIC_PATH;
 
     private static final String IAU_IMAGES_PATH = "images/detail/";
+    private static final String IAU_VIDEOS_PATH = "videos/detail/";
 
     private static final Pattern PATTERN_LOCALIZED_URL = Pattern
             .compile(IAU_BASE_PUBLIC_URL + "([a-z]+/)" + IAU_IMAGES_PATH + ".*");
@@ -108,8 +109,9 @@ public class IauService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
-    public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata) {
-        return newURL(IAU_BASE_PUBLIC_URL + IAU_IMAGES_PATH + media.getIdUsedInOrg());
+    public URL getSourceUrl(DjangoplicityMedia media, FileMetadata metadata, String ext) {
+        return newURL(
+                IAU_BASE_PUBLIC_URL + imageOrVideo(ext, IAU_IMAGES_PATH, IAU_VIDEOS_PATH) + media.getIdUsedInOrg());
     }
 
     @Override
