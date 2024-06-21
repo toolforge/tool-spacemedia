@@ -20,6 +20,7 @@ import java.util.TreeSet;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsP
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsVizualisation;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
+import org.wikimedia.commons.donvip.spacemedia.utils.SpacemediaHttpRequestRetryHandler;
 
 @Service
 public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
@@ -126,7 +128,8 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     }
 
     private NasaSvsMedia fetchMedia(CompositeMediaId id) throws IOException {
-        try (CloseableHttpClient httpclient = HttpClients.createDefault();
+        try (CloseableHttpClient httpclient = HttpClientBuilder.create()
+                .setRetryHandler(new SpacemediaHttpRequestRetryHandler()).build();
                 CloseableHttpResponse response = httpclient.execute(newHttpGet(API_VIZUAL_ENDPOINT + id.getMediaId()));
                 InputStream in = response.getEntity().getContent()) {
             return mapMedia(jackson.readValue(in, NasaSvsVizualisation.class));
