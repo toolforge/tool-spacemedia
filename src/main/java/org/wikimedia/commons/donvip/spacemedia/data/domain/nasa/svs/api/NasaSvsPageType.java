@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum NasaSvsPageType {
     Animation,
+    @JsonProperty("B-Roll")
+    B_Roll,
     Visualization,
     @JsonProperty("Produced Video")
     Produced_Video,
