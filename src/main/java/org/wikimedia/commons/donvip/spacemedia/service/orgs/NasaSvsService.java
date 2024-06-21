@@ -20,7 +20,9 @@ import java.util.TreeSet;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,7 +128,8 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     }
 
     private NasaSvsMedia fetchMedia(CompositeMediaId id) throws IOException {
-        try (CloseableHttpClient httpclient = HttpClients.createDefault();
+        try (CloseableHttpClient httpclient = HttpClientBuilder.create()
+                .setRetryHandler(new StandardHttpRequestRetryHandler(30, false)).build();
                 CloseableHttpResponse response = httpclient.execute(newHttpGet(API_VIZUAL_ENDPOINT + id.getMediaId()));
                 InputStream in = response.getEntity().getContent()) {
             return mapMedia(jackson.readValue(in, NasaSvsVizualisation.class));
