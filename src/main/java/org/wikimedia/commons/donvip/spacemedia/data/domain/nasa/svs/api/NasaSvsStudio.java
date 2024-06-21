@@ -2,11 +2,11 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api;
 
 public enum NasaSvsStudio {
     /** NASA's Scientific Visualization Studio. */
-    svs,
+    svs, SVS,
     /** NASA's Goddard Media Studios. */
-    gms,
+    gms, GMS,
     /** NASA's Conceptual Image Lab. */
-    cil,
+    cil, CILab,
     /** NASA Hyperwall. */
-    hw
+    hw, HW
 }
