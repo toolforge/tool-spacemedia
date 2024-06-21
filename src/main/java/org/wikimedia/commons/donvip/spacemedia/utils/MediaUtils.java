@@ -6,6 +6,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.execOutput;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -124,6 +125,13 @@ public class MediaUtils {
                 String ext = extension;
                 Function<URI, Optional<Path>> dl = x -> {
                     try {
+                        long fileSize = contentLength.getAsLong();
+                        long usableSpace = new File("/").getUsableSpace();
+                        if (usableSpace < fileSize) {
+                            LOGGER.error("Not enough usable disk space ({} bytes) to download {} ({} bytes). Aborting",
+                                    usableSpace, uri, fileSize);
+                            return Optional.empty();
+                        }
                         Path tempFile = Files.createTempFile("sm", "." + ext);
                         FileUtils.copyInputStreamToFile(in, tempFile.toFile());
                         return ofNullable(tempFile);
