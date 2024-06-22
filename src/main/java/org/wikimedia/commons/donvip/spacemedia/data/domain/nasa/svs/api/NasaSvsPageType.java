@@ -6,6 +6,7 @@ public enum NasaSvsPageType {
     Animation,
     @JsonProperty("B-Roll")
     B_Roll,
+    Infographic,
     Interactive,
     Visualization,
     @JsonProperty("Produced Video")
