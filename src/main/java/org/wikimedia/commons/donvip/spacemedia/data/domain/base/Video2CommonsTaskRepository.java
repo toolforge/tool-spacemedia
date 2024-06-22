@@ -12,6 +12,7 @@ public interface Video2CommonsTaskRepository extends CrudRepository<Video2Common
 
     List<Video2CommonsTask> findByStatusIn(Set<Status> states);
 
+    @Query("select m from #{#entityName} m where (m.url = ?1 or m.metadataId = ?2) and m.status in ?3 order by m.created desc limit 1")
     Video2CommonsTask findFirstByUrlOrMetadataIdAndStatusInOrderByCreatedDesc(URL url, Long metadataId,
             Set<Status> states);
 
