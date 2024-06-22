@@ -211,6 +211,8 @@ public class Video2CommonsService {
                 LOGGER.error("{} => {}", url, status);
             } else {
                 LOGGER.info("{} => {}", url, status);
+            }
+            if (status != null) {
                 task.setProgress(status.progress);
                 task.setStatus(status.status());
                 task.setText(status.text());
