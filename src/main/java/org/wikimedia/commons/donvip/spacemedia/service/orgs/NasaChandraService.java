@@ -197,7 +197,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     protected List<NasaChandraMedia> fillMediaWithHtml(String url, Element galleryItem, NasaChandraMedia media)
             throws IOException {
         if ((url.contains(".htm") || url.lastIndexOf('.') < url.lastIndexOf('/'))
-                && !GALLERY_URLS.get(media.getId().getRepoId()).contains(url)) {
+                && !GALLERY_URLS.computeIfAbsent(media.getId().getRepoId(), this::fetchGalleryUrls).contains(url)) {
             return fillMediaWithHtml(url, fetchUrl(url), galleryItem, media);
         } else {
             Element resourcesText = galleryItem.getElementsByClass("resources_text").first();
