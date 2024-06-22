@@ -310,10 +310,15 @@ public class MediaService {
     }
 
     private static boolean handleFileReadingError(FileMetadata metadata, Exception e) {
-        boolean result = ignoreMetadata(metadata, "Unreadable file", e);
-        metadata.setReadable(Boolean.FALSE);
-        LOGGER.info("Readable state has been updated to {} for {}", Boolean.FALSE, metadata);
-        return result;
+        if (e.toString().contains("UnknownHostException")) {
+            LOGGER.warn("Ignored file reading error of {} => {}", metadata.getAssetUri(), e.getMessage());
+            return false;
+        } else {
+            boolean result = ignoreMetadata(metadata, "Unreadable file", e);
+            metadata.setReadable(Boolean.FALSE);
+            LOGGER.info("Readable state has been updated to {} for {}", Boolean.FALSE, metadata);
+            return result;
+        }
     }
 
     private static Object flushOrClose(Object contents) {
