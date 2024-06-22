@@ -574,6 +574,7 @@ public class Media implements MediaProjection, MediaDescription {
         setCreationDate(mediaFromApi.getCreationDate());
         setPublicationDateTime(mediaFromApi.getPublicationDateTime());
         setPublicationDate(mediaFromApi.getPublicationDate());
+        setPublicationYear(mediaFromApi.getPublicationYear());
         setThumbnailUrl(mediaFromApi.getThumbnailUrl());
         synchronizeMetadataWith(mediaFromApi);
         if (this instanceof WithKeywords kw && mediaFromApi instanceof WithKeywords kwApi) {
