@@ -38,6 +38,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTaskRepository;
@@ -65,6 +66,9 @@ public class Video2CommonsService {
 
     @Autowired
     private Video2CommonsTaskRepository repository;
+
+    @Autowired
+    private FileMetadataRepository fileMetadataRepository;
 
     @Autowired
     private List<AbstractOrgService<?>> orgs;
@@ -145,8 +149,9 @@ public class Video2CommonsService {
     }
 
     public Video2CommonsTask uploadVideo(String wikiCode, String filename, URL url, String orgId,
-            CompositeMediaId mediaId, String format) throws IOException {
-        Video2CommonsTask task = repository.findFirstByUrlAndStatusInOrderByCreatedDesc(url, Set.of(PROGRESS, DONE));
+            CompositeMediaId mediaId, Long metadataId, String format) throws IOException {
+        Video2CommonsTask task = repository.findFirstByUrlOrMetadataIdAndStatusInOrderByCreatedDesc(url, metadataId,
+                Set.of(PROGRESS, DONE));
         if (task != null) {
             LOGGER.warn("Upload requested but there is already an ongoing video2commons task, returning it: {}", task);
             return task;
@@ -165,7 +170,8 @@ public class Video2CommonsService {
             if (run.error() != null) {
                 throw new IOException(run.toString());
             }
-            task = repository.save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm", orgId, mediaId));
+            task = repository
+                    .save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm", orgId, mediaId, metadataId));
             // STEP 2 - check status and wait a few seconds (just to check logs, tasks can
             // be pending several hours)
             HttpRequestBase request = Utils.newHttpGet(URL_API + "/status-single?task=" + run.id());
@@ -173,11 +179,10 @@ public class Video2CommonsService {
             while (!task.getStatus().isCompleted() && n++ < maxAttempts) {
                 task = updateTask(task, request, url, httpclient, httpClientContext);
                 // If there is no audio track, can't you just deal with it?!
-                if ("webm (VP9/Opus)".equals(format) && task.getStatus().isFailed()
-                        && task.getText().contains("Audio is asked to be kept but the file has no audio")) {
-                    LOGGER.info("No audio, fallback to webm (VP9) format");
-                    repository.delete(task);
-                    return uploadVideo(wikiCode, filenameExt, url, orgId, mediaId, "webm (VP9)");
+                if ("webm (VP9/Opus)".equals(format) && task.isNoAudioTrackError()) {
+                    LOGGER.info("No audio, fallback to webm (VP9) format for {}:{}:{}", orgId, mediaId, metadataId);
+                    handleNoAudioTrackError(task);
+                    return uploadVideo(wikiCode, filenameExt, url, orgId, mediaId, metadataId, "webm (VP9)");
                 }
             }
             if (task.getProgress() < 100) {
@@ -185,6 +190,16 @@ public class Video2CommonsService {
                         run.id(), task.getProgress());
             }
             return task;
+        }
+    }
+
+    public void handleNoAudioTrackError(Video2CommonsTask task) {
+        repository.delete(task);
+        FileMetadata fm = fileMetadataRepository.findById(task.getMetadataId())
+                .orElseThrow(() -> new IllegalStateException("No file metadata found with id " + task.getMetadataId()));
+        if (fm.isAudioTrack() != Boolean.FALSE) {
+            fm.setAudioTrack(Boolean.FALSE);
+            fileMetadataRepository.save(fm);
         }
     }
 
@@ -280,6 +295,9 @@ public class Video2CommonsService {
                     mediaService.saveNewMetadataCommonsFileNames(metadata, filenames);
                 }
             });
+            if (task.isNoAudioTrackError()) {
+                handleNoAudioTrackError(task);
+            }
         }
     }
 

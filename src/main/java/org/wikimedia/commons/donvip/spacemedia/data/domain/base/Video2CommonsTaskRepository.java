@@ -12,8 +12,9 @@ public interface Video2CommonsTaskRepository extends CrudRepository<Video2Common
 
     List<Video2CommonsTask> findByStatusIn(Set<Status> states);
 
-    Video2CommonsTask findFirstByUrlAndStatusInOrderByCreatedDesc(URL url, Set<Status> states);
+    Video2CommonsTask findFirstByUrlOrMetadataIdAndStatusInOrderByCreatedDesc(URL url, Long metadataId,
+            Set<Status> states);
 
-    @Query("select m from #{#entityName} m where m.status = 'FAIL' and not exists(select x from #{#entityName} x where x.status = 'DONE' and x.url = m.url)")
+    @Query("select m from #{#entityName} m where m.status = 'FAIL' and not exists(select x from #{#entityName} x where x.status IN ('DONE','PROGRESS') and (x.url = m.url or x.metadataId = m.metadataId))")
     List<Video2CommonsTask> findFailedTasks();
 }
