@@ -1,6 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 import static java.util.Objects.requireNonNull;
+import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.DONE;
+import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.PROGRESS;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getHttpClientContext;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
@@ -144,6 +146,12 @@ public class Video2CommonsService {
 
     public Video2CommonsTask uploadVideo(String wikiCode, String filename, URL url, String orgId,
             CompositeMediaId mediaId, String format) throws IOException {
+        Video2CommonsTask task = repository.findFirstByUrlOrMediaIdAndStatusInOrderByCreatedDesc(url, mediaId,
+                Set.of(PROGRESS, DONE));
+        if (task != null) {
+            LOGGER.warn("Upload requested but there is already an ongoing video2commons task, returning it: {}", task);
+            return task;
+        }
         String filenameExt = requireNonNull(filename, "filename");
         for (String ext : V2C_VIDEO_EXTENSIONS) {
             filenameExt = filenameExt.replace('.' + ext, "");
@@ -158,8 +166,7 @@ public class Video2CommonsService {
             if (run.error() != null) {
                 throw new IOException(run.toString());
             }
-            Video2CommonsTask task = repository
-                    .save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm", orgId, mediaId));
+            task = repository.save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm", orgId, mediaId));
             // STEP 2 - check status and wait a few seconds (just to check logs, tasks can
             // be pending several hours)
             HttpRequestBase request = Utils.newHttpGet(URL_API + "/status-single?task=" + run.id());
@@ -235,7 +242,7 @@ public class Video2CommonsService {
             for (Video2CommonsTask task : repository.findByStatusIn(Video2CommonsTask.Status.incompleteStates())) {
                 result.add(updateTask(task, Utils.newHttpGet(URL_API + "/status-single?task=" + task.getId()),
                         task.getUrl(), httpclient, httpClientContext));
-                if (task.getStatus() == Status.DONE) {
+                if (task.getStatus() == DONE) {
                     orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst()
                             .ifPresent(o -> o.editStructuredDataContent(task.getFilename(), task.getMediaId(),
                                     task.getUrl()));
