@@ -60,12 +60,17 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
 
     @Override
     protected List<String> fetchGalleryUrls(String repoId) {
+        List<String> result = doFetchGalleryUrls();
+        GALLERY_URLS.put(repoId, result);
+        return result;
+    }
+
+    private List<String> doFetchGalleryUrls() {
         List<String> result = new ArrayList<>();
         int from = 1999;
         int to = Year.now().getValue();
         result.addAll(IntStream.rangeClosed(from, to).map(x -> ((to - x + from - 2000) % 100 + 100) % 100)
                 .mapToObj(x -> String.format("%s/chronological%02d.html", PHOTO_URL, x)).toList());
-
         try {
             Set<String> resources = new TreeSet<>();
             String url = BASE_URL + "/resources/chandraMission.html";
@@ -84,7 +89,6 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
         } catch (IOException e) {
             LOGGER.error("Failed to parse mission page: {}", e.getMessage());
         }
-        GALLERY_URLS.put(repoId, result);
         return result;
     }
 
@@ -197,7 +201,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     protected List<NasaChandraMedia> fillMediaWithHtml(String url, Element galleryItem, NasaChandraMedia media)
             throws IOException {
         if ((url.contains(".htm") || url.lastIndexOf('.') < url.lastIndexOf('/'))
-                && !GALLERY_URLS.get(media.getId().getRepoId()).contains(url)) {
+                && !GALLERY_URLS.computeIfAbsent(media.getId().getRepoId(), x -> doFetchGalleryUrls()).contains(url)) {
             return fillMediaWithHtml(url, fetchUrl(url), galleryItem, media);
         } else {
             Element resourcesText = galleryItem.getElementsByClass("resources_text").first();
