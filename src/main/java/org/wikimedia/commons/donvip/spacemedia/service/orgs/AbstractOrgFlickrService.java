@@ -335,6 +335,10 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             }
             return media;
         } catch (FlickrException e) {
+            if (e.getMessage().endsWith("not found (invalid ID)")) {
+                LOGGER.warn(e.getMessage());
+                return null;
+            }
             throw new IOException(e);
         }
     }
