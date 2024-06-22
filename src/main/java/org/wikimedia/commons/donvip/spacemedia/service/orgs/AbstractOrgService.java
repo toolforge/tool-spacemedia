@@ -1364,8 +1364,13 @@ public abstract class AbstractOrgService<T extends Media>
         if (media instanceof WithLatLon ll) {
             result.addAll(findGeolocalizedCategories(ll));
         }
-        if (metadata.isVideo() && isNASA(media) && addNASAVideoCategory()) {
-            result.add("NASA videos in " + media.getYear().getValue());
+        if (metadata.isVideo()) {
+            if (isNASA(media) && addNASAVideoCategory()) {
+                result.add("NASA videos in " + media.getYear().getValue());
+            }
+            if (media.containsInTitleOrDescriptionOrKeywords("timelapse")) {
+                result.add("Time-lapse videos");
+            }
         }
         if (includeHidden) {
             UnitedStates.getUsMilitaryCategory(media).ifPresent(result::add);
