@@ -864,15 +864,15 @@ public class CommonsService {
     }
 
     public String uploadNewFile(String wikiCode, String filename, String ext, URL url, String sha1, String orgId,
-            CompositeMediaId mediaId) throws IOException, UploadException {
+            CompositeMediaId mediaId, Long metadataId, boolean audio) throws IOException, UploadException {
         return doUpload(requireNonNull(wikiCode), normalizeFilename(filename), ext, url, sha1, orgId, mediaId,
-                new UploadErrorPolicy(true, true, true, true), true);
+                metadataId, audio, new UploadErrorPolicy(true, true, true, true), true);
     }
 
-    public String uploadExistingFile(String filename, URL url, String sha1, String orgId, CompositeMediaId mediaId)
-            throws IOException, UploadException {
-        return doUpload(null, filename, null, url, sha1, orgId, mediaId, new UploadErrorPolicy(true, true, true, true),
-                true);
+    public String uploadExistingFile(String filename, URL url, String sha1, String orgId, CompositeMediaId mediaId,
+            Long metadataId) throws IOException, UploadException {
+        return doUpload(null, filename, null, url, sha1, orgId, mediaId, metadataId, false,
+                new UploadErrorPolicy(true, true, true, true), true);
     }
 
     public static String normalizeFilename(String filename) {
@@ -897,11 +897,11 @@ public class CommonsService {
     }
 
     private synchronized String doUpload(String wikiCode, String filename, String ext, URL url, String sha1,
-            String orgId, CompositeMediaId mediaId, UploadErrorPolicy errorPolicy, boolean uploadByUrl)
-            throws IOException, UploadException {
+            String orgId, CompositeMediaId mediaId, Long metadataId, boolean audio, UploadErrorPolicy errorPolicy,
+            boolean uploadByUrl) throws IOException, UploadException {
         if (Video2CommonsService.V2C_VIDEO_EXTENSIONS.stream().anyMatch(
                 e -> e.equals(ext) || url.getFile().endsWith('.' + e)) || "www.youtube.com".equals(url.getHost())) {
-            return doUploadVideo(wikiCode, filename, url, orgId, mediaId);
+            return doUploadVideo(wikiCode, filename, url, orgId, mediaId, metadataId, audio);
         } else if (!isPermittedFileExt(ext) && !isPermittedFileUrl(url)) {
             throw new UploadException("Neither extension " + ext + " nor URL " + url
                     + " match any supported file type: " + permittedFileTypes);
@@ -950,7 +950,8 @@ public class CommonsService {
                             || msg.contains("upstream request timeout"))) {
                         LOGGER.warn("Unable to upload {} by URL ({}), fallback to upload in chunks...", url, msg);
                         // T334814 - upload by chunk for memory exhaustion or upstream request timeout
-                        return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, errorPolicy, false);
+                        return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, metadataId, audio,
+                                errorPolicy, false);
                     }
                     throw e;
                 }
@@ -962,8 +963,8 @@ public class CommonsService {
             if (apiResponse == null) {
                 throw new UploadException("No upload response");
             }
-            return handleUploadResponse(wikiCode, filename, ext, url, sha1, orgId, mediaId, errorPolicy, uploadByUrl,
-                    apiResponse);
+            return handleUploadResponse(wikiCode, filename, ext, url, sha1, orgId, mediaId, metadataId, audio,
+                    errorPolicy, uploadByUrl, apiResponse);
         } finally {
             if (localFile != null) {
                 Files.deleteIfExists(localFile.getKey());
@@ -972,20 +973,21 @@ public class CommonsService {
     }
 
     private String handleUploadResponse(String wikiCode, String filename, String ext, URL url, String sha1,
-            String orgId, CompositeMediaId mediaId, UploadErrorPolicy errorPolicy, boolean uploadByUrl,
-            UploadApiResponse apiResponse) throws IOException, UploadException {
+            String orgId, CompositeMediaId mediaId, Long metadataId, boolean audio, UploadErrorPolicy errorPolicy,
+            boolean uploadByUrl, UploadApiResponse apiResponse) throws IOException, UploadException {
         ApiError error = apiResponse.getError();
         UploadResponse upload = apiResponse.getUpload();
         if (error != null) {
             if (errorPolicy.renewTokenIfBadToken && "badtoken".equals(error.getCode())) {
                 token = queryTokens().getCsrftoken();
-                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId,
+                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, metadataId, audio,
                         new UploadErrorPolicy(false, errorPolicy.retryWithSanitizedUrl, true, true), uploadByUrl);
             }
             if (errorPolicy.retryWithSanitizedUrl && "http-invalid-url".equals(error.getCode())) {
                 try {
-                    return doUpload(wikiCode, filename, ext, urlToUri(url).toURL(), sha1, orgId, mediaId,
-                            new UploadErrorPolicy(errorPolicy.renewTokenIfBadToken, false, true, true), uploadByUrl);
+                    return doUpload(wikiCode, filename, ext, urlToUri(url).toURL(), sha1, orgId, mediaId, metadataId,
+                            audio, new UploadErrorPolicy(errorPolicy.renewTokenIfBadToken, false, true, true),
+                            uploadByUrl);
                 } catch (URISyntaxException e) {
                     throw new UploadException(error.getCode(), e);
                 }
@@ -999,19 +1001,20 @@ public class CommonsService {
             if (errorPolicy.retryAfterRandomProxy403error && "http-curl-error".equals(error.getCode())
                     && "Error fetching URL: Received HTTP code 403 from proxy after CONNECT"
                             .equals(error.getInfo())) {
-                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId,
+                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, metadataId, audio,
                         new UploadErrorPolicy(errorPolicy.renewTokenIfBadToken, true, false, true), uploadByUrl);
             }
             if (errorPolicy.retryOnDbReadOnly && "readonly".equals(error.getCode())) {
                 // Infinite retries on readonly errors, it's meant to become available again
                 // soon
-                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, errorPolicy, uploadByUrl);
+                return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, metadataId, audio, errorPolicy,
+                        uploadByUrl);
             }
             if ("verification-error".equals(error.getCode())) {
                 Matcher m = FILE_EXT_MISMATCH.matcher(error.getInfo());
                 if (m.matches()) {
-                    return doUpload(wikiCode, filename, m.group(2), url, sha1, orgId, mediaId, errorPolicy,
-                            uploadByUrl);
+                    return doUpload(wikiCode, filename, m.group(2), url, sha1, orgId, mediaId, metadataId, audio,
+                            errorPolicy, uploadByUrl);
                 }
             }
             throw new UploadException(error.toString());
@@ -1031,10 +1034,10 @@ public class CommonsService {
             boolean retryOnDbReadOnly) {
     }
 
-    private String doUploadVideo(String wikiCode, String filename, URL url, String orgId, CompositeMediaId mediaId)
-            throws IOException, UploadException {
+    private String doUploadVideo(String wikiCode, String filename, URL url, String orgId, CompositeMediaId mediaId,
+            Long metadataId, boolean audio) throws IOException, UploadException {
         Video2CommonsTask task = video2Commons.uploadVideo(wikiCode, filename, url, orgId, mediaId,
-                "webm (VP9/Opus)");
+                metadataId, audio ? "webm (VP9/Opus)" : "webm (VP9)");
         if (task.getStatus().shouldSucceed()) {
             return task.getFilename();
         } else if (task.getText().contains("The file format could not be recognized")
