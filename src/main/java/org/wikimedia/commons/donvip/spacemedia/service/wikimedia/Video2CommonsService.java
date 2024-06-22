@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
 import static java.util.Objects.requireNonNull;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.DONE;
+import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.FAIL;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.PROGRESS;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getHttpClientContext;
@@ -38,6 +39,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTaskRepository;
@@ -65,6 +67,9 @@ public class Video2CommonsService {
 
     @Autowired
     private Video2CommonsTaskRepository repository;
+
+    @Autowired
+    private FileMetadataRepository fileMetadataRepository;
 
     @Autowired
     private List<AbstractOrgService<?>> orgs;
@@ -145,8 +150,9 @@ public class Video2CommonsService {
     }
 
     public Video2CommonsTask uploadVideo(String wikiCode, String filename, URL url, String orgId,
-            CompositeMediaId mediaId, String format) throws IOException {
-        Video2CommonsTask task = repository.findFirstByUrlAndStatusInOrderByCreatedDesc(url, Set.of(PROGRESS, DONE));
+            CompositeMediaId mediaId, Long metadataId, String format) throws IOException {
+        Video2CommonsTask task = repository.findFirstByUrlOrMetadataIdAndStatusInOrderByCreatedDesc(url, metadataId,
+                Set.of(PROGRESS, DONE));
         if (task != null) {
             LOGGER.warn("Upload requested but there is already an ongoing video2commons task, returning it: {}", task);
             return task;
@@ -165,7 +171,8 @@ public class Video2CommonsService {
             if (run.error() != null) {
                 throw new IOException(run.toString());
             }
-            task = repository.save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm", orgId, mediaId));
+            task = repository
+                    .save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm", orgId, mediaId, metadataId));
             // STEP 2 - check status and wait a few seconds (just to check logs, tasks can
             // be pending several hours)
             HttpRequestBase request = Utils.newHttpGet(URL_API + "/status-single?task=" + run.id());
@@ -173,11 +180,10 @@ public class Video2CommonsService {
             while (!task.getStatus().isCompleted() && n++ < maxAttempts) {
                 task = updateTask(task, request, url, httpclient, httpClientContext);
                 // If there is no audio track, can't you just deal with it?!
-                if ("webm (VP9/Opus)".equals(format) && task.getStatus().isFailed()
-                        && task.getText().contains("Audio is asked to be kept but the file has no audio")) {
-                    LOGGER.info("No audio, fallback to webm (VP9) format");
-                    repository.delete(task);
-                    return uploadVideo(wikiCode, filenameExt, url, orgId, mediaId, "webm (VP9)");
+                if ("webm (VP9/Opus)".equals(format) && task.isNoAudioTrackError()) {
+                    LOGGER.info("No audio, fallback to webm (VP9) format for {}:{}:{}", orgId, mediaId, metadataId);
+                    handleNoAudioTrackError(task);
+                    return uploadVideo(wikiCode, filenameExt, url, orgId, mediaId, metadataId, "webm (VP9)");
                 }
             }
             if (task.getProgress() < 100) {
@@ -185,6 +191,16 @@ public class Video2CommonsService {
                         run.id(), task.getProgress());
             }
             return task;
+        }
+    }
+
+    public void handleNoAudioTrackError(Video2CommonsTask task) {
+        repository.delete(task);
+        FileMetadata fm = fileMetadataRepository.findById(task.getMetadataId())
+                .orElseThrow(() -> new IllegalStateException("No file metadata found with id " + task.getMetadataId()));
+        if (fm.isAudioTrack() != Boolean.FALSE) {
+            fm.setAudioTrack(Boolean.FALSE);
+            fileMetadataRepository.save(fm);
         }
     }
 
@@ -212,10 +228,11 @@ public class Video2CommonsService {
             } else {
                 LOGGER.info("{} => {}", url, status);
             }
-            if (status != null) {
+            if (status != null && !status.isUnknown()) {
                 task.setProgress(status.progress);
                 task.setStatus(status.status());
                 task.setText(status.text());
+                task.setLastChecked(ZonedDateTime.now());
             }
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -224,19 +241,18 @@ public class Video2CommonsService {
         } catch (IOException e) {
             LOGGER.warn("{}", e.getMessage());
         }
-        task.setLastChecked(ZonedDateTime.now());
         return repository.save(task);
     }
 
     public List<Video2CommonsTask> checkTasks(boolean forceDone) throws IOException {
-        removeFilenamesOfFailedTasks();
+        handleKnownFailedTasks();
         if (forceDone) {
             addFilenamesOfSucceededTasks();
         }
-        return editSdcOfSucceededTasks();
+        return updateTasks();
     }
 
-    private List<Video2CommonsTask> editSdcOfSucceededTasks() throws IOException {
+    private List<Video2CommonsTask> updateTasks() throws IOException {
         List<Video2CommonsTask> result = new ArrayList<>();
         HttpClientContext httpClientContext = getHttpClientContext(cookieStore);
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
@@ -247,6 +263,8 @@ public class Video2CommonsService {
                     orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst()
                             .ifPresent(o -> o.editStructuredDataContent(task.getFilename(), task.getMediaId(),
                                     task.getUrl()));
+                } else if (task.getStatus() == FAIL) {
+                    handleFailedTask(task);
                 }
             }
         }
@@ -265,21 +283,26 @@ public class Video2CommonsService {
         }
     }
 
-    private void removeFilenamesOfFailedTasks() {
-        for (Video2CommonsTask task : repository.findFailedTasks()) {
-            orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst().ifPresent(o -> {
-                FileMetadata metadata = o.retrieveMetadata(task.getMediaId(), task.getUrl());
-                Set<String> filenames = new TreeSet<>(metadata.getCommonsFileNames());
-                for (String filename : metadata.getCommonsFileNames()) {
-                    if (commonsService.findImage(filename.replace(' ', '_')) == null) {
-                        LOGGER.warn("V2C task {} => Removing '{}' file link from {}", task.getId(), filename, metadata);
-                        filenames.remove(filename);
-                    }
+    private void handleKnownFailedTasks() {
+        repository.findFailedTasks().forEach(this::handleFailedTask);
+    }
+
+    private void handleFailedTask(Video2CommonsTask task) {
+        orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst().ifPresent(o -> {
+            FileMetadata metadata = o.retrieveMetadata(task.getMediaId(), task.getUrl());
+            Set<String> filenames = new TreeSet<>(metadata.getCommonsFileNames());
+            for (String filename : metadata.getCommonsFileNames()) {
+                if (commonsService.findImage(filename.replace(' ', '_')) == null) {
+                    LOGGER.warn("V2C task {} => Removing '{}' file link from {}", task.getId(), filename, metadata);
+                    filenames.remove(filename);
                 }
-                if (!filenames.equals(metadata.getCommonsFileNames())) {
-                    mediaService.saveNewMetadataCommonsFileNames(metadata, filenames);
-                }
-            });
+            }
+            if (!filenames.equals(metadata.getCommonsFileNames())) {
+                mediaService.saveNewMetadataCommonsFileNames(metadata, filenames);
+            }
+        });
+        if (task.isNoAudioTrackError()) {
+            handleNoAudioTrackError(task);
         }
     }
 
@@ -293,5 +316,8 @@ public class Video2CommonsService {
     }
 
     private static record TaskStatusValue(String id, int progress, String status, String text, String title, URL url) {
+        boolean isUnknown() {
+            return "The status of the task could not be retrieved.".equals(text);
+        }
     }
 }
