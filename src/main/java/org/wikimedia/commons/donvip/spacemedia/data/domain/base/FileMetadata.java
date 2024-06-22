@@ -119,6 +119,10 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JoinColumn(name = "exif_id", referencedColumnName = "id")
     private ExifMetadata exif;
 
+    @Column(nullable = true)
+    @JsonProperty("audio_track")
+    private Boolean audioTrack;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @JsonProperty("commons_file_names")
     protected Set<String> commonsFileNames = new HashSet<>();
@@ -160,6 +164,10 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
             return true;
         }
         return false;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getSha1() {
@@ -264,6 +272,14 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
     public void setSize(Long size) {
         this.size = size;
+    }
+
+    public Boolean isAudioTrack() {
+        return audioTrack;
+    }
+
+    public void setAudioTrack(Boolean audioTrack) {
+        this.audioTrack = audioTrack;
     }
 
     public ImageDimensions getImageDimensions() {
@@ -440,7 +456,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @Override
     public int hashCode() {
         return Objects.hash(phash, sha1, readable, assetUrl, size, commonsFileNames, exif, dimensions, extension,
-                description, originalFileName, assumedReadable);
+                audioTrack, description, originalFileName, assumedReadable);
     }
 
     @Override
@@ -454,6 +470,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
                 && Objects.equals(readable, other.readable) && Objects.equals(assetUrl, other.assetUrl)
                 && Objects.equals(commonsFileNames, other.commonsFileNames) && Objects.equals(exif, other.exif)
                 && Objects.equals(dimensions, other.dimensions) && Objects.equals(extension, other.extension)
+                && Objects.equals(audioTrack, other.audioTrack)
                 && Objects.equals(description, other.description)
                 && Objects.equals(originalFileName, other.originalFileName)
                 && Objects.equals(assumedReadable, other.assumedReadable);

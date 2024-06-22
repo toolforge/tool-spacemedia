@@ -24,6 +24,9 @@ public class Video2CommonsTask {
     @Column(nullable = false, length = 2000)
     private URL url;
 
+    @Column(nullable = false)
+    private Long metadataId;
+
     @Column(nullable = false, length = 255)
     private String filename;
 
@@ -75,9 +78,11 @@ public class Video2CommonsTask {
 
     }
 
-    public Video2CommonsTask(String id, URL url, String filename, String orgId, CompositeMediaId mediaId) {
+    public Video2CommonsTask(String id, URL url, String filename, String orgId, CompositeMediaId mediaId,
+            Long metadataId) {
         setId(requireNonNull(id));
         setUrl(requireNonNull(url));
+        setMetadataId(requireNonNull(metadataId));
         setFilename(requireNonNull(filename));
         setOrgId(requireNonNull(orgId));
         setMediaId(requireNonNull(mediaId));
@@ -100,6 +105,14 @@ public class Video2CommonsTask {
 
     public void setUrl(URL url) {
         this.url = url;
+    }
+
+    public Long getMetadataId() {
+        return metadataId;
+    }
+
+    public void setMetadataId(Long metadataId) {
+        this.metadataId = metadataId;
     }
 
     public String getFilename() {
@@ -168,6 +181,10 @@ public class Video2CommonsTask {
 
     public void setLastChecked(ZonedDateTime lastChecked) {
         this.lastChecked = lastChecked;
+    }
+
+    public boolean isNoAudioTrackError() {
+        return getStatus().isFailed() && getText().contains("Audio is asked to be kept but the file has no audio");
     }
 
     @Override

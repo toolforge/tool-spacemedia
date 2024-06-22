@@ -948,14 +948,14 @@ public abstract class AbstractOrgService<T extends Media>
                         smallerFiles);
                 for (String smallerFile : smallerFiles) {
                     commonsService.uploadExistingFile(smallerFile, downloadUrl, metadata.getSha1(), getId(),
-                            media.getId());
+                            media.getId(), metadata.getId());
                 }
                 metadata.setCommonsFileNames(new HashSet<>(smallerFiles));
             } else {
                 Pair<String, Map<String, String>> codeAndLegends = getWikiCode(media, metadata);
                 String uploadedFilename = commonsService.uploadNewFile(codeAndLegends.getLeft(),
                         media.getUploadTitle(metadata), metadata.getFileExtension(), downloadUrl, metadata.getSha1(),
-                        getId(), media.getId());
+                        getId(), media.getId(), metadata.getId(), Boolean.FALSE != metadata.isAudioTrack());
                 metadata.setCommonsFileNames(new HashSet<>(Set.of(uploadedFilename)));
                 editStructuredDataContent(uploadedFilename, codeAndLegends.getRight(), media, metadata);
             }
