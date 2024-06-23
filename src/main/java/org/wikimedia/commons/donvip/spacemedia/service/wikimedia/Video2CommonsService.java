@@ -45,7 +45,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTas
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTaskRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
-import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -165,9 +164,9 @@ public class Video2CommonsService {
             wikiCode += "\n[[Category:Uploaded with video2commons]]";
         }
         HttpClientContext httpClientContext = getHttpClientContext(cookieStore);
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             // STEP 1 - Run task
-            RunResponse run = submitTaskRun(wikiCode, url, filenameExt, httpClientContext, httpclient, format);
+            RunResponse run = submitTaskRun(wikiCode, url, filenameExt, httpClientContext, httpClient, format);
             if (run.error() != null) {
                 throw new IOException(run.toString());
             }
@@ -175,14 +174,14 @@ public class Video2CommonsService {
                     .save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm", orgId, mediaId, metadataId));
             // STEP 2 - check status and wait a few seconds (just to check logs, tasks can
             // be pending several hours)
-            HttpRequestBase request = Utils.newHttpGet(URL_API + "/status-single?task=" + run.id());
+            HttpRequestBase request = newHttpGet(URL_API + "/status-single?task=" + run.id());
             int n = 1;
             while (!task.getStatus().isCompleted() && n++ < maxAttempts) {
-                task = updateTask(task, request, url, httpclient, httpClientContext);
+                task = updateTask(task, request, url, httpClient, httpClientContext);
                 // If there is no audio track, can't you just deal with it?!
                 if ("webm (VP9/Opus)".equals(format) && task.isNoAudioTrackError()) {
                     LOGGER.info("No audio, fallback to webm (VP9) format for {}:{}:{}", orgId, mediaId, metadataId);
-                    handleNoAudioTrackError(task);
+                    handleNoAudioTrackError(task, httpClientContext, httpClient);
                     return uploadVideo(wikiCode, filenameExt, url, orgId, mediaId, metadataId, "webm (VP9)");
                 }
             }
@@ -194,7 +193,13 @@ public class Video2CommonsService {
         }
     }
 
-    public void handleNoAudioTrackError(Video2CommonsTask task) {
+    public void handleNoAudioTrackError(Video2CommonsTask task, HttpClientContext httpClientContext,
+            CloseableHttpClient httpClient) {
+        try {
+            removeTask(task.getId(), httpClientContext, httpClient);
+        } catch (IOException e) {
+            LOGGER.warn("Failed to remove video2commons task {}", task.getId());
+        }
         repository.delete(task);
         FileMetadata fm = fileMetadataRepository.findById(task.getMetadataId())
                 .orElseThrow(() -> new IllegalStateException("No file metadata found with id " + task.getMetadataId()));
@@ -205,11 +210,11 @@ public class Video2CommonsService {
     }
 
     private RunResponse submitTaskRun(String wikiCode, URL url, String filenameExt, HttpClientContext httpClientContext,
-            CloseableHttpClient httpclient, String format) throws IOException {
-        HttpRequestBase request = Utils.newHttpPost(URL_API + "/task/run",
+            CloseableHttpClient httpClient, String format) throws IOException {
+        HttpRequestBase request = newHttpPost(URL_API + "/task/run",
                 Map.of("url", url, "extractor", "", "subtitles", false, "filename", filenameExt, "filedesc",
                         wikiCode, "format", format, "_csrf_token", requireNonNull(csrf, "v2c csrf token")));
-        try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
+        try (CloseableHttpResponse response = executeRequest(request, httpClient, httpClientContext);
                 InputStream in = response.getEntity().getContent()) {
             RunResponse run = jackson.readValue(in, RunResponse.class);
             LOGGER.info("video2commons task {} submitted to upload {} as '{}.webm' ({})", run.id(), url, filenameExt,
@@ -218,9 +223,17 @@ public class Video2CommonsService {
         }
     }
 
+    public void removeTask(String taskId, HttpClientContext httpClientContext, CloseableHttpClient httpClient) throws IOException {
+        try (CloseableHttpResponse response = executeRequest(
+                newHttpPost(URL_API + "/task/run", Map.of("_csrf_token", requireNonNull(csrf, "v2c csrf token"))),
+                httpClient, httpClientContext)) {
+            LOGGER.info("Remove video2commons task {} => {}", taskId, response);
+        }
+    }
+
     private Video2CommonsTask updateTask(Video2CommonsTask task, HttpRequestBase request, URL url,
-            CloseableHttpClient httpclient, HttpClientContext httpClientContext) {
-        try (CloseableHttpResponse response = executeRequest(request, httpclient, httpClientContext);
+            CloseableHttpClient httpClient, HttpClientContext httpClientContext) {
+        try (CloseableHttpResponse response = executeRequest(request, httpClient, httpClientContext);
                 InputStream in = response.getEntity().getContent()) {
             TaskStatusValue status = jackson.readValue(in, TaskStatus.class).value();
             if (status == null || Status.valueOf(status.status().toUpperCase(Locale.ENGLISH)).isFailed()) {
@@ -245,7 +258,9 @@ public class Video2CommonsService {
     }
 
     public List<Video2CommonsTask> checkTasks(boolean forceDone) throws IOException {
-        handleKnownFailedTasks();
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            handleKnownFailedTasks(httpClient, getHttpClientContext(cookieStore));
+        }
         if (forceDone) {
             addFilenamesOfSucceededTasks();
         }
@@ -255,16 +270,16 @@ public class Video2CommonsService {
     private List<Video2CommonsTask> updateTasks() throws IOException {
         List<Video2CommonsTask> result = new ArrayList<>();
         HttpClientContext httpClientContext = getHttpClientContext(cookieStore);
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             for (Video2CommonsTask task : repository.findByStatusIn(Video2CommonsTask.Status.incompleteStates())) {
-                result.add(updateTask(task, Utils.newHttpGet(URL_API + "/status-single?task=" + task.getId()),
-                        task.getUrl(), httpclient, httpClientContext));
+                result.add(updateTask(task, newHttpGet(URL_API + "/status-single?task=" + task.getId()),
+                        task.getUrl(), httpClient, httpClientContext));
                 if (task.getStatus() == DONE) {
                     orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst()
                             .ifPresent(o -> o.editStructuredDataContent(task.getFilename(), task.getMediaId(),
                                     task.getUrl()));
                 } else if (task.getStatus() == FAIL) {
-                    handleFailedTask(task);
+                    handleFailedTask(task, httpClient, httpClientContext);
                 }
             }
         }
@@ -283,11 +298,12 @@ public class Video2CommonsService {
         }
     }
 
-    private void handleKnownFailedTasks() {
-        repository.findFailedTasks().forEach(this::handleFailedTask);
+    private void handleKnownFailedTasks(CloseableHttpClient httpClient, HttpClientContext httpClientContext) {
+        repository.findFailedTasks().forEach(x -> handleFailedTask(x, httpClient, httpClientContext));
     }
 
-    private void handleFailedTask(Video2CommonsTask task) {
+    private void handleFailedTask(Video2CommonsTask task, CloseableHttpClient httpClient,
+            HttpClientContext httpClientContext) {
         orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst().ifPresent(o -> {
             FileMetadata metadata = o.retrieveMetadata(task.getMediaId(), task.getUrl());
             Set<String> filenames = new TreeSet<>(metadata.getCommonsFileNames());
@@ -302,7 +318,7 @@ public class Video2CommonsService {
             }
         });
         if (task.isNoAudioTrackError()) {
-            handleNoAudioTrackError(task);
+            handleNoAudioTrackError(task, httpClientContext, httpClient);
         }
     }
 
