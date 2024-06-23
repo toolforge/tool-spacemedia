@@ -30,9 +30,15 @@ abstract class AbstractSpacemediaOrgUpdateJobApplication implements ApplicationL
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         try {
-            if (!Arrays.asList(event.getApplicationContext().getEnvironment().getActiveProfiles()).contains("test")) {
+            List<String> activeProfiles = Arrays
+                    .asList(event.getApplicationContext().getEnvironment().getActiveProfiles());
+            if (!activeProfiles.contains("test")) {
                 for (Org<?> org : orgs) {
-                    org.updateMedia(event.getArgs());
+                    if (org.updateOnProfiles(activeProfiles)) {
+                        org.updateMedia(event.getArgs());
+                    } else {
+                        LOGGER.info("{} does not perform media update with profiles {}", org, activeProfiles);
+                    }
                 }
             }
         } catch (IOException | UploadException e) {

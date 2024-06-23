@@ -125,6 +125,8 @@ public interface Org<T extends Media> {
      */
     String getId();
 
+    boolean updateOnProfiles(List<String> activeProfiles);
+
     void updateMedia(String[] args) throws IOException, UploadException;
 
     Statistics getStatistics(boolean details);

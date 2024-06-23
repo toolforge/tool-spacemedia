@@ -242,6 +242,11 @@ public abstract class AbstractOrgService<T extends Media>
         LOGGER.info("{} upload mode: {}", id, uploadMode);
     }
 
+    @Override
+    public boolean updateOnProfiles(List<String> activeProfiles) {
+        return activeProfiles.stream().anyMatch(p -> "web".equals(p) || ("job-" + getId().replace('.', '-')).equals(p));
+    }
+
     /**
      * Checks that given Commons categories exist and are not redirected. Otherwise, log a warning.
      *

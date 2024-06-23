@@ -46,6 +46,11 @@ public class HubbleEsaService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
+    public boolean updateOnProfiles(List<String> activeProfiles) {
+        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("hubble");
+    }
+
+    @Override
     protected List<AbstractOrgService<?>> getSimilarOrgServices() {
         return List.of(nasaService);
     }

@@ -52,6 +52,11 @@ public class WebbNasaService extends AbstractOrgStsciService {
     }
 
     @Override
+    public boolean updateOnProfiles(List<String> activeProfiles) {
+        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("webb");
+    }
+
+    @Override
     protected List<AbstractOrgService<?>> getSimilarOrgServices() {
         return List.of(esaService);
     }
