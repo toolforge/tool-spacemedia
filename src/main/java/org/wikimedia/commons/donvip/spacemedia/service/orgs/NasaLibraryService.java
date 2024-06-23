@@ -114,7 +114,7 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
 
     @Autowired
     public NasaLibraryService(NasaMediaRepository<NasaMedia> repository) {
-        super(repository, "nasa", NASA_CENTERS);
+        super(repository, "nasa.library", NASA_CENTERS);
     }
 
     @Override

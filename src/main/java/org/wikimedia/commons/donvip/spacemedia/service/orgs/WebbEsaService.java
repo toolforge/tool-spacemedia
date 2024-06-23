@@ -45,6 +45,11 @@ public class WebbEsaService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
+    public boolean updateOnProfiles(List<String> activeProfiles) {
+        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("webb");
+    }
+
+    @Override
     protected List<AbstractOrgService<?>> getSimilarOrgServices() {
         return List.of(nasaService);
     }
