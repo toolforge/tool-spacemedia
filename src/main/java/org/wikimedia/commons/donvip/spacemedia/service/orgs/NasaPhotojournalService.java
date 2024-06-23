@@ -108,6 +108,11 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
         for (int i = 1; i < trs.size() - 1; i += 2) {
             Element item = new Element("fake");
             item.appendChildren(List.of(trs.get(i), trs.get(i + 1)));
+            // https://photojournal.jpl.nasa.gov/keywords/dp?start=100
+            // PIA19856 breaks the table with a weird additional row :'(
+            if (item.child(1).childrenSize() == 1) {
+                item.appendChild(trs.get(i++ + 2)); // NOSONAR
+            }
             result.add(item);
         }
         return result;
@@ -120,7 +125,7 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
 
     @Override
     protected String extractIdFromGalleryItem(String url, Element result) {
-        return result.child(1).child(1).getElementsByTag("dt").first().text().replace(":", "");
+        return result.child(result.childrenSize() - 1).getElementsByTag("dt").first().text().replace(":", "");
     }
 
     @Override
