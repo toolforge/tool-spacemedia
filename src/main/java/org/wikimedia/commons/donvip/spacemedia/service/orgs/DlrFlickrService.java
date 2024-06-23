@@ -20,7 +20,7 @@ public class DlrFlickrService extends AbstractOrgFlickrService {
 
     @Autowired
     public DlrFlickrService(FlickrMediaRepository repository, @Value("${dlr.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, "dlr", flickrAccounts);
+        super(repository, "dlr.flickr", flickrAccounts);
     }
 
     @Override

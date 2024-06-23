@@ -46,7 +46,7 @@ public class WebbEsaService extends AbstractOrgDjangoplicityService {
 
     @Override
     public boolean updateOnProfiles(List<String> activeProfiles) {
-        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("webb");
+        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("job-webb");
     }
 
     @Override

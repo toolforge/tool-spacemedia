@@ -32,7 +32,7 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
     @Autowired
     public IndividualsFlickrService(FlickrMediaRepository repository,
             @Value("${individuals.flickr.accounts}") Set<String> flickrAccounts) {
-        super(repository, "individuals", flickrAccounts);
+        super(repository, "individuals.flickr", flickrAccounts);
     }
 
     @Override

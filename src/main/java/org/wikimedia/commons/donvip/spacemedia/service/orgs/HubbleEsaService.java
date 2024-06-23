@@ -47,7 +47,7 @@ public class HubbleEsaService extends AbstractOrgDjangoplicityService {
 
     @Override
     public boolean updateOnProfiles(List<String> activeProfiles) {
-        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("hubble");
+        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("job-hubble");
     }
 
     @Override

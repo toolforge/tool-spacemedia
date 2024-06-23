@@ -42,7 +42,7 @@ public class HubbleNasaService extends AbstractOrgStsciService {
 
     @Override
     public boolean updateOnProfiles(List<String> activeProfiles) {
-        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("hubble");
+        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("job-hubble");
     }
 
     @Override

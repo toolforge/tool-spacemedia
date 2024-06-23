@@ -53,7 +53,7 @@ public class WebbNasaService extends AbstractOrgStsciService {
 
     @Override
     public boolean updateOnProfiles(List<String> activeProfiles) {
-        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("webb");
+        return super.updateOnProfiles(activeProfiles) || activeProfiles.contains("job-webb");
     }
 
     @Override
