@@ -8,6 +8,23 @@
 	<version>0.5.0-SNAPSHOT</version>
 	<name>spacemedia</name>
 	<description>Find free media space-related missing in Wikimedia Commons</description>
+	<url>https://spacemedia.toolforge.org</url>
+	<inceptionYear>2019</inceptionYear>
+	<licenses>
+		<license>
+			<name>GPL-3.0-or-later</name>
+			<url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<id>Don-vip</id>
+			<name>Vincent Privat</name>
+			<email>vincent.privat@gmail.com</email>
+			<timezone>Europe/Paris</timezone>
+		</developer>
+	</developers>
 
 	<properties>
 		<java.version>17</java.version>
