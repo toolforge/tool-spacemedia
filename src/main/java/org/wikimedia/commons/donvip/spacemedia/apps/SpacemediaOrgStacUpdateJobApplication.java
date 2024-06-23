@@ -4,8 +4,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -19,7 +17,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.orgs.Org;
 public class SpacemediaOrgStacUpdateJobApplication extends AbstractSpacemediaOrgUpdateJobApplication {
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(SpacemediaOrgStacUpdateJobApplication.class).web(WebApplicationType.NONE).run(args);
+        app(SpacemediaOrgStacUpdateJobApplication.class).run(args);
     }
 
     @Bean

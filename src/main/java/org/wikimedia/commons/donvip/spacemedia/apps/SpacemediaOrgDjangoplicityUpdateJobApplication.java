@@ -2,8 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.apps;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -20,7 +18,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.orgs.Org;
 public class SpacemediaOrgDjangoplicityUpdateJobApplication extends AbstractSpacemediaOrgUpdateJobApplication {
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(SpacemediaOrgDjangoplicityUpdateJobApplication.class).web(WebApplicationType.NONE).run(args);
+        app(SpacemediaOrgDjangoplicityUpdateJobApplication.class).run(args);
     }
 
     @Bean

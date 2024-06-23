@@ -4,8 +4,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -24,7 +22,7 @@ import com.amazonaws.regions.Regions;
 public class SpacemediaOrgS3UpdateJobApplication extends AbstractSpacemediaOrgUpdateJobApplication {
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(SpacemediaOrgS3UpdateJobApplication.class).web(WebApplicationType.NONE).run(args);
+        app(SpacemediaOrgS3UpdateJobApplication.class).run(args);
     }
 
     @Bean
