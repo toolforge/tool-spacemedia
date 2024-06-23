@@ -88,7 +88,8 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
     @Value("${nasa.max.tries}")
     private int maxTries;
 
-    private final Set<String> nasaCenters;
+    public static final Set<String> NASA_CENTERS = Set.of("AFRC", "ARC", "GRC", "GSFC", "HQ", "JPL", "JSC", "KSC",
+            "LARC", "LRC", "MAF", "MSFC", "SSC", "WSTF");
 
     @Lazy
     @Autowired
@@ -112,9 +113,8 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
     private Map<String, String> nasaKeywords;
 
     @Autowired
-    public NasaLibraryService(NasaMediaRepository<NasaMedia> repository, @Value("${nasa.centers}") Set<String> nasaCenters) {
-        super(repository, "nasa", nasaCenters);
-        this.nasaCenters = Objects.requireNonNull(nasaCenters);
+    public NasaLibraryService(NasaMediaRepository<NasaMedia> repository) {
+        super(repository, "nasa", NASA_CENTERS);
     }
 
     @Override
@@ -261,7 +261,7 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
         LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
         // Recent years have a lot of photos: search by center to avoid more than 10k results
         for (int year = LocalDateTime.now().getYear(); year >= 2000; year--) {
-            for (String center : nasaCenters) {
+            for (String center : NASA_CENTERS) {
                 List<NasaImage> localUploadedImages = new ArrayList<>();
                 Pair<Integer, Collection<NasaImage>> update = doUpdateMedia(NasaMediaType.image, year,
                         singleton(center), foundIds, doNotFetchEarlierThan);
@@ -283,7 +283,7 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
         }
         if (doNotFetchEarlierThan == null) {
             // Delete media removed from NASA website (only for complete updates)
-            for (String center : nasaCenters) {
+            for (String center : NASA_CENTERS) {
                 for (NasaImage image : imageRepository.findMissingInCommonsNotIn(Set.of(center),
                         foundIds.stream().filter(x -> x.getRepoId().equals(center)).map(CompositeMediaId::getMediaId)
                                 .collect(toSet()))) {

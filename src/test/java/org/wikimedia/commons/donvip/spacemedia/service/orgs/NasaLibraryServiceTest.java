@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,7 +22,6 @@ import java.util.regex.Matcher;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,9 +72,6 @@ class NasaLibraryServiceTest extends AbstractOrgServiceTest {
     @Autowired
     private Environment env;
 
-    @Value("${nasa.centers}")
-    private Set<String> nasaCenters;
-
     @Test
     void testIssPattern() {
         Matcher m = NasaLibraryService.ISS_PATTERN.matcher("iss068e029662");
@@ -123,9 +118,8 @@ class NasaLibraryServiceTest extends AbstractOrgServiceTest {
 
     @Test
     void testNasaCentersHomePages() {
-        assertFalse(nasaCenters.isEmpty());
         Map<String, String> errors = new TreeMap<>();
-        for (String center : nasaCenters) {
+        for (String center : NasaLibraryService.NASA_CENTERS) {
             URL homePage = env.getProperty("nasa." + center.toLowerCase(Locale.ENGLISH) + ".home.page", URL.class);
             assertNotNull(homePage, env.toString());
             try {
@@ -164,7 +158,7 @@ class NasaLibraryServiceTest extends AbstractOrgServiceTest {
         @Bean
         @Autowired
         public NasaLibraryService service(NasaMediaRepository<NasaMedia> repository) {
-            return new NasaLibraryService(repository, Set.of("HQ"));
+            return new NasaLibraryService(repository);
         }
     }
 }
