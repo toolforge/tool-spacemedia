@@ -162,6 +162,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                                     && !x.url().toExternalForm().endsWith(".exr")
                                     && !x.alt_text().contains("stamp slate")
                                     && !x.alt_text().contains("colorbar")
+                                    && !x.alt_text().contains("sequence of PNG")
                                     && !x.alt_text().startsWith("Color bar")
                                     && !x.alt_text().startsWith("Video slate")
                                     && !x.alt_text().startsWith("Descriptive image")
