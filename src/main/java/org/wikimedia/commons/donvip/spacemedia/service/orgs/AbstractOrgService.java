@@ -989,13 +989,13 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     public void editStructuredDataContent(String uploadedFilename, CompositeMediaId mediaId, URL assetUrl) {
-        T media = getById(mediaId);
-        FileMetadata metadata = retrieveMetadata(mediaId, assetUrl);
         try {
+            T media = getById(mediaId);
+            FileMetadata metadata = retrieveMetadata(mediaId, assetUrl);
             editStructuredDataContent(uploadedFilename, getLegends(media, getWikiFileDesc(media, metadata).getValue()),
                     media, metadata);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } catch (ImageNotFoundException | IOException e) {
+            LOGGER.error("Unable to edit SDC data: {} => {} => {}", mediaId, uploadedFilename, e.getMessage());
         }
     }
 
