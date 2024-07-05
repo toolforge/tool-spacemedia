@@ -1,8 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
+import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Objects.requireNonNull;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.DONE;
-import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.FAIL;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.PROGRESS;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getHttpClientContext;
@@ -12,6 +12,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpPost;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -223,11 +224,21 @@ public class Video2CommonsService {
         }
     }
 
+    public void abortTask(String taskId, HttpClientContext httpClientContext, CloseableHttpClient httpClient)
+            throws IOException {
+        abortOrRemoveTask("abort", taskId, httpClientContext, httpClient);
+    }
+
     public void removeTask(String taskId, HttpClientContext httpClientContext, CloseableHttpClient httpClient) throws IOException {
+        abortOrRemoveTask("remove", taskId, httpClientContext, httpClient);
+    }
+
+    private void abortOrRemoveTask(String op, String taskId, HttpClientContext httpClientContext,
+            CloseableHttpClient httpClient) throws IOException {
         try (CloseableHttpResponse response = executeRequest(
-                newHttpPost(URL_API + "/task/run", Map.of("_csrf_token", requireNonNull(csrf, "v2c csrf token"))),
+                newHttpPost(URL_API + "/task/" + op, Map.of("_csrf_token", requireNonNull(csrf, "v2c csrf token"))),
                 httpClient, httpClientContext)) {
-            LOGGER.info("Remove video2commons task {} => {}", taskId, response.getStatusLine());
+            LOGGER.info("{} video2commons task {} => {}", op, taskId, response.getStatusLine());
         }
     }
 
@@ -275,15 +286,31 @@ public class Video2CommonsService {
                 result.add(updateTask(task, newHttpGet(URL_API + "/status-single?task=" + task.getId()),
                         task.getUrl(), httpClient, httpClientContext));
                 if (task.getStatus() == DONE) {
-                    orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst()
-                            .ifPresent(o -> o.editStructuredDataContent(task.getFilename(), task.getMediaId(),
-                                    task.getUrl()));
-                } else if (task.getStatus() == FAIL) {
+                    LOGGER.info("Task done! => {}", task);
+                    handleDoneTask(task);
+                } else if (task.getStatus().isFailed()) {
+                    LOGGER.error("Task failed! => {}", task);
                     handleFailedTask(task, httpClient, httpClientContext);
+                } else if (task.getStatus() == PROGRESS && Duration.between(task.getCreated(), ZonedDateTime.now())
+                        .toMillis() > Duration.of(1, DAYS).toMillis()) {
+                    if (commonsService.findImage(task.getFilename().replace(' ', '_')) != null) {
+                        LOGGER.info("Task done even if seen in progress! => {}", task);
+                        handleDoneTask(task);
+                    } else {
+                        LOGGER.error("Task assumed failed after 1 day! => {}", task);
+                        handleFailedTask(task, httpClient, httpClientContext);
+                    }
+                    abortTask(task.getId(), httpClientContext, httpClient);
+                    removeTask(task.getId(), httpClientContext, httpClient);
                 }
             }
         }
         return result;
+    }
+
+    private void handleDoneTask(Video2CommonsTask task) {
+        orgs.stream().filter(o -> o.getId().equals(task.getOrgId())).findFirst()
+                .ifPresent(o -> o.editStructuredDataContent(task.getFilename(), task.getMediaId(), task.getUrl()));
     }
 
     private void addFilenamesOfSucceededTasks() {
