@@ -61,6 +61,8 @@ public class Video2CommonsService {
 
     public static final Set<String> V2C_VIDEO_EXTENSIONS = Set.of("avi", "mp4");
 
+    private static final int MEDIUM_TEXT_MAX_LENGTH = 16_777_215;
+
     @Autowired
     private ObjectMapper jackson;
 
@@ -244,7 +246,9 @@ public class Video2CommonsService {
             if (status != null && !status.isUnknown()) {
                 task.setProgress(status.progress);
                 task.setStatus(status.status());
-                task.setText(status.text());
+                String txt = status.text();
+                int length = txt != null ? txt.length() : 0;
+                task.setText(txt != null && length >= MEDIUM_TEXT_MAX_LENGTH ? txt.substring(0, MEDIUM_TEXT_MAX_LENGTH - 1) : txt);
                 task.setLastChecked(ZonedDateTime.now());
             }
             Thread.sleep(1000);
