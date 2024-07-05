@@ -64,11 +64,11 @@ public class Video2CommonsTask {
         }
 
         public boolean isCompleted() {
-            return this == FAIL || this == DONE;
+            return this != PROGRESS;
         }
 
         public boolean isFailed() {
-            return this == FAIL;
+            return this == FAIL || this == ABORT || this == NEEDSSU;
         }
 
         public static Set<Status> incompleteStates() {
