@@ -15,6 +15,7 @@ import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsS
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.normalizeFilename;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.Video2CommonsService.V2C_VIDEO_EXTENSIONS;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -60,10 +61,10 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
 import org.jsoup.HttpStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1230,8 +1231,8 @@ public abstract class AbstractOrgService<T extends Media>
                     String url = group.startsWith("http") ? group : "https://" + group;
                     try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableAutomaticRetries()
                             .disableRedirectHandling().build();
-                            CloseableHttpResponse response = httpclient
-                                    .execute(newHttpGet(url.replace("http://", "https://")))) {
+                            ClassicHttpResponse response = executeRequest(
+                                    newHttpGet(url.replace("http://", "https://")), httpclient, null)) {
                         Header location = response.getFirstHeader("Location");
                         if (location != null) {
                             return location.getValue().replace("&feature=youtu.be", "");

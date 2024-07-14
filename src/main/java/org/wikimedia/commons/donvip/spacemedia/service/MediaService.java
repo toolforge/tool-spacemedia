@@ -37,6 +37,8 @@ import javax.imageio.ImageIO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.poi.sl.usermodel.SlideShow;
@@ -252,9 +254,9 @@ public class MediaService {
             result |= isBlank(metadata.getOriginalFileName())
                     && metadata.updateFilenameAndExtension(assetUrl.getPath());
             if (shouldReadFile(assetUrl, metadata, forceUpdateOfHashes)) {
-                try {
+                try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
                     ContentsAndMetadata<?> img = readFile(assetUrl, metadata.getFileExtension(), localPath, false,
-                            true);
+                            true, httpClient, null);
                     contents = img.contents();
                     result |= updateReadableStateAndDims(metadata, img);
                     result |= updateFileSize(metadata, img);

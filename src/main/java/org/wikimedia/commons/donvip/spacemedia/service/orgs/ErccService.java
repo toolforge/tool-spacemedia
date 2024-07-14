@@ -6,7 +6,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequestStream;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getHttpClientContext;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
@@ -25,13 +25,12 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -274,17 +273,15 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
         try (CloseableHttpClient httpclient = HttpClientBuilder.create().build()) {
             HttpClientContext context = getHttpClientContext(cookieStore);
             // STEP 1 - Request item page
-            HttpRequestBase request = newHttpGet(ERCC_BASE_URL + ERCC_MAPS_PATH + media.getIdUsedInOrg());
-            try (CloseableHttpResponse response = executeRequest(request, httpclient, context);
-                    InputStream in = response.getEntity().getContent()) {
+            HttpUriRequestBase request = newHttpGet(ERCC_BASE_URL + ERCC_MAPS_PATH + media.getIdUsedInOrg());
+            try (InputStream in = executeRequestStream(request, httpclient, context)) {
                 request = newHttpGet(
                         newURL(ERCC_BASE_URL + "API/ERCC/Maps/GetMap?mapID=" + media.getId().getMediaId()));
                 request.setHeader("RequestVerificationToken", Jsoup.parse(in, "UTF-8", ERCC_BASE_URL)
                         .getElementsByAttributeValue("name", "__RequestVerificationToken").first().attr("value"));
             }
             // STEP 2 - Call API using token and cookies
-            try (CloseableHttpResponse response = executeRequest(request, httpclient, context);
-                    InputStream in = response.getEntity().getContent()) {
+            try (InputStream in = executeRequestStream(request, httpclient, context)) {
                 return media.copyDataFrom(mapMedia(jackson.readValue(in, MapsItem.class), media.getId()));
             } catch (IOException e) {
                 LOGGER.error("{} => {}", request, e.getMessage());
