@@ -24,6 +24,8 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRep
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSetRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateContext;
 import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -147,10 +150,12 @@ public class FlickrMediaProcessorService {
         }
         media = saveMediaAndPhotosetsIfNeeded(media, save, savePhotoSets, isPresentInDb, saver);
         savePhotoSets = false;
-        save = mediaService
-                .updateMedia(media, patternsToRemove.get(), stringsToRemove.get(), false, urlResolver,
-                        similarCandidateMedia, checkBlocklist)
-                .getResult();
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            save = mediaService
+                    .updateMedia(new MediaUpdateContext<>(media, null, urlResolver, httpClient, null, false, false),
+                            patternsToRemove.get(), stringsToRemove.get(), similarCandidateMedia, checkBlocklist)
+                    .result();
+        }
         int uploadCount = 0;
         if (shouldUploadAuto.test(media, false) && (videosEnabled || !media.isVideo())) {
             Triple<FlickrMedia, Collection<FileMetadata>, Integer> upload = uploader.apply(media);

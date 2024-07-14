@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.File;
 import java.net.URL;
 
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.junit.jupiter.api.Test;
 import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 
@@ -21,8 +23,12 @@ class ExifMetadataTest {
 
     @Test
     void testReadImageMetadata() throws Exception {
-        ExifMetadata metadata = ExifMetadata.of(ImageUtils
-                .readImageMetadata(new URL("https://images-assets.nasa.gov/image/P22-003-22/P22-003-22~orig.jpg")));
+        ExifMetadata metadata = null;
+        try (CloseableHttpClient hc = HttpClients.createDefault()) {
+            metadata = ExifMetadata.of(
+                    ImageUtils.readImageMetadata(
+                            new URL("https://images-assets.nasa.gov/image/P22-003-22/P22-003-22~orig.jpg"), hc, null));
+        }
         assertNotNull(metadata);
 
         assertEquals("Chris Hanoch", metadata.getExifArtist());

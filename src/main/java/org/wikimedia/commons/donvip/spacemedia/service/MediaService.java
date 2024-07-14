@@ -6,6 +6,10 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.text.StringEscapeUtils.unescapeXml;
+import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.computePerceptualHash;
+import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.computeSha1;
+import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.encode;
+import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.similarityScore;
 import static org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils.readImageMetadata;
 import static org.wikimedia.commons.donvip.spacemedia.utils.MediaUtils.readFile;
 
@@ -37,6 +41,8 @@ import javax.imageio.ImageIO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.poi.sl.usermodel.SlideShow;
@@ -64,7 +70,6 @@ import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.utils.ContentsAndMetadata;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
-import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Mp4File;
 
 @Lazy
@@ -122,28 +127,27 @@ public class MediaService {
         photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.photographers.csv"));
     }
 
-    public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<Pattern> patternsToRemove,
-            Iterable<String> stringsToRemove, boolean forceUpdate, UrlResolver<M> urlResolver,
+    public <M extends Media> MediaUpdateResult<M> updateMedia(MediaUpdateContext<M> ctx,
+            Iterable<Pattern> patternsToRemove, Iterable<String> stringsToRemove,
             Function<LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist)
             throws IOException {
-        return updateMedia(media, patternsToRemove, stringsToRemove, forceUpdate, urlResolver, similarCandidateMedia,
-                checkBlocklist, true, false, null);
+        return updateMedia(ctx, patternsToRemove, stringsToRemove, similarCandidateMedia, checkBlocklist, true);
     }
 
-    public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<Pattern> patternsToRemove,
-            Iterable<String> stringsToRemove, boolean forceUpdate, UrlResolver<M> urlResolver,
+    public <M extends Media> MediaUpdateResult<M> updateMedia(MediaUpdateContext<M> ctx,
+            Iterable<Pattern> patternsToRemove, Iterable<String> stringsToRemove,
             Function<LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist,
-            boolean includeByPerceptualHash, boolean ignoreExifMetadata, Path localPath) throws IOException {
+            boolean includeByPerceptualHash) throws IOException {
         boolean result = false;
+        M media = ctx.media();
         LOGGER.trace("updateMedia - cleanupDescription - {}", media);
         if (cleanupDescription(media, patternsToRemove, stringsToRemove)) {
             LOGGER.info("Description has been cleaned up for {}", media);
             result = true;
         }
         LOGGER.trace("updateMedia - updateReadableStateAndHashes - {}", media);
-        MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, urlResolver, forceUpdate,
-                ignoreExifMetadata);
-        if (ur.getResult()) {
+        MediaUpdateResult<M> ur = updateReadableStateAndHashes(ctx);
+        if (ur.result()) {
             LOGGER.info("Readable state and/or hashes have been updated for {}", media);
             result = true;
         }
@@ -161,7 +165,7 @@ public class MediaService {
             result = true;
         }
         LOGGER.trace("updateMedia - done - {}", media);
-        return new MediaUpdateResult(result, ur.getException());
+        return new MediaUpdateResult<>(media, result, ur.exception());
     }
 
     protected boolean belongsToBlocklist(Media media) {
@@ -204,57 +208,49 @@ public class MediaService {
         return photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith);
     }
 
-    public <M extends Media> MediaUpdateResult updateReadableStateAndHashes(M media, Path localPath,
-            UrlResolver<M> urlResolver, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
+    public <M extends Media> MediaUpdateResult<M> updateReadableStateAndHashes(MediaUpdateContext<M> ctx) {
         boolean result = false;
         Exception exception = null;
-        for (FileMetadata metadata : media.getMetadata()) {
+        for (FileMetadata metadata : ctx.media().getMetadata()) {
             if (metadata.isIgnored() != Boolean.TRUE) {
-                MediaUpdateResult ur = updateReadableStateAndHashes(media, metadata, localPath, urlResolver,
-                        forceUpdateOfHashes, ignoreExifMetadata);
-                result |= ur.getResult();
-                if (ur.getException() != null) {
-                    exception = ur.getException();
+                MediaUpdateResult<M> ur = updateReadableStateAndHashes(ctx, metadata);
+                result |= ur.result();
+                if (ur.exception() != null) {
+                    exception = ur.exception();
                 }
-                if (ur.getResult()) {
+                if (ur.result()) {
                     LOGGER.info("Readable state and/or hashes have been updated for {}", metadata);
                 }
             }
         }
         // T230284 - Processing full-res images can lead to OOM errors
-        return new MediaUpdateResult(result, exception);
+        return new MediaUpdateResult<>(ctx.media(), result, exception);
     }
 
-    public static class MediaUpdateResult {
-        private final boolean result;
-        private final Exception exception;
+    public record MediaUpdateContext<M extends Media>(M media, Path localPath, UrlResolver<M> urlResolver,
+            HttpClient httpClient, HttpClientContext context, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
+    }
 
-        public MediaUpdateResult(boolean result, Exception exception) {
-            this.result = result;
-            this.exception = exception;
-        }
+    public record MediaUpdateResult<M extends Media>(M media, boolean result, boolean resetConsecutiveFailures,
+            boolean incrementConsecutiveFailures, Exception exception) {
 
-        public boolean getResult() {
-            return result;
-        }
-
-        public Exception getException() {
-            return exception;
+        public MediaUpdateResult(M media, boolean result, Exception exception) {
+            this(media, result, false, false, exception);
         }
     }
 
-    private <M extends Media> MediaUpdateResult updateReadableStateAndHashes(M media, FileMetadata metadata,
-            Path localPath, UrlResolver<M> urlResolver, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
+    private <M extends Media> MediaUpdateResult<M> updateReadableStateAndHashes(MediaUpdateContext<M> ctx,
+            FileMetadata metadata) {
         boolean result = false;
         Object contents = null;
         try {
-            URL assetUrl = urlResolver.resolveDownloadUrl(media, metadata);
+            URL assetUrl = ctx.urlResolver.resolveDownloadUrl(ctx.media, metadata);
             result |= isBlank(metadata.getOriginalFileName())
                     && metadata.updateFilenameAndExtension(assetUrl.getPath());
-            if (shouldReadFile(assetUrl, metadata, forceUpdateOfHashes)) {
+            if (shouldReadFile(assetUrl, metadata, ctx.forceUpdateOfHashes)) {
                 try {
-                    ContentsAndMetadata<?> img = readFile(assetUrl, metadata.getFileExtension(), localPath, false,
-                            true);
+                    ContentsAndMetadata<?> img = readFile(assetUrl, metadata.getFileExtension(), ctx.localPath, false,
+                            true, ctx.httpClient, ctx.context);
                     contents = img.contents();
                     result |= updateReadableStateAndDims(metadata, img);
                     result |= updateFileSize(metadata, img);
@@ -278,35 +274,35 @@ public class MediaService {
                     result = handleFileReadingError(metadata, e);
                 }
             }
-            if (contents instanceof BufferedImage bi && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
+            if (contents instanceof BufferedImage bi && updatePerceptualHash(metadata, bi, ctx.forceUpdateOfHashes)) {
                 LOGGER.info("Perceptual hash has been updated for {}", metadata);
                 result = true;
             }
             contents = flushOrClose(contents);
             boolean isImage = metadata.isImage();
             boolean isReadableImage = isImage && Boolean.TRUE == metadata.isReadable();
-            if ((!isImage || isReadableImage)
-                    && updateSha1(media, metadata, localPath, urlResolver, forceUpdateOfHashes)) {
+            if ((!isImage || isReadableImage) && updateSha1(ctx, metadata)) {
                 LOGGER.info("SHA1 hash has been updated for {}", metadata);
                 result = true;
             }
-            if (isReadableImage && !ignoreExifMetadata && updateExifMetadata(metadata)) {
+            if (isReadableImage && !ctx.ignoreExifMetadata
+                    && updateExifMetadata(metadata, ctx.httpClient, ctx.context)) {
                 LOGGER.info("EXIF metadata has been updated for {}", metadata);
                 result = true;
             }
         } catch (RestClientException e) {
-            LOGGER.error("Error while computing hashes for {}: {}", media, e.getMessage());
-            return new MediaUpdateResult(result, e);
+            LOGGER.error("Error while computing hashes for {}: {}", ctx.media, e.getMessage());
+            return new MediaUpdateResult<>(ctx.media, result, e);
         } catch (IOException e) {
-            LOGGER.error("Error while computing hashes for {}", media, e);
-            return new MediaUpdateResult(result, e);
+            LOGGER.error("Error while computing hashes for {}", ctx.media, e);
+            return new MediaUpdateResult<>(ctx.media, result, e);
         } finally {
             contents = flushOrClose(contents);
         }
         if (result) {
             saveMetadata(metadata);
         }
-        return new MediaUpdateResult(result, null);
+        return new MediaUpdateResult<>(ctx.media, result, null);
     }
 
     private static boolean handleFileReadingError(FileMetadata metadata, Exception e) {
@@ -501,10 +497,12 @@ public class MediaService {
         return result;
     }
 
-    public boolean updateExifMetadata(FileMetadata metadata) throws IOException {
+    public boolean updateExifMetadata(FileMetadata metadata, HttpClient httpClient, HttpClientContext context)
+            throws IOException {
         if (metadata.getExif() == null) {
             try {
-                metadata.setExif(exifRepository.save(ExifMetadata.of(readImageMetadata(metadata.getAssetUri()))));
+                metadata.setExif(exifRepository
+                        .save(ExifMetadata.of(readImageMetadata(metadata.getAssetUri(), httpClient, context))));
                 return true;
             } catch (IOException e) {
                 LOGGER.error("Failed to update EXIF metadata for {}: {}", metadata, e.getMessage());
@@ -516,30 +514,22 @@ public class MediaService {
     /**
      * Computes the media SHA-1.
      *
-     * @param metadata media object
+     * @param ctx media update context
      * @param metadata media object metadata
-     * @param localPath if set, use it instead of asset URL
-     * @param urlResolver URL download resolver
-     * @param forceUpdate {@code true} to force update of an existing hash
      * @return {@code true} if media has been updated with computed SHA-1 and must be persisted
      * @throws IOException        in case of I/O error
      */
-    public <M extends Media> boolean updateSha1(M media, FileMetadata metadata, Path localPath,
-            UrlResolver<M> urlResolver, boolean forceUpdate) throws IOException {
-        if ((!metadata.hasSha1() || forceUpdate) && (metadata.getAssetUrl() != null || localPath != null)) {
-            metadata.setSha1(getSha1(localPath, urlResolver.resolveDownloadUrl(media, metadata)));
+    public <M extends Media> boolean updateSha1(MediaUpdateContext<M> ctx, FileMetadata metadata)
+            throws IOException {
+        if ((!metadata.hasSha1() || ctx.forceUpdateOfHashes)
+                && (metadata.getAssetUrl() != null || ctx.localPath != null)) {
+            metadata.setSha1(ctx.localPath != null ? computeSha1(ctx.localPath)
+                    : computeSha1(ctx.urlResolver.resolveDownloadUrl(ctx.media, metadata), ctx.httpClient,
+                            ctx.context));
             updateHashes(metadata.getSha1(), metadata.getPhash(), metadata.getMime());
             return true;
         }
         return false;
-    }
-
-    private static String getSha1(Path localPath, URL url) throws IOException {
-        if (localPath != null) {
-            return HashHelper.computeSha1(localPath);
-        } else {
-            return HashHelper.computeSha1(url);
-        }
     }
 
     private void updateHashes(String sha1, String phash, String mime) {
@@ -563,7 +553,7 @@ public class MediaService {
     public boolean updatePerceptualHash(FileMetadata metadata, BufferedImage image, boolean forceUpdate) {
         if (image != null && (!metadata.hasPhash() || forceUpdate)) {
             try {
-                metadata.setPhash(HashHelper.encode(HashHelper.computePerceptualHash(image)));
+                metadata.setPhash(encode(computePerceptualHash(image)));
             } catch (RuntimeException e) {
                 LOGGER.error("Failed to update perceptual hash for {}", metadata, e);
             }
@@ -750,7 +740,7 @@ public class MediaService {
 
     private boolean phashMatches(FileMetadata metadata, String filename, String phash) {
         if (phash != null) {
-            double score = HashHelper.similarityScore(metadata.getPhash(), phash);
+            double score = similarityScore(metadata.getPhash(), phash);
             if (score <= perceptualThresholdIdenticalId) {
                 LOGGER.info("Found match ({}) between {} and {} / {}", score, metadata, filename, phash);
                 return true;
