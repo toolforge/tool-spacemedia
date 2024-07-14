@@ -107,12 +107,12 @@ public class KariService extends AbstractOrgService<KariMedia> {
             Optional<KariMedia> mediaInRepo = repository.findById(new CompositeMediaId("kari", id));
             KariMedia media = mediaInRepo.orElse(null);
             if (media == null) {
-                KariUpdateResult result = fetchMedia(id);
-                media = result.getMedia();
-                save = result.getResult();
-                if (result.isResetConsecutiveFailures()) {
+                MediaUpdateResult<KariMedia> result = fetchMedia(id);
+                media = result.media();
+                save = result.result();
+                if (result.resetConsecutiveFailures()) {
                     consecutiveFailures = 0;
-                } else if (result.isIncrementConsecutiveFailures()) {
+                } else if (result.incrementConsecutiveFailures()) {
                     consecutiveFailures++;
                 }
             }
@@ -129,34 +129,7 @@ public class KariService extends AbstractOrgService<KariMedia> {
         endUpdateMedia(count, emptyList(), emptyList(), start);
     }
 
-    static class KariUpdateResult extends MediaUpdateResult {
-
-        private final KariMedia media;
-        private final boolean resetConsecutiveFailures;
-        private final boolean incrementConsecutiveFailures;
-
-        public KariUpdateResult(KariMedia media, boolean result, boolean resetConsecutiveFailures,
-                boolean incrementConsecutiveFailures, Exception exception) {
-            super(result, exception);
-            this.media = media;
-            this.resetConsecutiveFailures = resetConsecutiveFailures;
-            this.incrementConsecutiveFailures = incrementConsecutiveFailures;
-        }
-
-        public KariMedia getMedia() {
-            return media;
-        }
-
-        public boolean isResetConsecutiveFailures() {
-            return resetConsecutiveFailures;
-        }
-
-        public boolean isIncrementConsecutiveFailures() {
-            return incrementConsecutiveFailures;
-        }
-    }
-
-    private KariUpdateResult fetchMedia(String id) {
+    private MediaUpdateResult<KariMedia> fetchMedia(String id) {
         String viewUrl = getViewUrl(id);
         URL view = newURL(viewUrl);
         KariMedia media = null;
@@ -186,7 +159,8 @@ public class KariService extends AbstractOrgService<KariMedia> {
             incrementConsecutiveFailures = true;
             ex = e;
         }
-        return new KariUpdateResult(media, media != null, resetConsecutiveFailures, incrementConsecutiveFailures, ex);
+        return new MediaUpdateResult<>(media, media != null, resetConsecutiveFailures, incrementConsecutiveFailures,
+                ex);
     }
 
     protected KariMedia processMedia(boolean save, KariMedia media, URL view, boolean mediaInRepo) throws IOException {
@@ -241,7 +215,7 @@ public class KariService extends AbstractOrgService<KariMedia> {
 
     @Override
     protected KariMedia refresh(KariMedia media) throws IOException {
-        KariMedia mediaFromApi = fetchMedia(media.getId().getMediaId()).getMedia();
+        KariMedia mediaFromApi = fetchMedia(media.getId().getMediaId()).media();
         return mediaFromApi != null ? media.copyDataFrom(mediaFromApi) : null;
     }
 

@@ -3,7 +3,10 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.execOutput;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.findExtension;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -33,10 +36,10 @@ import javax.imageio.IIOException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.poi.hslf.usermodel.HSLFSlideShow;
@@ -77,21 +80,20 @@ public class MediaUtils {
     }
 
     public static <T> ContentsAndMetadata<T> readFile(URL url, String extension, Path localPath, boolean readMetadata,
-            boolean log) throws IOException, FileDecodingException {
-        return readFile(Utils.urlToUriUnchecked(url), extension, localPath, readMetadata, log);
+            boolean log, HttpClient httpClient, HttpClientContext context) throws IOException, FileDecodingException {
+        return readFile(urlToUriUnchecked(url), extension, localPath, readMetadata, log, httpClient, context);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> ContentsAndMetadata<T> readFile(URI uri, String extension, Path localPath, boolean readMetadata,
-            boolean log) throws IOException, FileDecodingException {
+            boolean log, HttpClient httpClient, HttpClientContext context) throws IOException, FileDecodingException {
         if (log) {
             LOGGER.info("Reading file {}", uri);
         }
         if (isBlank(extension)) {
-            extension = Utils.findExtension(uri.toString());
+            extension = findExtension(uri.toString());
         }
-        try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
+        try (ClassicHttpResponse response = executeRequest(newHttpGet(uri), httpClient, context);
                 InputStream in = response.getEntity().getContent()) {
             boolean imageio = extension != null && IMAGEIO_EXTENSIONS.contains(extension);
             String filename = null;
@@ -176,7 +178,7 @@ public class MediaUtils {
                         contentLength(contentLength, () -> bytes.length), filename, extension, 1, null);
             } else {
                 throw new FileDecodingException(
-                        "Unsupported format: " + extension + " / headers:" + Arrays.stream(response.getAllHeaders())
+                        "Unsupported format: " + extension + " / headers:" + Arrays.stream(response.getHeaders())
                                 .map(h -> h.getName() + ": " + h.getValue()).sorted().toList());
             }
         }

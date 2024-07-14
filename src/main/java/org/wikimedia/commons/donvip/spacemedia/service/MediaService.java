@@ -37,6 +37,8 @@ import javax.imageio.ImageIO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.poi.sl.usermodel.SlideShow;
@@ -122,28 +124,27 @@ public class MediaService {
         photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.photographers.csv"));
     }
 
-    public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<Pattern> patternsToRemove,
-            Iterable<String> stringsToRemove, boolean forceUpdate, UrlResolver<M> urlResolver,
+    public <M extends Media> MediaUpdateResult<M> updateMedia(MediaUpdateContext<M> ctx,
+            Iterable<Pattern> patternsToRemove, Iterable<String> stringsToRemove,
             Function<LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist)
             throws IOException {
-        return updateMedia(media, patternsToRemove, stringsToRemove, forceUpdate, urlResolver, similarCandidateMedia,
-                checkBlocklist, true, false, null);
+        return updateMedia(ctx, patternsToRemove, stringsToRemove, similarCandidateMedia, checkBlocklist, true);
     }
 
-    public <M extends Media> MediaUpdateResult updateMedia(M media, Iterable<Pattern> patternsToRemove,
-            Iterable<String> stringsToRemove, boolean forceUpdate, UrlResolver<M> urlResolver,
+    public <M extends Media> MediaUpdateResult<M> updateMedia(MediaUpdateContext<M> ctx,
+            Iterable<Pattern> patternsToRemove, Iterable<String> stringsToRemove,
             Function<LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist,
-            boolean includeByPerceptualHash, boolean ignoreExifMetadata, Path localPath) throws IOException {
+            boolean includeByPerceptualHash) throws IOException {
         boolean result = false;
+        M media = ctx.media();
         LOGGER.trace("updateMedia - cleanupDescription - {}", media);
         if (cleanupDescription(media, patternsToRemove, stringsToRemove)) {
             LOGGER.info("Description has been cleaned up for {}", media);
             result = true;
         }
         LOGGER.trace("updateMedia - updateReadableStateAndHashes - {}", media);
-        MediaUpdateResult ur = updateReadableStateAndHashes(media, localPath, urlResolver, forceUpdate,
-                ignoreExifMetadata);
-        if (ur.getResult()) {
+        MediaUpdateResult<M> ur = updateReadableStateAndHashes(ctx);
+        if (ur.result()) {
             LOGGER.info("Readable state and/or hashes have been updated for {}", media);
             result = true;
         }
@@ -161,7 +162,7 @@ public class MediaService {
             result = true;
         }
         LOGGER.trace("updateMedia - done - {}", media);
-        return new MediaUpdateResult(result, ur.getException());
+        return new MediaUpdateResult<>(media, result, ur.exception());
     }
 
     protected boolean belongsToBlocklist(Media media) {
@@ -204,57 +205,49 @@ public class MediaService {
         return photographersBlocklist.stream().anyMatch(normalizedPhotographer::startsWith);
     }
 
-    public <M extends Media> MediaUpdateResult updateReadableStateAndHashes(M media, Path localPath,
-            UrlResolver<M> urlResolver, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
+    public <M extends Media> MediaUpdateResult<M> updateReadableStateAndHashes(MediaUpdateContext<M> ctx) {
         boolean result = false;
         Exception exception = null;
-        for (FileMetadata metadata : media.getMetadata()) {
+        for (FileMetadata metadata : ctx.media().getMetadata()) {
             if (metadata.isIgnored() != Boolean.TRUE) {
-                MediaUpdateResult ur = updateReadableStateAndHashes(media, metadata, localPath, urlResolver,
-                        forceUpdateOfHashes, ignoreExifMetadata);
-                result |= ur.getResult();
-                if (ur.getException() != null) {
-                    exception = ur.getException();
+                MediaUpdateResult<M> ur = updateReadableStateAndHashes(ctx, metadata);
+                result |= ur.result();
+                if (ur.exception() != null) {
+                    exception = ur.exception();
                 }
-                if (ur.getResult()) {
+                if (ur.result()) {
                     LOGGER.info("Readable state and/or hashes have been updated for {}", metadata);
                 }
             }
         }
         // T230284 - Processing full-res images can lead to OOM errors
-        return new MediaUpdateResult(result, exception);
+        return new MediaUpdateResult<>(ctx.media(), result, exception);
     }
 
-    public static class MediaUpdateResult {
-        private final boolean result;
-        private final Exception exception;
+    public record MediaUpdateContext<M extends Media>(M media, Path localPath, UrlResolver<M> urlResolver,
+            HttpClient httpClient, HttpClientContext context, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
+    }
 
-        public MediaUpdateResult(boolean result, Exception exception) {
-            this.result = result;
-            this.exception = exception;
-        }
+    public record MediaUpdateResult<M extends Media>(M media, boolean result, boolean resetConsecutiveFailures,
+            boolean incrementConsecutiveFailures, Exception exception) {
 
-        public boolean getResult() {
-            return result;
-        }
-
-        public Exception getException() {
-            return exception;
+        public MediaUpdateResult(M media, boolean result, Exception exception) {
+            this(media, result, false, false, exception);
         }
     }
 
-    private <M extends Media> MediaUpdateResult updateReadableStateAndHashes(M media, FileMetadata metadata,
-            Path localPath, UrlResolver<M> urlResolver, boolean forceUpdateOfHashes, boolean ignoreExifMetadata) {
+    private <M extends Media> MediaUpdateResult<M> updateReadableStateAndHashes(MediaUpdateContext<M> ctx,
+            FileMetadata metadata) {
         boolean result = false;
         Object contents = null;
         try {
-            URL assetUrl = urlResolver.resolveDownloadUrl(media, metadata);
+            URL assetUrl = ctx.urlResolver.resolveDownloadUrl(ctx.media, metadata);
             result |= isBlank(metadata.getOriginalFileName())
                     && metadata.updateFilenameAndExtension(assetUrl.getPath());
-            if (shouldReadFile(assetUrl, metadata, forceUpdateOfHashes)) {
+            if (shouldReadFile(assetUrl, metadata, ctx.forceUpdateOfHashes)) {
                 try {
-                    ContentsAndMetadata<?> img = readFile(assetUrl, metadata.getFileExtension(), localPath, false,
-                            true);
+                    ContentsAndMetadata<?> img = readFile(assetUrl, metadata.getFileExtension(), ctx.localPath, false,
+                            true, ctx.httpClient, ctx.context);
                     contents = img.contents();
                     result |= updateReadableStateAndDims(metadata, img);
                     result |= updateFileSize(metadata, img);
@@ -278,7 +271,7 @@ public class MediaService {
                     result = handleFileReadingError(metadata, e);
                 }
             }
-            if (contents instanceof BufferedImage bi && updatePerceptualHash(metadata, bi, forceUpdateOfHashes)) {
+            if (contents instanceof BufferedImage bi && updatePerceptualHash(metadata, bi, ctx.forceUpdateOfHashes)) {
                 LOGGER.info("Perceptual hash has been updated for {}", metadata);
                 result = true;
             }
@@ -286,27 +279,27 @@ public class MediaService {
             boolean isImage = metadata.isImage();
             boolean isReadableImage = isImage && Boolean.TRUE == metadata.isReadable();
             if ((!isImage || isReadableImage)
-                    && updateSha1(media, metadata, localPath, urlResolver, forceUpdateOfHashes)) {
+                    && updateSha1(ctx.media, metadata, ctx.localPath, ctx.urlResolver, ctx.forceUpdateOfHashes)) {
                 LOGGER.info("SHA1 hash has been updated for {}", metadata);
                 result = true;
             }
-            if (isReadableImage && !ignoreExifMetadata && updateExifMetadata(metadata)) {
+            if (isReadableImage && !ctx.ignoreExifMetadata && updateExifMetadata(metadata)) {
                 LOGGER.info("EXIF metadata has been updated for {}", metadata);
                 result = true;
             }
         } catch (RestClientException e) {
-            LOGGER.error("Error while computing hashes for {}: {}", media, e.getMessage());
-            return new MediaUpdateResult(result, e);
+            LOGGER.error("Error while computing hashes for {}: {}", ctx.media, e.getMessage());
+            return new MediaUpdateResult<>(ctx.media, result, e);
         } catch (IOException e) {
-            LOGGER.error("Error while computing hashes for {}", media, e);
-            return new MediaUpdateResult(result, e);
+            LOGGER.error("Error while computing hashes for {}", ctx.media, e);
+            return new MediaUpdateResult<>(ctx.media, result, e);
         } finally {
             contents = flushOrClose(contents);
         }
         if (result) {
             saveMetadata(metadata);
         }
-        return new MediaUpdateResult(result, null);
+        return new MediaUpdateResult<>(ctx.media, result, null);
     }
 
     private static boolean handleFileReadingError(FileMetadata metadata, Exception e) {

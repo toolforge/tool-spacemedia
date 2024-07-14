@@ -4,7 +4,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Objects.requireNonNull;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.DONE;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.PROGRESS;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequestStream;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getHttpClientContext;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpPost;
@@ -21,16 +21,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,13 +101,11 @@ public class Video2CommonsService {
     }
 
     private String getCsrfToken() {
-        try (CloseableHttpClient httpclient = HttpClientBuilder.create().setRedirectStrategy(new LaxRedirectStrategy())
-                .build()) {
+        try (CloseableHttpClient httpclient = HttpClientBuilder.create().build()) {
             HttpClientContext context = getHttpClientContext(cookieStore);
             // STEP 1 - Request login page
-            HttpRequestBase request = newHttpGet(URL_BASE + "oauthinit?returnto=" + URL_BASE);
-            try (CloseableHttpResponse response = executeRequest(request, httpclient, context);
-                    InputStream in = response.getEntity().getContent()) {
+            HttpUriRequestBase request = newHttpGet(URL_BASE + "oauthinit?returnto=" + URL_BASE);
+            try (InputStream in = executeRequestStream(request, httpclient, context)) {
                 request = newHttpPost(
                         Jsoup.parse(in, "UTF-8", URL_BASE).getElementsByTag("form").first(),
                         action -> CommonsService.BASE_URL + action,
@@ -119,8 +116,7 @@ public class Video2CommonsService {
                         }, null);
             }
             // STEP 2 - Login and get authorization request
-            try (CloseableHttpResponse response = executeRequest(request, httpclient, context);
-                    InputStream in = response.getEntity().getContent()) {
+            try (InputStream in = executeRequestStream(request, httpclient, context)) {
                 request = newHttpPost(
                         Jsoup.parse(in, "UTF-8", CommonsService.BASE_URL).getElementById("mw-mwoauth-authorize-form"),
                         action -> CommonsService.BASE_URL + action,
@@ -133,13 +129,11 @@ public class Video2CommonsService {
                         });
             }
             // STEP 3 - Authorize application
-            try (CloseableHttpResponse response = executeRequest(request, httpclient, context);
-                    InputStream in = response.getEntity().getContent()) {
+            try (InputStream in = executeRequestStream(request, httpclient, context)) {
             }
             // STEP 4 - request CSRF token
             request = newHttpGet(URL_API + "/csrf");
-            try (CloseableHttpResponse response = executeRequest(request, httpclient, context);
-                    InputStream in = response.getEntity().getContent()) {
+            try (InputStream in = executeRequestStream(request, httpclient, context)) {
                 return jackson.readValue(in, Csrf.class).csrf();
             }
         } catch (IOException e) {
@@ -175,7 +169,7 @@ public class Video2CommonsService {
                     .save(new Video2CommonsTask(run.id(), url, filenameExt + ".webm", orgId, mediaId, metadataId));
             // STEP 2 - check status and wait a few seconds (just to check logs, tasks can
             // be pending several hours)
-            HttpRequestBase request = newHttpGet(URL_API + "/status-single?task=" + run.id());
+            HttpUriRequestBase request = newHttpGet(URL_API + "/status-single?task=" + run.id());
             int n = 1;
             while (!task.getStatus().isCompleted() && n++ < maxAttempts) {
                 task = updateTask(task, request, url, httpClient, httpClientContext);
@@ -208,11 +202,10 @@ public class Video2CommonsService {
 
     private RunResponse submitTaskRun(String wikiCode, URL url, String filenameExt, HttpClientContext httpClientContext,
             CloseableHttpClient httpClient, String format) throws IOException {
-        HttpRequestBase request = newHttpPost(URL_API + "/task/run",
+        HttpUriRequestBase request = newHttpPost(URL_API + "/task/run",
                 Map.of("url", url, "extractor", "", "subtitles", false, "filename", filenameExt, "filedesc",
                         wikiCode, "format", format, "_csrf_token", requireNonNull(csrf, "v2c csrf token")));
-        try (CloseableHttpResponse response = executeRequest(request, httpClient, httpClientContext);
-                InputStream in = response.getEntity().getContent()) {
+        try (InputStream in = executeRequestStream(request, httpClient, httpClientContext)) {
             RunResponse run = jackson.readValue(in, RunResponse.class);
             LOGGER.info("video2commons task {} submitted to upload {} as '{}.webm' ({})", run.id(), url, filenameExt,
                     format);
@@ -230,20 +223,20 @@ public class Video2CommonsService {
 
     private void abortOrRemoveTask(String op, String taskId, HttpClientContext httpClientContext,
             CloseableHttpClient httpClient) {
-        try (CloseableHttpResponse response = executeRequest(
-                newHttpPost(URL_API + "/task/" + op,
-                        Map.of("id", taskId, "_csrf_token", requireNonNull(csrf, "v2c csrf token"))),
-                httpClient, httpClientContext)) {
-            LOGGER.warn("{} video2commons task {} => {}", op, taskId, response.getStatusLine());
+        try {
+            String response = httpClient.execute(
+                    newHttpPost(URL_API + "/task/" + op,
+                            Map.of("id", taskId, "_csrf_token", requireNonNull(csrf, "v2c csrf token"))),
+                    httpClientContext, new BasicHttpClientResponseHandler());
+            LOGGER.warn("{} video2commons task {} => {}", op, taskId, response);
         } catch (IOException e) {
             LOGGER.warn("Failed to {} video2commons task {}", op, taskId);
         }
     }
 
-    private Video2CommonsTask updateTask(Video2CommonsTask task, HttpRequestBase request, URL url,
+    private Video2CommonsTask updateTask(Video2CommonsTask task, HttpUriRequestBase request, URL url,
             CloseableHttpClient httpClient, HttpClientContext httpClientContext) {
-        try (CloseableHttpResponse response = executeRequest(request, httpClient, httpClientContext);
-                InputStream in = response.getEntity().getContent()) {
+        try (InputStream in = executeRequestStream(request, httpClient, httpClientContext)) {
             TaskStatusValue status = jackson.readValue(in, TaskStatus.class).value();
             if (status == null || Status.valueOf(status.status().toUpperCase(Locale.ENGLISH)).isFailed()) {
                 LOGGER.error("{} => {}", url, status);

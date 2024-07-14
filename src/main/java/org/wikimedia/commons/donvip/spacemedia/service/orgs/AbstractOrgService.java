@@ -15,6 +15,7 @@ import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsS
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.normalizeFilename;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.Video2CommonsService.V2C_VIDEO_EXTENSIONS;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -60,10 +61,12 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
 import org.jsoup.HttpStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,6 +103,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateContext;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.RemoteService;
 import org.wikimedia.commons.donvip.spacemedia.service.SearchService;
@@ -784,7 +788,9 @@ public abstract class AbstractOrgService<T extends Media>
             LOGGER.warn("Refresh of {} failed: {}", media, e.getMessage());
         }
         if (refreshedMedia != null) {
-            doCommonUpdate(refreshedMedia, true);
+            try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+                doCommonUpdate(refreshedMedia, httpClient, null, true);
+            }
             return saveMedia(refreshedMedia);
         } else {
             deleteMedia(media, "refresh did not find media anymore");
@@ -1230,8 +1236,8 @@ public abstract class AbstractOrgService<T extends Media>
                     String url = group.startsWith("http") ? group : "https://" + group;
                     try (CloseableHttpClient httpclient = HttpClientBuilder.create().disableAutomaticRetries()
                             .disableRedirectHandling().build();
-                            CloseableHttpResponse response = httpclient
-                                    .execute(newHttpGet(url.replace("http://", "https://")))) {
+                            ClassicHttpResponse response = executeRequest(
+                                    newHttpGet(url.replace("http://", "https://")), httpclient, null)) {
                         Header location = response.getFirstHeader("Location");
                         if (location != null) {
                             return location.getValue().replace("&feature=youtu.be", "");
@@ -1649,11 +1655,14 @@ public abstract class AbstractOrgService<T extends Media>
         return getMediaClass();
     }
 
-    protected final MediaUpdateResult doCommonUpdate(T media, boolean forceUpdate) throws IOException {
-        MediaUpdateResult ur = mediaService.updateMedia(media, getPatternsToRemove(media), getStringsToRemove(media),
-                forceUpdate, getUrlResolver(), this::getSimilarUploadedMediaByDate, checkBlocklist(),
-                includeByPerceptualHash(), ignoreExifMetadata(), null);
-        boolean result = ur.getResult();
+    protected final MediaUpdateResult<T> doCommonUpdate(T media, HttpClient httpClient, HttpClientContext context,
+            boolean forceUpdate) throws IOException {
+        MediaUpdateResult<T> ur = mediaService.updateMedia(
+                new MediaUpdateContext<T>(media, null, getUrlResolver(), httpClient, context, forceUpdate,
+                        ignoreExifMetadata()),
+                getPatternsToRemove(media), getStringsToRemove(media), this::getSimilarUploadedMediaByDate,
+                checkBlocklist(), includeByPerceptualHash());
+        boolean result = ur.result();
         if (!media.isIgnored() && media.hasMetadata()) {
             LOGGER.trace("Start common update checks for {}", media);
             for (FileMetadata fm : media.getMetadata()) {
@@ -1666,12 +1675,12 @@ public abstract class AbstractOrgService<T extends Media>
             }
             LOGGER.trace("Ended common update checks for {}", media);
         }
-        ur = new MediaUpdateResult(result, ur.getException());
+        ur = new MediaUpdateResult<>(media, result, ur.exception());
         postDoCommonUpdate(media, ur);
         return ur;
     }
 
-    protected void postDoCommonUpdate(T media, MediaUpdateResult ur) {
+    protected void postDoCommonUpdate(T media, MediaUpdateResult<T> ur) {
         // Override if custom behaviour has to be performed after a common update
     }
 
@@ -1744,7 +1753,14 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected final boolean doCommonUpdate(T media) throws IOException {
-        return doCommonUpdate(media, false).getResult();
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            return doCommonUpdate(media, httpClient, null);
+        }
+    }
+
+    protected final boolean doCommonUpdate(T media, HttpClient httpClient, HttpClientContext context)
+            throws IOException {
+        return doCommonUpdate(media, httpClient, context, false).result();
     }
 
     @Override

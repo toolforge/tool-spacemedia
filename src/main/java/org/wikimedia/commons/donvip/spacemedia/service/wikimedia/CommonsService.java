@@ -79,6 +79,8 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -1433,9 +1435,9 @@ public class CommonsService {
     public HashAssociation computeAndSaveHash(String sha1, String name, String mime) {
         if (!hashRepository.existsById(sha1)) {
             BufferedImage bi = null;
-            try {
+            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
                 URL url = getImageUrl(name);
-                bi = (BufferedImage) MediaUtils.readFile(url, null, null, false, false).contents();
+                bi = (BufferedImage) MediaUtils.readFile(url, null, null, false, false, httpClient, null).contents();
                 if (bi == null) {
                     throw new IOException("Failed to read image from " + url);
                 }

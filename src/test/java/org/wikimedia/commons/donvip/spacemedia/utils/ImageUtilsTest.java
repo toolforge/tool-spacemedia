@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -20,13 +22,16 @@ class ImageUtilsTest {
             "https://upload.wikimedia.org/wikipedia/commons/7/78/Empty_200x1.jpg,200,1",
             "https://upload.wikimedia.org/wikipedia/commons/e/e2/Artemis_program_%28original_with_wordmark%29.svg,200,185" })
     void testReadImage(URL url, int width, int height) throws Exception {
-        BufferedImage bi = (BufferedImage) MediaUtils.readFile(url, null, null, true, true).contents();
-        assertNotNull(bi);
-        try {
-            assertEquals(width, bi.getWidth());
-            assertEquals(height, bi.getHeight());
-        } finally {
-            bi.flush();
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            BufferedImage bi = (BufferedImage) MediaUtils.readFile(url, null, null, true, true, httpClient, null)
+                    .contents();
+            assertNotNull(bi);
+            try {
+                assertEquals(width, bi.getWidth());
+                assertEquals(height, bi.getHeight());
+            } finally {
+                bi.flush();
+            }
         }
     }
 }
