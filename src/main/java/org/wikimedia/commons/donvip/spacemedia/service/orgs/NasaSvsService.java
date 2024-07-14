@@ -92,7 +92,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                             } catch (RuntimeException e) {
                                 LOGGER.error("Error while processing {}", result, e);
                             }
-                            count++;
+                            ongoingUpdateMedia(start, count++);
                         }
                     }
                     done = results.next() == null;
