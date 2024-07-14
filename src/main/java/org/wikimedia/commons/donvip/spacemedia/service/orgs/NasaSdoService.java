@@ -11,6 +11,7 @@ import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.Wikidata
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q5297355_DOPPLERGRAM;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q725252_SATELLITE_IMAGERY;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem.Q98069877_VIDEO;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -38,9 +39,9 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -188,10 +189,10 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         URL keywordsUrl = getKeywordsUrl(instrument, date);
         LOGGER.info("Fetching {}", keywordsUrl);
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(newHttpGet(keywordsUrl));
+                ClassicHttpResponse response = executeRequest(newHttpGet(keywordsUrl), httpclient, null);
                 InputStream in = response.getEntity().getContent()) {
-            if (response.getStatusLine().getStatusCode() >= 400) {
-                LOGGER.warn("{} => {}", keywordsUrl, response.getStatusLine());
+            if (response.getCode() >= 400) {
+                LOGGER.warn("{} => {}", keywordsUrl, response);
                 return List.of();
             }
             return parseKeywords(in, dateTimeFormatter);

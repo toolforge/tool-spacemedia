@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static java.util.Comparator.comparingLong;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequestStream;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -18,10 +19,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsP
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsVizualisation;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
-import org.wikimedia.commons.donvip.spacemedia.utils.SpacemediaHttpRequestRetryHandler;
+import org.wikimedia.commons.donvip.spacemedia.utils.SpacemediaHttpRequestRetryStrategy;
 
 @Service
 public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
@@ -80,8 +80,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
             String searchUrl = sb.toString();
             boolean done = false;
             while (!done) {
-                try (CloseableHttpResponse response = httpclient.execute(newHttpGet(searchUrl));
-                        InputStream in = response.getEntity().getContent()) {
+                try (InputStream in = executeRequestStream(newHttpGet(searchUrl), httpclient, null)) {
                     NasaSvsSearchResultPage results = jackson.readValue(in, NasaSvsSearchResultPage.class);
                     LOGGER.info("GET {}", searchUrl);
                     for (NasaSvsSearchResult result : results.results()) {
@@ -92,7 +91,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                             } catch (RuntimeException e) {
                                 LOGGER.error("Error while processing {}", result, e);
                             }
-                            count++;
+                            ongoingUpdateMedia(start, count++);
                         }
                     }
                     done = results.next() == null;
@@ -129,9 +128,9 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
 
     private NasaSvsMedia fetchMedia(CompositeMediaId id) throws IOException {
         try (CloseableHttpClient httpclient = HttpClientBuilder.create()
-                .setRetryHandler(new SpacemediaHttpRequestRetryHandler()).build();
-                CloseableHttpResponse response = httpclient.execute(newHttpGet(API_VIZUAL_ENDPOINT + id.getMediaId()));
-                InputStream in = response.getEntity().getContent()) {
+                .setRetryStrategy(new SpacemediaHttpRequestRetryStrategy()).build();
+                InputStream in = executeRequestStream(newHttpGet(API_VIZUAL_ENDPOINT + id.getMediaId()), httpclient,
+                        null)) {
             return mapMedia(jackson.readValue(in, NasaSvsVizualisation.class));
         }
     }

@@ -140,12 +140,13 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
     }
 
     private NasaPhotojournalMedia readHtm(String id) throws IOException, UploadException {
-        when(mediaService.updateMedia(any(), any(), any(), anyBoolean(), any(), any(), anyBoolean(), anyBoolean(),
-                anyBoolean(), any())).thenReturn(new MediaUpdateResult(true, null));
+        NasaPhotojournalMedia media = new NasaPhotojournalMedia();
+
+        when(mediaService.updateMedia(any(), any(), any(), any(), anyBoolean(), anyBoolean()))
+                .thenReturn(new MediaUpdateResult<>(media, true, null));
         when(repository.save(any(NasaPhotojournalMedia.class))).thenAnswer(a -> a.getArgument(0, NasaPhotojournalMedia.class));
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
 
-        NasaPhotojournalMedia media = new NasaPhotojournalMedia();
         media.setId(new CompositeMediaId("photojournal", id));
         Document html = html("nasa/photojournal/" + id + ".htm");
         media.setPublication(

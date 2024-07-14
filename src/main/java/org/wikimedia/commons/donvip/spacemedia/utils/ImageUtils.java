@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequestStream;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 
 import java.awt.image.BufferedImage;
@@ -21,9 +22,8 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
@@ -109,8 +109,7 @@ public class ImageUtils {
             LOGGER.info("Reading number of images in {}", uri);
         }
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
-                InputStream in = response.getEntity().getContent()) {
+                InputStream in = executeRequestStream(newHttpGet(uri), httpclient, null)) {
             return readNumberOfImages(ImageIO.createImageInputStream(in));
         }
     }
@@ -164,8 +163,7 @@ public class ImageUtils {
     public static Metadata readImageMetadata(URI uri) throws IOException {
         LOGGER.info("Reading EXIF metadata for {}...", uri);
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
-                InputStream in = response.getEntity().getContent()) {
+                InputStream in = executeRequestStream(newHttpGet(uri), httpclient, null)) {
             return ImageMetadataReader.readMetadata(in);
         } catch (ImageProcessingException e) {
             throw new IOException(e);

@@ -20,6 +20,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateContext;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeApiService;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeMediaProcessor;
 import org.wikimedia.commons.donvip.spacemedia.utils.MediaUtils;
@@ -201,12 +204,14 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
             save = true;
         }
         Path path = !video.getUniqueMetadata().hasSha1() ? downloadVideo(video) : null;
-        if (mediaService
-                .updateMedia(video, getPatternsToRemove(video), getStringsToRemove(video), false, getUrlResolver(),
-                        this::getSimilarUploadedMediaByDate, checkBlocklist(), includeByPerceptualHash(),
-                        ignoreExifMetadata(), path)
-                .getResult()) {
-            save = true;
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            if (mediaService.updateMedia(
+                    new MediaUpdateContext<>(video, path, getUrlResolver(), httpClient, null, false,
+                            ignoreExifMetadata()),
+                    getPatternsToRemove(video), getStringsToRemove(video), this::getSimilarUploadedMediaByDate,
+                    checkBlocklist(), includeByPerceptualHash()).result()) {
+                save = true;
+            }
         }
         if (path != null) {
             Files.deleteIfExists(path);
