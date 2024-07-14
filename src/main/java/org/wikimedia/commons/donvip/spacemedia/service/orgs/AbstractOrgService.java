@@ -945,7 +945,7 @@ public abstract class AbstractOrgService<T extends Media>
         if (mediaLooksOk && new UploadContext<>(media, metadata, getUploadMode(),
                 minYearUploadAuto, this::isPermittedFileType, isManual).shouldUpload()) {
             checkUploadPreconditions(media, metadata, checkUnicity);
-            List<String> smallerFiles = mediaService.findSmallerCommonsFilesWithIdAndPhash(media, metadata);
+            List<String> smallerFiles = mediaService.findSmallerCommonsFilesWithSearchTermAndPhash(media, metadata);
             URL downloadUrl = getUrlResolver().resolveDownloadUrl(media, metadata);
             if (!smallerFiles.isEmpty()) {
                 LOGGER.info(
@@ -1630,7 +1630,8 @@ public abstract class AbstractOrgService<T extends Media>
         if (isNotEmpty(metadata.getCommonsFileNames())) {
             throw new ImageUploadForbiddenException(media + " is already on Commons: " + metadata.getCommonsFileNames());
         }
-        if (mediaService.findCommonsFiles(List.of(metadata), media.getSearchTermsInCommons(),
+        List<FileMetadata> metadataList = List.of(metadata);
+        if (mediaService.findCommonsFiles(metadataList, media.getSearchTermsInCommons(metadataList),
                 () -> getSimilarUploadedMediaByDate(media.getPublicationDate()), includeByPerceptualHash())) {
             metadata = metadataRepository.save(metadata);
             throw new ImageUploadForbiddenException(

@@ -414,10 +414,13 @@ public class Media implements MediaProjection, MediaDescription {
         return List.of(getIdUsedInOrg());
     }
 
-    public List<String> getSearchTermsInCommons() {
+    public List<String> getSearchTermsInCommons(Collection<FileMetadata> metadata) {
         List<String> result = new ArrayList<>(getIdUsedInCommons());
         ofNullable(getDescription()).map(x -> x.contains(" --- ") ? x.substring(x.indexOf(" --- ") + 5) : x)
                 .ifPresent(result::add);
+        metadata.stream().map(FileMetadata::getDescription).filter(Objects::nonNull).distinct().sorted()
+                .forEach(result::add);
+        metadata.stream().map(FileMetadata::getAssetUri).map(Object::toString).distinct().sorted().forEach(result::add);
         return result;
     }
 

@@ -149,7 +149,7 @@ public class MediaService {
         }
         LOGGER.trace("updateMedia - findCommonsFiles - {}", media);
         if (media.hasAssetsToUpload()
-                && findCommonsFiles(media.getMetadata(), media.getSearchTermsInCommons(),
+                && findCommonsFiles(media.getMetadata(), media.getSearchTermsInCommons(media.getMetadata()),
                         () -> similarCandidateMedia.apply(media.getPublicationDate()),
                         includeByPerceptualHash)) {
             LOGGER.info("Commons files have been updated for {}", media);
@@ -653,7 +653,7 @@ public class MediaService {
                     Collection<WikiPage> images = commonsService.searchImages(text.strip());
                     if (!images.isEmpty()) {
                         for (FileMetadata metadata : metadatas) {
-                            if (findCommonsFilesWithIdAndPhash(images, metadata)) {
+                            if (findCommonsFilesWithSearchTermAndPhash(images, metadata)) {
                                 result = true;
                             }
                         }
@@ -706,11 +706,11 @@ public class MediaService {
         return !filenames.isEmpty() && saveNewMetadataCommonsFileNames(metadata, filenames);
     }
 
-    public List<String> findSmallerCommonsFilesWithIdAndPhash(Media media, FileMetadata metadata) throws IOException {
+    public List<String> findSmallerCommonsFilesWithSearchTermAndPhash(Media media, FileMetadata metadata) throws IOException {
         List<String> result = new ArrayList<>();
-        for (String idUsedInCommons : media.getIdUsedInCommons()) {
+        for (String searchTerm : media.getSearchTermsInCommons(List.of(metadata))) {
             try {
-                result.addAll(findCommonsFilesWithIdAndPhashFiltered(commonsService.searchImages(idUsedInCommons),
+                result.addAll(findCommonsFilesWithSearchTermAndPhashFiltered(commonsService.searchImages(searchTerm),
                         metadata, MediaService::filterBySameMimeAndSmallerSize));
             } catch (IOException e) {
                 LOGGER.error("Failed to search images: {}", e.getMessage());
@@ -719,13 +719,13 @@ public class MediaService {
         return result;
     }
 
-    private boolean findCommonsFilesWithIdAndPhash(Collection<WikiPage> images, FileMetadata metadata) {
-        List<String> filenames = findCommonsFilesWithIdAndPhashFiltered(images, metadata,
+    private boolean findCommonsFilesWithSearchTermAndPhash(Collection<WikiPage> images, FileMetadata metadata) {
+        List<String> filenames = findCommonsFilesWithSearchTermAndPhashFiltered(images, metadata,
                 MediaService::filterBySameMimeAndLargerOrEqualSizeOrLargerOrEqualDimensions);
         return !filenames.isEmpty() && saveNewMetadataCommonsFileNames(metadata, new HashSet<>(filenames));
     }
 
-    private List<String> findCommonsFilesWithIdAndPhashFiltered(Collection<WikiPage> images, FileMetadata metadata,
+    private List<String> findCommonsFilesWithSearchTermAndPhashFiltered(Collection<WikiPage> images, FileMetadata metadata,
             BiPredicate<FileMetadata, ImageInfo> filter) {
         List<String> filenames = new ArrayList<>();
         if (shouldSearchByPhash(metadata)) {
