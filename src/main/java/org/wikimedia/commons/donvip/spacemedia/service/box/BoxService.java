@@ -1,7 +1,8 @@
 package org.wikimedia.commons.donvip.spacemedia.service.box;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.checkResponse;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequestStream;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpPost;
 
@@ -18,17 +19,17 @@ import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.ProtocolException;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,9 +75,8 @@ public class BoxService {
             try (CloseableHttpClient httpclient = HttpClientBuilder.create()
                     .setRedirectStrategy(new BoxRedirectStrategy()).build()) {
                 // STEP 1 - Request login page
-                HttpRequestBase request = newHttpGet(authURL);
-                try (CloseableHttpResponse response1 = checkResponse(request, httpclient.execute(request));
-                        InputStream in1 = response1.getEntity().getContent()) {
+                HttpUriRequestBase request = newHttpGet(authURL);
+                try (InputStream in1 = executeRequestStream(request, httpclient, null)) {
                     request = newHttpPost(
                             Jsoup.parse(in1, "UTF-8", authURL).getElementsByClass("form login_form").first(),
                             (input, params) -> params.add(new BasicNameValuePair(input.attr("name"),
@@ -85,8 +85,7 @@ public class BoxService {
                                                     : input.attr("value"))));
 
                     // STEP 2 - Login and request authorize page
-                    try (CloseableHttpResponse response2 = checkResponse(request, httpclient.execute(request));
-                            InputStream in2 = response2.getEntity().getContent()) {
+                    try (InputStream in2 = executeRequestStream(request, httpclient, null)) {
                         request = newHttpPost(
                                 Jsoup.parse(in2, "UTF-8", authURL).getElementById("consent_form"), (input, params) -> {
                                     if (!"consent_reject_button".equals(input.attr("id"))) {
@@ -95,7 +94,7 @@ public class BoxService {
                                 });
 
                         // STEP 3 - authorize and request authorization code
-                        try (CloseableHttpResponse response3 = checkResponse(request, httpclient.execute(request))) {
+                        try (ClassicHttpResponse response3 = executeRequest(request, httpclient, null)) {
                             // https://app.box.com/developers/console
                             api = new BoxAPIConnection(clientId, clientSecret,
                                     response3.getFirstHeader("location").getValue().split("=")[2]);
@@ -184,7 +183,7 @@ public class BoxService {
                 || commonsService.isPermittedFileExt(fileInfo.getExtension()));
     }
 
-    private static class BoxRedirectStrategy extends LaxRedirectStrategy {
+    private static class BoxRedirectStrategy extends DefaultRedirectStrategy {
 
         @Override
         public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context)

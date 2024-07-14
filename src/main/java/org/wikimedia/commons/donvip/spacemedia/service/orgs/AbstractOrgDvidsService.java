@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,7 +201,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                 Pair<DvidsMedia, Integer> result = dvidsProcessor.processDvidsMedia(
                         () -> repository.findById(new CompositeMediaId(unit, id)),
                         () -> getMediaFromApi(rest, id, unit),
-                        media -> processDvidsMediaUpdate(media, false).getResult(), this::shouldUploadAuto,
+                        media -> processDvidsMediaUpdate(media, false).result(), this::shouldUploadAuto,
                         this::uploadWrapped);
                 if (result.getValue() > 0) {
                     uploadedMedia.add(result.getKey());
@@ -270,10 +272,10 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         return response;
     }
 
-    private MediaUpdateResult processDvidsMediaUpdate(DvidsMedia media, boolean forceUpdate) {
-        try {
-            MediaUpdateResult commonUpdate = doCommonUpdate(media, forceUpdate);
-            boolean save = commonUpdate.getResult();
+    private MediaUpdateResult<DvidsMedia> processDvidsMediaUpdate(DvidsMedia media, boolean forceUpdate) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            MediaUpdateResult<DvidsMedia> commonUpdate = doCommonUpdate(media, httpClient, null, forceUpdate);
+            boolean save = commonUpdate.result();
             if (!media.isIgnored()) {
                 if (ignoredCategories.contains(media.getCategory())) {
                     save = mediaService.ignoreMedia(media, "Ignored category: " + media.getCategory());
@@ -283,7 +285,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                     save = mediaService.ignoreMedia(media, "No template found (VIRIN O): " + media.getVirin());
                 }
             }
-            return new MediaUpdateResult(save, commonUpdate.getException());
+            return new MediaUpdateResult<>(media, save, commonUpdate.exception());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -292,7 +294,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     @Override
     public final DvidsMedia refreshAndSave(DvidsMedia media) throws IOException {
         media = refresh(media);
-        Exception e = processDvidsMediaUpdate(media, true).getException();
+        Exception e = processDvidsMediaUpdate(media, true).exception();
         if (e instanceof NotFound) {
             return deleteMedia(media, e);
         } else {
