@@ -56,22 +56,24 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.fluent.ContentResponseHandler;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.util.Timeout;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
@@ -143,9 +145,8 @@ public final class Utils {
     public static HttpGet newHttpGet(URI uri) {
         HttpGet request = new HttpGet(uri);
         RequestConfig.Builder requestConfig = RequestConfig.custom();
-        requestConfig.setConnectTimeout(30 * 1000);
-        requestConfig.setConnectionRequestTimeout(30 * 1000);
-        requestConfig.setSocketTimeout(30 * 1000);
+        requestConfig.setConnectionRequestTimeout(Timeout.ofSeconds(30));
+        requestConfig.setResponseTimeout(Timeout.ofSeconds(30));
         request.setConfig(requestConfig.build());
         return request;
     }
@@ -185,14 +186,19 @@ public final class Utils {
         }
     }
 
-    public static CloseableHttpResponse executeRequest(HttpRequestBase request, CloseableHttpClient httpclient,
+    public static InputStream executeRequestStream(HttpUriRequestBase request, CloseableHttpClient httpclient,
             HttpClientContext context) throws IOException {
-        return checkResponse(request, httpclient.execute(request, context));
+        return httpclient.execute(request, context, new ContentResponseHandler()).asStream();
+    }
+
+    public static ClassicHttpResponse executeRequest(HttpUriRequestBase request, CloseableHttpClient httpclient,
+            HttpClientContext context) throws IOException {
+        return checkResponse(request, httpclient.executeOpen(null, request, context));
     }
 
     public static <T extends HttpResponse> T checkResponse(HttpRequest request, T response) throws IOException {
-        if (response.getStatusLine().getStatusCode() >= 400) {
-            throw new IOException(request + " => " + response.getStatusLine().toString());
+        if (response.getCode() >= 400) {
+            throw new IOException(request + " => " + response);
         }
         return response;
     }
@@ -418,7 +424,7 @@ public final class Utils {
 
     public static boolean uriExists(String uri) {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().disableRedirectHandling().build()) {
-            return httpClient.execute(new HttpHead(uri)).getStatusLine().getStatusCode() == 200;
+            return httpClient.executeOpen(null, new HttpHead(uri), null).getCode() == 200;
         } catch (IOException e) {
             return false;
         }
@@ -503,7 +509,7 @@ public final class Utils {
     public static HttpClientContext getHttpClientContext(CookieStore cookieStore) {
         HttpClientContext context = new HttpClientContext();
         context.setCookieStore(cookieStore);
-        context.setRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build());
+        context.setRequestConfig(RequestConfig.custom().setCookieSpec(StandardCookieSpec.STRICT).build());
         return context;
     }
 }

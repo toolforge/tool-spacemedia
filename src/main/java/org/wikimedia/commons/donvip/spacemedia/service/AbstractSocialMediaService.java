@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 import static java.util.stream.Collectors.joining;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.timestampFormatter;
 import static org.wikimedia.commons.donvip.spacemedia.utils.HashHelper.similarityScore;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
@@ -27,9 +28,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -267,10 +268,10 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             throws IOException, URISyntaxException, InterruptedException {
         LOGGER.info("Uploading media for file {} resolved to URL {}", muc.filename, muc.url);
         try (CloseableHttpClient httpclient = HttpClients.custom().setUserAgent(commonsService.getUserAgent()).build();
-                CloseableHttpResponse response = httpclient.execute(newHttpGet(muc.url.toURI()));
+                ClassicHttpResponse response = executeRequest(newHttpGet(muc.url.toURI()), httpclient, null);
                 InputStream in = response.getEntity().getContent()) {
-            if (response.getStatusLine().getStatusCode() >= 400) {
-                String message = muc.url.toURI().toString() + " -> " + response.getStatusLine().toString();
+            if (response.getCode() >= 400) {
+                String message = muc.url.toURI().toString() + " -> " + response;
                 if (retryCount > 0) {
                     LOGGER.warn("{}, {} retry attempts remaining", message, retryCount);
                     Thread.sleep(2000);

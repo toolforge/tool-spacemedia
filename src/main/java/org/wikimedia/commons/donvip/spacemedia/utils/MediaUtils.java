@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.execOutput;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 
 import java.awt.image.BufferedImage;
@@ -33,10 +34,10 @@ import javax.imageio.IIOException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.poi.hslf.usermodel.HSLFSlideShow;
@@ -91,7 +92,7 @@ public class MediaUtils {
             extension = Utils.findExtension(uri.toString());
         }
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
+                ClassicHttpResponse response = executeRequest(newHttpGet(uri), httpclient, null);
                 InputStream in = response.getEntity().getContent()) {
             boolean imageio = extension != null && IMAGEIO_EXTENSIONS.contains(extension);
             String filename = null;
@@ -176,7 +177,7 @@ public class MediaUtils {
                         contentLength(contentLength, () -> bytes.length), filename, extension, 1, null);
             } else {
                 throw new FileDecodingException(
-                        "Unsupported format: " + extension + " / headers:" + Arrays.stream(response.getAllHeaders())
+                        "Unsupported format: " + extension + " / headers:" + Arrays.stream(response.getHeaders())
                                 .map(h -> h.getName() + ": " + h.getValue()).sorted().toList());
             }
         }

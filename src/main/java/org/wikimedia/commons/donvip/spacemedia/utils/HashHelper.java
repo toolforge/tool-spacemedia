@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import static java.util.Objects.requireNonNull;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 
 import java.awt.image.BufferedImage;
@@ -14,10 +15,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
@@ -53,12 +54,12 @@ public final class HashHelper {
         LOGGER.debug("Computing SHA1 for {} ...", httpUrl);
         URI uri = Utils.urlToUriUnchecked(httpUrl);
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpclient.execute(newHttpGet(uri));
+                ClassicHttpResponse response = executeRequest(newHttpGet(uri), httpclient, null);
                 InputStream in = response.getEntity().getContent()) {
-            int statusCode = response.getStatusLine().getStatusCode();
+            int statusCode = response.getCode();
             if (statusCode != HttpStatus.SC_OK) {
                 org.springframework.http.HttpStatus status = org.springframework.http.HttpStatus.valueOf(statusCode);
-                String statusText = response.getStatusLine().toString();
+                String statusText = response.getReasonPhrase();
                 if (statusCode >= 500) {
                     throw HttpServerErrorException.create(status, statusText, null, null, StandardCharsets.UTF_8);
                 } else if (statusCode >= 400) {
