@@ -61,6 +61,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoMedia
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
@@ -241,6 +242,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                 : Optional.empty();
         } catch (DateTimeParseException | NumberFormatException e) {
             LOGGER.error("Cannot parse line: " + line, e);
+            GlitchTip.capture(e);
             return Optional.empty();
         }
     }
@@ -344,6 +346,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                     } catch (HttpStatusException e) {
                         // https://sdo.gsfc.nasa.gov/assets/img/browse/2016/12/25/ => HTTP 404
                         LOGGER.error(e.getMessage(), e);
+                        GlitchTip.capture(e);
                     }
                 }
             }
@@ -369,6 +372,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                         commonsService.editStructuredDataContent(uploadFileName.replace('_', ' '), null, statements);
                     } catch (IOException | MediaWikiApiErrorException e) {
                         LOGGER.error("Failed to update SDC keywords: {}", e.getMessage(), e);
+                        GlitchTip.capture(e);
                     }
                 }
             }
@@ -457,6 +461,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                 save = false;
             } catch (UploadException e) {
                 LOGGER.error("Unable to upload {}", media, e);
+                GlitchTip.capture(e);
             }
         }
         if (save) {

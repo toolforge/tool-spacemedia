@@ -139,6 +139,7 @@ public class Video2CommonsService {
         } catch (IOException e) {
             LOGGER.error("Failed to initialize video2commons API. Upload of some videos will not be possible: {}",
                     e.getMessage());
+            GlitchTip.capture(e);
             return null;
         }
     }
@@ -252,6 +253,7 @@ public class Video2CommonsService {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage(), e);
+            GlitchTip.capture(e);
             Thread.currentThread().interrupt();
         } catch (IOException e) {
             LOGGER.warn("{}", e.getMessage());

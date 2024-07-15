@@ -59,6 +59,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.exception.WrappedUploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMediaProcessorService.Counter;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -424,6 +425,7 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
             }
         } catch (IOException e) {
             LOGGER.error("Wikidata error", e);
+            GlitchTip.capture(e);
         }
         return opt;
     }

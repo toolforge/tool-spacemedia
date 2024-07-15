@@ -44,6 +44,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -242,6 +243,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 break;
             } catch (IOException | IllegalArgumentException | UploadException e) {
                 LOGGER.error(media.toString(), e);
+                GlitchTip.capture(e);
                 if (e.getMessage() != null && e.getMessage().contains("tiffinfo command failed")) {
                     save = mediaService.ignoreMedia(media, media.getMetadata().toString(), e);
                     break;
@@ -259,6 +261,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
             fillMediaWithHtml(html, media, url);
         } catch (IOException | IllegalStateException e) {
             LOGGER.error(url.toExternalForm(), e);
+            GlitchTip.capture(e);
         }
         return media;
     }
@@ -342,6 +345,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                         .isEmpty();
             } catch (IOException | RuntimeException e) {
                 LOGGER.error(searchUrl, e);
+                GlitchTip.capture(e);
                 moreImages = false;
             }
         } while (moreImages);

@@ -39,6 +39,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AsyncOrgUpdaterService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.Org;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -364,6 +365,7 @@ public abstract class OrgRestController<T extends Media> {
                 service.refreshAndSave(media);
             } catch (IOException e) {
                 LOGGER.error("Failed to refresh {}: {}", media, e.getMessage());
+                GlitchTip.capture(e);
             }
         });
     }
@@ -374,6 +376,7 @@ public abstract class OrgRestController<T extends Media> {
                 service.syncAndSave(media);
             } catch (IOException e) {
                 LOGGER.error("Failed to sync {}: {}", media, e.getMessage());
+                GlitchTip.capture(e);
             }
         });
     }
@@ -392,6 +395,7 @@ public abstract class OrgRestController<T extends Media> {
                         processor.accept(media);
                     } catch (RuntimeException e) {
                         LOGGER.error("Failed to process {}: {} => {}", media, e.getClass(), e.getMessage());
+                        GlitchTip.capture(e);
                     }
                 }
             }

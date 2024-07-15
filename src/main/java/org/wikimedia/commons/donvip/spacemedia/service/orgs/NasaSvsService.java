@@ -39,6 +39,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsP
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsVizualisation;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.SpacemediaHttpRequestRetryStrategy;
 
 @Service
@@ -90,6 +91,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                                 updateImage(newId(result.id), uploadedMedia);
                             } catch (RuntimeException e) {
                                 LOGGER.error("Error while processing {}", result, e);
+                                GlitchTip.capture(e);
                             }
                             ongoingUpdateMedia(start, count++);
                         }

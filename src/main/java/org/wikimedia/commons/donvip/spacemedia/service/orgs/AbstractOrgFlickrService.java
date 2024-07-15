@@ -44,6 +44,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.FlickrService;
 import org.wikimedia.commons.donvip.spacemedia.service.flickr.IgnoreCriteria;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 
@@ -250,6 +251,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
                 }
             } catch (FlickrException | RuntimeException e) {
                 LOGGER.error("Error while fetching Flickr media from account {}", flickrAccount, e);
+                GlitchTip.capture(e);
             }
         }
         endUpdateMedia(count, uploadedMedia, start, false /* tweets already posted - one by Flickr account */);
@@ -278,10 +280,12 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
                     } else {
                         LOGGER.error("Error while processing non-free Flickr image " + picture.getId()
                                 + " from account " + flickrAccount, e);
+                        GlitchTip.capture(e);
                     }
                 } else {
                     LOGGER.error("Error while processing non-free Flickr image " + picture.getId()
                             + " from account " + flickrAccount, e);
+                    GlitchTip.capture(e);
                 }
             }
         }
@@ -377,6 +381,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
             });
         } catch (FlickrException e) {
             LOGGER.error("Flickr error : {}", e.getMessage(), e);
+            GlitchTip.capture(e);
         }
         if ("jpg".equals(p.getOriginalFormat()) && "video".equals(p.getMedia())) {
             addMetadata(m, processor.getVideoUrl(p.getId()), md -> {

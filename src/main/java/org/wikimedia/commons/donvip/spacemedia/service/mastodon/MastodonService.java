@@ -20,6 +20,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.httpclient.multipart.FileByteArrayBodyPartPayload;
@@ -48,6 +49,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
             oAuthAccessToken = new OAuth2AccessToken(accessToken);
         } catch (IllegalArgumentException e) {
             LOGGER.error("Unable to setup Mastodon API: {}", e.getMessage());
+            GlitchTip.capture(e);
         }
     }
 
@@ -108,6 +110,7 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
             } catch (IOException | RuntimeException | URISyntaxException e) {
                 LOGGER.error("Unable to retrieve JPEG from Commons or upload it to Mastodon: {}", e.getMessage());
                 LOGGER.debug("Unable to retrieve JPEG from Commons or upload it to Mastodon: {}", e.getMessage(), e);
+                GlitchTip.capture(e);
             }
         }
         return mediaIds.isEmpty() ? null : mediaIds;

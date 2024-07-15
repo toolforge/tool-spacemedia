@@ -404,6 +404,12 @@
 			<artifactId>plotty</artifactId>
 			<version>0.4.9</version>
 		</dependency>
+		<!-- GlitchTip -->
+		<dependency>
+			<groupId>io.sentry</groupId>
+			<artifactId>sentry</artifactId>
+			<version>7.12.0</version>
+		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

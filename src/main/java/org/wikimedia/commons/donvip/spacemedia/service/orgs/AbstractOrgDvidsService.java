@@ -54,6 +54,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.dvids.DvidsMediaProcessorService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -153,6 +154,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                     refreshAndSaveById(id);
                 } catch (IOException | ImageNotFoundException e) {
                     LOGGER.error(e.getMessage(), e);
+                    GlitchTip.capture(e);
                 }
             }
         }
@@ -186,6 +188,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                     Utils.durationInSec(start));
         } catch (ApiException | TooManyResultsException exx) {
             LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
+            GlitchTip.capture(exx);
         }
         return Pair.of(count, uploadedMedia);
     }
@@ -209,10 +212,13 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                 ongoingUpdateMedia(start, unit, count++);
             } catch (HttpClientErrorException e) {
                 LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
+                GlitchTip.capture(e);
             } catch (DataAccessException e) {
                 LOGGER.error("DAO error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
+                GlitchTip.capture(e);
             } catch (RuntimeException e) {
                 LOGGER.error("Error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
+                GlitchTip.capture(e);
             }
         }
         ApiPageInfo pi = response.getPageInfo();
@@ -315,6 +321,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                 return deleteMedia(media, e);
             } else {
                 LOGGER.error(message, e);
+                GlitchTip.capture(e);
             }
         } catch (BadRequest e) {
             String message = e.getMessage();
@@ -322,6 +329,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                 return deleteMedia(media, e);
             } else {
                 LOGGER.error(message, e);
+                GlitchTip.capture(e);
             }
         } catch (Forbidden e) {
             String message = e.getMessage();
@@ -329,6 +337,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                 return deleteMedia(media, e);
             } else {
                 LOGGER.error(message, e);
+                GlitchTip.capture(e);
             }
         }
         return media;

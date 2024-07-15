@@ -100,6 +100,7 @@ public class WikidataService {
                 }
             } catch (MediaWikiApiErrorException | IOException e) {
                 LOGGER.error(e.getMessage(), e);
+                GlitchTip.capture(e);
             }
             return null;
         }).filter(Objects::nonNull).collect(toMap(this::findFamilyName, this::findCommonsCategory));
@@ -139,6 +140,7 @@ public class WikidataService {
             }
         } catch (MediaWikiApiErrorException | IOException e) {
             LOGGER.error(e.getMessage(), e);
+            GlitchTip.capture(e);
         }
         return null;
     }

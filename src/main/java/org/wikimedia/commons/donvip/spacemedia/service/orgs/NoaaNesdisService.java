@@ -27,6 +27,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.noaa.nesdis.NoaaNesdisMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.noaa.nesdis.NoaaNesdisMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 @Service
 public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisMedia> {
@@ -67,6 +68,7 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
                     .toList();
         } catch (IOException | RuntimeException e) {
             LOGGER.error("Error while fetching {}", pageUrl, e);
+            GlitchTip.capture(e);
             return List.of();
         }
     }
@@ -135,6 +137,7 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
             return List.of(media);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to parse HTML for {} => {}", media, html.html());
+            GlitchTip.capture(e);
             throw e;
         }
     }

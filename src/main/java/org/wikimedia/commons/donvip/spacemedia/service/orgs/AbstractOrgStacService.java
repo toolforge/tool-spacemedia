@@ -31,6 +31,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -114,6 +115,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
                     "{{Map/bbox|longitude=" + bb[0] + "/" + bb[2] + "|latitude=" + bb[1] + "/" + bb[3] + "}}");
         } catch (IOException | RuntimeException e) {
             LOGGER.error("Unable to parse STAC item at URL {}: {}", stacItemUrl, e.getMessage());
+            GlitchTip.capture(e);
         }
         String s = sb.toString();
         return s.isEmpty() ? Optional.empty() : Optional.of(s);
@@ -138,6 +140,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
                     processedItems, count);
         } catch (IOException e) {
             LOGGER.error("Unable to process STAC catalog", e);
+            GlitchTip.capture(e);
         }
 
         return Pair.of(count, uploadedMedia);

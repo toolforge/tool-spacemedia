@@ -59,6 +59,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMedi
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaResponse;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -119,6 +120,7 @@ public class NasaMediaProcessorService {
             } catch (InterruptedException e) {
                 LOGGER.error(e.getMessage(), e);
                 Thread.currentThread().interrupt();
+                GlitchTip.capture(e);
             }
         }
         lastRequest = now();
@@ -161,14 +163,17 @@ public class NasaMediaProcessorService {
                         counter.count++;
                     } catch (Forbidden e) {
                         problem.accept(item.getHref(), e);
+                        GlitchTip.capture(e);
                     } catch (RestClientException e) {
                         if (e.getCause() instanceof HttpMessageNotReadableException) {
                             problem.accept(item.getHref(), e.getCause());
                         } else {
                             LOGGER.error("Cannot process item {}", item, e);
                         }
+                        GlitchTip.capture(e);
                     } catch (URISyntaxException | RuntimeException e) {
                         LOGGER.error("Cannot process item {}", item, e);
+                        GlitchTip.capture(e);
                     }
                 }
                 if (!CollectionUtils.isEmpty(collection.getLinks())) {
@@ -182,6 +187,7 @@ public class NasaMediaProcessorService {
                 }
             } catch (RestClientException e) {
                 LOGGER.error("Unable to process search results for {}", searchUrl, e);
+                GlitchTip.capture(e);
             }
         }
         return null;
@@ -223,8 +229,10 @@ public class NasaMediaProcessorService {
                 } catch (HttpClientErrorException.Forbidden e) {
                     // NHQ202211160205-2 always return http 403
                     LOGGER.error("Unable to retrieve EXIF metadata for {}: {}", media.getId(), e.getMessage());
+                    GlitchTip.capture(e);
                 } catch (Exception e) {
                     LOGGER.error("Unable to retrieve EXIF metadata for {}", media.getId(), e);
+                    GlitchTip.capture(e);
                 }
             }
         } else {

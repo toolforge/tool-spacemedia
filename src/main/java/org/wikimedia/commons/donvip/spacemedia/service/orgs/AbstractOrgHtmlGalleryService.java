@@ -32,6 +32,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -136,6 +137,7 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                                     LOGGER.error("Error while updating {} => {} => {}", id,
                                             e.getClass().getSimpleName(), e.getMessage());
                                     LOGGER.debug("Error stacktrace:", e);
+                                    GlitchTip.capture(e);
                                 }
                             }
                         } else {
@@ -145,6 +147,7 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                         LOGGER.error("Failed to extract item id from {} => {} => {}", pageUrl,
                                 e.getClass().getSimpleName(), e.getMessage());
                         LOGGER.debug("Error stacktrace:", e);
+                        GlitchTip.capture(e);
                     }
                     ongoingUpdateMedia(start, startCount + count++);
                 }
@@ -154,9 +157,11 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                 break;
             } catch (UnknownHostException e) {
                 LOGGER.error("Error while fetching {}", pageUrl, e);
+                GlitchTip.capture(e);
                 break;
             } catch (IOException e) {
                 LOGGER.error("Error while fetching {}", pageUrl, e);
+                GlitchTip.capture(e);
             }
         } while (loop);
         return count;

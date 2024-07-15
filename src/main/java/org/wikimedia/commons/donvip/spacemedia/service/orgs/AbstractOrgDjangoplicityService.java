@@ -55,6 +55,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.Djangop
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -581,8 +582,10 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
                         }
                     } catch (UploadException | ImageUploadForbiddenException e) {
                         LOGGER.error("Upload error when processing {}", url, e);
+                        GlitchTip.capture(e);
                     } catch (HttpStatusException e) {
                         LOGGER.error("Fetch error when processing {}", url, e);
+                        GlitchTip.capture(e);
                     }
                 }
             } catch (HttpStatusException | UpdateFinishedException e) {
@@ -591,6 +594,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
                 loop = false;
             } catch (IOException | RuntimeException e) {
                 LOGGER.error("Error when fetching {}", url, e);
+                GlitchTip.capture(e);
             }
         }
         endUpdateMedia(count, uploadedMedia, uploadedMetadata, start);

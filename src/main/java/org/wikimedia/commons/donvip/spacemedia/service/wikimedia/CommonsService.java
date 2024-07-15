@@ -711,6 +711,7 @@ public class CommonsService {
                     fetchSubCategories(subcats.parallelStream(), result, depth);
                 } catch (CannotCreateTransactionException e) {
                     LOGGER.error("Failed to fetch subcategories in parallel stream, retrying with single thread", e);
+                    GlitchTip.capture(e);
                     fetchSubCategories(subcats.stream(), result, depth);
                 }
             } else {
@@ -1253,6 +1254,7 @@ public class CommonsService {
                     }
                 } catch (RuntimeException e) {
                     LOGGER.error("Failed to handle {} => {}", title, e.getMessage());
+                    GlitchTip.capture(e);
                 }
             }
         }
@@ -1267,6 +1269,7 @@ public class CommonsService {
                 } catch (IOException e) {
                     LOGGER.error("Failed to post status: {}", e.getMessage());
                     LOGGER.debug("Failed to post status: {}", e.getMessage(), e);
+                    GlitchTip.capture(e);
                 }
             });
         }
@@ -1449,6 +1452,7 @@ public class CommonsService {
                 return hash;
             } catch (IOException | FileDecodingException | RuntimeException e) {
                 LOGGER.error("Failed to compute/save hash of {}: {}", name, e.toString());
+                GlitchTip.capture(e);
             } finally {
                 if (bi != null) {
                     bi.flush();

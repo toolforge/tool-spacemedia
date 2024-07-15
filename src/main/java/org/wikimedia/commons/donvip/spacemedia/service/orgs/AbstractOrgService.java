@@ -113,6 +113,7 @@ import org.wikimedia.commons.donvip.spacemedia.service.osm.NominatimService;
 import org.wikimedia.commons.donvip.spacemedia.service.osm.NominatimService.Address;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataService;
@@ -629,6 +630,7 @@ public abstract class AbstractOrgService<T extends Media>
                 } catch (IOException e) {
                     LOGGER.error("Failed to post status: {}", e.getMessage());
                     LOGGER.debug("Failed to post status: {}", e.getMessage(), e);
+                    GlitchTip.capture(e);
                 }
             });
         }
@@ -769,6 +771,7 @@ public abstract class AbstractOrgService<T extends Media>
                 return refreshAndSave(media);
             } catch (IOException e) {
                 LOGGER.error("Failed to refresh {}", media, e);
+                GlitchTip.capture(e);
                 return null;
             }
         }).filter(Objects::nonNull).toList();
@@ -902,6 +905,7 @@ public abstract class AbstractOrgService<T extends Media>
                 return saveMedia(upload(media, false, isManual).getLeft());
             } catch (UploadException e) {
                 LOGGER.error("Failed to upload {}", media, e);
+                GlitchTip.capture(e);
                 return null;
             }
         }).filter(Objects::nonNull).toList();
@@ -912,6 +916,7 @@ public abstract class AbstractOrgService<T extends Media>
             return upload(media, true, false);
         } catch (UploadException e) {
             LOGGER.error("Failed to upload {}", media, e);
+            GlitchTip.capture(e);
             throw new RuntimeException(e);
         }
     }
@@ -927,6 +932,7 @@ public abstract class AbstractOrgService<T extends Media>
             List<FileMetadata> uploaded = new ArrayList<>();
             return Triple.of(media, uploaded, doUpload(media, checkUnicity, uploaded, isManual));
         } catch (RuntimeException e) {
+            GlitchTip.capture(e);
             throw new UploadException(e);
         }
     }
@@ -1001,6 +1007,7 @@ public abstract class AbstractOrgService<T extends Media>
                     media, metadata);
         } catch (ImageNotFoundException | IOException e) {
             LOGGER.error("Unable to edit SDC data: {} => {} => {}", mediaId, uploadedFilename, e.getMessage());
+            GlitchTip.capture(e);
         }
     }
 
@@ -1016,6 +1023,7 @@ public abstract class AbstractOrgService<T extends Media>
                 LOGGER.info("Unable to add SDC data: {} => {}", statements, e.getMessage());
             } else {
                 LOGGER.error("Unable to add SDC data: {} => {}", statements, e.getMessage());
+                GlitchTip.capture(e);
             }
         }
     }
@@ -1245,6 +1253,7 @@ public abstract class AbstractOrgService<T extends Media>
                     }
                 } catch (IOException e) {
                     LOGGER.error(group + " -> " + e.getMessage(), e);
+                    GlitchTip.capture(e);
                 }
                 return group;
             }).replace("http://", "https://");
@@ -1406,6 +1415,7 @@ public abstract class AbstractOrgService<T extends Media>
                     }
                 } catch (IOException e) {
                     LOGGER.error("Failed to read GIF file: {}", e.getMessage());
+                    GlitchTip.capture(e);
                 }
             }
             if (metadata.isVideo() && dims != null) {
@@ -1441,6 +1451,7 @@ public abstract class AbstractOrgService<T extends Media>
                 }
             } catch (IOException e) {
                 LOGGER.error("Nominatim error: {}", e.getMessage());
+                GlitchTip.capture(e);
             }
             String continent = geometry.getContinent(media.getLatitude(), media.getLongitude());
             if (!preciseCatAdded) {
@@ -1824,6 +1835,7 @@ public abstract class AbstractOrgService<T extends Media>
             return fm;
         } catch (RuntimeException e) {
             LOGGER.error("Error while adding metadata {} for media {}", assetUrl, media);
+            GlitchTip.capture(e);
             throw e;
         }
     }

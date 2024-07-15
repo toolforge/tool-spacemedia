@@ -32,6 +32,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.Org;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 @EnableCaching
 @SpringBootConfiguration
@@ -213,8 +214,9 @@ abstract class AbstractSpacemediaOrgUpdateJobApplication implements ApplicationL
                     }
                 }
             }
-        } catch (IOException | UploadException e) {
+        } catch (IOException | UploadException | RuntimeException e) {
             LOGGER.error(e.getMessage(), e);
+            GlitchTip.capture(e);
         }
     }
 

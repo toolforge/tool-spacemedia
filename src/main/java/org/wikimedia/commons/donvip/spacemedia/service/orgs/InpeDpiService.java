@@ -34,6 +34,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.inpe.dpi.InpeDpiMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.inpe.dpi.InpeDpiMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -187,6 +188,7 @@ public class InpeDpiService extends AbstractOrgService<InpeDpiMedia> {
                                 ongoingUpdateMedia(start, count + localCount);
                             } catch (RuntimeException | URISyntaxException e) {
                                 LOGGER.error("Error: {} => {}", href, e.getMessage());
+                                GlitchTip.capture(e);
                             }
                             break;
                         case "txt", "zip":

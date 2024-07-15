@@ -21,6 +21,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.twitter.TweetRequest.TweetMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 import com.github.scribejava.apis.TwitterApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
@@ -65,6 +66,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
                     .accessTokenSecret(accessSecret).apiKey(consumerToken).apiSecretKey(consumerSecret).build());
         } catch (IllegalArgumentException e) {
             LOGGER.error("Unable to setup Twitter API: {}", e.getMessage());
+            GlitchTip.capture(e);
         }
     }
 
@@ -148,6 +150,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
             } catch (IOException | RuntimeException | URISyntaxException e) {
                 LOGGER.error("Unable to retrieve JPEG from Commons or upload it to Twitter: {}", e.getMessage());
                 LOGGER.debug("Unable to retrieve JPEG from Commons or upload it to Twitter: {}", e.getMessage(), e);
+                GlitchTip.capture(e);
             }
         }
         // Don't return empty media object as it causes bad request in v2/tweet endpoint

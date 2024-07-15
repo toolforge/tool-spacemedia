@@ -38,6 +38,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.website.NasaWebsiteMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.website.NasaWebsiteMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 @Service
 public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsiteMedia> {
@@ -97,8 +98,10 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
                     break;
                 }
                 LOGGER.error("Error while fetching {}", pageUrl, e);
+                GlitchTip.capture(e);
             } catch (IOException | RuntimeException e) {
                 LOGGER.error("Error while fetching {}", pageUrl, e);
+                GlitchTip.capture(e);
             }
         } while (loop);
         return result;
@@ -174,6 +177,7 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
             return List.of(media);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to parse HTML for {} => {}", media, html.html());
+            GlitchTip.capture(e);
             throw e;
         }
     }

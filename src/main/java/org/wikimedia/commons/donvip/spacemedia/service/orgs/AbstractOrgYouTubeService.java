@@ -33,6 +33,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateContext;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeApiService;
 import org.wikimedia.commons.donvip.spacemedia.service.youtube.YouTubeMediaProcessor;
 import org.wikimedia.commons.donvip.spacemedia.utils.MediaUtils;
@@ -137,11 +138,13 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
             }
         } catch (HttpClientErrorException e) {
             LOGGER.error("HttpClientError while fetching YouTube videos from channel {}: {}", channelId, e.getMessage());
+            GlitchTip.capture(e);
             if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
                 processYouTubeVideos(repository.findAll(Set.of(channelId)));
             }
         } catch (IOException | RuntimeException e) {
             LOGGER.error("Error while fetching YouTube videos from channel " + channelId, e);
+            GlitchTip.capture(e);
         }
         return count;
     }

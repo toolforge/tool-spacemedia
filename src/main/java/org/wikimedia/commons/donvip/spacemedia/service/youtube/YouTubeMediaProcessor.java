@@ -29,6 +29,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.youtube.YouTubeMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Lazy
@@ -115,6 +116,7 @@ public class YouTubeMediaProcessor {
                         }
                     } catch (IOException e) {
                         LOGGER.error("Failed to get page content of {}", link, e);
+                        GlitchTip.capture(e);
                     }
                 }
                 pageRequest = page.nextPageable();

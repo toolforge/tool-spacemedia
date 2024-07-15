@@ -44,6 +44,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterM
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.InternetArchiveService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
@@ -149,6 +150,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
                 updateImage(item, uploadedMedia);
             } catch (IOException | UploadException | RuntimeException e) {
                 LOGGER.error(e.getMessage(), e);
+                GlitchTip.capture(e);
             }
             ongoingUpdateMedia(start, "ASTER", count++);
         }
@@ -270,6 +272,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
             }
         } catch (IOException | RuntimeException e) {
             LOGGER.error("Error while fetching {}: {}", image, e.getMessage());
+            GlitchTip.capture(e);
             throw e;
         }
         return image;

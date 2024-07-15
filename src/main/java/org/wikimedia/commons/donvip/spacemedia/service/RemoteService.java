@@ -24,6 +24,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociation;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 @Lazy
 @Service
@@ -60,6 +61,7 @@ public class RemoteService {
                     Thread.sleep(500);
                 } catch (InterruptedException ex) {
                     LOGGER.error("{}", ex.getMessage(), ex);
+                    GlitchTip.capture(e);
                     Thread.currentThread().interrupt();
                 }
             }

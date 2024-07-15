@@ -29,6 +29,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.stsci.StsciMediaRepos
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.stsci.StsciService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
 /**
@@ -107,9 +108,11 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
                     } catch (HttpStatusException e) {
                         LOGGER.error("Error while requesting {}: {}", e.getUrl(), e.getMessage());
                         problem(e.getUrl(), e);
+                        GlitchTip.capture(e);
                     } catch (IOException | UploadException | RuntimeException e) {
                         LOGGER.error("Error while fetching image " + imageId, e);
                         problem(getImageDetailsLink(imageId), e);
+                        GlitchTip.capture(e);
                     }
                 }
             }

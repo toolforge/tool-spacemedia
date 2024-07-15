@@ -29,6 +29,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.box.BoxMediaRepositor
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
 import org.wikimedia.commons.donvip.spacemedia.service.box.BoxService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 import com.box.sdk.BoxAPIResponseException;
 import com.box.sdk.BoxFile;
@@ -122,6 +123,7 @@ public abstract class AbstractOrgBoxService extends AbstractOrgService<BoxMedia>
                 ongoingUpdateMedia(start, share, count++);
             } catch (UploadException | IOException e) {
                 LOGGER.error(e.getMessage(), e);
+                GlitchTip.capture(e);
             }
         }
 

@@ -48,6 +48,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.GetPagedM
 import org.wikimedia.commons.donvip.spacemedia.data.domain.eu.ercc.api.MapsItem;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.WikidataItem;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -192,6 +193,7 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
                             updateMapItem(item, uploadedMedia, uploadedMetadata);
                         } catch (RuntimeException e) {
                             LOGGER.error("Error when updating {}", item, e);
+                            GlitchTip.capture(e);
                         }
                         ongoingUpdateMedia(start, count++);
                     }
@@ -199,6 +201,7 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
                 loop = ++idx <= response.NumberOfPages();
             } catch (IOException | RuntimeException e) {
                 LOGGER.error("Error when fetching {}", url, e);
+                GlitchTip.capture(e);
             }
         }
         endUpdateMedia(count, uploadedMedia, uploadedMetadata, start);
@@ -285,6 +288,7 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
                 return media.copyDataFrom(mapMedia(jackson.readValue(in, MapsItem.class), media.getId()));
             } catch (IOException e) {
                 LOGGER.error("{} => {}", request, e.getMessage());
+                GlitchTip.capture(e);
                 if (e.getMessage() != null && e.getMessage().endsWith("403 Forbidden")) {
                     return null;
                 } else {

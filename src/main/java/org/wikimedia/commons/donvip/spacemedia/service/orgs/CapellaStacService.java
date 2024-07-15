@@ -28,6 +28,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.stac.StacMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
@@ -123,6 +124,7 @@ public class CapellaStacService extends AbstractOrgStacService {
                     uploadedMedia.add(media);
                 } catch (UploadException e) {
                     LOGGER.error("Failed to upload {}: {}", media, e);
+                    GlitchTip.capture(e);
                 }
                 saveMedia(media);
             }

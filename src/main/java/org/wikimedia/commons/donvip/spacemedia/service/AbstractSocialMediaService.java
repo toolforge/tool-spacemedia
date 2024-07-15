@@ -42,6 +42,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -136,8 +137,10 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             LOGGER.info("Response: {}", response);
             return jackson.readValue(response.getBody(), responseClass);
         } catch (ExecutionException e) {
+            GlitchTip.capture(e);
             throw new IOException(e);
         } catch (InterruptedException e) {
+            GlitchTip.capture(e);
             Thread.currentThread().interrupt();
             throw new IOException(e);
         }
@@ -169,6 +172,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
                                 StandardCharsets.UTF_8));
             } catch (NoSuchElementException e) {
                 LOGGER.error("No commons file name for uploaded metadata ?! {}", uploadedMetadata);
+                GlitchTip.capture(e);
             }
         }
         return sb.toString().strip();

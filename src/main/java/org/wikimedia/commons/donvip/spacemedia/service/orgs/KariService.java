@@ -27,6 +27,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.kari.KariMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -122,6 +123,7 @@ public class KariService extends AbstractOrgService<KariMedia> {
                     count++;
                 } catch (TransactionException e) {
                     LOGGER.error("Transaction error when saving {}", media, e);
+                    GlitchTip.capture(e);
                 }
             }
             id = Integer.toString(Integer.valueOf(id) + 1);
@@ -153,10 +155,12 @@ public class KariService extends AbstractOrgService<KariMedia> {
             }
         } catch (DateTimeParseException e) {
             LOGGER.error("Cannot parse HTML", e);
+            GlitchTip.capture(e);
             ex = e;
         } catch (IOException e) {
             problem(view, e);
             incrementConsecutiveFailures = true;
+            GlitchTip.capture(e);
             ex = e;
         }
         return new MediaUpdateResult<>(media, media != null, resetConsecutiveFailures, incrementConsecutiveFailures,

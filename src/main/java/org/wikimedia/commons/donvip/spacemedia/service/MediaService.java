@@ -68,6 +68,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.ContentsAndMetadata;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Mp4File;
@@ -260,6 +261,7 @@ public class MediaService {
                         if (e.getMessage() != null
                                 && IGNORED_IO_ERRORS.stream().anyMatch(x -> e.getMessage().startsWith(x))) {
                             LOGGER.error("I/O decoding error for {}: {}", assetUrl, e.getMessage());
+                            GlitchTip.capture(e);
                             if (metadata.isReadable() == null || metadata.isAssumedReadable() == null) {
                                 metadata.setReadable(Boolean.FALSE);
                                 metadata.setAssumedReadable(Boolean.TRUE);
@@ -292,9 +294,11 @@ public class MediaService {
             }
         } catch (RestClientException e) {
             LOGGER.error("Error while computing hashes for {}: {}", ctx.media, e.getMessage());
+            GlitchTip.capture(e);
             return new MediaUpdateResult<>(ctx.media, result, e);
         } catch (IOException e) {
             LOGGER.error("Error while computing hashes for {}", ctx.media, e);
+            GlitchTip.capture(e);
             return new MediaUpdateResult<>(ctx.media, result, e);
         } finally {
             contents = flushOrClose(contents);
@@ -325,6 +329,7 @@ public class MediaService {
                 c.close();
             } catch (IOException e) {
                 LOGGER.error("Failed to close {}", contents, e);
+                GlitchTip.capture(e);
             }
         }
         return null;
@@ -401,6 +406,7 @@ public class MediaService {
                     }
                 } catch (IOException e) {
                     LOGGER.error("Failed to compute file size for {}", metadata, e);
+                    GlitchTip.capture(e);
                 }
             }
         }
@@ -504,8 +510,9 @@ public class MediaService {
                 metadata.setExif(exifRepository
                         .save(ExifMetadata.of(readImageMetadata(metadata.getAssetUri(), httpClient, context))));
                 return true;
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
                 LOGGER.error("Failed to update EXIF metadata for {}: {}", metadata, e.getMessage());
+                GlitchTip.capture(e);
             }
         }
         return false;
@@ -556,6 +563,7 @@ public class MediaService {
                 metadata.setPhash(encode(computePerceptualHash(image)));
             } catch (RuntimeException e) {
                 LOGGER.error("Failed to update perceptual hash for {}", metadata, e);
+                GlitchTip.capture(e);
             }
             updateHashes(metadata.getSha1(), metadata.getPhash(), metadata.getMime());
             return true;
@@ -650,6 +658,7 @@ public class MediaService {
                     }
                 } catch (IOException e) {
                     LOGGER.error("Failed to search images: {}", e.getMessage());
+                    GlitchTip.capture(e);
                 }
             }
         }
@@ -704,6 +713,7 @@ public class MediaService {
                         metadata, MediaService::filterBySameMimeAndSmallerSize));
             } catch (IOException e) {
                 LOGGER.error("Failed to search images: {}", e.getMessage());
+                GlitchTip.capture(e);
             }
         }
         return result;

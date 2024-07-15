@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -159,6 +160,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
                 setOriginalFileName(URLDecoder.decode(assetPath, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 LOGGER.error(e.getMessage(), e);
+                GlitchTip.capture(e);
             }
             setExtension(ext);
             return true;

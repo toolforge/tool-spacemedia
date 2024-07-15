@@ -44,6 +44,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrPhotoSet
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateContext;
 import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
@@ -132,6 +133,7 @@ public class FlickrMediaProcessorService {
                 }
             } catch (FlickrException e) {
                 LOGGER.error("Failed to retrieve photosets of image {}: {}", media.getId(), e.getMessage());
+                GlitchTip.capture(e);
             }
         }
         if ((!isPresentInDb || isEmpty(media.getAllCommonsFileNames())) && media.getPhotosets() != null) {

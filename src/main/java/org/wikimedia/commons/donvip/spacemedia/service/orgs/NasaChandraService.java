@@ -36,6 +36,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.chandra.NasaChandraMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.chandra.NasaChandraMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
@@ -88,6 +89,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
             result.addAll(resources);
         } catch (IOException e) {
             LOGGER.error("Failed to parse mission page: {}", e.getMessage());
+            GlitchTip.capture(e);
         }
         return result;
     }
@@ -310,6 +312,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
             }
         } catch (RuntimeException e) {
             LOGGER.error("Failed to parse HTML for {} => {}", media, html.html());
+            GlitchTip.capture(e);
             throw e;
         }
     }

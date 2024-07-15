@@ -54,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 public class MediaUtils {
 
@@ -118,6 +119,7 @@ public class MediaUtils {
                             result.numImagesOrPages(), null);
                 } catch (IIOException e) {
                     LOGGER.error("Image I/O error while reading {}: {}", uri, e.getMessage());
+                    GlitchTip.capture(e);
                     return new ContentsAndMetadata<>(null, contentLength.getAsLong(), filename, extension, 1, e);
                 }
             } else if ("www.youtube.com".equals(uri.getHost())) {
@@ -165,6 +167,7 @@ public class MediaUtils {
                             null);
                 } catch (IOException e) {
                     LOGGER.error("PDF I/O error while reading {}: {}", uri, e.getMessage());
+                    GlitchTip.capture(e);
                     return new ContentsAndMetadata<>(null, contentLength.getAsLong(), filename, extension, 1, e);
                 }
             } else if (POI_HSLF_EXTENSIONS.contains(extension) || POI_XSLF_EXTENSIONS.contains(extension)) {
@@ -339,6 +342,7 @@ public class MediaUtils {
             LOGGER.warn("Youtube video not downloaded?");
         } catch (IOException | ExecutionException | InterruptedException e) {
             LOGGER.error("Error while downloading YouTube video: {}", e.getMessage());
+            GlitchTip.capture(e);
         }
         return null;
     }

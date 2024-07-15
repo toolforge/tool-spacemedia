@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 import com.box.sdk.BoxAPIConnection;
 import com.box.sdk.BoxFile;
@@ -103,6 +104,7 @@ public class BoxService {
                 }
             } catch (IOException e) {
                 LOGGER.error("Failed to instantiate Box API: {}", e.getMessage(), e);
+                GlitchTip.capture(e);
             }
         } else {
             LOGGER.warn("Incomplete Box credentials configuration => Box API will not be available");

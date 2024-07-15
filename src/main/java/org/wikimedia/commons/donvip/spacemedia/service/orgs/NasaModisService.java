@@ -36,6 +36,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.modis.NasaModisMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.modis.NasaModisMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
@@ -95,6 +96,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
                 updateImage(date, uploadedMedia);
             } catch (IOException | UploadException | RuntimeException e) {
                 LOGGER.error(e.getMessage(), e);
+                GlitchTip.capture(e);
             } catch (UpdateFinishedException e) {
                 LOGGER.info("Detected end of medias at date {}", date);
                 break;

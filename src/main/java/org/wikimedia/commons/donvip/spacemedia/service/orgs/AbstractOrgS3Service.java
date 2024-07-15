@@ -30,6 +30,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.s3.S3MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.s3.S3Service;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -116,6 +117,7 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
                     }
                 } catch (UploadException | IOException | RuntimeException e) {
                     LOGGER.error(e.getMessage(), e);
+                    GlitchTip.capture(e);
                 }
             } else {
                 LOGGER.info("Media skipped: {}", media);

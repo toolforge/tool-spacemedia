@@ -23,6 +23,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.noaa.library.NoaaLibraryMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.noaa.library.NoaaLibraryMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @Service
@@ -59,6 +60,7 @@ public class NoaaLibraryService extends AbstractOrgHtmlGalleryService<NoaaLibrar
                     .map(x -> BASE_URL + x.getElementsByTag("a").first().attr("href")).toList());
         } catch (IOException e) {
             LOGGER.error("Failed to retrieve sub collections", e);
+            GlitchTip.capture(e);
         }
         return result;
     }
@@ -112,6 +114,7 @@ public class NoaaLibraryService extends AbstractOrgHtmlGalleryService<NoaaLibrar
             return List.of(media);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to parse HTML for {} => {}", media, html.html());
+            GlitchTip.capture(e);
             throw e;
         }
     }
