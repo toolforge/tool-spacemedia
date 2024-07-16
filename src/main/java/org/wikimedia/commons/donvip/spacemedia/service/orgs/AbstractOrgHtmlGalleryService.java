@@ -130,7 +130,8 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                                 try {
                                     List<T> medias = updateImages(id, date, result, uploadedMedia);
                                     if (doNotFetchEarlierThan != null && medias.stream().anyMatch(
-                                            media -> media.getPublicationDate().isBefore(doNotFetchEarlierThan))) {
+                                            media -> media.getPublicationDate() != null
+                                                    && media.getPublicationDate().isBefore(doNotFetchEarlierThan))) {
                                         loop = false;
                                     }
                                 } catch (IOException | RuntimeException e) {
