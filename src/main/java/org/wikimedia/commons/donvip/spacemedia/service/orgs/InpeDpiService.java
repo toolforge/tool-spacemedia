@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -226,6 +227,10 @@ public class InpeDpiService extends AbstractOrgService<InpeDpiMedia> {
                 }
             }
             media.setPublicationDate(media.getCreationDate());
+            if (media.getPublicationYear() == null) {
+                LOGGER.warn("Failed to detect publication year for {}, setting it to current year", media);
+                media.setPublicationYear(Year.now());
+            }
             save = true;
         }
         URI fileUri = fileUrl.toURI();
