@@ -141,6 +141,8 @@ public class MediaService {
             boolean includeByPerceptualHash) throws IOException {
         boolean result = false;
         M media = ctx.media();
+        GlitchTip.setTag("media", media.getIdUsedInOrg());
+        GlitchTip.setTag("repo", media.getId().getRepoId());
         LOGGER.trace("updateMedia - cleanupDescription - {}", media);
         if (cleanupDescription(media, patternsToRemove, stringsToRemove)) {
             LOGGER.info("Description has been cleaned up for {}", media);
