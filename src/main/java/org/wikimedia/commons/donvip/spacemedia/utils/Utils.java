@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -69,7 +71,6 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.NameValuePair;
@@ -189,8 +190,7 @@ public final class Utils {
 
     public static InputStream executeRequestStream(HttpUriRequestBase request, HttpClient httpclient,
             HttpClientContext context) throws IOException {
-        HttpEntity entity = executeRequest(request, httpclient, context).getEntity();
-        return entity != null ? entity.getContent() : null;
+        return requireNonNull(executeRequest(request, httpclient, context).getEntity(), "entity").getContent();
     }
 
     public static ClassicHttpResponse executeRequest(HttpUriRequestBase request, HttpClient httpclient,
