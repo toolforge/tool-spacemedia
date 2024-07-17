@@ -81,7 +81,21 @@ public final class HashHelper {
      *                              java.desktop/java.awt.image.ComponentColorModel.getDataElements(ComponentColorModel.java:1557))
      */
     public static BigInteger computePerceptualHash(BufferedImage image) {
-        return ALGORITHM.hash(image).getHashValue();
+        try {
+            return ALGORITHM.hash(image).getHashValue();
+        } catch (IllegalArgumentException e) {
+            if ("Unknown data buffer type: 2".equals(e.getMessage())) {
+                BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(),
+                        BufferedImage.TYPE_USHORT_GRAY);
+                image.copyData(newImage.getRaster());
+                try {
+                    return ALGORITHM.hash(newImage).getHashValue();
+                } finally {
+                    newImage.flush();
+                }
+            }
+            throw e;
+        }
     }
 
     public static double similarityScore(String phash1, String phash2) {
