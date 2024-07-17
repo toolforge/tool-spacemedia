@@ -1678,12 +1678,15 @@ public abstract class AbstractOrgService<T extends Media>
             LOGGER.trace("Start common update checks for {}", media);
             for (FileMetadata fm : media.getMetadata()) {
                 if (Boolean.TRUE != fm.isIgnored()) {
+                    GlitchTip.setExtra("asset_url", fm.getAssetUri().toString());
+                    GlitchTip.setTag("ext", fm.getFileExtension());
                     result |= doCheckNonFree(media, fm);
                     result |= doCheckShortOrMissingTitleAndDescription(media, fm);
                     result |= doCheckImageTooBigOrTooSmall(fm);
                     result |= doCheckUninterestingTitle(media, fm);
                 }
             }
+            GlitchTip.removeExtra("asset_url", "ext");
             LOGGER.trace("Ended common update checks for {}", media);
         }
         ur = new MediaUpdateResult<>(media, result, ur.exception());

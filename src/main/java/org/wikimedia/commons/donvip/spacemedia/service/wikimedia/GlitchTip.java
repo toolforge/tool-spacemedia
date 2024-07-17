@@ -32,4 +32,40 @@ public final class GlitchTip {
             LOGGER.trace("Failed to capture exception with GlitchTip: {}", ignored.getMessage());
         }
     }
+
+    public static void setTag(String key, String value) {
+        try {
+            Sentry.setTag(key, value);
+        } catch (RuntimeException ignored) {
+            LOGGER.trace("Failed to set tag with GlitchTip: {}", ignored.getMessage());
+        }
+    }
+
+    public static void setExtra(String key, String value) {
+        try {
+            Sentry.setExtra(key, value);
+        } catch (RuntimeException ignored) {
+            LOGGER.trace("Failed to set extra with GlitchTip: {}", ignored.getMessage());
+        }
+    }
+
+    public static void removeTag(String... keys) {
+        try {
+            for (String key : keys) {
+                Sentry.removeTag(key);
+            }
+        } catch (RuntimeException ignored) {
+            LOGGER.trace("Failed to remove tag with GlitchTip: {}", ignored.getMessage());
+        }
+    }
+
+    public static void removeExtra(String... keys) {
+        try {
+            for (String key : keys) {
+                Sentry.removeExtra(key);
+            }
+        } catch (RuntimeException ignored) {
+            LOGGER.trace("Failed to remove extra with GlitchTip: {}", ignored.getMessage());
+        }
+    }
 }

@@ -207,6 +207,7 @@ abstract class AbstractSpacemediaOrgUpdateJobApplication implements ApplicationL
                     .asList(event.getApplicationContext().getEnvironment().getActiveProfiles());
             if (!activeProfiles.contains("test")) {
                 for (Org<?> org : orgs) {
+                    GlitchTip.setTag("org", org.getId());
                     if (org.updateOnProfiles(activeProfiles)) {
                         org.updateMedia(event.getArgs());
                     } else {
