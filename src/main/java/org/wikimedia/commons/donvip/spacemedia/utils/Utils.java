@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
@@ -220,6 +221,8 @@ public final class Utils {
                 if (e.getStatusCode() >= 400 && e.getStatusCode() < 500) {
                     throw e;
                 }
+            } catch (UnknownHostException e) {
+                throw e;
             } catch (IOException e) {
                 LOGGER.warn("{} when scrapping {} => {}", e.getClass().getSimpleName(), pageUrl, e.getMessage());
             }
