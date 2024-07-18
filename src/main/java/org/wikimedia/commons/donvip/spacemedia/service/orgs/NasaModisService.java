@@ -255,6 +255,9 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
                 LOGGER.error("Unable to determine satellite for {}", h5);
             }
         }
+        if (image.getCredits() == null) {
+            image.setCredits("MODIS Land Rapid Response Team, NASA GSFC");
+        }
         // Image URL
         String url0250 = null;
         String url0500 = null;
