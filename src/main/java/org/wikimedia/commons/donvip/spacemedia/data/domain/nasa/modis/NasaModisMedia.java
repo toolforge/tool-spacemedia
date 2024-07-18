@@ -11,7 +11,7 @@ import jakarta.persistence.Entity;
 @Entity
 public class NasaModisMedia extends SingleFileMedia {
 
-    @Column(nullable = false, length = 8)
+    @Column(nullable = true, length = 8)
     private String satellite;
 
     @Column(nullable = true, length = 64)
