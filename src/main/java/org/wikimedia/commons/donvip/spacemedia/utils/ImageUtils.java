@@ -4,6 +4,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -11,6 +12,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -18,9 +20,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.imageio.IIOException;
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -33,6 +38,10 @@ import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
+import com.twelvemonkeys.imageio.plugins.tiff.BigTIFFImageReaderSpi;
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageReader;
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageWriter;
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageWriterSpi;
 
 public class ImageUtils {
 
@@ -170,6 +179,29 @@ public class ImageUtils {
             return ImageMetadataReader.readMetadata(in);
         } catch (ImageProcessingException e) {
             throw new IOException(e);
+        }
+    }
+
+    public static void convertBigTiffToTiff(File input, File output) throws IOException {
+        try (ImageInputStream inputStream = ImageIO.createImageInputStream(input);
+                ImageOutputStream outputStream = ImageIO.createImageOutputStream(output)) {
+            TIFFImageReader reader = (TIFFImageReader) new BigTIFFImageReaderSpi().createReaderInstance();
+            reader.setInput(inputStream);
+
+            TIFFImageWriter writer = (TIFFImageWriter) new TIFFImageWriterSpi().createWriterInstance();
+            ImageWriteParam writeParam = writer.getDefaultWriteParam();
+            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            writeParam.setCompressionType("LZW");
+            writer.setOutput(outputStream);
+
+            int thumbnailCount = reader.getNumThumbnails(0);
+            List<BufferedImage> thumbnails = new ArrayList<>(thumbnailCount);
+            for (int i = 0; i < thumbnailCount; i++) {
+                thumbnails.set(i, reader.readThumbnail(0, i));
+            }
+
+            writer.write(reader.getStreamMetadata(),
+                    new IIOImage(reader.read(0), thumbnails, reader.getImageMetadata(0)), writeParam);
         }
     }
 }
