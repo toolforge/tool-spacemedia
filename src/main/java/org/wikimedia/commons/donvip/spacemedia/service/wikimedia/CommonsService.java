@@ -30,6 +30,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUri;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -176,6 +177,10 @@ import com.github.scribejava.core.httpclient.multipart.BodyPartPayload;
 import com.github.scribejava.core.httpclient.multipart.FileByteArrayBodyPartPayload;
 import com.github.scribejava.core.model.OAuth1AccessToken;
 import com.github.scribejava.core.oauth.OAuth10aService;
+
+import edu.harvard.hul.ois.jhove.Message;
+import edu.harvard.hul.ois.jhove.RepInfo;
+import edu.harvard.hul.ois.jhove.module.TiffModule;
 
 @Service
 public class CommonsService {
@@ -932,8 +937,7 @@ public class CommonsService {
             if (doUploadByUrl) {
                 params.put("url", url.toExternalForm());
             } else {
-                localFile = downloadFile(url,
-                        isNotBlank(ext) && !filename.endsWith('.' + ext) ? filename + '.' + ext : filename);
+                localFile = doDownloadFile(url, ext, filename);
                 if (isPpt) {
                     localFile = convertPowerpointFileToPdf(localFile.getKey());
                     LOGGER.info("Powerpoint file converted to PDF: {}", localFile.getKey());
@@ -967,7 +971,7 @@ public class CommonsService {
                 throw new UploadException("No upload response");
             }
             return handleUploadResponse(wikiCode, filename, ext, url, sha1, orgId, mediaId, metadataId, audio,
-                    errorPolicy, uploadByUrl, apiResponse);
+                    errorPolicy, uploadByUrl, localFile, targetExt, params, apiResponse, false);
         } finally {
             if (localFile != null) {
                 Files.deleteIfExists(localFile.getKey());
@@ -975,9 +979,14 @@ public class CommonsService {
         }
     }
 
+    private static Pair<Path, Long> doDownloadFile(URL url, String ext, String filename) throws IOException {
+        return downloadFile(url, isNotBlank(ext) && !filename.endsWith('.' + ext) ? filename + '.' + ext : filename);
+    }
+
     private String handleUploadResponse(String wikiCode, String filename, String ext, URL url, String sha1,
             String orgId, CompositeMediaId mediaId, Long metadataId, boolean audio, UploadErrorPolicy errorPolicy,
-            boolean uploadByUrl, UploadApiResponse apiResponse) throws IOException, UploadException {
+            boolean uploadByUrl, Pair<Path, Long> localFile, String targetExt, Map<String, String> params,
+            UploadApiResponse apiResponse, boolean comesFromTiffFallback) throws IOException, UploadException {
         ApiError error = apiResponse.getError();
         UploadResponse upload = apiResponse.getUpload();
         if (error != null) {
@@ -1008,8 +1017,7 @@ public class CommonsService {
                         new UploadErrorPolicy(errorPolicy.renewTokenIfBadToken, true, false, true), uploadByUrl);
             }
             if (errorPolicy.retryOnDbReadOnly && "readonly".equals(error.getCode())) {
-                // Infinite retries on readonly errors, it's meant to become available again
-                // soon
+                // Infinite retry on readonly errors, it's meant to become available again soon
                 return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, metadataId, audio, errorPolicy,
                         uploadByUrl);
             }
@@ -1020,6 +1028,43 @@ public class CommonsService {
                             errorPolicy, uploadByUrl);
                 }
             }
+            if (!comesFromTiffFallback && "internal_api_error_InvalidTiffException".equals(error.getCode())) {
+                LOGGER.warn("InvalidTiffException received from Mediawiki API for {}", url);
+                if (localFile == null) {
+                    LOGGER.warn("Downloading {} to investigate...", url);
+                    localFile = doDownloadFile(url, ext, filename);
+                }
+                RepInfo rep = new RepInfo(url.toExternalForm());
+                try (RandomAccessFile raf = new RandomAccessFile(localFile.getKey().toFile(), "rw")) {
+                    TiffModule tiff = new TiffModule();
+                    tiff.parse(raf, rep);
+                    switch (rep.getWellFormed()) {
+                    case RepInfo.TRUE:
+                        LOGGER.warn("TIFF file is well-formed! Nothing more to do.");
+                        break;
+                    case RepInfo.FALSE:
+                        LOGGER.warn("TIFF file is NOT well-formed! Trying to fix it.");
+                        if (fixTIFF(rep, raf)) {
+                            LOGGER.info("TIFF fix applied! Uploading {} in chunks...", url);
+                            apiResponse = doUploadInChunks(targetExt, params, localFile, 5_242_880);
+                            if (apiResponse != null) {
+                                return handleUploadResponse(wikiCode, filename, ext, url, sha1, orgId, mediaId,
+                                        metadataId, audio, errorPolicy, uploadByUrl, localFile, targetExt, params,
+                                        apiResponse, true);
+                            } else {
+                                LOGGER.error("No upload response");
+                            }
+                        } else {
+                            LOGGER.warn("Unable to fix TIFF file :(");
+                        }
+                        break;
+                    case RepInfo.UNDETERMINED:
+                    default:
+                        LOGGER.warn("TIFF file well-formedness cannot be determined! Nothing more to do.");
+                        break;
+                    }
+                }
+            }
             throw new UploadException(error.toString());
         } else if (!SUCCESS.equals(upload.getResult())) {
             throw new UploadException(apiResponse.toString());
@@ -1028,6 +1073,30 @@ public class CommonsService {
             LOGGER.warn("SHA1 mismatch for {} ! Expected {}, got {}", url, sha1, upload.getImageInfo().getSha1());
         }
         return upload.getFilename();
+    }
+
+    private static boolean fixTIFF(RepInfo rep, RandomAccessFile raf) throws IOException {
+        boolean fixApplied = false;
+        for (Message message : rep.getMessage()) {
+            LOGGER.warn("TIFF {}", message);
+            if (message.getMessage().startsWith("No TIFF magic number:")) {
+                byte[] bytes = new byte[2];
+                raf.read(bytes, 0, 2);
+                if (bytes[0] == 0x49 && bytes[1] == 0x49) {
+                    raf.write(new byte[] { 42, 0 }, 2, 2); // Little-endian
+                    fixApplied |= true;
+                } else if (bytes[0] == 0x4D && bytes[1] == 0x4D) {
+                    raf.write(new byte[] { 0, 42 }, 2, 2); // Big-endian
+                    fixApplied |= true;
+                } else {
+                    LOGGER.error("Strange TIFF file: {}", bytes);
+                }
+            } else {
+                // Handle more cases in the future
+                LOGGER.error("No fallback implement for TIFF error {}", message);
+            }
+        }
+        return fixApplied;
     }
 
     static record UploadErrorPolicy(

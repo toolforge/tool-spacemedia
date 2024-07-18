@@ -40,6 +40,7 @@
 		<batik.version>1.17</batik.version>
 		<flickr4java-version>3.0.9</flickr4java-version>
 		<jettyhttp2-version>11.0.18</jettyhttp2-version>
+		<jhove.version>1.30.0</jhove.version>
 		<poi-version>5.2.5</poi-version>
 		<springboot-version>3.1.12</springboot-version>
 		<scribejava-version>8.3.3</scribejava-version>
@@ -372,6 +373,17 @@
 			<artifactId>isoparser</artifactId>
 			<!-- More recent versions up to 1.9.56 do not work - https://github.com/sannies/mp4parser/issues/449 -->
 			<version>1.9.41</version>
+		</dependency>
+		<!-- JHove -->
+		<dependency>
+			<groupId>org.openpreservation.jhove</groupId>
+			<artifactId>jhove-core</artifactId>
+			<version>${jhove.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openpreservation.jhove.modules</groupId>
+			<artifactId>tiff-hul</artifactId>
+			<version>1.9.4</version>
 		</dependency>
 		<!-- Web -->
 		<dependency>
