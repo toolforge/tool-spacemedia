@@ -144,6 +144,14 @@ public class Video2CommonsService {
         }
     }
 
+    private String csrfToken() {
+        if (csrf == null) {
+            csrf = getCsrfToken();
+            LOGGER.info("Video2Commons CSRF token: {}", csrf);
+        }
+        return csrf;
+    }
+
     public Video2CommonsTask uploadVideo(String wikiCode, String filename, URL url, String orgId,
             CompositeMediaId mediaId, Long metadataId, String format) throws IOException {
         Video2CommonsTask task = repository.findFirstByUrlOrMetadataIdAndStatusInOrderByCreatedDesc(url, metadataId,
@@ -205,7 +213,7 @@ public class Video2CommonsService {
             CloseableHttpClient httpClient, String format) throws IOException {
         HttpUriRequestBase request = newHttpPost(URL_API + "/task/run",
                 Map.of("url", url, "extractor", "", "subtitles", false, "filename", filenameExt, "filedesc",
-                        wikiCode, "format", format, "_csrf_token", requireNonNull(csrf, "v2c csrf token")));
+                        wikiCode, "format", format, "_csrf_token", requireNonNull(csrfToken(), "v2c csrf token")));
         try (InputStream in = executeRequestStream(request, httpClient, httpClientContext)) {
             RunResponse run = jackson.readValue(in, RunResponse.class);
             LOGGER.info("video2commons task {} submitted to upload {} as '{}.webm' ({})", run.id(), url, filenameExt,
@@ -227,7 +235,7 @@ public class Video2CommonsService {
         try {
             String response = httpClient.execute(
                     newHttpPost(URL_API + "/task/" + op,
-                            Map.of("id", taskId, "_csrf_token", requireNonNull(csrf, "v2c csrf token"))),
+                            Map.of("id", taskId, "_csrf_token", requireNonNull(csrfToken(), "v2c csrf token"))),
                     httpClientContext, new BasicHttpClientResponseHandler());
             LOGGER.warn("{} video2commons task {} => {}", op, taskId, response);
         } catch (IOException e) {
