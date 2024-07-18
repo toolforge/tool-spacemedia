@@ -72,6 +72,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.NameValuePair;
@@ -177,8 +178,12 @@ public final class Utils {
     }
 
     public static HttpPost newHttpPost(String uri, List<? extends NameValuePair> params) {
+        return newHttpPost(uri, new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
+    }
+
+    public static HttpPost newHttpPost(String uri, final HttpEntity entity) {
         HttpPost post = new HttpPost(uri);
-        post.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
+        post.setEntity(entity);
         return post;
     }
 

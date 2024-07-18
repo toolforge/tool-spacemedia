@@ -4,6 +4,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Objects.requireNonNull;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.DONE;
 import static org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTask.Status.PROGRESS;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequestStream;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getHttpClientContext;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
@@ -29,6 +30,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -128,7 +130,15 @@ public class Video2CommonsService {
                             }
                         });
             }
-            // STEP 3 - Authorize application
+            // STEP 3 - Authorize application - follow POST redirects manually
+            // HTTP Client 5 removed the LaxRedirectStrategy
+            // https://stackoverflow.com/questions/69531010/how-to-follow-redirects-for-post-in-apache-httpclient-5-1
+            try (CloseableHttpClient httpclient2 = HttpClientBuilder.create().disableRedirectHandling().build()) {
+                try (ClassicHttpResponse response = executeRequest(request, httpclient2, context)) {
+                    request = newHttpGet(response.getHeaders("Location")[0].getValue()
+                            .replace("tools.wmflabs.org/video2commons", "video2commons.toolforge.org"));
+                }
+            }
             try (InputStream in = executeRequestStream(request, httpclient, context)) {
             }
             // STEP 4 - request CSRF token
