@@ -4,6 +4,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -21,6 +22,7 @@ import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -33,6 +35,10 @@ import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
+import com.twelvemonkeys.imageio.plugins.tiff.BigTIFFImageReaderSpi;
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageReader;
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageWriter;
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageWriterSpi;
 
 public class ImageUtils {
 
@@ -170,6 +176,19 @@ public class ImageUtils {
             return ImageMetadataReader.readMetadata(in);
         } catch (ImageProcessingException e) {
             throw new IOException(e);
+        }
+    }
+
+    public static void convertBigTiffToTiff(File input, File output) throws IOException {
+        try (ImageInputStream inputStream = ImageIO.createImageInputStream(input);
+                ImageOutputStream outputStream = ImageIO.createImageOutputStream(output)) {
+            TIFFImageReader reader = (TIFFImageReader) new BigTIFFImageReaderSpi().createReaderInstance();
+            reader.setInput(inputStream);
+
+            TIFFImageWriter writer = (TIFFImageWriter) new TIFFImageWriterSpi().createWriterInstance();
+            writer.setOutput(outputStream);
+
+            writer.write(reader.read(0));
         }
     }
 }
