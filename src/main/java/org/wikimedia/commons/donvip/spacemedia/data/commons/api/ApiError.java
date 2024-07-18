@@ -10,6 +10,12 @@ public class ApiError {
 
     private String errorclass;
 
+    @JsonProperty("apierror-exceptioncaught")
+    private String exceptioncaught;
+
+    @JsonProperty("apierror-exceptioncaughttype")
+    private String exceptioncaughttype;
+
     private String docref;
 
     private AbuseFilter abusefilter;
@@ -57,6 +63,22 @@ public class ApiError {
         this.errorclass = errorclass;
     }
 
+    public String getExceptioncaught() {
+        return exceptioncaught;
+    }
+
+    public void setExceptioncaught(String exceptioncaught) {
+        this.exceptioncaught = exceptioncaught;
+    }
+
+    public String getExceptioncaughttype() {
+        return exceptioncaughttype;
+    }
+
+    public void setExceptioncaughttype(String exceptioncaughttype) {
+        this.exceptioncaughttype = exceptioncaughttype;
+    }
+
     public String getDocref() {
         return docref;
     }
@@ -69,6 +91,8 @@ public class ApiError {
     public String toString() {
         return "ApiError [" + (code != null ? "code=" + code + ", " : "") + (info != null ? "info=" + info + ", " : "")
                 + (errorclass != null ? "errorclass=" + errorclass + ", " : "")
+                + (exceptioncaught != null ? "apierror-exceptioncaught=" + exceptioncaught + ", " : "")
+                + (exceptioncaughttype != null ? "apierror-exceptioncaughttype=" + exceptioncaughttype + ", " : "")
                 + (docref != null ? "docref=" + docref + ", " : "")
                 + (abusefilter != null ? "abusefilter=" + abusefilter + ", " : "")
                 + (star != null ? "star=" + star : "") + "]";
