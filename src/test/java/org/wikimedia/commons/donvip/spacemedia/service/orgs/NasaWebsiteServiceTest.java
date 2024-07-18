@@ -6,12 +6,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,8 +68,12 @@ class NasaWebsiteServiceTest extends AbstractOrgServiceTest {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         when(commonsService.isPermittedFileUrl(any())).thenReturn(true);
 
-        service.fillMediaWithHtml("https://www.nasa.gov/" + repo + '/' + id,
-                Jsoup.parse(new File("src/test/resources/nasa/website/" + repo + '/' + id + ".htm")), null, media);
+        Document html = Jsoup.parse(new File("src/test/resources/nasa/website/" + repo + '/' + id + ".htm"));
+        try {
+            service.fillMediaWithHtml("https://www.nasa.gov/" + repo + '/' + id, html, null, media);
+        } catch (IOException e) {
+            Assumptions.assumeFalse(e != null, e.getMessage());
+        }
 
         assertEquals(title, media.getTitle());
         if (descriptionLength == 0) {

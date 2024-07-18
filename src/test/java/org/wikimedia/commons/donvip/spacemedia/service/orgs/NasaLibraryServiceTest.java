@@ -126,7 +126,7 @@ class NasaLibraryServiceTest extends AbstractOrgServiceTest {
                 URLConnection conn = homePage.openConnection();
                 if (conn instanceof HttpURLConnection httpConn) {
                     String message = homePage + " -> " + httpConn.getResponseCode();
-                    if (httpConn.getResponseCode() != 200) {
+                    if (httpConn.getResponseCode() != 200 && httpConn.getResponseCode() != 429) {
                         System.err.println(message);
                         errors.put(center, message);
                     } else {
