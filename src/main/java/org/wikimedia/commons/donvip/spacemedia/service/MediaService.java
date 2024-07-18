@@ -284,7 +284,8 @@ public class MediaService {
             }
             contents = flushOrClose(contents);
             boolean isImage = metadata.isImage();
-            boolean isReadableImage = isImage && Boolean.TRUE == metadata.isReadable();
+            boolean isReadableImage = isImage
+                    && (Boolean.TRUE == metadata.isReadable() || Boolean.TRUE == metadata.isAssumedReadable());
             if ((!isImage || isReadableImage) && updateSha1(ctx, metadata)) {
                 LOGGER.info("SHA1 hash has been updated for {}", metadata);
                 result = true;
