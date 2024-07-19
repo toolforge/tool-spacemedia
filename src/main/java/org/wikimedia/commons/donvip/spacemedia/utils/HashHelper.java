@@ -53,7 +53,7 @@ public final class HashHelper {
     public static String computeSha1(URL httpUrl, HttpClient httpClient, HttpClientContext context) throws IOException {
         LOGGER.debug("Computing SHA1 for {} ...", httpUrl);
         URI uri = Utils.urlToUriUnchecked(httpUrl);
-        try (ClassicHttpResponse response = executeRequest(newHttpGet(uri), httpClient, context);
+        try (ClassicHttpResponse response = executeRequest(newHttpGet(uri), httpClient, context, false);
                 InputStream in = response.getEntity().getContent()) {
             int statusCode = response.getCode();
             if (statusCode != HttpStatus.SC_OK) {

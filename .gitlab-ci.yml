@@ -91,7 +91,6 @@ test:
     when: always
     paths:
       - target/jacoco.*
-      - target/site/
       - target/surefire-reports/*.txt
       - target/surefire-reports/*.xml
     expire_in: 7 days
