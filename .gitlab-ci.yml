@@ -4,8 +4,10 @@ include:
   - template: Security/SAST.gitlab-ci.yml
 #  - template: Jobs/Build.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - project: "repos/ci-tools/sonarqube"
-    ref: main
+#  - project: "repos/ci-tools/sonarqube"
+#    ref: main
+  - project: don-vip/sonarqube
+    ref: don-vip-main-patch-68816
     file: "templates/maven-sonar-ci.yml"
 
 cache:
@@ -105,7 +107,7 @@ sonar-scanner:
   variables:
     SONAR_MAVEN_BINARY: "./mvnw $MAVEN_CLI_OPTS"
     SONAR_MAVEN_GOALS: "-Pweb -Pjobs verify sonar:sonar -DskipTests=true"
-    SONAR_PROJECT_KEY: "tool-spacemedia"
+    SONAR_PROJECT_KEY: "toolforge-repos_spacemedia"
   needs: ["test"]
 
 deploy_maven:
