@@ -170,25 +170,23 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
 
     private List<T> updateImages(CompositeMediaId id, Optional<Temporal> date, Element galleryItem,
             List<T> uploadedMedia) throws IOException, UploadException {
-        boolean save = false;
+        boolean saveAll = false;
         List<T> medias = null;
         Optional<T> imageInDb = repository.findById(id);
         if (imageInDb.isPresent()) {
             medias = List.of(imageInDb.get());
         } else {
             medias = fetchMedias(id, date, galleryItem);
-            save = !medias.isEmpty();
+            saveAll = !medias.isEmpty();
         }
         for (T media : medias) {
+            boolean save = saveAll;
             save |= doCommonUpdate(media);
             save |= ignoreNonFreeFiles(media);
             if (shouldUploadAuto(media, false)) {
-                media = saveMedia(upload(save ? saveMedia(media) : media, true, false).getLeft());
-                uploadedMedia.add(media);
-                save = false;
-            }
-            if (save) {
-                media = saveMedia(media);
+                uploadedMedia.add(saveMedia(upload(save ? saveMedia(media) : media, true, false).getLeft()));
+            } else if (save) {
+                saveMedia(media);
             }
         }
         return medias;

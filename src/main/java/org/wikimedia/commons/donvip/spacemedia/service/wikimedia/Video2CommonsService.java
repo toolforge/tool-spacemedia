@@ -140,6 +140,7 @@ public class Video2CommonsService {
                 }
             }
             try (InputStream in = executeRequestStream(request, httpclient, context)) {
+                // Response not needed
             }
             // STEP 4 - request CSRF token
             request = newHttpGet(URL_API + "/csrf");
