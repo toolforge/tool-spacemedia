@@ -113,7 +113,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
 
     @Override
     protected OAuthRequest buildStatusRequest(String text) throws IOException {
-        return postRequest(V2_TWEET, "application/json", new TweetRequest(null, text));
+        return postRequest(V2_TWEET, "application/json", new TweetRequest(text, null));
     }
 
     @Override
@@ -128,7 +128,7 @@ public class TwitterService extends AbstractSocialMediaService<OAuth10aService, 
             text = createStatusText(emojis, accounts, imagesCount, videosCount, uploadedMedia, uploadedMetadata,
                     --maxKeywords);
         }
-        return postRequest(V2_TWEET, "application/json", new TweetRequest(createTweetMedia(uploadedMetadata), text));
+        return postRequest(V2_TWEET, "application/json", new TweetRequest(text, createTweetMedia(uploadedMetadata)));
     }
 
     private static boolean isTweetValid(String text) {
