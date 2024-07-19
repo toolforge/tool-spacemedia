@@ -105,7 +105,7 @@ sonar-scanner:
   variables:
     SONAR_MAVEN_BINARY: "./mvnw $MAVEN_CLI_OPTS"
     SONAR_MAVEN_GOALS: "-Pweb -Pjobs verify sonar:sonar -DskipTests=true"
-    SONAR_PROJECT_KEY: "tool-spacemedia"
+    SONAR_PROJECT_KEY: "toolforge-repos_spacemedia"
   needs: ["test"]
 
 deploy_maven:

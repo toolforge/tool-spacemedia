@@ -34,8 +34,8 @@
 		<maven.compiler.release>${java.version}</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-		<sonar.organization>toolforge</sonar.organization>
-		<sonar.projectKey>tool-spacemedia</sonar.projectKey>
+		<sonar.organization>toolforge-repos</sonar.organization>
+		<sonar.projectKey>toolforge-repos_spacemedia</sonar.projectKey>
 
 		<batik.version>1.17</batik.version>
 		<flickr4java-version>3.0.9</flickr4java-version>
