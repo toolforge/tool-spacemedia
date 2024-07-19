@@ -24,11 +24,12 @@ public class SpacemediaOrgFlickrUpdateJobApplication extends AbstractSpacemediaO
     }
 
     @Bean
-    public Org<?> org(@Value("${org}") String org,
+    @SuppressWarnings("unchecked")
+    public Org<FlickrMedia> org(@Value("${org}") String org,
             @Value("${flickr.accounts}") Set<String> flickrAccounts,
             @Autowired FlickrMediaRepository repository,
             ApplicationContext context) throws ReflectiveOperationException {
-        return (Org<?>) Class.forName(org).getConstructor(FlickrMediaRepository.class, Set.class)
+        return (Org<FlickrMedia>) Class.forName(org).getConstructor(FlickrMediaRepository.class, Set.class)
                 .newInstance(repository, flickrAccounts);
     }
 }

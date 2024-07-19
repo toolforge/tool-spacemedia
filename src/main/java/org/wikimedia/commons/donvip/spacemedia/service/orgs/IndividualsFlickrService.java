@@ -61,6 +61,8 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
                 replace(result, "Flickr-public domain mark", "PD-USGov-USGS");
             }
             break;
+        default:
+            break;
         }
         return result;
     }
@@ -106,6 +108,8 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
                 }
             }
             break;
+        default:
+            break;
         }
         if (result.contains("Photos of Jupiter system by spacecraft") && result.contains("Photos by JunoCam")) {
             replace(result, "Photos of Jupiter system by spacecraft", "Photos of Jupiter system by JunoCam");
@@ -132,6 +136,8 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
                 break;
             case "194849271@N04":
                 result.add("Files from SpaceFromSpace Flickr stream");
+                break;
+            default:
                 break;
             }
         }

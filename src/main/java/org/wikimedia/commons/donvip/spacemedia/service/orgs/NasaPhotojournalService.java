@@ -27,6 +27,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -43,6 +45,8 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 
 @Service
 public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaPhotojournalMedia> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NasaPhotojournalService.class);
 
     static final Pattern ANIMATION_PATTERN = Pattern.compile(
             ".*<a href=\"(https?://[^\"]+\\.(?:gif|mp4))\".*");
@@ -176,6 +180,8 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
                 addMetadata(media, BASE_URL + tr.child(1).getElementsByTag("a").first().attr("href"),
                         m -> m.setImageDimensions(idims));
                 break;
+            default:
+                LOGGER.info("Ignored key: {}", key);
             }
         }
         boolean isAnimation = media.containsInTitleOrDescriptionOrKeywords("animation");

@@ -25,18 +25,22 @@ public class SpacemediaOrgStsciUpdateJobApplication extends AbstractSpacemediaOr
     }
 
     @Bean
-    public Org<?> django(@Value("${django}") String org, @Value("${django.search.link}") String searchLink,
+    @SuppressWarnings("unchecked")
+    public Org<DjangoplicityMedia> django(@Value("${django}") String org,
+            @Value("${django.search.link}") String searchLink,
             @Autowired DjangoplicityMediaRepository repository, ApplicationContext context)
             throws ReflectiveOperationException {
-        return (Org<?>) Class.forName(org).getConstructor(DjangoplicityMediaRepository.class, String.class)
+        return (Org<DjangoplicityMedia>) Class.forName(org)
+                .getConstructor(DjangoplicityMediaRepository.class, String.class)
                 .newInstance(repository, searchLink);
     }
 
     @Bean
-    public Org<?> stsci(@Value("${stsci}") String org, @Value("${stsci.search.link}") String searchLink,
+    @SuppressWarnings("unchecked")
+    public Org<StsciMedia> stsci(@Value("${stsci}") String org, @Value("${stsci.search.link}") String searchLink,
             @Value("${stsci.detail.link}") String detailLink, @Autowired StsciMediaRepository repository,
             ApplicationContext context) throws ReflectiveOperationException {
-        return (Org<?>) Class.forName(org)
+        return (Org<StsciMedia>) Class.forName(org)
                 .getConstructor(StsciMediaRepository.class, String.class, String.class)
                 .newInstance(repository, searchLink, detailLink);
     }

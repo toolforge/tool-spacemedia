@@ -24,11 +24,12 @@ public class SpacemediaOrgYoutubeUpdateJobApplication extends AbstractSpacemedia
     }
 
     @Bean
-    public Org<?> org(@Value("${org}") String org,
+    @SuppressWarnings("unchecked")
+    public Org<YouTubeMedia> org(@Value("${org}") String org,
             @Value("${youtube.channels}") Set<String> youtubeChannels,
             @Autowired YouTubeMediaRepository repository,
             ApplicationContext context) throws ReflectiveOperationException {
-        return (Org<?>) Class.forName(org).getConstructor(YouTubeMediaRepository.class, Set.class)
+        return (Org<YouTubeMedia>) Class.forName(org).getConstructor(YouTubeMediaRepository.class, Set.class)
                 .newInstance(repository, youtubeChannels);
     }
 }

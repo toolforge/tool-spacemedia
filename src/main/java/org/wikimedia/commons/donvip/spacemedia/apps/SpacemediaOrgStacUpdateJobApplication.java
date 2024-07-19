@@ -21,9 +21,10 @@ public class SpacemediaOrgStacUpdateJobApplication extends AbstractSpacemediaOrg
     }
 
     @Bean
-    public Org<?> org(@Value("${org}") String org, @Value("${stac.catalogs}") Set<String> stacCatalogs,
+    @SuppressWarnings("unchecked")
+    public Org<StacMedia> org(@Value("${org}") String org, @Value("${stac.catalogs}") Set<String> stacCatalogs,
             @Autowired StacMediaRepository repository, ApplicationContext context) throws ReflectiveOperationException {
-        return (Org<?>) Class.forName(org)
+        return (Org<StacMedia>) Class.forName(org)
                 .getConstructor(StacMediaRepository.class, Set.class).newInstance(repository, stacCatalogs);
     }
 }
