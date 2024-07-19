@@ -41,7 +41,7 @@ public class YouTubeMediaProcessor {
     // Taken from
     // https://github.com/eatcha-wikimedia/YouTubeReviewBot/blob/master/main.py
     private static final Pattern FROM_YOUTUBE = Pattern.compile(
-            ".*\\{\\{\\s*?[Ff]rom\\s[Yy]ou[Tt]ube\\s*(?:\\||\\|1\\=|\\s*?)(?:\\s*)(?:1|=\\||)(?:=|)([^\"&?\\/ \\}]{11}).*",
+            ".*\\{\\{\\s*?[Ff]rom\\s[Yy]ou[Tt]ube\\s*(?:\\||\\|1\\=|\\s*?)\\s*(?:1|=\\||)(?:=|)([^\"&?\\/ \\}]{11}).*",
             Pattern.DOTALL);
 
     // Taken from

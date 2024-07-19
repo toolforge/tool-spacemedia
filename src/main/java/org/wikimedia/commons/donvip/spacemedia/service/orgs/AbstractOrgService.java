@@ -97,6 +97,7 @@ import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageUploadForbiddenException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.exception.WrappedUploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.AbstractSocialMediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
 import org.wikimedia.commons.donvip.spacemedia.service.ExecutionMode;
@@ -917,7 +918,7 @@ public abstract class AbstractOrgService<T extends Media>
         } catch (UploadException e) {
             LOGGER.error("Failed to upload {}", media, e);
             GlitchTip.capture(e);
-            throw new RuntimeException(e);
+            throw new WrappedUploadException(e);
         }
     }
 

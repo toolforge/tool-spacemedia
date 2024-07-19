@@ -54,7 +54,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
 
     static final List<Pattern> COPERNICUS_PROCESSED_BY = Arrays.asList(
             Pattern.compile(
-                    ".*Copernicus.*data [\\(\\[]2\\d{3}(?:[-–/]\\d{2,4})?[\\)\\]] ?(?:/|,) ?(?:Processed by )?(.*)",
+                    ".*Copernicus.*data [\\(\\[]2\\d{3}(?:[-–/]\\d{2,4})?[\\)\\]] ?[/,] ?(?:Processed by )?(.*)",
                     Pattern.CASE_INSENSITIVE),
             Pattern.compile(
                     "(?:Basierend auf|Modifizierte und) von der (.*) (?:modifizierten|bearbeitete) Copernicus[ -]Sentinel[ -]Daten [\\(\\[]2\\d{3}(?:[-–/]\\d{2,4})?[\\)\\]]",
