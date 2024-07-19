@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-record TweetRequest(TweetMedia media, String text) {
+record TweetRequest(String text, TweetMedia media) {
 
     static record TweetMedia(@JsonProperty("media_ids") List<String> mediaIds) {
     }
