@@ -201,7 +201,13 @@ public final class Utils {
 
     public static ClassicHttpResponse executeRequest(HttpUriRequestBase request, HttpClient httpclient,
             HttpClientContext context) throws IOException {
-        return checkResponse(request, httpclient.executeOpen(null, request, context));
+        return executeRequest(request, httpclient, context, true);
+    }
+
+    public static ClassicHttpResponse executeRequest(HttpUriRequestBase request, HttpClient httpclient,
+            HttpClientContext context, boolean checkResponse) throws IOException {
+        ClassicHttpResponse response = httpclient.executeOpen(null, request, context);
+        return checkResponse ? checkResponse(request, response) : response;
     }
 
     public static <T extends HttpResponse> T checkResponse(HttpRequest request, T response) throws IOException {

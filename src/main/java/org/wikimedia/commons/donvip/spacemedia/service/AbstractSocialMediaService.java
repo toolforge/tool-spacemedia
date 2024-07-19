@@ -272,7 +272,7 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             throws IOException, URISyntaxException, InterruptedException {
         LOGGER.info("Uploading media for file {} resolved to URL {}", muc.filename, muc.url);
         try (CloseableHttpClient httpclient = HttpClients.custom().setUserAgent(commonsService.getUserAgent()).build();
-                ClassicHttpResponse response = executeRequest(newHttpGet(muc.url.toURI()), httpclient, null);
+                ClassicHttpResponse response = executeRequest(newHttpGet(muc.url.toURI()), httpclient, null, false);
                 InputStream in = response.getEntity().getContent()) {
             if (response.getCode() >= 400) {
                 String message = muc.url.toURI().toString() + " -> " + response;

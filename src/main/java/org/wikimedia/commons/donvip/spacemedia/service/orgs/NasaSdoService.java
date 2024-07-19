@@ -190,7 +190,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         URL keywordsUrl = getKeywordsUrl(instrument, date);
         LOGGER.info("Fetching {}", keywordsUrl);
         try (CloseableHttpClient httpclient = HttpClients.createDefault();
-                ClassicHttpResponse response = executeRequest(newHttpGet(keywordsUrl), httpclient, null);
+                ClassicHttpResponse response = executeRequest(newHttpGet(keywordsUrl), httpclient, null, false);
                 InputStream in = response.getEntity().getContent()) {
             if (response.getCode() >= 400) {
                 LOGGER.warn("{} => {}", keywordsUrl, response);
