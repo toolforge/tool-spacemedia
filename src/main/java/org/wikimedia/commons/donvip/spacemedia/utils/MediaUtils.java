@@ -307,6 +307,8 @@ public class MediaUtils {
                     case "Image Height":
                         height = Integer.parseInt(parts[1].trim());
                         break;
+                    default:
+                        LOGGER.warn("Strange part: {}", parts[0]);
                     }
                 }
             }

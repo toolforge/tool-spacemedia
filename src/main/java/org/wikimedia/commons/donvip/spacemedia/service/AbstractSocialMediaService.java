@@ -354,6 +354,8 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
             case "fire", "wildfire":
                 result.add(Emojis.FIRE);
                 break;
+            default:
+                break;
             }
         }
         return result;
