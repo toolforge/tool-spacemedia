@@ -40,6 +40,7 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.jsoup.HttpStatusException;
@@ -61,6 +62,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoMedia
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
+import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateContext;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
@@ -347,6 +349,18 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                         // https://sdo.gsfc.nasa.gov/assets/img/browse/2016/12/25/ => HTTP 404
                         LOGGER.error(e.getMessage(), e);
                         GlitchTip.capture(e);
+                    }
+                }
+            } else {
+                for (NasaSdoMedia media : sdoRepository.findByMediaTypeAndDimensionsAndDate(mediaType, dims, date)) {
+                    for (FileMetadata metadata : media.getMetadataStream()
+                            .filter(fm -> fm.isIgnored() != Boolean.TRUE && fm.shouldRead()).toList()) {
+                        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+                            mediaService.updateReadableStateAndHashes(
+                                    new MediaUpdateContext<>(media, null, null, httpClient, null, false, false),
+                                    metadata);
+                            ongoingUpdateMedia(start, count + localCount++);
+                        }
                     }
                 }
             }

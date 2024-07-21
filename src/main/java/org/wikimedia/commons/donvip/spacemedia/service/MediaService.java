@@ -242,7 +242,7 @@ public class MediaService {
         }
     }
 
-    private <M extends Media> MediaUpdateResult<M> updateReadableStateAndHashes(MediaUpdateContext<M> ctx,
+    public <M extends Media> MediaUpdateResult<M> updateReadableStateAndHashes(MediaUpdateContext<M> ctx,
             FileMetadata metadata) {
         boolean result = false;
         Object contents = null;
@@ -411,6 +411,8 @@ public class MediaService {
                     LOGGER.error("Failed to compute file size for {}", metadata, e);
                     GlitchTip.capture(e);
                 }
+            } else {
+                LOGGER.warn("Unable to update file size of {}", metadata);
             }
         }
         return false;
