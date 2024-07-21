@@ -10,6 +10,8 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,8 @@ import jakarta.transaction.Transactional;
 @Lazy
 @Service
 public class DvidsMediaProcessorService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DvidsMediaProcessorService.class);
 
     private static final String OLD_DVIDS_CDN = "https://cdn.dvidshub.net/";
 
@@ -110,6 +114,10 @@ public class DvidsMediaProcessorService {
     }
 
     private DvidsMedia save(DvidsMedia media) {
+        if (media.getVirin() != null && media.getVirin().length() > 20) {
+            LOGGER.warn("VIRIN too long for {}", media);
+            media.setVirin(media.getVirin().substring(0, 20));
+        }
         switch (media.getMediaType()) {
         case image:
             return imageRepository.save((DvidsImage) media);
