@@ -144,6 +144,19 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
                 date);
     }
 
+    @Query(value = """
+            select nasa_sdo_media.*
+            from nasa_sdo_media left join (nasa_sdo_media_metadata, file_metadata)
+            on (nasa_sdo_media.media_id = nasa_sdo_media_metadata.nasa_sdo_media_media_id and nasa_sdo_media_metadata.metadata_id = file_metadata.id)
+            where media_type = ?1 and width = ?2 and height = ?3 and creation_date = ?4
+            """, nativeQuery = true)
+    List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDate(int mediaType, int width, int height, LocalDate date);
+
+    default List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, ImageDimensions dim,
+            LocalDate date) {
+        return findByMediaTypeAndDimensionsAndDate(mediaType.ordinal(), dim.getWidth(), dim.getHeight(), date);
+    }
+
     // SAVE
 
     @Override
