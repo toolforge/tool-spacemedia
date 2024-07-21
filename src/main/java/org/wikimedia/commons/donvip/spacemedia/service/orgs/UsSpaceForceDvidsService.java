@@ -18,10 +18,6 @@ public class UsSpaceForceDvidsService extends AbstractOrgDvidsService {
         super(repository, "usspaceforce.dvids", dvidsUnits, minYear);
     }
 
-    public final void checkDvidsCategories() {
-        checkCommonsCategories(KEYWORDS_CATS);
-    }
-
     @Override
     public String getName() {
         return "U.S. Space Force/Command (DVIDS)";

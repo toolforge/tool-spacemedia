@@ -253,6 +253,11 @@ public abstract class AbstractOrgService<T extends Media>
         return activeProfiles.stream().anyMatch(p -> "web".equals(p) || ("job-" + getId().replace('.', '-')).equals(p));
     }
 
+    @Override
+    public void checkCommonsCategories() {
+        // To be overriden if applicable
+    }
+
     /**
      * Checks that given Commons categories exist and are not redirected. Otherwise, log a warning.
      *

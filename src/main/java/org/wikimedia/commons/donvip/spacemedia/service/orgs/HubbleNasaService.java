@@ -62,7 +62,8 @@ public class HubbleNasaService extends AbstractOrgStsciService {
         return "Hubble (NASA)";
     }
 
-    public void checkHubbleCategories() {
+    @Override
+    public void checkCommonsCategories() {
         checkCommonsCategories(hubbleCategories);
     }
 

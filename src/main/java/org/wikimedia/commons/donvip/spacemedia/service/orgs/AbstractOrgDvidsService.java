@@ -115,6 +115,11 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
+    public final void checkCommonsCategories() {
+        checkCommonsCategories(KEYWORDS_CATS);
+    }
+
+    @Override
     public void updateMedia(String[] args) {
         LocalDateTime start = startUpdateMedia();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
