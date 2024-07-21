@@ -105,7 +105,8 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
         dpTypes = loadCsvMapping("djangoplicity.types.csv");
     }
 
-    public void checkEsoCategories() {
+    @Override
+    public void checkCommonsCategories() {
         checkCommonsCategories(dpCategories);
         checkCommonsCategories(dpTypes);
     }

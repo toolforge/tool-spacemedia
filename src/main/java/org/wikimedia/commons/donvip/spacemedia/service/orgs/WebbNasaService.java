@@ -66,7 +66,8 @@ public class WebbNasaService extends AbstractOrgStsciService {
         return "Webb (NASA)";
     }
 
-    public void checkWebbCategories() {
+    @Override
+    public void checkCommonsCategories() {
         checkCommonsCategories(webbCategories);
     }
 

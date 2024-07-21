@@ -25,6 +25,8 @@ import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 
 public interface Org<T extends Media> {
 
+    void checkCommonsCategories();
+
     void evictCaches();
 
     long countAllMedia();

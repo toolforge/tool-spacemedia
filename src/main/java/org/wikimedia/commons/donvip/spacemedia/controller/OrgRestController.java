@@ -418,6 +418,11 @@ public abstract class OrgRestController<T extends Media> {
         service.evictCaches();
     }
 
+    @GetMapping("/checkcategories")
+    public final void checkCommonsCategories() {
+        service.checkCommonsCategories();
+    }
+
     /**
      * STScI ids contain slashes so we cannot use {@link RequestParam} for ids.
      *

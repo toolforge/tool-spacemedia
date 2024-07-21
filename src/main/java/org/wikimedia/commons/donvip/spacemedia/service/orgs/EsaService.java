@@ -101,7 +101,8 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         esaSystems = loadCsvMapping("esa.systems.csv");
     }
 
-    public void checkEsaCategories() {
+    @Override
+    public void checkCommonsCategories() {
         checkCommonsCategories(esaLocations);
         checkCommonsCategories(esaMissions);
         checkCommonsCategories(esaPeople);
