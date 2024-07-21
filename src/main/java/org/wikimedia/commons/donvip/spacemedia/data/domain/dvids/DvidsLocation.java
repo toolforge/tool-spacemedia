@@ -4,15 +4,15 @@ import static java.util.stream.Collectors.joining;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-
-import org.apache.commons.lang3.StringUtils;
 
 @Embeddable
 public class DvidsLocation {
 
-    @Column(length = 48)
+    @Column(length = 96)
     private String city;
 
     @Column(length = 48)
