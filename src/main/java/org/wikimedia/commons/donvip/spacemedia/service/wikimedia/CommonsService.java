@@ -6,6 +6,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.time.temporal.TemporalQueries.localDate;
 import static java.util.Locale.ENGLISH;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
@@ -866,7 +867,7 @@ public class CommonsService {
     }
 
     public static String formatWikiCode(String badWikiCode) {
-        return replaceLinks(badWikiCode, "[$1 $2]").replace("|", "{{!}}");
+        return ofNullable(replaceLinks(badWikiCode, "[$1 $2]")).orElse("").replace("|", "{{!}}");
     }
 
     private static String replaceLinks(String text, String replacement) {

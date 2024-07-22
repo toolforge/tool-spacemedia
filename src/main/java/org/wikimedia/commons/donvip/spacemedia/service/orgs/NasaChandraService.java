@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
@@ -368,7 +369,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
                     }
                 }
             } else {
-                Element image = nextSiblingWithClass(number, "more_image");
+                Element image = requireNonNull(nextSiblingWithClass(number, "more_image"));
                 moreMedia.setThumbnailUrl(
                         newURL(newChandraUrl(url, image.getElementsByTag("img").first().attr("href"))));
                 Element moreCaption = nextSiblingWithClass(image, "more_caption");

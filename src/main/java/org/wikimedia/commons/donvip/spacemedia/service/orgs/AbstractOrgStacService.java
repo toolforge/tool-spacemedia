@@ -110,7 +110,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
     public static Optional<String> getOtherFieldBoundingBox(ObjectMapper jackson, URL stacItemUrl) {
         StringBuilder sb = new StringBuilder();
         try {
-            Double[] bb = jackson.readValue(stacItemUrl, StacItem.class).bbox();
+            Double[] bb = jackson.readValue(stacItemUrl, StacItem.class).bbox().toArray(new Double[] {});
             addOtherField(sb, "Bounding box",
                     "{{Map/bbox|longitude=" + bb[0] + "/" + bb[2] + "|latitude=" + bb[1] + "/" + bb[3] + "}}");
         } catch (IOException | RuntimeException e) {
@@ -256,8 +256,8 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @JsonIgnoreProperties(ignoreUnknown = true)
     protected static record StacItem(String type, String stacVersion, String id, StacProperties properties,
-            StacGeometry geometry, List<StacLink> links, StacAssets assets, Double[] bbox, List<String> stacExtensions,
-            String collection) {
+            StacGeometry geometry, List<StacLink> links, StacAssets assets, List<Double> bbox,
+            List<String> stacExtensions, String collection) {
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
