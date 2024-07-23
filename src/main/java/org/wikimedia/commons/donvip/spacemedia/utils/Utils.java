@@ -90,6 +90,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -378,10 +379,9 @@ public final class Utils {
      * @return the output
      * @throws IOException          when there was an error, e.g. command does not exist
      * @throws ExecutionException   when the return code is != 0. The output is can be retrieved in the exception message
-     * @throws InterruptedException if the current thread is {@linkplain Thread#interrupt() interrupted} by another thread while waiting
      */
     public static String execOutput(List<String> command, long timeout, TimeUnit unit)
-            throws IOException, ExecutionException, InterruptedException {
+            throws IOException, ExecutionException {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.join(" ", command));
         }
@@ -395,6 +395,10 @@ public final class Utils {
                 throw new ExecutionException(command.toString() + " => " + output, null);
             }
             return output;
+        } catch (InterruptedException e) {
+            GlitchTip.capture(e);
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
         } finally {
             try {
                 Files.delete(out);
@@ -527,5 +531,15 @@ public final class Utils {
         context.setCookieStore(cookieStore);
         context.setRequestConfig(RequestConfig.custom().setCookieSpec(StandardCookieSpec.STRICT).build());
         return context;
+    }
+
+    public static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage(), e);
+            Thread.currentThread().interrupt();
+            GlitchTip.capture(e);
+        }
     }
 }

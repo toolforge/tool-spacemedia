@@ -44,6 +44,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.core.httpclient.multipart.BodyPartPayload;
@@ -260,16 +261,11 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
 
     protected <M> M postMedia(MediaUploadContext muc, BiFunction<MediaUploadContext, byte[], M> poster)
             throws IOException, URISyntaxException {
-        try {
-            return postMedia(muc, poster, 10);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IOException(e);
-        }
+        return postMedia(muc, poster, 10);
     }
 
     private <M> M postMedia(MediaUploadContext muc, BiFunction<MediaUploadContext, byte[], M> poster, int retryCount)
-            throws IOException, URISyntaxException, InterruptedException {
+            throws IOException, URISyntaxException {
         LOGGER.info("Uploading media for file {} resolved to URL {}", muc.filename, muc.url);
         try (CloseableHttpClient httpclient = HttpClients.custom().setUserAgent(commonsService.getUserAgent()).build();
                 ClassicHttpResponse response = executeRequest(newHttpGet(muc.url.toURI()), httpclient, null, false);
@@ -278,12 +274,12 @@ public abstract class AbstractSocialMediaService<S extends OAuthService, T exten
                 String message = muc.url.toURI().toString() + " -> " + response;
                 if (retryCount > 0) {
                     LOGGER.warn("{}, {} retry attempts remaining", message, retryCount);
-                    Thread.sleep(2000);
+                    Utils.sleep(2000);
                     return postMedia(muc, poster, retryCount - 1);
                 }
                 throw new IOException(message);
             }
-            Thread.sleep(500);
+            Utils.sleep(500);
             return poster.apply(muc, in.readAllBytes());
         }
     }

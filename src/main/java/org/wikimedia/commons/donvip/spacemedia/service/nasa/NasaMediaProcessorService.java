@@ -61,6 +61,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaResp
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.Geo;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -113,15 +114,9 @@ public class NasaMediaProcessorService {
     void ensureApiLimit() {
         LocalDateTime fourSecondsAgo = now().minus(DELAY, ChronoUnit.MILLIS);
         if (lastRequest != null && lastRequest.isAfter(fourSecondsAgo)) {
-            try {
-                long millis = MILLIS.between(now(), lastRequest.plus(DELAY, ChronoUnit.MILLIS));
-                LOGGER.info("Sleeping {} ms to conform to NASA API limit policy", millis);
-                Thread.sleep(millis);
-            } catch (InterruptedException e) {
-                LOGGER.error(e.getMessage(), e);
-                Thread.currentThread().interrupt();
-                GlitchTip.capture(e);
-            }
+            long millis = MILLIS.between(now(), lastRequest.plus(DELAY, ChronoUnit.MILLIS));
+            LOGGER.info("Sleeping {} ms to conform to NASA API limit policy", millis);
+            Utils.sleep(millis);
         }
         lastRequest = now();
     }

@@ -173,6 +173,7 @@ import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.HashHelper;
 import org.wikimedia.commons.donvip.spacemedia.utils.ImageUtils;
 import org.wikimedia.commons.donvip.spacemedia.utils.MediaUtils;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.github.scribejava.apis.MediaWikiApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
@@ -1281,11 +1282,7 @@ public class CommonsService {
     private void ensureUploadRate() throws UploadException {
         LocalDateTime fiveSecondsAgo = now().minusSeconds(DELAY);
         if (lastUpload != null && lastUpload.isAfter(fiveSecondsAgo)) {
-            try {
-                Thread.sleep(DELAY - SECONDS.between(now(), lastUpload.plusSeconds(DELAY)));
-            } catch (InterruptedException e) {
-                throw new UploadException(e);
-            }
+            Utils.sleep(DELAY - SECONDS.between(now(), lastUpload.plusSeconds(DELAY)));
         }
         lastUpload = now();
     }

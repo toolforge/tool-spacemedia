@@ -47,6 +47,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTas
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Video2CommonsTaskRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgService;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -269,11 +270,7 @@ public class Video2CommonsService {
                 task.setText(status.text());
                 task.setLastChecked(ZonedDateTime.now());
             }
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            LOGGER.error(e.getMessage(), e);
-            GlitchTip.capture(e);
-            Thread.currentThread().interrupt();
+            Utils.sleep(1000);
         } catch (IOException e) {
             LOGGER.warn("{}", e.getMessage());
         }

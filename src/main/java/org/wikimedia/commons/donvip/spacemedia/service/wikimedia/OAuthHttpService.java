@@ -78,7 +78,11 @@ public class OAuthHttpService {
             } else {
                 throw e;
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (ExecutionException e) {
+            throw new IOException(e);
+        } catch (InterruptedException e) {
+            GlitchTip.capture(e);
+            Thread.currentThread().interrupt();
             throw new IOException(e);
         }
     }

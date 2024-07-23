@@ -317,9 +317,6 @@ public class MediaUtils {
             }
             return new ContentsAndMetadata<>(new ImageDimensions(width, height), contentLength.getAsLong(), filename,
                     extension, 1, null);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IOException(e);
         } catch (ExecutionException e) {
             throw new IOException(e);
         }
@@ -342,7 +339,7 @@ public class MediaUtils {
                 return Paths.get(matcher.get().group(1));
             }
             LOGGER.warn("Youtube video not downloaded?");
-        } catch (IOException | ExecutionException | InterruptedException e) {
+        } catch (IOException | ExecutionException e) {
             LOGGER.error("Error while downloading YouTube video: {}", e.getMessage());
             GlitchTip.capture(e);
         }

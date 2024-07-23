@@ -146,9 +146,6 @@ public class ImageUtils {
             } finally {
                 Files.delete(pngFile);
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IOException(e);
         } catch (ExecutionException e) {
             throw new IOException(e);
         } finally {
