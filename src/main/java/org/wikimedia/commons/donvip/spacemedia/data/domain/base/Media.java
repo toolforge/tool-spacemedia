@@ -185,17 +185,21 @@ public class Media implements MediaProjection, MediaDescription {
         String uid = getUploadId(fileMetadata);
         String s = getUploadTitle();
         if (strippedLower(uid).equals(strippedLower(s))) {
-            return isTitleBlacklisted(s)
+            return isWrongtitle(s)
                     ? getUploadTitle(
                             normalizeFilename(
                                     getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata)))),
                             uid)
                     : stringShortened(s, "");
         } else {
-            return getUploadTitle(isTitleBlacklisted(s)
+            return getUploadTitle(isWrongtitle(s)
                     ? normalizeFilename(getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata))))
                     : s, uid);
         }
+    }
+
+    private static boolean isWrongtitle(String s) {
+        return isTitleBlacklisted(s) || ("n-a".equals(s.replace('/', '-').toLowerCase(ENGLISH)));
     }
 
     @Transient
