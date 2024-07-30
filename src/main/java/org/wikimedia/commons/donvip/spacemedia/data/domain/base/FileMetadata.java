@@ -440,7 +440,9 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JsonIgnore
     public boolean shouldRead() {
         return readable == null || (Boolean.TRUE == readable
-                && (!hasSha1() || hasMissingSize() || isBlank(getExtension()) || isBlank(getOriginalFileName())
+                && (!hasSha1() || hasMissingSize() || isBlank(getExtension())
+                        || (isBlank(getOriginalFileName())
+                                && !assetUrl.toString().startsWith("https://www.flickr.com/video_download.gne?"))
                         || (isImage() && !hasPhash()) || (!isAudio() && !hasValidDimensions())))
                 || (Boolean.TRUE == assumedReadable
                         && (hasMissingSize() || isBlank(getExtension()) || isBlank(getOriginalFileName())));
