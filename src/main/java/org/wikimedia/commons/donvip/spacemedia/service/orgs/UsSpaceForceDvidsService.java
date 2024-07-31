@@ -14,8 +14,10 @@ public class UsSpaceForceDvidsService extends AbstractOrgDvidsService {
     @Autowired
     public UsSpaceForceDvidsService(DvidsMediaRepository<DvidsMedia> repository,
             @Value("${usspaceforce.dvids.units}") Set<String> dvidsUnits,
-            @Value("${usspaceforce.dvids.min.year}") int minYear) {
-        super(repository, "usspaceforce.dvids", dvidsUnits, minYear);
+            @Value("${usspaceforce.dvids.countries:*}") Set<String> dvidsCountries,
+            @Value("${usspaceforce.dvids.min.year}") int minYear,
+            @Value("${usspaceforce.dvids.blocklist:true}") boolean blocklist) {
+        super(repository, "usspaceforce.dvids", dvidsUnits, dvidsCountries, minYear, blocklist);
     }
 
     @Override
