@@ -13,11 +13,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,7 +40,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsLocation;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
@@ -83,10 +82,10 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     private String apiKey;
 
     @Value("${dvids.api.search.url}")
-    private UriTemplate searchApiEndpoint;
+    private String searchApiEndpoint;
 
     @Value("${dvids.api.search.year.url}")
-    private UriTemplate searchYearApiEndpoint;
+    private String searchYearApiEndpoint;
 
     @Value("${dvids.api.asset.url}")
     private UriTemplate assetApiEndpoint;
@@ -97,11 +96,18 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     @Value("${dvids.ignored.categories}")
     private Set<String> ignoredCategories;
 
+    private final Set<String> countries;
+
     private final int minYear;
 
-    protected AbstractOrgDvidsService(DvidsMediaRepository<DvidsMedia> repository, String id, Set<String> units, int minYear) {
+    private final boolean blocklist;
+
+    protected AbstractOrgDvidsService(DvidsMediaRepository<DvidsMedia> repository, String id, Set<String> units,
+            Set<String> countries, int minYear, boolean blocklist) {
         super(repository, id, units);
+        this.countries = countries;
         this.minYear = minYear;
+        this.blocklist = blocklist;
     }
 
     @Override
@@ -110,8 +116,8 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
-    protected Class<DvidsImage> getTopTermsMediaClass() {
-        return DvidsImage.class; // TODO can't get a direct lucene reader on DvidsMedia
+    protected boolean checkBlocklist() {
+        return blocklist;
     }
 
     @Override
@@ -129,16 +135,18 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         for (int year = LocalDateTime.now().getYear(); year >= minYear
                 && (doNotFetchEarlierThan == null || year >= doNotFetchEarlierThan.getYear()); year--) {
             for (String unit : getRepoIdsFromArgs(args)) {
-                Pair<Integer, Collection<DvidsMedia>> update = updateDvidsMedia(unit, year, DvidsMediaType.image,
-                        idsKnownToDvidsApi);
-                uploadedMedia.addAll(update.getRight());
-                count += update.getLeft();
-                ongoingUpdateMedia(start, count);
-                if (videosEnabled) {
-                    update = updateDvidsMedia(unit, year, DvidsMediaType.video, idsKnownToDvidsApi);
+                for (String country : countries) {
+                    Pair<Integer, Collection<DvidsMedia>> update = updateDvidsMedia(unit, country, year,
+                            DvidsMediaType.image, idsKnownToDvidsApi);
                     uploadedMedia.addAll(update.getRight());
                     count += update.getLeft();
                     ongoingUpdateMedia(start, count);
+                    if (videosEnabled) {
+                        update = updateDvidsMedia(unit, country, year, DvidsMediaType.video, idsKnownToDvidsApi);
+                        uploadedMedia.addAll(update.getRight());
+                        count += update.getLeft();
+                        ongoingUpdateMedia(start, count);
+                    }
                 }
             }
         }
@@ -165,8 +173,8 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         }
     }
 
-    private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, int year, DvidsMediaType type,
-            Set<String> idsKnownToDvidsApi) {
+    private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, String country, int year,
+            DvidsMediaType type, Set<String> idsKnownToDvidsApi) {
         RestTemplate rest = new RestTemplate();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
@@ -175,24 +183,25 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             int page = 1;
             LocalDateTime start = LocalDateTime.now();
             count = 0;
-            LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/?)...", type, unit, year, page);
+            LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {} (page {}/?)...", type, unit,
+                    country, year, page);
             while (loop) {
                 DvidsUpdateResult ur = doUpdateDvidsMedia(rest,
-                        searchDvidsMediaIds(rest, true, type, unit, year, page++), unit);
+                        searchDvidsMediaIds(rest, true, type, unit, country, year, page++), unit);
                 idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                 uploadedMedia.addAll(ur.uploadedMedia);
                 count += ur.count;
                 ongoingUpdateMedia(start, unit, count);
                 loop = count < ur.totalResults;
                 if (loop) {
-                    LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/{})...", type, unit, year, page,
-                            ur.numberOfPages());
+                    LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {} (page {}/{})...", type,
+                            unit, country, year, page, ur.numberOfPages());
                 }
             }
-            LOGGER.info("{} {}s for year {} completed: {} {}s in {}", unit, type, year, count, type,
+            LOGGER.info("{}/{} {}s for year {} completed: {} {}s in {}", unit, country, type, year, count, type,
                     Utils.durationInSec(start));
         } catch (ApiException | TooManyResultsException exx) {
-            LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
+            LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit + " / country " + country, exx);
             GlitchTip.capture(exx);
         }
         return Pair.of(count, uploadedMedia);
@@ -250,35 +259,43 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     private ApiSearchResponse searchDvidsMediaIds(RestTemplate rest, boolean allowCappedResults, DvidsMediaType type,
-            String unit, int year, int page)
+            String unit, String country, int year, int page)
             throws ApiException, TooManyResultsException {
-        Map<String, Object> variables = Map.of("api_key", apiKey, "type", type, "unit", unit, "page", page);
-        ApiSearchResponse response;
-        if (year <= 0) {
-            response = rest.getForObject(searchApiEndpoint.expand(variables), ApiSearchResponse.class);
+        Map<String, Object> variables = new TreeMap<>(Map.of("api_key", apiKey, "type", type, "page", page));
+        String template = year <= 0 ? searchApiEndpoint : searchYearApiEndpoint;
+        if ("*".equals(unit)) {
+            template = template.replace("&unit={unit}", "");
         } else {
-            variables = new HashMap<>(variables);
+            variables.put("unit", unit);
+        }
+        if ("*".equals(country)) {
+            template = template.replace("&country={country}", "");
+        } else {
+            variables.put("country", country);
+        }
+        if (year > 0) {
             variables.put("from_date", year + "-01-01T00:00:00Z");
             variables.put("to_date", year + "-12-31T23:59:59Z");
-            response = rest.getForObject(searchYearApiEndpoint.expand(variables), ApiSearchResponse.class);
         }
+        ApiSearchResponse response = rest.getForObject(new UriTemplate(template).expand(variables),
+                ApiSearchResponse.class);
         if (response == null || response.getErrors() != null) {
             throw new ApiException(
                     String.format("API error while fetching DVIDS %ss from unit '%s': %s", type, unit, response));
         }
         ApiPageInfo pageInfo = response.getPageInfo();
         if (pageInfo.getTotalResults() == MAX_RESULTS) {
-            String msg = String.format("Incomplete search! More criteria must be defined for %ss of '%s' (%d)!",
-                    type, unit, year);
+            String msg = String.format("Incomplete search! More criteria must be defined for %ss of '%s'/'%s' (%d)!",
+                    type, unit, country, year);
             if (allowCappedResults) {
                 LOGGER.warn(msg);
             } else {
                 throw new TooManyResultsException(msg);
             }
         } else if (pageInfo.getTotalResults() == 0) {
-            LOGGER.warn("No {} for {} in year {}", type, unit, year);
+            LOGGER.warn("No {} for {}/{} in year {}", type, unit, country, year);
         } else if (page == 1) {
-            LOGGER.debug("{} {}s to process for {}", pageInfo.getTotalResults(), type, unit);
+            LOGGER.debug("{} {}s to process for {}/{}", pageInfo.getTotalResults(), type, unit, country);
         }
         return response;
     }
