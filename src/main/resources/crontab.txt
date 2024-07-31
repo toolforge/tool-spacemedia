@@ -43,5 +43,6 @@
 00 14 * * * /bin/sh /data/project/spacemedia/run.sh custom noaa-nesdis
 05 14 * * * /bin/sh /data/project/spacemedia/run.sh custom noaa-library
 10 14 * * * /bin/sh /data/project/spacemedia/run.sh custom dinamis
+10 14 * * * /bin/sh /data/project/spacemedia/run.sh dvids usmilfrance-dvids
 # Hashes
-15 14 * * * /bin/sh /data/project/spacemedia/run.sh web
+20 14 * * * /bin/sh /data/project/spacemedia/run.sh web
