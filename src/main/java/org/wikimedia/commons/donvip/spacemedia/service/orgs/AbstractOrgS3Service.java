@@ -60,11 +60,6 @@ public abstract class AbstractOrgS3Service extends AbstractOrgService<S3Media> {
         return S3Media.class;
     }
 
-    @Override
-    protected Class<S3Media> getTopTermsMediaClass() {
-        return S3Media.class;
-    }
-
     protected final S3Object getS3Object(CompositeMediaId mediaId) {
         return getS3Object(mediaId.getRepoId(), mediaId.getMediaId());
     }
