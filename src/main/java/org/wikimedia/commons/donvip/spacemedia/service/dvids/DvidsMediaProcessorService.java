@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -69,6 +70,7 @@ public class DvidsMediaProcessorService {
     @Transactional
     public Pair<DvidsMedia, Integer> processDvidsMedia(Supplier<Optional<DvidsMedia>> dbFetcher,
             Supplier<DvidsMedia> apiFetcher, Predicate<DvidsMedia> processDvidsMediaUpdater,
+            Consumer<DvidsMedia> checkRemoteMedia,
             BiPredicate<DvidsMedia, Boolean> shouldUploadAuto,
             Function<DvidsMedia, Triple<DvidsMedia, Collection<FileMetadata>, Integer>> uploader) {
         DvidsMedia media = null;
@@ -89,7 +91,7 @@ public class DvidsMediaProcessorService {
             media = upload.getLeft();
             save = true;
         }
-        return Pair.of(save ? save(media) : media, uploadCount);
+        return Pair.of(save ? saveAndCheckRemoteMedia(media, checkRemoteMedia) : media, uploadCount);
     }
 
     protected boolean updateCategoryAndCdnUrls(DvidsMedia media, Supplier<DvidsMedia> apiFetcher) {
@@ -135,5 +137,11 @@ public class DvidsMediaProcessorService {
             return webcastRepository.save((DvidsWebcast) media);
         }
         throw new IllegalArgumentException(media.toString());
+    }
+
+    private DvidsMedia saveAndCheckRemoteMedia(DvidsMedia media, Consumer<DvidsMedia> checkRemoteMedia) {
+        media = save(media);
+        checkRemoteMedia.accept(media);
+        return media;
     }
 }

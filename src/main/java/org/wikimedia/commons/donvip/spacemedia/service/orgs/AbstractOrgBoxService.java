@@ -58,11 +58,6 @@ public abstract class AbstractOrgBoxService extends AbstractOrgService<BoxMedia>
     }
 
     @Override
-    protected Class<BoxMedia> getTopTermsMediaClass() {
-        return BoxMedia.class;
-    }
-
-    @Override
     protected UrlResolver<BoxMedia> getUrlResolver() {
         return (media, metadata) -> {
             try {
