@@ -131,11 +131,6 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
     }
 
     @Override
-    protected Class<NasaImage> getTopTermsMediaClass() {
-        return NasaImage.class; // TODO can't get a direct lucene reader on NasaMedia
-    }
-
-    @Override
     public NasaMedia saveMedia(NasaMedia media) {
         LOGGER.info("Saving {}", media);
         if (media.getPublicationDateTime() == null) {

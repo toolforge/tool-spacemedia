@@ -26,11 +26,14 @@ public class SpacemediaOrgDvidsUpdateJobApplication extends AbstractSpacemediaOr
     @Bean
     @SuppressWarnings("unchecked")
     public Org<DvidsMedia> org(@Value("${org}") String org,
-            @Value("${dvids.units}") Set<String> dvidsUnits, @Value("${dvids.min.year}") int minYear,
+            @Value("${dvids.units:*}") Set<String> dvidsUnits,
+            @Value("${dvids.countries:*}") Set<String> dvidsCountries,
+            @Value("${dvids.min.year}") int minYear,
+            @Value("${dvids.blocklist:true}") boolean blocklist,
             @Autowired DvidsMediaRepository<DvidsMedia> repository,
             ApplicationContext context) throws ReflectiveOperationException {
         return (Org<DvidsMedia>) Class.forName(org)
-                .getConstructor(DvidsMediaRepository.class, Set.class, int.class)
-                .newInstance(repository, dvidsUnits, minYear);
+                .getConstructor(DvidsMediaRepository.class, Set.class, Set.class, int.class, boolean.class)
+                .newInstance(repository, dvidsUnits, dvidsCountries, minYear, blocklist);
     }
 }
