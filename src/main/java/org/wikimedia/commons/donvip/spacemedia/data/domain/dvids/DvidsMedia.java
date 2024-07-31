@@ -55,7 +55,7 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
     /**
      * Full name of unit credited with media asset.
      */
-    @Column(length = 64)
+    @Column(length = 80)
     @JsonProperty("unit_name")
     private String unitName;
 
