@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 
 import java.io.IOException;
@@ -10,14 +11,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.ToLongFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpClientErrorException.BadRequest;
@@ -40,20 +45,18 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsImage;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsLocation;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaType;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiAssetResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiPageInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResponse;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResult;
 import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.dvids.DvidsMediaProcessorService;
+import org.wikimedia.commons.donvip.spacemedia.service.dvids.DvidsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
@@ -68,8 +71,6 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     private static final Pattern US_MEDIA_BY = Pattern
             .compile(".*\\((U\\.S\\. .+ (?:photo|graphic|video) by )[^\\)]+\\)", Pattern.DOTALL);
 
-    private static final int MAX_RESULTS = 1000;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgDvidsService.class);
 
     protected static final Map<String, String> KEYWORDS_CATS = loadCsvMapping(
@@ -79,17 +80,9 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     @Autowired
     private DvidsMediaProcessorService dvidsProcessor;
 
-    @Value("${dvids.api.key}")
-    private String apiKey;
-
-    @Value("${dvids.api.search.url}")
-    private UriTemplate searchApiEndpoint;
-
-    @Value("${dvids.api.search.year.url}")
-    private UriTemplate searchYearApiEndpoint;
-
-    @Value("${dvids.api.asset.url}")
-    private UriTemplate assetApiEndpoint;
+    @Lazy
+    @Autowired
+    private DvidsService dvids;
 
     @Value("${dvids.media.url}")
     private UriTemplate mediaUrl;
@@ -97,11 +90,21 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     @Value("${dvids.ignored.categories}")
     private Set<String> ignoredCategories;
 
+    private final DvidsMediaRepository<DvidsMedia> dvidsRepository;
+
+    private final Set<String> countries;
+
     private final int minYear;
 
-    protected AbstractOrgDvidsService(DvidsMediaRepository<DvidsMedia> repository, String id, Set<String> units, int minYear) {
+    private final boolean blocklist;
+
+    protected AbstractOrgDvidsService(DvidsMediaRepository<DvidsMedia> repository, String id, Set<String> units,
+            Set<String> countries, int minYear, boolean blocklist) {
         super(repository, id, units);
+        this.dvidsRepository = repository;
+        this.countries = countries;
         this.minYear = minYear;
+        this.blocklist = blocklist;
     }
 
     @Override
@@ -110,8 +113,8 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
-    protected Class<DvidsImage> getTopTermsMediaClass() {
-        return DvidsImage.class; // TODO can't get a direct lucene reader on DvidsMedia
+    protected boolean checkBlocklist() {
+        return blocklist;
     }
 
     @Override
@@ -128,17 +131,22 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
         for (int year = LocalDateTime.now().getYear(); year >= minYear
                 && (doNotFetchEarlierThan == null || year >= doNotFetchEarlierThan.getYear()); year--) {
-            for (String unit : getRepoIdsFromArgs(args)) {
-                Pair<Integer, Collection<DvidsMedia>> update = updateDvidsMedia(unit, year, DvidsMediaType.image,
-                        idsKnownToDvidsApi);
-                uploadedMedia.addAll(update.getRight());
-                count += update.getLeft();
-                ongoingUpdateMedia(start, count);
-                if (videosEnabled) {
-                    update = updateDvidsMedia(unit, year, DvidsMediaType.video, idsKnownToDvidsApi);
-                    uploadedMedia.addAll(update.getRight());
-                    count += update.getLeft();
-                    ongoingUpdateMedia(start, count);
+            for (int month = year == Year.now().getValue() ? YearMonth.now().getMonthValue() : 12; month > 0; month--) {
+                for (String unit : getRepoIdsFromArgs(args)) {
+                    for (String country : countries) {
+                        Pair<Integer, Collection<DvidsMedia>> update = updateDvidsMedia(unit, country, year,
+                                month, DvidsMediaType.image, idsKnownToDvidsApi);
+                        uploadedMedia.addAll(update.getRight());
+                        count += update.getLeft();
+                        ongoingUpdateMedia(start, count);
+                        if (videosEnabled) {
+                            update = updateDvidsMedia(unit, country, year, month, DvidsMediaType.video,
+                                    idsKnownToDvidsApi);
+                            uploadedMedia.addAll(update.getRight());
+                            count += update.getLeft();
+                            ongoingUpdateMedia(start, count);
+                        }
+                    }
                 }
             }
         }
@@ -165,8 +173,8 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         }
     }
 
-    private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, int year, DvidsMediaType type,
-            Set<String> idsKnownToDvidsApi) {
+    private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, String country, int year, int month,
+            DvidsMediaType type, Set<String> idsKnownToDvidsApi) {
         RestTemplate rest = new RestTemplate();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
@@ -175,24 +183,25 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             int page = 1;
             LocalDateTime start = LocalDateTime.now();
             count = 0;
-            LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/?)...", type, unit, year, page);
+            LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {}-{} (page {}/?)...", type, unit,
+                    country, year, month, page);
             while (loop) {
                 DvidsUpdateResult ur = doUpdateDvidsMedia(rest,
-                        searchDvidsMediaIds(rest, true, type, unit, year, page++), unit);
+                        dvids.searchDvidsMediaIds(true, type, unit, country, year, month, page++), unit);
                 idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                 uploadedMedia.addAll(ur.uploadedMedia);
                 count += ur.count;
                 ongoingUpdateMedia(start, unit, count);
                 loop = count < ur.totalResults;
                 if (loop) {
-                    LOGGER.info("Fetching DVIDS {}s from unit '{}' for year {} (page {}/{})...", type, unit, year, page,
-                            ur.numberOfPages());
+                    LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {}-{} (page {}/{})...", type,
+                            unit, country, year, month, page, ur.numberOfPages());
                 }
             }
-            LOGGER.info("{} {}s for year {} completed: {} {}s in {}", unit, type, year, count, type,
-                    Utils.durationInSec(start));
+            LOGGER.info("{}/{} {}s for year {}-{} completed: {} {}s in {}", unit, country, type, year, month, count,
+                    type, Utils.durationInSec(start));
         } catch (ApiException | TooManyResultsException exx) {
-            LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit, exx);
+            LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit + " / country " + country, exx);
             GlitchTip.capture(exx);
         }
         return Pair.of(count, uploadedMedia);
@@ -203,12 +212,12 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         LocalDateTime start = LocalDateTime.now();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
-        for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted().toList()) {
+        for (CompositeMediaId id : response.getResults().stream().map(x -> x.toCompositeMediaId(dvids)).distinct()
+                .sorted().toList()) {
             try {
-                idsKnownToDvidsApi.add(id);
+                idsKnownToDvidsApi.add(id.getMediaId());
                 Pair<DvidsMedia, Integer> result = dvidsProcessor.processDvidsMedia(
-                        () -> repository.findById(new CompositeMediaId(unit, id)),
-                        () -> getMediaFromApi(rest, id, unit),
+                        () -> repository.findById(id), () -> dvids.getMediaFromApi(id),
                         media -> processDvidsMediaUpdate(media, false).result(), this::shouldUploadAuto,
                         this::uploadWrapped);
                 if (result.getValue() > 0) {
@@ -216,29 +225,20 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                 }
                 ongoingUpdateMedia(start, unit, count++);
             } catch (HttpClientErrorException e) {
-                LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
+                LOGGER.error("API error while processing DVIDS {}: {}", id, smartExceptionLog(e));
                 GlitchTip.capture(e);
             } catch (DataAccessException e) {
-                LOGGER.error("DAO error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
+                LOGGER.error("DAO error while processing DVIDS {}: {}", id, smartExceptionLog(e));
                 GlitchTip.capture(e);
             } catch (RuntimeException e) {
-                LOGGER.error("Error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
+                LOGGER.error("Error while processing DVIDS {}: {}", id, smartExceptionLog(e));
                 GlitchTip.capture(e);
             }
         }
         ApiPageInfo pi = response.getPageInfo();
-        return new DvidsUpdateResult(pi.getResultsPerPage(), pi.getTotalResults(), count, uploadedMedia,
-                idsKnownToDvidsApi);
+        return new DvidsUpdateResult(pi.resultsPerPage(), pi.totalResults(), count, uploadedMedia, idsKnownToDvidsApi);
     }
 
-    private DvidsMedia getMediaFromApi(RestTemplate rest, String id, String unit) {
-        DvidsMedia media = ofNullable(
-                rest.getForObject(assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)), ApiAssetResponse.class))
-                .orElseThrow(() -> new IllegalArgumentException("No result from DVIDS API for " + id))
-                .getResults();
-        media.setId(new CompositeMediaId(unit, id));
-        return media;
-    }
 
     private static record DvidsUpdateResult(
             int resultsPerPage, int totalResults, int count, Collection<DvidsMedia> uploadedMedia,
@@ -247,40 +247,6 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         public int numberOfPages() {
             return (int) Math.ceil((double) totalResults / (double) resultsPerPage);
         }
-    }
-
-    private ApiSearchResponse searchDvidsMediaIds(RestTemplate rest, boolean allowCappedResults, DvidsMediaType type,
-            String unit, int year, int page)
-            throws ApiException, TooManyResultsException {
-        Map<String, Object> variables = Map.of("api_key", apiKey, "type", type, "unit", unit, "page", page);
-        ApiSearchResponse response;
-        if (year <= 0) {
-            response = rest.getForObject(searchApiEndpoint.expand(variables), ApiSearchResponse.class);
-        } else {
-            variables = new HashMap<>(variables);
-            variables.put("from_date", year + "-01-01T00:00:00Z");
-            variables.put("to_date", year + "-12-31T23:59:59Z");
-            response = rest.getForObject(searchYearApiEndpoint.expand(variables), ApiSearchResponse.class);
-        }
-        if (response == null || response.getErrors() != null) {
-            throw new ApiException(
-                    String.format("API error while fetching DVIDS %ss from unit '%s': %s", type, unit, response));
-        }
-        ApiPageInfo pageInfo = response.getPageInfo();
-        if (pageInfo.getTotalResults() == MAX_RESULTS) {
-            String msg = String.format("Incomplete search! More criteria must be defined for %ss of '%s' (%d)!",
-                    type, unit, year);
-            if (allowCappedResults) {
-                LOGGER.warn(msg);
-            } else {
-                throw new TooManyResultsException(msg);
-            }
-        } else if (pageInfo.getTotalResults() == 0) {
-            LOGGER.warn("No {} for {} in year {}", type, unit, year);
-        } else if (page == 1) {
-            LOGGER.debug("{} {}s to process for {}", pageInfo.getTotalResults(), type, unit);
-        }
-        return response;
     }
 
     private MediaUpdateResult<DvidsMedia> processDvidsMediaUpdate(DvidsMedia media, boolean forceUpdate) {
@@ -318,8 +284,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         // DVIDS API Terms of Service force us to check for deleted content
         // https://api.dvidshub.net/docs/tos
         try {
-            return media.copyDataFrom(
-                    getMediaFromApi(new RestTemplate(), media.getId().getMediaId(), media.getId().getRepoId()));
+            return media.copyDataFrom(dvids.getMediaFromApi(media.getId()));
         } catch (IllegalArgumentException e) {
             String message = e.getMessage();
             if (message != null && message.startsWith("No result from DVIDS API for ")) {
@@ -436,5 +401,244 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         Set<String> result = super.getTwitterAccounts(uploadedMedia);
         result.add(UnitedStates.getUsMilitaryTwitterAccount(uploadedMedia));
         return result;
+    }
+
+    private boolean byCountry() {
+        return Set.of("*").equals(getRepoIds());
+    }
+
+    private long count(ToLongFunction<Set<String>> a, ToLongFunction<Set<String>> b, Set<String> set) {
+        return byCountry() ? a.applyAsLong(set) : b.applyAsLong(set);
+    }
+
+    @Override
+    public long countAllMedia() {
+        return byCountry() ? dvidsRepository.countByCountry(countries) : repository.count(getRepoIds());
+    }
+
+    @Override
+    public long countAllMedia(String roc) {
+        return isBlank(roc) ? countAllMedia() : count(dvidsRepository::countByCountry, repository::count, Set.of(roc));
+    }
+
+    @Override
+    public long countIgnored() {
+        return byCountry() ? dvidsRepository.countByMetadata_IgnoredTrueByCountry(countries)
+                : repository.countByMetadata_IgnoredTrue(getRepoIds());
+    }
+
+    @Override
+    public long countIgnored(String roc) {
+        return isBlank(roc) ? countIgnored()
+                : count(dvidsRepository::countByMetadata_IgnoredTrueByCountry, repository::countByMetadata_IgnoredTrue,
+                        Set.of(roc));
+    }
+
+    @Override
+    public long countMissingMedia() {
+        return byCountry() ? dvidsRepository.countMissingInCommonsByCountry(countries)
+                : repository.countMissingInCommons(getRepoIds());
+    }
+
+    @Override
+    public long countMissingMedia(String roc) {
+        return isBlank(roc) ? countMissingMedia()
+                : count(dvidsRepository::countMissingInCommonsByCountry, repository::countMissingInCommons,
+                        Set.of(roc));
+    }
+
+    @Override
+    public long countMissingImages() {
+        return byCountry() ? dvidsRepository.countMissingImagesInCommonsByCountry(countries)
+                : repository.countMissingImagesInCommons(getRepoIds());
+    }
+
+    @Override
+    public long countMissingImages(String roc) {
+        return isBlank(roc) ? countMissingImages()
+                : count(dvidsRepository::countMissingImagesInCommonsByCountry, repository::countMissingImagesInCommons,
+                        Set.of(roc));
+    }
+
+    @Override
+    public long countMissingVideos() {
+        return byCountry() ? dvidsRepository.countMissingVideosInCommonsByCountry(countries)
+                : repository.countMissingVideosInCommons(getRepoIds());
+    }
+
+    @Override
+    public long countMissingVideos(String roc) {
+        return isBlank(roc) ? countMissingVideos()
+                : count(dvidsRepository::countMissingVideosInCommonsByCountry, repository::countMissingVideosInCommons,
+                        Set.of(roc));
+    }
+
+    @Override
+    public long countMissingDocuments() {
+        return byCountry() ? dvidsRepository.countMissingDocumentsInCommonsByCountry(countries)
+                : repository.countMissingDocumentsInCommons(getRepoIds());
+    }
+
+    @Override
+    public long countMissingDocuments(String roc) {
+        return isBlank(roc) ? countMissingDocuments()
+                : count(dvidsRepository::countMissingDocumentsInCommonsByCountry,
+                        repository::countMissingDocumentsInCommons, Set.of(roc));
+    }
+
+    @Override
+    public long countPerceptualHashes() {
+        return byCountry() ? dvidsRepository.countByMetadata_PhashNotNullByCountry(countries)
+                : repository.countByMetadata_PhashNotNull(getRepoIds());
+    }
+
+    @Override
+    public long countPerceptualHashes(String roc) {
+        return isBlank(roc) ? countPerceptualHashes()
+                : count(dvidsRepository::countByMetadata_PhashNotNullByCountry,
+                        repository::countByMetadata_PhashNotNull, Set.of(roc));
+    }
+
+    @Override
+    public long countUploadedMedia() {
+        return byCountry() ? dvidsRepository.countUploadedToCommonsByCountry(countries)
+                : repository.countUploadedToCommons(getRepoIds());
+    }
+
+    @Override
+    public long countUploadedMedia(String roc) {
+        return isBlank(roc) ? countUploadedMedia()
+                : count(dvidsRepository::countUploadedToCommonsByCountry, repository::countUploadedToCommons,
+                        Set.of(roc));
+    }
+
+    @Override
+    public Iterable<DvidsMedia> listAllMedia() {
+        return repository.findAll(getRepoIds());
+    }
+
+    @Override
+    public Page<DvidsMedia> listAllMedia(Pageable page) {
+        return repository.findAll(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<DvidsMedia> listAllMedia(String roc, Pageable page) {
+        return isBlank(roc) ? listAllMedia(page) : repository.findAll(Set.of(roc), page);
+    }
+
+    @Override
+    public List<DvidsMedia> listMissingMedia() {
+        return repository.findMissingInCommons(getRepoIds());
+    }
+
+    @Override
+    public Page<DvidsMedia> listMissingMedia(Pageable page) {
+        return repository.findMissingInCommons(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<DvidsMedia> listMissingMedia(String roc, Pageable page) {
+        return isBlank(roc) ? listMissingMedia(page) : repository.findMissingInCommons(Set.of(roc), page);
+    }
+
+    @Override
+    public Page<DvidsMedia> listMissingImages(Pageable page) {
+        return repository.findMissingImagesInCommons(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<DvidsMedia> listMissingImages(String roc, Pageable page) {
+        return isBlank(roc) ? listMissingImages(page) : repository.findMissingImagesInCommons(Set.of(roc), page);
+    }
+
+    @Override
+    public Page<DvidsMedia> listMissingVideos(Pageable page) {
+        return repository.findMissingVideosInCommons(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<DvidsMedia> listMissingVideos(String roc, Pageable page) {
+        return isBlank(roc) ? listMissingVideos(page) : repository.findMissingVideosInCommons(Set.of(roc), page);
+    }
+
+    @Override
+    public Page<DvidsMedia> listMissingDocuments(Pageable page) {
+        return repository.findMissingDocumentsInCommons(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<DvidsMedia> listMissingDocuments(String roc, Pageable page) {
+        return isBlank(roc) ? listMissingDocuments(page) : repository.findMissingDocumentsInCommons(Set.of(roc), page);
+    }
+
+    @Override
+    public List<DvidsMedia> listMissingMediaByDate(LocalDate date, String roc) {
+        return repository.findMissingInCommonsByPublicationDate(isBlank(roc) ? getRepoIds() : Set.of(roc), date);
+    }
+
+    @Override
+    public List<DvidsMedia> listMissingMediaByMonth(YearMonth month, String roc) {
+        return repository.findMissingInCommonsByPublicationMonth(isBlank(roc) ? getRepoIds() : Set.of(roc), month);
+    }
+
+    @Override
+    public List<DvidsMedia> listMissingMediaByYear(Year year, String roc) {
+        return repository.findMissingInCommonsByPublicationYear(isBlank(roc) ? getRepoIds() : Set.of(roc), year);
+    }
+
+    @Override
+    public List<DvidsMedia> listMissingMediaByTitle(String title, String roc) {
+        return repository.findMissingInCommonsByTitle(isBlank(roc) ? getRepoIds() : Set.of(roc), title);
+    }
+
+    @Override
+    public Page<DvidsMedia> listHashedMedia(Pageable page) {
+        return repository.findByMetadata_PhashNotNull(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<DvidsMedia> listHashedMedia(String roc, Pageable page) {
+        return isBlank(roc) ? listHashedMedia(page) : repository.findByMetadata_PhashNotNull(Set.of(roc), page);
+    }
+
+    @Override
+    public List<DvidsMedia> listUploadedMedia() {
+        return repository.findUploadedToCommons(getRepoIds());
+    }
+
+    @Override
+    public Page<DvidsMedia> listUploadedMedia(Pageable page) {
+        return repository.findUploadedToCommons(getRepoIds(), page);
+    }
+
+    @Override
+    public List<DvidsMedia> listUploadedMediaByDate(LocalDate date) {
+        return repository.findUploadedToCommonsByPublicationDate(getRepoIds(), date);
+    }
+
+    @Override
+    public Page<DvidsMedia> listUploadedMedia(String roc, Pageable page) {
+        return isBlank(roc) ? listUploadedMedia(page) : repository.findUploadedToCommons(Set.of(roc), page);
+    }
+
+    @Override
+    public List<DvidsMedia> listDuplicateMedia() {
+        return repository.findDuplicateInCommons(getRepoIds());
+    }
+
+    @Override
+    public List<DvidsMedia> listIgnoredMedia() {
+        return repository.findByMetadata_IgnoredTrue(getRepoIds());
+    }
+
+    @Override
+    public Page<DvidsMedia> listIgnoredMedia(Pageable page) {
+        return repository.findByMetadata_IgnoredTrue(getRepoIds(), page);
+    }
+
+    @Override
+    public Page<DvidsMedia> listIgnoredMedia(String roc, Pageable page) {
+        return isBlank(roc) ? listIgnoredMedia(page) : repository.findByMetadata_IgnoredTrue(Set.of(roc), page);
     }
 }

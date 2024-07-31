@@ -1668,10 +1668,6 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected abstract Class<T> getMediaClass();
 
-    protected Class<? extends T> getTopTermsMediaClass() {
-        return getMediaClass();
-    }
-
     protected final MediaUpdateResult<T> doCommonUpdate(T media, HttpClient httpClient, HttpClientContext context,
             boolean forceUpdate) throws IOException {
         MediaUpdateResult<T> ur = mediaService.updateMedia(

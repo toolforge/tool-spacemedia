@@ -1,19 +1,11 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api;
 
-public class ApiSearchResult {
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
+import org.wikimedia.commons.donvip.spacemedia.service.dvids.DvidsService;
 
-    private String id;
+public record ApiSearchResult(String id, String unit_name) {
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    @Override
-    public String toString() {
-        return "ApiSearchResult [id=" + id + "]";
+    public CompositeMediaId toCompositeMediaId(DvidsService dvids) {
+        return new CompositeMediaId(dvids.getUnitAbbreviation(unit_name), id);
     }
 }
