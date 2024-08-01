@@ -224,12 +224,12 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         LocalDateTime start = LocalDateTime.now();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
-        for (String id : response.getResults().stream().map(ApiSearchResult::getId).distinct().sorted().toList()) {
+        for (CompositeMediaId id : response.getResults().stream().map(ApiSearchResult::toCompositeMediaId).distinct()
+                .sorted().toList()) {
             try {
-                idsKnownToDvidsApi.add(id);
+                idsKnownToDvidsApi.add(id.getMediaId());
                 Pair<DvidsMedia, Integer> result = dvidsProcessor.processDvidsMedia(
-                        () -> repository.findById(new CompositeMediaId(unit, id)),
-                        () -> getMediaFromApi(rest, id, unit),
+                        () -> repository.findById(id), () -> getMediaFromApi(rest, id),
                         media -> processDvidsMediaUpdate(media, false).result(), this::shouldUploadAuto,
                         this::uploadWrapped);
                 if (result.getValue() > 0) {
@@ -237,13 +237,13 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                 }
                 ongoingUpdateMedia(start, unit, count++);
             } catch (HttpClientErrorException e) {
-                LOGGER.error("API error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
+                LOGGER.error("API error while processing DVIDS {}: {}", id, smartExceptionLog(e));
                 GlitchTip.capture(e);
             } catch (DataAccessException e) {
-                LOGGER.error("DAO error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
+                LOGGER.error("DAO error while processing DVIDS {}: {}", id, smartExceptionLog(e));
                 GlitchTip.capture(e);
             } catch (RuntimeException e) {
-                LOGGER.error("Error while processing DVIDS {} from unit {}: {}", id, unit, smartExceptionLog(e));
+                LOGGER.error("Error while processing DVIDS {}: {}", id, smartExceptionLog(e));
                 GlitchTip.capture(e);
             }
         }
@@ -252,12 +252,12 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                 idsKnownToDvidsApi);
     }
 
-    private DvidsMedia getMediaFromApi(RestTemplate rest, String id, String unit) {
+    private DvidsMedia getMediaFromApi(RestTemplate rest, CompositeMediaId id) {
         DvidsMedia media = ofNullable(
                 rest.getForObject(assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id)), ApiAssetResponse.class))
                 .orElseThrow(() -> new IllegalArgumentException("No result from DVIDS API for " + id))
                 .getResults();
-        media.setId(new CompositeMediaId(unit, id));
+        media.setId(id);
         return media;
     }
 
@@ -349,8 +349,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         // DVIDS API Terms of Service force us to check for deleted content
         // https://api.dvidshub.net/docs/tos
         try {
-            return media.copyDataFrom(
-                    getMediaFromApi(new RestTemplate(), media.getId().getMediaId(), media.getId().getRepoId()));
+            return media.copyDataFrom(getMediaFromApi(new RestTemplate(), media.getId()));
         } catch (IllegalArgumentException e) {
             String message = e.getMessage();
             if (message != null && message.startsWith("No result from DVIDS API for ")) {
