@@ -143,16 +143,16 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         LocalDate doNotFetchEarlierThan = getRuntimeData().getDoNotFetchEarlierThan();
         for (int year = LocalDateTime.now().getYear(); year >= minYear
                 && (doNotFetchEarlierThan == null || year >= doNotFetchEarlierThan.getYear()); year--) {
-            for (int quarter = 4; quarter > 0; quarter--) {
+            for (int month = 12; month > 0; month--) {
                 for (String unit : getRepoIdsFromArgs(args)) {
                     for (String country : countries) {
                         Pair<Integer, Collection<DvidsMedia>> update = updateDvidsMedia(unit, country, year,
-                                quarter, DvidsMediaType.image, idsKnownToDvidsApi);
+                                month, DvidsMediaType.image, idsKnownToDvidsApi);
                         uploadedMedia.addAll(update.getRight());
                         count += update.getLeft();
                         ongoingUpdateMedia(start, count);
                         if (videosEnabled) {
-                            update = updateDvidsMedia(unit, country, year, quarter, DvidsMediaType.video,
+                            update = updateDvidsMedia(unit, country, year, month, DvidsMediaType.video,
                                     idsKnownToDvidsApi);
                             uploadedMedia.addAll(update.getRight());
                             count += update.getLeft();
@@ -185,7 +185,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         }
     }
 
-    private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, String country, int year, int quarter,
+    private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, String country, int year, int month,
             DvidsMediaType type, Set<String> idsKnownToDvidsApi) {
         RestTemplate rest = new RestTemplate();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
@@ -195,22 +195,22 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             int page = 1;
             LocalDateTime start = LocalDateTime.now();
             count = 0;
-            LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {} Q{} (page {}/?)...", type, unit,
-                    country, year, quarter, page);
+            LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {}-{} (page {}/?)...", type, unit,
+                    country, year, month, page);
             while (loop) {
                 DvidsUpdateResult ur = doUpdateDvidsMedia(rest,
-                        searchDvidsMediaIds(rest, true, type, unit, country, year, quarter, page++), unit);
+                        searchDvidsMediaIds(rest, true, type, unit, country, year, month, page++), unit);
                 idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                 uploadedMedia.addAll(ur.uploadedMedia);
                 count += ur.count;
                 ongoingUpdateMedia(start, unit, count);
                 loop = count < ur.totalResults;
                 if (loop) {
-                    LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {} Q{} (page {}/{})...", type,
-                            unit, country, year, quarter, page, ur.numberOfPages());
+                    LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {}-{} (page {}/{})...", type,
+                            unit, country, year, month, page, ur.numberOfPages());
                 }
             }
-            LOGGER.info("{}/{} {}s for year {} Q{} completed: {} {}s in {}", unit, country, type, year, quarter, count,
+            LOGGER.info("{}/{} {}s for year {}-{} completed: {} {}s in {}", unit, country, type, year, month, count,
                     type, Utils.durationInSec(start));
         } catch (ApiException | TooManyResultsException exx) {
             LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit + " / country " + country, exx);
@@ -271,7 +271,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     private ApiSearchResponse searchDvidsMediaIds(RestTemplate rest, boolean allowCappedResults, DvidsMediaType type,
-            String unit, String country, int year, int quarter, int page)
+            String unit, String country, int year, int month, int page)
             throws ApiException, TooManyResultsException {
         Map<String, Object> variables = new TreeMap<>(Map.of("api_key", apiKey, "type", type, "page", page));
         String template = year <= 0 ? searchApiEndpoint : searchYearApiEndpoint;
@@ -286,9 +286,9 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             variables.put("country", country);
         }
         if (year > 0) {
-            variables.put("from_date", String.format("%04d-%02d-01T00:00:00Z", year, 1 + (quarter - 1) * 3));
-            variables.put("to_date", String.format("%04d-%02d-%02dT23:59:59Z", year, 3 + (quarter - 1) * 3,
-                    quarter == 1 || quarter == 4 ? 31 : 30));
+            variables.put("from_date", String.format("%04d-%02d-01T00:00:00Z", year, month));
+            variables.put("to_date", String.format("%04d-%02d-%02dT23:59:59Z", year, month == 12 ? 12 : month + 1,
+                    month == 12 ? 31 : 1));
         }
         ApiSearchResponse response = rest.getForObject(new UriTemplate(template).expand(variables),
                 ApiSearchResponse.class);
@@ -299,15 +299,15 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         ApiPageInfo pageInfo = response.getPageInfo();
         if (pageInfo.getTotalResults() == MAX_RESULTS) {
             String msg = String.format(
-                    "Incomplete search! More criteria must be defined for %ss of '%s'/'%s' (%d Q%d)!", type, unit,
-                    country, year, quarter);
+                    "Incomplete search! More criteria must be defined for %ss of '%s'/'%s' (%04d-%02d)!", type, unit,
+                    country, year, month);
             if (allowCappedResults) {
                 LOGGER.warn(msg);
             } else {
                 throw new TooManyResultsException(msg);
             }
         } else if (pageInfo.getTotalResults() == 0) {
-            LOGGER.warn("No {} for {}/{} in year {} Q{}", type, unit, country, year, quarter);
+            LOGGER.warn("No {} for {}/{} in year {}-{}", type, unit, country, year, month);
         } else if (page == 1) {
             LOGGER.debug("{} {}s to process for {}/{}", pageInfo.getTotalResults(), type, unit, country);
         }
