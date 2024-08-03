@@ -187,7 +187,8 @@ public class Video2CommonsTask {
 
     @JsonIgnore
     public boolean isNoAudioTrackError() {
-        return getStatus().isFailed() && getText().contains("Audio is asked to be kept but the file has no audio");
+        return getStatus().isFailed() && getText() != null
+                && getText().contains("Audio is asked to be kept but the file has no audio");
     }
 
     @Override
