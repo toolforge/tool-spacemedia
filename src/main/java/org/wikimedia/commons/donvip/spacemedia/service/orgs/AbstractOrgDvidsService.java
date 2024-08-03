@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 
 import java.io.IOException;
@@ -43,7 +44,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpClientErrorException.BadRequest;
 import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.HttpClientErrorException.NotFound;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -55,7 +55,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiPageInfo
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResponse;
 import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
-import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.dvids.DvidsMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.dvids.DvidsService;
@@ -177,7 +176,6 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
 
     private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, String country, int year, int month,
             DvidsMediaType type, Set<String> idsKnownToDvidsApi) {
-        RestTemplate rest = new RestTemplate();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
         try {
@@ -188,8 +186,8 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {}-{} (page {}/?)...", type, unit,
                     country, year, month, page);
             while (loop) {
-                DvidsUpdateResult ur = doUpdateDvidsMedia(rest,
-                        dvids.searchDvidsMediaIds(true, type, unit, country, year, month, page++), unit);
+                DvidsUpdateResult ur = doUpdateDvidsMedia(
+                        dvids.searchDvidsMediaIds(type, unit, country, year, month, page++), unit);
                 idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                 uploadedMedia.addAll(ur.uploadedMedia);
                 count += ur.count;
@@ -202,14 +200,14 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             }
             LOGGER.info("{}/{} {}s for year {}-{} completed: {} {}s in {}", unit, country, type, year, month, count,
                     type, Utils.durationInSec(start));
-        } catch (ApiException | TooManyResultsException exx) {
+        } catch (ApiException exx) {
             LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit + " / country " + country, exx);
             GlitchTip.capture(exx);
         }
         return Pair.of(count, uploadedMedia);
     }
 
-    private DvidsUpdateResult doUpdateDvidsMedia(RestTemplate rest, ApiSearchResponse response, String unit) {
+    private DvidsUpdateResult doUpdateDvidsMedia(ApiSearchResponse response, String unit) {
         int count = 0;
         LocalDateTime start = LocalDateTime.now();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
@@ -337,7 +335,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         Matcher m = US_MEDIA_BY.matcher(media.getDescription());
         if (m.matches()) {
             result.append(m.group(1));
-        } else if (StringUtils.isNotBlank(media.getBranch()) && !"Joint".equals(media.getBranch())) {
+        } else if (isNotBlank(media.getBranch()) && !"Joint".equals(media.getBranch())) {
             result.append("U.S. ").append(media.getBranch()).append(' ').append(media.getId().getRepoId())
                     .append(" by ");
         }
@@ -358,7 +356,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         if (metadata.isVideo()) {
             VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(),
                     media.getUniqueMetadata().getAssetUrl());
-            if (t != null && StringUtils.isNotBlank(t.videoCategory())) {
+            if (t != null && isNotBlank(t.videoCategory())) {
                 result.add(t.videoCategory());
             }
         }
@@ -372,7 +370,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     public Set<String> findLicenceTemplates(DvidsMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         VirinTemplates t = UnitedStates.getUsVirinTemplates(media.getVirin(), media.getUniqueMetadata().getAssetUrl());
-        if (t != null && StringUtils.isNotBlank(t.pdTemplate())) {
+        if (t != null && isNotBlank(t.pdTemplate())) {
             result.add(t.pdTemplate());
         }
         if (media.getDescription() != null) {
@@ -408,8 +406,12 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         return Set.of("*").equals(set);
     }
 
+    private Set<String> countriesOr(Set<String> set) {
+        return star(set) ? countries : set;
+    }
+
     private long count(ToLongFunction<Set<String>> byCountry, ToLongFunction<Set<String>> byRepo, Set<String> set) {
-        return star(getRepoIds()) ? byCountry.applyAsLong(star(set) ? countries : set) : byRepo.applyAsLong(set);
+        return star(getRepoIds()) ? byCountry.applyAsLong(countriesOr(set)) : byRepo.applyAsLong(set);
     }
 
     @Override
@@ -513,13 +515,12 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     private <T> T list(Function<Set<String>, T> byCountry, Function<Set<String>, T> byRepo, Set<String> set) {
-        return star(getRepoIds()) ? byCountry.apply(star(set) ? countries : set) : byRepo.apply(set);
+        return star(getRepoIds()) ? byCountry.apply(countriesOr(set)) : byRepo.apply(set);
     }
 
     private <T, U> T list(BiFunction<Set<String>, U, T> byCountry, BiFunction<Set<String>, U, T> byRepo,
             Set<String> set, U criteria) {
-        return star(getRepoIds()) ? byCountry.apply(star(set) ? countries : set, criteria)
-                : byRepo.apply(set, criteria);
+        return star(getRepoIds()) ? byCountry.apply(countriesOr(set), criteria) : byRepo.apply(set, criteria);
     }
 
     @Override
