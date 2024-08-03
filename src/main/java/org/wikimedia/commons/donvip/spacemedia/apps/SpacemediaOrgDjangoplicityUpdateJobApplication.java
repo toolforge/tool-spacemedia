@@ -22,10 +22,12 @@ public class SpacemediaOrgDjangoplicityUpdateJobApplication extends AbstractSpac
     }
 
     @Bean
-    public Org<?> org(@Value("${org}") String org, @Value("${django.search.link}") String searchLink,
+    @SuppressWarnings("unchecked")
+    public Org<DjangoplicityMedia> org(@Value("${org}") String org, @Value("${django.search.link}") String searchLink,
             @Autowired DjangoplicityMediaRepository repository, ApplicationContext context)
             throws ReflectiveOperationException {
-        return (Org<?>) Class.forName(org).getConstructor(DjangoplicityMediaRepository.class, String.class)
+        return (Org<DjangoplicityMedia>) Class.forName(org)
+                .getConstructor(DjangoplicityMediaRepository.class, String.class)
                 .newInstance(repository, searchLink);
     }
 }
