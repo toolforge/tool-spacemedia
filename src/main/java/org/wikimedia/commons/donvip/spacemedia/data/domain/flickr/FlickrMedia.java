@@ -6,7 +6,6 @@ import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsS
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getFirstSentence;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -48,9 +47,6 @@ public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
 
     @Column(nullable = false)
     private int license;
-
-    @JsonProperty("lastupdate")
-    private LocalDateTime lastUpdate;
 
     @JsonProperty("datetakengranularity")
     private int dateTakenGranularity;
@@ -109,16 +105,6 @@ public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
     @JsonProperty("dateupload")
     public void setPublicationDateTime(ZonedDateTime publicationDateTime) {
         super.setPublicationDateTime(publicationDateTime);
-    }
-
-    @Override
-    public LocalDateTime getLastUpdate() {
-        return lastUpdate;
-    }
-
-    @Override
-    public void setLastUpdate(LocalDateTime lastUpdate) {
-        this.lastUpdate = lastUpdate;
     }
 
     public int getDateTakenGranularity() {
@@ -302,7 +288,6 @@ public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
     public FlickrMedia copyDataFrom(FlickrMedia mediaFromApi) {
         super.copyDataFrom(mediaFromApi);
         this.license = mediaFromApi.license;
-        this.lastUpdate = mediaFromApi.lastUpdate;
         this.dateTakenGranularity = mediaFromApi.dateTakenGranularity;
         this.originalFormat = mediaFromApi.originalFormat;
         this.latitude = mediaFromApi.latitude;

@@ -2,7 +2,6 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import static java.util.Objects.requireNonNull;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,10 +16,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.cert.CertificateFactory;
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -54,10 +49,6 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -353,21 +344,6 @@ public final class Utils {
 
     public static boolean isTokenPart(char c) {
         return Character.isAlphabetic(c) || Character.isDigit(c) || c == '-' || c == '_';
-    }
-
-    public static void addCertificate(String resource) throws GeneralSecurityException, IOException {
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        try (InputStream is = Files.newInputStream(Paths.get(System.getProperty("java.home"), "lib", "security", "cacerts"))) {
-            keyStore.load(is, "changeit".toCharArray());
-        }
-        keyStore.setCertificateEntry(resource,
-                CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(
-                        IOUtils.toByteArray(Utils.class.getClassLoader().getResourceAsStream(resource)))));
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmf.init(keyStore);
-        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-        sslContext.init(null, tmf.getTrustManagers(), null);
-        SSLContext.setDefault(sslContext);
     }
 
     /**

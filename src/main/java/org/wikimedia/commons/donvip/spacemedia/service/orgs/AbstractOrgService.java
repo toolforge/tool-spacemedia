@@ -135,6 +135,8 @@ import jakarta.persistence.PersistenceContext;
 public abstract class AbstractOrgService<T extends Media>
         implements Comparable<AbstractOrgService<T>>, Org<T> {
 
+    private static final String Q20007257_CC_BY_40 = "Q20007257";
+
     private static final int LOTS_OF_MP = 150_000_000;
 
     protected static final String EN = "en";
@@ -154,11 +156,11 @@ public abstract class AbstractOrgService<T extends Media>
     private static final Set<String> PD_US = Set.of("PD-US", "PD-NASA", "PD-Hubble", "PD-Webb");
 
     private static final Map<String, String> LICENCES = Map.ofEntries(e("YouTube CC-BY", "Q14947546"),
-            e("Cc-by-2.0", "Q19125117"), e("Cc-by-4.0", "Q20007257"), e("Cc-by-sa-2.0", "Q19068220"),
+            e("Cc-by-2.0", "Q19125117"), e("Cc-by-4.0", Q20007257_CC_BY_40), e("Cc-by-sa-2.0", "Q19068220"),
             e("Cc-by-sa-4.0", "Q18199165"), e("Cc-zero", "Q6938433"),
-            e("DLR-License", "Q62619894"), e("ESA|", "Q26259495"), e("ESO", "Q20007257"), e("IAU", "Q20007257"),
-            e("KOGL", "Q12584618"), e("NOIRLab", "Q20007257"), e("ESA-Hubble", "Q20007257"),
-            e("ESA-Webb", "Q20007257"));
+            e("DLR-License", "Q62619894"), e("ESA|", "Q26259495"), e("ESO", Q20007257_CC_BY_40),
+            e("IAU", Q20007257_CC_BY_40), e("KOGL", "Q12584618"), e("NOIRLab", Q20007257_CC_BY_40),
+            e("ESA-Hubble", Q20007257_CC_BY_40), e("ESA-Webb", Q20007257_CC_BY_40));
 
     private static final List<String> COURTESY_SPELLINGS = List.of("courtesy", "courtsey", "contributed photo");
 

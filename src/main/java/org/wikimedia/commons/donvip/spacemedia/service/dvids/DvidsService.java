@@ -22,7 +22,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiPageInfo
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResponse;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiUnitResponse;
 import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
-import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException;
 
 /**
  * Service fetching images from https://api.dvidshub.net/
@@ -30,6 +29,8 @@ import org.wikimedia.commons.donvip.spacemedia.exception.TooManyResultsException
 @Lazy
 @Service
 public class DvidsService {
+
+    private static final String API_KEY = "api_key";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DvidsService.class);
 
@@ -54,16 +55,16 @@ public class DvidsService {
 
     public DvidsMedia getMediaFromApi(CompositeMediaId id) {
         DvidsMedia media = ofNullable(
-                rest.getForObject(assetApiEndpoint.expand(Map.of("api_key", apiKey, "id", id.getMediaId())),
+                rest.getForObject(assetApiEndpoint.expand(Map.of(API_KEY, apiKey, "id", id.getMediaId())),
                         ApiAssetResponse.class))
                 .orElseThrow(() -> new IllegalArgumentException("No result from DVIDS API for " + id)).results();
         media.setId(id);
         return media;
     }
 
-    public ApiSearchResponse searchDvidsMediaIds(boolean allowCappedResults, DvidsMediaType type,
-            String unit, String country, int year, int month, int page) throws ApiException, TooManyResultsException {
-        Map<String, Object> variables = new TreeMap<>(Map.of("api_key", apiKey, "type", type, "page", page));
+    public ApiSearchResponse searchDvidsMediaIds(DvidsMediaType type,
+            String unit, String country, int year, int month, int page) throws ApiException {
+        Map<String, Object> variables = new TreeMap<>(Map.of(API_KEY, apiKey, "type", type, "page", page));
         String template = year <= 0 ? searchApiEndpoint : searchYearApiEndpoint;
         if ("*".equals(unit)) {
             template = template.replace("&unit={unit}", "");
@@ -91,11 +92,7 @@ public class DvidsService {
             String msg = String.format(
                     "Incomplete search! More criteria must be defined for %ss of '%s'/'%s' (%04d-%02d)!", type, unit,
                     country, year, month);
-            if (allowCappedResults) {
-                LOGGER.warn(msg);
-            } else {
-                throw new TooManyResultsException(msg);
-            }
+            LOGGER.warn(msg);
         } else if (pageInfo.totalResults() == 0) {
             LOGGER.warn("No {} for {}/{} in year {}-{}", type, unit, country, year, month);
         } else if (page == 1) {
@@ -107,7 +104,7 @@ public class DvidsService {
     @Cacheable("unitAbbrByFullName")
     public String getUnitAbbreviation(String unitFullName) {
         return ofNullable(rest.getForObject(
-                unitApiEndpoint.expand(Map.of("api_key", apiKey, "unit_name", requireNonNull(unitFullName))),
+                unitApiEndpoint.expand(Map.of(API_KEY, apiKey, "unit_name", requireNonNull(unitFullName))),
                 ApiUnitResponse.class)).orElseThrow().results().iterator().next().unit_abbrev();
     }
 }
