@@ -1726,15 +1726,13 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     private boolean doCheckImageTooBigOrTooSmall(FileMetadata fm) {
-        if (fm.isImage()) {
-            if (fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000) {
-                LOGGER.debug("Too small image test has been trigerred for {}", fm);
-                return mediaService.ignoreAndSaveMetadata(fm, "Too small image");
-            } else if (fm.getSize() != null && fm.getSize() > 5_368_709_120L) {
-                // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
-                LOGGER.debug("Too big image test has been trigerred for {}", fm);
-                return mediaService.ignoreAndSaveMetadata(fm, "Too big image");
-            }
+        if (fm.isImage() && fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000) {
+            LOGGER.debug("Too small image test has been trigerred for {}", fm);
+            return mediaService.ignoreAndSaveMetadata(fm, "Too small image");
+        } else if (fm.getSize() != null && fm.getSize() > 5_368_709_120L) {
+            // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
+            LOGGER.debug("Too big file test has been trigerred for {}", fm);
+            return mediaService.ignoreAndSaveMetadata(fm, "Too big image");
         }
         return false;
     }
