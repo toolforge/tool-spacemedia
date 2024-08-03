@@ -1734,7 +1734,7 @@ public abstract class AbstractOrgService<T extends Media>
         } else if (fm.getSize() != null && fm.getSize() > 5_368_709_120L) {
             // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
             LOGGER.debug("Too big file test has been trigerred for {}", fm);
-            return mediaService.ignoreAndSaveMetadata(fm, "Too big image");
+            return mediaService.ignoreAndSaveMetadata(fm, "Too big file");
         }
         return false;
     }

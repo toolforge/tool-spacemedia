@@ -160,7 +160,7 @@ public class ImageUtils {
         } catch (IIOException e) {
             throw e;
         } catch (IOException | RuntimeException e) {
-            throw new FileDecodingException(e);
+            throw new FileDecodingException(-1, e);
         }
     }
 
