@@ -130,7 +130,7 @@ public class MediaUtils {
                 Function<URI, Optional<Path>> dl = x -> {
                     try {
                         long fileSize = contentLength.getAsLong();
-                        long usableSpace = new File("/").getUsableSpace();
+                        long usableSpace = new File(System.getProperty("java.io.tmpdir")).getUsableSpace();
                         if (usableSpace < fileSize) {
                             LOGGER.error("Not enough usable disk space ({} bytes) to download {} ({} bytes). Aborting",
                                     usableSpace, uri, fileSize);
@@ -180,7 +180,7 @@ public class MediaUtils {
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(new Object(),
                         contentLength(contentLength, () -> bytes.length), filename, extension, 1, null);
             } else {
-                throw new FileDecodingException(
+                throw new FileDecodingException(contentLength.getAsLong(),
                         "Unsupported format: " + extension + " / headers:" + Arrays.stream(response.getHeaders())
                                 .map(h -> h.getName() + ": " + h.getValue()).sorted().toList());
             }
@@ -207,13 +207,13 @@ public class MediaUtils {
             String extension, URI uri) throws FileDecodingException, IOException {
         try (OggFile ogg = new OggFile(in)) {
             if (ogg.getPacketReader().getNextPacket() == null) {
-                throw new FileDecodingException("Failed to open OGV video from " + uri);
+                throw new FileDecodingException(contentLength, "Failed to open OGV video from " + uri);
             }
             return new ContentsAndMetadata<>(ogg, contentLength, filename, extension, 1, null);
         }
     }
 
-    private static <T> ContentsAndMetadata<T> readVideo(Path localPath, URI uri,
+    private static <T> ContentsAndMetadata<T> readVideo(Path localPath, URI uri, LongSupplier contentLength,
             Function<URI, Optional<Path>> downloader, Function<Path, ContentsAndMetadata<T>> reader)
             throws FileDecodingException, IOException {
         try {
@@ -221,7 +221,8 @@ public class MediaUtils {
                 return reader.apply(localPath);
             } else {
                 Path tempFile = downloader.apply(uri)
-                        .orElseThrow(() -> new FileDecodingException("Failed to download video from " + uri));
+                        .orElseThrow(() -> new FileDecodingException(contentLength.getAsLong(),
+                                "Failed to download video from " + uri));
                 try {
                     return reader.apply(tempFile);
                 } finally {
@@ -239,7 +240,7 @@ public class MediaUtils {
     private static ContentsAndMetadata<IsoFile> readMp4Video(Path localPath, LongSupplier contentLength,
             String filename, String extension, URI uri, Function<URI, Optional<Path>> downloader)
             throws FileDecodingException, IOException {
-        return readVideo(localPath, uri, downloader, x -> {
+        return readVideo(localPath, uri, contentLength, downloader, x -> {
             try {
                 try {
                     return readMp4Video(x, contentLength, filename, extension);
@@ -257,7 +258,7 @@ public class MediaUtils {
         try (IsoFile mp4 = new Mp4File(path.toFile())) {
             MovieBox movieBox = mp4.getMovieBox();
             if (movieBox == null) {
-                throw new FileDecodingException("Failed to open MP4 video from " + path);
+                throw new FileDecodingException(contentLength.getAsLong(), "Failed to open MP4 video from " + path);
             }
             return new ContentsAndMetadata<>(mp4, contentLength(contentLength, mp4::getSize), filename, extension,
                     movieBox.getTrackCount(), null);
@@ -278,7 +279,7 @@ public class MediaUtils {
     private static ContentsAndMetadata<ImageDimensions> readWebmVideo(Path localPath, LongSupplier contentLength,
             String filename, String extension, URI uri, Function<URI, Optional<Path>> downloader)
             throws FileDecodingException, IOException {
-        return readVideo(localPath, uri, downloader, x -> {
+        return readVideo(localPath, uri, contentLength, downloader, x -> {
             try {
                 try {
                     return readWebmVideo(x, contentLength, filename, extension);
@@ -313,7 +314,7 @@ public class MediaUtils {
                 }
             }
             if (width == 0 && height == 0) {
-                throw new FileDecodingException("Failed to open WEBM video from " + path);
+                throw new FileDecodingException(contentLength.getAsLong(), "Failed to open WEBM video from " + path);
             }
             return new ContentsAndMetadata<>(new ImageDimensions(width, height), contentLength.getAsLong(), filename,
                     extension, 1, null);

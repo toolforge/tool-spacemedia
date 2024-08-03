@@ -4,11 +4,19 @@ public class FileDecodingException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    public FileDecodingException(String message) {
+    private final long contentLength;
+
+    public FileDecodingException(long contentLength, String message) {
         super(message);
+        this.contentLength = contentLength;
     }
 
-    public FileDecodingException(Throwable cause) {
+    public FileDecodingException(long contentLength, Throwable cause) {
         super(cause);
+        this.contentLength = contentLength;
+    }
+
+    public long getContentLength() {
+        return contentLength;
     }
 }

@@ -274,7 +274,10 @@ public class MediaService {
                             result = handleFileReadingError(metadata, e);
                         }
                     }
-                } catch (IOException | RestClientException | FileDecodingException e) {
+                } catch (FileDecodingException e) {
+                    updateFileSize(metadata, e.getContentLength(), null, null);
+                    result = handleFileReadingError(metadata, e);
+                } catch (IOException | RestClientException e) {
                     result = handleFileReadingError(metadata, e);
                 }
             }
@@ -388,16 +391,20 @@ public class MediaService {
     }
 
     private static boolean updateFileSize(FileMetadata metadata, ContentsAndMetadata<?> img) {
+        return updateFileSize(metadata, img.contentLength(), img.contents(), img.extension());
+    }
+
+    private static boolean updateFileSize(FileMetadata metadata, long contentLength, Object contents, String ext) {
         if (!metadata.hasSize()) {
-            if (img.contentLength() > 0) {
-                metadata.setSize(img.contentLength());
+            if (contentLength > 0) {
+                metadata.setSize(contentLength);
                 LOGGER.info("Size has been updated from contentLength for {}", metadata);
                 return true;
-            } else if (img.contents() instanceof BufferedImage bi && isNotBlank(img.extension())) {
+            } else if (contents instanceof BufferedImage bi && isNotBlank(ext)) {
                 try {
-                    Path tempFile = Files.createTempFile("sm", img.extension());
+                    Path tempFile = Files.createTempFile("sm", ext);
                     try {
-                        if (ImageIO.write(bi, img.extension(), tempFile.toFile())) {
+                        if (ImageIO.write(bi, ext, tempFile.toFile())) {
                             metadata.setSize(Files.size(tempFile));
                             LOGGER.info("Size has been updated from file size for {}", metadata);
                             return true;
