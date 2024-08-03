@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.normalizeFilename;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getFirstSentence;
 
@@ -14,8 +16,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
@@ -42,7 +42,9 @@ public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
 
     private static final String STATICFLICKR_COM = ".staticflickr.com";
 
-    private static final Pattern USER_ID = Pattern.compile(".*(NHQ\\d{12}|GRC-\\d{4}-[A-Z]-\\d{5}).*");
+    private static final Pattern USER_ID = Pattern.compile(
+            ".*(NHQ\\d{12}|GRC-\\d{4}-[A-Z]-\\d{5}|iss\\d{3}e\\d{6}|jsc\\d{4}e\\d{6}).*",
+            Pattern.CASE_INSENSITIVE);
 
     @Column(nullable = false)
     private int license;
@@ -237,15 +239,23 @@ public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
     @JsonIgnore
     public Optional<String> getUserDefinedId() {
         Matcher m = USER_ID.matcher(getTitle());
-        return m.matches() ? Optional.of(m.group(1)) : Optional.empty();
+        if (m.matches()) {
+            return Optional.of(m.group(1));
+        } else if (isNotBlank(getDescription())) {
+            m = USER_ID.matcher(getDescription());
+            if (m.matches()) {
+                return Optional.of(m.group(1));
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
         if ((title.isEmpty() || UnitedStates.isVirin(title) || UnitedStates.isFakeVirin(title))
-                && CollectionUtils.isNotEmpty(getPhotosets())) {
+                && isNotEmpty(getPhotosets())) {
             String albumTitle = getPhotosets().iterator().next().getTitle();
-            if (StringUtils.isNotBlank(albumTitle)) {
+            if (isNotBlank(albumTitle)) {
                 return albumTitle + " (" + getId().getMediaId() + ")";
             }
         }

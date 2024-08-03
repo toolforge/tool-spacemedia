@@ -44,11 +44,14 @@ class FlickrMediaTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "NHQ202305030019,Czech Republic Artemis Accords Signing (NHQ202305030019)",
-            "GRC-2023-C-03833,GRC-2023-C-03833" })
-    void testGetUserDefinedId(String expectedId, String title) {
+    @CsvSource(delimiter = ';', value = {
+            "NHQ202305030019;Czech Republic Artemis Accords Signing (NHQ202305030019);xxx",
+            "GRC-2023-C-03833;GRC-2023-C-03833;xxx",
+            "iss071e406326;The English Channel and the North Sea;iss071e406326 (July 28, 2024) --- The English Channel and the North Sea separate the island of Great Britain from the northwest European nations of The Netherlands, Belgium, and France in this photograph from the International Space Station as it orbited 258 miles above." })
+    void testGetUserDefinedId(String expectedId, String title, String description) {
         FlickrMedia media = new FlickrMedia();
         media.setTitle(title);
+        media.setDescription(description);
         assertEquals(Optional.of(expectedId), media.getUserDefinedId());
     }
 
