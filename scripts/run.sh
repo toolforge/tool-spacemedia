@@ -54,9 +54,17 @@ rm -f /tmp*.mp4
 rm -Rf /tmp/tomcat*
 rm -f /tmp/MediaDataBox*
 
+if [ -d /srv/tmp ] ; then
+  rm -f /srv/tmp/*
+  TMPDIR=/srv/tmp
+else
+  TMPDIR=/tmp
+fi
+
 java -Xms$MEM -Xmx$MEM \
 --add-opens java.base/java.lang=ALL-UNNAMED \
 -Dexecution.mode=$MODE \
+-Djava.io.tmpdir=$TMPDIR \
 -Dsentry.dsn=$SENTRY_DSN \
 -Dsentry.stacktrace.app.packages=org.wikimedia.commons.donvip.spacemedia \
 -Dsentry.stacktrace.hidecommon=False \
