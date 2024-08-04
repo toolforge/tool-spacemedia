@@ -105,6 +105,8 @@ public class DvidsService {
     public String getUnitAbbreviation(String unitFullName) {
         return ofNullable(rest.getForObject(
                 unitApiEndpoint.expand(Map.of(API_KEY, apiKey, "unit_name", requireNonNull(unitFullName))),
-                ApiUnitResponse.class)).orElseThrow().results().iterator().next().unit_abbrev();
+                ApiUnitResponse.class))
+                .orElseThrow(() -> new IllegalStateException("No unit found for " + unitFullName))
+                .results().iterator().next().unit_abbrev();
     }
 }
