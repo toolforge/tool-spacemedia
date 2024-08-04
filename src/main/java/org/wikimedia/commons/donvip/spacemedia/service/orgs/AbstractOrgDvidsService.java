@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -212,8 +213,15 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         LocalDateTime start = LocalDateTime.now();
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
         Set<String> idsKnownToDvidsApi = new HashSet<>();
-        for (CompositeMediaId id : response.getResults().stream().map(x -> x.toCompositeMediaId(dvids)).distinct()
-                .sorted().toList()) {
+        for (CompositeMediaId id : response.getResults().stream().map(x -> {
+            try {
+                return x.toCompositeMediaId(unit, dvids);
+            } catch (RuntimeException e) {
+                LOGGER.error("Failed to retrieve unit abbreviation for {}: {}", x, e.toString());
+                LOGGER.trace("Failed to retrieve unit abbreviation for {}", x, e);
+                return null;
+            }
+        }).filter(Objects::nonNull).distinct().sorted().toList()) {
             try {
                 idsKnownToDvidsApi.add(id.getMediaId());
                 Pair<DvidsMedia, Integer> result = dvidsProcessor.processDvidsMedia(
