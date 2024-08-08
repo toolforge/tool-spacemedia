@@ -3,7 +3,9 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,11 +48,15 @@ public class EsaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    protected List<String> getReviewCategories() {
+        List<String> result = new ArrayList<>(super.getReviewCategories());
+        result.add("ESA images (review needed)");
+        return result;
+    }
+
+    @Override
     public Set<String> findCategories(FlickrMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (includeHidden) {
-            result.add("ESA images (review needed)");
-        }
         // Try to find any ESA mission or people in the description and title.
         // Filters in the description search to minimize false positives such as Herschel, Galileo...
         String titleLc = media.getTitle().toLowerCase(Locale.ENGLISH);

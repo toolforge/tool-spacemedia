@@ -172,7 +172,7 @@ class IndividualsFlickrServiceTest extends AbstractOrgServiceTest {
         FileMetadata metadata = new FileMetadata(new URL("https://foo"));
         assertEquals(Set.of("Photos by the Curiosity rover Mastcam"), service.findCategories(media, metadata, false));
         assertEquals(Set.of("Photos by the Curiosity rover Mastcam", "Files from Kevin Gill Flickr stream",
-                "Spacemedia Flickr files uploaded by null"),
+                "Spacemedia Flickr files uploaded by null", "Spacemedia files (review needed)"),
                 service.findCategories(media, metadata, true));
     }
 
