@@ -41,9 +41,8 @@ public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
 
     private static final String STATICFLICKR_COM = ".staticflickr.com";
 
-    private static final Pattern USER_ID = Pattern.compile(
-            ".*(NHQ\\d{12}|GRC-\\d{4}-[A-Z]-\\d{5}|iss\\d{3}e\\d{6}|jsc\\d{4}e\\d{6}).*",
-            Pattern.CASE_INSENSITIVE);
+    public static final String USER_ID_STRING = "NHQ\\d{12}|GRC-\\d{4}-[A-Z]-\\d{5}|iss\\d{3}e\\d{6}|jsc\\d{4}e\\d{6}|[PV]\\d{8}[A-Z]{2}-\\d{4}";
+    private static final Pattern USER_ID = Pattern.compile(".*(" + USER_ID_STRING + ").*", Pattern.CASE_INSENSITIVE);
 
     @Column(nullable = false)
     private int license;

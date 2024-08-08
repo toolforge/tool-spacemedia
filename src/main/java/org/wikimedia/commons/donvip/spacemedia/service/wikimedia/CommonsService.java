@@ -787,7 +787,7 @@ public class CommonsService {
         // Find category by year/by month
         result = mapCategoriesByDate(result, date);
         // Make sure all imported files get reviewed
-        if (needsReview) {
+        if (needsReview && result.stream().noneMatch(x -> x.contains("review needed"))) {
             result.add("Spacemedia files (review needed)");
         }
         return result;

@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,5 +25,10 @@ public class UsMilFranceDvidsService extends AbstractOrgDvidsService {
     @Override
     public String getName() {
         return "U.S. Military in France (DVIDS)";
+    }
+
+    @Override
+    protected List<String> getReviewCategories() {
+        return List.of("Milimedia files (review needed)");
     }
 }
