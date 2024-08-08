@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 import static java.util.Optional.ofNullable;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.Year;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -82,6 +83,33 @@ public final class UnitedStates {
 
     private static String vd(String organization) {
         return "Videos of the United States " + organization;
+    }
+
+    public static Optional<String> getUsGovernmentCategory(Media media) {
+        return ofNullable(switch (media.getId().getRepoId()) {
+            case "whitehouse","whitehouse45","obamawhitehouse" -> media.getCreationDate().isAfter(LocalDate.of(2021, 1, 20))
+                    ? "Photographs from the White House during the Biden administration"
+                    : media.getCreationDate().isAfter(LocalDate.of(2017, 1, 20))
+                            ? "Photographs from the White House during the Trump administration"
+                            : media.getCreationDate().isAfter(LocalDate.of(2009, 1, 20))
+                                    ? "Photographs from the White House during the Obama administration"
+                                    : "Photographs from the White House";
+            default -> null;
+        });
+    }
+
+    public static String getUsGovernmentLicence(Media media) {
+        return switch (media.getId().getRepoId()) {
+            case "whitehouse", "whitehouse45", "obamawhitehouse" -> "PD-USGov-POTUS";
+            default -> null;
+        };
+    }
+
+    public static String getUsGovernmentTwitterAccount(Media media) {
+        return switch (media.getId().getRepoId()) {
+            case "whitehouse", "whitehouse45", "obamawhitehouse" -> "@whitehouse";
+            default -> null;
+        };
     }
 
     public static Optional<String> getUsMilitaryCategory(Media media) {

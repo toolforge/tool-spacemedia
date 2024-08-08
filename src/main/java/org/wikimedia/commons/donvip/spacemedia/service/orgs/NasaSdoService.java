@@ -129,6 +129,11 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     @Override
+    protected List<String> getReviewCategories() {
+        return List.of();
+    }
+
+    @Override
     public URL getSourceUrl(NasaSdoMedia media, FileMetadata metadata, String ext) {
         return metadata.getAssetUrl();
     }

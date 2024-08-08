@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,13 @@ public class UsSpaceForceFlickrService extends AbstractOrgFlickrService {
             result.remove(FlickrLicense.United_States_Government_Work.getWikiTemplate());
             result.add("PD-USGov-Military-Air Force");
         }
+        return result;
+    }
+
+    @Override
+    protected List<String> getReviewCategories() {
+        List<String> result = new ArrayList<>(super.getReviewCategories());
+        result.add("Milimedia files (review needed)");
         return result;
     }
 
