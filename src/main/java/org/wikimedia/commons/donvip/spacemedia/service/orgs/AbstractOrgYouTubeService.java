@@ -104,7 +104,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         }
 
         List<String> categories = new ArrayList<>();
-        categories.add("Spacemedia files (review needed)");
+        categories.addAll(getReviewCategories());
         categories.addAll(getOrgCategories());
         mediaProcessor.syncYouTubeVideos(repository.findMissingInCommons(repoIdsFromArgs), categories);
 

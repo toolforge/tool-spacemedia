@@ -1402,6 +1402,7 @@ public abstract class AbstractOrgService<T extends Media>
         if (includeHidden) {
             UnitedStates.getUsMilitaryCategory(media).ifPresent(result::add);
             result.add(hiddenUploadCategory());
+            result.addAll(getReviewCategories());
             ImageDimensions dims = metadata.getImageDimensions();
             if ("gif".equals(metadata.getFileExtensionOnCommons())) {
                 try {
@@ -1435,6 +1436,10 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected String hiddenUploadCategory() {
         return "Spacemedia files uploaded by " + commonsService.getAccount();
+    }
+
+    protected List<String> getReviewCategories() {
+        return List.of("Spacemedia files (review needed)");
     }
 
     protected boolean categorizeGeolocalizedByName() {

@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,11 @@ public class UsGovernmentFlickrService extends AbstractOrgFlickrService {
 
     protected boolean checkBlocklist() {
         return false;
+    }
+
+    @Override
+    protected List<String> getReviewCategories() {
+        return List.of("Govmedia files (review needed)");
     }
 
     @Override

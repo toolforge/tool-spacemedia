@@ -396,11 +396,15 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     }
 
     @Override
+    protected List<String> getReviewCategories() {
+        List<String> result = new ArrayList<>(super.getReviewCategories());
+        result.add("ESA images (review needed)");
+        return result;
+    }
+
+    @Override
     public Set<String> findCategories(EsaMedia media, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(media, metadata, includeHidden);
-        if (includeHidden) {
-            result.add("ESA images (review needed)");
-        }
         String mission = Optional.ofNullable(media.getMission()).orElse("");
         if (StringUtils.isNotBlank(mission)) {
             String cats = esaMissions.get(mission);
