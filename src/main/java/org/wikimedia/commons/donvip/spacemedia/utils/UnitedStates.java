@@ -101,6 +101,7 @@ public final class UnitedStates {
     public static String getUsGovernmentLicence(Media media) {
         return switch (media.getId().getRepoId()) {
             case "whitehouse", "whitehouse45", "obamawhitehouse" -> "PD-USGov-POTUS";
+            case "statephotos" -> "PD-USGov-DOS";
             default -> null;
         };
     }
@@ -108,6 +109,7 @@ public final class UnitedStates {
     public static String getUsGovernmentTwitterAccount(Media media) {
         return switch (media.getId().getRepoId()) {
             case "whitehouse", "whitehouse45", "obamawhitehouse" -> "@whitehouse";
+            case "statephotos" -> "@StateDept";
             default -> null;
         };
     }
