@@ -360,6 +360,11 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia ESA files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public URL getSourceUrl(EsaMedia media, FileMetadata metadata, String ext) {
         URL url = media.getUrl();
         String externalForm = url.toExternalForm();

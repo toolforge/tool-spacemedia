@@ -26,6 +26,11 @@ public class NasaBoxService extends AbstractOrgBoxService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Artemis Outreach files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public Set<String> findLicenceTemplates(BoxMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("PD-USGov-NASA");
