@@ -215,6 +215,10 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
         return NasaSvsMedia.class;
     }
 
+    protected String hiddenUploadCategory() {
+        return "Spacemedia SVS files uploaded by " + commonsService.getAccount();
+    }
+
     // https://svs.gsfc.nasa.gov/help/
 
     @Override
