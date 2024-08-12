@@ -110,6 +110,11 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     }
 
     @Override
+    protected String hiddenUploadCategory() {
+        return "Files from Umbra uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected boolean isSatellitePicture(S3Media media, FileMetadata metadata) {
         return true;
     }

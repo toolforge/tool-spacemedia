@@ -30,6 +30,10 @@ public class UsGovernmentFlickrService extends AbstractOrgFlickrService {
         return false;
     }
 
+    protected String hiddenUploadCategory() {
+        return "Govmedia files uploaded by " + commonsService.getAccount();
+    }
+
     @Override
     protected List<String> getReviewCategories() {
         return List.of("Govmedia files (review needed)");

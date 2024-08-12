@@ -88,6 +88,10 @@ public class KariService extends AbstractOrgService<KariMedia> {
         return false;
     }
 
+    protected String hiddenUploadCategory() {
+        return "Spacemedia KARI files uploaded by " + commonsService.getAccount();
+    }
+
     @Override
     public Set<String> findLicenceTemplates(KariMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
