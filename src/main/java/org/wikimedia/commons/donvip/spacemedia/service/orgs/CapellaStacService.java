@@ -79,7 +79,7 @@ public class CapellaStacService extends AbstractOrgStacService {
     }
 
     @Override
-    protected String hiddenUploadCategory() {
+    protected String hiddenUploadCategory(String repoId) {
         return "Files from Capella Space uploaded by " + commonsService.getAccount();
     }
 

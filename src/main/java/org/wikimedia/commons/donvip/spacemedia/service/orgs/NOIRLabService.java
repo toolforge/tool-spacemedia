@@ -136,6 +136,11 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia NOIRLab files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public Set<String> findLicenceTemplates(DjangoplicityMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("NOIRLab");
