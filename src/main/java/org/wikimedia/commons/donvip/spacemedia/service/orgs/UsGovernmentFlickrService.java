@@ -31,6 +31,11 @@ public class UsGovernmentFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "U.S. Government Flickr files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected List<String> getReviewCategories() {
         return List.of("Govmedia files (review needed)");
     }

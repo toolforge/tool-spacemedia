@@ -100,6 +100,11 @@ class AbstractOrgDjangoplicityServiceTest extends AbstractOrgServiceTest {
             protected String getCopyrightLink() {
                 return null;
             }
+
+            @Override
+            protected String hiddenUploadCategory(String repoId) {
+                return "";
+            }
         }
 
         @Bean

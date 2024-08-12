@@ -169,6 +169,11 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia ERCC files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public void updateMedia(String[] args) throws IOException, UploadException {
         LocalDateTime start = startUpdateMedia();
         int count = 0;

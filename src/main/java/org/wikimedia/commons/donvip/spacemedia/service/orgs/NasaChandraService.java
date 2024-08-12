@@ -61,6 +61,11 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Chandra files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected List<String> fetchGalleryUrls(String repoId) {
         List<String> result = doFetchGalleryUrls();
         GALLERY_URLS.put(repoId, result);

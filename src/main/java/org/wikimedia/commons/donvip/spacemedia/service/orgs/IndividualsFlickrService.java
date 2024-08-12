@@ -41,6 +41,11 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Individuals Flickr files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected Collection<String> getStringsToRemove(FlickrMedia media) {
         return STRINGS_TO_REMOVE;
     }

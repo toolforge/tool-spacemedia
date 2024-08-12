@@ -86,6 +86,11 @@ public class DinamisService extends AbstractOrgService<DinamisMedia> {
         return true;
     }
 
+    @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Dinamis files uploaded by " + commonsService.getAccount();
+    }
+
     private String getBaseUrl(String repoId) {
         return BASE_URL + ("PO".equals(repoId) ? "/PO" : "");
     }

@@ -51,6 +51,11 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia NESDIS files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected List<String> fetchGalleryUrls(String repoId) {
         List<String> result = new ArrayList<>();
         result.addAll(fetchGalleryUrls(repoId, "real-time-imagery/imagery-collections"));

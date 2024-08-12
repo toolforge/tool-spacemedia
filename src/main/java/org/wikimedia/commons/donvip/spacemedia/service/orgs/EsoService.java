@@ -44,6 +44,11 @@ public class EsoService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia ESO files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public Set<String> findLicenceTemplates(DjangoplicityMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("ESO");

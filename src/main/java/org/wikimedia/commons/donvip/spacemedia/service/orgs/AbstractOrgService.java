@@ -821,7 +821,7 @@ public abstract class AbstractOrgService<T extends Media>
 
     @Override
     public T syncAndSave(T media) throws IOException {
-        String hiddenCat = hiddenUploadCategory().replace(' ', '_');
+        String hiddenCat = hiddenUploadCategory(media.getId().getRepoId()).replace(' ', '_');
         media.getMetadataStream().forEach(fm -> {
             for (String filename : fm.getCommonsFileNames()) {
                 if (!commonsService.isInCategory(filename, c -> hiddenCat.equals(c.getId().getTo()))) {
@@ -1401,7 +1401,7 @@ public abstract class AbstractOrgService<T extends Media>
         }
         if (includeHidden) {
             UnitedStates.getUsMilitaryCategory(media).ifPresent(result::add);
-            result.add(hiddenUploadCategory());
+            result.add(hiddenUploadCategory(media.getId().getRepoId()));
             result.addAll(getReviewCategories());
             ImageDimensions dims = metadata.getImageDimensions();
             if ("gif".equals(metadata.getFileExtensionOnCommons())) {
@@ -1434,9 +1434,7 @@ public abstract class AbstractOrgService<T extends Media>
         return result;
     }
 
-    protected String hiddenUploadCategory() {
-        return "Spacemedia files uploaded by " + commonsService.getAccount();
-    }
+    protected abstract String hiddenUploadCategory(String repoId);
 
     protected List<String> getReviewCategories() {
         return List.of("Spacemedia files (review needed)");

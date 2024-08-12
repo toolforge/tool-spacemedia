@@ -63,6 +63,11 @@ public class HubbleNasaService extends AbstractOrgStsciService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Hubble files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public void checkCommonsCategories() {
         checkCommonsCategories(hubbleCategories);
     }

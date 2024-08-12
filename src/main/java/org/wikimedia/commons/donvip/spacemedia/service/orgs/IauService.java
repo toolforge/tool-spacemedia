@@ -97,6 +97,11 @@ public class IauService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia IAU files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected boolean checkBlocklist() {
         return true;
     }
