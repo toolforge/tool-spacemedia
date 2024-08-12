@@ -241,8 +241,8 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     protected abstract List<String> getOrgCategories();
 
     @Override
-    protected String hiddenUploadCategory() {
-        return "Spacemedia YouTube files uploaded by " + commonsService.getAccount();
+    protected String hiddenUploadCategory(String repoId) {
+        return "YouTube files uploaded by " + commonsService.getAccount();
     }
 
     @Override

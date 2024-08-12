@@ -132,8 +132,8 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
     }
 
     @Override
-    protected String hiddenUploadCategory() {
-        return "Spacemedia Flickr files uploaded by " + commonsService.getAccount();
+    protected String hiddenUploadCategory(String repoId) {
+        return "Flickr files uploaded by " + commonsService.getAccount();
     }
 
     @Override

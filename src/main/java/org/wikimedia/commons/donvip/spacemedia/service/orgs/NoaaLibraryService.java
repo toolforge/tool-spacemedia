@@ -44,6 +44,11 @@ public class NoaaLibraryService extends AbstractOrgHtmlGalleryService<NoaaLibrar
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia NOAA Library files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected List<String> fetchGalleryUrls(String repoId) {
         List<String> result = new ArrayList<>();
         result.addAll(fetchGalleryUrls(repoId, "2268"));

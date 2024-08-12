@@ -65,6 +65,11 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia MODIS files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected boolean checkBlocklist() {
         return false;
     }

@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 

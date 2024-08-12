@@ -48,6 +48,11 @@ public class EsaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia ESA Flickr files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected List<String> getReviewCategories() {
         List<String> result = new ArrayList<>(super.getReviewCategories());
         result.add("ESA images (review needed)");
