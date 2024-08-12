@@ -53,6 +53,11 @@ public class NasaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia NASA Flickr files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public String getUiRepoId(String repoId) {
         // Remove "nasa" from ids displayed in UI to make the long list fit in screen
         return super.getUiRepoId(repoId).replaceAll("nasa[_-]?", "").replaceAll("_?photos?", "").replace("mission", "")

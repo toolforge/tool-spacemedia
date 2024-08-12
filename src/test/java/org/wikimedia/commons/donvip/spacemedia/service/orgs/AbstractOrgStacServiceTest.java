@@ -67,6 +67,11 @@ class AbstractOrgStacServiceTest extends AbstractOrgServiceTest {
                 protected boolean isStacItemIgnored(String itemHref) {
                     return false;
                 }
+
+                @Override
+                protected String hiddenUploadCategory(String repoId) {
+                    return "";
+                }
             };
         }
     }

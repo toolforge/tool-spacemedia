@@ -125,6 +125,11 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "DVIDS files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public void updateMedia(String[] args) {
         LocalDateTime start = startUpdateMedia();
         Set<String> idsKnownToDvidsApi = new HashSet<>();

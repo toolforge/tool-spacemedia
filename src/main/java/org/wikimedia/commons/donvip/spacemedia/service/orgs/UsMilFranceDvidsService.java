@@ -28,6 +28,11 @@ public class UsMilFranceDvidsService extends AbstractOrgDvidsService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Milimedia files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected List<String> getReviewCategories() {
         return List.of("Milimedia files (review needed)");
     }

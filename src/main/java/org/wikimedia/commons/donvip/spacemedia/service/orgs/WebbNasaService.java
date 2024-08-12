@@ -67,6 +67,11 @@ public class WebbNasaService extends AbstractOrgStsciService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Webb files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public void checkCommonsCategories() {
         checkCommonsCategories(webbCategories);
     }

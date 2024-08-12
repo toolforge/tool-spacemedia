@@ -61,6 +61,11 @@ public class HubbleEsaService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Hubble files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected SdcStatements getStatements(DjangoplicityMedia media, FileMetadata metadata) {
         SdcStatements result = super.getStatements(media, metadata).creator("Q2513"); // Created by Hubble
         for (String instrument : media.getInstruments()) {
