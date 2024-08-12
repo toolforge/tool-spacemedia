@@ -27,6 +27,10 @@ public class UsMilFranceDvidsService extends AbstractOrgDvidsService {
         return "U.S. Military in France (DVIDS)";
     }
 
+    protected String hiddenUploadCategory() {
+        return "Milimedia files uploaded by " + commonsService.getAccount();
+    }
+
     @Override
     protected List<String> getReviewCategories() {
         return List.of("Milimedia files (review needed)");
