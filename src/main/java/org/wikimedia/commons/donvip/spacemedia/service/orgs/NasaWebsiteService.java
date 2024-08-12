@@ -80,6 +80,11 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia NASA Website files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected List<String> fetchGalleryUrls(String repoId) {
         if (IMAGE_ARTICLE.equals(repoId)) {
             return List.of(BASE_URL + repoId);

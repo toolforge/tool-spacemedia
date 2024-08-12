@@ -56,6 +56,11 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Arianespace YouTube files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public Set<String> findCategories(YouTubeMedia video, FileMetadata metadata, boolean includeHidden) {
         Set<String> result = super.findCategories(video, metadata, includeHidden);
         if (includeHidden) {

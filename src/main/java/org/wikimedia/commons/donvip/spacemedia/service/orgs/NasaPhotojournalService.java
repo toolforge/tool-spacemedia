@@ -88,6 +88,11 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Photojournal files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected boolean checkBlocklist() {
         return false;
     }

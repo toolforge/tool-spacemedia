@@ -69,6 +69,11 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia " + lrocOrShadowcam(repoId, "LROC", "ShadowCam") + " files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected boolean checkBlocklist() {
         return false;
     }

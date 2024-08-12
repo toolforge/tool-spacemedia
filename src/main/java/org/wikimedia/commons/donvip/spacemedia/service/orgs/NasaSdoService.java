@@ -124,7 +124,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     @Override
-    protected String hiddenUploadCategory() {
+    protected String hiddenUploadCategory(String repoId) {
         return "Spacemedia SDO files uploaded by " + commonsService.getAccount();
     }
 

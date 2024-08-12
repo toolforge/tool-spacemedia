@@ -27,6 +27,11 @@ public class SentinelHubFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Sentinel Hub Flickr files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected boolean checkBlocklist() {
         return false;
     }

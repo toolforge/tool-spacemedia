@@ -73,6 +73,11 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "WEB.mil files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     protected List<String> fetchGalleryUrls(String repoId) {
         return List.of(galleryUrls.get(repoId));
     }

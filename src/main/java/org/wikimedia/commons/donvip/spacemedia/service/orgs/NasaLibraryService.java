@@ -131,6 +131,11 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia NASA Library files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public NasaMedia saveMedia(NasaMedia media) {
         LOGGER.info("Saving {}", media);
         if (media.getPublicationDateTime() == null) {

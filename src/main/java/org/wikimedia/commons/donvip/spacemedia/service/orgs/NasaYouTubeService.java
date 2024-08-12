@@ -24,6 +24,11 @@ public class NasaYouTubeService extends AbstractOrgYouTubeService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia NASA YouTube files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public String getUiRepoId(String repoId) {
         // Remove "nasa" from ids displayed in UI to make the long list fit in screen
         return super.getUiRepoId(repoId).replaceAll("(?i)nasa[_-]?", "").replace("Video", "");

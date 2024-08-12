@@ -60,6 +60,11 @@ public class WebbEsaService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
+    protected String hiddenUploadCategory(String repoId) {
+        return "Spacemedia Webb files uploaded by " + commonsService.getAccount();
+    }
+
+    @Override
     public Set<String> findLicenceTemplates(DjangoplicityMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("ESA-Webb|" + media.getCredits());

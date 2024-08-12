@@ -99,7 +99,7 @@ public class InpeDpiService extends AbstractOrgService<InpeDpiMedia> {
     }
 
     @Override
-    protected String hiddenUploadCategory() {
+    protected String hiddenUploadCategory(String repoId) {
         return "Spacemedia INPE files uploaded by " + commonsService.getAccount();
     }
 
