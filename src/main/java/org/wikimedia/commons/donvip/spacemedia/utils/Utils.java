@@ -147,6 +147,10 @@ public final class Utils {
         return request;
     }
 
+    public static HttpHead newHttpHead(URI uri) {
+        return new HttpHead(uri);
+    }
+
     public static HttpPost newHttpPost(Element form, BiConsumer<Element, List<NameValuePair>> consumer)
             throws IOException {
         return newHttpPost(form, x -> x, consumer, null);

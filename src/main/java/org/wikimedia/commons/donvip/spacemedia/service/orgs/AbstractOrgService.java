@@ -1734,7 +1734,7 @@ public abstract class AbstractOrgService<T extends Media>
         if (fm.isImage() && fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000) {
             LOGGER.debug("Too small image test has been trigerred for {}", fm);
             return mediaService.ignoreAndSaveMetadata(fm, "Too small image");
-        } else if (fm.getSize() != null && fm.getSize() > 5_368_709_120L) {
+        } else if (fm.getSize() != null && fm.getSize() > CommonsService.MAX_FILE_SIZE) {
             // See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
             LOGGER.debug("Too big file test has been trigerred for {}", fm);
             return mediaService.ignoreAndSaveMetadata(fm, "Too big file");
