@@ -6,6 +6,7 @@ import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.execOutput;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.findExtension;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpHead;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
 
 import java.awt.image.BufferedImage;
@@ -40,6 +41,8 @@ import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ProtocolException;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.poi.hslf.usermodel.HSLFSlideShow;
@@ -51,9 +54,11 @@ import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.MovieBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 public class MediaUtils {
@@ -93,6 +98,17 @@ public class MediaUtils {
         }
         if (isBlank(extension)) {
             extension = findExtension(uri.toString());
+        }
+        try (ClassicHttpResponse response = executeRequest(newHttpHead(uri), httpClient, context)) {
+            Header header = response.getHeader(HttpHeaders.CONTENT_LENGTH);
+            if (header != null) {
+                long contentLength = Long.parseLong(header.getValue());
+                if (contentLength > CommonsService.MAX_FILE_SIZE) {
+                    throw new FileDecodingException(contentLength, "File too big: " + uri + " => " + contentLength);
+                }
+            }
+        } catch (ProtocolException | NumberFormatException e) {
+            LOGGER.warn(e.getMessage());
         }
         try (ClassicHttpResponse response = executeRequest(newHttpGet(uri), httpClient, context);
                 InputStream in = response.getEntity().getContent()) {
