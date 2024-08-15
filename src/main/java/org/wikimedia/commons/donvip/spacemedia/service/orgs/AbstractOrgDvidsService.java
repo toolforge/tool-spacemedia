@@ -350,6 +350,11 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
+    protected String getTakenLocation(DvidsMedia media) {
+        return media.getLocation().getCountry();
+    }
+
+    @Override
     protected final String getAuthor(DvidsMedia media, FileMetadata metadata) {
         StringBuilder result = new StringBuilder();
         Matcher m = US_MEDIA_BY.matcher(media.getDescription());
