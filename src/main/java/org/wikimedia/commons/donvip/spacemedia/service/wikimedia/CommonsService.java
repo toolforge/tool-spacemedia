@@ -223,6 +223,11 @@ public class CommonsService {
 
     private static final int MAX_LEN_SEARCH = 266;
 
+    /**
+     * See https://commons.wikimedia.org/wiki/Commons:Maximum_file_size
+     */
+    public static final long MAX_FILE_SIZE = 5_368_709_120L;
+
     @Autowired
     private CommonsImageRepository imageRepository;
 
