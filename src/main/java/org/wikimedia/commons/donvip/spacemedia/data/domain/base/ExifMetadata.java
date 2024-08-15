@@ -145,7 +145,9 @@ public class ExifMetadata {
     @Column(columnDefinition = "TEXT")
     private String xmpTitle;
 
+    @Lob
     @JsonProperty("XMP:WebStatement")
+    @Column(columnDefinition = "TEXT")
     private String xmpWebStatement;
 
     @JsonProperty("Composite:Megapixels")
