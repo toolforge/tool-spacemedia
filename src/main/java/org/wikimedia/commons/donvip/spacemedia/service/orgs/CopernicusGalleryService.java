@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.regex.Pattern.compile;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
 
 import java.io.IOException;
@@ -163,7 +164,9 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
             } else if ("Credit:".equals(prevLine)) {
                 media.setCredits(line.strip());
             }
-            prevLine = line.strip();
+            if (isNotBlank(line)) {
+                prevLine = line.strip();
+            }
         }
 
         media.setKeywords(section.getElementsByClass("col-12 col-md-6 order-md-first m-0").first()
