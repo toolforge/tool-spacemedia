@@ -10,6 +10,7 @@
 30  0 * * * /bin/sh /data/project/spacemedia/run.sh custom kari
 35  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr inpe-flickr
 # Real ones
+45  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr usembassies-flickr
 50  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr usgovernment-flickr
 55  0 * * * /bin/sh /data/project/spacemedia/run.sh flickr sentinel-hub-flickr
  0  1 * * * /bin/sh /data/project/spacemedia/run.sh custom nasa-library
