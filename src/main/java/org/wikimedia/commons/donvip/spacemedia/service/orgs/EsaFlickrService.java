@@ -53,8 +53,8 @@ public class EsaFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
-    protected List<String> getReviewCategories() {
-        List<String> result = new ArrayList<>(super.getReviewCategories());
+    protected List<String> getReviewCategories(FlickrMedia media) {
+        List<String> result = new ArrayList<>(super.getReviewCategories(media));
         result.add("ESA images (review needed)");
         return result;
     }

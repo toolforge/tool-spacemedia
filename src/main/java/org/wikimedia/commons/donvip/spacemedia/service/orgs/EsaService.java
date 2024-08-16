@@ -401,8 +401,8 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     }
 
     @Override
-    protected List<String> getReviewCategories() {
-        List<String> result = new ArrayList<>(super.getReviewCategories());
+    protected List<String> getReviewCategories(EsaMedia media) {
+        List<String> result = new ArrayList<>(super.getReviewCategories(media));
         result.add("ESA images (review needed)");
         return result;
     }

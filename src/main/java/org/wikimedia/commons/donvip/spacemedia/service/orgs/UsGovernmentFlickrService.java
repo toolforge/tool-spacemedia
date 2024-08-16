@@ -36,8 +36,8 @@ public class UsGovernmentFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
-    protected List<String> getReviewCategories() {
-        return List.of("Govmedia files (review needed)");
+    protected List<String> getReviewCategories(FlickrMedia media) {
+        return getGovernmentReviewCategories(media);
     }
 
     @Override

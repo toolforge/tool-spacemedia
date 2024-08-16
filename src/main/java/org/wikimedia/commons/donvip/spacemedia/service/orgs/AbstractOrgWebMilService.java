@@ -9,6 +9,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.webmil.WebMilMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.webmil.WebMilMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -185,6 +187,11 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
     @Override
     protected final Pair<String, Map<String, String>> getWikiFileDesc(WebMilMedia media, FileMetadata metadata) {
         return milim(media, metadata, media.getVirin(), Optional.empty(), Optional.empty());
+    }
+
+    @Override
+    protected List<String> getReviewCategories(WebMilMedia media) {
+        return getMilitaryReviewCategories(media);
     }
 
     @Override
