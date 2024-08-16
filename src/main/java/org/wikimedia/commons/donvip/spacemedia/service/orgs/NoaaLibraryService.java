@@ -32,7 +32,7 @@ public class NoaaLibraryService extends AbstractOrgHtmlGalleryService<NoaaLibrar
     private static final Logger LOGGER = LoggerFactory.getLogger(NoaaLibraryService.class);
 
     private static final String BASE_URL = "https://www.noaa.gov";
-    private static final String COLL_URL = BASE_URL + "/digital-library/collections";
+    private static final String COLL_URL = BASE_URL + "/digital-library/categories";
 
     public NoaaLibraryService(NoaaLibraryMediaRepository repository) {
         super(repository, "noaa.library", Set.of("noaa.library"));
@@ -55,16 +55,16 @@ public class NoaaLibraryService extends AbstractOrgHtmlGalleryService<NoaaLibrar
         return result;
     }
 
-    private List<String> fetchGalleryUrls(String repoId, String collectionId) {
+    private List<String> fetchGalleryUrls(String repoId, String categoryId) {
         List<String> result = new ArrayList<>();
-        String url = COLL_URL + '/' + collectionId;
+        String url = COLL_URL + '/' + categoryId;
         result.add(url);
         try {
             result.addAll(getWithJsoup(url, 10_000, 3).getElementsByClass("c-view__wrap").first()
                     .getElementsByClass("views-view-responsive-grid__item-inner").stream()
                     .map(x -> BASE_URL + x.getElementsByTag("a").first().attr("href")).toList());
         } catch (IOException e) {
-            LOGGER.error("Failed to retrieve sub collections", e);
+            LOGGER.error("Failed to retrieve sub categories", e);
             GlitchTip.capture(e);
         }
         return result;
