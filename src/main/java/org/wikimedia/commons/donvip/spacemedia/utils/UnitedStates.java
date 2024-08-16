@@ -85,6 +85,12 @@ public final class UnitedStates {
         return "Videos of the United States " + organization;
     }
 
+    public static String getUsEmbassyTwitterAccount(Media media) {
+        return switch (media.getId().getRepoId()) {
+            default -> null;
+        };
+    }
+
     public static Optional<String> getUsGovernmentCategory(Media media) {
         return ofNullable(switch (media.getId().getRepoId()) {
             case "whitehouse","whitehouse45","obamawhitehouse" -> media.getCreationDate().isAfter(LocalDate.of(2021, 1, 20))
