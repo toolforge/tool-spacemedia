@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.converter.ConvertWith;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,25 +43,23 @@ class CopernicusGalleryServiceTest extends AbstractOrgServiceTest {
     private static final Pattern HAS_DAY_MONTH = Pattern.compile(".*" + CopernicusGalleryService.DAY_MONTH + ".*");
 
     @ParameterizedTest
-    @CsvSource({ "smoke-quebec-wildfires-reaches-baltic-sea" })
-    void testFillMediaWithHtml(String id) throws IOException {
+    @CsvSource(delimiter = ';', value = {
+        "smoke-quebec-wildfires-reaches-baltic-sea;European Union, Copernicus Sentinel-3 imagery;Baltic Sea;Smoke from Québec wildfires reaches the Baltic Sea;https://www.copernicus.eu/system/files/styles/image_of_the_day/private/2023-06/image_day/20230616_SmokeInTheBalticSea.jpg?itok=j9Ad-f5C;This image, acquired by one of Copernicus’ Sentinel-3 satellites, shows plumes from the Québec wildfires making their way to north-eastern Europe. Canada, which is currently affected by around 450 active fires, has activated the EU Civil Protection Mechanism requesting European assistance. In an immediate response, France, Portugal and Spain sent close to 300 firefighters. Wildfires in Canada have burnt 4.1 million hectares so far, an area as large as the Netherlands. Copernicus data facilitate continuous monitoring of the situation, providing invaluable support to emergency management operations.;https://www.copernicus.eu/system/files/2023-06/image_day/20230616_SmokeInTheBalticSea.jpg;Fires,Atmosphere",
+        "kourou-french-guiana;European Union, Copernicus Sentinel-2 imagery;French Guiana;Kourou in French Guiana;https://www.copernicus.eu/system/files/styles/image_of_the_day/private/2024-08/image_day/20240816_KourouInFrenchGuiana.png?itok=utnn--OC;Ahead of the upcoming launch of the Copernicus Sentinel-2C, we take a closer look at Kourou, the headquarters of the Guiana Space Centre. Kourou is a coastal town in north-central French Guiana, an overseas department of France. It lies at the mouth of the Kourou River, where its waters flow into the Atlantic Ocean after a journey of 144 km through dense tropical rainforest. The city is surrounded by a landscape rich in biodiversity, with mangroves lining the riverbanks and extensive white sandy beaches stretching along the coast. The region's economy is deeply rooted in agriculture, with crops such as coffee, cocoa and tropical fruits the main products. To the northwest of Kourou is the Guiana Space Centre, known as Europe's Spaceport. Established in 1964, the spaceport's proximity to the equator provides an ideal location for launching satellites into orbit. The spaceport has been the starting point for many important satellite missions and plays a key role in Europe's independent access to space endeavours. This image was acquired by the Copernicus Sentinel-2 A satellite on 10 October 2023. More information on the Copernicus Sentinel-2 mission is available here.;https://www.copernicus.eu/system/files/2024-08/image_day/20240816_KourouInFrenchGuiana.png;Other Human Activities,Human Activities" })
+    void testFillMediaWithHtml(String id, String credits, String location, String title, String thumbnail, String description, String assetUrl, @ConvertWith(SetArgumentConverter.class) Set<String> keywords) throws IOException {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         CopernicusGalleryMedia media = new CopernicusGalleryMedia();
         service.fillMediaWithHtml(null, Jsoup.parse(new File("src/test/resources/copernicus/" + id + ".html")), null,
                 media);
-        assertEquals("European Union, Copernicus Sentinel-3 imagery", media.getCredits());
-        assertEquals("Baltic Sea", media.getLocation());
-        assertEquals("Smoke from Québec wildfires reaches the Baltic Sea", media.getTitle());
-        assertEquals(
-                "https://www.copernicus.eu/system/files/styles/image_of_the_day/private/2023-06/image_day/20230616_SmokeInTheBalticSea.jpg?itok=j9Ad-f5C",
-                media.getThumbnailUrl().toExternalForm());
-        assertEquals(
-                "This image, acquired by one of Copernicus’ Sentinel-3 satellites, shows plumes from the Québec wildfires making their way to north-eastern Europe. Canada, which is currently affected by around 450 active fires, has activated the EU Civil Protection Mechanism requesting European assistance. In an immediate response, France, Portugal and Spain sent close to 300 firefighters. Wildfires in Canada have burnt 4.1 million hectares so far, an area as large as the Netherlands. Copernicus data facilitate continuous monitoring of the situation, providing invaluable support to emergency management operations.",
-                media.getDescription());
+        assertEquals(credits, media.getCredits());
+        assertEquals(location, media.getLocation());
+        assertEquals(title, media.getTitle());
+        assertEquals(thumbnail, media.getThumbnailUrl().toExternalForm());
+        assertEquals(description, media.getDescription());
         FileMetadata metadata = media.getUniqueMetadata();
         assertNotNull(metadata);
-        assertEquals("https://www.copernicus.eu/system/files/2023-06/image_day/20230616_SmokeInTheBalticSea.jpg", metadata.getAssetUrl().toExternalForm());
-        assertEquals(Set.of("Atmosphere", "Fires"), media.getKeywords());
+        assertEquals(assetUrl, metadata.getAssetUrl().toExternalForm());
+        assertEquals(keywords, media.getKeywords());
     }
 
     @Test
