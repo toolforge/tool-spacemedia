@@ -129,7 +129,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     @Override
-    protected List<String> getReviewCategories() {
+    protected List<String> getReviewCategories(NasaSdoMedia media) {
         return List.of();
     }
 

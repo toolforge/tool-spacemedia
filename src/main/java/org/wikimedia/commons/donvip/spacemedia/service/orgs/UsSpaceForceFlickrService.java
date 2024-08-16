@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -39,10 +38,8 @@ public class UsSpaceForceFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
-    protected List<String> getReviewCategories() {
-        List<String> result = new ArrayList<>(super.getReviewCategories());
-        result.add("Milimedia files (review needed)");
-        return result;
+    protected List<String> getReviewCategories(FlickrMedia media) {
+        return getMilitaryReviewCategories(media);
     }
 
     @Override

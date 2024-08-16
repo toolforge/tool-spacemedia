@@ -130,10 +130,8 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
-    protected List<String> getReviewCategories() {
-        List<String> result = new ArrayList<>(super.getReviewCategories());
-        result.add("Milimedia files (review needed)");
-        return result;
+    protected List<String> getReviewCategories(DvidsMedia media) {
+        return getMilitaryReviewCategories(media);
     }
 
     @Override

@@ -104,7 +104,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         }
 
         List<String> categories = new ArrayList<>();
-        categories.addAll(getReviewCategories());
+        categories.addAll(getReviewCategories(null));
         categories.addAll(getOrgCategories());
         mediaProcessor.syncYouTubeVideos(repository.findMissingInCommons(repoIdsFromArgs), categories);
 

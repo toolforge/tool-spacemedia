@@ -85,6 +85,27 @@ public final class UnitedStates {
         return "Videos of the United States " + organization;
     }
 
+    public static Optional<String> getUsEmbassyCategory(Media media) {
+        return Optional.of("Files from the " + switch (media.getId().getRepoId()) {
+        case "101399499@N08" -> "U.S. Embassy in South Sudan";
+        case "156788110@N04" -> "U.S. Embassy in Ljubljana";
+        case "196062858@N03" -> "U.S. Mission to the Dutch Caribbean";
+        case "40236643@N04" -> "U.S. Embassy in San Salvador";
+        case "89616529@N03" -> "U.S. Embassy in Dhaka";
+        case "92297346@N03" -> "U.S. Embassy in Tokyo";
+        default -> throw new IllegalStateException(media.getId().getRepoId());
+        } + " Flickr Stream");
+    }
+
+    public static String getUsEmbassyTwitterAccount(Media media) {
+        return switch (media.getId().getRepoId()) {
+            case "156788110@N04" -> "@USEmbassySLO";
+            case "40236643@N04" -> "@USEmbassySV";
+            case "92297346@N03" -> "@usembassytokyo";
+            default -> null;
+        };
+    }
+
     public static Optional<String> getUsGovernmentCategory(Media media) {
         return ofNullable(switch (media.getId().getRepoId()) {
             case "whitehouse","whitehouse45","obamawhitehouse" -> media.getCreationDate().isAfter(LocalDate.of(2021, 1, 20))

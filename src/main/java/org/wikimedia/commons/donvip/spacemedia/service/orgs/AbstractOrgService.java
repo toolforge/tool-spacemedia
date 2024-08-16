@@ -1402,7 +1402,7 @@ public abstract class AbstractOrgService<T extends Media>
         if (includeHidden) {
             UnitedStates.getUsMilitaryCategory(media).ifPresent(result::add);
             result.add(hiddenUploadCategory(media.getId().getRepoId()));
-            result.addAll(getReviewCategories());
+            result.addAll(getReviewCategories(media));
             ImageDimensions dims = metadata.getImageDimensions();
             if ("gif".equals(metadata.getFileExtensionOnCommons())) {
                 try {
@@ -1436,8 +1436,29 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected abstract String hiddenUploadCategory(String repoId);
 
-    protected List<String> getReviewCategories() {
+    protected List<String> getReviewCategories(T media) {
         return List.of("Spacemedia files (review needed)");
+    }
+
+    protected List<String> getDiplomaticReviewCategories(T media) {
+        return getSideProjectReviewCategories(media, "Diplomedia");
+    }
+
+    protected List<String> getGovernmentReviewCategories(T media) {
+        return getSideProjectReviewCategories(media, "Govmedia");
+    }
+
+    protected List<String> getMilitaryReviewCategories(T media) {
+        return getSideProjectReviewCategories(media, "Milimedia");
+    }
+
+    protected List<String> getSideProjectReviewCategories(T media, String project) {
+        List<String> result = new ArrayList<>();
+        result.add(project + " files (review needed)");
+        if (media.containsInTitleOrDescriptionOrKeywords("space", "rocket", "satellite", "launch", "nasa", "astronaut", "cosmonaut")) {
+            result.add("Spacemedia files (review needed)");
+        }
+        return result;
     }
 
     protected boolean categorizeGeolocalizedByName() {
