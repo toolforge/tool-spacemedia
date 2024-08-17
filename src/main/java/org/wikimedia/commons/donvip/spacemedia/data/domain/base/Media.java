@@ -185,12 +185,8 @@ public class Media implements MediaProjection, MediaDescription {
         String uid = getUploadId(fileMetadata);
         String s = getUploadTitle();
         if (strippedLower(uid).equals(strippedLower(s))) {
-            return isWrongtitle(s)
-                    ? getUploadTitle(
-                            normalizeFilename(
-                                    getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata)))),
-                            uid)
-                    : stringShortened(s, "");
+            return getUploadTitle(normalizeFilename(
+                    getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata)))), uid);
         } else {
             return getUploadTitle(isWrongtitle(s)
                     ? normalizeFilename(getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata))))
