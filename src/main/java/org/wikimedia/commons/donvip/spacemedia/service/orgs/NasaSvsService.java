@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Caption;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
@@ -156,6 +157,9 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
         ofNullable(viz.missions()).map(TreeSet::new).ifPresent(media::setMissions);
         if (viz.media_groups() != null) {
             for (NasaSvsMediaGroup group : viz.media_groups()) {
+                List<Caption> captions = group.mediaItemsStream()
+                        .filter(x -> x.media_type() == NasaSvsMediaType.Captions && x.filename().endsWith(".srt"))
+                        .map(x -> new Caption(x.language_code(), x.url())).toList();
                 // For each group and media type, only consider the biggest media (unless we
                 // have a webm file at the same resolution)
                 for (NasaSvsMediaType mediaType : NasaSvsMediaType.typesOkForCommons()) {
@@ -186,6 +190,11 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                                 addMetadata(media, item.url(), fm -> {
                                     fm.setDescription(item.alt_text());
                                     fm.setImageDimensions(new ImageDimensions(item.width(), item.height()));
+                                    if (item.media_type() == NasaSvsMediaType.Movie) {
+                                        for (Caption c : captions) {
+                                            addCaption(fm, c.getLang(), c.getUrl());
+                                        }
+                                    }
                                 });
                             });
                 }
