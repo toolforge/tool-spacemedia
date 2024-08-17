@@ -128,6 +128,9 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JsonProperty("commons_file_names")
     protected Set<String> commonsFileNames = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    protected Set<Caption> captions = new HashSet<>();
+
     @Column(nullable = true)
     protected Boolean ignored;
 
@@ -324,6 +327,14 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
         this.description = description;
     }
 
+    public Set<Caption> getCaptions() {
+        return captions;
+    }
+
+    public void setCaptions(Set<Caption> captions) {
+        this.captions = captions;
+    }
+
     public Boolean isIgnored() {
         return ignored;
     }
@@ -338,6 +349,10 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
 
     public void setIgnoredReason(String ignoredReason) {
         this.ignoredReason = ignoredReason;
+    }
+
+    public boolean addCaption(Caption caption) {
+        return getCaptions().add(caption);
     }
 
     @Transient

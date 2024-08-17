@@ -13,6 +13,8 @@ public record NasaSvsMediaItem(
         NasaSvsMediaType media_type,
         /** Alt text for this media item. */
         String alt_text,
+        String label,
+        String language_code,
         /**
          * The width of this item (in pixels). Note: this value is 0 for items that
          * don't contain resolution information (e.g., audio files or caption files).
