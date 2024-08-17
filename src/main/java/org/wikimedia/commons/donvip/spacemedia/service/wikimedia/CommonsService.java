@@ -1156,6 +1156,14 @@ public class CommonsService {
         editor.editEntityDocument(MediaInfoUpdateBuilder.forEntityId(entityId).updateLabels(termUpdateBuilder.build())
                 .updateStatements(statementUpdateBuilder.build()).build(), false, "Adding SDC details", null);
         LOGGER.info("SDC edit of {} done", entityId);
+        // null edit to trigger page invalidation
+        // see https://www.mediawiki.org/wiki/Help:Dummy_edit#A_null_edit
+        performNullEdit(filename);
+    }
+
+    public void performNullEdit(String filename) throws IOException {
+        edit(Map.of("action", "edit", "format", "json", "bot", "true", "title", "File:" + filename,
+            "appendtext", "", "token", token), false);
     }
 
     static MediaInfoDocument getMediaInfoDocument(String filename) throws MediaWikiApiErrorException, IOException {
@@ -1385,7 +1393,7 @@ public class CommonsService {
                 && !oldImageRepository.existsByName(dupe.getName())) {
             return edit(Map.of("action", "edit", "title", "File:" + dupe.getName(), "format", "json",
                     "summary", "Duplicate of [[:File:" + olderImage.getName() + "]]", "prependtext",
-                    "{{duplicate|" + olderImage.getName() + "}}\n", "token", token), false);
+                    "{{duplicate|" + olderImage.getName() + "}}\n", "token", token, "bot", "true"), false);
         }
         return 0;
     }
