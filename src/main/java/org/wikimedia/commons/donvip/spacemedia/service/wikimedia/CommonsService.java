@@ -1156,6 +1156,22 @@ public class CommonsService {
         editor.editEntityDocument(MediaInfoUpdateBuilder.forEntityId(entityId).updateLabels(termUpdateBuilder.build())
                 .updateStatements(statementUpdateBuilder.build()).build(), false, "Adding SDC details", null);
         LOGGER.info("SDC edit of {} done", entityId);
+        // null edit to trigger page invalidation
+        // see https://www.mediawiki.org/wiki/Help:Dummy_edit#A_null_edit
+        performNullEdit(filename);
+    }
+
+    public void performNullEdit(String filename) throws IOException {
+        ParseApiResponse apiResponse = apiHttpPost(Map.of(
+            "action", "edit",
+            "format", "json",
+            "bot", "true",
+            "title", filename,
+            "appendtext", ""
+        ), ParseApiResponse.class);
+        if (apiResponse.getError() != null) {
+            LOGGER.warn(apiResponse.getError().toString());
+        }
     }
 
     static MediaInfoDocument getMediaInfoDocument(String filename) throws MediaWikiApiErrorException, IOException {
