@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
@@ -44,6 +45,13 @@ public class UsGovernmentFlickrService extends AbstractOrgFlickrService {
     public Set<String> findLicenceTemplates(FlickrMedia media, FileMetadata metadata) {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add(UnitedStates.getUsGovernmentLicence(media));
+        return result;
+    }
+
+    @Override
+    protected SdcStatements getStatements(FlickrMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
+        UnitedStates.getUsGovernmentCreator(media).ifPresent(result::creator);
         return result;
     }
 

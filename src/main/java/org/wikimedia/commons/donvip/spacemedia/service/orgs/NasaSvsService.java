@@ -40,6 +40,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsV
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.SpacemediaHttpRequestRetryStrategy;
 
 @Service
@@ -236,6 +237,11 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.add("PD-USGov-NASA");
         return result;
+    }
+
+    @Override
+    protected SdcStatements getStatements(NasaSvsMedia media, FileMetadata metadata) {
+        return super.getStatements(media, metadata).creator("Q47520574");
     }
 
     public static record NasaSvsSearchResultPage(
