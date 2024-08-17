@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
+import static java.util.Locale.ENGLISH;
 import static java.util.Optional.ofNullable;
 
 import java.net.URL;
@@ -97,6 +98,18 @@ public final class UnitedStates {
         } + " Flickr Stream");
     }
 
+    public static Optional<String> getUsEmbassyCreator(Media media) {
+        return Optional.of(switch (media.getId().getRepoId()) {
+            case "101399499@N08" -> "Q4116404";
+            case "156788110@N04" -> "Q67115259";
+            case "196062858@N03" -> "Q5164571";
+            case "40236643@N04" -> "Q16935247";
+            case "89616529@N03" -> "Q19891423";
+            case "92297346@N03" -> "Q2331721";
+            default -> throw new IllegalStateException(media.getId().getRepoId());
+        });
+    }
+
     public static String getUsEmbassyTwitterAccount(Media media) {
         return switch (media.getId().getRepoId()) {
             case "156788110@N04" -> "@USEmbassySLO";
@@ -115,7 +128,16 @@ public final class UnitedStates {
                             : media.getCreationDate().isAfter(LocalDate.of(2009, 1, 20))
                                     ? "Photographs from the White House during the Obama administration"
                                     : "Photographs from the White House";
+            case "statephotos" -> "Photographs by the U.S. Department of State";
             default -> null;
+        });
+    }
+
+    public static Optional<String> getUsGovernmentCreator(Media media) {
+        return Optional.of(switch (media.getId().getRepoId()) {
+            case "whitehouse", "whitehouse45", "obamawhitehouse" -> "Q1355327";
+            case "statephotos" -> "Q789915";
+            default -> throw new IllegalStateException(media.getId().getRepoId());
         });
     }
 
@@ -123,7 +145,7 @@ public final class UnitedStates {
         return switch (media.getId().getRepoId()) {
             case "whitehouse", "whitehouse45", "obamawhitehouse" -> "PD-USGov-POTUS";
             case "statephotos" -> "PD-USGov-DOS";
-            default -> null;
+            default -> throw new IllegalStateException(media.getId().getRepoId());
         };
     }
 
@@ -136,33 +158,55 @@ public final class UnitedStates {
     }
 
     public static Optional<String> getUsMilitaryCategory(Media media) {
-        return ofNullable(switch (media.getId().getRepoId()) {
-        case "afspc", "AFSC", "airforcespacecommand" -> "Photographs by the United States Air Force Space Command";
-        case "ssc", "SSC", "129133022@N07" -> "Photographs by the Space Systems Command";
-        case "jtfsd", "spacecom", "USSPACECOM" -> "Photographs by the United States Space Command";
+        return ofNullable(switch (media.getId().getRepoId().toLowerCase(ENGLISH)) {
+        case "afspc", "afsc", "airforcespacecommand" -> "Photographs by the United States Air Force Space Command";
+        case "ssc", "129133022@n07" -> "Photographs by the Space Systems Command";
+        case "jtfsd", "spacecom", "usspacecom" -> "Photographs by the United States Space Command";
         case "spoc" ->
             media.getYear().isBefore(Year.of(2020)) ? "Photographs by the United States Air Force Space Command" : null;
         default -> null;
         });
     }
 
+    public static Optional<String> getUsMilitaryCreator(Media media) {
+        return Optional.ofNullable(switch (media.getId().getRepoId().toLowerCase(ENGLISH)) {
+            // TODO store these values in Wikidata thanks to a new property
+            case "afspc", "afsc", "airforcespacecommand" -> "Q407203";
+            case "ssc", "129133022@n07" -> "Q2306400";
+            case "jtfsd", "spacecom", "usspacecom" -> "Q7892209";
+            case "spoc" -> media.getYear().isBefore(Year.of(2020)) ? "Q407203" : "Q80815922";
+            case "starcom" -> "Q108226200";
+            case "21sw" -> "Q4631162";
+            case "310sw" -> "Q4634679";
+            case "45sw" -> "Q4638258";
+            case "460sw-pa" -> "Q16207108";
+            case "50sw" -> "Q609146";
+            case "b-gar" -> "Q97671318";
+            case "sbd1" -> "Q104869543";
+            case "sld30" -> "Q4634644";
+            case "ussf-pa" -> "Q55088961";
+            case "207-mi-bde" -> "Q55602691";
+            default -> null;
+        });
+    }
+
     public static String getUsMilitaryEmoji(Media media) {
-        return switch (media.getId().getRepoId()) {
-        case "SLD30", "45SW", "patrick", "vandenberg" -> Emojis.ROCKET;
+        return switch (media.getId().getRepoId().toLowerCase(ENGLISH)) {
+        case "sld30", "45sw", "patrick", "vandenberg" -> Emojis.ROCKET;
         default -> Emojis.FLAG_USA;
         };
     }
 
     public static String getUsMilitaryTwitterAccount(Media media) {
-        return switch (media.getId().getRepoId()) {
+        return switch (media.getId().getRepoId().toLowerCase(ENGLISH)) {
         case "buckley" -> "@Buckley_SFB";
-        case "SBD1" -> "@PeteSchriever";
-        case "vandenberg", "SLD30" -> "@SLDelta30";
-        case "patrick", "45SW" -> "@SLDelta45";
-        case "ssc", "SSC", "129133022@N07" -> "@USSF_SSC";
-        case "spoc", "SpOC" -> "@ussfspoc";
-        case "starcom", "STARCOM" -> "@USSF_STARCOM";
-        case "jtfsd", "spacecom", "USSPACECOM" -> "@US_SpaceCom";
+        case "sbd1" -> "@PeteSchriever";
+        case "vandenberg", "sld30" -> "@SLDelta30";
+        case "patrick", "45sw" -> "@SLDelta45";
+        case "ssc", "129133022@n07" -> "@USSF_SSC";
+        case "spoc" -> "@ussfspoc";
+        case "starcom" -> "@USSF_STARCOM";
+        case "jtfsd", "spacecom", "usspacecom" -> "@US_SpaceCom";
         default -> "@SpaceForceDoD";
         };
     }

@@ -54,12 +54,14 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepos
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiPageInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResponse;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.webmil.WebMilMedia;
 import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.dvids.DvidsMediaProcessorService;
 import org.wikimedia.commons.donvip.spacemedia.service.dvids.DvidsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
@@ -408,6 +410,13 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                 result.add("PD-USGov-NASA");
             }
         }
+        return result;
+    }
+
+    @Override
+    protected SdcStatements getStatements(DvidsMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
+        UnitedStates.getUsMilitaryCreator(media).ifPresent(result::creator);
         return result;
     }
 

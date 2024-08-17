@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.webmil.WebMilMedia;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 
@@ -54,6 +56,13 @@ public class UsEmbassiesFlickrService extends AbstractOrgFlickrService {
         Set<String> result = super.findLicenceTemplates(media, metadata);
         result.remove("Flickr-public domain mark");
         result.add("PD-USGov-DOS");
+        return result;
+    }
+
+    @Override
+    protected SdcStatements getStatements(FlickrMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
+        UnitedStates.getUsEmbassyCreator(media).ifPresent(result::creator);
         return result;
     }
 

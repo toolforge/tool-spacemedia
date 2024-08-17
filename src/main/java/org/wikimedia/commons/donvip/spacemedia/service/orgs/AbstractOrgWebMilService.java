@@ -31,8 +31,10 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.webmil.WebMilMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.webmil.WebMilMediaRepository;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates.VirinTemplates;
 
@@ -215,6 +217,13 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
         if (t != null && StringUtils.isNotBlank(t.pdTemplate())) {
             result.add(t.pdTemplate());
         }
+        return result;
+    }
+
+    @Override
+    protected SdcStatements getStatements(WebMilMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
+        UnitedStates.getUsMilitaryCreator(media).ifPresent(result::creator);
         return result;
     }
 
