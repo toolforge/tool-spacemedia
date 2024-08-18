@@ -1027,6 +1027,7 @@ public class CommonsService {
             }
             if (errorPolicy.retryOnDbReadOnly && "readonly".equals(error.getCode())) {
                 // Infinite retry on readonly errors, it's meant to become available again soon
+                Utils.sleep(1000L);
                 return doUpload(wikiCode, filename, ext, url, sha1, orgId, mediaId, metadataId, audio, errorPolicy,
                         uploadByUrl);
             }
