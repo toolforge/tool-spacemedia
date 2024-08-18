@@ -54,7 +54,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaRepos
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiPageInfo;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiSearchResponse;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.webmil.WebMilMedia;
 import org.wikimedia.commons.donvip.spacemedia.exception.ApiException;
 import org.wikimedia.commons.donvip.spacemedia.exception.ImageNotFoundException;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;

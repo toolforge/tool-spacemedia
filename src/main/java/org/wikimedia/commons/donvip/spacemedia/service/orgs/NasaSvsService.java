@@ -193,7 +193,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                                     fm.setImageDimensions(new ImageDimensions(item.width(), item.height()));
                                     if (item.media_type() == NasaSvsMediaType.Movie) {
                                         for (Caption c : captions) {
-                                            addCaption(fm, c.getLang(), c.getUrl());
+                                            fm.addCaption(c);
                                         }
                                     }
                                 });
