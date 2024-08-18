@@ -81,8 +81,6 @@ import org.springframework.web.client.RestClientException;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.Statistics;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Caption;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CaptionRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
@@ -179,8 +177,6 @@ public abstract class AbstractOrgService<T extends Media>
 
     @Autowired
     private FileMetadataRepository metadataRepository;
-    @Autowired
-    private CaptionRepository captionRepository;
     @Autowired
     protected RuntimeDataRepository runtimeDataRepository;
     @Autowired
@@ -1845,22 +1841,6 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected final List<? extends Media> getSimilarUploadedMediaByDate(LocalDate date) {
         return getSimilarOrgServices().stream().flatMap(x -> x.listUploadedMediaByDate(date).stream()).toList();
-    }
-
-    protected Caption addCaption(FileMetadata fm, String lang, String url) {
-        return addCaption(fm, lang, newURL(url));
-    }
-
-    protected Caption addCaption(FileMetadata fm, String lang, URL url) {
-        try {
-            Caption c = captionRepository.findByUrl(url).orElseGet(() -> captionRepository.save(new Caption(lang, url)));
-            fm.addCaption(requireNonNull(c));
-            return c;
-        } catch (RuntimeException e) {
-            LOGGER.error("Error while adding caption {} for metadata {}", url, fm);
-            GlitchTip.capture(e);
-            throw e;
-        }
     }
 
     protected FileMetadata addMetadata(T media, String assetUrl, Consumer<FileMetadata> consumer) {

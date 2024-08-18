@@ -20,7 +20,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.TestPropertySource;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CaptionRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
@@ -45,9 +44,6 @@ import jakarta.persistence.EntityManagerFactory;
 
 @TestPropertySource("/application-test.properties")
 public abstract class AbstractOrgServiceTest {
-
-    @MockBean
-    protected CaptionRepository captionRepository;
 
     @MockBean
     protected FileMetadataRepository metadataRepository;

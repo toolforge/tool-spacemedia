@@ -41,7 +41,6 @@ import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ProtocolException;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;

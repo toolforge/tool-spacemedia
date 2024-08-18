@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.webmil.WebMilMedia;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 import org.wikimedia.commons.donvip.spacemedia.utils.UnitedStates;
@@ -28,6 +27,7 @@ public class UsEmbassiesFlickrService extends AbstractOrgFlickrService {
         return "U.S. Embassies (Flickr)";
     }
 
+    @Override
     protected boolean checkBlocklist() {
         return false;
     }
