@@ -41,6 +41,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.TriFunction;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -130,14 +131,14 @@ public class MediaService {
 
     public <M extends Media> MediaUpdateResult<M> updateMedia(MediaUpdateContext<M> ctx,
             Iterable<Pattern> patternsToRemove, Iterable<String> stringsToRemove,
-            Function<LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist)
+            TriFunction<M, LocalDate, Integer, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist)
             throws IOException {
         return updateMedia(ctx, patternsToRemove, stringsToRemove, similarCandidateMedia, checkBlocklist, true);
     }
 
     public <M extends Media> MediaUpdateResult<M> updateMedia(MediaUpdateContext<M> ctx,
             Iterable<Pattern> patternsToRemove, Iterable<String> stringsToRemove,
-            Function<LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist,
+            TriFunction<M, LocalDate, Integer, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist,
             boolean includeByPerceptualHash) throws IOException {
         boolean result = false;
         M media = ctx.media();
@@ -157,7 +158,7 @@ public class MediaService {
         LOGGER.trace("updateMedia - findCommonsFiles - {}", media);
         if (media.hasAssetsToUpload()
                 && findCommonsFiles(media.getMetadata(), media.getSearchTermsInCommons(media.getMetadata()),
-                        () -> similarCandidateMedia.apply(media.getPublicationDate()),
+                        () -> similarCandidateMedia.apply(media, media.getPublicationDate(), 7),
                         includeByPerceptualHash)) {
             LOGGER.info("Commons files have been updated for {}", media);
             result = true;
