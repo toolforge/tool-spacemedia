@@ -17,6 +17,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(indexes = { @Index(columnList = "url") })
@@ -160,6 +161,16 @@ public class EsaMedia extends Media implements WithKeywords {
     @Override
     public String getUploadTitle(FileMetadata fileMetadata) {
         return CommonsService.normalizeFilename(title) + ' ' + getUploadId(fileMetadata);
+    }
+
+    @Transient
+    public boolean isHubble() {
+        return "HST".equalsIgnoreCase(getMission()) || "Hubble".equalsIgnoreCase(getMission());
+    }
+
+    @Transient
+    public boolean isWebb() {
+        return "JWST".equalsIgnoreCase(getMission()) || "Webb".equalsIgnoreCase(getMission()) || "JWST Webb".equalsIgnoreCase(getMission());
     }
 
     public EsaMedia copyDataFrom(EsaMedia mediaFromApi) {
