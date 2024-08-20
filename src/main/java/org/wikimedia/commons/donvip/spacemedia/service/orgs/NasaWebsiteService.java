@@ -70,7 +70,7 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
     }
 
     @Override
-    protected List<AbstractOrgService<?>> getSimilarOrgServices() {
+    protected List<AbstractOrgService<?>> getSimilarOrgServices(NasaWebsiteMedia media) {
         return List.of(nasaLibraryService);
     }
 

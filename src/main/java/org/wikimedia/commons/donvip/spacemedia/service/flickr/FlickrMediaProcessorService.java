@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -92,7 +93,7 @@ public class FlickrMediaProcessorService {
             Supplier<Collection<Pattern>> patternsToRemove, Supplier<Collection<String>> stringsToRemove,
             BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<FileMetadata>, Integer>> uploader,
-            UrlResolver<FlickrMedia> urlResolver, Function<LocalDate, List<? extends Media>> similarCandidateMedia,
+            UrlResolver<FlickrMedia> urlResolver, BiFunction<FlickrMedia, LocalDate, List<? extends Media>> similarCandidateMedia,
             boolean checkBlocklist, UnaryOperator<FlickrMedia> saver, List<IgnoreCriteria> ignoreCriterias)
             throws IOException {
         boolean save = false;

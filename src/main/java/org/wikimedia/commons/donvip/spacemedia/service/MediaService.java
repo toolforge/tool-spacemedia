@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -130,14 +131,14 @@ public class MediaService {
 
     public <M extends Media> MediaUpdateResult<M> updateMedia(MediaUpdateContext<M> ctx,
             Iterable<Pattern> patternsToRemove, Iterable<String> stringsToRemove,
-            Function<LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist)
+            BiFunction<M, LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist)
             throws IOException {
         return updateMedia(ctx, patternsToRemove, stringsToRemove, similarCandidateMedia, checkBlocklist, true);
     }
 
     public <M extends Media> MediaUpdateResult<M> updateMedia(MediaUpdateContext<M> ctx,
             Iterable<Pattern> patternsToRemove, Iterable<String> stringsToRemove,
-            Function<LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist,
+            BiFunction<M, LocalDate, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist,
             boolean includeByPerceptualHash) throws IOException {
         boolean result = false;
         M media = ctx.media();
@@ -157,7 +158,7 @@ public class MediaService {
         LOGGER.trace("updateMedia - findCommonsFiles - {}", media);
         if (media.hasAssetsToUpload()
                 && findCommonsFiles(media.getMetadata(), media.getSearchTermsInCommons(media.getMetadata()),
-                        () -> similarCandidateMedia.apply(media.getPublicationDate()),
+                        () -> similarCandidateMedia.apply(media, media.getPublicationDate()),
                         includeByPerceptualHash)) {
             LOGGER.info("Commons files have been updated for {}", media);
             result = true;
