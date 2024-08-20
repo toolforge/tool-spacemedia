@@ -54,6 +54,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
@@ -1681,7 +1682,7 @@ public abstract class AbstractOrgService<T extends Media>
         }
         List<FileMetadata> metadataList = List.of(metadata);
         if (mediaService.findCommonsFiles(metadataList, media.getSearchTermsInCommons(metadataList),
-                () -> getSimilarUploadedMediaByDate(media.getPublicationDate()), includeByPerceptualHash())) {
+                () -> getSimilarUploadedMediaByDate(media, media.getPublicationDate(), 14), includeByPerceptualHash())) {
             metadata = metadataRepository.save(metadata);
             throw new ImageUploadForbiddenException(
                     media + " is already on Commons: " + metadata.getCommonsFileNames());
@@ -1835,12 +1836,14 @@ public abstract class AbstractOrgService<T extends Media>
         return (media, metadata) -> metadata.getAssetUrl();
     }
 
-    protected List<AbstractOrgService<?>> getSimilarOrgServices() {
+    protected List<AbstractOrgService<?>> getSimilarOrgServices(T media) {
         return List.of();
     }
 
-    protected final List<? extends Media> getSimilarUploadedMediaByDate(LocalDate date) {
-        return getSimilarOrgServices().stream().flatMap(x -> x.listUploadedMediaByDate(date).stream()).toList();
+    protected final List<? extends Media> getSimilarUploadedMediaByDate(T media, LocalDate date, int numDaysBefore) {
+        return getSimilarOrgServices(media).stream().flatMap(
+            x -> IntStream.range(0, numDaysBefore + 1).parallel().mapToObj(
+                i -> x.listUploadedMediaByDate(date.minusDays(i)).stream()).flatMap(s -> s)).toList();
     }
 
     protected FileMetadata addMetadata(T media, String assetUrl, Consumer<FileMetadata> consumer) {

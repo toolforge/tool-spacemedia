@@ -50,7 +50,7 @@ public class WebbEsaService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
-    protected List<AbstractOrgService<?>> getSimilarOrgServices() {
+    protected List<AbstractOrgService<?>> getSimilarOrgServices(DjangoplicityMedia media) {
         return List.of(nasaService);
     }
 
