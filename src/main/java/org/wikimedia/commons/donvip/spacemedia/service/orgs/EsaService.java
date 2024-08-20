@@ -159,7 +159,13 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 .map(Element::text).collect(Collectors.joining("<br>")));
         Element metaLicence = element.getElementsByClass("modal__meta_licence").get(0);
         image.setCredits(metaLicence.child(0).text().replace("CREDIT ", ""));
-        image.setLicence(metaLicence.child(1).text().replace("LICENCE ", ""));
+        for (int i = 1; i < metaLicence.childNodeSize(); i++) {
+            String text = metaLicence.child(i).text();
+            if (text.startsWith("LICENCE ")) {
+                image.setLicence(text.replace("LICENCE ", ""));
+                break;
+            }
+        }
         for (Element li : element.getElementsByClass("modal__meta").get(0).children()) {
             if (li.children().size() == 1 && li.child(0).children().size() > 1) {
                 // Weird HTML code for https://www.esa.int/ESA_Multimedia/Images/2015/12/MTG_combined_antenna
@@ -205,7 +211,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         String licenceUppercase = Optional.ofNullable(image.getLicence()).orElse("").toUpperCase(Locale.ENGLISH);
         return !licenceUppercase.contains("PERMISSION MAY BE REQUIRED")
                 && ((licenceUppercase.contains("BY-SA") || licenceUppercase.contains("PUBLICDOMAIN")
-                        || licenceUppercase.contains("PUBLIC DOMAIN"))
+                        || licenceUppercase.contains("PUBLIC DOMAIN")) || licenceUppercase.contains("BY 4.0 INT")
                         || copyrightUppercase.contains("BY-SA"));
     }
 
