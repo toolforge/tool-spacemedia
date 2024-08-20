@@ -1681,7 +1681,7 @@ public abstract class AbstractOrgService<T extends Media>
         }
         List<FileMetadata> metadataList = List.of(metadata);
         if (mediaService.findCommonsFiles(metadataList, media.getSearchTermsInCommons(metadataList),
-                () -> getSimilarUploadedMediaByDate(media.getPublicationDate()), includeByPerceptualHash())) {
+                () -> getSimilarUploadedMediaByDate(media, media.getPublicationDate()), includeByPerceptualHash())) {
             metadata = metadataRepository.save(metadata);
             throw new ImageUploadForbiddenException(
                     media + " is already on Commons: " + metadata.getCommonsFileNames());
@@ -1835,12 +1835,12 @@ public abstract class AbstractOrgService<T extends Media>
         return (media, metadata) -> metadata.getAssetUrl();
     }
 
-    protected List<AbstractOrgService<?>> getSimilarOrgServices() {
+    protected List<AbstractOrgService<?>> getSimilarOrgServices(T media) {
         return List.of();
     }
 
-    protected final List<? extends Media> getSimilarUploadedMediaByDate(LocalDate date) {
-        return getSimilarOrgServices().stream().flatMap(x -> x.listUploadedMediaByDate(date).stream()).toList();
+    protected final List<? extends Media> getSimilarUploadedMediaByDate(T media, LocalDate date) {
+        return getSimilarOrgServices(media).stream().flatMap(x -> x.listUploadedMediaByDate(date).stream()).toList();
     }
 
     protected FileMetadata addMetadata(T media, String assetUrl, Consumer<FileMetadata> consumer) {
