@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -92,7 +93,8 @@ public class FlickrMediaProcessorService {
             Supplier<Collection<Pattern>> patternsToRemove, Supplier<Collection<String>> stringsToRemove,
             BiPredicate<FlickrMedia, Boolean> shouldUploadAuto,
             Function<FlickrMedia, Triple<FlickrMedia, Collection<FileMetadata>, Integer>> uploader,
-            UrlResolver<FlickrMedia> urlResolver, Function<LocalDate, List<? extends Media>> similarCandidateMedia,
+            UrlResolver<FlickrMedia> urlResolver,
+            TriFunction<FlickrMedia, LocalDate, Integer, List<? extends Media>> similarCandidateMedia,
             boolean checkBlocklist, UnaryOperator<FlickrMedia> saver, List<IgnoreCriteria> ignoreCriterias)
             throws IOException {
         boolean save = false;
