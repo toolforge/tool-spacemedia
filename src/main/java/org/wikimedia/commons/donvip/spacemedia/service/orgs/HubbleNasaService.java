@@ -46,7 +46,7 @@ public class HubbleNasaService extends AbstractOrgStsciService {
     }
 
     @Override
-    protected List<AbstractOrgService<?>> getSimilarOrgServices() {
+    protected List<AbstractOrgService<?>> getSimilarOrgServices(StsciMedia media) {
         return List.of(esaService);
     }
 

@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
@@ -45,6 +46,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.esa.EsaMediaRepositor
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
+import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
 import org.wikimedia.commons.donvip.spacemedia.utils.Emojis;
 
 @Service
@@ -65,6 +67,14 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
 
     static final List<String> CC_BY_SA_SPELLINGS = Arrays.asList(
             "CC-BY-SA-3.0 IGO", "CC BY-SA IGO 3.0", "CC BY-SA 3.0 IGO", "(CC BY-SA 2.0)", "(CC BY-SA 4.0)");
+
+    @Lazy
+    @Autowired
+    private HubbleEsaService hubbleService;
+
+    @Lazy
+    @Autowired
+    private WebbEsaService webbService;
 
     @Autowired
     private EsaMediaRepository mediaRepository;
@@ -120,6 +130,17 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     }
 
     @Override
+    protected List<AbstractOrgService<?>> getSimilarOrgServices(EsaMedia media) {
+        if (media.isWebb()) {
+            return List.of(webbService);
+        } else if (media.isHubble()) {
+            return List.of(hubbleService);
+        } else {
+            return List.of();
+        }
+    }
+
+    @Override
     protected boolean isSatellitePicture(EsaMedia media, FileMetadata metadata) {
         return super.isSatellitePicture(media, metadata)
                 || (media.getMission() != null && media.getMission().toLowerCase(Locale.ENGLISH).contains("sentinel"));
@@ -159,7 +180,13 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
                 .map(Element::text).collect(Collectors.joining("<br>")));
         Element metaLicence = element.getElementsByClass("modal__meta_licence").get(0);
         image.setCredits(metaLicence.child(0).text().replace("CREDIT ", ""));
-        image.setLicence(metaLicence.child(1).text().replace("LICENCE ", ""));
+        for (int i = 1; i < metaLicence.childNodeSize(); i++) {
+            String text = metaLicence.child(i).text();
+            if (text.startsWith("LICENCE ")) {
+                image.setLicence(text.replace("LICENCE ", ""));
+                break;
+            }
+        }
         for (Element li : element.getElementsByClass("modal__meta").get(0).children()) {
             if (li.children().size() == 1 && li.child(0).children().size() > 1) {
                 // Weird HTML code for https://www.esa.int/ESA_Multimedia/Images/2015/12/MTG_combined_antenna
@@ -205,7 +232,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         String licenceUppercase = Optional.ofNullable(image.getLicence()).orElse("").toUpperCase(Locale.ENGLISH);
         return !licenceUppercase.contains("PERMISSION MAY BE REQUIRED")
                 && ((licenceUppercase.contains("BY-SA") || licenceUppercase.contains("PUBLICDOMAIN")
-                        || licenceUppercase.contains("PUBLIC DOMAIN"))
+                        || licenceUppercase.contains("PUBLIC DOMAIN")) || licenceUppercase.contains("BY 4.0 INT")
                         || copyrightUppercase.contains("BY-SA"));
     }
 
@@ -536,7 +563,24 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
             result.add(copernicusTemplate);
             credit = getCopernicusProcessedBy(credit).orElse("ESA");
         }
-        result.add("ESA|" + credit);
+        if (media.isWebb()) {
+            result.add("ESA-Webb|" + credit);
+        } else if (media.isHubble()) {
+            result.add("ESA-Hubble|" + credit);
+        } else {
+            result.add("ESA|" + credit);
+        }
+        return result;
+    }
+
+    @Override
+    protected SdcStatements getStatements(EsaMedia media, FileMetadata metadata) {
+        SdcStatements result = super.getStatements(media, metadata);
+        if (media.isWebb()) {
+            result.creator("Q186447");
+        } else if (media.isHubble()) {
+            result.creator("Q2513");
+        }
         return result;
     }
 
