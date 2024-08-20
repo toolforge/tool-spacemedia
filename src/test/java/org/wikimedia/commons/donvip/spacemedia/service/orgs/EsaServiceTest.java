@@ -77,7 +77,8 @@ class EsaServiceTest extends AbstractOrgServiceTest {
     @CsvSource({
             "false,322928,Friendly_Little_Robot,https://www.esa.int/ESA_Multimedia/Images/2014/09/Friendly_Little_Robot",
             "true,495693,Nuclear_explosions_on_a_neutron_star_feed_its_jets,https://www.esa.int/ESA_Multimedia/Images/2024/03/Nuclear_explosions_on_a_neutron_star_feed_its_jets",
-            "true,496653,Barcelona_captured_by_Copernicus_Sentinel-2,https://www.esa.int/ESA_Multimedia/Images/2022/07/Barcelona_captured_by_Copernicus_Sentinel-2" })
+            "true,496653,Barcelona_captured_by_Copernicus_Sentinel-2,https://www.esa.int/ESA_Multimedia/Images/2022/07/Barcelona_captured_by_Copernicus_Sentinel-2",
+            "true,500734,Juice_snaps_Moon_en_route_to_Earth,https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2024/08/juice_snaps_moon_en_route_to_earth/26280877-1-eng-GB/Juice_snaps_Moon_en_route_to_Earth.png" })
     void testParseHtml(boolean copyrightOk, String id, String filename, URL url) throws Exception {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
 
