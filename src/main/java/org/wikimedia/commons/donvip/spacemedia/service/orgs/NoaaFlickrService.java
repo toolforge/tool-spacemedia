@@ -48,14 +48,4 @@ public class NoaaFlickrService extends AbstractOrgFlickrService {
         result.remove(FlickrLicense.Public_Domain_Mark.getWikiTemplate());
         return result;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        switch (uploadedMedia.getPathAlias()) {
-        case "noaasatellites":
-            return Set.of("@NOAASatellites");
-        default:
-            return Set.of("@NOAA");
-        }
-    }
 }

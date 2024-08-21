@@ -232,9 +232,4 @@ public class KariService extends AbstractOrgService<KariMedia> {
     protected Set<String> getEmojis(KariMedia uploadedMedia) {
         return Set.of(Emojis.FLAG_KOR);
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(KariMedia uploadedMedia) {
-        return Set.of("@kari2030");
-    }
 }

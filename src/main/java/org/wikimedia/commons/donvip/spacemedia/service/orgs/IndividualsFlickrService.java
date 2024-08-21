@@ -194,24 +194,4 @@ public class IndividualsFlickrService extends AbstractOrgFlickrService {
             return Set.of();
         }
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        switch (uploadedMedia.getPathAlias()) {
-        case "geckzilla":
-            return Set.of("@SpaceGeck");
-        case "kevinmgill":
-            return Set.of("@kevinmgill");
-        case "pierre_markuse":
-            return Set.of("@Pierre_Markuse");
-        case "harrystrangerphotography", "194849271@N04":
-            return Set.of("@Harry__Stranger");
-        case "192271236@N03":
-            return Set.of("@andrluck");
-        case "semeion":
-            return Set.of("@stim3on");
-        default:
-            return Set.of();
-        }
-    }
 }

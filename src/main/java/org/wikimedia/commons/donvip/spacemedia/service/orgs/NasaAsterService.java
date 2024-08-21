@@ -250,11 +250,6 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
         return Set.of(Emojis.SATELLITE, Emojis.EARTH_AMERICA);
     }
 
-    @Override
-    protected Set<String> getTwitterAccounts(NasaAsterMedia uploadedMedia) {
-        return Set.of("@NASAEarth");
-    }
-
     private NasaAsterMedia fetchMedia(AsterItem item) throws IOException {
         NasaAsterMedia image = new NasaAsterMedia();
         image.setId(new CompositeMediaId("aster", item.name()));

@@ -27,6 +27,7 @@ public class UsGovernmentFlickrService extends AbstractOrgFlickrService {
         return "U.S. Government (Flickr)";
     }
 
+    @Override
     protected boolean checkBlocklist() {
         return false;
     }
@@ -59,13 +60,6 @@ public class UsGovernmentFlickrService extends AbstractOrgFlickrService {
     protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
         Set<String> result = super.getEmojis(uploadedMedia);
         result.add(Emojis.FLAG_USA);
-        return result;
-    }
-
-    @Override
-    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        Set<String> result = super.getEmojis(uploadedMedia);
-        result.add(UnitedStates.getUsGovernmentTwitterAccount(uploadedMedia));
         return result;
     }
 }

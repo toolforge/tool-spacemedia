@@ -163,11 +163,6 @@ public class NOIRLabService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(DjangoplicityMedia uploadedMedia) {
-        return Set.of("@NOIRLabAstro");
-    }
-
-    @Override
     protected String mainDivClass() {
         return "col-md-9 left-column";
     }

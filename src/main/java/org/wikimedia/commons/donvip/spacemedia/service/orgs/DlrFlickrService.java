@@ -72,9 +72,4 @@ public class DlrFlickrService extends AbstractOrgFlickrService {
     protected Set<String> getMastodonAccounts(FlickrMedia uploadedMedia) {
         return Set.of("@DLR@social.bund.de");
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        return Set.of("@DLR_en");
-    }
 }

@@ -330,9 +330,4 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
     protected Set<String> getMastodonAccounts(ErccMedia uploadedMedia) {
         return Set.of("@EC_ECHO@social.network.europa.eu");
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(ErccMedia uploadedMedia) {
-        return Set.of("@eu_echo");
-    }
 }

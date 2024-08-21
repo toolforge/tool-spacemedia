@@ -1,7 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.util.Collections.singleton;
-import static java.util.Map.entry;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper.loadCsvMapping;
@@ -17,7 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -70,12 +68,6 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
     static final Pattern ISS_PATTERN = Pattern.compile("iss0{1,2}(\\d{1,2})e\\d{6}");
 
     static final Pattern ARTEMIS_PATTERN = Pattern.compile("art0{1,2}(\\d{1,2})e\\d{6}");
-
-    static final Map<String, String> TWITTER_CENTER_ACCOUNTS = Map.ofEntries(entry("AFRC", "@nasaarmstrong"),
-            entry("ARC", "@nasaames"), entry("GRC", "@nasaglenn"), entry("GSFC", "@NASAGoddard"),
-            entry("HQ", "@nasahqphoto"), entry("JPL", "@NASAJPL"), entry("JSC", "@NASA_Johnson"),
-            entry("KSC", "@NASAKennedy"), entry("LARC", "@NASA_Langley"), entry("LRC", "@NASA_Langley"),
-            entry("MSFC", "@NASA_Marshall"), entry("SSC", "@NASAStennis"));
 
     @Value("${nasa.search.link}")
     private String searchEndpoint;
@@ -471,23 +463,6 @@ public class NasaLibraryService extends AbstractOrgService<NasaMedia> {
         Set<String> result = super.getEmojis(uploadedMedia);
         if (ISS_PATTERN.matcher(uploadedMedia.getId().getMediaId()).matches()) {
             result.add(Emojis.ASTRONAUT);
-        }
-        return result;
-    }
-
-    @Override
-    protected Set<String> getTwitterAccounts(NasaMedia uploadedMedia) {
-        Set<String> result = new HashSet<>();
-        if (ISS_PATTERN.matcher(uploadedMedia.getId().getMediaId()).matches()) {
-            result.add("@Space_Station");
-        } else if (uploadedMedia.getId().getRepoId() != null) {
-            String account = TWITTER_CENTER_ACCOUNTS.get(uploadedMedia.getId().getRepoId());
-            if (account != null) {
-                result.add(account);
-            }
-        }
-        if (result.isEmpty()) {
-            result.add("@NASA");
         }
         return result;
     }

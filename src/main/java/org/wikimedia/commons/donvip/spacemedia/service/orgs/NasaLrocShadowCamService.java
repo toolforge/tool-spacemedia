@@ -220,9 +220,4 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
         }
         return List.of(media);
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(NasaLrocMedia uploadedMedia) {
-        return Set.of("@NASAMoon");
-    }
 }

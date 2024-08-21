@@ -48,11 +48,4 @@ public class UsSpaceForceFlickrService extends AbstractOrgFlickrService {
         result.add(UnitedStates.getUsMilitaryEmoji(uploadedMedia));
         return result;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        Set<String> result = super.getEmojis(uploadedMedia);
-        result.add(UnitedStates.getUsMilitaryTwitterAccount(uploadedMedia));
-        return result;
-    }
 }

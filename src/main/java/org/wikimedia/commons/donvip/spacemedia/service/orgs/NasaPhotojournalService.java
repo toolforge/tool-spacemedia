@@ -338,11 +338,6 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(NasaPhotojournalMedia uploadedMedia) {
-        return Set.of("@NASAJPL");
-    }
-
-    @Override
     protected SdcStatements getStatements(NasaPhotojournalMedia media, FileMetadata metadata) {
         SdcStatements result = super.getStatements(media, metadata);
         wikidataStatementMapping(media.getInstrument(), mappings.getNasaInstruments(), "P4082", result); // Taken with

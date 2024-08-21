@@ -133,9 +133,4 @@ public class IauService extends AbstractOrgDjangoplicityService {
     protected String getCopyrightLink() {
         return "/copyright/";
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(DjangoplicityMedia uploadedMedia) {
-        return Set.of("@IAU_org");
-    }
 }

@@ -211,9 +211,4 @@ public class CapellaStacService extends AbstractOrgStacService {
         result.add(Emojis.EARTH_AMERICA);
         return result;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(StacMedia uploadedMedia) {
-        return Set.of("@capellaspace");
-    }
 }

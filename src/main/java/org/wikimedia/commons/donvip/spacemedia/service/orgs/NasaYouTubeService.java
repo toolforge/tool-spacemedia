@@ -48,9 +48,4 @@ public class NasaYouTubeService extends AbstractOrgYouTubeService {
     protected Set<String> getEmojis(YouTubeMedia uploadedMedia) {
         return Set.of(Emojis.ROCKET);
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(YouTubeMedia uploadedMedia) {
-        return Set.of("@NASA");
-    }
 }

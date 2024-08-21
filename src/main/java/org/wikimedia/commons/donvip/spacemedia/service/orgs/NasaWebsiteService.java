@@ -313,9 +313,4 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
     protected Class<NasaWebsiteMedia> getMediaClass() {
         return NasaWebsiteMedia.class;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(NasaWebsiteMedia uploadedMedia) {
-        return Set.of("@NASA");
-    }
 }

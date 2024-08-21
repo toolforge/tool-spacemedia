@@ -113,7 +113,6 @@ import org.wikimedia.commons.donvip.spacemedia.service.UrlResolver;
 import org.wikimedia.commons.donvip.spacemedia.service.mastodon.MastodonService;
 import org.wikimedia.commons.donvip.spacemedia.service.osm.NominatimService;
 import org.wikimedia.commons.donvip.spacemedia.service.osm.NominatimService.Address;
-import org.wikimedia.commons.donvip.spacemedia.service.twitter.TwitterService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
@@ -653,8 +652,6 @@ public abstract class AbstractOrgService<T extends Media>
             Collection<? extends T> uploadedMedia) {
         if (socialMedia instanceof MastodonService) {
             return uploadedMedia.stream().flatMap(media -> getMastodonAccounts(media).stream()).collect(toSet());
-        } else if (socialMedia instanceof TwitterService) {
-            return uploadedMedia.stream().flatMap(media -> getTwitterAccounts(media).stream()).collect(toSet());
         }
         return Set.of();
     }
@@ -677,10 +674,6 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     protected Set<String> getMastodonAccounts(T uploadedMedia) {
-        return new HashSet<>();
-    }
-
-    protected Set<String> getTwitterAccounts(T uploadedMedia) {
         return new HashSet<>();
     }
 

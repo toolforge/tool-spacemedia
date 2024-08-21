@@ -119,9 +119,4 @@ public class WebbNasaService extends AbstractOrgStsciService {
         result.add(Emojis.STARS);
         return result;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(StsciMedia uploadedMedia) {
-        return Set.of("@NASAWebb");
-    }
 }

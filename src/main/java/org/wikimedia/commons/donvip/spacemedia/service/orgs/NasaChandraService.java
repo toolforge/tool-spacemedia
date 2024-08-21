@@ -601,9 +601,4 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     protected Class<NasaChandraMedia> getMediaClass() {
         return NasaChandraMedia.class;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(NasaChandraMedia uploadedMedia) {
-        return Set.of("@chandraxray");
-    }
 }

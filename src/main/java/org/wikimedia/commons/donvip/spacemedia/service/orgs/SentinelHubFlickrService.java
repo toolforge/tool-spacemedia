@@ -42,11 +42,6 @@ public class SentinelHubFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        return Set.of("@sentinel_hub");
-    }
-
-    @Override
     protected Collection<String> getStringsToRemove(FlickrMedia media) {
         return List.of("Follow us on <a href=\"https://twitter.com/sentinel_hub\">Twitter!</a>");
     }

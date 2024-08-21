@@ -547,9 +547,4 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     protected Set<String> getEmojis(NasaSdoMedia uploadedMedia) {
         return Set.of(Emojis.SUN);
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(NasaSdoMedia uploadedMedia) {
-        return Set.of("@NASASun");
-    }
 }

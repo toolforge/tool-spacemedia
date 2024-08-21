@@ -13,7 +13,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -615,29 +614,6 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
         fillSet(result, uploadedMedia.getActivity(),
                 Map.of("Human Spaceflight", Emojis.ASTRONAUT, "Observing the Earth", Emojis.EARTH_EUROPE, "Operations",
                         Emojis.ANTENNA, "Space Science", Emojis.SATELLITE, "Space Transportation", Emojis.ROCKET));
-        return result;
-    }
-
-    @Override
-    protected Set<String> getTwitterAccounts(EsaMedia uploadedMedia) {
-        Set<String> result = new HashSet<>();
-        fillSet(result, uploadedMedia.getMission(),
-                Map.of("Ariel", "@ESAArielMission", "BepiColombo", "@BepiColombo", "CHEOPS", "@ESA_CHEOPS", "Euclid",
-                        "@ESA_Euclid", "ExoMars", "@ExoMars_CaSSIS", "Gaia", "@ESAGaia", "Juice", "@ESA_JUICE",
-                        "XMM-Newton", "@ESA_XMM"));
-        Set<String> systems = uploadedMedia.getSystems();
-        if (systems != null) {
-            for (String system : systems) {
-                fillSet(result, system, Map.of("Copernicus", "@CopernicusEU"));
-            }
-        }
-        fillSet(result, uploadedMedia.getActivity(),
-                Map.of("Human Spaceflight", "@esaspaceflight", "Observing the Earth", "@ESA_EO", "Operations",
-                        "@esaoperations", "Photo Archive (ESA Publications)", "@ESA_History", "Space Science",
-                        "@esascience", "Technology", "@esa_tech", "Space Transportation", "@ESA_transport"));
-        if (result.isEmpty()) {
-            result.add("@esa");
-        }
         return result;
     }
 

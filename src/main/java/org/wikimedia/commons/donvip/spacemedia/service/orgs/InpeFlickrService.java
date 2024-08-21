@@ -89,9 +89,4 @@ public class InpeFlickrService extends AbstractOrgFlickrService {
     protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
         return Set.of(Emojis.FLAG_BRA);
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        return Set.of("@inpe_mcti");
-    }
 }

@@ -122,9 +122,4 @@ public class WebbEsaService extends AbstractOrgDjangoplicityService {
     protected Set<String> getEmojis(DjangoplicityMedia uploadedMedia) {
         return Set.of(Emojis.STARS);
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(DjangoplicityMedia uploadedMedia) {
-        return Set.of("@ESA_Webb");
-    }
 }

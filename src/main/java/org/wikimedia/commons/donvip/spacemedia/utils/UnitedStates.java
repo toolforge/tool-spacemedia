@@ -110,15 +110,6 @@ public final class UnitedStates {
         });
     }
 
-    public static String getUsEmbassyTwitterAccount(Media media) {
-        return switch (media.getId().getRepoId()) {
-            case "156788110@N04" -> "@USEmbassySLO";
-            case "40236643@N04" -> "@USEmbassySV";
-            case "92297346@N03" -> "@usembassytokyo";
-            default -> null;
-        };
-    }
-
     public static Optional<String> getUsGovernmentCategory(Media media) {
         return ofNullable(switch (media.getId().getRepoId()) {
             case "whitehouse","whitehouse45","obamawhitehouse" -> media.getCreationDate().isAfter(LocalDate.of(2021, 1, 20))
@@ -146,14 +137,6 @@ public final class UnitedStates {
             case "whitehouse", "whitehouse45", "obamawhitehouse" -> "PD-USGov-POTUS";
             case "statephotos" -> "PD-USGov-DOS";
             default -> throw new IllegalStateException(media.getId().getRepoId());
-        };
-    }
-
-    public static String getUsGovernmentTwitterAccount(Media media) {
-        return switch (media.getId().getRepoId()) {
-            case "whitehouse", "whitehouse45", "obamawhitehouse" -> "@whitehouse";
-            case "statephotos" -> "@StateDept";
-            default -> null;
         };
     }
 
@@ -195,20 +178,6 @@ public final class UnitedStates {
         return switch (media.getId().getRepoId().toLowerCase(ENGLISH)) {
         case "sld30", "45sw", "patrick", "vandenberg" -> Emojis.ROCKET;
         default -> Emojis.FLAG_USA;
-        };
-    }
-
-    public static String getUsMilitaryTwitterAccount(Media media) {
-        return switch (media.getId().getRepoId().toLowerCase(ENGLISH)) {
-        case "buckley" -> "@Buckley_SFB";
-        case "sbd1" -> "@PeteSchriever";
-        case "vandenberg", "sld30" -> "@SLDelta30";
-        case "patrick", "45sw" -> "@SLDelta45";
-        case "ssc", "129133022@n07" -> "@USSF_SSC";
-        case "spoc" -> "@ussfspoc";
-        case "starcom" -> "@USSF_STARCOM";
-        case "jtfsd", "spacecom", "usspacecom" -> "@US_SpaceCom";
-        default -> "@SpaceForceDoD";
         };
     }
 }

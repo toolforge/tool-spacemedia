@@ -230,11 +230,4 @@ public abstract class AbstractOrgWebMilService extends AbstractOrgHtmlGallerySer
         result.add(UnitedStates.getUsMilitaryEmoji(uploadedMedia));
         return result;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(WebMilMedia uploadedMedia) {
-        Set<String> result = super.getEmojis(uploadedMedia);
-        result.add(UnitedStates.getUsMilitaryTwitterAccount(uploadedMedia));
-        return result;
-    }
 }

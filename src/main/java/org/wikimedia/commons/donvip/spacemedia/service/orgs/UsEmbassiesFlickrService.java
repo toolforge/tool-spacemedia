@@ -82,11 +82,4 @@ public class UsEmbassiesFlickrService extends AbstractOrgFlickrService {
         result.add(Emojis.FLAG_USA);
         return result;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        Set<String> result = super.getEmojis(uploadedMedia);
-        result.add(UnitedStates.getUsEmbassyTwitterAccount(uploadedMedia));
-        return result;
-    }
 }

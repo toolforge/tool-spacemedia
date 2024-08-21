@@ -203,11 +203,6 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
         return Set.of(Emojis.SATELLITE, Emojis.EARTH_AMERICA);
     }
 
-    @Override
-    protected Set<String> getTwitterAccounts(NasaModisMedia uploadedMedia) {
-        return Set.of("@NASAEarth");
-    }
-
     private NasaModisMedia fetchMedia(LocalDate date) throws IOException, UpdateFinishedException {
         NasaModisMedia image = new NasaModisMedia();
         image.setId(new CompositeMediaId("modis", date.toString()));

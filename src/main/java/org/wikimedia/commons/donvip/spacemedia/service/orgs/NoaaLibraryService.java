@@ -155,9 +155,4 @@ public class NoaaLibraryService extends AbstractOrgHtmlGalleryService<NoaaLibrar
     protected Class<NoaaLibraryMedia> getMediaClass() {
         return NoaaLibraryMedia.class;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(NoaaLibraryMedia uploadedMedia) {
-        return Set.of("@NOAASatellites", "@NOAALibrary");
-    }
 }

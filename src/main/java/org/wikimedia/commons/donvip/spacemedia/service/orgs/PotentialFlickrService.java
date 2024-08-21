@@ -26,9 +26,4 @@ public class PotentialFlickrService extends AbstractOrgFlickrService {
     protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
         return Set.of("❔");
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        return Set.of();
-    }
 }

@@ -79,9 +79,4 @@ public class EsaFlickrService extends AbstractOrgFlickrService {
         EsaService.enrichEsaCategories(result, media, "");
         return result;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(FlickrMedia uploadedMedia) {
-        return Set.of("@esa");
-    }
 }

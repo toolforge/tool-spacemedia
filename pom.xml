@@ -290,26 +290,6 @@
 			<artifactId>google-http-client-jackson2</artifactId>
 			<version>1.44.2</version>
 		</dependency>
-		<dependency>
-			<groupId>io.github.redouane59.twitter</groupId>
-			<artifactId>twittered</artifactId>
-			<version>2.23</version>
-			<exclusions>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.sonar</groupId>
-					<artifactId>sonar-packaging-maven-plugin</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.twitter.twittertext</groupId>
-			<artifactId>twitter-text</artifactId>
-			<version>3.1.0</version>
-		</dependency>
 		<!-- Box - https://github.com/box/box-java-sdk#vulnerabilities-in-bouncycastle-libraries -->
 		<dependency>
 			<groupId>com.box</groupId>

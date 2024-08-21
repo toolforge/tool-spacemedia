@@ -56,15 +56,6 @@ public class NasaBoxService extends AbstractOrgBoxService {
         return result;
     }
 
-    @Override
-    protected Set<String> getTwitterAccounts(BoxMedia uploadedMedia) {
-        Set<String> result = super.getTwitterAccounts(uploadedMedia);
-        if (isArtemis(uploadedMedia)) {
-            result.add("@NASAArtemis");
-        }
-        return result;
-    }
-
     private static final boolean isArtemis(BoxMedia media) {
         return ARTEMIS_SHARE.equals(getShare(media.getId()));
     }

@@ -426,13 +426,6 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         return result;
     }
 
-    @Override
-    protected Set<String> getTwitterAccounts(DvidsMedia uploadedMedia) {
-        Set<String> result = super.getTwitterAccounts(uploadedMedia);
-        result.add(UnitedStates.getUsMilitaryTwitterAccount(uploadedMedia));
-        return result;
-    }
-
     private static boolean star(Set<String> set) {
         return Set.of("*").equals(set);
     }

@@ -82,9 +82,4 @@ public class EsoService extends AbstractOrgDjangoplicityService {
         result.add(Emojis.STARS);
         return result;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(DjangoplicityMedia uploadedMedia) {
-        return Set.of("@ESO");
-    }
 }

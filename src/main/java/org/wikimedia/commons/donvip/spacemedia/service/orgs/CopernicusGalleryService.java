@@ -213,9 +213,4 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     protected String hiddenUploadCategory(String repoId) {
         return "Spacemedia Copernicus files uploaded by " + commonsService.getAccount();
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(CopernicusGalleryMedia uploadedMedia) {
-        return Set.of("@CopernicusEU");
-    }
 }

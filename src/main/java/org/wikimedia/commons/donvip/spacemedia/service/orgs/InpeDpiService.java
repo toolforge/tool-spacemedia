@@ -124,11 +124,6 @@ public class InpeDpiService extends AbstractOrgService<InpeDpiMedia> {
     }
 
     @Override
-    protected Set<String> getTwitterAccounts(InpeDpiMedia uploadedMedia) {
-        return Set.of("@inpe_mcti");
-    }
-
-    @Override
     public URL getSourceUrl(InpeDpiMedia media, FileMetadata metadata, String ext) {
         return newURL(GALERIA_URL);
     }

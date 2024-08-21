@@ -226,11 +226,6 @@ public class UmbraS3Service extends AbstractOrgS3Service {
         return result;
     }
 
-    @Override
-    protected Set<String> getTwitterAccounts(S3Media uploadedMedia) {
-        return Set.of("@umbraspace");
-    }
-
     /**
      * Extended Umbra Metadata: https://docs.canopy.umbra.space/reference/get_schema
      */

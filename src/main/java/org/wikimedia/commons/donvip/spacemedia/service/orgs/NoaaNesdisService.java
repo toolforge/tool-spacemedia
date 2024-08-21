@@ -233,9 +233,4 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     protected Class<NoaaNesdisMedia> getMediaClass() {
         return NoaaNesdisMedia.class;
     }
-
-    @Override
-    protected Set<String> getTwitterAccounts(NoaaNesdisMedia uploadedMedia) {
-        return Set.of("@NOAASatellites");
-    }
 }
