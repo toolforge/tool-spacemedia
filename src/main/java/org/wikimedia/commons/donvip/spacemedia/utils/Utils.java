@@ -419,6 +419,15 @@ public final class Utils {
             return "";
         }
         int idxDotInDesc = desc.indexOf('.');
+        if (idxDotInDesc <= 0) {
+            return desc;
+        }
+        // Special case for "U.S."
+        if (desc.charAt(idxDotInDesc-1) == 'U' && desc.length() > idxDotInDesc + 3
+            && desc.charAt(idxDotInDesc+1) == 'S'
+            &&  desc.charAt(idxDotInDesc+2) == '.') {
+                idxDotInDesc = desc.indexOf('.', idxDotInDesc+3);
+        }
         return idxDotInDesc > 0 ? desc.substring(0, idxDotInDesc) : desc;
     }
 
