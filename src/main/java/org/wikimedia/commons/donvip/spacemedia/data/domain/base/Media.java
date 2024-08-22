@@ -244,7 +244,7 @@ public class Media implements MediaProjection, MediaDescription {
 
     protected static String getUploadTitle(String s, String id) {
         String firstPart = stringShortened(s, id);
-        return firstPart.contains(id) ? firstPart
+        return "".equals(firstPart) ? id : firstPart.contains(id) ? firstPart
                 : new StringBuilder(firstPart).append(" (").append(id).append(')').toString();
     }
 
