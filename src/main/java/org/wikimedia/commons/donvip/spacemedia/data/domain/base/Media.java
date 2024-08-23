@@ -194,7 +194,7 @@ public class Media implements MediaProjection, MediaDescription {
         }
     }
 
-    private static boolean isWrongtitle(String s) {
+    protected boolean isWrongtitle(String s) {
         return isTitleBlacklisted(s) || ("n-a".equals(s.replace('/', '-').toLowerCase(ENGLISH)));
     }
 

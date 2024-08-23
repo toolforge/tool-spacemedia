@@ -1,9 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.flickr;
 
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.normalizeFilename;
-import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getFirstSentence;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
@@ -220,6 +217,11 @@ public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
         return result;
     }
 
+    @Override
+    public String getUploadId(FileMetadata fileMetadata) {
+        return getUserDefinedId().orElseGet(() -> super.getUploadId(fileMetadata));
+    }
+
     @Transient
     @JsonIgnore
     public Optional<String> getUserDefinedId() {
@@ -236,18 +238,9 @@ public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
     }
 
     @Override
-    public String getUploadTitle(FileMetadata fileMetadata) {
-        if ((title.isEmpty() || UnitedStates.isVirin(title) || UnitedStates.isFakeVirin(title))
-                && isNotEmpty(getPhotosets())) {
-            String albumTitle = getPhotosets().iterator().next().getTitle();
-            if (isNotBlank(albumTitle)) {
-                return albumTitle + " (" + getId().getMediaId() + ")";
-            }
-        }
-        String s = getUploadTitle();
-        return getUploadTitle(isTitleBlacklisted(s)
-                ? normalizeFilename(getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata))))
-                : s, getUserDefinedId().orElseGet(() -> getUploadId(fileMetadata)));
+    protected boolean isWrongtitle(String s) {
+        return super.isWrongtitle(s) || title.isEmpty()
+            || UnitedStates.isVirin(title) || UnitedStates.isFakeVirin(title) || UnitedStates.isWhiteHouse(title);
     }
 
     @Override

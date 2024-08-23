@@ -28,6 +28,9 @@ public final class UnitedStates {
     private static final Pattern FAKE_US_VIRIN = Pattern.compile(
             "([\\d]{8})-([A-Z])-([0-9A-Z]{5})-([\\d]{3,4})");
 
+    private static final Pattern WHITE_HOUSE = Pattern.compile(
+            "[FPSV]\\d{8}[A-Z]{2}-\\d{4}");
+
     private UnitedStates() {
 
     }
@@ -50,6 +53,10 @@ public final class UnitedStates {
 
     public static boolean isVirin(String identifier) {
         return US_VIRIN.matcher(identifier).matches();
+    }
+
+    public static boolean isWhiteHouse(String identifier) {
+        return WHITE_HOUSE.matcher(identifier).matches();
     }
 
     public static record VirinTemplates(String virinTemplate, String pdTemplate, String videoCategory) {

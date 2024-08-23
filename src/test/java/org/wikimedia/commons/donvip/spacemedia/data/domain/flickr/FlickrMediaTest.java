@@ -43,6 +43,18 @@ class FlickrMediaTest {
         assertEquals("NEEMO 15 Eng Eval Day 4 (5727383147)", media.getUploadTitle(null));
     }
 
+    @Test
+    void testGetUploadTitle3() {
+        FlickrMedia media = new FlickrMedia();
+        media.setId(new CompositeMediaId("whitehouse", "53912725338"));
+        FlickrPhotoSet photoset = new FlickrPhotoSet();
+        photoset.setTitle("Winter 2024");
+        media.addPhotoSet(photoset);
+        media.setTitle("S20240327CS-0772");
+        media.setDescription("Second Gentleman Doug Emhoff greets professional pickleball players at the Miami Open Tennis Tournament, Wednesday, March 27, 2024, at Hard Rock Stadium in Miami Gardens, Florida. (Official White House Photo by Cameron Smith)");
+        assertEquals("Winter 2024 (S20240327CS-0772)", media.getUploadTitle(null));
+    }
+
     @ParameterizedTest
     @CsvSource(delimiter = ';', value = {
             "NHQ202305030019;Czech Republic Artemis Accords Signing (NHQ202305030019);xxx",
