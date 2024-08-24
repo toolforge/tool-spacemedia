@@ -1236,7 +1236,7 @@ public abstract class AbstractOrgService<T extends Media>
     protected String getDescription(T media, FileMetadata fileMetadata) {
         String description = media.getDescription(fileMetadata);
         if (StringUtils.isBlank(description)) {
-            return media.getTitle();
+            return media.getUploadTitleFirstPart(media.getUploadTitle(), fileMetadata);
         } else {
             // Resolve url shortener/redirect blocked in spam disallow list
             String result = PATTERN_SHORT.matcher(description).replaceAll(match -> {

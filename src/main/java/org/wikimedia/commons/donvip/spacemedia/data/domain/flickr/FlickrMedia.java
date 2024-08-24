@@ -41,6 +41,8 @@ public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
     public static final String USER_ID_STRING = "NHQ\\d{12}|GRC-\\d{4}-[A-Z]-\\d{5}|iss\\d{3}e\\d{6}|jsc\\d{4}e\\d{6}|[FPSV]\\d{8}[A-Z]{2}-\\d{4}";
     private static final Pattern USER_ID = Pattern.compile(".*(" + USER_ID_STRING + ").*", Pattern.CASE_INSENSITIVE);
 
+    private static final Pattern UGLY_ID = Pattern.compile("\\d{8,14}_[A-Z]+_?\\d+");
+
     @Column(nullable = false)
     private int license;
 
@@ -239,8 +241,8 @@ public class FlickrMedia extends Media implements WithLatLon, WithKeywords {
 
     @Override
     protected boolean isWrongtitle(String s) {
-        return super.isWrongtitle(s) || title.isEmpty()
-            || UnitedStates.isVirin(title) || UnitedStates.isFakeVirin(title) || UnitedStates.isWhiteHouse(title);
+        return super.isWrongtitle(s) || s.isEmpty() || UGLY_ID.matcher(s).matches()
+            || UnitedStates.isVirin(s) || UnitedStates.isFakeVirin(s) || UnitedStates.isWhiteHouse(s);
     }
 
     @Override
