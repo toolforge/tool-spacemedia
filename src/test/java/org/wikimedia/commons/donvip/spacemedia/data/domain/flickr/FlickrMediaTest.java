@@ -77,4 +77,15 @@ class FlickrMediaTest {
         assertFalse(media.areSameUris(new URI("https://live.staticflickr.com/2481/3578880072_1f2efcf80c_o.jpg"),
                 new URI("https://live.staticflickr.com/2481/3578880072_1f2efcf80c_m.jpg")));
     }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = {
+        "true;20221130103217_JQM49353",
+        "true;20220216095511_IMG_6593",
+        "true;20211206113838_CR3A0863",
+        "true;1F9A7938",
+        "true;JQ5D0262"})
+    void testIsWrongTitle(boolean expected, String title) {
+        assertEquals(expected, new FlickrMedia().isWrongtitle(title));
+    }
 }
