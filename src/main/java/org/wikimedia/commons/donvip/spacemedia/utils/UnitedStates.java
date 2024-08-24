@@ -2,11 +2,13 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import static java.util.Locale.ENGLISH;
 import static java.util.Optional.ofNullable;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.ES;
 
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -115,6 +117,13 @@ public final class UnitedStates {
             case "92297346@N03" -> "Q2331721";
             default -> throw new IllegalStateException(media.getId().getRepoId());
         });
+    }
+
+    public static <M extends Media> String getUsEmbassyLanguage(M media, Function<M, String> def) {
+        return switch(media.getId().getRepoId()) {
+            case "40236643@N04" -> ES;
+            default -> def.apply(media);
+        };
     }
 
     public static Optional<String> getUsGovernmentCategory(Media media) {

@@ -89,6 +89,9 @@ public final class Utils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
 
+    public static final String EN = "en";
+    public static final String ES = "es";
+
     private Utils() {
         // Hide default constructor
     }

@@ -77,6 +77,11 @@ public class UsEmbassiesFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
+    protected String getLanguage(FlickrMedia media) {
+        return UnitedStates.getUsEmbassyLanguage(media, super::getLanguage);
+    }
+
+    @Override
     protected Set<String> getEmojis(FlickrMedia uploadedMedia) {
         Set<String> result = super.getEmojis(uploadedMedia);
         result.add(Emojis.FLAG_USA);

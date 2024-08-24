@@ -14,6 +14,8 @@ import static org.apache.commons.lang3.StringUtils.strip;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.formatWikiCode;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService.normalizeFilename;
 import static org.wikimedia.commons.donvip.spacemedia.service.wikimedia.Video2CommonsService.V2C_VIDEO_EXTENSIONS;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.EN;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.ES;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.durationInSec;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.executeRequest;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newHttpGet;
@@ -138,9 +140,6 @@ public abstract class AbstractOrgService<T extends Media>
     private static final String Q20007257_CC_BY_40 = "Q20007257";
 
     private static final int LOTS_OF_MP = 150_000_000;
-
-    protected static final String EN = "en";
-    protected static final String ES = "es";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOrgService.class);
 
