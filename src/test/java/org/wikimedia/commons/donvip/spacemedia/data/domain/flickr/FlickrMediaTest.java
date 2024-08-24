@@ -77,4 +77,9 @@ class FlickrMediaTest {
         assertFalse(media.areSameUris(new URI("https://live.staticflickr.com/2481/3578880072_1f2efcf80c_o.jpg"),
                 new URI("https://live.staticflickr.com/2481/3578880072_1f2efcf80c_m.jpg")));
     }
+
+    @Test
+    void testIsWrongTitle() {
+        assertTrue(new FlickrMedia().isWrongtitle("20221130103217_JQM49353"));
+    }
 }

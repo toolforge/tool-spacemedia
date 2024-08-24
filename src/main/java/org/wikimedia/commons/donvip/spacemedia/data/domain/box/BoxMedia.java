@@ -30,7 +30,7 @@ public class BoxMedia extends SingleFileMedia {
     }
 
     @Override
-    protected String getUploadTitle() {
+    public String getUploadTitle() {
         int idx = title.lastIndexOf('.');
         String result = CommonsService.normalizeFilename(idx > -1 ? title.substring(0, idx) : title);
         return result.replace("IMG_", "").matches("[\\p{Alnum}_]+") ? getId().getRepoId().split("/")[0] + ' ' + result

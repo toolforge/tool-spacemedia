@@ -68,6 +68,7 @@ class MediaTest {
         assertTrue(Media.isTitleBlacklisted("578224_389534067749441_1515397233_n"));
         assertTrue(Media.isTitleBlacklisted("GOPR7166 reframed by Herve"));
         assertTrue(Media.isTitleBlacklisted("IMG_3836_propellers_cirrus_David_Noone"));
+        assertTrue(Media.isTitleBlacklisted("20220216095511_IMG_6593"));
 
         assertFalse(Media.isTitleBlacklisted("Hubble Takes a Closer Look at its 31st Anniversary Image"));
         assertFalse(Media.isTitleBlacklisted("HercC130_GoingHome.jPG"));
