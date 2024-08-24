@@ -139,6 +139,23 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
                 media.getMetadata().stream().map(m -> media.getUploadId(m)).toList());
     }
 
+    @Test
+    void testReadHtm4() throws Exception {
+        NasaPhotojournalMedia media = readHtm("PIA26369");
+
+        assertEquals(4, media.getMetadata().size());
+        assertEquals(
+                Set.of("https://photojournal.jpl.nasa.gov/tiff/PIA26369.tif",
+                        "https://photojournal.jpl.nasa.gov/jpeg/PIA26369.jpg",
+                        "https://photojournal.jpl.nasa.gov/archive/PIA26369_hires.jpg",
+                        "https://photojournal.jpl.nasa.gov/archive/PIA26369_hires.tif"),
+                media.getMetadata().stream().map(m -> m.getAssetUrl().toExternalForm()).collect(toSet()));
+
+        assertEquals(
+                List.of("PIA26369", "PIA26369", "PIA26369_hires", "PIA26369_hires"),
+                media.getMetadata().stream().map(m -> media.getUploadId(m)).toList());
+    }
+
     private NasaPhotojournalMedia readHtm(String id) throws IOException, UploadException {
         NasaPhotojournalMedia media = new NasaPhotojournalMedia();
 

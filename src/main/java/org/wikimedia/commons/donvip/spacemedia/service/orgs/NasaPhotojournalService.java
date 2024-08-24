@@ -59,7 +59,7 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
             ".*<a href=\"(https?://[^\"]+\\.mov)\".*");
 
     static final Pattern FIGURE_PATTERN = Pattern.compile(
-            "<a href=\"(https?://[^\"]+/(?:figures|archive)/[^\"]+\\.(?:jpg|png|tiff))\"");
+            "<a href=\"(https?://[^\"]+/(?:figures|archive)/[^\"]+\\.(?:jpg|png|tiff?))\"");
 
     static final Pattern ACQ_PATTERN = Pattern.compile(
             ".*acquired ((?:January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, [1-2]\\d{3}).*");
@@ -240,7 +240,7 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
 
     boolean detectFigures(NasaPhotojournalMedia media) {
         String caption = media.getDescription();
-        return caption.contains("<img ") && addMetadataFromPattern(FIGURE_PATTERN, caption, media);
+        return addMetadataFromPattern(FIGURE_PATTERN, caption, media);
     }
 
     static boolean detectCreationDate(NasaPhotojournalMedia media) {
