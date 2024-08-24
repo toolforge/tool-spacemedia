@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import static java.lang.Double.parseDouble;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.util.Locale.ENGLISH;
 import static java.util.Optional.empty;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.extractDate;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.getWithJsoup;
@@ -77,6 +78,10 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
     @Value("${nasa.photojournal.geohack.globes}")
     private Set<String> globes;
 
+    @Lazy
+    @Autowired
+    private NasaAsterService asterService;
+
     @Autowired
     public NasaPhotojournalService(NasaPhotojournalMediaRepository repository) {
         super(repository, "nasa.photojournal", Set.of("photojournal"));
@@ -95,6 +100,16 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
     @Override
     protected boolean checkBlocklist() {
         return false;
+    }
+
+    @Override
+    protected List<AbstractOrgService<?>> getSimilarOrgServices(NasaPhotojournalMedia media) {
+        if (media.getInstrument() != null) {
+            switch (media.getInstrument().toLowerCase(ENGLISH)) {
+                case "aster": return List.of(asterService);
+            }
+        }
+        return List.of();
     }
 
     @Override
