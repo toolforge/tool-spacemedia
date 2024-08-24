@@ -188,10 +188,14 @@ public class Media implements MediaProjection, MediaDescription {
             return getUploadTitle(normalizeFilename(
                     getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata)))), uid);
         } else {
-            return getUploadTitle(isWrongtitle(s)
-                    ? normalizeFilename(getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata))))
-                    : s, uid);
+            return getUploadTitle(getUploadTitleFirstPart(s, fileMetadata), uid);
         }
+    }
+
+    public String getUploadTitleFirstPart(String s, FileMetadata fileMetadata) {
+        return isWrongtitle(s)
+                ? normalizeFilename(getAlbumName().orElseGet(() -> getFirstSentence(getDescription(fileMetadata))))
+                : s;
     }
 
     protected boolean isWrongtitle(String s) {
