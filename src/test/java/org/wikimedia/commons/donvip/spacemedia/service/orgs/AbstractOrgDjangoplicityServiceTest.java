@@ -24,7 +24,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
-import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.AbstractOrgDjangoplicityServiceTest.TestConfig.TestAbstractDjangoplicityService;
 
 @SpringJUnitConfig(AbstractOrgDjangoplicityServiceTest.TestConfig.class)
@@ -32,9 +31,6 @@ class AbstractOrgDjangoplicityServiceTest extends AbstractOrgServiceTest {
 
     @Autowired
     private TestAbstractDjangoplicityService service;
-
-    @MockBean
-    private CategorizationService categorizationService;
 
     @MockBean
     private DjangoplicityMediaRepository repo;

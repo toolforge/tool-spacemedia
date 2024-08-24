@@ -1,5 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.wikimedia;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -49,7 +51,7 @@ public class SdcStatements extends TreeMap<String, Pair<Object, Map<String, Obje
     }
 
     private SdcStatements addStatement(WikidataProperty prop, Object value) {
-        put(prop.toString(), Pair.of(value, null));
+        put(prop.toString(), Pair.of(requireNonNull(value, prop.toString()), null));
         return this;
     }
 }

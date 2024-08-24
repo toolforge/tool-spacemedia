@@ -26,6 +26,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
+import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
 import org.wikimedia.commons.donvip.spacemedia.service.GeometryService;
 import org.wikimedia.commons.donvip.spacemedia.service.GoogleTranslateService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService;
@@ -58,6 +59,9 @@ public abstract class AbstractOrgServiceTest {
 
     @MockBean
     protected CommonsService commonsService;
+
+    @MockBean
+    protected CategorizationService categorizationService;
 
     @MockBean
     protected MediaService mediaService;

@@ -29,7 +29,6 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
-import org.wikimedia.commons.donvip.spacemedia.service.CategorizationService;
 import org.wikimedia.commons.donvip.spacemedia.service.MediaService.MediaUpdateResult;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.SdcStatements;
@@ -40,9 +39,6 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
 
     @MockBean
     private NasaPhotojournalMediaRepository repository;
-
-    @MockBean
-    private CategorizationService categorizationService;
 
     @Autowired
     private NasaPhotojournalService service;

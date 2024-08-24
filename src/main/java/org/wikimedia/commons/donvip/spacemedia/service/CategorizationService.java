@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.service;
 import static java.util.Arrays.stream;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -49,8 +50,26 @@ public class CategorizationService {
 
     @PostConstruct
     void init() throws IOException {
-        satellitePicturesCategories = CsvHelper.loadSet(getClass().getResource("/satellite.pictures.categories.txt"));
-        categoriesStatements = CsvHelper.loadCsvMapping("categories.statements.csv");
+        getSatellitePicturesCategories();
+        getCategoriesStatements();
+    }
+
+    private Set<String> getSatellitePicturesCategories() {
+        if (satellitePicturesCategories == null) {
+            try {
+                satellitePicturesCategories = CsvHelper.loadSet(getClass().getResource("/satellite.pictures.categories.txt"));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return satellitePicturesCategories;
+    }
+
+    private Map<String, String> getCategoriesStatements() {
+        if (categoriesStatements == null) {
+            categoriesStatements = CsvHelper.loadCsvMapping("categories.statements.csv");
+        }
+        return categoriesStatements;
     }
 
     public static String extractCopernicusTemplate(String text) {
@@ -67,7 +86,7 @@ public class CategorizationService {
     }
 
     public void findCategoriesStatements(SdcStatements result, Set<String> cats) {
-        for (Entry<String, String> e : categoriesStatements.entrySet()) {
+        for (Entry<String, String> e : getCategoriesStatements().entrySet()) {
             if (stream(e.getKey().split(";")).map(r -> Pattern.compile(r, Pattern.CASE_INSENSITIVE))
                     .anyMatch(p -> cats.stream().anyMatch(c -> p.matcher(c).matches()))) {
                 LOGGER.info("SDC category match: {}", e);
@@ -117,7 +136,7 @@ public class CategorizationService {
     public Set<String> findCategoriesForEarthObservationImage(Media image, UnaryOperator<String> categorizer,
             String defaultCat, boolean lookIntoTitle, boolean lookIntoDescription, boolean lookIntoKeywords) {
         Set<String> result = new TreeSet<>();
-        for (String targetOrSubject : satellitePicturesCategories) {
+        for (String targetOrSubject : getSatellitePicturesCategories()) {
             if (image.containsInTitleOrDescriptionOrKeywords(targetOrSubject, lookIntoTitle, lookIntoDescription,
                     lookIntoKeywords)) {
                 findCategoryForEarthObservationTargetOrSubject(categorizer, targetOrSubject).ifPresent(result::add);
