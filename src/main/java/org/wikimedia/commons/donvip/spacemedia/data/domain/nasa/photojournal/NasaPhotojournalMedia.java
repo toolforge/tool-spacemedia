@@ -22,7 +22,7 @@ public class NasaPhotojournalMedia extends Media {
     @Column(name = "spacecraft", nullable = true, length = 50)
     private String spacecraft;
 
-    @Column(name = "instrument", nullable = true, length = 100)
+    @Column(name = "instrument", nullable = true, length = 128)
     private String instrument;
 
     @Column(name = "producer", nullable = true, length = 64)
