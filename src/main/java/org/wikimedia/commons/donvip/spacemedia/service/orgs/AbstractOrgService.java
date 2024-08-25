@@ -933,6 +933,7 @@ public abstract class AbstractOrgService<T extends Media>
             List<FileMetadata> uploaded = new ArrayList<>();
             return Triple.of(media, uploaded, doUpload(media, checkUnicity, uploaded, isManual));
         } catch (RuntimeException e) {
+            LOGGER.error("Failed to upload {}", media, e);
             GlitchTip.capture(e);
             throw new UploadException(e);
         }
@@ -947,6 +948,9 @@ public abstract class AbstractOrgService<T extends Media>
                 LOGGER.warn("File {} not uploaded: {}", metadata, e.getMessage());
             } catch (IgnoreException e) {
                 mediaService.ignoreAndSaveMetadata(metadata, e.getMessage(), e);
+            } catch (RuntimeException e) {
+                LOGGER.error("Failed to upload {}", metadata, e);
+                throw e;
             }
         }
         return count;
@@ -960,6 +964,7 @@ public abstract class AbstractOrgService<T extends Media>
             checkUploadPreconditions(media, metadata, checkUnicity);
             List<String> smallerFiles = mediaService.findSmallerCommonsFilesWithSearchTermAndPhash(media, metadata);
             URL downloadUrl = getUrlResolver().resolveDownloadUrl(media, metadata);
+            LOGGER.debug("Download URL resolved to {}", downloadUrl);
             if (!smallerFiles.isEmpty()) {
                 LOGGER.info(
                         "Found existing smaller files with same id and perceptual hash on Commons, replacing them: {}",
@@ -971,9 +976,11 @@ public abstract class AbstractOrgService<T extends Media>
                 metadata.setCommonsFileNames(new HashSet<>(smallerFiles));
             } else {
                 Pair<String, Map<String, String>> codeAndLegends = getWikiCode(media, metadata);
+                LOGGER.debug("Wikicode and legends: {}", codeAndLegends);
                 String uploadedFilename = commonsService.uploadNewFile(codeAndLegends.getLeft(),
                         media.getUploadTitle(metadata), metadata.getFileExtension(), downloadUrl, metadata.getSha1(),
                         getId(), media.getId(), metadata.getId(), Boolean.FALSE != metadata.isAudioTrack());
+                LOGGER.debug("Uploaded filename: {}", uploadedFilename);
                 metadata.setCommonsFileNames(new HashSet<>(Set.of(uploadedFilename)));
                 editStructuredDataContent(uploadedFilename, codeAndLegends.getRight(), media, metadata);
             }
