@@ -208,7 +208,7 @@ public class CommonsService {
             "File extension \"\\.([a-z]+)\" does not match the detected MIME type of the file \\(image/([a-z]+)\\)\\.");
 
     private static final Pattern KNOWN_LARGE_CATS = Pattern.compile(
-            "(\\d{4} births|Births in Philadelphia‎|Categories requiring permanent diffusion to zero|Categories which should only contain photographs|Churches by patron saint|Living people|Of \\(relation\\) \\(flat list\\)|Politicians of the United States by name)|Surnames");
+            "(\\d{4} births|Births in Philadelphia|Categories requiring permanent diffusion to zero|Categories which should only contain photographs|Churches by patron saint|Living people|Of \\(relation\\) \\(flat list\\)|Politicians of the United States by name)|Surnames");
 
     private static final Set<String> UNWANTED_CATEGORIES = Set.of("One of", "Two of", "Three of", "Four of", "Five of");
     private static final List<Pattern> UNWANTED_CATEGORIES_PATTERNS = List.of(Pattern
