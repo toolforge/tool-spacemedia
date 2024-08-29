@@ -108,9 +108,8 @@ public class MastodonService extends AbstractSocialMediaService<OAuth20Service, 
                     LOGGER.error("Couldn't find by its SHA1 a file we've just uploaded: {}", metadata.getSha1());
                 }
             } catch (IOException | RuntimeException | URISyntaxException e) {
-                LOGGER.error("Unable to retrieve JPEG from Commons or upload it to Mastodon: {}", e.getMessage());
+                LOGGER.warn("Unable to retrieve JPEG from Commons or upload it to Mastodon: {}", e.getMessage());
                 LOGGER.debug("Unable to retrieve JPEG from Commons or upload it to Mastodon: {}", e.getMessage(), e);
-                GlitchTip.capture(e);
             }
         }
         return mediaIds.isEmpty() ? null : mediaIds;
