@@ -3,6 +3,7 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 import static java.util.Locale.ENGLISH;
 import static java.util.Optional.ofNullable;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.ES;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.PT_BR;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -103,6 +104,9 @@ public final class UnitedStates {
         case "40236643@N04" -> "U.S. Embassy in San Salvador";
         case "89616529@N03" -> "U.S. Embassy in Dhaka";
         case "92297346@N03" -> "U.S. Embassy in Tokyo";
+        case "embaixadaeua-brasil" -> "U.S. Embassy in Brasilia";
+        case "embaixadaeua-caboverde" -> "U.S. Embassy in Praia";
+        case "us-embassy-tashkent" -> "U.S. Embassy in Tashkent";
         default -> throw new IllegalStateException(media.getId().getRepoId());
         } + " Flickr Stream");
     }
@@ -115,6 +119,9 @@ public final class UnitedStates {
             case "40236643@N04" -> "Q16935247";
             case "89616529@N03" -> "Q19891423";
             case "92297346@N03" -> "Q2331721";
+            case "embaixadaeua-brasil" -> "Q10272292";
+            case "embaixadaeua-caboverde" -> "Q104759613";
+            case "us-embassy-tashkent" -> "Q105635753";
             default -> throw new IllegalStateException(media.getId().getRepoId());
         });
     }
@@ -122,6 +129,7 @@ public final class UnitedStates {
     public static <M extends Media> String getUsEmbassyLanguage(M media, Function<M, String> def) {
         return switch(media.getId().getRepoId()) {
             case "40236643@N04" -> ES;
+            case "embaixadaeua-brasil" -> PT_BR;
             default -> def.apply(media);
         };
     }
