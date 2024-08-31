@@ -1,6 +1,7 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,5 +24,10 @@ public class UsMilFranceDvidsService extends AbstractOrgDvidsService {
     @Override
     public String getName() {
         return "U.S. Military in France (DVIDS)";
+    }
+
+    @Override
+    protected int[] getDays(int year, int month) {
+        return month == 6 ? IntStream.range(1, 31).map(i -> 31 - i).toArray() : super.getDays(year, month);
     }
 }
