@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.utils;
 
+import static com.drew.metadata.file.FileSystemDirectory.TAG_FILE_SIZE;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.execOutput;
@@ -17,7 +18,6 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,8 +49,6 @@ import org.apache.poi.sl.usermodel.SlideShow;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xslf.util.PPTX2PNG;
 import org.gagravarr.ogg.OggFile;
-import org.mp4parser.IsoFile;
-import org.mp4parser.boxes.iso14496.part12.MovieBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -59,6 +57,11 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
+
+import com.drew.imaging.mp4.Mp4MetadataReader;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.file.FileSystemDirectory;
+import com.drew.metadata.mp4.media.Mp4VideoDirectory;
 
 public class MediaUtils {
 
@@ -76,9 +79,7 @@ public class MediaUtils {
             .compile("\\[download\\] (\\S{11}\\.\\S{3,4}) has already been downloaded(?: and merged)?");
     private static final Pattern DESTINATION = Pattern.compile("\\[download\\] Destination: (\\S{11}\\.\\S{3,4})");
 
-    private static final Set<String> IGNORED_MP4_ERRORS = Set.of(
-            "box size of zero means 'till end of file. That is not yet supported",
-            "A cast to int has gone wrong. Please contact the mp4parser discussion group (");
+    private static final Set<String> IGNORED_MP4_ERRORS = Set.of();
 
     private MediaUtils() {
         // Hide default constructor
@@ -252,7 +253,7 @@ public class MediaUtils {
         }
     }
 
-    private static ContentsAndMetadata<IsoFile> readMp4Video(Path localPath, LongSupplier contentLength,
+    private static ContentsAndMetadata<Mp4VideoDirectory> readMp4Video(Path localPath, LongSupplier contentLength,
             String filename, String extension, URI uri, Function<URI, Optional<Path>> downloader)
             throws FileDecodingException, IOException {
         return readVideo(localPath, uri, contentLength, downloader, x -> {
@@ -268,22 +269,24 @@ public class MediaUtils {
         });
     }
 
-    private static ContentsAndMetadata<IsoFile> readMp4Video(Path path, LongSupplier contentLength, String filename,
+    private static ContentsAndMetadata<Mp4VideoDirectory> readMp4Video(Path path, LongSupplier contentLength, String filename,
             String extension) throws IOException, FileDecodingException {
-        try (IsoFile mp4 = new Mp4File(path.toFile())) {
-            MovieBox movieBox = mp4.getMovieBox();
-            if (movieBox == null) {
+        try {
+            Metadata md = Mp4MetadataReader.readMetadata(path.toFile());
+            FileSystemDirectory fs = md.getFirstDirectoryOfType(FileSystemDirectory.class);
+            Mp4VideoDirectory mp4 = md.getFirstDirectoryOfType(Mp4VideoDirectory.class);
+            if (mp4 == null) {
                 throw new FileDecodingException(contentLength.getAsLong(), "Failed to open MP4 video from " + path);
             }
-            return new ContentsAndMetadata<>(mp4, contentLength(contentLength, mp4::getSize), filename, extension,
-                    movieBox.getTrackCount(), null);
+            return new ContentsAndMetadata<>(mp4, contentLength(contentLength, () -> fs.getLongObject(TAG_FILE_SIZE)),
+                    filename, extension, 1, null);
         } catch (RuntimeException e) {
             if (e.getMessage() != null && IGNORED_MP4_ERRORS.stream().anyMatch(x -> e.getMessage().startsWith(x))) {
-                // Ignore https://github.com/sannies/mp4parser/issues/427
                 return new ContentsAndMetadata<>(
                         // Return sample data from
                         // https://github.com/mathiasbynens/small/blob/master/mp4-with-audio.mp4
-                        new Mp4File(Channels.newChannel(MediaUtils.class.getResourceAsStream("/mp4-with-audio.mp4"))),
+                        Mp4MetadataReader.readMetadata(MediaUtils.class.getResourceAsStream("/mp4-with-audio.mp4"))
+                            .getFirstDirectoryOfType(Mp4VideoDirectory.class),
                         contentLength.getAsLong(), filename, extension, 1, null);
             } else {
                 throw e;
