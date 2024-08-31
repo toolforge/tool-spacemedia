@@ -208,6 +208,7 @@ public class Media implements MediaProjection, MediaDescription {
     }
 
     @Transient
+    @JsonIgnore
     public final Optional<String> getAlbumName() {
         return getAlbumNames().stream().findFirst();
     }
