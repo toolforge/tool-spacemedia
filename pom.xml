@@ -41,10 +41,10 @@
 
 		<batik.version>1.17</batik.version>
 		<flickr4java-version>3.0.9</flickr4java-version>
-		<jettyhttp2-version>11.0.18</jettyhttp2-version>
+		<jettyhttp2-version>12.0.12</jettyhttp2-version>
 		<jhove.version>1.30.0</jhove.version>
 		<poi-version>5.3.0</poi-version>
-		<springboot-version>3.1.12</springboot-version>
+		<springboot-version>3.2.9</springboot-version>
 		<scribejava-version>8.3.3</scribejava-version>
 		<twelvemonkeys-version>3.11.0</twelvemonkeys-version>
 	</properties>
@@ -261,6 +261,10 @@
 			<artifactId>jackson-dataformat-csv</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jdk8</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>dev.brachtendorf</groupId>
 			<artifactId>JImageHash</artifactId>
 			<version>1.0.0</version>
@@ -433,7 +437,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.wiremock</groupId>
-			<artifactId>wiremock</artifactId>
+			<artifactId>wiremock-jetty12</artifactId>
 			<version>3.9.1</version>
 			<scope>test</scope>
 		</dependency>
@@ -706,7 +710,7 @@
 									<goal>repackage</goal>
 								</goals>
 								<configuration>
-									<!--<loaderImplementation>CLASSIC</loaderImplementation>-->
+									<loaderImplementation>CLASSIC</loaderImplementation>
 									<mainClass>
 										org.wikimedia.commons.donvip.spacemedia.apps.SpacemediaWebApplication</mainClass>
 									<outputDirectory>
