@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.TreeMap;
 
 import org.slf4j.Logger;
@@ -103,10 +104,17 @@ public class DvidsService {
 
     @Cacheable("unitAbbrByFullName")
     public String getUnitAbbreviation(String unitFullName) {
-        return ofNullable(rest.getForObject(
-                unitApiEndpoint.expand(Map.of(API_KEY, apiKey, "unit_name", requireNonNull(unitFullName))),
-                ApiUnitResponse.class))
-                .orElseThrow(() -> new IllegalStateException("No unit found for " + unitFullName))
-                .results().iterator().next().unit_abbrev();
+        try {
+            return ofNullable(rest.getForObject(
+                    unitApiEndpoint.expand(Map.of(API_KEY, apiKey, "unit_name", requireNonNull(unitFullName))),
+                    ApiUnitResponse.class))
+                    .orElseThrow(() -> new IllegalStateException("No unit found for " + unitFullName))
+                    .results().iterator().next().unit_abbrev();
+        } catch (IllegalStateException | NoSuchElementException e) {
+            if (unitFullName.endsWith(" Public Affairs")) {
+                return getUnitAbbreviation(unitFullName.replace(" Public Affairs", ""));
+            }
+            throw e;
+        }
     }
 }
