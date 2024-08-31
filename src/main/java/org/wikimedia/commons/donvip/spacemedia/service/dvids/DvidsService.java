@@ -103,10 +103,18 @@ public class DvidsService {
 
     @Cacheable("unitAbbrByFullName")
     public String getUnitAbbreviation(String unitFullName) {
-        return ofNullable(rest.getForObject(
-                unitApiEndpoint.expand(Map.of(API_KEY, apiKey, "unit_name", requireNonNull(unitFullName))),
-                ApiUnitResponse.class))
-                .orElseThrow(() -> new IllegalStateException("No unit found for " + unitFullName))
-                .results().iterator().next().unit_abbrev();
+        String errorMessage = "No unit found for " + unitFullName;
+        try {
+            return ofNullable(rest.getForObject(
+                    unitApiEndpoint.expand(Map.of(API_KEY, apiKey, "unit_name", requireNonNull(unitFullName))),
+                    ApiUnitResponse.class))
+                    .orElseThrow(() -> new IllegalStateException(errorMessage))
+                    .results().iterator().next().unit_abbrev();
+        } catch (IllegalStateException e) {
+            if (errorMessage.equals(e.getMessage()) && unitFullName.endsWith(" Public Affairs")) {
+                return getUnitAbbreviation(unitFullName.replace(" Public Affairs", ""));
+            }
+            throw e;
+        }
     }
 }

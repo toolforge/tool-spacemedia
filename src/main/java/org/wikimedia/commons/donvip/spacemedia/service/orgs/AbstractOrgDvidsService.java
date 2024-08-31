@@ -204,7 +204,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
                 uploadedMedia.addAll(ur.uploadedMedia);
                 count += ur.count;
                 ongoingUpdateMedia(start, unit, count);
-                loop = count < ur.totalResults;
+                loop = page < ur.numberOfPages();
                 if (loop) {
                     LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {}-{} (page {}/{})...", type,
                             unit, country, year, month, page, ur.numberOfPages());
