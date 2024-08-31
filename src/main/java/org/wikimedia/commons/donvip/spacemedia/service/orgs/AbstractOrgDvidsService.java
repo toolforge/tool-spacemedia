@@ -145,19 +145,21 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         for (int year = LocalDateTime.now().getYear(); year >= minYear
                 && (doNotFetchEarlierThan == null || year >= doNotFetchEarlierThan.getYear()); year--) {
             for (int month = year == Year.now().getValue() ? YearMonth.now().getMonthValue() : 12; month > 0; month--) {
-                for (String unit : getRepoIdsFromArgs(args)) {
-                    for (String country : countries) {
-                        Pair<Integer, Collection<DvidsMedia>> update = updateDvidsMedia(unit, country, year,
-                                month, DvidsMediaType.image, idsKnownToDvidsApi);
-                        uploadedMedia.addAll(update.getRight());
-                        count += update.getLeft();
-                        ongoingUpdateMedia(start, count);
-                        if (videosEnabled) {
-                            update = updateDvidsMedia(unit, country, year, month, DvidsMediaType.video,
-                                    idsKnownToDvidsApi);
+                for (int day : getDays(year, month)) {
+                    for (String unit : getRepoIdsFromArgs(args)) {
+                        for (String country : countries) {
+                            Pair<Integer, Collection<DvidsMedia>> update = updateDvidsMedia(unit, country, year,
+                                    month, day, DvidsMediaType.image, idsKnownToDvidsApi);
                             uploadedMedia.addAll(update.getRight());
                             count += update.getLeft();
                             ongoingUpdateMedia(start, count);
+                            if (videosEnabled) {
+                                update = updateDvidsMedia(unit, country, year, month, day, DvidsMediaType.video,
+                                        idsKnownToDvidsApi);
+                                uploadedMedia.addAll(update.getRight());
+                                count += update.getLeft();
+                                ongoingUpdateMedia(start, count);
+                            }
                         }
                     }
                 }
@@ -168,6 +170,11 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             deleteOldDvidsMedia(idsKnownToDvidsApi);
         }
         endUpdateMedia(count, uploadedMedia, allMetadata(uploadedMedia), start, LocalDate.now().minusYears(1), true);
+    }
+
+    protected int[] getDays(int year, int month) {
+        // Iterate at month level by default
+        return new int[]{0};
     }
 
     private void deleteOldDvidsMedia(Set<String> idsKnownToDvidsApi) {
@@ -186,7 +193,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         }
     }
 
-    private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, String country, int year, int month,
+    private Pair<Integer, Collection<DvidsMedia>> updateDvidsMedia(String unit, String country, int year, int month, int day,
             DvidsMediaType type, Set<String> idsKnownToDvidsApi) {
         List<DvidsMedia> uploadedMedia = new ArrayList<>();
         int count = 0;
@@ -195,22 +202,22 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             int page = 1;
             LocalDateTime start = LocalDateTime.now();
             count = 0;
-            LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {}-{} (page {}/?)...", type, unit,
-                    country, year, month, page);
+            LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for {}-{}-{} (page {}/?)...", type, unit,
+                    country, year, month, day, page);
             while (loop) {
                 DvidsUpdateResult ur = doUpdateDvidsMedia(
-                        dvids.searchDvidsMediaIds(type, unit, country, year, month, page++), unit);
+                        dvids.searchDvidsMediaIds(type, unit, country, year, month, day, page++), unit);
                 idsKnownToDvidsApi.addAll(ur.idsKnownToDvidsApi);
                 uploadedMedia.addAll(ur.uploadedMedia);
                 count += ur.count;
                 ongoingUpdateMedia(start, unit, count);
                 loop = page <= ur.numberOfPages();
                 if (loop) {
-                    LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for year {}-{} (page {}/{})...", type,
-                            unit, country, year, month, page, ur.numberOfPages());
+                    LOGGER.info("Fetching DVIDS {}s from unit '{}', country '{}' for {}-{}-{} (page {}/{})...", type,
+                            unit, country, year, month, day, page, ur.numberOfPages());
                 }
             }
-            LOGGER.info("{}/{} {}s for year {}-{} completed: {} {}s in {}", unit, country, type, year, month, count,
+            LOGGER.info("{}/{} {}s for {}-{}-{} completed: {} {}s in {}", unit, country, type, year, month, day, count,
                     type, Utils.durationInSec(start));
         } catch (ApiException exx) {
             LOGGER.error("Error while fetching DVIDS " + type + "s from unit " + unit + " / country " + country, exx);

@@ -63,7 +63,7 @@ public class DvidsService {
     }
 
     public ApiSearchResponse searchDvidsMediaIds(DvidsMediaType type,
-            String unit, String country, int year, int month, int page) throws ApiException {
+            String unit, String country, int year, int month, int day, int page) throws ApiException {
         Map<String, Object> variables = new TreeMap<>(Map.of(API_KEY, apiKey, "type", type, "page", page));
         String template = year <= 0 ? searchApiEndpoint : searchYearApiEndpoint;
         if ("*".equals(unit)) {
@@ -77,9 +77,9 @@ public class DvidsService {
             variables.put("country", country);
         }
         if (year > 0) {
-            variables.put("from_date", String.format("%04d-%02d-01T00:00:00Z", year, month));
+            variables.put("from_date", String.format("%04d-%02d-%02dT00:00:00Z", year, month, day > 0 ? day : 1));
             variables.put("to_date", String.format("%04d-%02d-%02dT23:59:59Z", year, month == 12 ? 12 : month + 1,
-                    month == 12 ? 31 : 1));
+                day > 0 ? day : month == 12 ? 31 : 1));
         }
         ApiSearchResponse response = rest.getForObject(new UriTemplate(template).expand(variables),
                 ApiSearchResponse.class);
@@ -90,11 +90,11 @@ public class DvidsService {
         ApiPageInfo pageInfo = response.getPageInfo();
         if (pageInfo.totalResults() == MAX_RESULTS) {
             String msg = String.format(
-                    "Incomplete search! More criteria must be defined for %ss of '%s'/'%s' (%04d-%02d)!", type, unit,
-                    country, year, month);
+                    "Incomplete search! More criteria must be defined for %ss of '%s'/'%s' (%04d-%02d-%02d)!", type, unit,
+                    country, year, month, day);
             LOGGER.warn(msg);
         } else if (pageInfo.totalResults() == 0) {
-            LOGGER.warn("No {} for {}/{} in year {}-{}", type, unit, country, year, month);
+            LOGGER.warn("No {} for {}/{} in year {}-{}-{}", type, unit, country, year, month, day);
         } else if (page == 1) {
             LOGGER.debug("{} {}s to process for {}/{}", pageInfo.totalResults(), type, unit, country);
         }
