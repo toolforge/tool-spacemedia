@@ -28,7 +28,7 @@ public class S3Service {
     private static final Logger LOGGER = LoggerFactory.getLogger(S3Service.class);
 
     public static final Set<String> MEDIA_EXT = Set.of("wav", "mp3", "flac", "midi", "bmp", "jpg", "jpeg", "tif", "tiff",
-            "pdf", "png", "webp", "xcf", "gif", "svg", "mp4", "webm", "ogv", "mpeg", "avi");
+            "pdf", "png", "webp", "xcf", "gif", "svg", "mp4", "webm", "ogv", "mpeg", "avi", "mov");
 
     static {
         System.setProperty(SDKGlobalConfiguration.AWS_EC2_METADATA_DISABLED_SYSTEM_PROPERTY, "true");

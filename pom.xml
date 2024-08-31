@@ -349,13 +349,6 @@
 			<artifactId>vorbis-java-core</artifactId>
 			<version>0.8</version>
 		</dependency>
-		<!-- MP4 Video -->
-		<dependency>
-			<groupId>org.mp4parser</groupId>
-			<artifactId>isoparser</artifactId>
-			<!-- More recent versions up to 1.9.56 do not work - https://github.com/sannies/mp4parser/issues/449 -->
-			<version>1.9.41</version>
-		</dependency>
 		<!-- JHove -->
 		<dependency>
 			<groupId>org.openpreservation.jhove</groupId>

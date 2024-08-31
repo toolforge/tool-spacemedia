@@ -62,7 +62,7 @@ public class Video2CommonsService {
     private static final String URL_BASE = "https://video2commons.toolforge.org/";
     private static final String URL_API = URL_BASE + "api";
 
-    public static final Set<String> V2C_VIDEO_EXTENSIONS = Set.of("avi", "mp4");
+    public static final Set<String> V2C_VIDEO_EXTENSIONS = Set.of("avi", "mp4", "mov");
 
     @Autowired
     private ObjectMapper jackson;
