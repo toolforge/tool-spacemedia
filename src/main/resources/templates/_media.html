@@ -35,15 +35,36 @@
 	       th:href="@{/{id}/search?q={q}(id=${org.id},q=${search.q})}" th:text="'Search results (' + ${medias.totalElements} + ')'"></a>
 	  </li>
 	</ul>
-	<!-- TODO https://attacomsian.com/blog/spring-boot-thymeleaf-pagination/ -->
     <nav th:fragment="pagination_nav(page)" th:if="${page.totalPages > 1}" aria-label="Search results pages">
       <ul class="pagination">
-        <li th:class="'page-item ' + (${pageNumber==page.number + 1} ? active)"
-            th:each="pageNumber : ${pageNumbers}">
-          <a class="page-link" th:if="${search == null or search.q == null}" th:href="@{''(repo=${repo}, size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
-          </a>
-          <a class="page-link" th:if="${search != null and search.q != null}" th:href="@{''(q=${search.q}, size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}">
-          </a>
+        <li th:class="page-item" th:classappend="${page.number == 0} ? 'disabled'">
+          <a class="page-link" th:if="${search == null or search.q == null}" th:href="@{''(repo=${repo}, size=${page.size}, page=0)}" th:text="<<"></a>
+          <a class="page-link" th:if="${search != null and search.q != null}" th:href="@{''(q=${search.q}, size=${page.size}, page=0)}" th:text="<<"></a>
+        </li>
+        <li th:class="page-item" th:classappend="${page.number == 0} ? 'disabled'">
+          <a class="page-link" th:if="${search == null or search.q == null}" th:href="@{''(repo=${repo}, size=${page.size}, page=${page.number-1})}" th:text="<"></a>
+          <a class="page-link" th:if="${search != null and search.q != null}" th:href="@{''(q=${search.q}, size=${page.size}, page=${page.number-1})}" th:text="<"></a>
+        </li>
+        <li class="page-item disabled" th:if="${page.number - 20 > 0}">
+          <a class="page-link" href="#">...</a>
+        </li>
+        <li th:class="page-item" th:classappend="${pageNumber==page.number + 1} ? 'active'"
+            th:each="pageNumber : ${#numbers.sequence(
+                page.number > 20 ? page.number - 20 : 1,
+                page.number + 20 < page.totalPages ? page.number + 20 : page.totalPages)}">
+          <a class="page-link" th:if="${search == null or search.q == null}" th:href="@{''(repo=${repo}, size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}"></a>
+          <a class="page-link" th:if="${search != null and search.q != null}" th:href="@{''(q=${search.q}, size=${page.size}, page=${pageNumber-1})}" th:text="${pageNumber}"></a>
+        </li>
+        <li class="page-item disabled" th:if="${page.number + 20 < page.totalPages-1}">
+          <a class="page-link" href="#">...</a>
+        </li>
+        <li th:class="page-item" th:classappend="${page.number == page.totalPages} ? 'disabled'">
+          <a class="page-link" th:if="${search == null or search.q == null}" th:href="@{''(repo=${repo}, size=${page.size}, page=${page.number+1})}" th:text=">"></a>
+          <a class="page-link" th:if="${search != null and search.q != null}" th:href="@{''(q=${search.q}, size=${page.size}, page=${page.number+1})}" th:text=">"></a>
+        </li>
+        <li th:class="page-item" th:classappend="${page.number == page.totalPages} ? 'disabled'">
+          <a class="page-link" th:if="${search == null or search.q == null}" th:href="@{''(repo=${repo}, size=${page.size}, page=${page.totalPages})}" th:text=">>"></a>
+          <a class="page-link" th:if="${search != null and search.q != null}" th:href="@{''(q=${search.q}, size=${page.size}, page=${page.totalPages})}" th:text=">>"></a>
         </li>
       </ul>
     </nav>
