@@ -87,7 +87,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     @Cacheable("dvidsCountMissingVideosByUnit")
     long countMissingVideosInCommons(Set<String> units);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg','wmv','avi') and m.location.country in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg','wmv','avi','mov') and m.location.country in ?1")
     @Cacheable("dvidsCountMissingVideosByCountry")
     long countMissingVideosInCommonsByCountry(Set<String> countries);
 
@@ -149,7 +149,7 @@ public interface DvidsMediaRepository<T extends DvidsMedia> extends MediaReposit
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg','exr') and m.location.country in ?1 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")
     Page<T> findMissingImagesInCommonsByCountry(Set<String> countries, Pageable page);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg','wmv','avi') and m.location.country in ?1 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg','wmv','avi','mov') and m.location.country in ?1 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")
     Page<T> findMissingVideosInCommonsByCountry(Set<String> countries, Pageable page);
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('pdf','stl','epub','ppt','pptm','pptx') and m.location.country in ?1 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")

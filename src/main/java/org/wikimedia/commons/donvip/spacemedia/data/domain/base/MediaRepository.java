@@ -79,7 +79,7 @@ public interface MediaRepository<T extends Media> extends JpaRepository<T, Compo
     @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg','exr') and m.id.repoId in ?1")
     long countMissingImagesInCommons(Set<String> repos);
 
-    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg','wmv','avi') and m.id.repoId in ?1")
+    @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg','wmv','avi','mov') and m.id.repoId in ?1")
     long countMissingVideosInCommons(Set<String> repos);
 
     @Query("select count(distinct (m.id)) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('pdf','stl','epub','ppt','pptm','pptx') and m.id.repoId in ?1")
@@ -180,7 +180,7 @@ public interface MediaRepository<T extends Media> extends JpaRepository<T, Compo
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('bmp','jpg','jpeg','tif','tiff','png','webp','xcf','gif','svg','exr') and m.id.repoId in ?1 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")
     Page<T> findMissingImagesInCommons(Set<String> repos, Pageable page);
 
-    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg','wmv','avi') and m.id.repoId in ?1 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")
+    @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('mp4','webm','ogv','mpeg','wmv','avi','mov') and m.id.repoId in ?1 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")
     Page<T> findMissingVideosInCommons(Set<String> repos, Pageable page);
 
     @Query("select distinct(m) from #{#entityName} m join m.metadata md where (md.ignored is null or md.ignored = false) and not exists elements (md.commonsFileNames) and md.extension in ('pdf','stl','epub','ppt','pptm','pptx') and m.id.repoId in ?1 order by m.publicationYear desc, m.publicationMonth desc, m.publicationDate desc")

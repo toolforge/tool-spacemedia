@@ -48,7 +48,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.poi.sl.usermodel.SlideShow;
 import org.apache.poi.util.Units;
-import org.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +71,10 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.ContentsAndMetadata;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
-import org.wikimedia.commons.donvip.spacemedia.utils.Mp4File;
+
+import com.drew.metadata.avi.AviDirectory;
+import com.drew.metadata.mov.media.QuickTimeVideoDirectory;
+import com.drew.metadata.mp4.media.Mp4VideoDirectory;
 
 @Lazy
 @Service
@@ -370,18 +372,15 @@ public class MediaService {
                 metadata.setImageDimensions(new ImageDimensions((int) box.getWidth(), (int) box.getHeight()));
                 LOGGER.info("PDF dimensions have been updated for {}", metadata);
                 result = true;
-            } else if (img.contents() instanceof Mp4File mp4) {
-                List<TrackHeaderBox> boxes = mp4.getBoxes(TrackHeaderBox.class, true);
-                if (!boxes.isEmpty()) {
-                    TrackHeaderBox box = boxes.get(0);
-                    if (box.getWidth() > 0 && box.getHeight() > 0) {
-                        metadata.setImageDimensions(new ImageDimensions((int) box.getWidth(), (int) box.getHeight()));
-                        LOGGER.info("MP4 dimensions have been updated for {}", metadata);
-                        result = true;
-                    } else {
-                        LOGGER.warn("MP4 track header box with invalid dimensions: {} => {}", metadata, box);
-                    }
-                }
+            } else if (img.contents() instanceof Mp4VideoDirectory mp4) {
+                result |= updateVideo(metadata, mp4,
+                    mp4.getInteger(Mp4VideoDirectory.TAG_WIDTH), mp4.getInteger(Mp4VideoDirectory.TAG_HEIGHT));
+            } else if (img.contents() instanceof AviDirectory avi) {
+                result |= updateVideo(metadata, avi,
+                    avi.getInteger(AviDirectory.TAG_WIDTH), avi.getInteger(AviDirectory.TAG_HEIGHT));
+            } else if (img.contents() instanceof QuickTimeVideoDirectory mov) {
+                result |= updateVideo(metadata, mov,
+                    mov.getInteger(QuickTimeVideoDirectory.TAG_WIDTH), mov.getInteger(QuickTimeVideoDirectory.TAG_HEIGHT));
             } else if (img.contents() instanceof ImageDimensions dims) {
                 metadata.setImageDimensions(dims);
                 LOGGER.info("Dimensions have been updated for {}", metadata);
@@ -389,6 +388,17 @@ public class MediaService {
             }
         }
         return result;
+    }
+
+    private static final boolean updateVideo(FileMetadata metadata, Object video, Integer width, Integer height) {
+        if (width != null && width > 0 && height != null && height > 0) {
+            metadata.setImageDimensions(new ImageDimensions(width, height));
+            LOGGER.info("Video dimensions have been updated for {}", metadata);
+            return true;
+        } else {
+            LOGGER.warn("Video with invalid dimensions: {} => {}", metadata, video);
+            return false;
+        }
     }
 
     private static boolean updateFileSize(FileMetadata metadata, ContentsAndMetadata<?> img) {

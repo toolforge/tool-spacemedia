@@ -51,7 +51,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     public static final Set<String> AUDIO_EXTENSIONS = Set.of("wav", "mp3", "flac", "midi");
     public static final Set<String> IMAGE_EXTENSIONS = Set.of("bmp", "jpg", "tiff", "png", "webp", "xcf", "gif",
             "svg", "exr");
-    public static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg", "wmv", "avi");
+    public static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "ogv", "mpeg", "wmv", "avi", "mov");
     public static final Set<String> DOC_EXTENSIONS = Set.of("pdf", "stl", "epub", "ppt", "pptm", "pptx");
 
     @Id
@@ -371,7 +371,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     public String getFileExtensionOnCommons() {
         String ext = getFileExtension();
         return ext == null ? ext : switch (ext) {
-        case "mp4" -> "webm";
+        case "mp4", "avi", "mov" -> "webm";
         case "ppt", "pptm", "pptx" -> "pdf";
         default -> ext;
         };
