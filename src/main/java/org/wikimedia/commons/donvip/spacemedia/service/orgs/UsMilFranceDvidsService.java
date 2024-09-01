@@ -28,6 +28,6 @@ public class UsMilFranceDvidsService extends AbstractOrgDvidsService {
 
     @Override
     protected int[] getDays(int year, int month) {
-        return month == 6 ? IntStream.range(1, 31).map(i -> 31 - i).toArray() : super.getDays(year, month);
+        return year >= 1944 && month == 6 ? IntStream.range(1, 31).map(i -> 31 - i).toArray() : super.getDays(year, month);
     }
 }
