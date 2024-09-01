@@ -4,10 +4,13 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
+import org.apache.commons.lang3.function.TriFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.DvidsMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.dvids.api.ApiAssetResponse;
@@ -55,12 +59,14 @@ public class DvidsService {
 
     private final RestTemplate rest = new RestTemplate();
 
-    public DvidsMedia getMediaFromApi(CompositeMediaId id) {
+    public DvidsMedia getMediaFromApi(CompositeMediaId id,
+            TriFunction<DvidsMedia, URL, Consumer<FileMetadata>, FileMetadata> addMetadata) {
         DvidsMedia media = ofNullable(
                 rest.getForObject(assetApiEndpoint.expand(Map.of(API_KEY, apiKey, "id", id.getMediaId())),
                         ApiAssetResponse.class))
                 .orElseThrow(() -> new IllegalArgumentException("No result from DVIDS API for " + id)).results();
         media.setId(id);
+        addMetadata.apply(media, media.getAssetUrl(), fm -> fm.setMediaDimensions(media.getMediaDimensions()));
         return media;
     }
 

@@ -39,7 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.aster.NasaAsterMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
@@ -362,7 +362,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
 
     private static void fillMetadataResolution(NasaAsterMedia image, String meta, Matcher mr, FileMetadata metadata) {
         if (mr.matches()) {
-            metadata.setImageDimensions(new ImageDimensions(intval(mr.group(1)), intval(mr.group(2))));
+            metadata.setMediaDimensions(new MediaDimensions(intval(mr.group(1)), intval(mr.group(2))));
         } else {
             LOGGER.warn("No resolution found for {}: {}", image, meta);
         }

@@ -104,7 +104,7 @@ class NasaAsterServiceTest extends AbstractOrgServiceTest {
             assertNotNull(metadata);
             if (sizeAndDims) {
                 assertNotNull(metadata.getSize());
-                assertNotNull(metadata.getImageDimensions());
+                assertNotNull(metadata.getMediaDimensions());
             }
             UploadContext<NasaAsterMedia> uploadContext = new UploadContext<>(media, metadata, UploadMode.AUTO, 1999,
                     service::isPermittedFileType, false);

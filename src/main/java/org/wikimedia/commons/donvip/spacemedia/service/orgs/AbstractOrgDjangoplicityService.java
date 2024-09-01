@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityFrontPageItem;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityLicence;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
@@ -236,7 +236,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
             return null;
         }
 
-        ImageDimensions dimensions = processObjectInfos(url, imgUrlLink, id, media, html);
+        MediaDimensions dimensions = processObjectInfos(url, imgUrlLink, id, media, html);
 
         Map<String, List<Pair<String, Integer>>> videoUrlsAndSizeByFormat = new TreeMap<>();
 
@@ -257,7 +257,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
                     || (assetUrlLink.contains(".jp") && !assetUrlLink.contains("/wallpaper")
                             && !assetUrlLink.contains("/publication"))) {
                 addMetadata(media, buildAssetUrl(assetUrlLink, url),
-                        m -> m.setImageDimensions(assetUrlLink.contains("/original/") ? dimensions : null));
+                        m -> m.setMediaDimensions(assetUrlLink.contains("/original/") ? dimensions : null));
             } else if (assetUrlExt != null && FileMetadata.VIDEO_EXTENSIONS.contains(assetUrlExt)) {
                 String text = link.nextElementSibling().child(0).text().replace(" checksum", "");
                 videoUrlsAndSizeByFormat.computeIfAbsent(assetUrlExt, k -> new ArrayList<>())
@@ -360,9 +360,9 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
         return div.getElementsByClass(getObjectInfoTitleClass());
     }
 
-    protected ImageDimensions processObjectInfos(URL url, String imgUrlLink, String id, DjangoplicityMedia media,
+    protected MediaDimensions processObjectInfos(URL url, String imgUrlLink, String id, DjangoplicityMedia media,
             Document doc) {
-        ImageDimensions result = null;
+        MediaDimensions result = null;
         for (Element info : doc.getElementsByClass(getObjectInfoClass())) {
             // Iterate on h3/h4 tags, depending on website
             for (Element h3 : info.getElementsByTag(getObjectInfoH3Tag())) {
@@ -401,10 +401,10 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
         return result;
     }
 
-    protected ImageDimensions processAboutTheImageOrVideo(URL url, String imgUrlLink, String id,
+    protected MediaDimensions processAboutTheImageOrVideo(URL url, String imgUrlLink, String id,
             DjangoplicityMedia media,
             String titleText, Element sibling, String text) {
-        ImageDimensions result = null;
+        MediaDimensions result = null;
         switch (titleText) {
         case "Id:":
             if (!id.equals(text)) {
@@ -425,7 +425,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
             if (!m.matches()) {
                 scrapingError(imgUrlLink, text);
             }
-            result = new ImageDimensions(Integer.valueOf(m.group(1)), Integer.valueOf(m.group(2)));
+            result = new MediaDimensions(Integer.valueOf(m.group(1)), Integer.valueOf(m.group(2)));
             break;
         case "Field of View:":
             media.setFieldOfView(text);

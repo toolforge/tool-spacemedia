@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
@@ -41,7 +41,7 @@ class AbstractOrgDjangoplicityServiceTest extends AbstractOrgServiceTest {
         media.setPublicationDateTime(ZonedDateTime.of(2022, 12, 19, 6, 0, 0, 0, ZoneId.of("UTC")));
         media.setName("[KAG2008] globule 13");
         FileMetadata metadata = new FileMetadata();
-        metadata.setImageDimensions(new ImageDimensions(3977, 3878));
+        metadata.setMediaDimensions(new MediaDimensions(3977, 3878));
         metadata.setAssetUrl(new URL("https://esahubble.org/media/archives/images/original/potw2251a.tif"));
         metadata.setPhash("57edtmbje3hvtfycdzpni9fyfal1ujv80pnmwmgwaw0h1p9nzq");
         metadata.setSha1("dde6dbb2424a7a21608302f8cad9a5b3bcccb589");

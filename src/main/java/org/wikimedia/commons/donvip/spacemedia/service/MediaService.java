@@ -1,5 +1,6 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
@@ -20,7 +21,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,9 +64,9 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDescription;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociation;
 import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
@@ -72,9 +75,17 @@ import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 import org.wikimedia.commons.donvip.spacemedia.utils.ContentsAndMetadata;
 import org.wikimedia.commons.donvip.spacemedia.utils.CsvHelper;
 
+import com.drew.lang.Rational;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
 import com.drew.metadata.avi.AviDirectory;
+import com.drew.metadata.mov.QuickTimeDirectory;
 import com.drew.metadata.mov.media.QuickTimeVideoDirectory;
+import com.drew.metadata.mp3.Mp3Directory;
+import com.drew.metadata.mp4.Mp4Directory;
+import com.drew.metadata.mp4.media.Mp4MediaDirectory;
 import com.drew.metadata.mp4.media.Mp4VideoDirectory;
+import com.drew.metadata.wav.WavDirectory;
 
 @Lazy
 @Service
@@ -350,39 +361,46 @@ public class MediaService {
         return true;
     }
 
-    private static boolean updateReadableStateAndDims(FileMetadata metadata, ContentsAndMetadata<?> img) {
+    static boolean updateReadableStateAndDims(FileMetadata metadata, ContentsAndMetadata<?> img) {
         boolean result = false;
         if (img.contents() != null && !Boolean.TRUE.equals(metadata.isReadable())) {
             metadata.setReadable(Boolean.TRUE);
             LOGGER.info("Readable state has been updated to {} for {}", Boolean.TRUE, metadata);
             result = true;
         }
-        if (!metadata.isAudio() && !metadata.hasValidDimensions()) {
+        if ((!metadata.isAudio() && !metadata.hasValidDimensions())
+                || ((metadata.isAudio() || metadata.isVideo()) && !metadata.hasValidDuration())) {
             if (img.contents() instanceof BufferedImage bi && bi.getWidth() > 0 && bi.getHeight() > 0) {
-                metadata.setImageDimensions(new ImageDimensions(bi.getWidth(), bi.getHeight()));
+                metadata.setMediaDimensions(new MediaDimensions(bi.getWidth(), bi.getHeight()));
                 LOGGER.info("Image dimensions have been updated for {}", metadata);
                 result = true;
             } else if (img.contents() instanceof SlideShow<?, ?> ppt) {
                 Dimension2D dim = Units.pointsToPixel(ppt.getPageSize());
-                metadata.setImageDimensions(new ImageDimensions((int) dim.getWidth(), (int) dim.getHeight()));
+                metadata.setMediaDimensions(new MediaDimensions((int) dim.getWidth(), (int) dim.getHeight()));
                 LOGGER.info("PowerPoint dimensions have been updated for {}", metadata);
                 result = true;
             } else if (img.contents() instanceof PDDocument pdf) {
                 PDRectangle box = pdf.getPage(0).getMediaBox();
-                metadata.setImageDimensions(new ImageDimensions((int) box.getWidth(), (int) box.getHeight()));
+                metadata.setMediaDimensions(new MediaDimensions((int) box.getWidth(), (int) box.getHeight()));
                 LOGGER.info("PDF dimensions have been updated for {}", metadata);
                 result = true;
-            } else if (img.contents() instanceof Mp4VideoDirectory mp4) {
-                result |= updateVideo(metadata, mp4,
-                    mp4.getInteger(Mp4VideoDirectory.TAG_WIDTH), mp4.getInteger(Mp4VideoDirectory.TAG_HEIGHT));
-            } else if (img.contents() instanceof AviDirectory avi) {
-                result |= updateVideo(metadata, avi,
-                    avi.getInteger(AviDirectory.TAG_WIDTH), avi.getInteger(AviDirectory.TAG_HEIGHT));
-            } else if (img.contents() instanceof QuickTimeVideoDirectory mov) {
-                result |= updateVideo(metadata, mov,
-                    mov.getInteger(QuickTimeVideoDirectory.TAG_WIDTH), mov.getInteger(QuickTimeVideoDirectory.TAG_HEIGHT));
-            } else if (img.contents() instanceof ImageDimensions dims) {
-                metadata.setImageDimensions(dims);
+            } else if (img.contents() instanceof Metadata md) {
+                if ((Object) md.getFirstDirectoryOfType(Mp4VideoDirectory.class) instanceof Mp4VideoDirectory mp4) {
+                    result |= updateDimensions(metadata, mp4, md.getFirstDirectoryOfType(Mp4Directory.class),
+                        Mp4VideoDirectory.TAG_WIDTH, Mp4VideoDirectory.TAG_HEIGHT, Mp4MediaDirectory.TAG_DURATION_SECONDS);
+                } else if ((Object) md.getFirstDirectoryOfType(AviDirectory.class) instanceof AviDirectory avi) {
+                    result |= updateDimensions(metadata, avi, avi,
+                        AviDirectory.TAG_WIDTH, AviDirectory.TAG_HEIGHT, AviDirectory.TAG_DURATION);
+                } else if ((Object) md.getFirstDirectoryOfType(QuickTimeVideoDirectory.class) instanceof QuickTimeVideoDirectory mov) {
+                    result |= updateDimensions(metadata, mov, md.getFirstDirectoryOfType(QuickTimeDirectory.class),
+                        QuickTimeVideoDirectory.TAG_WIDTH, QuickTimeVideoDirectory.TAG_HEIGHT, QuickTimeDirectory.TAG_DURATION_SECONDS);
+                } else if ((Object) md.getFirstDirectoryOfType(Mp3Directory.class) instanceof Mp3Directory mp3) {
+                    LOGGER.warn("MP3 duration not supported yet: https://github.com/drewnoakes/metadata-extractor/issues/492 => {}", mp3);
+                } else if ((Object) md.getFirstDirectoryOfType(WavDirectory.class) instanceof WavDirectory wav) {
+                    result |= updateDimensions(metadata, wav, wav, -1, -1, WavDirectory.TAG_DURATION);
+                }
+            } else if (img.contents() instanceof MediaDimensions dims) {
+                metadata.setMediaDimensions(dims);
                 LOGGER.info("Dimensions have been updated for {}", metadata);
                 result = true;
             }
@@ -390,13 +408,43 @@ public class MediaService {
         return result;
     }
 
-    private static final boolean updateVideo(FileMetadata metadata, Object video, Integer width, Integer height) {
-        if (width != null && width > 0 && height != null && height > 0) {
-            metadata.setImageDimensions(new ImageDimensions(width, height));
-            LOGGER.info("Video dimensions have been updated for {}", metadata);
+    private static final boolean updateDimensions(FileMetadata metadata, Directory dirWh, Directory dirDur, int tagWidth, int tagHeight, int TagDuration) {
+        Integer width = tagWidth != -1 ? dirWh.getInteger(tagWidth) : null;
+        Integer height = tagHeight != -1 ? dirWh.getInteger(tagHeight) : null;
+        Duration duration = null;
+        Object obj = dirDur.getObject(TagDuration);
+        if (obj instanceof Rational r) {
+            // MP4 - ISO/IED 14496-12:2015 pg.23 - https://b.goeswhere.com/ISO_IEC_14496-12_2015.pdf
+            // numerator = duration is an integer that declares length of the presentation (in the indicated timescale).
+            //             This property is derived from the presentation’s tracks:
+            //             the value of this field corresponds to the duration of the longest track in the presentation.
+            //             If the duration cannot be determined then duration is set to all 1s.
+            // denominator = timescale is an integer that specifies the time‐scale for the entire presentation;
+            //               this is the number of time units that pass in one second.
+            //               For example, a time coordinate system that measures time in sixtieths of a second has a time scale of 60.
+            int timescale = (int) r.getDenominator();
+            duration = timescale > 1 && timescale < 1000
+                ? Duration.of(r.getNumerator() * 1000 / timescale, ChronoUnit.MILLIS)
+                : switch(timescale) {
+                case 1 -> Duration.of(r.getNumerator(), ChronoUnit.SECONDS);
+                case 1_000 -> Duration.of(r.getNumerator(), ChronoUnit.MILLIS);
+                case 1_000_000 -> Duration.of(r.getNumerator(), ChronoUnit.MICROS);
+                case 1_000_000_000 -> Duration.of(r.getNumerator(), ChronoUnit.NANOS);
+                default -> throw new UnsupportedOperationException(obj.toString());
+            };
+        } else if (obj instanceof String s) {
+            String[] tab = s.split(":");
+            duration = Duration.ofHours(parseInt(tab[0])).plusMinutes(parseInt(tab[1])).plusSeconds(parseInt(tab[2]));
+        } else if (obj != null) {
+            throw new UnsupportedOperationException(obj.toString());
+        }
+        if ((!metadata.hasValidDimensions() && width != null && width > 0 && height != null && height > 0)
+            || (!metadata.hasValidDuration() && duration != null && duration.toNanos() > 0)) {
+            metadata.setMediaDimensions(new MediaDimensions(width, height, duration));
+            LOGGER.info("Audio/video dimensions have been updated for {}", metadata);
             return true;
         } else {
-            LOGGER.warn("Video with invalid dimensions: {} => {}", metadata, video);
+            LOGGER.warn("Invalid dimensions: {} => {} / {}", metadata, dirWh, dirDur);
             return false;
         }
     }
@@ -719,7 +767,7 @@ public class MediaService {
             }
             if (StringUtils.equals(metadata.getMime(), similarCandidateFile.getMime())
                     && (metadata.getSize() <= similarCandidateFile.getSize() || areLargerOrEqualDimensions(
-                            metadata.getImageDimensions(), similarCandidateFile.getImageDimensions()))
+                            metadata.getMediaDimensions(), similarCandidateFile.getMediaDimensions()))
                     && phashMatches(metadata, similarCandidateFile.getCommonsFileNames().iterator().next(),
                             similarCandidateFile.getPhash())) {
                 filenames.addAll(similarCandidateFile.getCommonsFileNames());
@@ -798,18 +846,18 @@ public class MediaService {
             ImageInfo imageInfo) {
         return StringUtils.equals(metadata.getMime(), imageInfo.getMime()) && metadata.hasSize()
                 && (metadata.getSize() <= imageInfo.getSize()
-                        || areLargerOrEqualDimensions(metadata.getImageDimensions(), imageInfo));
+                        || areLargerOrEqualDimensions(metadata.getMediaDimensions(), imageInfo));
     }
 
-    private static boolean areLargerOrEqualDimensions(ImageDimensions dims, ImageInfo imageInfo) {
+    private static boolean areLargerOrEqualDimensions(MediaDimensions dims, ImageInfo imageInfo) {
         return areLargerOrEqualDimensions(dims, imageInfo.getWidth(), imageInfo.getHeight());
     }
 
-    private static boolean areLargerOrEqualDimensions(ImageDimensions dims, ImageDimensions other) {
+    private static boolean areLargerOrEqualDimensions(MediaDimensions dims, MediaDimensions other) {
         return areLargerOrEqualDimensions(dims, other.getWidth(), other.getHeight());
     }
 
-    private static boolean areLargerOrEqualDimensions(ImageDimensions dims, int width, int height) {
+    private static boolean areLargerOrEqualDimensions(MediaDimensions dims, int width, int height) {
         return dims != null && dims.getWidth() <= width && dims.getHeight() <= height;
     }
 

@@ -1,7 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.youtube;
 
-import java.time.Duration;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
@@ -16,9 +14,6 @@ public class YouTubeMedia extends SingleFileMedia {
     @JsonProperty("channel_title")
     private String channelTitle;
 
-    @Column(nullable = false)
-    private Duration duration;
-
     @Column(nullable = true)
     private Boolean caption;
 
@@ -28,14 +23,6 @@ public class YouTubeMedia extends SingleFileMedia {
 
     public void setChannelTitle(String channelTitle) {
         this.channelTitle = channelTitle;
-    }
-
-    public Duration getDuration() {
-        return duration;
-    }
-
-    public void setDuration(Duration duration) {
-        this.duration = duration;
     }
 
     public Boolean isCaption() {

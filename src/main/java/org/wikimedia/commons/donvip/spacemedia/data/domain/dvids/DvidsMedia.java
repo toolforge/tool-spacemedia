@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.SingleFileMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.WithKeywords;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
@@ -287,11 +288,13 @@ public abstract class DvidsMedia extends SingleFileMedia implements WithKeywords
         return this;
     }
 
-    protected void setAssetUrl(URL assetUrl) {
-        if (hasMetadata()) {
-            getUniqueMetadata().setAssetUrl(assetUrl);
-        } else {
-            addMetadata(new FileMetadata(assetUrl));
-        }
+    @Transient
+    public URL getAssetUrl() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Transient
+    public MediaDimensions getMediaDimensions() {
+        throw new UnsupportedOperationException();
     }
 }

@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Caption;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.NasaSvsMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.NasaSvsMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.svs.api.NasaSvsMediaGroup;
@@ -190,7 +190,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
                                         .orElse(biggest);
                                 addMetadata(media, item.url(), fm -> {
                                     fm.setDescription(item.alt_text());
-                                    fm.setImageDimensions(new ImageDimensions(item.width(), item.height()));
+                                    fm.setMediaDimensions(new MediaDimensions(item.width(), item.height()));
                                     if (item.media_type() == NasaSvsMediaType.Movie) {
                                         for (Caption c : captions) {
                                             fm.addCaption(c);

@@ -1,11 +1,21 @@
 package org.wikimedia.commons.donvip.spacemedia.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.newURL;
+import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.urlToUriUnchecked;
+ 
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -26,6 +36,9 @@ import org.wikimedia.commons.donvip.spacemedia.data.hashes.HashAssociationReposi
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.IndividualsFlickrService;
 import org.wikimedia.commons.donvip.spacemedia.service.orgs.NasaFlickrService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
+import org.wikimedia.commons.donvip.spacemedia.utils.ContentsAndMetadata;
+import org.wikimedia.commons.donvip.spacemedia.utils.MediaUtils;
+import org.wikimedia.commons.donvip.spacemedia.utils.Utils;
 
 @SpringJUnitConfig(MediaServiceTest.TestConfig.class)
 @TestPropertySource("/application-test.properties")
@@ -129,6 +142,40 @@ class MediaServiceTest {
                         """
                         .trim(),
                 media.getDescription());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "15161474123_df8e27c096_o.jpg",
+        "cbar_temperature.png",
+        "STScI-01EVTAZ1A1PQ05ZT0GQNFGF57D.tif",
+        "4879612358_a8f6ff743a_o.gif",
+        "STScI-01EVVG5B33PKR01TBTYPF04TFE.pdf",
+        "illustration_8.ppt",
+        "pluto_and_charon_30611.pptx",
+        "PIA11217_H264_E12_proper_nosat_BW_3fps.mp4",
+        "PIA14310.wav",
+        "PIA14942.mov",
+        //"b_far.0018__cameraShape1_beauty.00.webm" // needs exiftool. To enable after switch to metadata-extractor
+    })
+    void testUpdateReadableStateAndDims(String file) throws Exception {
+        URL url = newURL("file://"+file);
+        FileMetadata fm = new FileMetadata(url);
+        Path path = Paths.get("src/test/resources/samples/", file);
+        try (InputStream in = Files.newInputStream(path)) {
+            ContentsAndMetadata<?> img = MediaUtils.readFile(urlToUriUnchecked(url), Utils.findExtension(file),
+                path, false, in, null, () -> 0);
+            assertNotNull(img);
+
+            assertTrue(MediaService.updateReadableStateAndDims(fm, img));
+
+            if (!fm.isAudio()) {
+                assertTrue(fm.hasValidDimensions());
+            }
+            if (fm.isAudio() || fm.isVideo()) {
+                assertTrue(fm.hasValidDuration());
+            }
+        }
     }
 
     @Configuration
