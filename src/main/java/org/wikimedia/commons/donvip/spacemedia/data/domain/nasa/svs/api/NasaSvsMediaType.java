@@ -21,7 +21,8 @@ public enum NasaSvsMediaType {
     /** A presentation file (usually PowerPoint or .pdf). */
     Presentation,
     /** A file that can't be categorized into one of the other media types. */
-    File;
+    File,
+    HyperwallShow;
 
     public boolean shouldBeOkForCommons() {
         return this != Frames && this != Captions;
