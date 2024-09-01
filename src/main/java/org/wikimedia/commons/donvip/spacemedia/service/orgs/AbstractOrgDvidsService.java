@@ -184,7 +184,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             String id = media.getId().getMediaId();
             if ((videosEnabled || !media.isVideo()) && !idsKnownToDvidsApi.contains(id)) {
                 try {
-                    refreshAndSaveById(id);
+                    refreshAndSaveById(media.getId().toString());
                 } catch (IOException | ImageNotFoundException e) {
                     LOGGER.error(e.getMessage(), e);
                     GlitchTip.capture(e);
