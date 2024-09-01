@@ -37,7 +37,7 @@ import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.photojournal.NasaPhotojournalMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.nasa.NasaMappingService;
@@ -170,7 +170,7 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
         Element cap = doc.getElementsByTag("caption").first();
         media.setTitle(cap.text().split(":")[1].trim());
         media.setThumbnailUrl(newURL(BASE_URL + "/thumb/" + media.getIdUsedInOrg() + ".jpg"));
-        ImageDimensions dims = null;
+        MediaDimensions dims = null;
         for (Element tr : cap.nextElementSibling().child(0).child(1)
                 .getElementsByTag("tr")) {
             String key = tr.child(0).text().replaceAll("[\\h:\\-]", "");
@@ -193,12 +193,12 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
                 break;
             case "ProductSize":
                 String[] tab = val.split(" ");
-                dims = new ImageDimensions(Integer.parseInt(tab[0]), Integer.parseInt(tab[2]));
+                dims = new MediaDimensions(Integer.parseInt(tab[0]), Integer.parseInt(tab[2]));
                 break;
             case "FullResTIFF", "FullResJPEG":
-                ImageDimensions idims = dims;
+                MediaDimensions idims = dims;
                 addMetadata(media, BASE_URL + tr.child(1).getElementsByTag("a").first().attr("href"),
-                        m -> m.setImageDimensions(idims));
+                        m -> m.setMediaDimensions(idims));
                 break;
             default:
                 LOGGER.info("Ignored key: {}", key);

@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
@@ -47,7 +47,7 @@ class WebbEsaServiceTest extends AbstractOrgServiceTest {
         assertEquals("NASA, ESA, CSA, STScI, and K. McQuinn (Rutgers University), A. Pagan (STScI).",
                 media.getCredits());
         assertEquals("2022-11-09T17:00", media.getPublicationDateTime().toLocalDateTime().toString());
-        ImageDimensions dims = media.getMetadata().iterator().next().getImageDimensions();
+        MediaDimensions dims = media.getMetadata().iterator().next().getMediaDimensions();
         assertEquals(4134, dims.getHeight());
         assertEquals(4134, dims.getWidth());
         assertEquals("Cetus", media.getConstellation());

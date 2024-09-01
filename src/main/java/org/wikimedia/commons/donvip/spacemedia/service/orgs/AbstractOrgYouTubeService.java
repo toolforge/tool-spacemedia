@@ -160,7 +160,10 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
     private YouTubeMedia toYouTubeVideo(String channel, Video ytVideo) {
         YouTubeMedia video = new YouTubeMedia();
         video.setId(new CompositeMediaId(channel, ytVideo.getId()));
-        addMetadata(video, "https://www.youtube.com/watch?v=" + video.getIdUsedInOrg(), fm -> fm.setExtension("webm"));
+        addMetadata(video, "https://www.youtube.com/watch?v=" + video.getIdUsedInOrg(), fm -> {
+            fm.setExtension("webm");
+            ofNullable(ytVideo.getContentDetails().getDuration()).map(Duration::parse).ifPresent(fm.getMediaDimensions()::setDuration);
+        });
         return fillVideoSnippetAndDetails(video, ytVideo);
     }
 
@@ -174,7 +177,6 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
         ofNullable(getBestThumbnailUrl(snippet.getThumbnails())).ifPresent(video::setThumbnailUrl);
         ofNullable(snippet.getTitle()).ifPresent(video::setTitle);
         VideoContentDetails details = ytVideo.getContentDetails();
-        ofNullable(details.getDuration()).map(Duration::parse).ifPresent(video::setDuration);
         ofNullable(details.getCaption()).map(Boolean::valueOf).ifPresent(video::setCaption);
         return video;
     }

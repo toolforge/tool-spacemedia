@@ -2,7 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
 
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -19,13 +19,19 @@ public class DvidsImage extends DvidsMedia {
     private DvidsAspectRatio aspectRatio;
 
     @Transient
+    private URL image;
+
+    @Transient
+    private MediaDimensions dimensions;
+
+    @Transient
     public URL getImage() {
-        return hasMetadata() ? getUniqueMetadata().getAssetUrl() : null;
+        return image;
     }
 
     @Transient
     public void setImage(URL imageUrl) {
-        setAssetUrl(imageUrl);
+        this.image = imageUrl;
     }
 
     public DvidsAspectRatio getAspectRatio() {
@@ -38,14 +44,26 @@ public class DvidsImage extends DvidsMedia {
 
     @Transient
     @JsonProperty("dimensions")
-    public ImageDimensions getImageDimensions() {
-        return getUniqueMetadata().getImageDimensions();
+    public MediaDimensions getImageDimensions() {
+        return dimensions;
     }
 
     @Transient
     @JsonProperty("dimensions")
-    public void setImageDimensions(ImageDimensions dimensions) {
-        getUniqueMetadata().setImageDimensions(dimensions);
+    public void setImageDimensions(MediaDimensions dimensions) {
+        this.dimensions = dimensions;
+    }
+
+    @Override
+    @Transient
+    public URL getAssetUrl() {
+        return getImage();
+    }
+
+    @Override
+    @Transient
+    public MediaDimensions getMediaDimensions() {
+        return getImageDimensions();
     }
 
     @Override

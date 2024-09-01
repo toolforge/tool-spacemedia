@@ -52,7 +52,7 @@ import org.springframework.stereotype.Service;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoDataType;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.sdo.NasaSdoInstrument;
@@ -292,7 +292,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     private int updateEveImagesOrVideos(LocalDate date, NasaMediaType mediaType, String browse, String ext,
             List<NasaSdoMedia> uploadedMedia, LocalDateTime start, int count) throws IOException {
         return updateImagesOrVideos(date, LocalDate.of(2014, 5, 31),
-                mediaType == NasaMediaType.video ? 0 : 1 /* Only mp4 (TODO) */, new ImageDimensions(320, 240),
+                mediaType == NasaMediaType.video ? 0 : 1 /* Only mp4 (TODO) */, new MediaDimensions(320, 240),
                 mediaType,
                 String.join("/", SAM_BASE_URL, browse,
                         (mediaType == NasaMediaType.video ? SAM_VID_DATE_TIME_FORMAT : SAM_IMG_DATE_TIME_FORMAT)
@@ -309,7 +309,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         if (mediaType == NasaMediaType.image && date.getDayOfMonth() == 1) {
             LOGGER.info("Current update date: {} ...", date);
         }
-        ImageDimensions dims = new ImageDimensions(dim, dim);
+        MediaDimensions dims = new MediaDimensions(dim, dim);
         int localCount = updateImagesOrVideos(date, LocalDate.now().plusDays(1),
                 mediaType == NasaMediaType.video ? NasaSdoDataType.values().length - 2
                         : NasaSdoDataType.values().length - 1,
@@ -320,7 +320,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         return localCount;
     }
 
-    private int updateImagesOrVideos(LocalDate date, LocalDate maxValidityDate, int expectedCount, ImageDimensions dims,
+    private int updateImagesOrVideos(LocalDate date, LocalDate maxValidityDate, int expectedCount, MediaDimensions dims,
             NasaMediaType mediaType, String browseUrl, String textToFind,
             BiPredicate<String, NasaSdoDataType> fileFilter, String ext, List<NasaSdoMedia> uploadedMedia,
             LocalDateTime start, int count, Function<String, ? extends Temporal> dateTimeExtractor) throws IOException {
@@ -381,7 +381,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     private void updateKeywords(LocalDate date, NasaMediaType mediaType, List<NasaSdoKeywords> aiaKeywords,
-            List<NasaSdoKeywords> hmiKeywords, ImageDimensions dims) {
+            List<NasaSdoKeywords> hmiKeywords, MediaDimensions dims) {
         if (isNotEmpty(aiaKeywords) || isNotEmpty(hmiKeywords)) {
             for (NasaSdoMedia media : sdoRepository.findByMediaTypeAndDimensionsAndDateAndFsnIsNull(mediaType, dims,
                     date)) {
@@ -431,7 +431,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
                 .toList();
     }
 
-    private NasaSdoMedia updateMedia(CompositeMediaId id, Temporal temporal, ImageDimensions dimensions, URL url,
+    private NasaSdoMedia updateMedia(CompositeMediaId id, Temporal temporal, MediaDimensions dimensions, URL url,
             NasaMediaType mediaType, NasaSdoDataType dataType, List<NasaSdoMedia> uploadedMedia)
             throws IOException {
         boolean save = false;
@@ -446,7 +446,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         return doUpdateMedia(media, save, uploadedMedia);
     }
 
-    private NasaSdoMedia newMedia(CompositeMediaId id, Temporal temporal, ImageDimensions dimensions, URL url,
+    private NasaSdoMedia newMedia(CompositeMediaId id, Temporal temporal, MediaDimensions dimensions, URL url,
             NasaMediaType mediaType, NasaSdoDataType dataType) {
         NasaSdoMedia media;
         media = new NasaSdoMedia();
@@ -463,7 +463,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         if (dimensions.getWidth() == 4096) {
             media.setThumbnailUrl(newURL(url.toExternalForm().replace("_4096_", "_1024_")));
         }
-        addMetadata(media, url, fm -> fm.setImageDimensions(dimensions));
+        addMetadata(media, url, fm -> fm.setMediaDimensions(dimensions));
         media.setMediaType(mediaType);
         return media;
     }
@@ -540,7 +540,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
         FileMetadata fm = media.getMetadata().iterator().next();
         return media.copyDataFrom(newMedia(media.getId(),
                 Optional.<Temporal>ofNullable(media.getCreationDateTime()).orElse(media.getCreationDate()),
-                fm.getImageDimensions(), fm.getAssetUrl(), media.getMediaType(), media.getDataType()));
+                fm.getMediaDimensions(), fm.getAssetUrl(), media.getMediaType(), media.getDataType()));
     }
 
     @Override

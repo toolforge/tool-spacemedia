@@ -82,8 +82,8 @@ class NasaPhotojournalServiceTest extends AbstractOrgServiceTest {
         assertEquals(
                 Optional.of("Kasei Valles (PIA25927).tiff|TIFF version\nKasei Valles (PIA25927_fig1).png|PNG version"),
                 service.getOtherVersions(media, jpeg));
-        assertEquals(611, jpeg.getImageDimensions().getWidth());
-        assertEquals(2696, jpeg.getImageDimensions().getHeight());
+        assertEquals(611, jpeg.getMediaDimensions().getWidth());
+        assertEquals(2696, jpeg.getMediaDimensions().getHeight());
 
         SdcStatements statements = service.getStatements(media, jpeg);
         assertEquals(Pair.of("Q1108979", null), statements.get("P4082"));
