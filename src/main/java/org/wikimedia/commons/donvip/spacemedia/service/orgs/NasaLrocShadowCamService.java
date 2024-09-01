@@ -139,7 +139,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
         if (media.getPublicationDate().isAfter(LocalDate.of(2009, 7, 1))) {
             result.add("Photos of the Moon by "
                     + lrocOrShadowcam(media.getId().getRepoId(), "Lunar Reconnaissance Orbiter", "ShadowCam")
-                    + (metadata.getImageDimensions() != null && metadata.getImageDimensions().getAspectRatio() < 0.25
+                    + (metadata.getMediaDimensions() != null && metadata.getMediaDimensions().getAspectRatio() < 0.25
                             ? " (raw frames)"
                             : ""));
         }

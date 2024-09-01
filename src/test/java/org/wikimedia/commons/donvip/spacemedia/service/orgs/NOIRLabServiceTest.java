@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 
@@ -63,7 +63,7 @@ class NOIRLabServiceTest extends AbstractOrgServiceTest {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         doDjangoplicityMediaTest(service.newMediaFromHtml(html("noirlab/" + id + ".htm"),
                 new URL("https://noirlab.edu/public/images/" + id + "/"), id, null), id, imageType, date,
-                new ImageDimensions(width, height), name, types, categories, credit, assetUrls, title, description,
+                new MediaDimensions(width, height), name, types, categories, credit, assetUrls, title, description,
                 telescopes);
     }
 

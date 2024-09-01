@@ -243,7 +243,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
             try {
                 idsKnownToDvidsApi.add(id.getMediaId());
                 Pair<DvidsMedia, Integer> result = dvidsProcessor.processDvidsMedia(
-                        () -> repository.findById(id), () -> dvids.getMediaFromApi(id),
+                        () -> repository.findById(id), () -> dvids.getMediaFromApi(id, this::addMetadata),
                         media -> processDvidsMediaUpdate(media, false).result(), this::checkRemoteMedia,
                         this::shouldUploadAuto, this::uploadWrapped);
                 if (result.getValue() > 0) {
@@ -309,7 +309,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
         // DVIDS API Terms of Service force us to check for deleted content
         // https://api.dvidshub.net/docs/tos
         try {
-            return media.copyDataFrom(dvids.getMediaFromApi(media.getId()));
+            return media.copyDataFrom(dvids.getMediaFromApi(media.getId(), this::addMetadata));
         } catch (IllegalArgumentException e) {
             String message = e.getMessage();
             if (message != null && message.startsWith("No result from DVIDS API for ")) {

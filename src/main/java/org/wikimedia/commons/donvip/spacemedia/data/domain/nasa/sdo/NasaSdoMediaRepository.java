@@ -11,7 +11,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Query;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.library.NasaMediaType;
 
@@ -95,7 +95,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
             """, nativeQuery = true)
     long countUploadedByMediaTypeAndDimensionsAndDate(int mediaType, int width, int height, LocalDate date);
 
-    default long countUploadedByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, ImageDimensions dim, LocalDate date) {
+    default long countUploadedByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, MediaDimensions dim, LocalDate date) {
         return countUploadedByMediaTypeAndDimensionsAndDate(mediaType.ordinal(), dim.getWidth(), dim.getHeight(), date);
     }
 
@@ -124,7 +124,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
             """, nativeQuery = true)
     List<NasaSdoMedia> findMissingByMediaTypeAndDimensionsAndDate(int mediaType, int width, int height, LocalDate date);
 
-    default List<NasaSdoMedia> findMissingByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, ImageDimensions dim,
+    default List<NasaSdoMedia> findMissingByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, MediaDimensions dim,
             LocalDate date) {
         return findMissingByMediaTypeAndDimensionsAndDate(mediaType.ordinal(), dim.getWidth(), dim.getHeight(), date);
     }
@@ -139,7 +139,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
             int height, LocalDate date);
 
     default List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDateAndFsnIsNull(NasaMediaType mediaType,
-            ImageDimensions dim, LocalDate date) {
+            MediaDimensions dim, LocalDate date) {
         return findByMediaTypeAndDimensionsAndDateAndFsnIsNull(mediaType.ordinal(), dim.getWidth(), dim.getHeight(),
                 date);
     }
@@ -152,7 +152,7 @@ public interface NasaSdoMediaRepository extends MediaRepository<NasaSdoMedia> {
             """, nativeQuery = true)
     List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDate(int mediaType, int width, int height, LocalDate date);
 
-    default List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, ImageDimensions dim,
+    default List<NasaSdoMedia> findByMediaTypeAndDimensionsAndDate(NasaMediaType mediaType, MediaDimensions dim,
             LocalDate date) {
         return findByMediaTypeAndDimensionsAndDate(mediaType.ordinal(), dim.getWidth(), dim.getHeight(), date);
     }

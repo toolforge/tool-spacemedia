@@ -1,10 +1,13 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.dvids;
 
 import java.net.URL;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -94,7 +97,7 @@ public class DvidsVideo extends DvidsMedia {
     @Transient
     public void setFiles(Set<DvidsVideoFile> files) {
         this.files = files;
-        files.stream().max(Comparator.comparing(DvidsVideoFile::getSize)).ifPresent(this::setVideo);
+        files.stream().max(Comparator.comparing(DvidsVideoFile::size)).ifPresent(this::setVideo);
     }
 
     public DvidsVideoFile getVideo() {
@@ -103,7 +106,6 @@ public class DvidsVideo extends DvidsMedia {
 
     public void setVideo(DvidsVideoFile video) {
         this.video = video;
-        setAssetUrl(video.getSrc());
     }
 
     public URL getHlsUrl() {
@@ -120,6 +122,18 @@ public class DvidsVideo extends DvidsMedia {
 
     public void setTimeStart(Float timeStart) {
         this.timeStart = timeStart;
+    }
+
+    @Override
+    @Transient
+    public URL getAssetUrl() {
+        return video.src();
+    }
+
+    @Override
+    @Transient
+    public MediaDimensions getMediaDimensions() {
+        return new MediaDimensions(video.width().intValue(), video.height().intValue(), Duration.ofSeconds(duration));
     }
 
     @Override

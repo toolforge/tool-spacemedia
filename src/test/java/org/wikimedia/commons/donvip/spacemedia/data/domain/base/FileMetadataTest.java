@@ -16,15 +16,15 @@ class FileMetadataTest {
     void testHasValidDimensions() {
         FileMetadata metadata = new FileMetadata();
         assertFalse(metadata.hasValidDimensions());
-        metadata.setImageDimensions(new ImageDimensions());
+        metadata.setMediaDimensions(new MediaDimensions());
         assertFalse(metadata.hasValidDimensions());
-        metadata.getImageDimensions().setWidth(0);
+        metadata.getMediaDimensions().setWidth(0);
         assertFalse(metadata.hasValidDimensions());
-        metadata.getImageDimensions().setHeight(0);
+        metadata.getMediaDimensions().setHeight(0);
         assertFalse(metadata.hasValidDimensions());
-        metadata.getImageDimensions().setWidth(1);
+        metadata.getMediaDimensions().setWidth(1);
         assertFalse(metadata.hasValidDimensions());
-        metadata.getImageDimensions().setHeight(1);
+        metadata.getMediaDimensions().setHeight(1);
         assertTrue(metadata.hasValidDimensions());
     }
 

@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
 
@@ -43,7 +43,7 @@ class IauServiceTest extends AbstractOrgServiceTest {
         doDjangoplicityMediaTest(
                 service.newMediaFromHtml(html("iau/" + id + ".html"),
                         new URL("https://www.iau.org/public/images/details/" + id + "/"), id, null),
-                id, imageType, date, new ImageDimensions(width, height), name, types, categories, credit, assetUrls,
+                id, imageType, date, new MediaDimensions(width, height), name, types, categories, credit, assetUrls,
                 title, description, telescopes);
     }
 

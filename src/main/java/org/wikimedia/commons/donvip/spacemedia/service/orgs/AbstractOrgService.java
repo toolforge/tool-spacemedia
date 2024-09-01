@@ -87,7 +87,7 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeData;
@@ -1076,11 +1076,14 @@ public abstract class AbstractOrgService<T extends Media>
             result.instanceOf(WikidataItem.Q98069877_VIDEO);
         }
         // Dimensions
-        if (metadata.getImageDimensions() != null) {
-            ofNullable(metadata.getImageDimensions().getWidth())
+        MediaDimensions dims = metadata.getMediaDimensions();
+        if (dims != null) {
+            ofNullable(dims.getWidth())
                     .ifPresent(w -> result.put("P2049", Pair.of(Pair.of(w, "Q355198"), null)));
-            ofNullable(metadata.getImageDimensions().getHeight())
+            ofNullable(dims.getHeight())
                     .ifPresent(h -> result.put("P2048", Pair.of(Pair.of(h, "Q355198"), null)));
+            ofNullable(dims.getDuration())
+                    .ifPresent(d -> result.put("P2047", Pair.of(Pair.of(d.toMillis(), "Q723733"), null)));
         }
         // Location
         if (media instanceof WithLatLon ll && (ll.getLatitude() != 0d || ll.getLongitude() != 0d)) {
@@ -1403,7 +1406,7 @@ public abstract class AbstractOrgService<T extends Media>
             UnitedStates.getUsMilitaryCategory(media).ifPresent(result::add);
             result.add(hiddenUploadCategory(media.getId().getRepoId()));
             result.addAll(getReviewCategories(media));
-            ImageDimensions dims = metadata.getImageDimensions();
+            MediaDimensions dims = metadata.getMediaDimensions();
             if ("gif".equals(metadata.getFileExtensionOnCommons())) {
                 try {
                     int numImages = ImageUtils.readNumberOfImages(metadata.getAssetUri(), true);
@@ -1596,7 +1599,7 @@ public abstract class AbstractOrgService<T extends Media>
         Set<String> result = new LinkedHashSet<>();
         if (metadata.isImage()) {
             Long size = metadata.getSize();
-            ImageDimensions dims = metadata.getImageDimensions();
+            MediaDimensions dims = metadata.getMediaDimensions();
             if (size != null && size >= LOTS_OF_MP || (dims != null && dims.getPixelsNumber() >= LOTS_OF_MP)) {
                 result.add("LargeImage");
             }
@@ -1752,7 +1755,7 @@ public abstract class AbstractOrgService<T extends Media>
     }
 
     private boolean doCheckImageTooBigOrTooSmall(FileMetadata fm) {
-        if (fm.isImage() && fm.hasValidDimensions() && fm.getImageDimensions().getPixelsNumber() < 20_000) {
+        if (fm.isImage() && fm.hasValidDimensions() && fm.getMediaDimensions().getPixelsNumber() < 20_000) {
             LOGGER.debug("Too small image test has been trigerred for {}", fm);
             return mediaService.ignoreAndSaveMetadata(fm, "Too small image");
         } else if (fm.getSize() != null && fm.getSize() > CommonsService.MAX_FILE_SIZE) {

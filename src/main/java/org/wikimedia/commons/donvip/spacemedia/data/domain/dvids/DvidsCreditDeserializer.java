@@ -33,21 +33,19 @@ public class DvidsCreditDeserializer extends StdDeserializer<List<DvidsCredit>> 
         JsonNode node = p.getCodec().readTree(p);
         if (node instanceof ArrayNode array) {
             for (int i = 0; i < array.size(); i++) {
-                DvidsCredit credit = new DvidsCredit();
                 JsonNode elem = array.get(i);
                 if (elem instanceof ObjectNode object) {
-                    ofNullable(object.get("id")).ifPresent(x -> credit.setId(x.asInt()));
-                    ofNullable(object.get("name")).ifPresent(x -> credit.setName(x.asText()));
-                    ofNullable(object.get("rank")).ifPresent(x -> credit.setRank(x.asText()));
-                    ofNullable(object.get("url")).ifPresent(x -> credit.setUrl(newURL(x.asText())));
+                    credits.add(new DvidsCredit(
+                    ofNullable(object.get("id")).map(JsonNode::asInt).orElse(null),
+                    ofNullable(object.get("name")).map(JsonNode::asText).orElse(null),
+                    ofNullable(object.get("rank")).map(JsonNode::asText).orElse(null),
+                    ofNullable(object.get("url")).map(x -> newURL(x.asText())).orElse(null)));
+                } else {
+                    credits.add(new DvidsCredit(null, null, null, null));
                 }
-                credits.add(credit);
             }
         } else if (node instanceof TextNode text) {
-            DvidsCredit credit = new DvidsCredit();
-            credit.setId(0);
-            credit.setName(text.asText());
-            credits.add(credit);
+            credits.add(new DvidsCredit(0, text.asText(), null, null));
         }
         return credits;
     }

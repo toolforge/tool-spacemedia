@@ -22,7 +22,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.TestPropertySource;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ExifMetadataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
@@ -96,13 +96,13 @@ public abstract class AbstractOrgServiceTest {
     }
 
     protected static void doDjangoplicityMediaTest(DjangoplicityMedia media, String id,
-            DjangoplicityMediaType imageType, String date, ImageDimensions dimensions, String name, Set<String> types,
+            DjangoplicityMediaType imageType, String date, MediaDimensions dimensions, String name, Set<String> types,
             Set<String> categories, String credit, List<String> assetUrls, String title, String description,
             Set<String> telescopes) {
         assertEquals(id, media.getId().getMediaId());
         assertEquals(imageType, media.getImageType());
         assertEquals(date, media.getPublicationDateTime().toLocalDateTime().toString());
-        assertEquals(dimensions, media.getMetadata().iterator().next().getImageDimensions());
+        assertEquals(dimensions, media.getMetadata().iterator().next().getMediaDimensions());
         assertEquals(name, media.getName());
         assertEquals(types, media.getTypes());
         assertEquals(categories, media.getCategories());
