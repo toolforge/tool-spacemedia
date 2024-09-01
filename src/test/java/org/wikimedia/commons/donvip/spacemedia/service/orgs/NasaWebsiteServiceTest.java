@@ -26,7 +26,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.website.NasaWebsiteMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.website.NasaWebsiteMediaRepository;
 
@@ -92,7 +92,7 @@ class NasaWebsiteServiceTest extends AbstractOrgServiceTest {
         FileMetadata fm = media.getMetadata().iterator().next();
         assertEquals(firstAssetUri, fm.getAssetUri());
         if (width > 0 || height > 0) {
-            ImageDimensions dims = fm.getImageDimensions();
+            MediaDimensions dims = fm.getMediaDimensions();
             assertEquals(width, dims.getWidth());
             assertEquals(height, dims.getHeight());
         }

@@ -1,6 +1,5 @@
 package org.wikimedia.commons.donvip.spacemedia.service.orgs;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 
@@ -39,9 +38,6 @@ public class ArianespaceYouTubeService extends AbstractOrgYouTubeService {
         boolean result = super.customProcessing(video);
         if (!video.isIgnored() && video.getDescription().contains("copyright: ROSCOSMOS")) {
             result = mediaService.ignoreMedia(video, "ROSCOSMOS copyright");
-        }
-        if (!video.isIgnored() && video.getDuration().compareTo(Duration.ofMinutes(6)) > 0) {
-            result = mediaService.ignoreMedia(video, "Video longer than 6 minutes");
         }
         if ("yMy9IfNqJ2k".equals(video.getId().getMediaId())) {
             result = mediaService.ignoreMedia(video, "Video duplicated");

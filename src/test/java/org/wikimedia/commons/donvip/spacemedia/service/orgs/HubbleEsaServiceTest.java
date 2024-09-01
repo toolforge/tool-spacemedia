@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
@@ -46,7 +46,7 @@ class HubbleEsaServiceTest extends AbstractOrgServiceTest {
         assertEquals(Set.of("Galaxies"), media.getCategories());
         assertEquals("ESA/Hubble & NASA, H. Ebeling", media.getCredits());
         assertEquals("2023-05-08T06:00", media.getPublicationDateTime().toLocalDateTime().toString());
-        ImageDimensions dims = media.getMetadata().iterator().next().getImageDimensions();
+        MediaDimensions dims = media.getMetadata().iterator().next().getMediaDimensions();
         assertEquals(2389, dims.getHeight());
         assertEquals(2839, dims.getWidth());
         assertEquals("Draco", media.getConstellation());

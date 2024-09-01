@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrLicense;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.flickr.FlickrMediaRepository;
@@ -373,10 +373,10 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         m.setMedia(FlickrMediaType.valueOf(p.getMedia()));
         m.setMediaStatus(p.getMediaStatus());
         m.setOriginalFormat(p.getOriginalFormat());
-        ImageDimensions dimensions = new ImageDimensions(p.getOriginalWidth(), p.getOriginalHeight());
+        MediaDimensions dimensions = new MediaDimensions(p.getOriginalWidth(), p.getOriginalHeight());
         try {
             addMetadata(m, p.getOriginalUrl(), md -> {
-                md.setImageDimensions(dimensions);
+                md.setMediaDimensions(dimensions);
                 md.setExtension(p.getOriginalFormat());
             });
         } catch (FlickrException e) {
@@ -385,7 +385,7 @@ public abstract class AbstractOrgFlickrService extends AbstractOrgService<Flickr
         }
         if ("jpg".equals(p.getOriginalFormat()) && "video".equals(p.getMedia())) {
             addMetadata(m, processor.getVideoUrl(p.getId()), md -> {
-                md.setImageDimensions(dimensions);
+                md.setMediaDimensions(dimensions);
                 md.setExtension("mp4");
             });
         }

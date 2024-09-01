@@ -1,31 +1,44 @@
 package org.wikimedia.commons.donvip.spacemedia.data.domain.base;
 
+import java.time.Duration;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Transient;
 
 @Embeddable
-public class ImageDimensions {
+public class MediaDimensions {
     /**
-     * Height of original image.
+     * Height of original image, in pixels.
      */
     private Integer height;
 
     /**
-     * Width of original image.
+     * Width of original image, in pixels.
      */
     private Integer width;
 
-    public ImageDimensions() {
+    /**
+     * Audio/video duration. Can be null
+     */
+    @Column(nullable = true)
+    private Duration duration;
+
+    public MediaDimensions() {
 
     }
 
-    public ImageDimensions(Integer width, Integer height) {
-        this.width = Objects.requireNonNull(width, "width");
-        this.height = Objects.requireNonNull(height, "height");
+    public MediaDimensions(Integer width, Integer height) {
+        this(width, height, null);
+    }
+
+    public MediaDimensions(Integer width, Integer height, Duration duration) {
+        this.width = width;
+        this.height = height;
+        this.duration = duration;
     }
 
     public Integer getHeight() {
@@ -44,13 +57,22 @@ public class ImageDimensions {
         this.width = width;
     }
 
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    @Transient
     public long getPixelsNumber() {
         return width * (long) height;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(height, width);
+        return Objects.hash(height, width, duration);
     }
 
     @Override
@@ -59,8 +81,8 @@ public class ImageDimensions {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        ImageDimensions other = (ImageDimensions) obj;
-        return Objects.equals(height, other.height) && Objects.equals(width, other.width);
+        MediaDimensions other = (MediaDimensions) obj;
+        return Objects.equals(height, other.height) && Objects.equals(width, other.width) && Objects.equals(duration, other.duration);
     }
 
     @Override
@@ -72,6 +94,12 @@ public class ImageDimensions {
     @JsonIgnore
     public boolean isValid() {
         return height != null && width != null && height > 0 && width > 0;
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean hasValidDuration() {
+        return duration != null && duration.toNanos() > 0;
     }
 
     @Transient

@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.djangoplicity.DjangoplicityMediaType;
@@ -50,7 +50,7 @@ class EsoServiceTest extends AbstractOrgServiceTest {
         when(metadataRepository.save(any(FileMetadata.class))).thenAnswer(a -> a.getArgument(0, FileMetadata.class));
         doDjangoplicityMediaTest(service.newMediaFromHtml(html("eso/" + type + '_' + id + ".html"),
                 new URL("https://www.eso.org/public/" + type + "/" + id + "/"), id, null), id, imageType, date,
-                w > 0 && h > 0 ? new ImageDimensions(w, h) : null, name, types, categories, credit, assetUrls, title,
+                w > 0 && h > 0 ? new MediaDimensions(w, h) : null, name, types, categories, credit, assetUrls, title,
                 description, telescopes);
     }
 

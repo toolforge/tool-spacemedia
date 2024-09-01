@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.website.NasaWebsiteMedia;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.nasa.website.NasaWebsiteMediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
@@ -282,7 +282,7 @@ public class NasaWebsiteService extends AbstractOrgHtmlGalleryService<NasaWebsit
             case "Size":
                 Matcher m = SIZE_PATTERN.matcher(value);
                 if (m.matches()) {
-                    fm.setImageDimensions(new ImageDimensions(parseInt(m.group(1)), parseInt(m.group(2))));
+                    fm.setMediaDimensions(new MediaDimensions(parseInt(m.group(1)), parseInt(m.group(2))));
                 }
                 break;
             default:

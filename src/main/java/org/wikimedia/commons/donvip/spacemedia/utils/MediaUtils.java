@@ -53,20 +53,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.exception.FileDecodingException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.CommonsService;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
-import com.drew.imaging.mp4.Mp4MetadataReader;
-import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
-import com.drew.metadata.avi.AviDirectory;
 import com.drew.metadata.file.FileSystemDirectory;
-import com.drew.metadata.mov.media.QuickTimeVideoDirectory;
-import com.drew.metadata.mp4.media.Mp4VideoDirectory;
 
 public class MediaUtils {
 
@@ -84,8 +79,6 @@ public class MediaUtils {
             .compile("\\[download\\] (\\S{11}\\.\\S{3,4}) has already been downloaded(?: and merged)?");
     private static final Pattern DESTINATION = Pattern.compile("\\[download\\] Destination: (\\S{11}\\.\\S{3,4})");
 
-    private static final Set<String> IGNORED_MP4_ERRORS = Set.of();
-
     private MediaUtils() {
         // Hide default constructor
     }
@@ -95,7 +88,6 @@ public class MediaUtils {
         return readFile(urlToUriUnchecked(url), extension, localPath, readMetadata, log, httpClient, context);
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> ContentsAndMetadata<T> readFile(URI uri, String extension, Path localPath, boolean readMetadata,
             boolean log, HttpClient httpClient, HttpClientContext context) throws IOException, FileDecodingException {
         if (log) {
@@ -117,96 +109,99 @@ public class MediaUtils {
         }
         try (ClassicHttpResponse response = executeRequest(newHttpGet(uri), httpClient, context);
                 InputStream in = response.getEntity().getContent()) {
-            boolean imageio = extension != null && IMAGEIO_EXTENSIONS.contains(extension);
-            String filename = null;
-            Header[] disposition = response.getHeaders("Content-Disposition");
-            if (ArrayUtils.isNotEmpty(disposition)) {
-                String value = disposition[0].getValue().replace("\"", "");
-                if (value.startsWith("attachment;") && value.contains("filename=")) {
-                    filename = URLDecoder.decode(value.split("=")[1], "UTF-8").replace(";filename*", "");
-                }
-                if (!imageio) {
-                    extension = Utils.findExtension(value);
-                    imageio = extension != null && IMAGEIO_EXTENSIONS.contains(extension);
-                }
+            return readFile(uri, extension, localPath, readMetadata, in,
+                response.getHeaders("Content-Disposition"), () -> response.getEntity().getContentLength());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> ContentsAndMetadata<T> readFile(URI uri, String extension, Path localPath, boolean readMetadata,
+            InputStream in, Header[] disposition, LongSupplier contentLength) throws IOException, FileDecodingException {
+        boolean imageio = extension != null && IMAGEIO_EXTENSIONS.contains(extension);
+        String filename = null;
+        if (ArrayUtils.isNotEmpty(disposition)) {
+            String value = disposition[0].getValue().replace("\"", "");
+            if (value.startsWith("attachment;") && value.contains("filename=")) {
+                filename = URLDecoder.decode(value.split("=")[1], "UTF-8").replace(";filename*", "");
             }
-            LongSupplier contentLength = () -> response.getEntity().getContentLength();
-            if (imageio || isBlank(extension)) {
-                try {
-                    ContentsAndMetadata<BufferedImage> result = ImageUtils.readImage(in, readMetadata);
-                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(result.contents(),
-                            contentLength(contentLength, result::contentLength), filename,
-                            isBlank(extension) ? result.extension() : extension,
-                            result.numImagesOrPages(), null);
-                } catch (IIOException e) {
-                    LOGGER.error("Image I/O error while reading {}: {}", uri, e.getMessage());
-                    GlitchTip.capture(e);
-                    return new ContentsAndMetadata<>(null, contentLength.getAsLong(), filename, extension, 1, e);
+            if (!imageio) {
+                extension = Utils.findExtension(value);
+                imageio = extension != null && IMAGEIO_EXTENSIONS.contains(extension);
+            }
+        }
+        String ext = extension;
+        Function<URI, Optional<Path>> dl = x -> {
+            try {
+                long fileSize = contentLength.getAsLong();
+                long usableSpace = new File(System.getProperty("java.io.tmpdir")).getUsableSpace();
+                if (usableSpace < fileSize) {
+                    LOGGER.error("Not enough usable disk space ({} bytes) to download {} ({} bytes). Aborting",
+                            usableSpace, uri, fileSize);
+                    return Optional.empty();
                 }
-            } else if ("www.youtube.com".equals(uri.getHost())) {
-                return (ContentsAndMetadata<T>) readMp4Video(localPath, contentLength, filename, extension, uri,
-                        x -> ofNullable(downloadYoutubeVideo(x.toString())));
-            } else if (FileMetadata.VIDEO_EXTENSIONS.contains(extension)) {
-                String ext = extension;
-                Function<URI, Optional<Path>> dl = x -> {
-                    try {
-                        long fileSize = contentLength.getAsLong();
-                        long usableSpace = new File(System.getProperty("java.io.tmpdir")).getUsableSpace();
-                        if (usableSpace < fileSize) {
-                            LOGGER.error("Not enough usable disk space ({} bytes) to download {} ({} bytes). Aborting",
-                                    usableSpace, uri, fileSize);
-                            return Optional.empty();
-                        }
-                        Path tempFile = Files.createTempFile("sm", "." + ext);
-                        try {
-                            FileUtils.copyInputStreamToFile(in, tempFile.toFile());
-                            return ofNullable(tempFile);
-                        } catch (IOException | RuntimeException e) {
-                            Files.delete(tempFile);
-                            throw e;
-                        }
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
-                };
-                return (ContentsAndMetadata<T>) switch (extension) {
-                case "avi" -> readAviVideo(localPath, contentLength, filename, extension, uri, dl);
-                case "mov" -> readMovVideo(localPath, contentLength, filename, extension, uri, dl);
-                case "mp4" -> readMp4Video(localPath, contentLength, filename, extension, uri, dl);
-                case "ogv" -> readOgvVideo(in, contentLength.getAsLong(), filename, extension, uri);
-                case "webm" -> readWebmVideo(localPath, contentLength, filename, extension, uri, dl);
-                default -> throw new UnsupportedOperationException("Unsupported video format: " + extension);
-                };
-            } else if ("webp".equals(extension)) {
-                ContentsAndMetadata<BufferedImage> result = ImageUtils.readWebp(uri, readMetadata);
+                Path tempFile = Files.createTempFile("sm", "." + ext);
+                try {
+                    FileUtils.copyInputStreamToFile(in, tempFile.toFile());
+                    return ofNullable(tempFile);
+                } catch (IOException | RuntimeException e) {
+                    Files.delete(tempFile);
+                    throw e;
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        };
+        if (imageio || extension == null || isBlank(extension)) {
+            try {
+                ContentsAndMetadata<BufferedImage> result = ImageUtils.readImage(in, readMetadata);
                 return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(result.contents(),
-                        contentLength(contentLength, result::contentLength), filename, extension, 1, null);
-            } else if ("pdf".equals(extension)) {
-                try {
-                    PdfRandomAccessReadBuffer reader = new PdfRandomAccessReadBuffer(in);
-                    PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(reader);
-                    return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(pdf,
-                            contentLength(contentLength, reader::size), filename, extension, pdf.getNumberOfPages(),
-                            null);
-                } catch (IOException e) {
-                    LOGGER.error("PDF I/O error while reading {}: {}", uri, e.getMessage());
-                    GlitchTip.capture(e);
-                    return new ContentsAndMetadata<>(null, contentLength.getAsLong(), filename, extension, 1, e);
-                }
-            } else if (POI_HSLF_EXTENSIONS.contains(extension) || POI_XSLF_EXTENSIONS.contains(extension)) {
-                SlideShow<?, ?> ppt = readPowerpointFile(in, extension);
-                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(ppt, contentLength.getAsLong(), filename,
-                        extension, ppt.getSlides().size(), null);
-            } else if ("stl".equals(extension) || "mp3".equals(extension)) {
-                // Assume readable
-                byte[] bytes = in.readAllBytes();
-                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(new Object(),
-                        contentLength(contentLength, () -> bytes.length), filename, extension, 1, null);
-            } else {
-                throw new FileDecodingException(contentLength.getAsLong(),
-                        "Unsupported format: " + extension + " / headers:" + Arrays.stream(response.getHeaders())
-                                .map(h -> h.getName() + ": " + h.getValue()).sorted().toList());
+                        contentLength(contentLength, result::contentLength), filename,
+                        isBlank(extension) ? result.extension() : extension,
+                        result.numImagesOrPages(), null);
+            } catch (IIOException e) {
+                LOGGER.error("Image I/O error while reading {}: {}", uri, e.getMessage());
+                GlitchTip.capture(e);
+                return new ContentsAndMetadata<>(null, contentLength.getAsLong(), filename, extension, 1, e);
             }
+        } else if ("www.youtube.com".equals(uri.getHost())) {
+            return (ContentsAndMetadata<T>) readMetadataSafe(localPath, contentLength, filename, extension, uri,
+                    x -> ofNullable(downloadYoutubeVideo(x.toString())));
+        } else if (FileMetadata.VIDEO_EXTENSIONS.contains(extension)) {
+            return (ContentsAndMetadata<T>) switch (extension) {
+            case "avi", "mov", "mp4" -> readMetadataSafe(localPath, contentLength, filename, extension, uri, dl);
+            case "ogv" -> readOgvVideo(in, contentLength.getAsLong(), filename, extension, uri);
+            case "webm" -> readWebmVideo(localPath, contentLength, filename, extension, uri, dl);
+            default -> throw new UnsupportedOperationException("Unsupported video format: " + extension);
+            };
+        } else if ("webp".equals(extension)) {
+            ContentsAndMetadata<BufferedImage> result = ImageUtils.readWebp(uri, readMetadata);
+            return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(result.contents(),
+                    contentLength(contentLength, result::contentLength), filename, extension, 1, null);
+        } else if ("pdf".equals(extension)) {
+            try {
+                PdfRandomAccessReadBuffer reader = new PdfRandomAccessReadBuffer(in);
+                PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(reader);
+                return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(pdf,
+                        contentLength(contentLength, reader::size), filename, extension, pdf.getNumberOfPages(),
+                        null);
+            } catch (IOException e) {
+                LOGGER.error("PDF I/O error while reading {}: {}", uri, e.getMessage());
+                GlitchTip.capture(e);
+                return new ContentsAndMetadata<>(null, contentLength.getAsLong(), filename, extension, 1, e);
+            }
+        } else if (POI_HSLF_EXTENSIONS.contains(extension) || POI_XSLF_EXTENSIONS.contains(extension)) {
+            SlideShow<?, ?> ppt = readPowerpointFile(in, extension);
+            return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(ppt, contentLength.getAsLong(), filename,
+                    extension, ppt.getSlides().size(), null);
+        } else if ("stl".equals(extension)) {
+            // Assume readable
+            byte[] bytes = in.readAllBytes();
+            return (ContentsAndMetadata<T>) new ContentsAndMetadata<>(new Object(),
+                    contentLength(contentLength, () -> bytes.length), filename, extension, 1, null);
+        } else if (FileMetadata.AUDIO_EXTENSIONS.contains(extension)) {
+            return (ContentsAndMetadata<T>) readMetadataSafe(localPath, contentLength, filename, extension, uri, dl);
+        } else {
+            throw new FileDecodingException(contentLength.getAsLong(), "Unsupported format: " + extension);
         }
     }
 
@@ -260,89 +255,37 @@ public class MediaUtils {
         }
     }
 
-    private static <T extends Directory> ContentsAndMetadata<T> readMetadata(Path path, LongSupplier contentLength, String filename,
-            String extension, Class<T> klass) throws IOException, FileDecodingException {
+    private static ContentsAndMetadata<Metadata> readMetadata(Path path, LongSupplier contentLength, String filename, String extension)
+            throws IOException, FileDecodingException {
         try {
             Metadata md = ImageMetadataReader.readMetadata(path.toFile());
             FileSystemDirectory fs = md.getFirstDirectoryOfType(FileSystemDirectory.class);
-            T dir = md.getFirstDirectoryOfType(klass);
-            if (fs == null || dir == null) {
-                throw new FileDecodingException(contentLength.getAsLong(), "Failed to open read metadata from " + path);
+            if (fs == null) {
+                throw new FileDecodingException(contentLength.getAsLong(), "Failed to read metadata from " + path + " / " + fs);
             }
-            return new ContentsAndMetadata<>(dir, contentLength(contentLength, () -> fs.getLongObject(TAG_FILE_SIZE)),
+            return new ContentsAndMetadata<>(md, contentLength(contentLength, () -> fs.getLongObject(TAG_FILE_SIZE)),
                     filename, extension, 1, null);
         } catch (ImageProcessingException e) {
             throw new FileDecodingException(contentLength.getAsLong(), e);
         }
     }
 
-    private static ContentsAndMetadata<AviDirectory> readAviVideo(Path localPath, LongSupplier contentLength,
-            String filename, String extension, URI uri, Function<URI, Optional<Path>> downloader)
-            throws FileDecodingException, IOException {
-        return readVideo(localPath, uri, contentLength, downloader, x -> {
-            try {
+    private static ContentsAndMetadata<Metadata> readMetadataSafe(Path localPath, LongSupplier contentLength,
+        String filename, String extension, URI uri, Function<URI, Optional<Path>> downloader) throws IOException, FileDecodingException {
+            return readVideo(localPath, uri, contentLength, downloader, x -> {
                 try {
-                    return readMetadata(x, contentLength, filename, extension, AviDirectory.class);
-                } catch (FileDecodingException e) {
-                    throw new IOException(e);
+                    try {
+                        return readMetadata(x, contentLength, filename, extension);
+                    } catch (FileDecodingException e) {
+                        throw new IOException(e);
+                    }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
                 }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
+            });
     }
 
-    private static ContentsAndMetadata<QuickTimeVideoDirectory> readMovVideo(Path localPath, LongSupplier contentLength,
-            String filename, String extension, URI uri, Function<URI, Optional<Path>> downloader)
-            throws FileDecodingException, IOException {
-        return readVideo(localPath, uri, contentLength, downloader, x -> {
-            try {
-                try {
-                    return readMetadata(x, contentLength, filename, extension, QuickTimeVideoDirectory.class);
-                } catch (FileDecodingException e) {
-                    throw new IOException(e);
-                }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
-    }
-
-    private static ContentsAndMetadata<Mp4VideoDirectory> readMp4Video(Path localPath, LongSupplier contentLength,
-            String filename, String extension, URI uri, Function<URI, Optional<Path>> downloader)
-            throws FileDecodingException, IOException {
-        return readVideo(localPath, uri, contentLength, downloader, x -> {
-            try {
-                try {
-                    return readMp4Video(x, contentLength, filename, extension);
-                } catch (FileDecodingException e) {
-                    throw new IOException(e);
-                }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
-    }
-
-    private static ContentsAndMetadata<Mp4VideoDirectory> readMp4Video(Path path, LongSupplier contentLength, String filename,
-            String extension) throws IOException, FileDecodingException {
-        try {
-            return readMetadata(path, contentLength, filename, extension, Mp4VideoDirectory.class);
-        } catch (RuntimeException e) {
-            if (e.getMessage() != null && IGNORED_MP4_ERRORS.stream().anyMatch(x -> e.getMessage().startsWith(x))) {
-                return new ContentsAndMetadata<>(
-                        // Return sample data from
-                        // https://github.com/mathiasbynens/small/blob/master/mp4-with-audio.mp4
-                        Mp4MetadataReader.readMetadata(MediaUtils.class.getResourceAsStream("/mp4-with-audio.mp4"))
-                            .getFirstDirectoryOfType(Mp4VideoDirectory.class),
-                        contentLength.getAsLong(), filename, extension, 1, null);
-            } else {
-                throw e;
-            }
-        }
-    }
-
-    private static ContentsAndMetadata<ImageDimensions> readWebmVideo(Path localPath, LongSupplier contentLength,
+    private static ContentsAndMetadata<MediaDimensions> readWebmVideo(Path localPath, LongSupplier contentLength,
             String filename, String extension, URI uri, Function<URI, Optional<Path>> downloader)
             throws FileDecodingException, IOException {
         return readVideo(localPath, uri, contentLength, downloader, x -> {
@@ -358,7 +301,8 @@ public class MediaUtils {
         });
     }
 
-    private static ContentsAndMetadata<ImageDimensions> readWebmVideo(Path path, LongSupplier contentLength,
+    // TODO: replace by metadata-extractor when https://github.com/drewnoakes/metadata-extractor/pull/679 is merged
+    private static ContentsAndMetadata<MediaDimensions> readWebmVideo(Path path, LongSupplier contentLength,
             String filename, String extension) throws IOException, FileDecodingException {
         try {
             int width = 0;
@@ -382,7 +326,7 @@ public class MediaUtils {
             if (width == 0 && height == 0) {
                 throw new FileDecodingException(contentLength.getAsLong(), "Failed to open WEBM video from " + path);
             }
-            return new ContentsAndMetadata<>(new ImageDimensions(width, height), contentLength.getAsLong(), filename,
+            return new ContentsAndMetadata<>(new MediaDimensions(width, height), contentLength.getAsLong(), filename,
                     extension, 1, null);
         } catch (ExecutionException e) {
             throw new IOException(e);

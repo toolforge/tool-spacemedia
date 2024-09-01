@@ -110,7 +110,7 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     private Long size;
 
     @Embedded
-    private ImageDimensions dimensions;
+    private MediaDimensions dimensions;
 
     @Lob
     @Column(nullable = true, columnDefinition = "MEDIUMTEXT")
@@ -287,11 +287,11 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
         this.audioTrack = audioTrack;
     }
 
-    public ImageDimensions getImageDimensions() {
+    public MediaDimensions getMediaDimensions() {
         return dimensions;
     }
 
-    public void setImageDimensions(ImageDimensions dimensions) {
+    public void setMediaDimensions(MediaDimensions dimensions) {
         this.dimensions = dimensions;
     }
 
@@ -299,6 +299,12 @@ public class FileMetadata implements FileMetadataProjection, MediaDescription {
     @JsonIgnore
     public boolean hasValidDimensions() {
         return dimensions != null && dimensions.isValid();
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean hasValidDuration() {
+        return dimensions != null && dimensions.hasValidDuration();
     }
 
     public ExifMetadata getExif() {
