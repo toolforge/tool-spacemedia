@@ -28,8 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.ImageDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.exception.UploadException;
 import org.wikimedia.commons.donvip.spacemedia.service.wikimedia.GlitchTip;
@@ -228,7 +228,7 @@ public abstract class AbstractOrgHtmlGalleryService<T extends Media> extends Abs
                 addMetadata(media, baseUrl + "/ptif/download_file?fName=" + fName, fm -> {
                     fm.setExtension("tif");
                     fm.setOriginalFileName(fName);
-                    fm.setImageDimensions(new ImageDimensions(data.width(), data.height()));
+                    fm.setMediaDimensions(new MediaDimensions(data.width(), data.height()));
                 });
             } else {
                 LOGGER.error("Failed to retrieve ptifName in data-fi-zoomify from {}", e);
