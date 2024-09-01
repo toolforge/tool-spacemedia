@@ -2,6 +2,7 @@ package org.wikimedia.commons.donvip.spacemedia.utils;
 
 import static java.util.Locale.ENGLISH;
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.ES;
 import static org.wikimedia.commons.donvip.spacemedia.utils.Utils.PT_BR;
 
@@ -70,6 +71,9 @@ public final class UnitedStates {
     }
 
     public static VirinTemplates getUsVirinTemplates(String virin, String url) {
+        if (isBlank(virin)) {
+            return null;
+        }
         Matcher m = US_VIRIN.matcher(virin);
         return m.matches() && !"ZZ999".equals(m.group(3)) ? switch (m.group(2)) {
             case "A" -> new VirinTemplates(vt(virin, "Army", url), "PD-USGov-Military-Army", vd("Army"));
