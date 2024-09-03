@@ -214,7 +214,7 @@ public abstract class AbstractOrgYouTubeService extends AbstractOrgService<YouTu
                     new MediaUpdateContext<>(video, path, getUrlResolver(), httpClient, null, false,
                             ignoreExifMetadata()),
                     getPatternsToRemove(video), getStringsToRemove(video), this::getSimilarUploadedMediaByDate,
-                    checkBlocklist(), includeByPerceptualHash()).result()) {
+                    checkAllowlist(), checkBlocklist(), includeByPerceptualHash()).result()) {
                 save = true;
             }
         }

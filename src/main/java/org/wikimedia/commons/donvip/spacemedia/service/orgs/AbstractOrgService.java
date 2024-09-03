@@ -87,8 +87,8 @@ import org.wikimedia.commons.donvip.spacemedia.data.domain.UploadMode;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.CompositeMediaId;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadata;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.FileMetadataRepository;
-import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.Media;
+import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaDimensions;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.MediaRepository;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeData;
 import org.wikimedia.commons.donvip.spacemedia.data.domain.base.RuntimeDataRepository;
@@ -1703,7 +1703,7 @@ public abstract class AbstractOrgService<T extends Media>
                 new MediaUpdateContext<T>(media, null, getUrlResolver(), httpClient, context, forceUpdate,
                         ignoreExifMetadata()),
                 getPatternsToRemove(media), getStringsToRemove(media), this::getSimilarUploadedMediaByDate,
-                checkBlocklist(), includeByPerceptualHash());
+                checkAllowlist(), checkBlocklist(), includeByPerceptualHash());
         boolean result = ur.result();
         if (!media.isIgnored() && media.hasMetadata()) {
             LOGGER.trace("Start common update checks for {}", media);
@@ -1777,6 +1777,10 @@ public abstract class AbstractOrgService<T extends Media>
 
     protected static boolean isCourtesy(String description) {
         return COURTESY_SPELLINGS.stream().anyMatch(description::contains);
+    }
+
+    protected boolean checkAllowlist() {
+        return false;
     }
 
     protected boolean checkBlocklist() {
