@@ -84,7 +84,7 @@ public class KariService extends AbstractOrgService<KariMedia> {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(KariMedia media) {
         return false;
     }
 

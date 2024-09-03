@@ -131,7 +131,7 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(NasaAsterMedia media) {
         return false;
     }
 
@@ -331,8 +331,6 @@ public class NasaAsterService extends AbstractOrgService<NasaAsterMedia> {
             }
         }
         image.setCreationDate(extractAcquisitionDate(image));
-        // FIXME ASTER entries can be MOV videos too
-        // https://asterweb.jpl.nasa.gov/gallery-detail.asp?name=fuji
         for (int i = 2; i < tables.size(); i++) {
             Element table = tables.get(i);
             Elements tds = table.getElementsByTag("td");

@@ -76,7 +76,7 @@ public abstract class AbstractOrgStsciService extends AbstractOrgService<StsciMe
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(StsciMedia media) {
         return false;
     }
 

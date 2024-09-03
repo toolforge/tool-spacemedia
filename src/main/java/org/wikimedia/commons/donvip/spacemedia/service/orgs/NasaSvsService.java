@@ -67,7 +67,7 @@ public class NasaSvsService extends AbstractOrgService<NasaSvsMedia> {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(NasaSvsMedia media) {
         return false;
     }
 

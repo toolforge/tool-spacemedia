@@ -112,7 +112,7 @@ public abstract class AbstractOrgDjangoplicityService extends AbstractOrgService
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(DjangoplicityMedia media) {
         return false;
     }
 

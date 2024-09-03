@@ -68,7 +68,7 @@ public abstract class AbstractOrgStacService extends AbstractOrgService<StacMedi
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(StacMedia media) {
         return false;
     }
 

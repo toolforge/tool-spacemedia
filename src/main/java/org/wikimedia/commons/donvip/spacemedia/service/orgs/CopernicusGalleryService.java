@@ -117,7 +117,7 @@ public class CopernicusGalleryService extends AbstractOrgHtmlGalleryService<Cope
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(CopernicusGalleryMedia media) {
         return false;
     }
 

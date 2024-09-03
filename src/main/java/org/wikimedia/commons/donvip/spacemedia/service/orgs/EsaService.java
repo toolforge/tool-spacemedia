@@ -124,7 +124,7 @@ public class EsaService extends AbstractOrgService<EsaMedia> {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(EsaMedia media) {
         return false;
     }
 
