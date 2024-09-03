@@ -131,28 +131,30 @@ public class MediaService {
     @Value("${ignored.sha1}")
     private Set<String> ignoredSha1;
 
+    private Set<String> allowListAllowedTerms;
     private Set<String> blockListIgnoredTerms;
     private Set<String> copyrightsBlocklist;
     private Set<String> photographersBlocklist;
 
     @PostConstruct
     public void init() throws IOException {
-        blockListIgnoredTerms = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.terms.csv"));
-        copyrightsBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.copyrights.csv"));
-        photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.photographers.csv"));
+        allowListAllowedTerms = CsvHelper.loadSet(getClass().getResource("/lists/allowlist.allowed.terms.csv"));
+        blockListIgnoredTerms = CsvHelper.loadSet(getClass().getResource("/lists/blocklist.ignored.terms.csv"));
+        copyrightsBlocklist = CsvHelper.loadSet(getClass().getResource("/lists/blocklist.ignored.copyrights.csv"));
+        photographersBlocklist = CsvHelper.loadSet(getClass().getResource("/lists/blocklist.ignored.photographers.csv"));
     }
 
     public <M extends Media> MediaUpdateResult<M> updateMedia(MediaUpdateContext<M> ctx,
             Iterable<Pattern> patternsToRemove, Iterable<String> stringsToRemove,
-            TriFunction<M, LocalDate, Integer, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist)
-            throws IOException {
-        return updateMedia(ctx, patternsToRemove, stringsToRemove, similarCandidateMedia, checkBlocklist, true);
+            TriFunction<M, LocalDate, Integer, List<? extends Media>> similarCandidateMedia,
+            boolean checkAllowlist, boolean checkBlocklist) throws IOException {
+        return updateMedia(ctx, patternsToRemove, stringsToRemove, similarCandidateMedia, checkAllowlist, checkBlocklist, true);
     }
 
     public <M extends Media> MediaUpdateResult<M> updateMedia(MediaUpdateContext<M> ctx,
             Iterable<Pattern> patternsToRemove, Iterable<String> stringsToRemove,
-            TriFunction<M, LocalDate, Integer, List<? extends Media>> similarCandidateMedia, boolean checkBlocklist,
-            boolean includeByPerceptualHash) throws IOException {
+            TriFunction<M, LocalDate, Integer, List<? extends Media>> similarCandidateMedia,
+            boolean checkAllowlist, boolean checkBlocklist, boolean includeByPerceptualHash) throws IOException {
         boolean result = false;
         M media = ctx.media();
         GlitchTip.setTag("media", media.getIdUsedInOrg());
@@ -177,30 +179,46 @@ public class MediaService {
             result = true;
         }
         LOGGER.trace("updateMedia - belongsToBlocklist - {}", media);
+        if (checkAllowlist && !media.isIgnored() && !belongsToAllowlist(media)) {
+            LOGGER.info("Allowlist check has been trigerred for {}", media);
+            result = true;
+        }
         if (checkBlocklist && !media.isIgnored() && belongsToBlocklist(media)) {
-            LOGGER.info("Blocklist has been trigerred for {}", media);
+            LOGGER.info("Blocklist check has been trigerred for {}", media);
             result = true;
         }
         LOGGER.trace("updateMedia - done - {}", media);
         return new MediaUpdateResult<>(media, result, ur.exception());
     }
 
-    protected boolean belongsToBlocklist(Media media) {
+    protected static String getTitleAndDescription(Media media) {
         StringBuilder sb = new StringBuilder();
         if (media.getTitle() != null) {
             sb.append(media.getTitle().toLowerCase(ENGLISH));
         }
         media.getDescriptions().stream().forEach(x -> sb.append(' ').append(x.toLowerCase(ENGLISH)));
         media.getAlbumNames().stream().forEach(x -> sb.append(' ').append(x.toLowerCase(ENGLISH)));
-        String titleAndDescription = sb.toString().trim();
-        if (!titleAndDescription.isEmpty()) {
-            titleAndDescription = titleAndDescription.replace("\r\n", " ").replace('\t', ' ').replace('\r', ' ')
-                    .replace('\n', ' ');
-            String ignoredTerms = blockListIgnoredTerms.parallelStream().filter(titleAndDescription::contains).sorted()
-                    .collect(joining(","));
-            if (!ignoredTerms.isEmpty()) {
-                return ignoreMedia(media, "Title or description contains term(s) in block list: " + ignoredTerms);
-            }
+        return sb.toString().trim().replace("\r\n", " ").replace('\t', ' ').replace('\r', ' ').replace('\n', ' ');
+    }
+
+    protected static String getMatchingTerms(Media media, Set<String> terms) {
+        String titleAndDescription = getTitleAndDescription(media);
+        return titleAndDescription.isEmpty() ? ""
+                : terms.parallelStream().filter(titleAndDescription::contains).sorted().collect(joining(","));
+    }
+
+    protected boolean belongsToAllowlist(Media media) {
+        boolean result = !getMatchingTerms(media, allowListAllowedTerms).isEmpty();
+        if (!result) {
+            ignoreMedia(media, "Title or description does not contains any term from allow list");
+        }
+        return result;
+    }
+
+    protected boolean belongsToBlocklist(Media media) {
+        String ignoredTerms = getMatchingTerms(media, blockListIgnoredTerms);
+        if (!ignoredTerms.isEmpty()) {
+            return ignoreMedia(media, "Title or description contains term(s) in block list: " + ignoredTerms);
         }
         boolean result = false;
         for (FileMetadata metadata : media.getMetadata()) {

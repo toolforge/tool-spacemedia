@@ -30,7 +30,7 @@ public class SearchService {
 
     @PostConstruct
     void init() throws IOException {
-        ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/search.ignored.terms.csv"));
+        ignoredCommonTerms = CsvHelper.loadSet(getClass().getResource("/lists/search.ignored.terms.csv"));
     }
 
     public boolean isSearchEnabled() {
