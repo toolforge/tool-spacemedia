@@ -57,7 +57,7 @@ public class CategorizationService {
     private Set<String> getSatellitePicturesCategories() {
         if (satellitePicturesCategories == null) {
             try {
-                satellitePicturesCategories = CsvHelper.loadSet(getClass().getResource("/satellite.pictures.categories.txt"));
+                satellitePicturesCategories = CsvHelper.loadSet(getClass().getResource("/lists/satellite.pictures.categories.txt"));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

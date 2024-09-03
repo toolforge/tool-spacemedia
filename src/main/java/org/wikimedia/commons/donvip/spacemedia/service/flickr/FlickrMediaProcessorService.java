@@ -76,7 +76,7 @@ public class FlickrMediaProcessorService {
 
     @PostConstruct
     public void init() throws IOException {
-        ignoredPhotoAlbums = CsvHelper.loadSet(getClass().getResource("/blocklist.ignored.flickr.albums.csv")).stream()
+        ignoredPhotoAlbums = CsvHelper.loadSet(getClass().getResource("/lists/blocklist.ignored.flickr.albums.csv")).stream()
                 .mapToLong(Long::parseLong).boxed().collect(toSet());
     }
 
@@ -95,8 +95,8 @@ public class FlickrMediaProcessorService {
             Function<FlickrMedia, Triple<FlickrMedia, Collection<FileMetadata>, Integer>> uploader,
             UrlResolver<FlickrMedia> urlResolver,
             TriFunction<FlickrMedia, LocalDate, Integer, List<? extends Media>> similarCandidateMedia,
-            boolean checkBlocklist, UnaryOperator<FlickrMedia> saver, List<IgnoreCriteria> ignoreCriterias)
-            throws IOException {
+            boolean checkAllowlist, boolean checkBlocklist,
+            UnaryOperator<FlickrMedia> saver, List<IgnoreCriteria> ignoreCriterias) throws IOException {
         boolean save = false;
         boolean savePhotoSets = false;
         final Optional<FlickrMedia> optMediaInRepo = flickrRepository.findById(media.getId());
@@ -157,7 +157,7 @@ public class FlickrMediaProcessorService {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             save = mediaService
                     .updateMedia(new MediaUpdateContext<>(media, null, urlResolver, httpClient, null, false, false),
-                            patternsToRemove.get(), stringsToRemove.get(), similarCandidateMedia, checkBlocklist)
+                            patternsToRemove.get(), stringsToRemove.get(), similarCandidateMedia, checkAllowlist, checkBlocklist)
                     .result();
         }
         int uploadCount = 0;
