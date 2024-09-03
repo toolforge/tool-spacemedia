@@ -102,7 +102,7 @@ public class IauService extends AbstractOrgDjangoplicityService {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(DjangoplicityMedia media) {
         return true;
     }
 

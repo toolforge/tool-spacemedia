@@ -74,7 +74,7 @@ public class NasaLrocShadowCamService extends AbstractOrgHtmlGalleryService<Nasa
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(NasaLrocMedia media) {
         return false;
     }
 

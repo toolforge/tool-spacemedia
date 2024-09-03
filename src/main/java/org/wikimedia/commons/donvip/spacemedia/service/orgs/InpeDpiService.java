@@ -94,7 +94,7 @@ public class InpeDpiService extends AbstractOrgService<InpeDpiMedia> {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(InpeDpiMedia media) {
         return false;
     }
 

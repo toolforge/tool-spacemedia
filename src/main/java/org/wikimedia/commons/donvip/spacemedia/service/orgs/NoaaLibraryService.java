@@ -130,7 +130,7 @@ public class NoaaLibraryService extends AbstractOrgHtmlGalleryService<NoaaLibrar
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(NoaaLibraryMedia media) {
         return false;
     }
 

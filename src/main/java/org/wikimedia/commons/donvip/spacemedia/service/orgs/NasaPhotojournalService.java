@@ -98,7 +98,7 @@ public class NasaPhotojournalService extends AbstractOrgHtmlGalleryService<NasaP
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(NasaPhotojournalMedia media) {
         return false;
     }
 

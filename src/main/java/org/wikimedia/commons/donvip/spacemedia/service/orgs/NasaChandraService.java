@@ -511,7 +511,7 @@ public class NasaChandraService extends AbstractOrgHtmlGalleryService<NasaChandr
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(NasaChandraMedia media) {
         return false;
     }
 

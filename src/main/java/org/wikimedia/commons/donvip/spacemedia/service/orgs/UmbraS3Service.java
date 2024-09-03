@@ -121,7 +121,7 @@ public class UmbraS3Service extends AbstractOrgS3Service {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(S3Media media) {
         return false;
     }
 

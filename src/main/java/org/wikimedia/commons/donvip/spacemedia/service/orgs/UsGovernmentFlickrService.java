@@ -28,7 +28,7 @@ public class UsGovernmentFlickrService extends AbstractOrgFlickrService {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(FlickrMedia media) {
         return false;
     }
 

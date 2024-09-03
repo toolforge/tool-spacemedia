@@ -116,7 +116,7 @@ public abstract class AbstractOrgDvidsService extends AbstractOrgService<DvidsMe
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(DvidsMedia media) {
         return blocklist;
     }
 

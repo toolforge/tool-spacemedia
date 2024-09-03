@@ -70,7 +70,7 @@ public class NasaModisService extends AbstractOrgService<NasaModisMedia> {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(NasaModisMedia media) {
         return false;
     }
 

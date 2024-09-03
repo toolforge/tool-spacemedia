@@ -24,4 +24,9 @@ public class UsAirForceDvidsService extends AbstractOrgDvidsService {
     public String getName() {
         return "U.S. Air Force (DVIDS)";
     }
+
+    @Override
+    protected boolean checkAllowlist(DvidsMedia media) {
+        return !media.getId().getRepoId().equals("AEDC-AAFB");
+    }
 }

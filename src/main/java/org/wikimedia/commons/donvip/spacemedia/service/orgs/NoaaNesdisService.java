@@ -155,7 +155,7 @@ public class NoaaNesdisService extends AbstractOrgHtmlGalleryService<NoaaNesdisM
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(NoaaNesdisMedia media) {
         return false;
     }
 

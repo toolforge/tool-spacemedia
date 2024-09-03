@@ -158,7 +158,7 @@ public class ErccService extends AbstractOrgService<ErccMedia> {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(ErccMedia media) {
         return false;
     }
 

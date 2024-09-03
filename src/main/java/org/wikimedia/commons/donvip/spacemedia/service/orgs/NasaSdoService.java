@@ -114,7 +114,7 @@ public class NasaSdoService extends AbstractOrgService<NasaSdoMedia> {
     }
 
     @Override
-    protected boolean checkBlocklist() {
+    protected boolean checkBlocklist(NasaSdoMedia media) {
         return false;
     }
 
