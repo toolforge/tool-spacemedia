@@ -111,6 +111,8 @@ public final class UnitedStates {
         case "embaixadaeua-brasil" -> "U.S. Embassy in Brasilia";
         case "embaixadaeua-caboverde" -> "U.S. Embassy in Praia";
         case "us-embassy-tashkent" -> "U.S. Embassy in Tashkent";
+        case "us_embassy_abj" -> "U.S. Embassy in Abidjan";
+        case "us_embassy_nairobi", "28824161@N06" -> "U.S. Embassy in Nairobi";
         default -> throw new IllegalStateException(media.getId().getRepoId());
         } + " Flickr Stream");
     }
@@ -126,6 +128,8 @@ public final class UnitedStates {
             case "embaixadaeua-brasil" -> "Q10272292";
             case "embaixadaeua-caboverde" -> "Q104759613";
             case "us-embassy-tashkent" -> "Q105635753";
+            case "us_embassy_abj" -> "Q27861602";
+            case "us_embassy_nairobi", "28824161@N06" -> "Q20926176";
             default -> throw new IllegalStateException(media.getId().getRepoId());
         });
     }
